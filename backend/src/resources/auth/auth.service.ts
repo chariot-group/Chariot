@@ -1,6 +1,7 @@
 import { UserService } from '@/resources/user/user.service';
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -64,9 +65,7 @@ export class AuthService {
         access_token: token,
       };
     } catch (error) {
-      if (
-        error instanceof UnauthorizedException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while sign in user ${signInDto.email}: ${error.message}`;
@@ -104,9 +103,7 @@ export class AuthService {
         data: user,
       };
     } catch (error) {
-      if (
-        error instanceof NotFoundException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while reset password of user ${resetPasswordDto.email}: ${error.message}`;
@@ -150,9 +147,7 @@ export class AuthService {
         data: user,
       };
     } catch (error) {
-      if (
-        error instanceof BadRequestException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while changing password of #${id}: ${error.message}`;
@@ -177,9 +172,7 @@ export class AuthService {
         message,
       };
     } catch (error) {
-      if (
-        error instanceof UnauthorizedException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while verifying otp of #${id}: ${error.message}`;
