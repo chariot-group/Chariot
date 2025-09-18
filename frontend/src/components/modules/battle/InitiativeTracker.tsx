@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import InitiativeList from "./InitiativeList";
 import { IGroupWithRelations } from "@/models/groups/IGroup";
 import { IParticipant } from "@/models/participant/IParticipant";
@@ -17,9 +17,13 @@ const InitiativeTracker = ({ groups, campaignId }: Props) => {
   const t = useTranslations("InitiativeTracker");
 
   const [participants, setParticipants] = useState<IParticipant[]>([]);
-  const [currentParticipant, setCurrentParticipant] = useState<IParticipant | undefined>(undefined);
-  const [currentRound, setCurrentRound] = useState<number>(1);
-  const [initiatives, setInitiatives] = usePersistentInitiatives("battle-initiatives", {});
+
+  const [currentRound, setCurrentRound] = usePersistentInitiatives<number>("battle-currentRound", 1);
+  const [initiatives, setInitiatives] = usePersistentInitiatives<InitiativeMap>("battle-initiatives", {});
+  const [currentParticipant, setCurrentParticipant] = usePersistentInitiatives<IParticipant | undefined>(
+    "battle-currentParticipant",
+    undefined,
+  );
 
   useEffect(() => {
     if (groups.length !== 2) {
@@ -76,7 +80,7 @@ const InitiativeTracker = ({ groups, campaignId }: Props) => {
 
   const handleNext = () => {
     if (!currentParticipant) return;
-    const currentIndex = participants.findIndex((p) => p === currentParticipant);
+    const currentIndex = participants.findIndex((p) => p.character._id === currentParticipant.character._id);
     const total = participants.length;
 
     const validParticipants = participants.filter((p) => p.character.stats.currentHitPoints > 0);
