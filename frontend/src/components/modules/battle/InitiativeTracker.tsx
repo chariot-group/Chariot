@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft, RefreshCcw, Swords } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import usePersistentInitiatives, { InitiativeMap } from "@/hooks/usePersistentInitiatives";
 interface Props {
   groups: (IGroupWithRelations | null)[];
   campaignId: string;
@@ -14,9 +15,11 @@ interface Props {
 
 const InitiativeTracker = ({ groups, campaignId }: Props) => {
   const t = useTranslations("InitiativeTracker");
+
   const [participants, setParticipants] = useState<IParticipant[]>([]);
   const [currentParticipant, setCurrentParticipant] = useState<IParticipant | undefined>(undefined);
   const [currentRound, setCurrentRound] = useState<number>(1);
+  const [initiatives, setInitiatives] = usePersistentInitiatives("battle-initiatives", {});
 
   useEffect(() => {
     if (groups.length !== 2) {
@@ -29,7 +32,7 @@ const InitiativeTracker = ({ groups, campaignId }: Props) => {
         allParticipants.push({
           character,
           groupLabel: group.label,
-          initiative: 0,
+          initiative: initiatives[character._id] ? parseInt(initiatives[character._id]) : 0,
         });
       });
     });
@@ -44,6 +47,14 @@ const InitiativeTracker = ({ groups, campaignId }: Props) => {
       return initB - initA;
     });
     setParticipants(sorted);
+
+    const newInitiatives: InitiativeMap = {};
+    sorted.forEach((participant) => {
+      if (typeof participant.initiative !== "undefined") {
+        newInitiatives[participant.character._id] = participant.initiative.toString();
+      }
+    });
+    setInitiatives(newInitiatives);
   };
 
   const handleReset = () => {
