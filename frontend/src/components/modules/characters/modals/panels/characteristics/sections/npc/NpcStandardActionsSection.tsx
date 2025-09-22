@@ -146,7 +146,7 @@ export default function NpcStandardActionsSection({ npc, updateNpc, isUpdate }: 
                 <Champs
                   label={t("action.attackBonus")}
                   min={0}
-                  value={action.attackBonus}
+                  value={action.attackBonus || 0}
                   id={`attackBonus-${index}`}
                   type={"number"}
                   placeholder={t("action.attackBonus")}

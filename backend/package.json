@@ -19,7 +19,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node -r tsconfig-paths/register src/seeder/runner/seeder.ts",
     "seed:clean": "ts-node -r tsconfig-paths/register src/seeder/runner/seeder.ts --clean",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "stripe:checkout": "ts-node -r tsconfig-paths/register src/resources/stripe/runner/createCheckout.ts"
   },
   "dependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -36,6 +37,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
+    "dotenv": "^17.0.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
     "nest-winston": "^1.10.2",
@@ -44,6 +46,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "stripe": "^18.2.1",
     "winston": "^3.17.0"
   },
   "devDependencies": {
@@ -56,6 +59,7 @@
     "@types/mongoose": "^5.11.96",
     "@types/node": "^20.3.1",
     "@types/passport-jwt": "^4.0.1",
+    "@types/stripe": "^8.0.416",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
@@ -71,22 +75,5 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.3"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }

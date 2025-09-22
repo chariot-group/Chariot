@@ -65,14 +65,14 @@ export class NpcService {
         createdBy: new Types.ObjectId(userId),
       });
       const savedNpc = await newNpc.save();
-      await this.groupModel.updateMany(
-        {
-          _id: {
-            $in: createNpcDto.groups && createNpcDto.groups.map((id) => id),
+      if (createNpcDto.groups && createNpcDto.groups.length > 0) {
+        await this.groupModel.updateMany(
+          {
+            _id: { $in: createNpcDto.groups },
           },
-        },
-        { $addToSet: { characters: savedNpc._id } },
-      );
+          { $addToSet: { characters: savedNpc._id } },
+        );
+      }
       const end = Date.now();
 
       const message = `NPC created in ${end - start}ms`;

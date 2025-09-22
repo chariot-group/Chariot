@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, GoneException, Logger, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, GoneException, Logger, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import { AuthService } from '@/resources/auth/auth.service';
 import { SignInDto } from '@/resources/auth/dto/signIn.dto';
 import { CreateUserDto } from '@/resources/user/dto/create-user.dto';

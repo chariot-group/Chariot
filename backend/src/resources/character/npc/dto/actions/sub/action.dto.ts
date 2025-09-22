@@ -18,7 +18,7 @@ export class ActionDto {
 
   @IsOptional()
   @IsNumber()
-  attackBonus?: string;
+  attackBonus?: number;
 
   @ValidateNested()
   @IsOptional()

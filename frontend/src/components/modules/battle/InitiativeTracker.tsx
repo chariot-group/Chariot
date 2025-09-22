@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import InitiativeList from "./InitiativeList";
 import { IGroupWithRelations } from "@/models/groups/IGroup";
 import { IParticipant } from "@/models/participant/IParticipant";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft, RefreshCcw, Swords } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import usePersistentInitiatives, { InitiativeMap } from "@/hooks/usePersistentInitiatives";
 interface Props {
   groups: (IGroupWithRelations | null)[];
   campaignId: string;
@@ -14,9 +15,15 @@ interface Props {
 
 const InitiativeTracker = ({ groups, campaignId }: Props) => {
   const t = useTranslations("InitiativeTracker");
+
   const [participants, setParticipants] = useState<IParticipant[]>([]);
-  const [currentParticipant, setCurrentParticipant] = useState<IParticipant | undefined>(undefined);
-  const [currentRound, setCurrentRound] = useState<number>(1);
+
+  const [currentRound, setCurrentRound] = usePersistentInitiatives<number>("battle-currentRound", 1);
+  const [initiatives, setInitiatives] = usePersistentInitiatives<InitiativeMap>("battle-initiatives", {});
+  const [currentParticipant, setCurrentParticipant] = usePersistentInitiatives<IParticipant | undefined>(
+    "battle-currentParticipant",
+    undefined,
+  );
 
   useEffect(() => {
     if (groups.length !== 2) {
@@ -29,7 +36,7 @@ const InitiativeTracker = ({ groups, campaignId }: Props) => {
         allParticipants.push({
           character,
           groupLabel: group.label,
-          initiative: 0,
+          initiative: initiatives[character._id] ? parseInt(initiatives[character._id]) : 0,
         });
       });
     });
@@ -44,6 +51,14 @@ const InitiativeTracker = ({ groups, campaignId }: Props) => {
       return initB - initA;
     });
     setParticipants(sorted);
+
+    const newInitiatives: InitiativeMap = {};
+    sorted.forEach((participant) => {
+      if (typeof participant.initiative !== "undefined") {
+        newInitiatives[participant.character._id] = participant.initiative.toString();
+      }
+    });
+    setInitiatives(newInitiatives);
   };
 
   const handleReset = () => {
@@ -65,7 +80,7 @@ const InitiativeTracker = ({ groups, campaignId }: Props) => {
 
   const handleNext = () => {
     if (!currentParticipant) return;
-    const currentIndex = participants.findIndex((p) => p === currentParticipant);
+    const currentIndex = participants.findIndex((p) => p.character._id === currentParticipant.character._id);
     const total = participants.length;
 
     const validParticipants = participants.filter((p) => p.character.stats.currentHitPoints > 0);

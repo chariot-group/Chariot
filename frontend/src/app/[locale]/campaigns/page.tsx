@@ -65,7 +65,7 @@ export default function CampaignsPage() {
       setLoading(true);
       await Promise.all(
         groupsLabelRef.current
-          .filter((group) => !(typeof group._id === "string" && (group._id.startsWith("temp-"))))
+          .filter((group) => !(typeof group._id === "string" && group._id.startsWith("temp-")))
           .map(async (group) => {
             const label = group.label?.trim() || t("form.newGroup");
             const matchingGroup = newGroupRef.current.find((g) => g._id === group._id);
@@ -86,11 +86,23 @@ export default function CampaignsPage() {
 
       await Promise.all(
         newGroupRef.current
-          .filter((group) => typeof group._id === "string" && (group._id.startsWith("temp-") || group._id.startsWith("new-")))
+          .filter(
+            (group) => typeof group._id === "string" && (group._id.startsWith("temp-") || group._id.startsWith("new-")),
+          )
           .map(async (group) => {
-            const label = group.label?.trim()?.length ? group.label.trim() :  t("form.newGroup");
+            const label = group.label?.trim()?.length ? group.label.trim() : t("form.newGroup");
             const { _id, label: _, ...rest } = group;
             await GroupService.createGroup({ ...rest, label });
+          }),
+      );
+
+      await Promise.all(
+        updatedGroup
+          .filter((group) => !(typeof group._id === "string" && group._id.startsWith("temp-")))
+          .map(async (group) => {
+            if (typeof group._id === "string") {
+              await GroupService.updateGroup(group._id, { campaigns: group.campaigns });
+            }
           }),
       );
 
@@ -148,8 +160,10 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter" && isUpdating) {
-        saveActions();
+      if (event.key === "Enter" && !event.shiftKey && isUpdating) {
+        setTimeout(() => {
+          saveActions();
+        }, 100);
         return;
       }
 

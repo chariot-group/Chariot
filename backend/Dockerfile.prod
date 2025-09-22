@@ -9,8 +9,6 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN npm run build && test -f dist/src/main.js
 
-CMD [ "node", "dist/main.js" ]
-
-EXPOSE ${API_PORT}
+CMD [ "node", "dist/src/main.js" ]

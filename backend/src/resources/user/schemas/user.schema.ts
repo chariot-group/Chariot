@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import mongoose from 'mongoose';
+import { Subscription } from '@/resources/user/schemas/subscription/subscription.schema';
 
 export type UserDocument = User & Document;
 
@@ -18,6 +19,9 @@ export class User {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({ type: [Subscription], default: [] })
+  subscriptions: Subscription[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' }],

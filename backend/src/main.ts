@@ -5,6 +5,7 @@ import { instance } from '@/logger/winston.logger';
 import { ValidationPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import * as cookieParser from 'cookie-parser';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,6 +13,13 @@ async function bootstrap() {
       instance: instance,
     }),
   });
+
+  app.use('/stripe/webhook', bodyParser.raw({
+    type: 'application/json',
+    verify: (req: any, res, buf) => {
+      req.rawBody = buf;
+    },
+  }));
 
   app.use(cookieParser());
 
@@ -26,7 +34,7 @@ async function bootstrap() {
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new JwtAuthGuard(reflector));
 
-  await app.listen(9000);
+  await app.listen(process.env.INTERNAL_API_PORT);
 
   console.log('Chariot API running on port:', process.env.API_PORT ?? 3000);
 }

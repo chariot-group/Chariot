@@ -1,6 +1,8 @@
 services:
   mongo:
-    image: mongo:latest
+    networks:
+      - integ_net
+    image: mongo:8.0.0
     container_name: mongodb
     restart: always
     ports:
@@ -20,17 +22,16 @@ services:
       timeout: 5s
       retries: 5
   backend:
+    networks:
+      - integ_net
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: backend
     restart: always
     working_dir: /app
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
     ports:
-      - "${API_PORT}:9000"
+      - "${API_PORT}:${INTERNAL_API_PORT}"
     environment:
       - API_PORT=${API_PORT}
       - MONGO_URL=${MONGO_URL}
@@ -45,8 +46,6 @@ services:
       - RECEIVER_EMAIL=${RECEIVER_EMAIL}
       - SMTP_PASS=${SMTP_PASS}
       - NODE_ENV=${NODE_ENV}
-      - DEFAULT_PASSWORD=${DEFAULT_PASSWORD}
-      - INTERNAL_API_PORT=${INTERNAL_API_PORT}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
     depends_on:
@@ -54,24 +53,26 @@ services:
         condition: service_healthy
 
   frontend:
+    networks:
+      - integ_net
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: frontend
     restart: always
     working_dir: /app
-    volumes:
-      - ./frontend:/app
-      - ./frontend/node_modules:/app/node_modules
     ports:
       - "${FRONT_PORT}:3000"
     depends_on:
       - backend
     environment:
       - BACKEND_URL=${BACKEND_URL}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NODE_ENV=${NODE_ENV}
-    command: ["npm", "run", "dev"]
 
 volumes:
   mongodb_data:
+
+networks:
+  integ_net:

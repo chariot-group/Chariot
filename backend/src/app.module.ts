@@ -8,10 +8,10 @@ import { GroupModule } from '@/resources/group/group.module';
 import { CampaignModule } from '@/resources/campaign/campaign.module';
 import { SeederModule } from '@/seeder/seeder.module';
 import { AuthModule } from '@/resources/auth/auth.module';
-import { join } from 'path';
 import { MaillingService } from '@/mailling/mailling.service';
 import { MaillingModule } from '@/mailling/mailling.module';
 import { CharacterModule } from '@/resources/character/character.module';
+import { StripeModule } from '@/resources/stripe/stripe.module';
 
 @Module({
   imports: [
@@ -26,8 +26,9 @@ import { CharacterModule } from '@/resources/character/character.module';
     SeederModule,
     AuthModule,
     MaillingModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, MaillingService],
 })
-export class AppModule {}
+export class AppModule { }

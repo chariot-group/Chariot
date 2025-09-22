@@ -147,7 +147,7 @@ export default function NpcLairActionsSection({ npc, updateNpc, isUpdate }: Prop
                 <Champs
                   label={t("action.attackBonus")}
                   min={0}
-                  value={action.attackBonus}
+                  value={action.attackBonus || 0}
                   id={`attackBonus-${index}`}
                   type={"number"}
                   placeholder={t("action.attackBonus")}

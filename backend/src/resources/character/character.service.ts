@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
   GoneException,
+  HttpException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -128,10 +129,7 @@ export class CharacterService {
         data: character,
       };
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof GoneException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while deleting character #${id}: ${error.message}`;

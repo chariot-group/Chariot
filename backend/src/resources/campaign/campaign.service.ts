@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -233,9 +234,7 @@ export class CampaignService {
         data: updatedCampaign,
       };
     } catch (error) {
-      if (
-        error instanceof BadRequestException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error updating campaign #${id}: ${error.message}`;
@@ -250,12 +249,17 @@ export class CampaignService {
 
       const campaign = await this.campaignModel.findById(id).exec();
 
-      campaign.deletedAt = new Date();
-      campaign.groups.main.forEach(async (groupId) => {
-        await this.groupModel
-          .updateOne({ _id: groupId }, { $pull: { campaign: id } })
-          .exec();
+      const groups: string[] = ["main", "npc", "archived"];
+      groups.forEach((group) => {
+        if (campaign.groups[group] && campaign.groups[group].length > 0) {
+          campaign.groups[group].forEach(async (groupId) => {
+            await this.groupModel
+              .updateOne({ _id: groupId }, { $pull: { campaign: id } });
+          });
+        }
       });
+
+      campaign.deletedAt = new Date();
       campaign.groups.main = [];
       campaign.groups.npc = [];
       campaign.groups.archived = [];
