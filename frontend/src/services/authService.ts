@@ -1,5 +1,6 @@
 import { APIContentType } from "@/constants/APIContentType";
 import apiClient from "@/services/apiConfig";
+import { AxiosError } from "axios";
 
 const moduleUrl = "/auth/login";
 
@@ -85,6 +86,21 @@ const AuthService = {
       return err.response?.data;
     }
   },
-};
+
+  async findUser(id: string) {
+    try {
+      const response = await apiClient(APIContentType.JSON).get(`/auth/${id}`);
+
+      if (!response || !response.data || response === undefined) {
+        throw new Error("Invalid API response");
+      }
+
+      return response.data;
+    } catch (err: unknown | AxiosError) {
+      console.error("API error:", err);
+      return err;
+    }
+  },
+}
 
 export default AuthService;

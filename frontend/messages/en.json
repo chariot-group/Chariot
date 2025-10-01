@@ -496,6 +496,24 @@
     },
     "cancel": "Cancel"
   },
+  "activateAccount": {
+    "title": "Activate your account",
+    "description": "It's time to activate your account!",
+    "password": "Password",
+    "placeholderPassword": "Enter your new password",
+    "confirmPassword": "Confirm password",
+    "placeholderConfirmPassword": "Confirm your password",
+    "send": "Activate account",
+    "toasts": {
+      "accountActivated": "Account activated!",
+      "passwordsNotMatching": "Passwords do not match",
+      "passwordRequired": "You must enter a password",
+      "confirmPasswordRequired": "You must confirm your password",
+      "internal": "An error occurred while trying to activate your account",
+      "accountAlreadyActivated": "Your account is already activated"
+    },
+    "cancel": "Cancel"
+  },
   "NotFound": {
     "title": "Critical failure, page not found",
     "description": "Location roll: 1. The owlbear stares at the sign... but the sign doesn't respond.",

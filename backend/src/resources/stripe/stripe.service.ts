@@ -2,12 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import Stripe from 'stripe';
 import { UserService } from '@/resources/user/user.service';
 import { generateRandomPassword } from '@/utils/utils.tools';
+import { MaillingService } from '@/mailling/mailling.service';
 
 @Injectable()
 export class StripeService {
 
     constructor(
         private readonly userService: UserService,
+        private maillingService: MaillingService
     ) { }
 
     private readonly SERVICE_NAME = StripeService.name;
@@ -73,6 +75,8 @@ export class StripeService {
                 campaigns: [],
                 password: generateRandomPassword(),
             }).then((user) => user.data);
+
+            this.maillingService.sendWelcomeEmail(user.username, user.email, user._id.toString());
 
             this.logger.log(`👤 Nouvel utilisateur créé depuis Stripe : ${user.email}`, this.SERVICE_NAME);
         }

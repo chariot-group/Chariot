@@ -2,12 +2,14 @@ import Stripe from 'stripe';
 import { StripeService } from '@/resources/stripe/stripe.service';
 import { UserService } from '@/resources/user/user.service';
 import { Test, TestingModule } from '@nestjs/testing';
+import { MaillingService } from '@/mailling/mailling.service';
 
 describe('StripeService - verifySignature', () => {
   let stripeService: StripeService;
   let stripeMock: { webhooks: { constructEvent: jest.Mock } };
 
   const mockUserService = {} as UserService;
+  const mockMaillingService = {} as MaillingService;
 
   beforeEach(() => {
     stripeMock = {
@@ -21,7 +23,7 @@ describe('StripeService - verifySignature', () => {
     process.env.STRIPE_SECRET_KEY = 'sk_test_123';
 
     // On instancie le service normalement
-    stripeService = new StripeService(mockUserService);
+    stripeService = new StripeService(mockUserService, mockMaillingService);
 
     // On injecte le mock de stripe
     (stripeService as any).stripe = stripeMock;
@@ -62,6 +64,7 @@ describe('StripeService - handleEvent', () => {
       providers: [
         StripeService,
         { provide: UserService, useValue: userService },
+        { provide: MaillingService, useValue: { sendWelcomeEmail: jest.fn() } },
       ],
     }).compile();
 
@@ -147,6 +150,10 @@ describe('StripeService - handleEvent', () => {
 describe('StripeService - handleCheckoutSessionCompleted', () => {
   let service: StripeService;
   let userService: Partial<UserService>;
+  const sendWelcomeEmailMock = jest.fn();
+  let maillingService: Partial<MaillingService> = {
+    sendWelcomeEmail: sendWelcomeEmailMock,
+  };
   let stripeMock: Partial<any>;
   const logSpy = jest.fn();
 
@@ -165,7 +172,7 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
       },
     };
 
-    service = new StripeService(userService as UserService);
+    service = new StripeService(userService as UserService, maillingService as MaillingService);
     (service as any).stripe = stripeMock;
     (service as any).logger = { log: logSpy };
   });
@@ -181,8 +188,10 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
     const customer = { email: 'test@example.com', name: 'John Doe' };
     const user = {
       email: 'test@example.com',
+      username: undefined,
       subscriptions: [],
       save: jest.fn(),
+      _id: { toString: () => 'user_id_mock' },
     };
 
     const item = {
@@ -218,6 +227,7 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
 
     expect(user.save).toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Abonnement ajouté à'), expect.any(String));
+
   });
 
   it('should create new user with custom field if provided', async () => {
@@ -225,8 +235,10 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
     const mockCreatedUser = {
       data: {
         email: 'new@example.com',
+        username: 'CustomName',
         subscriptions: [],
         save: jest.fn(),
+        _id: { toString: () => 'user_id_mock' },
       },
     };
 
@@ -263,6 +275,12 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
 
     expect(mockCreatedUser.data.subscriptions.length).toBe(1);
     expect(mockCreatedUser.data.save).toHaveBeenCalled();
+
+    expect(maillingService.sendWelcomeEmail).toHaveBeenCalledWith(
+      'CustomName',
+      'new@example.com',
+      expect.any(String)
+    );
   });
 
   it('should fallback to customer.name if no custom_fields present', async () => {
@@ -270,8 +288,10 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
     const mockUser = {
       data: {
         email: 'new@example.com',
+        username: 'Fallback Name',
         subscriptions: [],
         save: jest.fn(),
+        _id: { toString: () => 'user_id_mock' },
       },
     };
 
@@ -296,12 +316,19 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
     }));
 
     expect(mockUser.data.save).toHaveBeenCalled();
+
+    expect(maillingService.sendWelcomeEmail).toHaveBeenCalledWith(
+      'Fallback Name',
+      'new@example.com',
+      expect.any(String)
+    );
   });
 });
 
 describe('StripeService - handleSubscriptionUpdated', () => {
   let service: StripeService;
   let userService: Partial<UserService>;
+  let maillingService: Partial<MaillingService>;
   let stripeMock: Partial<any>;
   let logger: any;
 
@@ -321,7 +348,7 @@ describe('StripeService - handleSubscriptionUpdated', () => {
       log: jest.fn(),
     };
 
-    service = new StripeService(userService as UserService);
+    service = new StripeService(userService as UserService, maillingService as MaillingService);
     (service as any).stripe = stripeMock;
     (service as any).logger = logger;
   });

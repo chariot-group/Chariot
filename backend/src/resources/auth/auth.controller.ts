@@ -1,4 +1,4 @@
-import { Body, Controller, GoneException, Logger, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, GoneException, Logger, NotAcceptableException, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import { AuthService } from '@/resources/auth/auth.service';
 import { SignInDto } from '@/resources/auth/dto/signIn.dto';
 import { CreateUserDto } from '@/resources/user/dto/create-user.dto';
@@ -42,7 +42,7 @@ export class AuthController {
   }
 
   private async validateResourceById(
-    id: Types.ObjectId,
+    id: Types.ObjectId, verifyDate: boolean = false
   ): Promise<void> {
     let user = await this.userModel.findById(id);
 
@@ -57,6 +57,17 @@ export class AuthController {
       const message = `User #${id} deleted`;
       this.logger.error(message, null, this.CONTROLLER_NAME);
       throw new GoneException(message);
+    }
+
+    if (verifyDate) {
+      const createdAt = new Date(user.createdAt).getTime();
+      const updatedAt = new Date(user.updatedAt).getTime();
+      const diff = Math.abs(updatedAt - createdAt);
+      const tolerance = 1000; // en ms
+
+      if (diff > tolerance) {
+        throw new NotAcceptableException();
+      }
     }
   }
 
@@ -81,7 +92,13 @@ export class AuthController {
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
     @Body() changePassword: changePasswordDto,
   ) {
-    await this.validateResourceById(id);
+    this.logger.log(`Change password for user #${id}`, this.CONTROLLER_NAME);
+    try {
+      await this.validateResourceById(id);
+    } catch (error) {
+      this.logger.error(error.message, error.stack, this.CONTROLLER_NAME);
+      throw error;
+    }
 
     return this.authService.forgotPassword(id, changePassword);
   }
@@ -104,5 +121,13 @@ export class AuthController {
     await this.validateResourceByEmail(email);
 
     return this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @Public()
+  @Get(':id')
+  async verifyUserIsNew(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
+    await this.validateResourceById(id, true);
+
+    return this.userService.findOne(id);
   }
 }
