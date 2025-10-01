@@ -301,7 +301,7 @@ export class GroupService {
       const start: number = Date.now();
       group.deletedAt = new Date();
 
-      const updated = await this.characterModel
+      await this.characterModel
         .updateMany(
           { _id: { $in: group.characters } },
           { $pull: { groups: id } },
