@@ -7,6 +7,6 @@
     "**/*spec.ts",
     "**/*test.ts",
     "jest.config.ts",
-    "src/seeder/**"
+    "src/seeder"
   ]
 }
