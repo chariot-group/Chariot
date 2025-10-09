@@ -20,6 +20,9 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+
   app.use('/stripe/webhook', bodyParser.raw({
     type: 'application/json',
     verify: (req: any, res, buf) => {
