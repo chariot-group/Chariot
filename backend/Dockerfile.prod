@@ -1,37 +1,14 @@
-# ====== Stage 1: Builder ======
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copier les fichiers de dépendances
+# Install dependencies
 COPY package*.json ./
-
-# Installer TOUTES les dépendances (y compris devDependencies pour le build)
 RUN npm ci
-RUN npm install --no-save @faker-js/faker  # <-- Ajoute juste cette ligne
 
-# Copier tout le code source
 COPY . .
 
-# Build l'application (avec accès à jest, faker, etc.)
+# Build the application
 RUN npm run build && test -f dist/src/main.js
 
-# ====== Stage 2: Production ======
-FROM node:20-alpine AS production
-
-WORKDIR /app
-
-# Copier les fichiers de dépendances
-COPY package*.json ./
-
-# Installer UNIQUEMENT les dépendances de production
-RUN npm ci --omit=dev
-
-# Copier les fichiers buildés depuis le stage builder
-COPY --from=builder /app/dist ./dist
-
-# Copier d'autres fichiers nécessaires si besoin (config, assets, etc.)
-# COPY --from=builder /app/config ./config
-
-# Lancer l'application
-CMD ["node", "dist/src/main.js"]
+CMD [ "node", "dist/src/main.js" ]
