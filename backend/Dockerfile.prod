@@ -8,7 +8,13 @@ RUN npm ci
 
 COPY . .
 
-# Build the application
-RUN npm run build && test -f dist/src/main.js
+# Voir ce qui se passe
+RUN echo "=== Starting build ===" && \
+    npm run build 2>&1 | tee build.log && \
+    echo "=== Build finished ===" && \
+    echo "=== Checking dist folder ===" && \
+    ls -la dist/ && \
+    ls -la dist/src/ && \
+    test -f dist/src/main.js
 
 CMD [ "node", "dist/src/main.js" ]
