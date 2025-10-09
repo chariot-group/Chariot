@@ -495,6 +495,24 @@
     },
     "cancel": "Cancelar"
   },
+  "activateAccount": {
+    "title": "Activar tu cuenta",
+    "description": "¡Es momento de activar tu cuenta!",
+    "password": "Contraseña",
+    "placeholderPassword": "Ingresa tu nueva contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "placeholderConfirmPassword": "Confirma tu contraseña",
+    "send": "Activar cuenta",
+    "toasts": {
+      "accountActivated": "¡Cuenta activada!",
+      "passwordsNotMatching": "Las contraseñas no coinciden",
+      "passwordRequired": "La contraseña es obligatoria",
+      "confirmPasswordRequired": "La confirmación de la contraseña es obligatoria",
+      "internal": "Ocurrió un error al intentar activar la cuenta",
+      "accountAlreadyActivated": "La cuenta ya está activada"
+    },
+    "cancel": "Cancelar"
+  },
   "NotFound": {
     "title": "Fallo crítico, página no encontrada",
     "description": "Tirada de localización: 1. El oso lechuza se queda mirando el cartel... pero el cartel no responde.",

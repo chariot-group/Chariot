@@ -4,7 +4,10 @@ import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import mongoose from 'mongoose';
 import { Subscription } from '@/resources/user/schemas/subscription/subscription.schema';
 
-export type UserDocument = User & Document;
+export type UserDocument = User & Document & {
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 @Schema({ timestamps: true })
 export class User {

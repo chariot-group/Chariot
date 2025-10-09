@@ -2,7 +2,7 @@ services:
   mongo:
     networks:
       - integ_net
-    image: mongo:8.0.0
+    image: mongo:8.0.15
     container_name: mongodb
     restart: always
     ports:

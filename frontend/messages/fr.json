@@ -496,6 +496,24 @@
     },
     "cancel": "Annuler"
   },
+  "activateAccount": {
+    "title": "Activer votre compte",
+    "description": "Il est temps d'activer votre compte !",
+    "password": "Mot de passe",
+    "placeholderPassword": "Entrez votre mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "placeholderConfirmPassword": "Confirmez votre mot de passe",
+    "send": "Activer le compte",
+    "toasts": {
+      "accountActivated": "Compte activé !",
+      "passwordsNotMatching": "Les mots de passe ne correspondent pas",
+      "passwordRequired": "Le mot de passe est requis",
+      "confirmPasswordRequired": "La confirmation du mot de passe est requise",
+      "internal": "Une erreur c'est produite quand nous avons essayé d'activer le compte",
+      "accountAlreadyActivated": "Le compte est déjà activé"
+    },
+    "cancel": "Annuler"
+  },
   "NotFound": {
     "title": "Échec critique, page introuvable",
     "description": "Jet de localisation : 1. Le hibours fixe le panneau… mais le panneau ne répond pas.",
