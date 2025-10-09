@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -233,9 +234,7 @@ export class CampaignService {
         data: updatedCampaign,
       };
     } catch (error) {
-      if (
-        error instanceof BadRequestException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error updating campaign #${id}: ${error.message}`;

@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -54,9 +55,7 @@ export class UserService {
         data: user,
       };
     } catch (error) {
-      if (
-        error instanceof ConflictException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while creating campaign: ${error.message}`;
@@ -187,9 +186,7 @@ export class UserService {
         data: user,
       };
     } catch (error) {
-      if (
-        error instanceof NotFoundException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while updating user #${id}: ${error.message}`;

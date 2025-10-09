@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -164,7 +165,7 @@ export class GroupService {
         },
       };
     } catch (error) {
-      if (error instanceof NotFoundException) throw error;
+      if (error instanceof HttpException) throw error;
       const errorMessage = `Error while fetching groups: ${error.message}`;
       this.logger.error(errorMessage);
       throw new InternalServerErrorException(errorMessage);
@@ -284,9 +285,7 @@ export class GroupService {
         data: group,
       };
     } catch (error) {
-      if (
-        error instanceof NotFoundException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while updating group #${id}: ${error.message}`;
