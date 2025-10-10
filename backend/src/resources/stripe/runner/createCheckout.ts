@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
 
-    const API_VERSION = '2025-05-28.basil';
+    const API_VERSION = '2025-08-27.basil';
     const SERVICE_NAME: string = 'STRIPE-CHECKOUT';
 
     dotenv.config({ path: path.resolve(process.cwd(), '../.env') });

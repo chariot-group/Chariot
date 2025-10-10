@@ -14,6 +14,15 @@ async function bootstrap() {
     }),
   });
 
+  app.enableCors({
+    origin: `${process.env.FRONTEND_URL}`,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+
   app.use('/stripe/webhook', bodyParser.raw({
     type: 'application/json',
     verify: (req: any, res, buf) => {
@@ -22,12 +31,6 @@ async function bootstrap() {
   }));
 
   app.use(cookieParser());
-
-  app.enableCors({
-    origin: `${process.env.FRONTEND_URL}`,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
