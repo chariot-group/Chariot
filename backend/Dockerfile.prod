@@ -1,42 +1,14 @@
-# -----------------------
-# 🏗️  STAGE 1 : Build
-# -----------------------
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
-# Créer le dossier de travail
 WORKDIR /app
 
-# Copier uniquement les fichiers nécessaires pour installer les deps
+# Install dependencies
 COPY package*.json ./
-
-# Installer les dépendances (avec cache efficace)
 RUN npm ci
 
-# Copier le code source
 COPY . .
 
-# Builder le projet NestJS
+# Build the application
 RUN npm run build
 
-# -----------------------
-# 🚀 STAGE 2 : Run (prod)
-# -----------------------
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-# Copier uniquement le build et les dépendances nécessaires
-COPY package*.json ./
-RUN npm ci --omit=dev
-
-# Copier le build depuis le stage précédent
-COPY --from=builder /app/dist ./dist
-
-# (Optionnel) Si tu as besoin de fichiers de config/env
-# COPY --from=builder /app/.env .env
-
-# Exposer le port (par défaut 3000 pour Nest)
-EXPOSE 3000
-
-# Lancer l’app
-CMD ["node", "dist/main.js"]
+CMD [ "node", "dist/src/main.js" ]
