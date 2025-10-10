@@ -1,56 +1,56 @@
-# 🚪 Tester le service Stripe en local
+# � Test Stripe service locally
 
-Ce guide explique comment tester l’intégration Stripe (Checkout + Webhooks) en local avec NestJS, en évitant toute pollution sur le compte Stripe.
+This guide explains how to test the Stripe integration (Checkout + Webhooks) locally with NestJS, while avoiding polluting the Stripe account.
 
 ---
 
-## 🔧 1. Installation et configuration de Stripe CLI
+## 🔧 1. Install and configure Stripe CLI
 
-Stripe CLI permet d'écouter les événements Webhook localement.
+Stripe CLI lets you listen to Webhook events locally.
 
 ### Installation
 
-Voir la doc officielle : [Stripe CLI install](https://stripe.com/docs/stripe-cli#install)
+See the official docs: [Stripe CLI install](https://stripe.com/docs/stripe-cli#install)
 
-### Connexion à ton compte Stripe
+### Log in to your Stripe account
 
 ```bash
 stripe login
 ```
 
-### Lancement du listener Stripe
+### Start the Stripe listener
 
-Dans un terminal (ne le ferme pas) :
+In a terminal (keep it open):
 
 ```bash
 stripe listen --forward-to localhost:{ton port API externe}/stripe/webhook
 ```
 
-Cela permet de rediriger tous les événements Stripe vers ton backend local NestJS.
+This forwards all Stripe events to your local NestJS backend.
 
-### Update les secrets
+### Update the secrets
 
-Changer la secret key du .env par celle donnée dans la commande précédente
+Replace the webhook secret in .env with the one printed by the previous command
 (whsec_...)
 
 ---
 
-## 🚀 3. Lancer une session Checkout (script personnalisé)
+## 🚀 3. Launch a Checkout session (custom script)
 
-Le projet contient un script qui génère une session Checkout avec `priceId` (déjà présent dans le dashboard Stripe).
+The project contains a script that creates a Checkout session with a `priceId` (already configured in the Stripe dashboard).
 
-Lance ce script avec :
+Run this script with:
 
 ```bash
 npm run stripe:checkout
 ```
 
-Ce script va :
+This script will:
 
-- Créer une session Checkout (abonnement)
-- Retourner une URL dans la console
+- Create a Checkout session (subscription)
+- Print a URL in the console
 
-Exemple de sortie :
+Example output:
 
 ```bash
 👉 URL Checkout : https://checkout.stripe.com/c/pay/cs_test_1234abcd
@@ -58,47 +58,47 @@ Exemple de sortie :
 
 ---
 
-## 🥺 4. Tester avec Checkout
+## 🥺 4. Test with Checkout
 
-1. **Copie-colle l’URL** dans ton navigateur
-2. Effectue un paiement avec une carte test : `4242 4242 4242 4242`
-3. Stripe déclenchera automatiquement :
+1. Paste the URL in your browser
+2. Make a payment with a test card: `4242 4242 4242 4242`
+3. Stripe will automatically trigger:
    - `checkout.session.completed`
    - `customer.subscription.updated`
 
-Ces événements seront captés par Stripe CLI et transmis à ton serveur via `/webhook/stripe`.
+These events will be captured by Stripe CLI and forwarded to your server via `/webhook/stripe`.
 
 ---
 
-## 🧰 Astuces
+## 🧰 Tips
 
-Pour créer un abonnement: 
-1. Sur la page checkout, rempli les infos demandés (pour bien tester, il faut que tu aies accès à l'email)
+To create a subscription:
+1. On the checkout page, fill in the requested info (to test properly, make sure you can access the email)
 
-Pour modifier un abonnement:
-1. Sur la page checkout, met le même email que l'étape d'avant.
-2. La page va changer en te disant que tu as déjà une abonnement. Suis les étapes.
-3. Une fois connecté, tu peux changer d'offres
-
----
-
-## ✅ Résultat attendu
-
-Dans ta base de données (collection `users`), tu dois voir :
-
-- Un utilisateur créé automatiquement à partir de l’email Stripe et du pseudo renseigné
-- Un abonnement stocké dans `subscriptions[]` (avec `productId`, `priceId`, `started_at`, `expired_at`)
-- L’historique complet si l’utilisateur change d’offre plus tard
+To modify a subscription:
+1. On the checkout page, use the same email as before.
+2. The page will tell you that you already have a subscription. Follow the steps.
+3. Once logged in, you can change plans.
 
 ---
 
-## 📁 Fichiers utiles
+## ✅ Expected result
 
-- `.env.example` : ajoute `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET`
-- `scripts/createCheckout.ts` : script utilisé par `npm run stripe:checkout`
-- `stripe.service.ts` : logique principale de traitement des webhooks
+In your database (collection `users`), you should see:
+
+- A user created automatically from the Stripe email and provided nickname
+- A subscription stored in `subscriptions[]` (with `productId`, `priceId`, `started_at`, `expired_at`)
+- The full history if the user changes plan later
 
 ---
 
-🎉 Tu es prêt à tester Stripe Checkout localement comme en production !
+## 📁 Useful files
+
+- `.env.example`: add `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`
+- `scripts/createCheckout.ts`: script used by `npm run stripe:checkout`
+- `stripe.service.ts`: main logic handling the webhooks
+
+---
+
+🎉 You're ready to test Stripe Checkout locally like in production!
 

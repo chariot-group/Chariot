@@ -1,28 +1,28 @@
-# Documentation : Utilisation du Logger Winston dans CHARIOT
+# Documentation: Using Winston Logger in CHARIOT
 
 ## Introduction
 
-Ce projet utilise [Winston](https://github.com/winstonjs/winston) comme logger pour assurer une gestion centralisée et flexible des logs. Winston est déjà installé et initialisé.
+This project uses [Winston](https://github.com/winstonjs/winston) as the logger to ensure centralized and flexible log management. Winston is already installed and initialized.
 
-## Fichier de logs
+## Log files
 
-Les logs sont stocké dans `logger/logs/{combine|error}.log` seulement dans un environnement de production. En environnement de développement, les logs sont affichées en console. Pour changer l'environnement, il suffit de changer la variable d'environnement (`ENV`) du `.env`.
+Logs are stored in `logger/logs/{combine|error}.log` only in a production environment. In development, logs are printed to the console. To change the environment, adjust the `ENV` variable in `.env`.
 
-En production seulement les logs de type `info`, `warn`ou `error` sont remontées. En développement tous les niveaux de logs sont affichées en console.
+In production, only `info`, `warn`, and `error` logs are persisted. In development, all log levels are printed to the console.
 
 ### combine.log
 
-Ce fichier regroupe toutes les logs de type `info`, `warn`ou `error`.
+This file contains all `info`, `warn`, and `error` logs.
 
 ### error.log
 
-Ce fichier regroupe seulement les logs de type `error`.
+This file contains only `error` logs.
 
-Les logs d'erreur apparraisent donc dans `combine.log` ET `error.log`.
+Error logs therefore appear in both `combine.log` AND `error.log`.
 
-## Utilisation dans un Service ou un Contrôleur
+## Usage in a Service or Controller
 
-Injectez le logger Winston dans n'importe quel service ou contrôleur et ajoutez un contexte pour mieux identifier l'origine des logs :
+Inject the Winston logger into any service or controller and add a context to better identify the origin of logs:
 
 ```typescript
 import { Logger, Controller, Get } from '@nestjs/common';
@@ -39,19 +39,19 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    this.logger.log('Info hello world', this.SERVICE_NAME); // Apparait comme info dans combine.log
-    this.logger.warn('Warning hello world', this.SERVICE_NAME); // Apparait comme warn dans combine.log
-    this.logger.error('Error hello world', this.SERVICE_NAME); // Apparait comme error dans combine.log et error.log
+  this.logger.log('Info hello world', this.SERVICE_NAME); // Appears as info in combine.log
+  this.logger.warn('Warning hello world', this.SERVICE_NAME); // Appears as warn in combine.log
+  this.logger.error('Error hello world', this.SERVICE_NAME); // Appears as error in combine.log and error.log
     return this.appService.getHello();
   }
 }
 ```
 
-L'ajout du deuxième paramètre (`this.SERVICE_NAME`) permet de spécifier un contexte pour chaque log, facilitant ainsi le suivi et le débogage.
+Adding the second parameter (`this.SERVICE_NAME`) specifies a context for each log, making tracking and debugging easier.
 
-## Bonnes Pratiques
+## Best Practices
 
-- Toujours utiliser le logger au lieu de `console.log` (même si cela fonctionne).
-- Définir des niveaux de logs appropriés pour faciliter le débogage.
-- Ajouter un contexte aux logs pour identifier leur provenance.
-- Ne pas loguer d’informations sensibles (ex: mots de passe, tokens).
+- Always use the logger instead of `console.log` (even if it works).
+- Use appropriate log levels to ease debugging.
+- Add context to logs to identify their origin.
+- Do not log sensitive information (passwords, tokens, etc.).

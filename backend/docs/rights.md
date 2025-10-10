@@ -1,16 +1,16 @@
-# 📚 Documentation - Gestion des droits et `IsCreatorGuard`
+# 📚 Documentation - Access Rights and `IsCreatorGuard`
 
-## 🔐 Authentification & Access Token
+## 🔐 Authentication & Access Token
 
-### 1. Récupération du token
+### 1. Retrieving the token
 
-Lorsqu’un utilisateur se connecte via :
+When a user logs in via:
 
 ```json
 POST /auth/login
 ```
 
-Un **JWT (JSON Web Token)** est généré et renvoyé dans la réponse :
+A **JWT (JSON Web Token)** is generated and returned in the response:
 
 ```json
 {
@@ -19,23 +19,23 @@ Un **JWT (JSON Web Token)** est généré et renvoyé dans la réponse :
 }
 ```
 
-Ce token contient l’identifiant de l’utilisateur (`userId`) et est utilisé pour authentifier les requêtes futures.
+This token contains the user identifier (`userId`) and is used to authenticate subsequent requests.
 
 ---
 
-### 2. Utilisation dans Postman
+### 2. Using in Postman
 
-Pour tester une route protégée avec **Postman**, il faut :
+To test a protected route with **Postman**:
 
-- Aller dans l'onglet **"Headers"**
-- Ajouter un header :
+- Go to the **Headers** tab
+- Add a header:
 
 ```
 Key: Cookie
 Value: accessToken=<JWT>
 ```
 
-#### Exemple :
+#### Example:
 
 ```
 Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -43,23 +43,23 @@ Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-## 🛡️ Vérification des droits : `IsCreatorGuard`
+## 🛡️ Rights verification: `IsCreatorGuard`
 
-Le **`IsCreatorGuard`** est un guard personnalisé qui vérifie que l’utilisateur connecté est **le créateur d’une ressource**.
+The **`IsCreatorGuard`** is a custom guard that ensures the authenticated user is **the creator of a resource**.
 
-### 🧠 Fonctionnement
+### 🧠 How it works
 
-- Le paramètre `:id` est extrait de la route (`@Param('id')`).
-- Le service injecté via `@IsCreator(Service)` doit exposer une méthode `findOne(id)` retournant un objet avec une propriété `creatorId`.
-- Le guard compare `creatorId` avec `request.user.userId`.
+- The `:id` parameter is extracted from the route (`@Param('id')`).
+- The service injected via `@IsCreator(Service)` must expose a `findOne(id)` method returning an object with a `creatorId` property.
+- The guard compares `creatorId` to `request.user.userId`.
 
 ---
 
-### ✅ Exemple d'utilisation
+### ✅ Usage example
 
-#### Étape 1 : Activer le guard globalement dans le contrôleur
+#### Step 1: Enable the guard at the controller level
 
-Dans le contrôleur, ajoutez :
+In the controller, add:
 
 ```ts
 @UseGuards(IsCreatorGuard)
@@ -69,9 +69,9 @@ export class GroupController {
 }
 ```
 
-#### Étape 2 : Protéger une méthode
+#### Step 2: Protect a method
 
-Ajoutez `@IsCreator(GroupService)` sur chaque méthode qui utilise `:id` :
+Add `@IsCreator(GroupService)` to each method that uses `:id`:
 
 ```ts
 @IsCreator(GroupService)
@@ -89,19 +89,19 @@ update(@Param('id') id: string, @Body() dto: UpdateGroupDto) {
 
 ---
 
-### 🔁 Conditions nécessaires
+### 🔁 Required conditions
 
-- Le service utilisé doit avoir une méthode `findOne(id: string)` retournant un objet `{ creatorId: string }`.
-- Le paramètre `id` doit être présent dans la route.
-- L’utilisateur doit être connecté (token JWT valide dans les cookies).
+- The service must expose a `findOne(id: string)` method returning `{ creatorId: string }`.
+- The `id` parameter must be present in the route.
+- The user must be authenticated (valid JWT token in cookies).
 
 ---
 
-## 🧪 Résumé rapide
+## 🧪 Quick summary
 
-| Élément                      | Description                                                           |
+| Item                         | Description                                                           |
 | ---------------------------- | --------------------------------------------------------------------- |
-| `accessToken`                | JWT stocké dans les cookies après login                               |
-| `@UseGuards(IsCreatorGuard)` | Active le guard sur toutes les routes du contrôleur                   |
-| `@IsCreator(Service)`        | Vérifie que l’utilisateur est bien le créateur de la ressource ciblée |
-| Méthode de service requise   | `findOne(id: string): Promise<{ creatorId: string }>`                 |
+| `accessToken`                | JWT stored in cookies after login                                     |
+| `@UseGuards(IsCreatorGuard)` | Enables the guard on all routes of the controller                     |
+| `@IsCreator(Service)`        | Ensures the user is the creator of the targeted resource              |
+| Required service method      | `findOne(id: string): Promise<{ creatorId: string }>`                 |
