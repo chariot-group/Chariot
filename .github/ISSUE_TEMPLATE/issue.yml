@@ -31,7 +31,6 @@ body:
       description: Tous les critères qui doivent obligatoirement être fait.
       value: |
         - [ ] 
-    render: markdown
 
   - type: textarea
     id: spec_tech
@@ -40,11 +39,9 @@ body:
       description: Précisions techniques pour faire le ticket
       value: |
         - [ ] 
-    render: markdown
 
   - type: textarea
     id: notes
     attributes:
       label: Notes
       description: Conseils, outils alternatifs, points de vigilance
-    render: markdown
