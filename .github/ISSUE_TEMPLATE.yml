@@ -1,0 +1,50 @@
+name: Nouveau ticket
+description: Template de création d'un ticket pour Chariot
+title: "[CHARIOT] "
+labels: ""
+assignees: ""
+body:
+  - type: textarea
+    id: objectif
+    attributes:
+      label: Objectif
+      description: Décrire au format Scrum ce qui est attendu du ticket
+      value: |
+        En tant que 
+        je souhaite 
+        Afin de 
+      validations:
+        required: true
+
+  - type: textarea
+    id: contexte
+    attributes:
+      label: Contexte
+      description: Pourquoi cette intégration est-elle nécessaire ?
+    validations:
+      required: true
+
+  - type: textarea
+    id: criteres
+    attributes:
+      label: Critères d’acceptation
+      description: Tous les critères qui doivent obligatoirement être fait.
+      value:
+        - [ ] 
+    render: markdown
+
+  - type: textarea
+    id: spec_tech
+    attributes:
+      label: Spécifications techniques (optionnel)
+      description: Précisions techniques pour faire le ticket
+      value: |
+        - [ ] 
+    render: markdown
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Conseils, outils alternatifs, points de vigilance
+    render: markdown
