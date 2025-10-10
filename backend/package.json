@@ -41,7 +41,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
     "nest-winston": "^1.10.2",
-    "nodemailer": "^6.10.1",
+    "nodemailer": "^7.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
