@@ -1,8 +1,8 @@
 name: Nouveau ticket
 description: Template de création d'un ticket pour Chariot
 title: "[CHARIOT] "
-labels: ""
-assignees: ""
+labels: []
+assignees: []
 body:
   - type: textarea
     id: objectif
@@ -13,8 +13,8 @@ body:
         En tant que 
         je souhaite 
         Afin de 
-      validations:
-        required: true
+    validations:
+      required: true
 
   - type: textarea
     id: contexte
@@ -29,7 +29,7 @@ body:
     attributes:
       label: Critères d’acceptation
       description: Tous les critères qui doivent obligatoirement être fait.
-      value:
+      value: |
         - [ ] 
     render: markdown
 
