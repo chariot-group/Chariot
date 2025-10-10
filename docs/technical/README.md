@@ -10,9 +10,9 @@ See [frontend/docs/](../../frontend/docs/) for:
 
 ## ⚙️ Backend
 See [backend/docs/](../../backend/docs/) for:
-- [Logger](../../backend/docs/logger.md) - Log configuration
-- [Stripe](../../backend/docs/stripe.md) - Payments integration
-- [Access rights](../../backend/docs/rights.md) - Permission system
+- [Logger](../../backend/docs/LOGGER.md) - Log configuration
+- [Stripe](../../backend/docs/STRIPE.md) - Payments integration
+- [Access rights](../../backend/docs/RIGHTS.md) - Permission system
 - [Backend Contribution](../../backend/docs/CONTRIBUTING.md) - Development standards
 
 ## 📋 Architecture

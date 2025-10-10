@@ -76,4 +76,4 @@ With this approach, we structure our NestJS project following best practices for
 
 To record events or important messages, we use a centralized logger. This helps track application activity and ease debugging.
 
-For more details on usage and configuration of the logger, see: [`logger.md`](./logger.md).
+For more details on usage and configuration of the logger, see: [`LOGGER.md`](./LOGGER.md).

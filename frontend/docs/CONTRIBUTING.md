@@ -18,7 +18,7 @@ Even if buttons look visually similar:
 
 ### 🌐 Locales & translation
 
-For any translation or internationalization questions, see [i18n.md](./i18n.md) for configuration and best practices.
+For any translation or internationalization questions, see [I18n.md](./I18n.md) for configuration and best practices.
 
 ## 🏗️ Project architecture
 
