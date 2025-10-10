@@ -23,7 +23,7 @@
     "stripe:checkout": "ts-node -r tsconfig-paths/register src/resources/stripe/runner/createCheckout.ts"
   },
   "dependencies": {
-    "@nestjs/cli": "^10.0.0",
+    "@nestjs/cli": "^11.0.0",
     "@nestjs/common": "^11.0.13",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.13",
