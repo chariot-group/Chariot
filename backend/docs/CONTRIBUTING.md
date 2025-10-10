@@ -1,51 +1,51 @@
-# Contribuer à Chariot Back
+# Contributing to Chariot Backend
 
-Lorsque vous contribuez à l'application Chariot Back, ...
+When contributing to the Chariot backend application, ...
 
-## Table des matières
+## Table of contents
 
-- [Création de Ressource](#création-de-ressource)
-- [Gestion des logs](#gestion-des-logs)
+- [Resource creation](#resource-creation)
+- [Log management](#log-management)
 
-## Création de Ressource
+## Resource creation
 
-### 1. Génération de la Ressource
+### 1. Generate the resource
 
-Pour créer une nouvelle ressource dans un projet NestJS, utilisez la commande suivante :
+To create a new resource in a NestJS project, use the following command:
 
 ```sh
 nest generate resource resourceName
 ```
 
-ou en version raccourcie :
+or the short version:
 
 ```sh
 nest g res resourceName
 ```
 
-Cela générera automatiquement un ensemble de fichiers nécessaires à la gestion de cette ressource : service, controller, module, DTOs, entité et les fichiers de test.
+This will automatically generate the necessary files for the resource: service, controller, module, DTOs, schema/entity, and test files.
 
-## 2. Adaptation à MongoDB
+## 2. Adapting to MongoDB
 
-Comme nous utilisons MongoDB avec Mongoose, nous devons adapter la structure des fichiers générés par défaut :
+Since we use MongoDB with Mongoose, we need to adapt the default generated structure:
 
-1. **Renommer le dossier `entities` en `schemas`** :
+1. **Rename the `entities` folder to `schemas`**:
 
    ```sh
    mv src/resource-name/entities src/resource-name/schemas
    ```
 
-2. **Renommer le fichier `resource.entity.ts` en `resource.schema.ts`** :
+2. **Rename the file `resource.entity.ts` to `resource.schema.ts`**:
 
    ```sh
    mv src/resource-name/schemas/resource.entity.ts src/resource-name/schemas/resource.schema.ts
    ```
 
-Il est à noter que dans une version ultérieure du projet, il pourrait être possible de faire une surcouche à la CLI de nest pour générer les schémas au lieu des entités de manière automatique.
+Note: In a future version of the project, we may add a Nest CLI plugin or overlay to generate schemas instead of entities automatically.
 
-## 3. Exemple de Schéma Mongoose pour NestJS
+## 3. Example Mongoose schema for NestJS
 
-Voici un exemple de schéma Mongoose pour une ressource basique, telle qu'un `Product` :
+Here is an example Mongoose schema for a basic resource such as `Product`:
 
 ```ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
@@ -68,12 +68,12 @@ export class Product {
 export const ProductSchema = SchemaFactory.createForClass(Product);
 ```
 
-Ce fichier sera enregistré sous `src/product/schemas/product.schema.ts`.
+This file will be saved under `src/product/schemas/product.schema.ts`.
 
-Avec cette approche, nous structurons notre projet NestJS en respectant les bonnes pratiques pour l'utilisation de MongoDB avec Mongoose sans dénaturer la structure modulaire de NestJS.
+With this approach, we structure our NestJS project following best practices for MongoDB with Mongoose without altering NestJS's modular structure.
 
-## Gestion des logs
+## Log management
 
-Pour enregistrer des événements ou des messages importants, nous utilisons un logger centralisé. Cela permet de suivre les activités de l'application et de faciliter le débuggage.
+To record events or important messages, we use a centralized logger. This helps track application activity and ease debugging.
 
-Pour plus de détails sur l'utilisation et la configuration du logger, veuillez consulter la documentation dédiée : [`logger.md`](./logger.md).
+For more details on usage and configuration of the logger, see: [`logger.md`](./logger.md).

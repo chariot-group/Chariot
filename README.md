@@ -1,55 +1,66 @@
 # Chariot
+Chariot is a companion app designed for Dungeon Masters of Dungeons & Dragons, especially those who play in person. Its goal is to simplify campaign preparation, management, and tracking through a modern, intuitive, and streamlined interface. Unlike virtual tabletop tools, Chariot focuses on narrative structure and visual clarity, helping DMs stay organized and fully immerse their players in engaging, story-driven sessions.
 
-Bienvenue sur le projet **Chariot**.
+👉 Learn more and join us at https://chariot.tools
 
-## 🚀 Lancement du projet
 
-Voici les étapes pour lancer l'application en local :
+## 📚 Documentation
 
-### 1. Configuration des fichiers `.env`
+### 🔧 Development
+- [Contribution](CONTRIBUTING.md) - How to contribute to the project
 
-Cloner le fichier `.env.example` en `.env` dans les trois répertoires suivants :
+### 🛠️ Technical
+- [Technical documentation](docs/technical/README.md) - API, architecture, frontend, backend
 
-- à la racine du projet
-- dans le dossier `frontend`
-- dans le dossier `backend`
+## 🏗️ Architecture
 
+**Monorepo**: Next.js (frontend) + NestJS (backend) + MongoDB + Docker
+
+## 🚀 Getting Started
+
+### 1. Environment
+a. Copy the example environment file
 ```bash
 cp .env.example .env
-cp frontend/.env.example frontend/.env
-cp backend/.env.example backend/.env
 ```
 
-### 2. Installation des dépendances
+b. Edit the environment variables as needed
+```bash
+nano .env
+#--or--#
+vim .env
+```
 
-Installer les dépendances nécessaires dans le frontend et le backend :
+### 2. Install dependencies
+
+Install the required dependencies for both frontend and backend:
 
 ```bash
 cd frontend && npm install
 cd ../backend && npm install
 ```
 
-### 3. Lancer le projet avec Docker
+### 3. Start the project with Docker
 
-Assurez-vous d’avoir Docker installé sur votre machine.
+Make sure Docker is installed on your machine.
 
-Pour lancer l’ensemble des services (frontend, backend, base de données...) :
+To start all services (frontend, backend, database, etc.):
 
 ```bash
 docker compose up
 ```
 
-## 🌱 Seeder (optionnel)
+## 🌱 Seeder (optional)
 
-Un système de **seeder** a été mis en place pour injecter des données de test dans la base de données.
+A **seeder** system is available to inject test data into the database.
 
-- Pour exécuter le seeder :
+- To run the seeder:
 
   ```bash
   docker compose exec backend npm run seed
   ```
 
-- Pour effacer les données existantes et reseeder proprement :
+- To clear existing data and reseed cleanly:
 
   ```bash
   docker compose exec backend npm run seed:clean

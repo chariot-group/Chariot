@@ -1,32 +1,32 @@
-# Contribuer à Chariot Front
+# Contributing to Chariot Frontend
 
-Lorsque vous contribuez à l'application Chariot Front, ...
+When contributing to the Chariot frontend application, ...
 
-## Table des matières
+## Table of contents
 
-1.  [Règles de code](#règles-de-code)
-2.  [Architecture du projet](#architecture-du-projet)
-3.  [Conventions de nommage](#conventions-de-nommage)
+1.  [Code rules](#code-rules)
+2.  [Project architecture](#project-architecture)
+3.  [Naming conventions](#naming-conventions)
 
-## 📚 Règles de code
+## 📚 Code rules
 
 ### 🔗 Navigation
 
-Même s'ils ont la même apparence visuelle :
+Even if buttons look visually similar:
 
-- Chaque bouton destiné à la navigation devra utiliser la balise next-navigation `<Link></Link>`
+- Every navigation button must use Next.js navigation `<Link></Link>`
 
-### 🌐 Locales & traduction
+### 🌐 Locales & translation
 
-Pour toute question relative à la traduction ou à l'internationalisation, veuillez consulter le fichier [i18n.md](./i18n.md) pour plus de détails sur la configuration et les bonnes pratiques.
+For any translation or internationalization questions, see [i18n.md](./i18n.md) for configuration and best practices.
 
-## 🏗️ Architecture du projet
+## 🏗️ Project architecture
 
-L’architecture de Chariot Front repose sur une structure modulaire centralisée.
+Chariot Frontend uses a centralized modular structure.
 
-Plutôt que d’avoir un dossier `modules` contenant tous les fichiers liés à un module donné, nous avons des dossiers thématiques globaux (`components`, `models`, `services`, `hooks`, etc.) dans lesquels les fichiers sont **regroupés par module**.
+Instead of a `modules` folder containing everything for a given module, we use global domain folders (`components`, `models`, `services`, `hooks`, etc.) where files are **grouped by module**.
 
-Par exemple :
+For example:
 
 ```
 components/
@@ -37,34 +37,34 @@ components/
   │   └── UserList.tsx
 ```
 
-Chaque sous-dossier correspond à un **module fonctionnel** (ex. `orders`, `users`, etc.), ce qui permet de garder une structure claire tout en mutualisant les types de fichiers.
+Each subfolder corresponds to a **functional module** (e.g., `orders`, `users`, etc.), keeping structure clear while sharing file types.
 
-Cette organisation s’applique à l’ensemble des dossiers suivants :
+This organization applies to the following folders:
 
-- **components/** : composants React triés par module
-- **models/** : types et interfaces spécifiques à un module
-- **services/** : appels API regroupés par module
-- **hooks/** : hooks personnalisés, également triés par module
-- **utils/** : fonctions utilitaires, triées par domaine fonctionnel si pertinent
+- **components/**: React components by module
+- **models/**: types and interfaces specific to a module
+- **services/**: API calls grouped by module
+- **hooks/**: custom hooks, also grouped by module
+- **utils/**: utility functions, grouped by functional domain when relevant
 
-Les fichiers ou composants vraiment globaux (utilisables dans tous les modules sans distinction) sont placés à la racine de chaque dossier, ou dans un sous-dossier `common/` selon les cas.
+Truly global files or components (usable across modules) live at the root of each folder, or in a `common/` subfolder when appropriate.
 
-👉 Cette architecture permet une **lisibilité accrue** et une **facilité de navigation** sans sacrifier la séparation des responsabilités.
+👉 This architecture improves **readability** and **navigation** without sacrificing separation of concerns.
 
-## 🔤 Conventions de nommage
+## 🔤 Naming conventions
 
 ### 🧩 Components
 
-- Chaque composant doit être nommé en **PascalCase**, et son fichier doit suivre le même nom.
-- Convention de nommage : **Module|(CRUDAction)|Specif**
+- Name components in **PascalCase** and match the filename.
+- Naming pattern: **Module|(CRUDAction)|Specific**
 
-_Exemple_ : **CampainIndexDatatable** ou **NPCForm**
+Example: **CampainIndexDatatable** or **NPCForm**
 
 ### 🏷️ Models
 
-- Les interfaces et types (dans leur nom et dans le nom de leur fichier) doivent toutes commencer par un **I**.
+- Interfaces and types (in both their name and file name) must start with an **I**.
 
-_Exemple_ :
+Example:
 
 `file: /src/modules/Campains/types/IContact.ts`
 
@@ -74,11 +74,11 @@ export interface ICampains {}
 
 ### 🏗️ Variables
 
-- Les variables doivent être nommées en **camelCase**.
-- Les constantes globales doivent être en **UPPER_CASE**.
-- Les noms doivent être explicites et éviter les abréviations inutiles.
+- Variables must be named in **camelCase**.
+- Global constants must be in **UPPER_CASE**.
+- Names must be explicit and avoid unnecessary abbreviations.
 
-_Exemple_ :
+Example:
 
 ```ts
 const userName = "John Doe";
