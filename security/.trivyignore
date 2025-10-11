@@ -1,0 +1,5 @@
+# Trivy Ignore File
+# Format: CVE-ID # Raison | Date | Reviewer
+
+# Exemple:
+# CVE-2023-12345 # Dev dependency only | 2024-01-15 | @username
