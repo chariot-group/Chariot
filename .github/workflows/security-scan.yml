@@ -170,10 +170,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    
-    # Seulement si SONAR_TOKEN est configuré
-    if: ${{ secrets.SONAR_TOKEN != '' }}
-    
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -185,7 +185,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # Installer les dépendances pour les deux projets
+      # Installer les dépendances
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: npm ci
@@ -194,7 +194,7 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      # Générer la couverture de tests pour le backend
+      # Exécuter les tests backend
       - name: Run backend tests with coverage
         working-directory: ./backend
         continue-on-error: true
@@ -205,14 +205,14 @@ jobs:
             echo "⚠️ Backend tests skipped or failed"
           fi
 
-      # Scan SonarCloud du monorepo complet
+      # ✅ On conditionne seulement la step du scan SonarCloud
       - name: SonarCloud Scan (Monorepo)
+        if: env.SONAR_TOKEN != ''
         uses: SonarSource/sonarcloud-github-action@master
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-
   # ============================================
   # JOB 4: Build et scan des images Docker
   # ============================================
