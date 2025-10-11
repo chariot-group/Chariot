@@ -25,6 +25,10 @@ jobs:
       matrix:
         project: [frontend, backend]
     
+    outputs:
+      has-critical-frontend: ${{ steps.check-vuln-frontend.outputs.has-critical }}
+      has-critical-backend: ${{ steps.check-vuln-backend.outputs.has-critical }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -48,7 +52,7 @@ jobs:
           mkdir -p ../../security/reports
           npm audit --json > ../../security/reports/npm-audit-${{ matrix.project }}.json || true
           echo "📦 Scanning ${{ matrix.project }} dependencies..."
-          npm audit --audit-level=moderate || echo "Vulnerabilities found but continuing..."
+          npm audit --audit-level=moderate || echo "Vulnerabilities found"
 
       - name: Run Trivy dependency scan
         uses: aquasecurity/trivy-action@master
@@ -58,7 +62,7 @@ jobs:
           format: 'sarif'
           output: 'security/reports/trivy-deps-${{ matrix.project }}.sarif'
           severity: 'CRITICAL,HIGH,MEDIUM'
-          exit-code: '0'  # Ne pas faire échouer le job
+          exit-code: '0'
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -68,24 +72,40 @@ jobs:
           sarif_file: 'security/reports/trivy-deps-${{ matrix.project }}.sarif'
           category: 'dependencies-${{ matrix.project }}'
 
-      - name: Check for critical vulnerabilities
+      - name: Check for critical vulnerabilities (frontend)
+        if: matrix.project == 'frontend'
+        id: check-vuln-frontend
         working-directory: ./security/reports
         continue-on-error: true
         run: |
-          if [ -f "npm-audit-${{ matrix.project }}.json" ]; then
-            CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' npm-audit-${{ matrix.project }}.json)
-            HIGH=$(jq '.metadata.vulnerabilities.high // 0' npm-audit-${{ matrix.project }}.json)
-            MODERATE=$(jq '.metadata.vulnerabilities.moderate // 0' npm-audit-${{ matrix.project }}.json)
-            
-            echo "🔍 ${{ matrix.project }}: $CRITICAL critical, $HIGH high, $MODERATE moderate"
-            
-            if [ "$CRITICAL" -gt 0 ]; then
-              echo "⚠️ $CRITICAL critical vulnerabilities found in ${{ matrix.project }}"
-              echo "status=failed" >> $GITHUB_OUTPUT
-            else
-              echo "✅ No critical vulnerabilities"
-              echo "status=passed" >> $GITHUB_OUTPUT
-            fi
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' npm-audit-frontend.json)
+          HIGH=$(jq '.metadata.vulnerabilities.high // 0' npm-audit-frontend.json)
+          
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "has-critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for critical vulnerabilities (backend)
+        if: matrix.project == 'backend'
+        id: check-vuln-backend
+        working-directory: ./security/reports
+        continue-on-error: true
+        run: |
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' npm-audit-backend.json)
+          HIGH=$(jq '.metadata.vulnerabilities.high // 0' npm-audit-backend.json)
+          
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "has-critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-critical=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload dependency scan reports
@@ -98,7 +118,7 @@ jobs:
           if-no-files-found: warn
 
   # ============================================
-  # JOB 2: Scan des secrets (VERSION GRATUITE)
+  # JOB 2: Scan des secrets
   # ============================================
   secret-scan:
     name: Détection de secrets
@@ -107,14 +127,17 @@ jobs:
       contents: read
       security-events: write
     
+    outputs:
+      secrets-found: ${{ steps.check-secrets.outputs.found }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      # TruffleHog est gratuit et ne nécessite pas de licence
       - name: Run TruffleHog scan
+        id: trufflehog
         uses: trufflesecurity/trufflehog@main
         continue-on-error: true
         with:
@@ -122,24 +145,68 @@ jobs:
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
 
-      # Alternative : Scan manuel avec git-secrets
-      - name: Install git-secrets
+      - name: Check secrets result
+        id: check-secrets
         run: |
-          git clone https://github.com/awslabs/git-secrets.git
-          cd git-secrets
-          sudo make install
-          cd ..
-          rm -rf git-secrets
-
-      - name: Run git-secrets scan
-        continue-on-error: true
-        run: |
-          git secrets --install
-          git secrets --register-aws
-          git secrets --scan-history || echo "Secrets scan completed with findings"
+          if [ "${{ steps.trufflehog.outcome }}" == "failure" ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
 
   # ============================================
-  # JOB 3: Build et scan des images Docker
+  # JOB 3: SAST avec SonarCloud (MONOREPO)
+  # ============================================
+  sast-scan:
+    name: Analyse statique (SAST)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    # Seulement si SONAR_TOKEN est configuré
+    if: ${{ secrets.SONAR_TOKEN != '' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Installer les dépendances pour les deux projets
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      # Générer la couverture de tests pour le backend
+      - name: Run backend tests with coverage
+        working-directory: ./backend
+        continue-on-error: true
+        run: |
+          if npm run test:cov 2>/dev/null; then
+            echo "✅ Backend tests completed with coverage"
+          else
+            echo "⚠️ Backend tests skipped or failed"
+          fi
+
+      # Scan SonarCloud du monorepo complet
+      - name: SonarCloud Scan (Monorepo)
+        uses: SonarSource/sonarcloud-github-action@master
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # ============================================
+  # JOB 4: Build et scan des images Docker
   # ============================================
   docker-scan:
     name: Scan des images Docker
@@ -155,6 +222,10 @@ jobs:
       matrix:
         project: [frontend, backend]
     
+    outputs:
+      has-critical-frontend: ${{ steps.check-docker-frontend.outputs.has-critical }}
+      has-critical-backend: ${{ steps.check-docker-backend.outputs.has-critical }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -164,10 +235,8 @@ jobs:
         run: |
           if [ -f "${{ matrix.project }}/Dockerfile" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "✅ Dockerfile found for ${{ matrix.project }}"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "⚠️ No Dockerfile found for ${{ matrix.project }}"
           fi
 
       - name: Set up Docker Buildx
@@ -220,11 +289,11 @@ jobs:
           sarif_file: 'security/reports/trivy-${{ matrix.project }}.sarif'
           category: 'docker-${{ matrix.project }}'
 
-      - name: Check for critical vulnerabilities
-        if: steps.check_dockerfile.outputs.exists == 'true'
+      - name: Check for critical vulnerabilities (frontend)
+        if: steps.check_dockerfile.outputs.exists == 'true' && matrix.project == 'frontend'
+        id: check-docker-frontend
         continue-on-error: true
         run: |
-          # Installer trivy CLI si besoin
           if ! command -v trivy &> /dev/null; then
             wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
             echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
@@ -233,12 +302,31 @@ jobs:
           fi
           
           CRITICAL_COUNT=$(trivy image --severity CRITICAL --format json ${{ matrix.project }}:scan 2>/dev/null | jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' || echo "0")
-          echo "Critical vulnerabilities found: $CRITICAL_COUNT"
           
           if [ "$CRITICAL_COUNT" -gt 0 ]; then
-            echo "⚠️ $CRITICAL_COUNT critical vulnerabilities found in Docker image"
+            echo "has-critical=true" >> $GITHUB_OUTPUT
           else
-            echo "✅ No critical vulnerabilities in Docker image"
+            echo "has-critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for critical vulnerabilities (backend)
+        if: steps.check_dockerfile.outputs.exists == 'true' && matrix.project == 'backend'
+        id: check-docker-backend
+        continue-on-error: true
+        run: |
+          if ! command -v trivy &> /dev/null; then
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+            echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+            sudo apt-get update
+            sudo apt-get install -y trivy
+          fi
+          
+          CRITICAL_COUNT=$(trivy image --severity CRITICAL --format json ${{ matrix.project }}:scan 2>/dev/null | jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' || echo "0")
+          
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "has-critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-critical=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload Docker scan reports
@@ -251,12 +339,12 @@ jobs:
           if-no-files-found: warn
 
   # ============================================
-  # JOB 4: Rapport final SANS notifications
+  # JOB 5: Rapport et notifications
   # ============================================
   security-report:
-    name: Rapport de sécurité
+    name: Rapport et notifications
     runs-on: ubuntu-latest
-    needs: [dependency-scan, secret-scan, docker-scan]
+    needs: [dependency-scan, secret-scan, docker-scan, sast-scan]
     if: always()
     permissions:
       contents: read
@@ -272,6 +360,37 @@ jobs:
         with:
           path: security/reports/
 
+      - name: Determine severity
+        id: severity
+        run: |
+          DEP_STATUS="${{ needs.dependency-scan.result }}"
+          SECRET_STATUS="${{ needs.secret-scan.result }}"
+          DOCKER_STATUS="${{ needs.docker-scan.result }}"
+          SAST_STATUS="${{ needs.sast-scan.result }}"
+          
+          HAS_CRITICAL_DEP_FE="${{ needs.dependency-scan.outputs.has-critical-frontend }}"
+          HAS_CRITICAL_DEP_BE="${{ needs.dependency-scan.outputs.has-critical-backend }}"
+          HAS_CRITICAL_DOCKER_FE="${{ needs.docker-scan.outputs.has-critical-frontend }}"
+          HAS_CRITICAL_DOCKER_BE="${{ needs.docker-scan.outputs.has-critical-backend }}"
+          HAS_SECRETS="${{ needs.secret-scan.outputs.secrets-found }}"
+          
+          if [[ "$HAS_CRITICAL_DEP_FE" == "true" ]] || \
+             [[ "$HAS_CRITICAL_DEP_BE" == "true" ]] || \
+             [[ "$HAS_CRITICAL_DOCKER_FE" == "true" ]] || \
+             [[ "$HAS_CRITICAL_DOCKER_BE" == "true" ]] || \
+             [[ "$HAS_SECRETS" == "true" ]]; then
+            echo "level=critical" >> $GITHUB_OUTPUT
+            echo "🚨 CRITICAL issues detected"
+          elif [[ "$DEP_STATUS" == "failure" ]] || \
+               [[ "$DOCKER_STATUS" == "failure" ]] || \
+               [[ "$SAST_STATUS" == "failure" ]]; then
+            echo "level=warning" >> $GITHUB_OUTPUT
+            echo "⚠️ WARNING level issues detected"
+          else
+            echo "level=success" >> $GITHUB_OUTPUT
+            echo "✅ All checks passed"
+          fi
+
       - name: Generate summary
         id: summary
         run: |
@@ -280,11 +399,12 @@ jobs:
           DEP_STATUS="${{ needs.dependency-scan.result }}"
           SECRET_STATUS="${{ needs.secret-scan.result }}"
           DOCKER_STATUS="${{ needs.docker-scan.result }}"
+          SAST_STATUS="${{ needs.sast-scan.result }}"
           
-          # Emoji de statut
           if [ "$DEP_STATUS" == "success" ]; then DEP_EMOJI="✅"; else DEP_EMOJI="⚠️"; fi
           if [ "$SECRET_STATUS" == "success" ]; then SECRET_EMOJI="✅"; else SECRET_EMOJI="⚠️"; fi
           if [ "$DOCKER_STATUS" == "success" ]; then DOCKER_EMOJI="✅"; else DOCKER_EMOJI="⚠️"; fi
+          if [ "$SAST_STATUS" == "success" ]; then SAST_EMOJI="✅"; elif [ "$SAST_STATUS" == "skipped" ]; then SAST_EMOJI="⏭️"; else SAST_EMOJI="⚠️"; fi
           
           cat > security/reports/summary.md << EOF
           # 🔒 Rapport de Sécurité
@@ -296,45 +416,211 @@ jobs:
           
           ## 📊 Résultats des Scans
           
-          | Type de Scan | Statut |
-          |--------------|--------|
-          | 📦 Dépendances (frontend) | $DEP_EMOJI $DEP_STATUS |
-          | 📦 Dépendances (backend) | $DEP_EMOJI $DEP_STATUS |
-          | 🔑 Secrets | $SECRET_EMOJI $SECRET_STATUS |
-          | 🐳 Docker Images | $DOCKER_EMOJI $DOCKER_STATUS |
+          | Type de Scan | Frontend | Backend | Statut Global |
+          |--------------|----------|---------|---------------|
+          | 📦 Dépendances | $DEP_EMOJI | $DEP_EMOJI | $DEP_STATUS |
+          | 🔍 SAST (Code) | $SAST_EMOJI | $SAST_EMOJI | $SAST_STATUS |
+          | 🐳 Docker | $DOCKER_EMOJI | $DOCKER_EMOJI | $DOCKER_STATUS |
+          | 🔑 Secrets | - | - | $SECRET_EMOJI $SECRET_STATUS |
           
-          ## 📝 Actions recommandées
+          ## 🎯 Niveau de sévérité : **${{ steps.severity.outputs.level }}**
           
           EOF
           
-          if [ "$DEP_STATUS" != "success" ]; then
-            echo "- ⚠️ Vérifier les vulnérabilités des dépendances" >> security/reports/summary.md
-          fi
-          if [ "$SECRET_STATUS" != "success" ]; then
-            echo "- ⚠️ Vérifier les secrets potentiellement exposés" >> security/reports/summary.md
-          fi
-          if [ "$DOCKER_STATUS" != "success" ]; then
-            echo "- ⚠️ Vérifier les vulnérabilités des images Docker" >> security/reports/summary.md
+          if [ "${{ steps.severity.outputs.level }}" == "critical" ]; then
+            cat >> security/reports/summary.md << EOF
+          ## ⚠️ Actions Requises
+          
+          - 🚨 Des vulnérabilités CRITIQUES ont été détectées
+          - 📧 Une notification email a été envoyée
+          - 🔒 Correction URGENTE requise avant merge
+          
+          EOF
           fi
           
           cat >> security/reports/summary.md << EOF
-          
           ---
           
           **[📊 Voir les détails complets](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})**
+          **[🔒 GitHub Security](${{ github.server_url }}/${{ github.repository }}/security)**
           EOF
           
           cat security/reports/summary.md
-          
-          # Statut global (ne pas faire échouer le workflow)
-          if [[ "$DEP_STATUS" == "failure" ]] || [[ "$SECRET_STATUS" == "failure" ]] || [[ "$DOCKER_STATUS" == "failure" ]]; then
-            echo "severity=warning" >> $GITHUB_OUTPUT
-            echo "⚠️ Some security checks reported issues"
-          else
-            echo "severity=success" >> $GITHUB_OUTPUT
-            echo "✅ All security checks completed"
-          fi
 
+      # ============================================
+      # NOTIFICATIONS DISCORD
+      # ============================================
+      - name: Send Discord notification (Success)
+        if: steps.severity.outputs.level == 'success' && secrets.DISCORD_WEBHOOK != ''
+        continue-on-error: true
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "embeds": [{
+                "title": "✅ Security Scan - Tous les tests passés",
+                "description": "Aucune vulnérabilité critique détectée",
+                "color": 65280,
+                "fields": [
+                  {
+                    "name": "Branch",
+                    "value": "'"${{ github.ref_name }}"'",
+                    "inline": true
+                  },
+                  {
+                    "name": "Commit",
+                    "value": "'"${GITHUB_SHA:0:7}"'",
+                    "inline": true
+                  },
+                  {
+                    "name": "Auteur",
+                    "value": "'"${{ github.actor }}"'",
+                    "inline": true
+                  }
+                ],
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+              }]
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK }}"
+
+      - name: Send Discord notification (Warning)
+        if: steps.severity.outputs.level == 'warning' && secrets.DISCORD_WEBHOOK != ''
+        continue-on-error: true
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "embeds": [{
+                "title": "⚠️ Security Scan - Problèmes Mineurs",
+                "description": "Des problèmes de sécurité mineurs ont été détectés",
+                "color": 16753920,
+                "fields": [
+                  {
+                    "name": "Branch",
+                    "value": "'"${{ github.ref_name }}"'",
+                    "inline": true
+                  },
+                  {
+                    "name": "Commit",
+                    "value": "'"${GITHUB_SHA:0:7}"'",
+                    "inline": true
+                  },
+                  {
+                    "name": "Action",
+                    "value": "Vérifier les rapports",
+                    "inline": true
+                  }
+                ],
+                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+              }]
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK }}"
+
+      - name: Send Discord notification (Critical)
+        if: steps.severity.outputs.level == 'critical' && secrets.DISCORD_WEBHOOK != ''
+        continue-on-error: true
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "content": "@here",
+              "embeds": [{
+                "title": "🚨 ALERTE CRITIQUE - Vulnérabilités Détectées",
+                "description": "**Des vulnérabilités CRITIQUES ont été détectées !**\n\nAction immédiate requise.",
+                "color": 16711680,
+                "fields": [
+                  {
+                    "name": "Branch",
+                    "value": "'"${{ github.ref_name }}"'",
+                    "inline": true
+                  },
+                  {
+                    "name": "Commit",
+                    "value": "'"${GITHUB_SHA:0:7}"'",
+                    "inline": true
+                  },
+                  {
+                    "name": "⚠️ Priorité",
+                    "value": "**URGENT**",
+                    "inline": true
+                  }
+                ],
+                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+              }]
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK }}"
+
+      # ============================================
+      # NOTIFICATION EMAIL (HOSTINGER)
+      # ============================================
+      - name: Send email notification (Critical)
+        if: steps.severity.outputs.level == 'critical' && secrets.MAIL_SERVER != ''
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: '🚨 CRITIQUE: Vulnérabilités de sécurité - ${{ github.repository }}'
+          to: ${{ secrets.SECURITY_EMAIL }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          content_type: text/html
+          body: |
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .header { background-color: #dc3545; color: white; padding: 20px; text-align: center; }
+                .content { padding: 20px; }
+                .info { background-color: #f8f9fa; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; }
+                .button { background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; display: inline-block; margin: 10px 0; border-radius: 5px; }
+                .footer { background-color: #f8f9fa; padding: 15px; text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1>🚨 Alerte de Sécurité Critique</h1>
+              </div>
+              <div class="content">
+                <p><strong>Des vulnérabilités critiques ont été détectées dans votre dépôt.</strong></p>
+                
+                <div class="info">
+                  <p><strong>Repository:</strong> ${{ github.repository }}</p>
+                  <p><strong>Branch:</strong> ${{ github.ref_name }}</p>
+                  <p><strong>Commit:</strong> ${{ github.sha }}</p>
+                  <p><strong>Auteur:</strong> ${{ github.actor }}</p>
+                  <p><strong>Date:</strong> $(date -u +"%Y-%m-%d %H:%M:%S UTC")</p>
+                </div>
+                
+                <h3>⚠️ Action Requise</h3>
+                <p>Une action immédiate est nécessaire pour corriger ces vulnérabilités avant tout déploiement en production.</p>
+                
+                <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" class="button">
+                  Voir le rapport détaillé
+                </a>
+                
+                <h3>📋 Prochaines étapes</h3>
+                <ol>
+                  <li>Consultez le rapport complet sur GitHub Actions</li>
+                  <li>Identifiez les vulnérabilités critiques</li>
+                  <li>Appliquez les correctifs recommandés</li>
+                  <li>Relancez le scan de sécurité</li>
+                </ol>
+              </div>
+              <div class="footer">
+                <p>Ce message a été généré automatiquement par le système de scan de sécurité.</p>
+                <p>GitHub Actions - Security Scanner</p>
+              </div>
+            </body>
+            </html>
+
+      # ============================================
+      # AUTRES ACTIONS
+      # ============================================
       - name: Comment PR with results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
