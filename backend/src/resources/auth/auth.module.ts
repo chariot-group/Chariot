@@ -22,14 +22,14 @@ import { MaillingModule } from '@/mailling/mailling.module';
         UserModule,
       ],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         global: true,
-        privateKey: configService.get<string>(
+        secret: configService.get<string>(
           'JWT_SECRET_KEY',
           'defaultSecretKey',
         ),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRATION', '60s'),
+          expiresIn: configService.get<string>('JWT_EXPIRATION', '60s') as any,
           algorithm: configService.get<Algorithm>(
             'JWT_ALGORITHM',
             'HS256',
@@ -41,4 +41,4 @@ import { MaillingModule } from '@/mailling/mailling.module';
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
 })
-export class AuthModule {}
+export class AuthModule { }
