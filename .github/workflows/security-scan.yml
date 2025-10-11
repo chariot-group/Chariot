@@ -172,7 +172,7 @@ jobs:
       contents: read
     
     # Seulement si SONAR_TOKEN est configuré
-    if: ${{env.SONAR_TOKEN != '' }}
+    if: ${{ secrets.SONAR_TOKEN != '' }}
     
     steps:
       - name: Checkout code
