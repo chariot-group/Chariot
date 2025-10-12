@@ -455,12 +455,12 @@ jobs:
           # === 1. NPM AUDIT JSON FILES ===
           for JSON in security/reports/npm-audit-frontend.json security/reports/npm-audit-backend.json; do
             if [ -f "$JSON" ]; then
-              CRIT_COUNT=$(jq '[.advisories[] | select(.severity == "critical")] | length' "$JSON" 2>/dev/null || echo "0")
+              CRIT_COUNT=$(jq '[.advisories[]] | length' "$JSON" 2>/dev/null || echo "0")
               if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
                 FOUND_CRITICAL="true"
                 echo "### 📦 Dépendances ($(basename "$JSON"))" >> security/reports/summary.md
                 print_table_header
-                jq -r '.advisories[] | select(.severity == "critical") | 
+                jq -r '.advisories[] | 
                   [ .module_name, .findings[0].version, (.cves[0] // .url // "N/A"), .severity, .findings[0].paths[0] ] | 
                   @tsv' "$JSON" | \
                   while IFS=$'\t' read -r pkg ver cve sev loc; do
@@ -475,7 +475,7 @@ jobs:
           for JSON in security/reports/docker-scan-frontend/trivy-frontend.json security/reports/docker-scan-backend/trivy-backend.json; do
             if [ -f "$JSON" ]; then
               # Compter les vulnérabilités critiques
-              CRIT_COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' "$JSON" 2>/dev/null || echo "0")
+              CRIT_COUNT=$(jq '[.Results[]?.Vulnerabilities[]?] | length' "$JSON" 2>/dev/null || echo "0")
               
               if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
                 FOUND_CRITICAL="true"
@@ -490,7 +490,6 @@ jobs:
                 jq -r '
                   .Results[]? 
                   | .Vulnerabilities[]? 
-                  | select(.Severity == "CRITICAL") 
                   | [
                       .PkgName // "N/A",
                       .InstalledVersion // "N/A",
