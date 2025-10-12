@@ -489,7 +489,7 @@ jobs:
               CRIT_COUNT=$(jq '[.advisories[] | select(.severity == "critical")] | length' "$JSON" 2>/dev/null || echo "0")
               if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
                 FOUND_CRITICAL="true"
-                echo "### 📦 Dépendances ($project)" >> security/reports/summary.md
+                echo "### 📦 Dépendances (${project})" >> security/reports/summary.md
                 print_table_header
                 jq -r '.advisories[] | select(.severity == "critical") | 
                   [ .module_name, .findings[0].version, (.cves[0] // .url // "N/A"), .severity, .findings[0].paths[0] ] | 
@@ -502,41 +502,46 @@ jobs:
             fi
           done
 
-          # 2. Trivy SARIF (frontend/backend deps, docker images)
+          # 2. Trivy SARIF (dependency & docker scans)
           for sarif in \
             security/reports/dependency-scan-frontend/trivy-deps-frontend.sarif \
             security/reports/dependency-scan-backend/trivy-deps-backend.sarif \
             security/reports/docker-scan-frontend/trivy-frontend.sarif \
             security/reports/docker-scan-backend/trivy-backend.sarif; do
             if [ -f "$sarif" ]; then
-              # Extraire le type (dépendance ou image)
-              if [[ "$sarif" == *"dependency-scan"* ]]; then
+              # Detect project and type
+              if [[ "$sarif" == *"dependency-scan-frontend"* ]]; then
                 SCOPE="Dépendances"
-                PROJECT=$(echo "$sarif" | grep -oE 'frontend|backend')
-              else
+                PROJECT="frontend"
+              elif [[ "$sarif" == *"dependency-scan-backend"* ]]; then
+                SCOPE="Dépendances"
+                PROJECT="backend"
+              elif [[ "$sarif" == *"docker-scan-frontend"* ]]; then
                 SCOPE="Image Docker"
-                PROJECT=$(echo "$sarif" | grep -oE 'frontend|backend')
+                PROJECT="frontend"
+              elif [[ "$sarif" == *"docker-scan-backend"* ]]; then
+                SCOPE="Image Docker"
+                PROJECT="backend"
+              else
+                SCOPE="Inconnu"
+                PROJECT="Inconnu"
               fi
-              # Chercher les vulnérabilités critiques
-              CRIT_COUNT=$(jq '[.runs[].results[] | select(.level == "error" and (.ruleId | ascii_downcase | test("critical"))) ] | length' "$sarif" 2>/dev/null)
-              # Fallback: parse severity in ruleId or message
-              if [ "$CRIT_COUNT" == "0" ] || [ -z "$CRIT_COUNT" ]; then
-                # Trivy SARIF: filter by severity in ruleId or message text
-                CRIT_COUNT=$(jq '[.runs[].results[] | select((.ruleId|ascii_downcase|test("critical")) or (.message.text|ascii_downcase|test("critical"))) ] | length' "$sarif" 2>/dev/null)
-              fi
+              # Filter for CRITICAL vulnerabilities (Trivy SARIF format)
+              # Trivy marks .level == "error" and .properties.severity == "CRITICAL"
+              CRIT_COUNT=$(jq '[.runs[].results[] | select(.level == "error" and (.properties.severity == "CRITICAL"))] | length' "$sarif" 2>/dev/null || echo "0")
               if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
                 FOUND_CRITICAL="true"
                 echo "### 🐳 $SCOPE ($PROJECT)" >> security/reports/summary.md
                 print_table_header
                 jq -r '
                   .runs[].results[] 
-                  | select((.ruleId|ascii_downcase|test("critical")) or (.message.text|ascii_downcase|test("critical")))
+                  | select(.level == "error" and (.properties.severity == "CRITICAL"))
                   | [
                       (.properties.packageName // .ruleId // "N/A"),
-                      (.properties.packageVersion // "N/A"),
+                      (.properties.installedVersion // .properties.packageVersion // "N/A"),
                       (
-                        if (.properties.cve || .properties.primaryLocationCve) then 
-                          (.properties.cve // .properties.primaryLocationCve) 
+                        if (.properties.cve) then 
+                          .properties.cve
                         elif (.ruleId|test("CVE-")) then 
                           .ruleId 
                         else 
