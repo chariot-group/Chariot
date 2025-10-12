@@ -241,7 +241,7 @@ jobs:
       - name: Check if Dockerfile exists
         id: check_dockerfile
         run: |
-          if [ -f "${{ matrix.project }}/Dockerfile" ]; then
+          if [ -f "${{ matrix.project }}/dockerfile" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -257,7 +257,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./${{ matrix.project }}
-          file: ./${{ matrix.project }}/Dockerfile
+          file: ./${{ matrix.project }}/dockerfile
           push: false
           load: true
           tags: ${{ matrix.project }}:scan
@@ -458,39 +458,6 @@ jobs:
       # ============================================
       # NOTIFICATIONS DISCORD
       # ============================================
-      - name: Send Discord notification (Success)
-        if: steps.severity.outputs.level == 'success' && env.DISCORD_WEBHOOK != ''
-        continue-on-error: true
-        run: |
-          curl -H "Content-Type: application/json" \
-            -X POST \
-            -d '{
-              "embeds": [{
-                "title": "✅ Security Scan - Tous les tests passés",
-                "description": "Aucune vulnérabilité critique détectée",
-                "color": 65280,
-                "fields": [
-                  {
-                    "name": "Branch",
-                    "value": "'"${{ github.ref_name }}"'",
-                    "inline": true
-                  },
-                  {
-                    "name": "Commit",
-                    "value": "'"${GITHUB_SHA:0:7}"'",
-                    "inline": true
-                  },
-                  {
-                    "name": "Auteur",
-                    "value": "'"${{ github.actor }}"'",
-                    "inline": true
-                  }
-                ],
-                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
-              }]
-            }' \
-            "${{ env.DISCORD_WEBHOOK }}"
-
       - name: Send Discord notification (Warning)
         if: steps.severity.outputs.level == 'warning' && env.DISCORD_WEBHOOK != ''
         continue-on-error: true
