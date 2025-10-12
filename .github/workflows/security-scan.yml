@@ -404,17 +404,37 @@ jobs:
         id: summary
         run: |
           mkdir -p security/reports
-          
-          DEP_STATUS="${{ needs.dependency-scan.result }}"
-          SECRET_STATUS="${{ needs.secret-scan.result }}"
-          DOCKER_STATUS="${{ needs.docker-scan.result }}"
+
+          HAS_CRITICAL_DEP_FE="${{ needs.dependency-scan.outputs.has-critical-frontend }}"
+          HAS_CRITICAL_DEP_BE="${{ needs.dependency-scan.outputs.has-critical-backend }}"
+          HAS_CRITICAL_DOCKER_FE="${{ needs.docker-scan.outputs.has-critical-frontend }}"
+          HAS_CRITICAL_DOCKER_BE="${{ needs.docker-scan.outputs.has-critical-backend }}"
+          HAS_SECRETS="${{ needs.secret-scan.outputs.secrets-found }}"
+
+          # Déterminer emoji et statut par type de scan
+          if [[ "$HAS_CRITICAL_DEP_FE" == "true" ]] || [[ "$HAS_CRITICAL_DEP_BE" == "true" ]]; then
+            DEP_EMOJI="⚠️"; DEP_STATUS="failure"
+          else
+            DEP_EMOJI="✅"; DEP_STATUS="success"
+          fi
+
+          if [[ "$HAS_CRITICAL_DOCKER_FE" == "true" ]] || [[ "$HAS_CRITICAL_DOCKER_BE" == "true" ]]; then
+            DOCKER_EMOJI="⚠️"; DOCKER_STATUS="failure"
+          else
+            DOCKER_EMOJI="✅"; DOCKER_STATUS="success"
+          fi
+
+          if [[ "$HAS_SECRETS" == "true" ]]; then
+            SECRET_EMOJI="⚠️"; SECRET_STATUS="failure"
+          else
+            SECRET_EMOJI="✅"; SECRET_STATUS="success"
+          fi
+
+          # SAST
           SAST_STATUS="${{ needs.sast-scan.result }}"
-          
-          if [ "$DEP_STATUS" == "success" ]; then DEP_EMOJI="✅"; else DEP_EMOJI="⚠️"; fi
-          if [ "$SECRET_STATUS" == "success" ]; then SECRET_EMOJI="✅"; else SECRET_EMOJI="⚠️"; fi
-          if [ "$DOCKER_STATUS" == "success" ]; then DOCKER_EMOJI="✅"; else DOCKER_EMOJI="⚠️"; fi
-          if [ "$SAST_STATUS" == "success" ]; then SAST_EMOJI="✅"; elif [ "$SAST_STATUS" == "skipped" ]; then SAST_EMOJI="⏭️"; else SAST_EMOJI="⚠️"; fi
-          
+          if [[ "$SAST_STATUS" == "success" ]]; then SAST_EMOJI="✅"; elif [[ "$SAST_STATUS" == "skipped" ]]; then SAST_EMOJI="⏭️"; else SAST_EMOJI="⚠️"; fi
+
+          # Générer le Markdown
           cat > security/reports/summary.md << EOF
           # 🔒 Rapport de Sécurité
           
