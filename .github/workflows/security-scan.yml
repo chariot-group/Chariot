@@ -244,7 +244,8 @@ jobs:
           if [ -f "${{ matrix.project }}/dockerfile" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "❌ Dockerfile not found for ${{ matrix.project }}"
+            exit 1
           fi
 
       - name: Set up Docker Buildx
