@@ -99,15 +99,12 @@ jobs:
             echo "has-critical=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Compress reports
-        if: always()
-        run: tar -czf security-reports-${{ matrix.project }}.tar.gz security/reports
       - name: Upload dependency scan reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dependency-scan-${{ matrix.project }}
-          path: security-reports-${{ matrix.project }}.tar.gz
+          path: security/reports/
           retention-days: 30
           if-no-files-found: warn
 
@@ -185,7 +182,7 @@ jobs:
       - name: Install backend dependencies
         if: ${{ hashFiles('backend/package.json') != '' && hashFiles('backend/package-lock.json') != '' }}
         working-directory: ./backend
-        run: npm ci --prefer-offline --no-audit --no-fund
+        run: npm ci
       # Cache SonarCloud
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
@@ -279,6 +276,17 @@ jobs:
           output: 'security/reports/trivy-${{ matrix.project }}.json'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
+
+      - name: Display vulnerabilities summary
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: ${{ matrix.project }}:scan
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
       - name: Check for critical vulnerabilities (frontend)
         if: steps.check_dockerfile.outputs.exists == 'true' && matrix.project == 'frontend'
         id: check-docker-frontend
@@ -304,15 +312,13 @@ jobs:
           else
             echo "has-critical=false" >> $GITHUB_OUTPUT
           fi
-      - name: Compress reports
-        if: always()
-        run: tar -czf security-reports-${{ matrix.project }}.tar.gz security/reports
+
       - name: Upload Docker scan reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: docker-scan-${{ matrix.project }}
-          path: security-reports-${{ matrix.project }}.tar.gz
+          path: security/reports/
           retention-days: 30
           if-no-files-found: warn
 
@@ -322,7 +328,7 @@ jobs:
   security-report:
     name: Rapport et notifications
     runs-on: ubuntu-latest
-    needs: [dependency-scan, secret-scan, docker-scan]
+    needs: [dependency-scan, secret-scan, docker-scan, sast-scan]
     if: always()
     permissions:
       contents: read
@@ -683,15 +689,13 @@ jobs:
             } catch (error) {
               console.log('Could not post comment:', error.message);
             }
-      - name: Compress reports
-        if: always()
-        run: tar -czf security-reports-${{ matrix.project }}.tar.gz security/reports
+
       - name: Upload consolidated report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-report-final
-          path: security-reports-${{ matrix.project }}.tar.gz
+          path: security/reports/
           retention-days: 90
           if-no-files-found: warn
 
