@@ -58,7 +58,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./${{ matrix.project }}
-        run: npm ci --prefer-offline --no-audit --no-fund
+        run: npm install --no-audit --prefer-offline --no-fund
 
       - name: Create reports directory
         run: mkdir -p security/reports
@@ -177,12 +177,12 @@ jobs:
       - name: Install frontend dependencies
         if: ${{ hashFiles('frontend/package.json') != '' && hashFiles('frontend/package-lock.json') != '' }}
         working-directory: ./frontend
-        run: npm ci --prefer-offline --no-audit --no-fund
+        run: npm install --no-audit --prefer-offline --no-fund
 
       - name: Install backend dependencies
         if: ${{ hashFiles('backend/package.json') != '' && hashFiles('backend/package-lock.json') != '' }}
         working-directory: ./backend
-        run: npm ci
+        run: npm install --no-audit --prefer-offline --no-fund
       # Cache SonarCloud
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
