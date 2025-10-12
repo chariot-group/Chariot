@@ -67,18 +67,10 @@ jobs:
         with:
           scan-type: 'fs'
           scan-ref: './${{ matrix.project }}'
-          format: 'sarif'
-          output: ${{ github.workspace }}/security/reports/trivy-deps-${{ matrix.project }}.sarif
+          format: 'json'
+          output: ${{ github.workspace }}/security/reports/trivy-deps-${{ matrix.project }}.json
           severity: 'CRITICAL,HIGH,MEDIUM'
           exit-code: '0'
-
-      - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        continue-on-error: true
-        with:
-          sarif_file: 'security/reports/trivy-deps-${{ matrix.project }}.sarif'
-          category: 'dependencies-${{ matrix.project }}'
 
       - name: Check for critical vulnerabilities (frontend)
         if: matrix.project == 'frontend'
@@ -275,8 +267,8 @@ jobs:
         continue-on-error: true
         with:
           image-ref: ${{ matrix.project }}:scan
-          format: 'sarif'
-          output: 'security/reports/trivy-${{ matrix.project }}.sarif'
+          format: 'json'
+          output: 'security/reports/trivy-${{ matrix.project }}.json'
           severity: 'CRITICAL,HIGH,MEDIUM'
           exit-code: '0'
 
@@ -289,14 +281,6 @@ jobs:
           format: 'table'
           severity: 'CRITICAL,HIGH,MEDIUM'
           exit-code: '0'
-
-      - name: Upload Trivy results to GitHub Security
-        if: steps.check_dockerfile.outputs.exists == 'true'
-        uses: github/codeql-action/upload-sarif@v3
-        continue-on-error: true
-        with:
-          sarif_file: 'security/reports/trivy-${{ matrix.project }}.sarif'
-          category: 'docker-${{ matrix.project }}'
 
       - name: Check for critical vulnerabilities (frontend)
         if: steps.check_dockerfile.outputs.exists == 'true' && matrix.project == 'frontend'
@@ -496,34 +480,17 @@ jobs:
             fi
           done
 
-          # === 2. TRIVY SARIF FILES ===
-          for SARIF in security/reports/trivy-frontend.sarif security/reports/trivy-backend.sarif; do
-            if [ -f "$SARIF" ]; then
-              CRIT_COUNT=$(jq '[.runs[].results[] | select(.level == "error" and (.properties.severity == "CRITICAL"))] | length' "$SARIF" 2>/dev/null || echo "0")
+          # === 2. TRIVY JSON FILES ===
+          for JSON in security/reports/trivy-frontend.json security/reports/trivy-backend.json; do
+            if [ -f "$JSON" ]; then
+              CRIT_COUNT=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' "$JSON" 2>/dev/null || echo "0")
               if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
                 FOUND_CRITICAL="true"
-                echo "### 🐳 Trivy ($(basename "$SARIF"))" >> security/reports/summary.md
+                echo "### 🐳 Trivy ($(basename "$JSON"))" >> security/reports/summary.md
                 print_table_header
-                jq -r '
-                  .runs[].results[]
-                  | select(.level == "error" and (.properties.severity == "CRITICAL"))
-                  | [
-                      (.properties.packageName // .ruleId // "N/A"),
-                      (.properties.installedVersion // .properties.packageVersion // "N/A"),
-                      (
-                        if (.properties.cve) then
-                          .properties.cve
-                        elif (.ruleId|test("CVE-")) then
-                          .ruleId
-                        else
-                          "N/A"
-                        end
-                      ),
-                      "critical",
-                      (.locations[0].physicalLocation.artifactLocation.uri // .locations[0].physicalLocation.region.startLine // "N/A")
-                    ]
-                    | @tsv
-                ' "$SARIF" | while IFS=$'\t' read -r pkg ver cve sev loc; do
+                jq -r '.Results[].Vulnerabilities[]? | select(.Severity == "CRITICAL") |
+                  [ .PkgName, .InstalledVersion, .VulnerabilityID, .Severity, .PrimaryURL ] | @tsv' "$JSON" | \
+                while IFS=$'\t' read -r pkg ver cve sev loc; do
                   echo "| $pkg | $ver | $cve | $sev | $loc |" >> security/reports/summary.md
                 done
                 echo "" >> security/reports/summary.md
