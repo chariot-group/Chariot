@@ -57,10 +57,10 @@ jobs:
         working-directory: ./${{ matrix.project }}
         continue-on-error: true
         run: |
-          mkdir -p ./security/reports
-          npm audit --json > ./security/reports/npm-audit-${{ matrix.project }}.json || true
-          echo "📦 Scanning ${{ matrix.project }} dependencies..."
-          npm audit --audit-level=moderate || echo "Vulnerabilities found"
+              mkdir -p ../security/reports
+              npm audit --json > ../security/reports/npm-audit-${{ matrix.project }}.json || true
+              echo "📦 Scanning ${{ matrix.project }} dependencies..."
+              npm audit --audit-level=moderate || echo "Vulnerabilities found"
 
       - name: Run Trivy dependency scan
         uses: aquasecurity/trivy-action@master
