@@ -400,7 +400,7 @@ jobs:
             echo "✅ All checks passed"
           fi
 
-      - name: Generate summary
+      - name: Generate summary with critical vulnerability details
         id: summary
         run: |
           mkdir -p security/reports
@@ -434,46 +434,134 @@ jobs:
           SAST_STATUS="${{ needs.sast-scan.result }}"
           if [[ "$SAST_STATUS" == "success" ]]; then SAST_EMOJI="✅"; elif [[ "$SAST_STATUS" == "skipped" ]]; then SAST_EMOJI="⏭️"; else SAST_EMOJI="⚠️"; fi
 
-          # Générer le Markdown
+          # Générer le Markdown initial
           cat > security/reports/summary.md << EOF
           # 🔒 Rapport de Sécurité
-          
+
           **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")  
           **Branch:** \`${{ github.ref_name }}\`  
           **Commit:** [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})  
           **Auteur:** @${{ github.actor }}
-          
+
           ## 📊 Résultats des Scans
-          
+
           | Type de Scan | Frontend | Backend | Statut Global |
           |--------------|----------|---------|---------------|
           | 📦 Dépendances | $DEP_EMOJI | $DEP_EMOJI | $DEP_STATUS |
           | 🔍 SAST (Code) | $SAST_EMOJI | $SAST_EMOJI | $SAST_STATUS |
           | 🐳 Docker | $DOCKER_EMOJI | $DOCKER_EMOJI | $DOCKER_STATUS |
           | 🔑 Secrets | - | - | $SECRET_EMOJI $SECRET_STATUS |
-          
+
           ## 🎯 Niveau de sévérité : **${{ steps.severity.outputs.level }}**
-          
+
           EOF
-          
+
           if [ "${{ steps.severity.outputs.level }}" == "critical" ]; then
             cat >> security/reports/summary.md << EOF
           ## ⚠️ Actions Requises
-          
+
           - 🚨 Des vulnérabilités CRITIQUES ont été détectées
           - 📧 Une notification email a été envoyée
           - 🔒 Correction URGENTE requise avant merge
-          
+
           EOF
           fi
-          
-          cat >> security/reports/summary.md << EOF
-          ---
-          
-          **[📊 Voir les détails complets](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})**
-          **[🔒 GitHub Security](${{ github.server_url }}/${{ github.repository }}/security)**
-          EOF
-          
+
+          # ===========================
+          # Générer la liste détaillée des vulnérabilités critiques
+          # ===========================
+          echo "## 📝 Détail des vulnérabilités CRITIQUES détectées" >> security/reports/summary.md
+          echo "" >> security/reports/summary.md
+
+          FOUND_CRITICAL="false"
+
+          # Helper pour afficher un tableau markdown de vulnérabilités critiques
+          print_table_header() {
+            echo "| Package/Image | Version | CVE | Sévérité | Emplacement |" >> security/reports/summary.md
+            echo "|--------------|---------|-----|----------|-------------|" >> security/reports/summary.md
+          }
+
+          # 1. NPM AUDIT (frontend/backend)
+          for project in frontend backend; do
+            JSON="security/reports/npm-audit-${project}.json"
+            if [ -f "$JSON" ]; then
+              # Compter les vulnérabilités critiques
+              CRIT_COUNT=$(jq '[.advisories[] | select(.severity == "critical")] | length' "$JSON" 2>/dev/null || echo "0")
+              if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
+                FOUND_CRITICAL="true"
+                echo "### 📦 Dépendances ($project)" >> security/reports/summary.md
+                print_table_header
+                jq -r '.advisories[] | select(.severity == "critical") | 
+                  [ .module_name, .findings[0].version, (.cves[0] // .url // "N/A"), .severity, .findings[0].paths[0] ] | 
+                  @tsv' "$JSON" | \
+                  while IFS=$'\t' read -r pkg ver cve sev loc; do
+                    echo "| $pkg | $ver | $cve | $sev | $loc |" >> security/reports/summary.md
+                  done
+                echo "" >> security/reports/summary.md
+              fi
+            fi
+          done
+
+          # 2. Trivy SARIF (frontend/backend deps, docker images)
+          for sarif in security/reports/trivy-deps-frontend.sarif security/reports/trivy-deps-backend.sarif security/reports/trivy-frontend.sarif security/reports/trivy-backend.sarif; do
+            if [ -f "$sarif" ]; then
+              # Extraire le type (dépendance ou image)
+              if [[ "$sarif" == *"deps"* ]]; then
+                SCOPE="Dépendances"
+                PROJECT=$(echo "$sarif" | grep -oE 'frontend|backend')
+              else
+                SCOPE="Image Docker"
+                PROJECT=$(echo "$sarif" | grep -oE 'frontend|backend')
+              fi
+              # Chercher les vulnérabilités critiques
+              CRIT_COUNT=$(jq '[.runs[].results[] | select(.level == "error" and (.ruleId | ascii_downcase | test("critical"))) ] | length' "$sarif" 2>/dev/null)
+              # Fallback: parse severity in ruleId or message
+              if [ "$CRIT_COUNT" == "0" ] || [ -z "$CRIT_COUNT" ]; then
+                # Trivy SARIF: filter by severity in ruleId or message text
+                CRIT_COUNT=$(jq '[.runs[].results[] | select((.ruleId|ascii_downcase|test("critical")) or (.message.text|ascii_downcase|test("critical"))) ] | length' "$sarif" 2>/dev/null)
+              fi
+              if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
+                FOUND_CRITICAL="true"
+                echo "### 🐳 $SCOPE ($PROJECT)" >> security/reports/summary.md
+                print_table_header
+                jq -r '
+                  .runs[].results[] 
+                  | select((.ruleId|ascii_downcase|test("critical")) or (.message.text|ascii_downcase|test("critical")))
+                  | [
+                      (.properties.packageName // .ruleId // "N/A"),
+                      (.properties.packageVersion // "N/A"),
+                      (
+                        if (.properties.cve || .properties.primaryLocationCve) then 
+                          (.properties.cve // .properties.primaryLocationCve) 
+                        elif (.ruleId|test("CVE-")) then 
+                          .ruleId 
+                        else 
+                          "N/A" 
+                        end
+                      ),
+                      "critical",
+                      (.locations[0].physicalLocation.artifactLocation.uri // .locations[0].physicalLocation.region.startLine // "N/A")
+                    ] 
+                    | @tsv
+                ' "$sarif" | while IFS=$'\t' read -r pkg ver cve sev loc; do
+                  echo "| $pkg | $ver | $cve | $sev | $loc |" >> security/reports/summary.md
+                done
+                echo "" >> security/reports/summary.md
+              fi
+            fi
+          done
+
+          # Si aucune vulnérabilité critique trouvée
+          if [ "$FOUND_CRITICAL" != "true" ]; then
+            echo "_Aucune vulnérabilité critique détectée dans les rapports._" >> security/reports/summary.md
+          fi
+
+          echo "" >> security/reports/summary.md
+          echo "---" >> security/reports/summary.md
+          echo "" >> security/reports/summary.md
+          echo "**[📊 Voir les détails complets](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})**" >> security/reports/summary.md
+          echo "**[🔒 GitHub Security](${{ github.server_url }}/${{ github.repository }}/security)**" >> security/reports/summary.md
+
           cat security/reports/summary.md
 
       # ============================================
