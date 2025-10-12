@@ -68,7 +68,7 @@ jobs:
           scan-type: 'fs'
           scan-ref: './${{ matrix.project }}'
           format: 'sarif'
-          output: 'security/reports/trivy-deps-${{ matrix.project }}.sarif'
+          output: ${{ github.workspace }}/security/reports/trivy-deps-${{ matrix.project }}.sarif
           severity: 'CRITICAL,HIGH,MEDIUM'
           exit-code: '0'
 
