@@ -503,10 +503,14 @@ jobs:
           done
 
           # 2. Trivy SARIF (frontend/backend deps, docker images)
-          for sarif in security/reports/trivy-deps-frontend.sarif security/reports/trivy-deps-backend.sarif security/reports/trivy-frontend.sarif security/reports/trivy-backend.sarif; do
+          for sarif in \
+            security/reports/dependency-scan-frontend/trivy-deps-frontend.sarif \
+            security/reports/dependency-scan-backend/trivy-deps-backend.sarif \
+            security/reports/docker-scan-frontend/trivy-frontend.sarif \
+            security/reports/docker-scan-backend/trivy-backend.sarif; do
             if [ -f "$sarif" ]; then
               # Extraire le type (dépendance ou image)
-              if [[ "$sarif" == *"deps"* ]]; then
+              if [[ "$sarif" == *"dependency-scan"* ]]; then
                 SCOPE="Dépendances"
                 PROJECT=$(echo "$sarif" | grep -oE 'frontend|backend')
               else
