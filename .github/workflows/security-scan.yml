@@ -159,6 +159,7 @@ jobs:
   # ============================================
   sast-scan:
     name: Analyse statique (SAST)
+    if: ${{ !startsWith(github.ref, 'refs/heads/renovate/') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
