@@ -52,6 +52,8 @@ jobs:
         working-directory: ./${{ matrix.project }}
         run: npm ci
 
+      - name: Create reports directory
+        run: mkdir -p security/reports
 
       - name: Run Trivy dependency scan
         uses: aquasecurity/trivy-action@master
