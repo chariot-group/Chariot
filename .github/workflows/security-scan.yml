@@ -57,8 +57,8 @@ jobs:
         working-directory: ./${{ matrix.project }}
         continue-on-error: true
         run: |
-          mkdir -p ../../security/reports
-          npm audit --json > ../../security/reports/npm-audit-${{ matrix.project }}.json || true
+          mkdir -p ./security/reports
+          npm audit --json > ./security/reports/npm-audit-${{ matrix.project }}.json || true
           echo "📦 Scanning ${{ matrix.project }} dependencies..."
           npm audit --audit-level=moderate || echo "Vulnerabilities found"
 
@@ -208,7 +208,7 @@ jobs:
       # ✅ On conditionne seulement la step du scan SonarCloud
       - name: SonarCloud Scan (Monorepo)
         if: env.SONAR_TOKEN != ''
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
