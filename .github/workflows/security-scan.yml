@@ -612,15 +612,6 @@ jobs:
       # ============================================
       # NOTIFICATION EMAIL (HOSTINGER)
       # ============================================
-      - name: Get commit author email
-        id: get-email
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            EMAIL=$(git log -1 --pretty=format:'%ae')
-          else
-            EMAIL="${{ github.event.pusher.email }}"
-          fi
-          echo "EMAIL=$EMAIL" >> $GITHUB_ENV
       - name: Send email notification (Critical)
         if: steps.severity.outputs.level == 'critical' && env.MAIL_SERVER != ''
         continue-on-error: true
@@ -631,7 +622,7 @@ jobs:
           username: ${{ env.MAIL_USERNAME }}
           password: ${{ env.MAIL_PASSWORD }}
           subject: '🚨 CRITIQUE: Vulnérabilités de sécurité - ${{ github.repository }}'
-          to: ${{ env.EMAIL }}
+          to: ${{ env.SECURITY_EMAIL }}
           from: ${{ env.MAIL_USERNAME }}
           html_body: |
             <!DOCTYPE html>
