@@ -518,35 +518,22 @@ jobs:
                 PROJECT=$(echo "$sarif" | grep -oE 'frontend|backend')
               fi
               # Chercher les vulnérabilités critiques
-              CRIT_COUNT=$(jq '[.runs[].results[] | select(.level == "error" and (.ruleId | ascii_downcase | test("critical"))) ] | length' "$sarif" 2>/dev/null)
-              # Fallback: parse severity in ruleId or message
-              if [ "$CRIT_COUNT" == "0" ] || [ -z "$CRIT_COUNT" ]; then
-                # Trivy SARIF: filter by severity in ruleId or message text
-                CRIT_COUNT=$(jq '[.runs[].results[] | select((.ruleId|ascii_downcase|test("critical")) or (.message.text|ascii_downcase|test("critical"))) ] | length' "$sarif" 2>/dev/null)
-              fi
+              CRIT_COUNT=$(jq '[.runs[].results[] | select(.properties.severity=="CRITICAL")] | length' "$sarif" 2>/dev/null)
               if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
                 FOUND_CRITICAL="true"
                 echo "### 🐳 $SCOPE ($PROJECT)" >> security/reports/summary.md
                 print_table_header
                 jq -r '
-                  .runs[].results[] 
-                  | select((.ruleId|ascii_downcase|test("critical")) or (.message.text|ascii_downcase|test("critical")))
+                  .runs[].results[]
+                  | select(.properties.severity=="CRITICAL")
                   | [
                       (.properties.packageName // .ruleId // "N/A"),
                       (.properties.packageVersion // "N/A"),
-                      (
-                        if (.properties.cve || .properties.primaryLocationCve) then 
-                          (.properties.cve // .properties.primaryLocationCve) 
-                        elif (.ruleId|test("CVE-")) then 
-                          .ruleId 
-                        else 
-                          "N/A" 
-                        end
-                      ),
-                      "critical",
-                      (.locations[0].physicalLocation.artifactLocation.uri // .locations[0].physicalLocation.region.startLine // "N/A")
-                    ] 
-                    | @tsv
+                      (.properties.cve[0] // .ruleId // "N/A"),
+                      .properties.severity,
+                      (.locations[0].physicalLocation.artifactLocation.uri // "N/A")
+                    ]
+                  | @tsv
                 ' "$sarif" | while IFS=$'\t' read -r pkg ver cve sev loc; do
                   echo "| $pkg | $ver | $cve | $sev | $loc |" >> security/reports/summary.md
                 done
