@@ -11,28 +11,23 @@ import { MaillingService } from '@/mailling/mailling.service';
 import { MaillingModule } from '@/mailling/mailling.module';
 import { CharacterModule } from '@/resources/character/character.module';
 import { StripeModule } from '@/resources/stripe/stripe.module';
-
-const imports = [
-  ConfigModule.forRoot({
-    isGlobal: true, // Permet d'accéder aux variables du env dans tous les modules
-  }),
-  MongooseModule.forRoot(process.env.MONGO_URL),
-  UserModule,
-  CharacterModule,
-  GroupModule,
-  CampaignModule,
-  AuthModule,
-  MaillingModule,
-  StripeModule,
-];
-
-if (process.env.NODE_ENV !== 'production') {
-  const { SeederModule } = require('@/seeder/seeder.module');
-  imports.push(SeederModule);
-}
+import { SeederModule } from '@/seeder/seeder.module';
 
 @Module({
-  imports,
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // Permet d'accéder aux variables du env dans tous les modules
+    }),
+    MongooseModule.forRoot(process.env.MONGO_URL),
+    UserModule,
+    CharacterModule,
+    GroupModule,
+    CampaignModule,
+    AuthModule,
+    MaillingModule,
+    StripeModule,
+    SeederModule,
+  ],
   controllers: [AppController],
   providers: [AppService, Logger, MaillingService],
 })
