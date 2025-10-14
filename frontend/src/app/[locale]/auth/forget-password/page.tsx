@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
   }, []);
 
   return (
-    <div className="w-full h-[100dvh] gap-1 flex flex-col items-center bg-background">
+    <div className="w-full h-dvh gap-1 flex flex-col items-center bg-background">
       <div className="w-[40%] h-1/3 flex flex-col justify-center ">
         <Stepper
           currentStep={step}
