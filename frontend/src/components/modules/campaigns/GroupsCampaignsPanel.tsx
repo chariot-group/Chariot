@@ -155,7 +155,7 @@ export default function GroupsCampaignsPanel({
       </Link>
       <div className="flex flex-row gap-10 mt-4 justify-between h-full">
         <GroupDnDWrapper onDragEnd={handleDragEnd}>
-          <div className="rounded-xl border border-ring bg-card text-card-foreground shadow w-1/3 h-full">
+          <div className="rounded-xl border border-ring bg-card text-card-foreground shadow-sm w-1/3 h-full">
             <GroupListPanel
               displayMembersCount
               updatedGroup={updatedGroup}
@@ -172,7 +172,7 @@ export default function GroupsCampaignsPanel({
               setSearch={setMainSearch}
             />
           </div>
-          <div className="rounded-xl border border-ring bg-card text-card-foreground shadow w-1/3 h-full">
+          <div className="rounded-xl border border-ring bg-card text-card-foreground shadow-sm w-1/3 h-full">
             <GroupListPanel
               displayMembersCount
               updatedGroup={updatedGroup}
@@ -189,7 +189,7 @@ export default function GroupsCampaignsPanel({
               setSearch={setNpcSearch}
             />
           </div>
-          <div className="rounded-xl border border-ring bg-card text-card-foreground shadow w-1/3 h-full">
+          <div className="rounded-xl border border-ring bg-card text-card-foreground shadow-sm w-1/3 h-full">
             <GroupListPanel
               displayMembersCount
               updatedGroup={updatedGroup}

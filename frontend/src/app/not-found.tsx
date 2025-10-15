@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Page() {
     return (
-        <div className="w-full h-[100dvh] flex flex-col items-center justify-center bg-background">
+        <div className="w-full h-dvh flex flex-col items-center justify-center bg-background">
         <Card className="w-[40%] shadow-md relative">
           <div className="p-6 w-full flex flex-col items-center justify-center gap-[3dvh]">
             <div className="flex flex-col items-center justify-center gap-2">
