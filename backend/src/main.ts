@@ -4,6 +4,7 @@ import { WinstonModule } from 'nest-winston';
 import { instance } from '@/logger/winston.logger';
 import { ValidationPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
 import * as cookieParser from 'cookie-parser';
 import * as bodyParser from 'body-parser';
 
@@ -36,6 +37,9 @@ async function bootstrap() {
 
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new JwtAuthGuard(reflector));
+
+  const metricsInterceptor = app.get(MetricsInterceptor);
+  app.useGlobalInterceptors(metricsInterceptor);
 
   await app.listen(process.env.INTERNAL_API_PORT);
 
