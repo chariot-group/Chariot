@@ -13,7 +13,7 @@ interface Props {
   updateCharacter?: (character: ICharacter) => void;
   isUpdating: boolean;
 }
-const CharacterModal = ({ isOpen, onClose, character, updateCharacter = () => {}, isUpdating }: Props) => {
+const CharacterModal = ({ isOpen, onClose, character, updateCharacter = () => { }, isUpdating }: Props) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
   useEffect(() => {
@@ -29,12 +29,11 @@ const CharacterModal = ({ isOpen, onClose, character, updateCharacter = () => {}
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black bg-opacity-50"
+        className="absolute inset-0 bg-black/50 backdrop-blur-xs"
         onClick={onClose}></div>
       <div
-        className={`h-[90vh] w-[95%] 2xl:w-[80%] 2xl:h-[80vh] ${
-          isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-        }`}>
+        className={`h-[90vh] w-[95%] 2xl:w-[80%] 2xl:h-[80vh] ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}>
         {character.kind === "player" && (
           <PlayerModalDetails
             isUpdate={isUpdating}
