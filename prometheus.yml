@@ -1,0 +1,48 @@
+# Documentation: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+
+global:
+  # Collecte des métriques toutes les 15s
+  scrape_interval: 15s
+  
+  # Intervalle d'évaluation des règles
+  evaluation_interval: 15s
+  
+  # Labels externes ajoutés à toutes les métriques
+  external_labels:
+    monitor: 'chariot-monitor'
+    environment: 'development'
+
+# Configuration des jobs de collecte (scrape configs)
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    
+  # Job 2: Backend NestJS
+  - job_name: 'chariot-backend'
+    static_configs:
+      - targets: ['backend:9000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    
+  # Job 3: Frontend Next.js (optionnel, à configurer plus tard)
+  # - job_name: 'chariot-frontend'
+  #   static_configs:
+  #     - targets: ['frontend:3000']
+  #   metrics_path: '/api/metrics'
+  
+  # Job 4: MongoDB (via exporter, à configurer plus tard)
+  # - job_name: 'mongodb'
+  #   static_configs:
+  #     - targets: ['mongodb-exporter:9216']
+
+# Configuration des alertes (à configurer plus tard avec Alertmanager)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+# Fichiers de règles (pour les agrégations et alertes)
+# rule_files:
+#   - "alerts/*.yml"
+#   - "rules/*.yml"
