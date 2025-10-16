@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { MetricsController } from './metrics.controller';
-import { MetricsService } from './metrics.service';
-import { MetricsInterceptor } from './metrics.interceptor';
+import { MetricsController } from '@/metrics/metrics.controller';
+import { MetricsService } from '@/metrics/metrics.service';
+import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
 import {
   httpRequestsCounterProvider,
   httpRequestDurationProvider,
@@ -17,7 +17,7 @@ import {
   emailsSentCounterProvider,
   stripePaymentsCounterProvider,
   mongoConnectionsGaugeProvider,
-} from './metrics.service';
+} from '@/metrics/metrics.service';
 
 @Module({
   imports: [
