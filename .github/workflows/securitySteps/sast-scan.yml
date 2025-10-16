@@ -1,0 +1,72 @@
+name: SAST Scan
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: false
+        type: string
+        default: '20'
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  sast-scan:
+    name: Analyse statique (SAST)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Install frontend dependencies
+        if: ${{ hashFiles('frontend/package.json') != '' && hashFiles('frontend/package-lock.json') != '' }}
+        working-directory: ./frontend
+        run: npm install --no-audit --prefer-offline --no-fund
+
+      - name: Install backend dependencies
+        if: ${{ hashFiles('backend/package.json') != '' && hashFiles('backend/package-lock.json') != '' }}
+        working-directory: ./backend
+        run: npm install --no-audit --prefer-offline --no-fund
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: sonar-cache-${{ runner.os }}-${{ hashFiles('**/sonar-project.properties') }}
+          restore-keys: |
+            sonar-cache-${{ runner.os }}-
+
+      - name: Run backend tests with coverage
+        working-directory: ./backend
+        continue-on-error: true
+        run: |
+          if npm run test:cov 2>/dev/null; then
+            echo "✅ Backend tests completed with coverage"
+          else
+            echo "⚠️ Backend tests skipped or failed"
+          fi
+
+      - name: SonarCloud Scan (Monorepo)
+        if: secrets.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+ 

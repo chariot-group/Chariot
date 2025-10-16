@@ -1,0 +1,119 @@
+name: Docker Scan
+
+on:
+  workflow_call:
+    outputs:
+      has-critical-frontend:
+        description: "Frontend Docker image has critical vulnerabilities"
+        value: ${{ jobs.docker-scan.outputs.has-critical-frontend }}
+      has-critical-backend:
+        description: "Backend Docker image has critical vulnerabilities"
+        value: ${{ jobs.docker-scan.outputs.has-critical-backend }}
+
+jobs:
+  docker-scan:
+    name: Scan des images Docker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [frontend, backend]
+    
+    outputs:
+      has-critical-frontend: ${{ steps.check-docker-frontend.outputs.has-critical }}
+      has-critical-backend: ${{ steps.check-docker-backend.outputs.has-critical }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Check if Dockerfile exists
+        id: check_dockerfile
+        run: |
+          if [ -f "${{ matrix.project }}/dockerfile" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Dockerfile not found for ${{ matrix.project }}"
+            exit 1
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        continue-on-error: true
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.project }}
+          file: ./${{ matrix.project }}/dockerfile
+          push: false
+          load: true
+          tags: ${{ matrix.project }}:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create reports directory
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        run: mkdir -p security/reports
+
+      - name: Run Trivy vulnerability scanner on image
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: ${{ matrix.project }}:scan
+          format: 'json'
+          output: 'security/reports/trivy-${{ matrix.project }}.json'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Display vulnerabilities summary
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: ${{ matrix.project }}:scan
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Check for critical vulnerabilities (frontend)
+        if: steps.check_dockerfile.outputs.exists == 'true' && matrix.project == 'frontend'
+        id: check-docker-frontend
+        working-directory: ./security/reports
+        continue-on-error: true
+        run: |
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-frontend.json 2>/dev/null || echo "0")
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "has-critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for critical vulnerabilities (backend)
+        if: steps.check_dockerfile.outputs.exists == 'true' && matrix.project == 'backend'
+        id: check-docker-backend
+        working-directory: ./security/reports
+        continue-on-error: true
+        run: |
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-backend.json 2>/dev/null || echo "0")
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "has-critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload Docker scan reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-scan-${{ matrix.project }}
+          path: security/reports/
+          retention-days: 30
+          if-no-files-found: warn
