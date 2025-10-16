@@ -12,6 +12,9 @@ env:
 jobs:
   dependency-scan:
     name: Scan des dépendances
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/dependency-scan.yml
     secrets: inherit
     with:
@@ -19,12 +22,17 @@ jobs:
 
   secret-scan:
     name: Détection de secrets
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/secret-scan.yml
     secrets: inherit
 
   sast-scan:
     name: Analyse statique (SAST)
     if: ${{ !startsWith(github.ref, 'refs/heads/renovate/') }}
+    permissions:
+      contents: read
     uses: ./.github/workflows/sast-scan.yml
     secrets: inherit
     with:
@@ -32,6 +40,9 @@ jobs:
 
   docker-scan:
     name: Scan des images Docker
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/docker-scan.yml
     secrets: inherit
 
@@ -39,6 +50,9 @@ jobs:
     name: Rapport et notifications
     needs: [dependency-scan, secret-scan, sast-scan, docker-scan]
     if: always()
+    permissions:
+      contents: read
+      pull-requests: write
     uses: ./.github/workflows/security-report.yml
     secrets: inherit
     with:
