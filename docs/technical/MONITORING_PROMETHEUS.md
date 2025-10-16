@@ -14,6 +14,8 @@ docker-compose ps  # Vérifier que tout tourne
 | Service | URL | Description |
 |---------|-----|-------------|
 | **Prometheus** | http://localhost:9090 | Interface de monitoring |
+| **cAdvisor** | http://localhost:8080 | Métriques des containers Docker |
+| **Node Exporter** | http://localhost:9100/metrics | Métriques de la machine hôte |
 | **Backend API** | http://localhost:3001 | API NestJS |
 | **Métriques** | http://localhost:3001/metrics | Endpoint Prometheus |
 | **Frontend** | http://localhost:3000 | Application Next.js |
@@ -72,16 +74,29 @@ open "http://localhost:9090/graph?g0.expr=chariot_http_requests_total"
          │   Port: 27017                  │    │
          └────────────────────────────────┘    │
                                                │
-         ┌─────────────────────────────────────┘
-         │
-         ▼
-┌───────────────────────────────┐
-│   Prometheus                   │
-│   Port: 9090                   │
+         ┌─────────────────────────────────────┤
+         │                                     │
+         │  ┌──────────────────────────────┐  │
+         │  │   cAdvisor                   │  │
+         │  │   Port: 8080                 │◄─┤
+         │  │   (Métriques containers)     │  │
+         │  └──────────────────────────────┘  │
+         │                                     │
+         │  ┌──────────────────────────────┐  │
+         │  │   Node Exporter              │  │
+         │  │   Port: 9100                 │◄─┤
+         │  │   (Métriques machine hôte)   │  │
+         │  └──────────────────────────────┘  │
+         │                                     │
+         ▼                                     │
+┌───────────────────────────────┐             │
+│   Prometheus                   │             │
+│   Port: 9090                   │─────────────┘
 │                                │
 │   Collecte:                    │
 │   - chariot-backend            │
-│   - Métriques système          │
+│   - cadvisor (containers)      │
+│   - node-exporter (host)       │
 │                                │
 │   Stockage: Time-series DB     │
 │   Rétention: 15 jours          │
@@ -169,6 +184,8 @@ Exemple: chariot_http_requests_total{method="GET", route="/campaigns", status_co
 ## 🎯 Requêtes PromQL Essentielles
 
 Copiez-collez dans Prometheus: http://localhost:9090/graph
+
+> 💡 **Note**: Pour les métriques des containers et de la machine hôte, consultez le [Guide de Monitoring des Containers](CONTAINER_MONITORING.md)
 
 ### Santé
 
@@ -327,9 +344,12 @@ docker-compose up -d
 | Composant | Statut | Port |
 |-----------|--------|------|
 | Prometheus | ✅ Opérationnel | 9090 |
+| cAdvisor | ✅ Opérationnel | 8080 |
+| Node Exporter | ✅ Opérationnel | 9100 |
 | Backend /metrics | ✅ Opérationnel | 3001 |
 | Métriques HTTP | ✅ Automatiques | - |
 | Métriques Système | ✅ Automatiques | - |
+| Métriques Containers | ✅ Automatiques | - |
 | Métriques Métier | 🟡 Définies | - |
 | Grafana | ⏳ Planifié | 3002 |
 
@@ -340,6 +360,7 @@ docker-compose up -d
 - [Documentation Prometheus](https://prometheus.io/docs/)
 - [PromQL Tutorial](https://prometheus.io/docs/prometheus/latest/querying/basics/)
 - [NestJS Prometheus](https://github.com/willsoto/nestjs-prometheus)
+- [Guide de Monitoring des Containers](CONTAINER_MONITORING.md) - cAdvisor et Node Exporter
 - `backend/docs/METRICS.md` - Guide d'implémentation
 
 ---

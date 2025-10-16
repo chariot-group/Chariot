@@ -15,6 +15,10 @@ See [backend/docs/](../../backend/docs/) for:
 - [Access rights](../../backend/docs/RIGHTS.md) - Permission system
 - [Backend Contribution](../../backend/docs/CONTRIBUTING.md) - Development standards
 
+## 📊 Monitoring
+- [Monitoring Guide](MONITORING.md) - Complete monitoring setup (Prometheus, cAdvisor, Node Exporter)
+- [macOS Compatibility](MONITORING_MACOS.md) - Node Exporter on macOS
+
 ## 📋 Architecture
 - **Monorepo**: Frontend (Next.js) + Backend (NestJS)
 - **Database**: Configured via Docker Compose
