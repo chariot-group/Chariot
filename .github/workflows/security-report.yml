@@ -184,8 +184,26 @@ jobs:
 
           cat security/reports/summary.md
 
+      - name: Check for DISCORD_WEBHOOK secret
+        id: check-discord
+        run: |
+          if [ "${{ secrets.DISCORD_WEBHOOK }}" != "" ]; then
+            echo "present=true" >> $GITHUB_OUTPUT
+          else
+            echo "present=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for MAIL_SERVER secret
+        id: check-mail
+        run: |
+          if [ "${{ secrets.MAIL_SERVER }}" != "" ]; then
+            echo "present=true" >> $GITHUB_OUTPUT
+          else
+            echo "present=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Discord notification (Warning)
-        if: steps.severity.outputs.level == 'warning' && secrets.DISCORD_WEBHOOK != ''
+        if: steps.severity.outputs.level == 'warning' && steps.check-discord.outputs.present == 'true'
         continue-on-error: true
         run: |
           curl -H "Content-Type: application/json" \
@@ -219,7 +237,7 @@ jobs:
             "${{ secrets.DISCORD_WEBHOOK }}"
 
       - name: Send Discord notification (Critical)
-        if: steps.severity.outputs.level == 'critical' && secrets.DISCORD_WEBHOOK != ''
+        if: steps.severity.outputs.level == 'critical' && steps.check-discord.outputs.present == 'true'
         continue-on-error: true
         run: |
           curl -H "Content-Type: application/json" \
@@ -254,7 +272,7 @@ jobs:
             "${{ secrets.DISCORD_WEBHOOK }}"
 
       - name: Send email notification (Critical)
-        if: steps.severity.outputs.level == 'critical' && secrets.MAIL_SERVER != ''
+        if: steps.severity.outputs.level == 'critical' && steps.check-mail.outputs.present == 'true'
         continue-on-error: true
         uses: dawidd6/action-send-mail@v3
         with:
