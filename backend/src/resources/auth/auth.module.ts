@@ -9,11 +9,13 @@ import { JwtStrategy } from '@/common/strategies/jwt.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '@/resources/user/schemas/user.schema';
 import { MaillingModule } from '@/mailling/mailling.module';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 @Module({
   imports: [
     UserModule,
     MaillingModule,
+    MetricsModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.registerAsync({
       imports: [

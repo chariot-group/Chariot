@@ -58,6 +58,23 @@ import {
     stripePaymentsCounterProvider,
     mongoConnectionsGaugeProvider,
   ],
-  exports: [MetricsService, MetricsInterceptor], // Export de l'intercepteur
+  exports: [
+    MetricsService,
+    MetricsInterceptor,
+    // Export des providers de métriques pour injection dans d'autres modules
+    httpRequestsCounterProvider,
+    httpRequestDurationProvider,
+    errorsCounterProvider,
+    activeUsersGaugeProvider,
+    campaignsCreatedCounterProvider,
+    activeCampaignsGaugeProvider,
+    charactersCreatedCounterProvider,
+    groupsCreatedCounterProvider,
+    authAttemptsCounterProvider,
+    dbQueryDurationProvider,
+    emailsSentCounterProvider,
+    stripePaymentsCounterProvider,
+    mongoConnectionsGaugeProvider,
+  ],
 })
-export class MetricsModule {}
+export class MetricsModule { }

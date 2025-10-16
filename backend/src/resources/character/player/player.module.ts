@@ -12,6 +12,7 @@ import {
   Character,
   CharacterSchema,
 } from '@/resources/character/core/schemas/character.schema';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 @Module({
   controllers: [PlayerController],
@@ -21,6 +22,7 @@ import {
     MongooseModule.forFeature([
       { name: Character.name, schema: CharacterSchema },
     ]),
+    MetricsModule,
   ],
 })
-export class PlayerModule {}
+export class PlayerModule { }

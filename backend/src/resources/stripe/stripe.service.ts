@@ -3,13 +3,17 @@ import Stripe from 'stripe';
 import { UserService } from '@/resources/user/user.service';
 import { generateRandomPassword } from '@/utils/utils.tools';
 import { MaillingService } from '@/mailling/mailling.service';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter } from 'prom-client';
 
 @Injectable()
 export class StripeService {
 
     constructor(
         private readonly userService: UserService,
-        private maillingService: MaillingService
+        private maillingService: MaillingService,
+        @InjectMetric('chariot_stripe_payments_total')
+        private readonly stripePaymentsCounter: Counter,
     ) { }
 
     private readonly SERVICE_NAME = StripeService.name;
@@ -97,6 +101,9 @@ export class StripeService {
         this.logger.log(`📦 Abonnement ajouté à ${user.email} : ${subscription.id}`, this.SERVICE_NAME);
 
         await user.save();
+
+        // Incrémentation du compteur Prometheus
+        this.stripePaymentsCounter.inc({ status: 'success' });
     }
 
     /**

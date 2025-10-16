@@ -12,6 +12,8 @@ import { Model, Types } from 'mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter } from 'prom-client';
 
 @Injectable()
 export class PlayerService {
@@ -19,6 +21,8 @@ export class PlayerService {
     @InjectModel(Character.name)
     private characterModel: Model<Character>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    @InjectMetric('chariot_characters_created_total')
+    private readonly charactersCreatedCounter: Counter,
   ) { }
 
   private readonly SERVICE_NAME = PlayerService.name;
@@ -51,6 +55,10 @@ export class PlayerService {
         },
         { $addToSet: { characters: savedPlayer._id } },
       );
+
+      // Incrémentation du compteur Prometheus
+      this.charactersCreatedCounter.inc({ user_id: userId });
+
       const end = Date.now();
 
       const message = `Player created in ${end - start}ms`;

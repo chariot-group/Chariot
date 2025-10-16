@@ -12,6 +12,7 @@ import {
   CharacterSchema,
 } from '@/resources/character/core/schemas/character.schema';
 import { CharacterModule } from '@/resources/character/character.module';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CharacterModule } from '@/resources/character/character.module';
       { name: Character.name, schema: CharacterSchema },
     ]),
     CharacterModule,
+    MetricsModule,
   ],
   exports: [
     MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]),
@@ -29,4 +31,4 @@ import { CharacterModule } from '@/resources/character/character.module';
   controllers: [GroupController],
   providers: [GroupService],
 })
-export class GroupModule {}
+export class GroupModule { }

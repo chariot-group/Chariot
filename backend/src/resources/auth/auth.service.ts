@@ -18,6 +18,8 @@ import { User, UserDocument } from '@/resources/user/schemas/user.schema';
 import { MaillingService } from '@/mailling/mailling.service';
 import { ResetPasswordDto } from '@/resources/auth/dto/resetPassword.dto';
 import verifyOTPDto from '@/resources/auth/dto/verifyOTPDto.dto';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter } from 'prom-client';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +28,8 @@ export class AuthService {
     private jwtService: JwtService,
     private maillingService: MaillingService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectMetric('chariot_auth_attempts_total')
+    private readonly authAttemptsCounter: Counter,
   ) { }
 
   private readonly SERVICE_NAME = AuthService.name;
@@ -37,6 +41,8 @@ export class AuthService {
       if (!user) {
         const message = `Email or password is incorrect`;
         this.logger.error(message, null, this.SERVICE_NAME);
+        // Incrémentation du compteur Prometheus (échec)
+        this.authAttemptsCounter.inc({ status: 'failure' });
         throw new UnauthorizedException(message);
       }
 
@@ -47,6 +53,8 @@ export class AuthService {
       if (!checkPassword) {
         const message = `Email or password is incorrect`;
         this.logger.error(message, null, this.SERVICE_NAME);
+        // Incrémentation du compteur Prometheus (échec)
+        this.authAttemptsCounter.inc({ status: 'failure' });
         throw new UnauthorizedException(message);
       }
 
@@ -60,6 +68,10 @@ export class AuthService {
 
       const message = `User ${signInDto.email} logged in ${end - start}ms`;
       this.logger.verbose(message, this.SERVICE_NAME);
+
+      // Incrémentation du compteur Prometheus (succès)
+      this.authAttemptsCounter.inc({ status: 'success' });
+
       return {
         message,
         access_token: token,

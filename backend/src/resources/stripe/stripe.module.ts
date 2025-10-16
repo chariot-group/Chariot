@@ -5,6 +5,7 @@ import { User, UserSchema } from '@/resources/user/schemas/user.schema';
 import { UserModule } from '@/resources/user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MaillingModule } from '@/mailling/mailling.module';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { MaillingModule } from '@/mailling/mailling.module';
       { name: User.name, schema: UserSchema },
     ]),
     UserModule,
-    MaillingModule
+    MaillingModule,
+    MetricsModule,
   ],
   controllers: [StripeController],
   providers: [StripeService]

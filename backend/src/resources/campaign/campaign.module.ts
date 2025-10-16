@@ -13,6 +13,7 @@ import {
 } from '@/resources/campaign/schemas/sub/groups.schema';
 import { GroupModule } from '@/resources/group/group.module';
 import { Group, GroupSchema } from '@/resources/group/schemas/group.schema';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { Group, GroupSchema } from '@/resources/group/schemas/group.schema';
       { name: Group.name, schema: GroupSchema },
     ]),
     GroupModule,
+    MetricsModule,
   ],
   exports: [
     MongooseModule.forFeature([
@@ -31,4 +33,4 @@ import { Group, GroupSchema } from '@/resources/group/schemas/group.schema';
   controllers: [CampaignController],
   providers: [CampaignService, Logger],
 })
-export class CampaignModule {}
+export class CampaignModule { }
