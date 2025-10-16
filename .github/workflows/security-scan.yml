@@ -12,34 +12,34 @@ env:
 jobs:
   dependency-scan:
     name: Scan des dépendances
-    uses: ./.github/workflows/securitySteps/dependency-scan.yml
+    uses: ./.github/workflows/dependency-scan.yml
     secrets: inherit
     with:
       node-version: '20'
 
   secret-scan:
     name: Détection de secrets
-    uses: ./.github/workflows/securitySteps/secret-scan.yml
+    uses: ./.github/workflows/secret-scan.yml
     secrets: inherit
 
   sast-scan:
     name: Analyse statique (SAST)
     if: ${{ !startsWith(github.ref, 'refs/heads/renovate/') }}
-    uses: ./.github/workflows/securitySteps/sast-scan.yml
+    uses: ./.github/workflows/sast-scan.yml
     secrets: inherit
     with:
       node-version: '20'
 
   docker-scan:
     name: Scan des images Docker
-    uses: ./.github/workflows/securitySteps/docker-scan.yml
+    uses: ./.github/workflows/docker-scan.yml
     secrets: inherit
 
   security-report:
     name: Rapport et notifications
     needs: [dependency-scan, secret-scan, sast-scan, docker-scan]
     if: always()
-    uses: ./.github/workflows/securitySteps/security-report.yml
+    uses: ./.github/workflows/security-report.yml
     secrets: inherit
     with:
       dependency-scan-result: ${{ needs.dependency-scan.result }}

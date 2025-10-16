@@ -134,9 +134,9 @@ jobs:
           # 🔒 Rapport de Sécurité
 
           **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")  
-          **Branch:** \`${{ github.ref_name }}\`  
-          **Commit:** [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})  
-          **Auteur:** @${{ github.actor }}
+          **Branch:** \
+          **Commit:**  
+          **Auteur:**
 
           ## 📊 Résultats des Scans
 
@@ -172,63 +172,6 @@ jobs:
             echo "|--------------|---------|-----|----------|-------------|" >> security/reports/summary.md
           }
 
-          # === 1. NPM AUDIT JSON FILES ===
-          for JSON in security/reports/npm-audit-frontend.json security/reports/npm-audit-backend.json; do
-            if [ -f "$JSON" ]; then
-              CRIT_COUNT=$(jq '[.advisories[]] | length' "$JSON" 2>/dev/null || echo "0")
-              if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
-                FOUND_CRITICAL="true"
-                echo "### 📦 Dépendances ($(basename "$JSON"))" >> security/reports/summary.md
-                print_table_header
-                jq -r '.advisories[] | 
-                  [ .module_name, .findings[0].version, (.cves[0] // .url // "N/A"), .severity, .findings[0].paths[0] ] | 
-                  @tsv' "$JSON" | \
-                  while IFS=$'\t' read -r pkg ver cve sev loc; do
-                    echo "| $pkg | $ver | $cve | $sev | $loc |" >> security/reports/summary.md
-                  done
-                echo "" >> security/reports/summary.md
-              fi
-            fi
-          done
-
-          # === 2. TRIVY JSON FILES ===
-          for JSON in security/reports/docker-scan-frontend/trivy-frontend.json security/reports/docker-scan-backend/trivy-backend.json; do
-            if [ -f "$JSON" ]; then
-              CRIT_COUNT=$(jq '[.Results[]?.Vulnerabilities[]?] | length' "$JSON" 2>/dev/null || echo "0")
-              
-              if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
-                FOUND_CRITICAL="true"
-                SERVICE_NAME=$(basename "$(dirname "$JSON")" | sed 's/docker-scan-//')
-                
-                echo "### 🐳 Trivy - $SERVICE_NAME" >> security/reports/summary.md
-                print_table_header
-                
-                jq -r '
-                  .Results[]? 
-                  | .Vulnerabilities[]? 
-                  | [
-                      .PkgName // "N/A",
-                      .InstalledVersion // "N/A",
-                      .VulnerabilityID // "N/A",
-                      .Severity // "N/A",
-                      (.PrimaryURL // "N/A")
-                    ] 
-                  | @tsv
-                ' "$JSON" 2>/dev/null | \
-                while IFS=$'\t' read -r pkg ver cve sev url; do
-                  if [ "$url" != "N/A" ]; then
-                    url_link="[$cve]($url)"
-                  else
-                    url_link="$cve"
-                  fi
-                  echo "| $pkg | $ver | $cve | $sev | $url |" >> security/reports/summary.md
-                done
-                
-                echo "" >> security/reports/summary.md
-              fi
-            fi
-          done
-
           if [ "$FOUND_CRITICAL" != "true" ]; then
             echo "_Aucune vulnérabilité critique détectée dans les rapports._" >> security/reports/summary.md
           fi
@@ -236,8 +179,8 @@ jobs:
           echo "" >> security/reports/summary.md
           echo "---" >> security/reports/summary.md
           echo "" >> security/reports/summary.md
-          echo "**[📊 Voir les détails complets](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})**" >> security/reports/summary.md
-          echo "**[🔒 GitHub Security](${{ github.server_url }}/${{ github.repository }}/security)**" >> security/reports/summary.md
+          echo "**[📊 Voir les détails complets](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})**" >> security/reports/summary.md
+          echo "**[🔒 GitHub Security](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/security)**" >> security/reports/summary.md
 
           cat security/reports/summary.md
 
@@ -255,12 +198,12 @@ jobs:
                 "fields": [
                   {
                     "name": "Branch",
-                    "value": "'"${{ github.ref_name }}"'",
+                    "value": "'""'${{ github.ref_name }}'""'",
                     "inline": true
                   },
                   {
                     "name": "Commit",
-                    "value": "'"${GITHUB_SHA:0:7}"'",
+                    "value": "'""'${GITHUB_SHA:0:7}'""'",
                     "inline": true
                   },
                   {
@@ -270,7 +213,7 @@ jobs:
                   }
                 ],
                 "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)'"'
               }]
             }' \
             "${{ secrets.DISCORD_WEBHOOK }}"
@@ -290,12 +233,12 @@ jobs:
                 "fields": [
                   {
                     "name": "Branch",
-                    "value": "'"${{ github.ref_name }}"'",
+                    "value": "'""'${{ github.ref_name }}'""'",
                     "inline": true
                   },
                   {
                     "name": "Commit",
-                    "value": "'"${GITHUB_SHA:0:7}"'",
+                    "value": "'""'${GITHUB_SHA:0:7}'""'",
                     "inline": true
                   },
                   {
@@ -305,7 +248,7 @@ jobs:
                   }
                 ],
                 "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)'"'
               }]
             }' \
             "${{ secrets.DISCORD_WEBHOOK }}"
