@@ -10,8 +10,7 @@ on:
     secrets:
       SONAR_TOKEN:
         required: true
-      GITHUB_TOKEN:
-        required: true
+      # GITHUB_TOKEN is provided by GitHub automatically and cannot be declared here
 
 jobs:
   sast-scan:
@@ -63,8 +62,17 @@ jobs:
             echo "⚠️ Backend tests skipped or failed"
           fi
 
+      - name: Check for SONAR_TOKEN secret
+        id: check-sonar
+        run: |
+          if [ "${{ secrets.SONAR_TOKEN }}" != "" ]; then
+            echo "present=true" >> $GITHUB_OUTPUT
+          else
+            echo "present=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: SonarCloud Scan (Monorepo)
-        if: secrets.SONAR_TOKEN != ''
+        if: steps.check-sonar.outputs.present == 'true'
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         continue-on-error: true
         env:

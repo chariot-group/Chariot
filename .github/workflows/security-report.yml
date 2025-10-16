@@ -43,8 +43,6 @@ on:
         required: false
       SECURITY_EMAIL:
         required: false
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   security-report:
