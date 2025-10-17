@@ -65,5 +65,25 @@ services:
       - BACKEND_URL=${BACKEND_URL}
       - NODE_ENV=${NODE_ENV}
 
+  # Outil pour collecter les métriques de MongoDB
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.40
+    container_name: mongodb-exporter
+    restart: always
+    ports:
+      - "${MONGODB_EXPORTER_PORT}:9216"
+    environment:
+      # URI de connexion MongoDB avec authentification
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017
+    command:
+      # Options de collecte des métriques
+      - '--mongodb.direct-connect=true'
+      - '--discovering-mode'
+      - '--compatible-mode'
+      - '--collect-all'
+    depends_on:
+      mongo:
+        condition: service_healthy
+
 volumes:
   mongodb_data:

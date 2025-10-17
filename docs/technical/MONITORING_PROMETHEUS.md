@@ -16,6 +16,7 @@ docker-compose ps  # Vérifier que tout tourne
 | **Prometheus** | http://localhost:9090 | Interface de monitoring |
 | **cAdvisor** | http://localhost:8080 | Métriques des containers Docker |
 | **Node Exporter** | http://localhost:9100/metrics | Métriques de la machine hôte |
+| **MongoDB Exporter** | http://localhost:9216/metrics | Métriques de la base de données |
 | **Backend API** | http://localhost:3001 | API NestJS |
 | **Métriques** | http://localhost:3001/metrics | Endpoint Prometheus |
 | **Frontend** | http://localhost:3000 | Application Next.js |
@@ -25,6 +26,7 @@ docker-compose ps  # Vérifier que tout tourne
 ```bash
 # Voir les métriques brutes
 curl http://localhost:3001/metrics
+curl http://localhost:9216/metrics  # MongoDB
 
 # Vérifier les targets dans Prometheus
 open http://localhost:9090/targets
@@ -85,7 +87,13 @@ open "http://localhost:9090/graph?g0.expr=chariot_http_requests_total"
          │  ┌──────────────────────────────┐  │
          │  │   Node Exporter              │  │
          │  │   Port: 9100                 │◄─┤
-         │  │   (Métriques machine hôte)   │  │
+         │   │   (Métriques machine hôte)   │  │
+         │   └──────────────────────────────┘  │
+         │                                     │
+         │  ┌──────────────────────────────┐  │
+         │  │   MongoDB Exporter           │  │
+         │  │   Port: 9216                 │◄─┤
+         │  │   (Métriques MongoDB)        │  │
          │  └──────────────────────────────┘  │
          │                                     │
          ▼                                     │
@@ -97,6 +105,7 @@ open "http://localhost:9090/graph?g0.expr=chariot_http_requests_total"
 │   - chariot-backend            │
 │   - cadvisor (containers)      │
 │   - node-exporter (host)       │
+│   - mongodb (database)         │
 │                                │
 │   Stockage: Time-series DB     │
 │   Rétention: 15 jours          │
@@ -175,6 +184,21 @@ Exemple: chariot_http_requests_total{method="GET", route="/campaigns", status_co
 - `chariot_stripe_payments_total`
 - `chariot_errors_total`
 
+### Métriques MongoDB (via exporter)
+- `mongodb_up` - MongoDB disponible (1 = UP, 0 = DOWN)
+- `mongodb_connections` - Connexions actives/disponibles/totales
+- `mongodb_network_bytes_total` - Trafic réseau (in/out)
+- `mongodb_op_counters_total` - Compteurs d'opérations (insert/query/update/delete/command)
+- `mongodb_opcounters_repl_total` - Opérations de réplication
+- `mongodb_memory` - Utilisation mémoire (resident/virtual/mapped)
+- `mongodb_metrics_document_total` - Documents insérés/mis à jour/supprimés/retournés
+- `mongodb_metrics_cursor_open` - Curseurs ouverts
+- `mongodb_metrics_query_executor_total` - Scans (collection/index)
+- `mongodb_ss_wt_cache` - Cache WiredTiger (taille, hit ratio)
+- `mongodb_ss_wt_block_manager` - Activité disque
+- `mongodb_mongod_db_data_size_bytes` - Taille des données par DB
+- `mongodb_mongod_db_index_size_bytes` - Taille des index par DB
+
 > 📖 Voir `backend/docs/METRICS.md` pour implémenter les métriques métier
 
 ---
@@ -247,6 +271,144 @@ Décomposition:
 
 ---
 
+## 📊 Requêtes PromQL pour MongoDB
+
+### Disponibilité
+
+```promql
+# MongoDB UP ?
+mongodb_up
+
+# Temps depuis le dernier démarrage (secondes)
+mongodb_instance_uptime_seconds
+```
+
+### Connexions
+
+```promql
+# Connexions actives
+mongodb_connections{state="current"}
+
+# Connexions disponibles
+mongodb_connections{state="available"}
+
+# Taux d'utilisation des connexions (%)
+100 * mongodb_connections{state="current"} / (mongodb_connections{state="current"} + mongodb_connections{state="available"})
+
+# Évolution des connexions actives
+rate(mongodb_connections{state="current"}[5m])
+```
+
+### Performance des Opérations
+
+```promql
+# Opérations par seconde (total)
+rate(mongodb_op_counters_total[5m])
+
+# Opérations par type
+rate(mongodb_op_counters_total{type="insert"}[5m])
+rate(mongodb_op_counters_total{type="query"}[5m])
+rate(mongodb_op_counters_total{type="update"}[5m])
+rate(mongodb_op_counters_total{type="delete"}[5m])
+
+# Top opérations
+topk(3, rate(mongodb_op_counters_total[5m]))
+```
+
+### Scans et Index
+
+```promql
+# Ratio index scans vs collection scans (doit être élevé)
+rate(mongodb_metrics_query_executor_total{state="scanned"}[5m]) / 
+rate(mongodb_metrics_query_executor_total{state="scannedObjects"}[5m])
+
+# Collection scans (à minimiser, signe de manque d'index)
+rate(mongodb_metrics_query_executor_total{state="scanned"}[5m])
+```
+
+### Mémoire et Cache
+
+```promql
+# Mémoire résidente (MB)
+mongodb_memory{type="resident"} / 1024 / 1024
+
+# Cache WiredTiger - Hit ratio (%)
+100 * rate(mongodb_ss_wt_cache_pages_read_into_cache_total[5m]) / 
+rate(mongodb_ss_wt_cache_pages_requested_from_cache_total[5m])
+
+# Cache utilisé vs maximum (%)
+100 * mongodb_ss_wt_cache_bytes{type="total"} / 
+mongodb_ss_wt_cache_max_bytes_configured
+```
+
+### Stockage
+
+```promql
+# Taille totale des données (GB)
+sum(mongodb_mongod_db_data_size_bytes) / 1024 / 1024 / 1024
+
+# Taille des données par database
+mongodb_mongod_db_data_size_bytes / 1024 / 1024  # MB
+
+# Taille des index par database
+mongodb_mongod_db_index_size_bytes / 1024 / 1024  # MB
+
+# Ratio taille index vs données
+mongodb_mongod_db_index_size_bytes / mongodb_mongod_db_data_size_bytes
+```
+
+### Réseau
+
+```promql
+# Trafic réseau entrant (MB/s)
+rate(mongodb_network_bytes_total{state="in_bytes"}[5m]) / 1024 / 1024
+
+# Trafic réseau sortant (MB/s)
+rate(mongodb_network_bytes_total{state="out_bytes"}[5m]) / 1024 / 1024
+
+# Requêtes réseau par seconde
+rate(mongodb_network_metrics_num_requests_total[5m])
+```
+
+### Documents
+
+```promql
+# Documents insérés/s
+rate(mongodb_metrics_document_total{state="inserted"}[5m])
+
+# Documents mis à jour/s
+rate(mongodb_metrics_document_total{state="updated"}[5m])
+
+# Documents supprimés/s
+rate(mongodb_metrics_document_total{state="deleted"}[5m])
+
+# Documents retournés/s (résultats de query)
+rate(mongodb_metrics_document_total{state="returned"}[5m])
+```
+
+### Alertes Recommandées
+
+```promql
+# ⚠️ MongoDB DOWN
+mongodb_up == 0
+
+# ⚠️ Connexions saturées (>80%)
+100 * mongodb_connections{state="current"} / 
+(mongodb_connections{state="current"} + mongodb_connections{state="available"}) > 80
+
+# ⚠️ Trop de collection scans (manque d'index)
+rate(mongodb_metrics_query_executor_total{state="scanned"}[5m]) > 100
+
+# ⚠️ Cache hit ratio trop bas (<80%)
+100 * rate(mongodb_ss_wt_cache_pages_read_into_cache_total[5m]) / 
+rate(mongodb_ss_wt_cache_pages_requested_from_cache_total[5m]) < 80
+
+# ⚠️ Mémoire résidente élevée (>2GB en dev)
+mongodb_memory{type="resident"} / 1024 / 1024 / 1024 > 2
+```
+
+---
+
 ---
 
 ## 🔧 Commandes Utiles
@@ -289,24 +451,6 @@ TRACES (OpenTelemetry)     → Parcours d'une requête, "Où est le bottleneck ?
 
 ---
 
-## 🚀 Prochaines Étapes
-
-### Court terme
-1. Tester en conditions réelles
-2. Implémenter métriques métier (voir `backend/docs/METRICS.md`)
-
-### Moyen terme
-3. Installer Grafana (port 3002)
-4. Créer dashboards (HTTP, latence, ressources)
-5. Configurer alertes (latence > 1s, erreurs > 5%, mémoire > 80%)
-
-### Long terme
-6. Monitorer MongoDB (exporter MongoDB)
-7. Monitorer Frontend (Next.js, Web Vitals)
-8. Haute disponibilité (Thanos pour stockage long terme)
-
----
-
 ## ❓ FAQ
 
 **Le backend ne démarre pas ?**
@@ -346,10 +490,12 @@ docker-compose up -d
 | Prometheus | ✅ Opérationnel | 9090 |
 | cAdvisor | ✅ Opérationnel | 8080 |
 | Node Exporter | ✅ Opérationnel | 9100 |
+| MongoDB Exporter | ✅ Opérationnel | 9216 |
 | Backend /metrics | ✅ Opérationnel | 3001 |
 | Métriques HTTP | ✅ Automatiques | - |
 | Métriques Système | ✅ Automatiques | - |
 | Métriques Containers | ✅ Automatiques | - |
+| Métriques MongoDB | ✅ Automatiques | - |
 | Métriques Métier | 🟡 Définies | - |
 | Grafana | ⏳ Planifié | 3002 |
 

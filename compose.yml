@@ -154,6 +154,34 @@ services:
       retries: 3
       start_period: 10s
 
+  # Outil pour collecter les métriques de MongoDB
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.40
+    container_name: mongodb-exporter
+    restart: always
+    ports:
+      - "${MONGODB_EXPORTER_PORT}:9216"
+    environment:
+      # URI de connexion MongoDB avec authentification
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017
+    command:
+      # Options de collecte des métriques
+      - '--mongodb.direct-connect=true'
+      - '--discovering-mode'
+      - '--compatible-mode'
+      - '--collect-all'
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9216/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
 volumes:
   mongodb_data:
   prometheus_data:

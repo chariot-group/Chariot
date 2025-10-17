@@ -36,10 +36,11 @@ scrape_configs:
       - targets: ['node-exporter:9100']
     scrape_interval: 15s
   
-  # Job 5: MongoDB (via exporter, à configurer plus tard)
-  # - job_name: 'mongodb'
-  #   static_configs:
-  #     - targets: ['mongodb-exporter:9216']
+  # Job 5: MongoDB Exporter (métriques de la base de données)
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb-exporter:9216']
+    scrape_interval: 15s
 
 # Configuration des alertes (à configurer plus tard avec Alertmanager)
 # alerting:
