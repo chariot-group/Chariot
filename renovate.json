@@ -1,0 +1,12 @@
+{
+  "packageRules": [
+    {
+      "matchPackageNames": ["**stripe**"],
+      "schedule": ["* 0-5 1-7 * 0,6"]
+    }
+  ],
+  "schedule": ["* 0-5 * * 0,6"],
+  "abandonmentThreshold": "1 years",
+  "scheduleTimezone": "Europe/Paris"
+
+}
