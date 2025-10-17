@@ -160,7 +160,7 @@ jobs:
           EOF
           fi
 
-          echo "## 📝 Détail des vulnérabilités CRITIQUES détectées" >> security/reports/summary.md
+          echo "## 📝 Détail des vulnérabilités détectées" >> security/reports/summary.md
           echo "" >> security/reports/summary.md
 
           FOUND_CRITICAL="false"
