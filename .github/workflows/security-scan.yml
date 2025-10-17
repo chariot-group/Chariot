@@ -1,0 +1,67 @@
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+env:      
+  NODE_VERSION: '20'
+
+jobs:
+  dependency-scan:
+    name: Scan des dépendances
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/dependency-scan.yml
+    secrets: inherit
+    with:
+      node-version: '20'
+
+  secret-scan:
+    name: Détection de secrets
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/secret-scan.yml
+    secrets: inherit
+
+  sast-scan:
+    name: Analyse statique (SAST)
+    if: ${{ !startsWith(github.ref, 'refs/heads/renovate/') }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/sast-scan.yml
+    secrets: inherit
+    with:
+      node-version: '20'
+
+  docker-scan:
+    name: Scan des images Docker
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/docker-scan.yml
+    secrets: inherit
+
+  security-report:
+    name: Rapport et notifications
+    needs: [dependency-scan, secret-scan, sast-scan, docker-scan]
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/security-report.yml
+    secrets: inherit
+    with:
+      dependency-scan-result: ${{ needs.dependency-scan.result }}
+      secret-scan-result: ${{ needs.secret-scan.result }}
+      sast-scan-result: ${{ needs.sast-scan.result }}
+      docker-scan-result: ${{ needs.docker-scan.result }}
+      has-critical-dep-frontend: ${{ needs.dependency-scan.outputs.has-critical-frontend }}
+      has-critical-dep-backend: ${{ needs.dependency-scan.outputs.has-critical-backend }}
+      has-critical-docker-frontend: ${{ needs.docker-scan.outputs.has-critical-frontend }}
+      has-critical-docker-backend: ${{ needs.docker-scan.outputs.has-critical-backend }}
+      secrets-found: ${{ needs.secret-scan.outputs.secrets-found }}
