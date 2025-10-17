@@ -73,7 +73,7 @@ jobs:
 
       - name: SonarCloud Scan (Monorepo)
         if: steps.check-sonar.outputs.present == 'true'
-        uses: SonarSource/sonarqube-scan-action@v5.3.2
+        uses: SonarSource/sonarqube-scan-action@v6
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
