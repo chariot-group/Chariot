@@ -1,4 +1,4 @@
-FROM debian:12.12-slim
+FROM debian:trixie-slim
 
 RUN apt-get update && \
     apt-get install -y curl gnupg ca-certificates && \
@@ -8,9 +8,8 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y nodejs git imagemagick libaom3 && \
     apt-get upgrade -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-    
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY . .
