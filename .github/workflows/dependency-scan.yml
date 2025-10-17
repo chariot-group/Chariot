@@ -1,0 +1,103 @@
+name: Dependency Scan
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: false
+        type: string
+        default: '20'
+    outputs:
+      has-critical-frontend:
+        description: "Frontend has critical vulnerabilities"
+        value: ${{ jobs.dependency-scan.outputs.has-critical-frontend }}
+      has-critical-backend:
+        description: "Backend has critical vulnerabilities"
+        value: ${{ jobs.dependency-scan.outputs.has-critical-backend }}
+
+jobs:
+  dependency-scan:
+    name: Scan des dépendances
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    strategy:
+      matrix:
+        project: [frontend, backend]
+    
+    outputs:
+      has-critical-frontend: ${{ steps.check-vuln-frontend.outputs.has-critical }}
+      has-critical-backend: ${{ steps.check-vuln-backend.outputs.has-critical }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js for ${{ matrix.project }}
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.project }}/package-lock.json
+
+      - name: Cache Node dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: node-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: ./${{ matrix.project }}
+        run: npm install --no-audit --prefer-offline --no-fund
+
+      - name: Create reports directory
+        run: mkdir -p security/reports
+
+      - name: Run Trivy dependency scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './${{ matrix.project }}'
+          format: 'json'
+          output: ${{ github.workspace }}/security/reports/trivy-deps-${{ matrix.project }}.json
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Check for critical vulnerabilities (frontend)
+        if: matrix.project == 'frontend'
+        id: check-vuln-frontend
+        working-directory: ./security/reports
+        continue-on-error: true
+        run: |
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-deps-frontend.json 2>/dev/null || echo "0")
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "has-critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for critical vulnerabilities (backend)
+        if: matrix.project == 'backend'
+        id: check-vuln-backend
+        working-directory: ./security/reports
+        continue-on-error: true
+        run: |
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-deps-backend.json 2>/dev/null || echo "0")
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "has-critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload dependency scan reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-scan-${{ matrix.project }}
+          path: security/reports/
+          retention-days: 30
+          if-no-files-found: warn
