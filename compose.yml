@@ -130,8 +130,7 @@ services:
       retries: 3
       start_period: 10s
   
-  # Outil pour collecter les métriques de la machine hôte
-  # Note: Configuration compatible macOS (Docker Desktop)
+  # Collecte des métriques de la machine hôte
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
