@@ -42,13 +42,13 @@ scrape_configs:
       - targets: ['mongodb-exporter:9216']
     scrape_interval: 15s
 
-# Configuration des alertes (à configurer plus tard avec Alertmanager)
-# alerting:
-#   alertmanagers:
-#     - static_configs:
-#         - targets: ['alertmanager:9093']
+# Configuration des alertes avec Alertmanager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+      timeout: 10s
 
-# Fichiers de règles (pour les agrégations et alertes)
-# rule_files:
-#   - "alerts/*.yml"
-#   - "rules/*.yml"
+# Fichiers de règles d'alertes
+rule_files:
+  - "/etc/prometheus/alerts/*.yml"

@@ -1,0 +1,230 @@
+# Règles d'alertes pour l'infrastructure (Node Exporter)
+# Surveillance des ressources système de la machine hôte
+
+groups:
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      # ==================== CPU ====================
+      
+      # Utilisation CPU élevée pendant 5 minutes
+      - alert: HighCpuUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: cpu
+        annotations:
+          summary: "Utilisation CPU élevée sur {{ $labels.instance }}"
+          description: "L'utilisation CPU est à {{ $value | humanize }}% pendant plus de 5 minutes sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/high-cpu-usage"
+      
+      # Utilisation CPU critique
+      - alert: CriticalCpuUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+          component: infrastructure
+          resource: cpu
+        annotations:
+          summary: "⚠️ Utilisation CPU CRITIQUE sur {{ $labels.instance }}"
+          description: "L'utilisation CPU atteint {{ $value | humanize }}% - Risque de dégradation des performances !"
+          runbook_url: "https://docs.chariot.com/runbooks/critical-cpu-usage"
+      
+      # ==================== MÉMOIRE ====================
+      
+      # Mémoire disponible faible
+      - alert: LowMemoryAvailable
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 20
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: memory
+        annotations:
+          summary: "Mémoire disponible faible sur {{ $labels.instance }}"
+          description: "Seulement {{ $value | humanize }}% de mémoire disponible sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/low-memory"
+      
+      # Mémoire critique
+      - alert: CriticalMemory
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+          component: infrastructure
+          resource: memory
+        annotations:
+          summary: "⚠️ Mémoire CRITIQUE sur {{ $labels.instance }}"
+          description: "Mémoire disponible à {{ $value | humanize }}% - Risque d'OOM Killer !"
+          runbook_url: "https://docs.chariot.com/runbooks/critical-memory"
+      
+      # Taux élevé de swap
+      - alert: HighSwapUsage
+        expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: memory
+        annotations:
+          summary: "Utilisation du swap élevée sur {{ $labels.instance }}"
+          description: "Le swap est utilisé à {{ $value | humanize }}% - Indique une pression mémoire."
+          runbook_url: "https://docs.chariot.com/runbooks/high-swap"
+      
+      # ==================== DISQUE ====================
+      
+      # Espace disque faible
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) * 100 < 20
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: disk
+        annotations:
+          summary: "Espace disque faible sur {{ $labels.instance }}"
+          description: "Partition {{ $labels.mountpoint }} : {{ $value | humanize }}% d'espace disponible sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/low-disk-space"
+      
+      # Espace disque critique
+      - alert: CriticalDiskSpace
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+          component: infrastructure
+          resource: disk
+        annotations:
+          summary: "⚠️ Espace disque CRITIQUE sur {{ $labels.instance }}"
+          description: "Partition {{ $labels.mountpoint }} : Seulement {{ $value | humanize }}% disponible ! Action immédiate requise."
+          runbook_url: "https://docs.chariot.com/runbooks/critical-disk-space"
+      
+      # Taux élevé d'inodes utilisés
+      - alert: HighInodesUsage
+        expr: (node_filesystem_files_free{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"} / node_filesystem_files{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}) * 100 < 20
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: disk
+        annotations:
+          summary: "Inodes presque épuisés sur {{ $labels.instance }}"
+          description: "Partition {{ $labels.mountpoint }} : {{ $value | humanize }}% d'inodes disponibles."
+          runbook_url: "https://docs.chariot.com/runbooks/high-inodes"
+      
+      # Prédiction de remplissage du disque dans les 24h
+      - alert: DiskWillFillIn24Hours
+        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|vfat"}[1h], 24*3600) < 0
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: disk
+        annotations:
+          summary: "Le disque sera plein dans 24h sur {{ $labels.instance }}"
+          description: "Basé sur la tendance actuelle, la partition {{ $labels.mountpoint }} sera pleine dans moins de 24h."
+          runbook_url: "https://docs.chariot.com/runbooks/disk-prediction"
+      
+      # ==================== RÉSEAU ====================
+      
+      # Taux élevé d'erreurs réseau
+      - alert: HighNetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: network
+        annotations:
+          summary: "Taux élevé d'erreurs réseau sur {{ $labels.instance }}"
+          description: "Interface {{ $labels.device }} : {{ $value | humanize }} erreurs/sec sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/network-errors"
+      
+      # Bande passante saturée (réception)
+      - alert: NetworkReceiveSaturation
+        expr: rate(node_network_receive_bytes_total{device!~"lo|veth.*|docker.*|br-.*"}[5m]) > 90 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: network
+        annotations:
+          summary: "Bande passante réseau saturée (RX) sur {{ $labels.instance }}"
+          description: "Interface {{ $labels.device }} : {{ $value | humanize }}B/s en réception."
+          runbook_url: "https://docs.chariot.com/runbooks/network-saturation"
+      
+      # Bande passante saturée (émission)
+      - alert: NetworkTransmitSaturation
+        expr: rate(node_network_transmit_bytes_total{device!~"lo|veth.*|docker.*|br-.*"}[5m]) > 90 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: network
+        annotations:
+          summary: "Bande passante réseau saturée (TX) sur {{ $labels.instance }}"
+          description: "Interface {{ $labels.device }} : {{ $value | humanize }}B/s en émission."
+          runbook_url: "https://docs.chariot.com/runbooks/network-saturation"
+      
+      # ==================== SYSTÈME ====================
+      
+      # Nœud down
+      - alert: NodeDown
+        expr: up{job="node-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "⚠️ Node Exporter DOWN sur {{ $labels.instance }}"
+          description: "Le Node Exporter ne répond plus depuis plus d'1 minute !"
+          runbook_url: "https://docs.chariot.com/runbooks/node-down"
+      
+      # Charge système élevée
+      - alert: HighSystemLoad
+        expr: node_load5 / count(node_cpu_seconds_total{mode="idle"}) without(cpu, mode) > 2
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+          resource: cpu
+        annotations:
+          summary: "Charge système élevée sur {{ $labels.instance }}"
+          description: "La charge moyenne sur 5min ({{ $value | humanize }}) dépasse 2x le nombre de CPUs."
+          runbook_url: "https://docs.chariot.com/runbooks/high-load"
+      
+      # Nombre élevé de processus
+      - alert: TooManyProcesses
+        expr: node_procs_running > 500
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "Nombre élevé de processus sur {{ $labels.instance }}"
+          description: "{{ $value | humanize }} processus en cours d'exécution."
+          runbook_url: "https://docs.chariot.com/runbooks/too-many-processes"
+      
+      # Redémarrage du système
+      - alert: NodeRestarted
+        expr: time() - node_boot_time_seconds < 600
+        labels:
+          severity: info
+          component: infrastructure
+        annotations:
+          summary: "Le système a redémarré récemment"
+          description: "{{ $labels.instance }} a redémarré il y a {{ $value | humanizeDuration }}."
+      
+      # Temps de fonctionnement faible (moins de 10 minutes)
+      - alert: LowUptime
+        expr: time() - node_boot_time_seconds < 600
+        for: 1m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "Uptime faible détecté sur {{ $labels.instance }}"
+          description: "Le système est up depuis seulement {{ $value | humanizeDuration }}."

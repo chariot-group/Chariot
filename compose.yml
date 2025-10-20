@@ -82,6 +82,8 @@ services:
     volumes:
       # Configuration Prometheus
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      # Règles d'alertes
+      - ./prometheus/alerts:/etc/prometheus/alerts:ro
       # Stockage des données de métriques
       - prometheus_data:/prometheus
     command:
@@ -96,6 +98,8 @@ services:
       # Console pour le debugging
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
+    depends_on:
+      - alertmanager
     networks:
       - default
     healthcheck:
@@ -104,6 +108,42 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  # Gestionnaire d'alertes Prometheus
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: always
+    ports:
+      - "${ALERTMANAGER_PORT}:9093"
+    volumes:
+      # Configuration AlertManager
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      # Stockage des données d'alertes
+      - alertmanager_data:/alertmanager
+    command:
+      # Fichier de configuration
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      # Chemin de stockage des données
+      - '--storage.path=/alertmanager'
+      # Activer l'API web
+      - '--web.external-url=http://localhost:9093'
+      # Activer le clustering (pour HA - optionnel en dev)
+      - '--cluster.listen-address='
+    networks:
+      - default
+    environment:
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - RECEIVER_EMAIL=${RECEIVER_EMAIL}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   # Outil pour surveiller les containers et leur état
   cadvisor:
@@ -184,3 +224,4 @@ services:
 volumes:
   mongodb_data:
   prometheus_data:
+  alertmanager_data:
