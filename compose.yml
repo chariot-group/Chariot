@@ -195,24 +195,22 @@ services:
       - "${MONGODB_EXPORTER_PORT}:9216"
     environment:
       # URI de connexion MongoDB avec authentification
-      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
+      # Logs pour déboguer les connexions
+      - MONGODB_DIRECT_CONNECT=true
     command:
       # Options de collecte des métriques
       - '--mongodb.direct-connect=true'
       - '--discovering-mode'
       - '--compatible-mode'
       - '--collect-all'
+      # Binding sur l'interface réseau du container
+      - '--web.listen-address=:9216'
     depends_on:
       mongo:
         condition: service_healthy
     networks:
       - default
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9216/metrics"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
 
 volumes:
   mongodb_data:
