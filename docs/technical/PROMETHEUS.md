@@ -68,70 +68,65 @@ Ce guide couvre l'implémentation complète et la résolution de la configuratio
     └── alertmanager-entrypoint.sh    # Script d'entrée AlertManager
 ```
 
-### Documentation
-
-```
-docs/technical/
-├── PROMETHEUS_AND_ALERTMANAGER.md    # Ce fichier (guide complet)
-├── PROMETHEUS_ENV_CONFIG.md          # Référence détaillée des variables
-├── PROMETHEUS_ARCHITECTURE.md        # Architecture système
-└── PROMETHEUS_CONFIGURATION_SUMMARY.md # Résumé de l'implémentation
-
-docs/development/
-└── PROMETHEUS_MIGRATION.md           # Guide de migration
-```
-
 ---
 
-## 🔐 Variables d'environnement
+## 🔐 Variables d'environnement (minimum requis)
 
-### Prometheus - Variables de base
+### Prometheus - Configuration essentielles
 
-```bash
-# Environnement et monitoring
-PROMETHEUS_ENVIRONMENT=development
-PROMETHEUS_MONITOR_NAME=chariot-monitor
-PROMETHEUS_RETENTION_TIME=15d
+| Variable | Défaut | Utilité |
+|----------|--------|---------|
+| `PROMETHEUS_ENVIRONMENT` | `development` | Label "environment" sur les métriques |
+| `PROMETHEUS_MONITOR_NAME` | `chariot-monitor` | Label "monitor" sur les métriques |
+| `PROMETHEUS_SCRAPE_INTERVAL` | `15s` | Fréquence de collecte globale |
+| `PROMETHEUS_EVALUATION_INTERVAL` | `15s` | Intervalle d'évaluation des règles |
 
-# Intervalles de collecte
-PROMETHEUS_SCRAPE_INTERVAL=15s
-PROMETHEUS_EVALUATION_INTERVAL=15s
+### Prometheus - Intervalles par job
 
-# Targets (adresses des services)
-PROMETHEUS_SELF_TARGET=localhost:9090
-PROMETHEUS_BACKEND_TARGET=backend:9000
-PROMETHEUS_CADVISOR_TARGET=cadvisor:8080
-PROMETHEUS_NODE_EXPORTER_TARGET=node-exporter:9100
-PROMETHEUS_MONGODB_EXPORTER_TARGET=mongodb-exporter:9216
-PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093
-```
+| Variable | Défaut | Utilité |
+|----------|--------|---------|
+| `PROMETHEUS_CHARIOT_BACKEND_SCRAPE_INTERVAL` | `10s` | Collecte du backend |
+| `PROMETHEUS_CADVISOR_SCRAPE_INTERVAL` | `15s` | Métriques des containers |
+| `PROMETHEUS_NODE_EXPORTER_SCRAPE_INTERVAL` | `15s` | Métriques de la machine |
+| `PROMETHEUS_MONGODB_SCRAPE_INTERVAL` | `15s` | Métriques MongoDB |
 
-### AlertManager - Variables SMTP (Secrets ⚠️)
+### Prometheus - Cibles (targets)
 
-```bash
-# ⚠️ ATTENTION : Ces variables contiennent des secrets
-# Ne jamais les commiter dans Git
+| Variable | Défaut | Utilité |
+|----------|--------|---------|
+| `PROMETHEUS_SELF_TARGET` | `localhost:9090` | Auto-monitoring Prometheus |
+| `PROMETHEUS_BACKEND_TARGET` | `backend:9000` | Adresse du backend NestJS |
+| `PROMETHEUS_BACKEND_METRICS_PATH` | `/metrics` | Endpoint des métriques backend |
+| `PROMETHEUS_CADVISOR_TARGET` | `cadvisor:8080` | Adresse cAdvisor |
+| `PROMETHEUS_NODE_EXPORTER_TARGET` | `node-exporter:9100` | Adresse Node Exporter |
+| `PROMETHEUS_MONGODB_EXPORTER_TARGET` | `mongodb-exporter:9216` | Adresse MongoDB Exporter |
+| `PROMETHEUS_ALERTMANAGER_TARGET` | `alertmanager:9093` | Adresse AlertManager |
 
-ALERTMANAGER_SMTP_FROM=contact@chariot.tools
-ALERTMANAGER_SMTP_HOST=smtp.hostinger.com
-ALERTMANAGER_SMTP_PORT=587
-ALERTMANAGER_SMTP_USER=contact@chariot.tools
-ALERTMANAGER_SMTP_PASSWORD=your_secure_password_here
+### AlertManager - SMTP (Secrets ⚠️)
 
-# Configuration des routes d'alertes
-ALERTMANAGER_RECEIVER_EMAIL=team@chariot.tools
-ALERTMANAGER_EXTERNAL_URL=http://localhost:9093
+| Variable | Défaut | Utilité |
+|----------|--------|---------|
+| `ALERTMANAGER_SMTP_FROM` | - | Email expéditeur (requis) |
+| `ALERTMANAGER_SMTP_HOST` | - | Serveur SMTP (requis) |
+| `ALERTMANAGER_SMTP_PORT` | - | Port SMTP (587 pour TLS) |
+| `ALERTMANAGER_SMTP_USER` | - | Login SMTP (requis) |
+| `ALERTMANAGER_SMTP_PASSWORD` | - | Mot de passe SMTP (requis) ⚠️ |
+| `ALERTMANAGER_SMTP_REQUIRE_TLS` | `true` | TLS obligatoire |
+| `ALERTMANAGER_RECEIVER_EMAIL` | - | Email destinataire (requis) |
 
-# Timing des alertes
-ALERTMANAGER_GROUP_WAIT=30s
-ALERTMANAGER_GROUP_INTERVAL=5m
-ALERTMANAGER_REPEAT_INTERVAL=3h
-ALERTMANAGER_CRITICAL_GROUP_WAIT=10s
-ALERTMANAGER_CRITICAL_REPEAT_INTERVAL=30m
-ALERTMANAGER_RESOLVE_TIMEOUT=5m
-```
+### AlertManager - Timing et groupement
 
-Pour la liste complète, voir `docs/technical/PROMETHEUS_ENV_CONFIG.md`.
+| Variable | Défaut | Utilité |
+|----------|--------|---------|
+| `ALERTMANAGER_TIMEOUT` | `10s` | Timeout de connexion à AlertManager |
+| `ALERTMANAGER_GROUP_WAIT` | `30s` | Attendre avant de grouper les alertes |
+| `ALERTMANAGER_GROUP_INTERVAL` | `5m` | Intervalle de regroupage |
+| `ALERTMANAGER_REPEAT_INTERVAL` | `3h` | Répétition des alertes non-résolues |
+| `ALERTMANAGER_CRITICAL_GROUP_WAIT` | `10s` | Attente pour alertes critiques |
+| `ALERTMANAGER_CRITICAL_REPEAT_INTERVAL` | `30m` | Répétition des alertes critiques |
+| `ALERTMANAGER_RESOLVE_TIMEOUT` | `5m` | Timeout de résolution |
+
+**⚠️ ATTENTION** : Ne jamais commiter `.env.prometheus` avec des secrets réels dans Git !
 
 ---
 
@@ -346,19 +341,6 @@ process_resident_memory_bytes{job="chariot-backend"}
 
 ---
 
-## 📚 Documentation supplémentaire
-
-Pour plus de détails sur des sujets spécifiques :
-
-| Topic | Fichier |
-|-------|---------|
-| Toutes les variables disponibles | `docs/technical/PROMETHEUS_ENV_CONFIG.md` |
-| Architecture système détaillée | `docs/technical/PROMETHEUS_ARCHITECTURE.md` |
-| Résumé de l'implémentation | `docs/technical/PROMETHEUS_CONFIGURATION_SUMMARY.md` |
-| Migration depuis ancienne config | `docs/development/PROMETHEUS_MIGRATION.md` |
-
----
-
 ## ✅ Checklist de déploiement
 
 ### Avant le déploiement
@@ -374,7 +356,7 @@ Pour plus de détails sur des sujets spécifiques :
 - [ ] Health checks répondent correctement
 - [ ] Configuration correctement générée (vérifier avec `docker exec`)
 - [ ] Logs sans erreurs
-- [ ] Promethe us collecte des métriques
+- [ ] Prometheus collecte des métriques
 - [ ] AlertManager reçoit les routes
 
 ---
@@ -421,9 +403,3 @@ Si vous rencontrez un problème :
 2. Vérifier l'absence d'erreurs dans la configuration : voir Troubleshooting
 3. Consulter la documentation de Prometheus/AlertManager
 4. Ouvrir une issue si le problème persiste
-
----
-
-**Dernière mise à jour:** 23 octobre 2025  
-**Statut:** ✅ Production-ready  
-**Branch:** 448-configuration-de-prometheus
