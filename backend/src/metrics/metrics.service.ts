@@ -5,16 +5,6 @@ import {
   makeGaugeProvider,
 } from '@willsoto/nestjs-prometheus';
 
-/**
- * Service de métriques personnalisées pour Chariot
- * 
- * Question socratique: Quels types de métriques pour une application de gestion de campagnes ?
- * 
- * Métriques créées:
- * 1. Counter: Événements qui s'accumulent (requêtes HTTP, erreurs)
- * 2. Histogram: Distributions (temps de réponse, taille des payloads)
- * 3. Gauge: Valeurs instantanées (utilisateurs connectés, campagnes actives)
- */
 @Injectable()
 export class MetricsService {
   private readonly logger = new Logger(MetricsService.name);
