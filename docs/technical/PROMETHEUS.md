@@ -33,6 +33,17 @@ Ce guide couvre l'implémentation complète et la résolution de la configuratio
               (Scripts de substitution de variables)
 ```
 
+### ⚠️ Compatibilité multi-plateforme (Linux vs macOS)
+
+La configuration Prometheus fonctionne sur **toutes les plateformes** (Linux, macOS, Windows) grâce aux **variables d'environnement** :
+
+| Platform | Stratégie | Exemple |
+|----------|-----------|---------|
+| **Linux** (Prod) | Service names via bridge network | `backend:9000` |
+| **macOS** (Docker Desktop) | host.docker.internal | `host.docker.internal:9000` |
+
+**Solution :** Les cibles sont paramétrables via `.env.prometheus` → une seule configuration template fonctionne partout ! 🎉
+
 ### Flux d'exécution
 
 1. **Docker Compose démarre** → Charge `.env.prometheus` via `env_file:`
@@ -144,6 +155,49 @@ nano .env.prometheus
 
 # 3. Vérifier que .env.prometheus est dans .gitignore
 grep ".env.prometheus" .gitignore
+```
+
+### ⚙️ Configuration multi-OS (Linux vs macOS)
+
+#### 🐧 Configuration pour LINUX (CI/Prod) - Par défaut
+
+Sur Linux, les containers communiquent via le réseau bridge Docker. **Pas de modification nécessaire** - utilisez la configuration par défaut dans `.env.prometheus.example` :
+
+```bash
+# ✅ Défaut (Linux) - Utilisez les noms de service
+PROMETHEUS_BACKEND_TARGET=backend:9000
+PROMETHEUS_CADVISOR_TARGET=cadvisor:8080
+PROMETHEUS_NODE_EXPORTER_TARGET=node-exporter:9100
+PROMETHEUS_MONGODB_EXPORTER_TARGET=mongodb-exporter:9216
+PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093
+```
+
+#### 🍎 Configuration pour MACOS (Dev) - Override
+
+Sur macOS avec Docker Desktop, les containers ne peuvent pas accéder directement aux services locaux. Utilisez `host.docker.internal` pour accéder au host :
+
+```bash
+# 📝 Éditer .env.prometheus et remplacer les cibles par :
+PROMETHEUS_BACKEND_TARGET=host.docker.internal:9000
+PROMETHEUS_CADVISOR_TARGET=host.docker.internal:8080
+PROMETHEUS_NODE_EXPORTER_TARGET=host.docker.internal:9100
+PROMETHEUS_MONGODB_EXPORTER_TARGET=host.docker.internal:9216
+PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093  # AlertManager reste en local
+```
+
+**Pourquoi ?**
+- Sur macOS, Docker Desktop exécute un VM Linux intermédiaire
+- Les noms de service (`backend`, `cadvisor`) ne sont accessibles que dans la VM
+- `host.docker.internal` est un alias spécial pour accéder à la machine hôte (macOS)
+- Les containers Prometheus/AlertManager restent accessibles via `localhost` dans compose.yml
+
+**Checklist macOS :**
+```bash
+# Vérifier la configuration
+grep "host.docker.internal" .env.prometheus
+
+# Tester la connectivité depuis Prometheus
+docker exec prometheus wget -v http://host.docker.internal:9000/metrics
 ```
 
 ### Lancer les services
