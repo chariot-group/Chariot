@@ -1,5 +1,14 @@
-# dotenv environment variable files
+# Environment variables & secrets
 .env
+.env.*.local
+.env.prometheus
+
+# Generated configuration files (from templates)
+prometheus.yml
+alertmanager.yml
 
 # OS
 .DS_Store
+node_modules
+dist
+build
