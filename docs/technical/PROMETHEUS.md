@@ -1,19 +1,20 @@
-# 📊 Prometheus et AlertManager - Guide Complet
+````markdown
+# 📊 Prometheus and AlertManager - Complete Guide
 
-## 📋 Vue d'ensemble
+## 📋 Overview
 
-Ce guide couvre l'implémentation complète et la résolution de la configuration de Prometheus et AlertManager dans le projet Chariot.
+This guide covers the complete implementation and troubleshooting of Prometheus and AlertManager configuration in the Chariot project.
 
-- **Architecture** : Configuration basée sur des variables d'environnement
-- **Sécurité** : Credentials protégées dans `.env.prometheus` (Git-ignoré)
-- **Multi-environnements** : Support pour dev, integ, et prod
-- **Statut** : ✅ Fonctionnel et stable
+- **Architecture**: Environment variable-based configuration
+- **Security**: Credentials protected in `.env.prometheus` (Git-ignored)
+- **Multi-environment**: Support for dev, integ, and prod
+- **Status**: ✅ Functional and stable
 
 ---
 
-## 🏗️ Architecture Technique
+## 🏗️ Technical Architecture
 
-### Pattern d'implémentation
+### Implementation Pattern
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -22,149 +23,149 @@ Ce guide couvre l'implémentation complète et la résolution de la configuratio
 └─────────────────────────────────────────────────┘
            │
            ├─ env_file: .env.prometheus
-           │  (Variables d'environnement chargées à runtime)
+           │  (Environment variables loaded at runtime)
            │
            ├─ volumes:
            │  ├─ prometheus.yml.template
            │  └─ alertmanager.yml.template
-           │  (Configuration avec placeholders ${VAR})
+           │  (Configuration with placeholders ${VAR})
            │
            └─ entrypoint: /usr/local/bin/*-entrypoint.sh
-              (Scripts de substitution de variables)
+              (Variable substitution scripts)
 ```
 
-### ⚠️ Compatibilité multi-plateforme (Linux vs macOS)
+### ⚠️ Multi-platform Compatibility (Linux vs macOS)
 
-La configuration Prometheus fonctionne sur **toutes les plateformes** (Linux, macOS, Windows) grâce aux **variables d'environnement** :
+Prometheus configuration works on **all platforms** (Linux, macOS, Windows) thanks to **environment variables**:
 
-| Platform | Stratégie | Exemple |
-|----------|-----------|---------|
+| Platform | Strategy | Example |
+|----------|----------|---------|
 | **Linux** (Prod) | Service names via bridge network | `backend:9000` |
 | **macOS** (Docker Desktop) | host.docker.internal | `host.docker.internal:9000` |
 
-**Solution :** Les cibles sont paramétrables via `.env.prometheus` → une seule configuration template fonctionne partout ! 🎉
+**Solution:** Targets are parameterizable via `.env.prometheus` → a single template configuration works everywhere! 🎉
 
-### Flux d'exécution
+### Execution Flow
 
-1. **Docker Compose démarre** → Charge `.env.prometheus` via `env_file:`
-2. **Entrypoint script exécuté** → Lit les variables d'environnement
-3. **Substitution sed** → Remplace `${VAR}` dans les templates
-4. **Service lancé** → Utilise la configuration générée
+1. **Docker Compose starts** → Loads `.env.prometheus` via `env_file:`
+2. **Entrypoint script executed** → Reads environment variables
+3. **Sed substitution** → Replaces `${VAR}` in templates
+4. **Service launched** → Uses generated configuration
 
-### Services et ports
+### Services and Ports
 
-| Service | Image | Port | Endpoint santé |
+| Service | Image | Port | Health Endpoint |
 |---------|-------|------|-----------------|
 | Prometheus | `prom/prometheus:latest` | 9090 | `http://localhost:9090/-/healthy` |
 | AlertManager | `prom/alertmanager:latest` | 9093 | `http://localhost:9093/-/healthy` |
 
 ---
 
-## 📁 Structure des fichiers
+## 📁 File Structure
 
-### Fichiers de configuration
+### Configuration Files
 
 ```
-├── prometheus.yml.template           # Template de configuration Prometheus
-├── alertmanager.yml.template         # Template de configuration AlertManager
-├── .env.prometheus.example           # Exemple de variables d'environnement
-├── .env.prometheus                   # ⚠️ Secrets (Git-ignoré, local seulement)
+├── prometheus.yml.template           # Prometheus configuration template
+├── alertmanager.yml.template         # AlertManager configuration template
+├── .env.prometheus.example           # Environment variables example
+├── .env.prometheus                   # ⚠️ Secrets (Git-ignored, local only)
 │
-├── compose.yml                       # Docker Compose (développement)
-├── compose.integ.yml                 # Docker Compose (intégration)
+├── compose.yml                       # Docker Compose (development)
+├── compose.integ.yml                 # Docker Compose (integration)
 ├── compose.prod.yml                  # Docker Compose (production)
 │
 └── scripts/
-    ├── prometheus-entrypoint.sh      # Script d'entrée Prometheus
-    └── alertmanager-entrypoint.sh    # Script d'entrée AlertManager
+    ├── prometheus-entrypoint.sh      # Prometheus entrypoint script
+    └── alertmanager-entrypoint.sh    # AlertManager entrypoint script
 ```
 
 ---
 
-## 🔐 Variables d'environnement (minimum requis)
+## 🔐 Environment Variables (Minimum Required)
 
-### Prometheus - Configuration essentielles
+### Prometheus - Essential Configuration
 
-| Variable | Défaut | Utilité |
-|----------|--------|---------|
-| `PROMETHEUS_ENVIRONMENT` | `development` | Label "environment" sur les métriques |
-| `PROMETHEUS_MONITOR_NAME` | `chariot-monitor` | Label "monitor" sur les métriques |
-| `PROMETHEUS_SCRAPE_INTERVAL` | `15s` | Fréquence de collecte globale |
-| `PROMETHEUS_EVALUATION_INTERVAL` | `15s` | Intervalle d'évaluation des règles |
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PROMETHEUS_ENVIRONMENT` | `development` | "environment" label on metrics |
+| `PROMETHEUS_MONITOR_NAME` | `chariot-monitor` | "monitor" label on metrics |
+| `PROMETHEUS_SCRAPE_INTERVAL` | `15s` | Global collection frequency |
+| `PROMETHEUS_EVALUATION_INTERVAL` | `15s` | Rule evaluation interval |
 
-### Prometheus - Intervalles par job
+### Prometheus - Per-Job Intervals
 
-| Variable | Défaut | Utilité |
-|----------|--------|---------|
-| `PROMETHEUS_CHARIOT_BACKEND_SCRAPE_INTERVAL` | `10s` | Collecte du backend |
-| `PROMETHEUS_CADVISOR_SCRAPE_INTERVAL` | `15s` | Métriques des containers |
-| `PROMETHEUS_NODE_EXPORTER_SCRAPE_INTERVAL` | `15s` | Métriques de la machine |
-| `PROMETHEUS_MONGODB_SCRAPE_INTERVAL` | `15s` | Métriques MongoDB |
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PROMETHEUS_CHARIOT_BACKEND_SCRAPE_INTERVAL` | `10s` | Backend collection |
+| `PROMETHEUS_CADVISOR_SCRAPE_INTERVAL` | `15s` | Container metrics |
+| `PROMETHEUS_NODE_EXPORTER_SCRAPE_INTERVAL` | `15s` | Machine metrics |
+| `PROMETHEUS_MONGODB_SCRAPE_INTERVAL` | `15s` | MongoDB metrics |
 
-### Prometheus - Cibles (targets)
+### Prometheus - Targets
 
-| Variable | Défaut | Utilité |
-|----------|--------|---------|
-| `PROMETHEUS_SELF_TARGET` | `localhost:9090` | Auto-monitoring Prometheus |
-| `PROMETHEUS_BACKEND_TARGET` | `backend:9000` | Adresse du backend NestJS |
-| `PROMETHEUS_BACKEND_METRICS_PATH` | `/metrics` | Endpoint des métriques backend |
-| `PROMETHEUS_CADVISOR_TARGET` | `cadvisor:8080` | Adresse cAdvisor |
-| `PROMETHEUS_NODE_EXPORTER_TARGET` | `node-exporter:9100` | Adresse Node Exporter |
-| `PROMETHEUS_MONGODB_EXPORTER_TARGET` | `mongodb-exporter:9216` | Adresse MongoDB Exporter |
-| `PROMETHEUS_ALERTMANAGER_TARGET` | `alertmanager:9093` | Adresse AlertManager |
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PROMETHEUS_SELF_TARGET` | `localhost:9090` | Prometheus self-monitoring |
+| `PROMETHEUS_BACKEND_TARGET` | `backend:9000` | NestJS backend address |
+| `PROMETHEUS_BACKEND_METRICS_PATH` | `/metrics` | Backend metrics endpoint |
+| `PROMETHEUS_CADVISOR_TARGET` | `cadvisor:8080` | cAdvisor address |
+| `PROMETHEUS_NODE_EXPORTER_TARGET` | `node-exporter:9100` | Node Exporter address |
+| `PROMETHEUS_MONGODB_EXPORTER_TARGET` | `mongodb-exporter:9216` | MongoDB Exporter address |
+| `PROMETHEUS_ALERTMANAGER_TARGET` | `alertmanager:9093` | AlertManager address |
 
 ### AlertManager - SMTP (Secrets ⚠️)
 
-| Variable | Défaut | Utilité |
-|----------|--------|---------|
-| `ALERTMANAGER_SMTP_FROM` | - | Email expéditeur (requis) |
-| `ALERTMANAGER_SMTP_HOST` | - | Serveur SMTP (requis) |
-| `ALERTMANAGER_SMTP_PORT` | - | Port SMTP (587 pour TLS) |
-| `ALERTMANAGER_SMTP_USER` | - | Login SMTP (requis) |
-| `ALERTMANAGER_SMTP_PASSWORD` | - | Mot de passe SMTP (requis) ⚠️ |
-| `ALERTMANAGER_SMTP_REQUIRE_TLS` | `true` | TLS obligatoire |
-| `ALERTMANAGER_RECEIVER_EMAIL` | - | Email destinataire (requis) |
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `ALERTMANAGER_SMTP_FROM` | - | Sender email (required) |
+| `ALERTMANAGER_SMTP_HOST` | - | SMTP server (required) |
+| `ALERTMANAGER_SMTP_PORT` | - | SMTP port (587 for TLS) |
+| `ALERTMANAGER_SMTP_USER` | - | SMTP login (required) |
+| `ALERTMANAGER_SMTP_PASSWORD` | - | SMTP password (required) ⚠️ |
+| `ALERTMANAGER_SMTP_REQUIRE_TLS` | `true` | TLS required |
+| `ALERTMANAGER_RECEIVER_EMAIL` | - | Recipient email (required) |
 
-### AlertManager - Timing et groupement
+### AlertManager - Timing and Grouping
 
-| Variable | Défaut | Utilité |
-|----------|--------|---------|
-| `ALERTMANAGER_TIMEOUT` | `10s` | Timeout de connexion à AlertManager |
-| `ALERTMANAGER_GROUP_WAIT` | `30s` | Attendre avant de grouper les alertes |
-| `ALERTMANAGER_GROUP_INTERVAL` | `5m` | Intervalle de regroupage |
-| `ALERTMANAGER_REPEAT_INTERVAL` | `3h` | Répétition des alertes non-résolues |
-| `ALERTMANAGER_CRITICAL_GROUP_WAIT` | `10s` | Attente pour alertes critiques |
-| `ALERTMANAGER_CRITICAL_REPEAT_INTERVAL` | `30m` | Répétition des alertes critiques |
-| `ALERTMANAGER_RESOLVE_TIMEOUT` | `5m` | Timeout de résolution |
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `ALERTMANAGER_TIMEOUT` | `10s` | AlertManager connection timeout |
+| `ALERTMANAGER_GROUP_WAIT` | `30s` | Wait before grouping alerts |
+| `ALERTMANAGER_GROUP_INTERVAL` | `5m` | Grouping interval |
+| `ALERTMANAGER_REPEAT_INTERVAL` | `3h` | Unresolved alerts repetition |
+| `ALERTMANAGER_CRITICAL_GROUP_WAIT` | `10s` | Wait for critical alerts |
+| `ALERTMANAGER_CRITICAL_REPEAT_INTERVAL` | `30m` | Critical alerts repetition |
+| `ALERTMANAGER_RESOLVE_TIMEOUT` | `5m` | Resolution timeout |
 
-**⚠️ ATTENTION** : Ne jamais commiter `.env.prometheus` avec des secrets réels dans Git !
+**⚠️ WARNING**: Never commit `.env.prometheus` with real secrets to Git!
 
 ---
 
-## 🚀 Utilisation
+## 🚀 Usage
 
-### Configuration initiale
+### Initial Configuration
 
 ```bash
-# 1. Créer la configuration locale
+# 1. Create local configuration
 cp .env.prometheus.example .env.prometheus
 
-# 2. Éditer avec les credentials SMTP
-# (Attention : ne jamais commiter ce fichier!)
+# 2. Edit with SMTP credentials
+# (Warning: never commit this file!)
 nano .env.prometheus
 
-# 3. Vérifier que .env.prometheus est dans .gitignore
+# 3. Verify that .env.prometheus is in .gitignore
 grep ".env.prometheus" .gitignore
 ```
 
-### ⚙️ Configuration multi-OS (Linux vs macOS)
+### ⚙️ Multi-OS Configuration (Linux vs macOS)
 
-#### 🐧 Configuration pour LINUX (CI/Prod) - Par défaut
+#### 🐧 Configuration for LINUX (CI/Prod) - Default
 
-Sur Linux, les containers communiquent via le réseau bridge Docker. **Pas de modification nécessaire** - utilisez la configuration par défaut dans `.env.prometheus.example` :
+On Linux, containers communicate via Docker bridge network. **No modifications needed** - use the default configuration in `.env.prometheus.example`:
 
 ```bash
-# ✅ Défaut (Linux) - Utilisez les noms de service
+# ✅ Default (Linux) - Use service names
 PROMETHEUS_BACKEND_TARGET=backend:9000
 PROMETHEUS_CADVISOR_TARGET=cadvisor:8080
 PROMETHEUS_NODE_EXPORTER_TARGET=node-exporter:9100
@@ -172,266 +173,266 @@ PROMETHEUS_MONGODB_EXPORTER_TARGET=mongodb-exporter:9216
 PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093
 ```
 
-#### 🍎 Configuration pour MACOS (Dev) - Override
+#### 🍎 Configuration for MACOS (Dev) - Override
 
-Sur macOS avec Docker Desktop, les containers ne peuvent pas accéder directement aux services locaux. Utilisez `host.docker.internal` pour accéder au host :
+On macOS with Docker Desktop, containers cannot directly access local services. Use `host.docker.internal` to access the host:
 
 ```bash
-# 📝 Éditer .env.prometheus et remplacer les cibles par :
+# 📝 Edit .env.prometheus and replace targets with:
 PROMETHEUS_BACKEND_TARGET=host.docker.internal:9000
 PROMETHEUS_CADVISOR_TARGET=host.docker.internal:8080
 PROMETHEUS_NODE_EXPORTER_TARGET=host.docker.internal:9100
 PROMETHEUS_MONGODB_EXPORTER_TARGET=host.docker.internal:9216
-PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093  # AlertManager reste en local
+PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093  # AlertManager remains local
 ```
 
-**Pourquoi ?**
-- Sur macOS, Docker Desktop exécute un VM Linux intermédiaire
-- Les noms de service (`backend`, `cadvisor`) ne sont accessibles que dans la VM
-- `host.docker.internal` est un alias spécial pour accéder à la machine hôte (macOS)
-- Les containers Prometheus/AlertManager restent accessibles via `localhost` dans compose.yml
+**Why?**
+- On macOS, Docker Desktop runs an intermediate Linux VM
+- Service names (`backend`, `cadvisor`) are only accessible within the VM
+- `host.docker.internal` is a special alias to access the host machine (macOS)
+- Prometheus/AlertManager containers remain accessible via `localhost` in compose.yml
 
-**Checklist macOS :**
+**macOS Checklist:**
 ```bash
-# Vérifier la configuration
+# Verify configuration
 grep "host.docker.internal" .env.prometheus
 
-# Tester la connectivité depuis Prometheus
+# Test connectivity from Prometheus
 docker exec prometheus wget -v http://host.docker.internal:9000/metrics
 ```
 
-### Lancer les services
+### Start Services
 
 ```bash
-# Développement
+# Development
 docker-compose up -d prometheus alertmanager
 
-# Intégration
+# Integration
 docker-compose -f compose.integ.yml up -d prometheus alertmanager
 
 # Production
 docker-compose -f compose.prod.yml up -d prometheus alertmanager
 ```
 
-### Vérifier le démarrage
+### Verify Startup
 
 ```bash
-# Voir les services en cours d'exécution
+# See running services
 docker-compose ps prometheus alertmanager
 
-# Vérifier les logs
+# Check logs
 docker-compose logs prometheus --tail=20
 docker-compose logs alertmanager --tail=20
 
-# Tester les endpoints
+# Test endpoints
 curl http://localhost:9090/-/healthy
 curl http://localhost:9093/-/healthy
 ```
 
-### Vérifier la substitution des variables
+### Verify Variable Substitution
 
 ```bash
-# Afficher la configuration générée (Prometheus)
+# Display generated configuration (Prometheus)
 docker exec prometheus cat /etc/prometheus/prometheus.yml | head -30
 
-# Afficher la configuration générée (AlertManager)
+# Display generated configuration (AlertManager)
 docker exec alertmanager cat /etc/alertmanager/alertmanager.yml | head -30
 
-# Vérifier qu'une variable spécifique a été remplacée
+# Verify a specific variable was replaced
 docker exec prometheus cat /etc/prometheus/prometheus.yml | grep -A2 "external_labels"
 docker exec alertmanager cat /etc/alertmanager/alertmanager.yml | grep "smtp_from"
 ```
 
 ---
 
-## 🔧 Entrypoint scripts
+## 🔧 Entrypoint Scripts
 
 ### `scripts/prometheus-entrypoint.sh`
 
-**Responsabilités :**
-1. Lire les variables d'environnement Prometheus (avec valeurs par défaut)
-2. Lire les variables d'environnement AlertManager (timeout, etc.)
-3. Substituer les `${VAR}` dans le template via `sed`
-4. Changer le répertoire courant vers `/etc/prometheus`
-5. Exécuter Prometheus avec les arguments fournis
+**Responsibilities:**
+1. Read Prometheus environment variables (with default values)
+2. Read AlertManager environment variables (timeout, etc.)
+3. Substitute `${VAR}` in template via `sed`
+4. Change working directory to `/etc/prometheus`
+5. Execute Prometheus with provided arguments
 
-**Technologie :**
-- Utilise `sed` pour la substitution (compatible Alpine)
-- Pas de dépendance externe (`envsubst` n'est pas nécessaire)
-- Shell standard `/bin/sh` (portabilité)
+**Technology:**
+- Uses `sed` for substitution (Alpine compatible)
+- No external dependency (`envsubst` not required)
+- Standard shell `/bin/sh` (portability)
 
 ### `scripts/alertmanager-entrypoint.sh`
 
-**Responsabilités :**
-1. Lire les variables d'environnement AlertManager (avec valeurs par défaut)
-2. Substituer les `${VAR}` dans le template via `sed`
-3. Changer le répertoire courant vers `/etc/alertmanager`
-4. Exécuter AlertManager avec les arguments fournis
+**Responsibilities:**
+1. Read AlertManager environment variables (with default values)
+2. Substitute `${VAR}` in template via `sed`
+3. Change working directory to `/etc/alertmanager`
+4. Execute AlertManager with provided arguments
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Services redémarrent en boucle
+### Services Restarting in Loop
 
-**Symptôme :** Containers affichent `Restarting (1)` dans `docker-compose ps`
+**Symptom:** Containers display `Restarting (1)` in `docker-compose ps`
 
-**Diagnostic :**
+**Diagnosis:**
 ```bash
 docker-compose logs prometheus --tail=50
 docker-compose logs alertmanager --tail=50
 ```
 
-**Solutions courantes :**
+**Common Solutions:**
 
-| Erreur | Cause | Solution |
-|--------|-------|----------|
-| `Error parsing command line arguments` | Syntax du shell incorrect | Vérifier l'entrypoint |
-| `parsing YAML: not a valid duration string: "${VAR}"` | Variable non substituée | Vérifier que `env_file: .env.prometheus` est présent |
-| `open prometheus.yml: no such file or directory` | Configuration non générée | Vérifier que le script d'entrée a exécuté `sed` |
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Error parsing command line arguments` | Incorrect shell syntax | Check entrypoint |
+| `parsing YAML: not a valid duration string: "${VAR}"` | Variable not substituted | Verify `env_file: .env.prometheus` is present |
+| `open prometheus.yml: no such file or directory` | Configuration not generated | Verify entrypoint script executed `sed` |
 
-### Variables d'environnement non chargées
+### Environment Variables Not Loaded
 
-**Diagnostic :**
+**Diagnosis:**
 ```bash
 docker exec prometheus env | grep PROMETHEUS_
 docker exec alertmanager env | grep ALERTMANAGER_
 ```
 
-**Solution :** Vérifier que `.env.prometheus` existe et contient les variables.
+**Solution:** Verify that `.env.prometheus` exists and contains the variables.
 
-### Configuration incorrecte
+### Incorrect Configuration
 
-**Diagnostic :**
+**Diagnosis:**
 ```bash
-# Afficher la configuration générée
+# Display generated configuration
 docker exec prometheus cat /etc/prometheus/prometheus.yml
 
-# Chercher des valeurs non remplacées
+# Look for unreplaced values
 docker exec prometheus cat /etc/prometheus/prometheus.yml | grep "\${"
 ```
 
-**Solution :** Si des `${VAR}` restent, c'est que la variable d'environnement n'était pas définie. Vérifier `.env.prometheus`.
+**Solution:** If `${VAR}` remains, the environment variable wasn't defined. Check `.env.prometheus`.
 
-### Recharger la configuration
+### Reload Configuration
 
 ```bash
-# Sans redémarrer les conteneurs (pour Prometheus)
+# Without restarting containers (for Prometheus)
 curl -X POST http://localhost:9090/-/reload
 
-# Redémarrer les services
+# Restart services
 docker-compose restart prometheus alertmanager
 ```
 
 ---
 
-## 🔐 Sécurité
+## 🔐 Security
 
-### Protection des secrets
+### Secret Protection
 
-| Élément | Sécurité | Action |
+| Element | Security | Action |
 |---------|----------|--------|
-| `.env.prometheus` | 🔴 SECRETS | Git-ignoré (ne pas commiter) |
-| `.env.prometheus.example` | 🟢 SAFE | Git-tracked (exemple seulement) |
-| `prometheus.yml.template` | 🟢 SAFE | Git-tracked (pas de secrets) |
-| `alertmanager.yml.template` | 🟢 SAFE | Git-tracked (pas de secrets) |
-| Generated config in container | 🟡 MEMORY | Non persisté, chiffré en mémoire |
+| `.env.prometheus` | 🔴 SECRETS | Git-ignored (do not commit) |
+| `.env.prometheus.example` | 🟢 SAFE | Git-tracked (example only) |
+| `prometheus.yml.template` | 🟢 SAFE | Git-tracked (no secrets) |
+| `alertmanager.yml.template` | 🟢 SAFE | Git-tracked (no secrets) |
+| Generated config in container | 🟡 MEMORY | Not persisted, encrypted in memory |
 
-### Vérifier que .gitignore est correct
+### Verify .gitignore Correctness
 
 ```bash
-# Vérifier la protection
+# Verify protection
 cat .gitignore | grep "\.env\|prometheus\.yml\|alertmanager\.yml"
 
-# Vérifier qu'aucun secret n'est tracké
-git ls-files | grep ".env.prometheus"  # Ne devrait rien retourner
+# Verify no secrets are tracked
+git ls-files | grep ".env.prometheus"  # Should return nothing
 ```
 
-### Best practices
+### Best Practices
 
-1. ✅ **Jamais commiter** `.env.prometheus`
-2. ✅ **Utiliser** des variables d'environnement pour les secrets en CI/CD
-3. ✅ **Valider** que les credentials SMTP sont corrects
-4. ✅ **Restreindre** l'accès aux serveurs ayant les secrets
+1. ✅ **Never commit** `.env.prometheus`
+2. ✅ **Use** environment variables for secrets in CI/CD
+3. ✅ **Validate** SMTP credentials are correct
+4. ✅ **Restrict** access to servers having secrets
 
 ---
 
-## 📈 Monitoring et métriques
+## 📈 Monitoring and Metrics
 
-### Targets Prometheus
+### Prometheus Targets
 
-Prometheus collecte les métriques de :
+Prometheus collects metrics from:
 
 ```yaml
-prometheus:9090        # Prometheus lui-même (auto-monitoring)
-backend:9000          # Backend NestJS
+prometheus:9090        # Prometheus itself (self-monitoring)
+backend:9000          # NestJS Backend
 cadvisor:8080         # Docker containers metrics
 node-exporter:9100    # Host machine metrics
 mongodb-exporter:9216 # MongoDB metrics
 ```
 
-### Accès aux interfaces
+### Interface Access
 
 ```
 Prometheus Web UI:     http://localhost:9090
 AlertManager Web UI:   http://localhost:9093
 ```
 
-### Requêtes Prometheus utiles
+### Useful Prometheus Queries
 
 ```promql
-# État du scrape
+# Scrape status
 up{job="prometheus"}
 
-# Containers en cours d'exécution
+# Running containers
 container_last_seen{name="prometheus"}
 
-# Espace disque MongoDB
+# MongoDB disk space
 mongodb_disk_storageSize_bytes
 
-# CPU du backend
+# Backend CPU
 process_resident_memory_bytes{job="chariot-backend"}
 ```
 
 ---
 
-## ✅ Checklist de déploiement
+## ✅ Deployment Checklist
 
-### Avant le déploiement
+### Before Deployment
 
-- [ ] `.env.prometheus` créé localement (non git-tracked)
-- [ ] Variables SMTP valides
-- [ ] Endpoints des services accessibles
-- [ ] `.gitignore` protège `.env.prometheus`
+- [ ] `.env.prometheus` created locally (not git-tracked)
+- [ ] Valid SMTP variables
+- [ ] Service endpoints accessible
+- [ ] `.gitignore` protects `.env.prometheus`
 
-### Après le déploiement
+### After Deployment
 
-- [ ] `docker-compose ps` montre services `Up (healthy)`
-- [ ] Health checks répondent correctement
-- [ ] Configuration correctement générée (vérifier avec `docker exec`)
-- [ ] Logs sans erreurs
-- [ ] Prometheus collecte des métriques
-- [ ] AlertManager reçoit les routes
+- [ ] `docker-compose ps` shows services `Up (healthy)`
+- [ ] Health checks respond correctly
+- [ ] Configuration correctly generated (verify with `docker exec`)
+- [ ] Logs without errors
+- [ ] Prometheus collecting metrics
+- [ ] AlertManager receiving routes
 
 ---
 
-## 📊 Résumé des changements
+## 📊 Summary of Changes
 
-### Problème initial
+### Initial Problem
 
-Prometheus et AlertManager redémarraient en boucle avec :
+Prometheus and AlertManager restarted in a loop with:
 ```
 Error parsing command line arguments: unexpected /bin/sh
 ```
 
-### Solution appliquée
+### Applied Solution
 
-1. ✅ Scripts d'entrée dédiés (`prometheus-entrypoint.sh`, `alertmanager-entrypoint.sh`)
-2. ✅ Substitution via `sed` (sans `envsubst`)
-3. ✅ Configuration correcte des `entrypoint` et `command` dans Docker Compose
-4. ✅ Gestion des répertoires de travail
+1. ✅ Dedicated entrypoint scripts (`prometheus-entrypoint.sh`, `alertmanager-entrypoint.sh`)
+2. ✅ Substitution via `sed` (without `envsubst`)
+3. ✅ Correct `entrypoint` and `command` configuration in Docker Compose
+4. ✅ Working directory management
 
-### Résultat
+### Result
 
 ```
 NAME           IMAGE                  STATUS
@@ -443,17 +444,19 @@ alertmanager   prom/alertmanager      Up 1 minute (healthy) ✅
 
 ## 📞 Support
 
-### Ressources
+### Resources
 
 - Prometheus docs: https://prometheus.io/docs/
 - AlertManager docs: https://prometheus.io/docs/alerting/latest/overview/
 - Docker Compose docs: https://docs.docker.com/compose/
 
-### Rapporter des problèmes
+### Reporting Issues
 
-Si vous rencontrez un problème :
+If you encounter a problem:
 
-1. Vérifier les logs : `docker-compose logs SERVICE --tail=50`
-2. Vérifier l'absence d'erreurs dans la configuration : voir Troubleshooting
-3. Consulter la documentation de Prometheus/AlertManager
-4. Ouvrir une issue si le problème persiste
+1. Check logs: `docker-compose logs SERVICE --tail=50`
+2. Verify no configuration errors: see Troubleshooting section
+3. Consult Prometheus/AlertManager documentation
+4. Open an issue if the problem persists
+
+````
