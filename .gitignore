@@ -12,3 +12,8 @@ alertmanager.yml
 node_modules
 dist
 build
+
+# Security reports
+security/reports/*
+!security/reports/.gitkeep
+*.sarif
