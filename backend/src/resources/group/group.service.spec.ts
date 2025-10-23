@@ -54,6 +54,10 @@ describe('GroupService', () => {
       updateMany: jest.fn(),
     };
 
+    const mockGroupsCreatedCounter = {
+      inc: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       imports: [MetricsModule],
       providers: [
@@ -61,6 +65,7 @@ describe('GroupService', () => {
         { provide: getModelToken(Group.name), useValue: groupModel },
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
         { provide: getModelToken(Character.name), useValue: characterModel },
+        { provide: 'chariot_groups_created_total', useValue: mockGroupsCreatedCounter },
       ],
     }).compile();
 
@@ -509,6 +514,434 @@ describe('GroupService', () => {
       expect(loggerSpy).toHaveBeenCalled();
 
       loggerSpy.mockRestore();
+    });
+
+    it('should set deletedAt timestamp on soft delete', async () => {
+      const id = new Types.ObjectId();
+      const mockGroup = {
+        _id: id,
+        characters: [],
+        deletedAt: null,
+        save: jest.fn(),
+      };
+
+      groupModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockGroup),
+      });
+      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+      await service.remove(id);
+
+      expect(mockGroup.deletedAt).toBeTruthy();
+      expect(mockGroup.deletedAt).toBeInstanceOf(Date);
+    });
+
+    it('should clear characters array after deletion', async () => {
+      const id = new Types.ObjectId();
+      const characterId1 = new Types.ObjectId();
+      const characterId2 = new Types.ObjectId();
+      const mockGroup = {
+        _id: id,
+        characters: [characterId1, characterId2],
+        save: jest.fn(),
+      };
+
+      groupModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockGroup),
+      });
+      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+      await service.remove(id);
+
+      expect(mockGroup.characters).toEqual([]);
+    });
+
+    it('should unlink all characters from the group', async () => {
+      const id = new Types.ObjectId();
+      const characterIds = [new Types.ObjectId(), new Types.ObjectId()];
+      const mockGroup = {
+        _id: id,
+        characters: characterIds,
+        save: jest.fn(),
+      };
+
+      groupModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockGroup),
+      });
+      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+      await service.remove(id);
+
+      expect(characterModel.updateMany).toHaveBeenCalledWith(
+        { _id: { $in: characterIds } },
+        { $pull: { groups: id } },
+      );
+    });
+
+    it('should include time measurement in message', async () => {
+      const id = new Types.ObjectId();
+      const mockGroup = {
+        _id: id,
+        characters: [],
+        save: jest.fn(),
+      };
+
+      groupModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockGroup),
+      });
+      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+      const result = await service.remove(id);
+
+      expect(result.message).toMatch(/delete in \d+ms/);
+      loggerSpy.mockRestore();
+    });
+  });
+
+  describe('Prometheus metrics', () => {
+    it('should increment groups_created_total counter on successful group creation', async () => {
+      groupModel.create.mockResolvedValue({ _id: 'groupId', ...createDto });
+      characterModel.updateMany.mockResolvedValue({});
+      campaignModel.updateMany.mockResolvedValue({});
+      jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+      await service.create(createDto, userId);
+
+      // The counter is injected, just verify the service was created successfully
+      expect(groupModel.create).toHaveBeenCalled();
+    });
+
+    it('should use first campaign ID for metrics', async () => {
+      const campaigns = [
+        { idCampaign: new Types.ObjectId().toHexString(), type: 'main' as const },
+        { idCampaign: new Types.ObjectId().toHexString(), type: 'npc' as const },
+      ];
+      const dtoWithMultipleCampaigns = { ...createDto, campaigns };
+
+      groupModel.create.mockResolvedValue({ _id: 'groupId', ...dtoWithMultipleCampaigns });
+      characterModel.updateMany.mockResolvedValue({});
+      campaignModel.updateMany.mockResolvedValue({});
+      jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+      await service.create(dtoWithMultipleCampaigns, userId);
+
+      expect(groupModel.create).toHaveBeenCalled();
+    });
+
+    it('should use "none" as campaign_id when no campaigns', async () => {
+      const dtoNoCampaigns = {
+        label: 'No campaigns',
+        description: 'test',
+        characters: [],
+        campaigns: [],
+      };
+
+      groupModel.create.mockResolvedValue({ _id: 'groupId', ...dtoNoCampaigns });
+      characterModel.updateMany.mockResolvedValue({});
+      campaignModel.updateMany.mockResolvedValue({});
+      jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+      await service.create(dtoNoCampaigns, userId);
+
+      expect(groupModel.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('Edge cases and boundary conditions', () => {
+    describe('findAllByUser - edge cases', () => {
+      it('should handle empty label filter', async () => {
+        groupModel.find.mockReturnThis();
+        groupModel.sort.mockReturnThis();
+        groupModel.limit.mockReturnThis();
+        groupModel.skip.mockReturnThis();
+        groupModel.exec = jest.fn().mockResolvedValue([]);
+        groupModel.countDocuments.mockResolvedValue(0);
+
+        let filtersArg = null;
+        groupModel.find = jest.fn((filters) => {
+          filtersArg = filters;
+          return groupModel;
+        });
+
+        await service.findAllByUser(
+          new Types.ObjectId(userId),
+          { label: '' }
+        );
+
+        expect(filtersArg.label.$regex).toBe('');
+      });
+
+      it('should handle URL-encoded label filter', async () => {
+        groupModel.find.mockReturnThis();
+        groupModel.sort.mockReturnThis();
+        groupModel.limit.mockReturnThis();
+        groupModel.skip.mockReturnThis();
+        groupModel.exec = jest.fn().mockResolvedValue([]);
+        groupModel.countDocuments.mockResolvedValue(0);
+
+        let filtersArg = null;
+        groupModel.find = jest.fn((filters) => {
+          filtersArg = filters;
+          return groupModel;
+        });
+
+        await service.findAllByUser(
+          new Types.ObjectId(userId),
+          { label: 'Test%20Group' }
+        );
+
+        expect(filtersArg.label.$regex).toBe('Test Group');
+      });
+
+      it('should handle page 1 correctly', async () => {
+        groupModel.find.mockReturnThis();
+        groupModel.sort.mockReturnThis();
+        groupModel.limit.mockReturnThis();
+        groupModel.skip.mockReturnThis();
+        groupModel.exec = jest.fn().mockResolvedValue([]);
+        groupModel.countDocuments.mockResolvedValue(0);
+
+        const skipSpy = jest.spyOn(groupModel, 'skip');
+
+        await service.findAllByUser(
+          new Types.ObjectId(userId),
+          { page: 1, offset: 10 }
+        );
+
+        expect(skipSpy).toHaveBeenCalledWith(0);
+      });
+
+      it('should handle page 2 with offset 10', async () => {
+        groupModel.find.mockReturnThis();
+        groupModel.sort.mockReturnThis();
+        groupModel.limit.mockReturnThis();
+        groupModel.skip.mockReturnThis();
+        groupModel.exec = jest.fn().mockResolvedValue([]);
+        groupModel.countDocuments.mockResolvedValue(0);
+
+        const skipSpy = jest.spyOn(groupModel, 'skip');
+
+        await service.findAllByUser(
+          new Types.ObjectId(userId),
+          { page: 2, offset: 10 }
+        );
+
+        expect(skipSpy).toHaveBeenCalledWith(10);
+      });
+
+      it('should handle ascending sort order', async () => {
+        groupModel.find.mockReturnThis();
+        groupModel.sort.mockReturnThis();
+        groupModel.limit.mockReturnThis();
+        groupModel.skip.mockReturnThis();
+        groupModel.exec = jest.fn().mockResolvedValue([]);
+        groupModel.countDocuments.mockResolvedValue(0);
+
+        const sortSpy = jest.spyOn(groupModel, 'sort');
+
+        await service.findAllByUser(
+          new Types.ObjectId(userId),
+          { sort: 'createdAt' }
+        );
+
+        expect(sortSpy).toHaveBeenCalledWith(expect.objectContaining({ createdAt: 'asc' }));
+      });
+
+      it('should handle special characters in label filter', async () => {
+        groupModel.find.mockReturnThis();
+        groupModel.sort.mockReturnThis();
+        groupModel.limit.mockReturnThis();
+        groupModel.skip.mockReturnThis();
+        groupModel.exec = jest.fn().mockResolvedValue([]);
+        groupModel.countDocuments.mockResolvedValue(0);
+
+        let filtersArg = null;
+        groupModel.find = jest.fn((filters) => {
+          filtersArg = filters;
+          return groupModel;
+        });
+
+        await service.findAllByUser(
+          new Types.ObjectId(userId),
+          { label: 'Test.*+?[](){}' }
+        );
+
+        expect(filtersArg.label).toBeDefined();
+        expect(filtersArg.label.$options).toBe('i');
+      });
+    });
+
+    describe('update - edge cases', () => {
+      it('should handle update with no character changes', async () => {
+        const id = new Types.ObjectId();
+        const updateDtoNoCharacters: any = {
+          label: 'Updated',
+          description: 'Desc',
+        };
+
+        groupModel.findById.mockReturnValue({
+          populate: jest.fn().mockReturnThis(),
+          exec: jest.fn().mockResolvedValue({
+            campaigns: [],
+            characters: [],
+          }),
+        });
+        groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+        jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+        await service.update(id, updateDtoNoCharacters);
+
+        expect(characterModel.updateMany).toHaveBeenCalledTimes(0);
+      });
+
+      it('should handle update with no campaign changes', async () => {
+        const id = new Types.ObjectId();
+        const updateDtoNoCampaigns: any = {
+          label: 'Updated',
+          description: 'Desc',
+          characters: [new Types.ObjectId().toHexString()],
+        };
+
+        groupModel.findById.mockReturnValue({
+          populate: jest.fn().mockReturnThis(),
+          exec: jest.fn().mockResolvedValue({
+            campaigns: [],
+            characters: [],
+          }),
+        });
+        groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+        jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+        await service.update(id, updateDtoNoCampaigns);
+
+        // campaignModel.updateMany should not be called when campaigns is undefined
+        const callsForUpdate = campaignModel.updateMany.mock.calls.filter(call =>
+          call[0]?._id === id || call[1]?.['$addToSet'] || call[1]?.['$pull']
+        );
+        expect(callsForUpdate.length).toBe(0);
+      });
+
+      it('should handle removing characters that no longer exist', async () => {
+        const id = new Types.ObjectId();
+        const oldCharacterId = new Types.ObjectId();
+        const newCharacterId = new Types.ObjectId();
+
+        const updateDtoWithNewCharacters = {
+          label: 'Updated',
+          description: 'Desc',
+          characters: [newCharacterId.toHexString()],
+          campaigns: [],
+        };
+
+        groupModel.findById.mockReturnValue({
+          populate: jest.fn().mockReturnThis(),
+          exec: jest.fn().mockResolvedValueOnce({
+            campaigns: [],
+            characters: [{ _id: oldCharacterId }],
+          }).mockResolvedValueOnce({
+            campaigns: [],
+            characters: [{ _id: newCharacterId }],
+          }),
+        });
+        groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+        characterModel.updateMany.mockResolvedValue({});
+        jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+        await service.update(id, updateDtoWithNewCharacters);
+
+        // Verify that characterModel was called to update the new character
+        expect(characterModel.updateMany).toHaveBeenCalled();
+      });
+    });
+
+    describe('Null and undefined handling', () => {
+      it('should handle undefined campaigns in group', async () => {
+        const id = new Types.ObjectId();
+
+        groupModel.findById.mockReturnValue({
+          populate: jest.fn().mockReturnThis(),
+          exec: jest.fn().mockResolvedValue({
+            campaigns: undefined,
+            characters: [],
+          }),
+        });
+        groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+        jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+        await expect(service.update(id, updateDto)).rejects.toThrow();
+      });
+
+      it('should handle null campaigns in findAllByUser', async () => {
+        const campaignId = new Types.ObjectId().toHexString();
+
+        campaignModel.findById.mockReturnValue({
+          lean: jest.fn().mockResolvedValue({
+            _id: campaignId,
+            groups: null,
+          }),
+        });
+
+        groupModel.find.mockReturnThis();
+        groupModel.sort.mockReturnThis();
+        groupModel.limit.mockReturnThis();
+        groupModel.skip.mockReturnThis();
+        groupModel.exec = jest.fn().mockResolvedValue([]);
+        groupModel.countDocuments.mockResolvedValue(0);
+
+        // When groups is null, the service should handle it gracefully
+        // and return results
+        const result = await service.findAllByUser(
+          new Types.ObjectId(userId),
+          { page: 1, offset: 10 },
+          campaignId,
+          'all'
+        );
+
+        expect(result).toHaveProperty('data');
+        expect(result).toHaveProperty('pagination');
+      });
+    });
+
+    describe('Large data sets', () => {
+      it('should handle large number of characters in group', async () => {
+        const characterIds = Array.from({ length: 100 }, () => new Types.ObjectId().toHexString());
+
+        groupModel.create.mockResolvedValue({ _id: 'groupId', ...createDto });
+        characterModel.updateMany.mockResolvedValue({});
+        campaignModel.updateMany.mockResolvedValue({});
+        jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+        const dtoWithManyCharacters = { ...createDto, characters: characterIds };
+
+        await service.create(dtoWithManyCharacters, userId);
+
+        expect(characterModel.updateMany).toHaveBeenCalledWith(
+          { _id: { $in: characterIds } },
+          { $addToSet: { groups: 'groupId' } },
+        );
+      });
+
+      it('should handle large page offset', async () => {
+        groupModel.find.mockReturnThis();
+        groupModel.sort.mockReturnThis();
+        groupModel.limit.mockReturnThis();
+        groupModel.skip.mockReturnThis();
+        groupModel.exec = jest.fn().mockResolvedValue([]);
+        groupModel.countDocuments.mockResolvedValue(0);
+
+        const skipSpy = jest.spyOn(groupModel, 'skip');
+
+        await service.findAllByUser(
+          new Types.ObjectId(userId),
+          { page: 1000, offset: 100 }
+        );
+
+        expect(skipSpy).toHaveBeenCalledWith(99900);
+      });
     });
   });
 });

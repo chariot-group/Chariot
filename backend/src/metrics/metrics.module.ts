@@ -24,15 +24,12 @@ import {
     PrometheusModule.register({
       // Configuration du endpoint /metrics
       path: '/metrics',
-      // Métriques par défaut (CPU, mémoire, etc.)
       defaultMetrics: {
         enabled: true,
         config: {
-          // Préfixe pour toutes les métriques par défaut
           prefix: 'chariot_',
         },
       },
-      // Labels globaux ajoutés à toutes les métriques
       defaultLabels: {
         app: 'chariot',
         service: 'backend',
@@ -42,8 +39,7 @@ import {
   controllers: [MetricsController],
   providers: [
     MetricsService,
-    MetricsInterceptor, // Ajout de l'intercepteur
-    // Providers de métriques personnalisées
+    MetricsInterceptor,
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
     errorsCounterProvider,
@@ -61,7 +57,6 @@ import {
   exports: [
     MetricsService,
     MetricsInterceptor,
-    // Export des providers de métriques pour injection dans d'autres modules
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
     errorsCounterProvider,
