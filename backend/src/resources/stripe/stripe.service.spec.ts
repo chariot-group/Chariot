@@ -3,6 +3,7 @@ import { StripeService } from '@/resources/stripe/stripe.service';
 import { UserService } from '@/resources/user/user.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MaillingService } from '@/mailling/mailling.service';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('StripeService - verifySignature', () => {
   let stripeService: StripeService;
@@ -10,6 +11,7 @@ describe('StripeService - verifySignature', () => {
 
   const mockUserService = {} as UserService;
   const mockMaillingService = {} as MaillingService;
+  const mockStripePaymentsCounter = { inc: jest.fn() } as any;
 
   beforeEach(() => {
     stripeMock = {
@@ -23,7 +25,7 @@ describe('StripeService - verifySignature', () => {
     process.env.STRIPE_SECRET_KEY = 'sk_test_123';
 
     // On instancie le service normalement
-    stripeService = new StripeService(mockUserService, mockMaillingService);
+    stripeService = new StripeService(mockUserService, mockMaillingService, mockStripePaymentsCounter);
 
     // On injecte le mock de stripe
     (stripeService as any).stripe = stripeMock;
@@ -60,7 +62,10 @@ describe('StripeService - handleEvent', () => {
       create: jest.fn(),
     };
 
+    const mockStripePaymentsCounter = { inc: jest.fn() } as any;
+
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         StripeService,
         { provide: UserService, useValue: userService },
@@ -156,6 +161,7 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
   };
   let stripeMock: Partial<any>;
   const logSpy = jest.fn();
+  const mockStripePaymentsCounter = { inc: jest.fn() } as any;
 
   beforeEach(() => {
     userService = {
@@ -172,7 +178,7 @@ describe('StripeService - handleCheckoutSessionCompleted', () => {
       },
     };
 
-    service = new StripeService(userService as UserService, maillingService as MaillingService);
+    service = new StripeService(userService as UserService, maillingService as MaillingService, mockStripePaymentsCounter);
     (service as any).stripe = stripeMock;
     (service as any).logger = { log: logSpy };
   });
@@ -348,7 +354,9 @@ describe('StripeService - handleSubscriptionUpdated', () => {
       log: jest.fn(),
     };
 
-    service = new StripeService(userService as UserService, maillingService as MaillingService);
+    const mockStripePaymentsCounter = { inc: jest.fn() } as any;
+
+    service = new StripeService(userService as UserService, maillingService as MaillingService, mockStripePaymentsCounter);
     (service as any).stripe = stripeMock;
     (service as any).logger = logger;
   });

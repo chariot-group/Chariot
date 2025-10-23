@@ -8,6 +8,7 @@ import { Types } from 'mongoose';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import type { CreateGroupDto } from '@/resources/group/dto/create-group.dto';
 import type { UpdateGroupDto } from '@/resources/group/dto/update-group.dto';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('GroupService', () => {
   let service: GroupService;
@@ -54,6 +55,7 @@ describe('GroupService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         GroupService,
         { provide: getModelToken(Group.name), useValue: groupModel },

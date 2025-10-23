@@ -7,6 +7,7 @@ import { Model, Types } from 'mongoose';
 import { CreatePlayerDto } from '@/resources/character/player/dto/create-player.dto';
 import { UpdatePlayerDto } from '@/resources/character/player/dto/update-player.dto';
 import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('PlayerService', () => {
   let service: PlayerService;
@@ -47,6 +48,7 @@ describe('PlayerService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         PlayerService,
         {
