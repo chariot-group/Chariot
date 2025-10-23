@@ -8,6 +8,7 @@ import { UnauthorizedException, InternalServerErrorException, NotFoundException,
 import { getModelToken } from '@nestjs/mongoose';
 import { User } from '@/resources/user/schemas/user.schema';
 import { Types } from 'mongoose';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('AuthService - signIn', () => {
   let authService: AuthService;
@@ -27,6 +28,7 @@ describe('AuthService - signIn', () => {
     maillingService = {};
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         AuthService,
         { provide: UserService, useValue: userService },
@@ -116,6 +118,7 @@ describe('AuthService - resetPassword', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         AuthService,
         { provide: UserService, useValue: userService },
@@ -178,6 +181,7 @@ describe('AuthService - forgotPassword', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         AuthService,
         { provide: UserService, useValue: {} },
@@ -246,6 +250,7 @@ describe('AuthService - verifyOTP', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         AuthService,
         { provide: UserService, useValue: {} },

@@ -12,6 +12,7 @@ import { MaillingModule } from '@/mailling/mailling.module';
 import { CharacterModule } from '@/resources/character/character.module';
 import { StripeModule } from '@/resources/stripe/stripe.module';
 import { SeederModule } from '@/seeder/seeder.module';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SeederModule } from '@/seeder/seeder.module';
     MaillingModule,
     StripeModule,
     SeederModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, MaillingService],

@@ -6,11 +6,18 @@ import {
 import * as nodemailer from 'nodemailer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter } from 'prom-client';
 
 @Injectable()
 export class MaillingService {
   private readonly SERVICE_NAME = MaillingService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
+
+  constructor(
+    @InjectMetric('chariot_emails_sent_total')
+    private readonly emailsSentCounter: Counter,
+  ) { }
 
   async sendOTP(username: string, email: string, otp: number, local: string) {
     try {
@@ -64,9 +71,14 @@ export class MaillingService {
         `Email send at ${email} in ${local}`,
         this.SERVICE_NAME,
       );
+
+      // Incrémentation du compteur Prometheus
+      this.emailsSentCounter.inc({ type: 'otp', status: 'success' });
     } catch (error) {
       const message = `Error while send otp code at ${email}: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
+      // Incrémentation du compteur Prometheus (échec)
+      this.emailsSentCounter.inc({ type: 'otp', status: 'failure' });
       throw new InternalServerErrorException(message);
     }
   }
@@ -106,9 +118,14 @@ export class MaillingService {
         `Welcome email sent to ${email} in default language (en)`,
         this.SERVICE_NAME,
       );
+
+      // Incrémentation du compteur Prometheus
+      this.emailsSentCounter.inc({ type: 'welcome', status: 'success' });
     } catch (error) {
       const message = `Error while sending welcome email to ${email}: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
+      // Incrémentation du compteur Prometheus (échec)
+      this.emailsSentCounter.inc({ type: 'welcome', status: 'failure' });
       throw new InternalServerErrorException(message);
     }
   }

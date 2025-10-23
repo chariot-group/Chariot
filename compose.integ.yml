@@ -71,8 +71,150 @@ services:
       - BACKEND_URL=${BACKEND_URL}
       - NODE_ENV=${NODE_ENV}
 
+  prometheus:
+    networks:
+      - integ_net
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    volumes:
+      # Template de configuration
+      - ./prometheus.yml.template:/etc/prometheus/prometheus.yml.template:ro
+      # Règles d'alertes
+      - ./prometheus/alerts:/etc/prometheus/alerts:ro
+      # Stockage des données de métriques
+      - prometheus_data:/prometheus
+      # Entrypoint script
+      - ./scripts/prometheus-entrypoint.sh:/usr/local/bin/prometheus-entrypoint.sh:ro
+    env_file:
+      - .env.prometheus
+    entrypoint: ["/usr/local/bin/prometheus-entrypoint.sh"]
+    command: 
+      - "--config.file=prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-15d}"
+      - "--web.enable-lifecycle"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+    depends_on:
+      - alertmanager
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Gestionnaire d'alertes Prometheus
+  alertmanager:
+    networks:
+      - integ_net
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: always
+    ports:
+      - "${ALERTMANAGER_PORT}:9093"
+    volumes:
+      # Template de configuration
+      - ./alertmanager.yml.template:/etc/alertmanager/alertmanager.yml.template:ro
+      # Stockage des données d'alertes
+      - alertmanager_data:/alertmanager
+      # Entrypoint script
+      - ./scripts/alertmanager-entrypoint.sh:/usr/local/bin/alertmanager-entrypoint.sh:ro
+    env_file:
+      - .env.prometheus
+    entrypoint: ["/usr/local/bin/alertmanager-entrypoint.sh"]
+    command: 
+      - "--config.file=alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Outil pour surveiller les containers et leur état
+  cadvisor:
+    networks:
+      - integ_net
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: always
+    ports:
+      - "${CADVISOR_PORT}:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Collecte des métriques de la machine hôte
+  node-exporter:
+    networks:
+      - integ_net
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: always
+    ports:
+      - "${NODE_EXPORTER_PORT}:9100"
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /:/host:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Collecte des métriques de MongoDB
+  mongodb-exporter:
+    networks:
+      - integ_net
+    image: percona/mongodb_exporter:0.40
+    container_name: mongodb-exporter
+    restart: always
+    ports:
+      - "${MONGODB_EXPORTER_PORT}:9216"
+    environment:
+      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017
+    command:
+      # Options de collecte des métriques
+      - '--mongodb.direct-connect=true'
+      - '--discovering-mode'
+      - '--compatible-mode'
+      - '--collect-all'
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9216/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
 volumes:
   mongodb_data:
+  prometheus_data:
+  alertmanager_data:
 
 networks:
   integ_net:

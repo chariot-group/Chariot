@@ -1,0 +1,6 @@
+services:
+  prometheus:
+    # macOS-specific configuration if needed
+    platform: linux/amd64  # Force amd64 on Apple Silicon
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

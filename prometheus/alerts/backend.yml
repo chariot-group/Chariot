@@ -1,0 +1,281 @@
+# Règles d'alertes pour le backend NestJS
+# Surveillance de l'application et de ses performances
+
+groups:
+  - name: backend_alerts
+    interval: 30s
+    rules:
+      # ==================== DISPONIBILITÉ ====================
+      
+      # Backend down
+      - alert: BackendDown
+        expr: up{job="chariot-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: application
+          service: backend
+        annotations:
+          summary: "⚠️ Backend NestJS est DOWN"
+          description: "Le backend ne répond plus depuis plus d'1 minute sur {{ $labels.instance }} !"
+          runbook_url: "https://docs.chariot.com/runbooks/backend-down"
+      
+      # Backend redémarré
+      - alert: BackendRestarted
+        expr: time() - process_start_time_seconds{job="chariot-backend"} < 300
+        labels:
+          severity: info
+          component: application
+          service: backend
+        annotations:
+          summary: "Backend a redémarré récemment"
+          description: "Le backend est up depuis seulement {{ $value | humanizeDuration }} sur {{ $labels.instance }}."
+      
+      # ==================== REQUÊTES HTTP ====================
+      
+      # Taux élevé de requêtes
+      - alert: BackendHighRequestRate
+        expr: rate(http_requests_total{job="chariot-backend"}[5m]) > 100
+        for: 10m
+        labels:
+          severity: info
+          component: application
+          service: backend
+          resource: traffic
+        annotations:
+          summary: "Taux élevé de requêtes sur le backend"
+          description: "Le backend reçoit {{ $value | humanize }} requêtes/sec sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-high-traffic"
+      
+      # Taux élevé d'erreurs 5xx
+      - alert: BackendHigh5xxErrors
+        expr: (rate(http_requests_total{job="chariot-backend",status=~"5.."}[5m]) / rate(http_requests_total{job="chariot-backend"}[5m]) * 100) > 5
+        for: 5m
+        labels:
+          severity: critical
+          component: application
+          service: backend
+          resource: errors
+        annotations:
+          summary: "⚠️ Taux élevé d'erreurs 5xx sur le backend"
+          description: "{{ $value | humanize }}% des requêtes retournent une erreur 5xx sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-5xx-errors"
+      
+      # Taux élevé d'erreurs 4xx
+      - alert: BackendHigh4xxErrors
+        expr: (rate(http_requests_total{job="chariot-backend",status=~"4.."}[5m]) / rate(http_requests_total{job="chariot-backend"}[5m]) * 100) > 20
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: errors
+        annotations:
+          summary: "Taux élevé d'erreurs 4xx sur le backend"
+          description: "{{ $value | humanize }}% des requêtes retournent une erreur 4xx sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-4xx-errors"
+      
+      # Latence élevée des requêtes (p95)
+      - alert: BackendHighLatencyP95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="chariot-backend"}[5m])) > 1
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: performance
+        annotations:
+          summary: "Latence p95 élevée sur le backend"
+          description: "95% des requêtes prennent plus de {{ $value | humanize }}s sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-high-latency"
+      
+      # Latence critique des requêtes (p99)
+      - alert: BackendCriticalLatencyP99
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job="chariot-backend"}[5m])) > 3
+        for: 5m
+        labels:
+          severity: critical
+          component: application
+          service: backend
+          resource: performance
+        annotations:
+          summary: "⚠️ Latence p99 CRITIQUE sur le backend"
+          description: "99% des requêtes prennent plus de {{ $value | humanize }}s sur {{ $labels.instance }} !"
+          runbook_url: "https://docs.chariot.com/runbooks/backend-critical-latency"
+      
+      # ==================== MÉTRIQUES NODEJS ====================
+      
+      # Utilisation CPU du process élevée
+      - alert: BackendHighProcessCpu
+        expr: rate(process_cpu_seconds_total{job="chariot-backend"}[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: cpu
+        annotations:
+          summary: "Utilisation CPU élevée du process backend"
+          description: "Le process Node.js utilise {{ $value | humanize }}% du CPU sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-high-process-cpu"
+      
+      # Utilisation mémoire du process élevée
+      - alert: BackendHighProcessMemory
+        expr: process_resident_memory_bytes{job="chariot-backend"} / 1024 / 1024 > 1024
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: memory
+        annotations:
+          summary: "Utilisation mémoire élevée du process backend"
+          description: "Le process Node.js utilise {{ $value | humanize }}MB de mémoire sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-high-process-memory"
+      
+      # Mémoire heap élevée
+      - alert: BackendHighHeapMemory
+        expr: nodejs_heap_size_used_bytes{job="chariot-backend"} / nodejs_heap_size_total_bytes{job="chariot-backend"} * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: memory
+        annotations:
+          summary: "Mémoire heap élevée sur le backend"
+          description: "Le heap Node.js est utilisé à {{ $value | humanize }}% sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-high-heap"
+      
+      # Garbage Collection fréquent
+      - alert: BackendFrequentGC
+        expr: rate(nodejs_gc_duration_seconds_count{job="chariot-backend"}[5m]) > 10
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: memory
+        annotations:
+          summary: "Garbage Collection fréquent sur le backend"
+          description: "{{ $value | humanize }} GC/sec sur {{ $labels.instance }} - Possible fuite mémoire."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-frequent-gc"
+      
+      # Durée GC élevée
+      - alert: BackendHighGCDuration
+        expr: rate(nodejs_gc_duration_seconds_sum{job="chariot-backend"}[5m]) / rate(nodejs_gc_duration_seconds_count{job="chariot-backend"}[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: memory
+        annotations:
+          summary: "Durée de GC élevée sur le backend"
+          description: "Durée moyenne de GC: {{ $value | humanize }}s sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-high-gc-duration"
+      
+      # ==================== EVENT LOOP ====================
+      
+      # Event loop lag élevé
+      - alert: BackendHighEventLoopLag
+        expr: nodejs_eventloop_lag_seconds{job="chariot-backend"} > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: performance
+        annotations:
+          summary: "Event loop lag élevé sur le backend"
+          description: "L'event loop a un lag de {{ $value | humanize }}s sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-event-loop-lag"
+      
+      # Event loop lag critique
+      - alert: BackendCriticalEventLoopLag
+        expr: nodejs_eventloop_lag_seconds{job="chariot-backend"} > 1
+        for: 2m
+        labels:
+          severity: critical
+          component: application
+          service: backend
+          resource: performance
+        annotations:
+          summary: "⚠️ Event loop lag CRITIQUE sur le backend"
+          description: "L'event loop a un lag de {{ $value | humanize }}s - L'application est bloquée !"
+          runbook_url: "https://docs.chariot.com/runbooks/backend-critical-event-loop-lag"
+      
+      # ==================== CONNEXIONS ACTIVES ====================
+      
+      # Nombre élevé de connexions actives
+      - alert: BackendHighActiveConnections
+        expr: nodejs_active_handles_total{job="chariot-backend"} > 1000
+        for: 10m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: connections
+        annotations:
+          summary: "Nombre élevé de connexions actives sur le backend"
+          description: "{{ $value | humanize }} handles actifs sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-high-connections"
+      
+      # ==================== ENDPOINTS SPÉCIFIQUES ====================
+      
+      # Endpoint /health down
+      - alert: BackendHealthEndpointDown
+        expr: up{job="chariot-backend",endpoint="/health"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: application
+          service: backend
+        annotations:
+          summary: "⚠️ Endpoint /health ne répond plus"
+          description: "L'endpoint de health check ne répond plus sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-health-down"
+      
+      # Taux d'erreurs élevé sur /api/auth
+      - alert: BackendAuthEndpointErrors
+        expr: (rate(http_requests_total{job="chariot-backend",path=~"/api/auth.*",status=~"5.."}[5m]) / rate(http_requests_total{job="chariot-backend",path=~"/api/auth.*"}[5m]) * 100) > 10
+        for: 5m
+        labels:
+          severity: critical
+          component: application
+          service: backend
+          endpoint: auth
+        annotations:
+          summary: "⚠️ Taux élevé d'erreurs sur les endpoints d'authentification"
+          description: "{{ $value | humanize }}% des requêtes auth échouent sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-auth-errors"
+      
+      # ==================== MÉTRIQUES CUSTOM ====================
+      
+      # Taux élevé d'exceptions non gérées
+      - alert: BackendUnhandledExceptions
+        expr: rate(nodejs_unhandled_exceptions_total{job="chariot-backend"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: application
+          service: backend
+          resource: errors
+        annotations:
+          summary: "⚠️ Exceptions non gérées détectées sur le backend"
+          description: "{{ $value | humanize }} exceptions non gérées/sec sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-unhandled-exceptions"
+      
+      # Taux élevé de rejections de promesses
+      - alert: BackendUnhandledRejections
+        expr: rate(nodejs_unhandled_rejections_total{job="chariot-backend"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: application
+          service: backend
+          resource: errors
+        annotations:
+          summary: "Rejections de promesses non gérées sur le backend"
+          description: "{{ $value | humanize }} rejections non gérées/sec sur {{ $labels.instance }}."
+          runbook_url: "https://docs.chariot.com/runbooks/backend-unhandled-rejections"

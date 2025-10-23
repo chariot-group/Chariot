@@ -5,6 +5,7 @@ import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
 import { BadRequestException, GoneException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('NpcService - validateGroupRelations', () => {
   let service: NpcService;
@@ -23,6 +24,7 @@ describe('NpcService - validateGroupRelations', () => {
       updateMany: jest.fn(),
     };
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         NpcService,
         { provide: getModelToken(Character.name), useValue: characterModel },
@@ -152,6 +154,7 @@ describe('NpcService - create', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         NpcService,
         { provide: getModelToken(Character.name), useValue: characterModel },
@@ -372,6 +375,7 @@ describe('NpcService - update', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [MetricsModule],
       providers: [
         NpcService,
         { provide: getModelToken(Character.name), useValue: characterModel },

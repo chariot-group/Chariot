@@ -6,6 +6,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { CreateCampaignDto } from '@/resources/campaign/dto/create-campaign.dto';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter } from 'prom-client';
 import { UpdateCampaignDto } from '@/resources/campaign/dto/update-campaign.dto';
 import {
   Campaign,
@@ -20,6 +22,8 @@ export class CampaignService {
   constructor(
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    @InjectMetric('chariot_campaigns_created_total')
+    private readonly campaignsCreatedCounter: Counter,
   ) { }
 
   private readonly logger = new Logger(CampaignService.name);
@@ -36,6 +40,8 @@ export class CampaignService {
         groups,
         createdBy: new Types.ObjectId(userId),
       });
+      // Incrémentation du compteur Prometheus
+      this.campaignsCreatedCounter.inc({ user_id: userId });
       await this.groupModel.updateMany(
         { _id: { $in: totalGroups.map((id) => id) } },
         { $addToSet: { campaigns: campaign._id } },
