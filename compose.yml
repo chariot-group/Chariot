@@ -57,12 +57,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    platform: linux/amd64
     container_name: frontend
     restart: always
     working_dir: /app
     volumes:
       - ./frontend:/app
-      - ./frontend/node_modules:/app/node_modules
+      - /app/node_modules
+      - /app/.next
     ports:
       - "${FRONT_PORT}:3000"
     depends_on:
