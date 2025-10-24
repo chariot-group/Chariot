@@ -7,6 +7,12 @@
 prometheus.yml
 alertmanager.yml
 
+# Logs
+backend/logger/logs/*.log
+frontend/logs/*.log
+mongo/logs/*.log
+/tmp/promtail/
+
 # OS
 .DS_Store
 node_modules

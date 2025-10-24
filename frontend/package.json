@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run generate:locales && next dev",
+    "dev": "npm run generate:locales && next dev 2>&1 | tee -a logs/frontend.log",
     "prebuild": "npm run generate:locales",
     "build": "next build",
     "start": "next start",
