@@ -97,99 +97,385 @@
       "gridPos": {"h": 4, "w": 12, "x": 0, "y": 14}
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 16
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "expr": "sum(chariot_active_users{service=\"backend\"})",
+          "refId": "A"
+        }
+      ],
       "title": "Active users",
-      "type": "stat",
-      "targets": [
-        {
-          "expr": "chariot_active_users{service=\"backend\"}"
-        }
-      ],
-      "gridPos": {"h": 4, "w": 8, "x": 0, "y": 14},
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "steps": [
-              {"color": "green", "value": null}
-            ]
-          }
-        }
-      }
+      "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 16
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "expr": "sum(chariot_auth_attempts_total{service=\"backend\",status=\"success\"})",
+          "refId": "A"
+        }
+      ],
       "title": "Auth success",
-      "type": "stat",
-      "targets": [
-        {
-          "expr": "chariot_auth_attempts_total{service=\"backend\",status=\"success\"}"
-        }
-      ],
-      "gridPos": {"h": 4, "w": 8, "x": 8, "y": 14},
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "steps": [
-              {"color": "green", "value": null}
-            ]
-          }
-        }
-      }
+      "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 16
+      },
+      "id": 20,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "expr": "sum(chariot_auth_attempts_total{service=\"backend\",status=\"failure\"})",
+          "refId": "A"
+        }
+      ],
       "title": "Auth failure",
-      "type": "stat",
-      "targets": [
-        {
-          "expr": "chariot_auth_attempts_total{service=\"backend\",status=\"failure\"}"
-        }
-      ],
-      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 14},
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "steps": [
-              {"color": "red", "value": null}
-            ]
-          }
-        }
-      }
+      "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 20
+      },
+      "id": 21,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "expr": "sum(chariot_campaigns_created_total{service=\"backend\"})",
+          "refId": "A"
+        }
+      ],
       "title": "Campaigns created",
-      "type": "stat",
-      "targets": [
-        {
-          "expr": "sum(chariot_campaigns_created_total{service=\"backend\"})"
-        }
-      ],
-      "gridPos": {"h": 4, "w": 8, "x": 0, "y": 18},
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "steps": [
-              {"color": "green", "value": null}
-            ]
-          }
-        }
-      }
+      "type": "stat"
     },
     {
-      "title": "Campaigns active",
-      "type": "stat",
-      "targets": [
-        {
-          "expr": "sum(chariot_active_campaigns{service=\"backend\"})"
-        }
-      ],
-      "gridPos": {"h": 4, "w": 8, "x": 8, "y": 18},
+      "datasource": {
+        "type": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
+          "mappings": [],
           "thresholds": {
+            "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null}
+              {
+                "color": "green",
+                "value": 0
+              }
             ]
           }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 20
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(chariot_active_campaigns{service=\"backend\"})",
+          "range": true,
+          "refId": "A"
         }
-      }
+      ],
+      "title": "Campaigns active",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 20
+      },
+      "id": 22,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(chariot_characters_created_total{service=\"backend\"})",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Characters create",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 24
+      },
+      "id": 23,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "expr": "sum(chariot_groups_created_total{service=\"backend\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "Groups create",
+      "type": "stat"
     }
   ]
 }

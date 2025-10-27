@@ -11,6 +11,7 @@ import { NpcModule } from '@/resources/character//npc/npc.module';
 import { PlayerModule } from '@/resources/character/player/player.module';
 import { CharacterService } from '@/resources/character/character.service';
 import { CharacterController } from '@/resources/character/character.controller';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -23,8 +24,9 @@ import { CharacterController } from '@/resources/character/character.controller'
           { name: 'npc', schema: NPCSchema },
         ],
       },
+      { name: Group.name, schema: GroupSchema }
     ]),
-    MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]),
+    MetricsModule,
     NpcModule,
     PlayerModule,
   ],
@@ -32,4 +34,4 @@ import { CharacterController } from '@/resources/character/character.controller'
   controllers: [CharacterController],
   providers: [CharacterService],
 })
-export class CharacterModule {}
+export class CharacterModule { }
