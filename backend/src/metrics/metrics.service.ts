@@ -41,8 +41,8 @@ export const errorsCounterProvider = makeCounterProvider({
   labelNames: ['type', 'controller', 'severity'],
 });
 
-// 4. GAUGE: Nombre d'utilisateurs actifs
-export const activeUsersGaugeProvider = makeGaugeProvider({
+// 4. COMPTEUR: Nombre d'utilisateurs actifs
+export const activeUsersGaugeProvider = makeCounterProvider({
   name: 'chariot_active_users',
   help: 'Number of currently active users',
 });
@@ -54,8 +54,8 @@ export const campaignsCreatedCounterProvider = makeCounterProvider({
   labelNames: ['user_id'],
 });
 
-// 6. GAUGE: Total des campagnes actives
-export const activeCampaignsGaugeProvider = makeGaugeProvider({
+// 6. COMPTEUR: Total des campagnes actives
+export const activeCampaignsGaugeProvider = makeCounterProvider({
   name: 'chariot_active_campaigns',
   help: 'Number of active campaigns',
 });

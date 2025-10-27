@@ -42,6 +42,12 @@ scrape_configs:
       - targets: ['${PROMETHEUS_MONGODB_EXPORTER_TARGET}']
     scrape_interval: ${PROMETHEUS_MONGODB_SCRAPE_INTERVAL}
 
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['${PROMETHEUS_LOKI_EXPORTER_TARGET}']
+    metrics_path: '${PROMETHEUS_LOKI_METRICS_PATH}'
+    scrape_interval: ${PROMETHEUS_LOKI_SCRAPE_INTERVAL}
+
 # Configuration des alertes avec Alertmanager
 alerting:
   alertmanagers:

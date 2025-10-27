@@ -1,0 +1,195 @@
+{
+  "title": "Backend Monitoring",
+  "description": "Monitoring détaillé du backend NestJS",
+  "id": null,
+  "uid": "backend-overview",
+  "timezone": "browser",
+  "schemaVersion": 37,
+  "version": 1,
+  "panels": [
+    {
+      "type": "row",
+      "title": "System Resources",
+      "collapsed": false,
+      "gridPos": {"h": 4, "w": 12, "x": 0, "y": 0}
+    },
+    {
+      "type": "gauge",
+      "title": "CPU Usage (%)",
+      "targets": [
+        {
+          "expr": "rate(chariot_process_cpu_seconds_total{service=\"backend\"}[5m]) * 100"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 8, "x": 0, "y": 0},
+      "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "steps": [
+                  {"value": 0, "color": "green"},
+                  {"value": 70, "color": "yellow"},
+                  {"value": 90, "color": "red"}
+                ]
+              },
+              "max": 100
+            }
+          }
+    },
+    {
+      "title": "Memory Usage (MB)",
+      "type": "gauge",
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes{service=\"backend\"} / 1000000"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 8, "x": 8, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "MB",
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 536 },
+              {"color": "orange", "value": 1073},
+              {"color": "red","value": 1610}
+            ]
+          },
+          "max": 2147
+        }
+      }
+    },
+    {
+      "title": "Request received",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(chariot_http_requests_total{service=\"backend\"})"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "logs",
+      "title": "Logs",
+      "targets": [
+        {
+          "expr": "{job=\"backend\"}",
+          "datasource": "Loki"
+        }
+      ],
+      "gridPos": { "x": 4, "y": 8, "w": 24, "h": 10 }
+    },
+    {
+      "type": "row",
+      "title": "Global statistics",
+      "collapsed": false,
+      "gridPos": {"h": 4, "w": 12, "x": 0, "y": 14}
+    },
+    {
+      "title": "Active users",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "chariot_active_users{service=\"backend\"}"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 8, "x": 0, "y": 14},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Auth success",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "chariot_auth_attempts_total{service=\"backend\",status=\"success\"}"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 8, "x": 8, "y": 14},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Auth failure",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "chariot_auth_attempts_total{service=\"backend\",status=\"failure\"}"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 14},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": null}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Campaigns created",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(chariot_campaigns_created_total{service=\"backend\"})"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 8, "x": 0, "y": 18},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Campaigns active",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(chariot_active_campaigns{service=\"backend\"})"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 8, "x": 8, "y": 18},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

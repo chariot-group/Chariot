@@ -1,0 +1,110 @@
+{
+      "title": "6. Logs Analysis Dashboard",
+      "description": "Analyse approfondie des logs",
+      "id": null,
+      "uid": "logs-analysis",
+      "timezone": "browser",
+      "schemaVersion": 37,
+      "version": 1,
+      "panels": [
+        {
+          "title": "Log Volume by Service (Last 24h)",
+          "type": "bargauge",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "datasource": "Loki",
+          "targets": [
+            {
+              "expr": "sum by (service) (count_over_time({job=~\".*\"}[24h]))",
+              "legendFormat": "{{service}}"
+            }
+          ],
+          "options": {
+            "orientation": "horizontal",
+            "displayMode": "gradient"
+          }
+        },
+        {
+          "title": "Error Rate Trend",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "datasource": "Loki",
+          "targets": [
+            {
+              "expr": "sum(rate({job=\"backend-logs\", level=\"error\"}[5m])) * 60",
+              "legendFormat": "Backend Errors/min"
+            },
+            {
+              "expr": "sum(rate({job=\"frontend-logs\"} |~ \"(?i)error\"[5m])) * 60",
+              "legendFormat": "Frontend Errors/min"
+            },
+            {
+              "expr": "sum(rate({job=\"mongodb-logs\"} |~ \"(?i)error\"[5m])) * 60",
+              "legendFormat": "MongoDB Errors/min"
+            }
+          ]
+        },
+        {
+          "title": "Top 10 Error Contexts (Backend)",
+          "type": "table",
+          "gridPos": {"h": 10, "w": 12, "x": 0, "y": 8},
+          "datasource": "Loki",
+          "targets": [
+            {
+              "expr": "topk(10, sum by (context) (count_over_time({job=\"backend-logs\", level=\"error\"}[6h])))",
+              "format": "table"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "renameByName": {
+                  "context": "Context",
+                  "Value": "Error Count"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "Log Level Distribution (Backend)",
+          "type": "piechart",
+          "gridPos": {"h": 10, "w": 12, "x": 12, "y": 8},
+          "datasource": "Loki",
+          "targets": [
+            {
+              "expr": "sum by (level) (count_over_time({job=\"backend-logs\"}[6h]))",
+              "legendFormat": "{{level}}"
+            }
+          ]
+        },
+        {
+          "title": "Error Heatmap by Hour",
+          "type": "heatmap",
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 18},
+          "datasource": "Loki",
+          "targets": [
+            {
+              "expr": "sum(count_over_time({job=\"backend-logs\", level=\"error\"}[$__interval]))"
+            }
+          ]
+        },
+        {
+          "title": "All Error Logs (Real-time)",
+          "type": "logs",
+          "gridPos": {"h": 12, "w": 24, "x": 0, "y": 28},
+          "datasource": "Loki",
+          "targets": [
+            {
+              "expr": "{job=~\".*\", level=\"error\"} or {job=~\"frontend-logs|mongodb-logs\"} |~ \"(?i)error\""
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "wrapLogMessage": true,
+            "sortOrder": "Descending",
+            "enableLogDetails": true
+          }
+        }
+      ]
+    }

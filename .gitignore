@@ -11,7 +11,7 @@ alertmanager.yml
 backend/logger/logs/*.log
 frontend/logs/*.log
 mongo/logs/*.log
-/tmp/promtail/
+/var/log/promtail/
 
 # OS
 .DS_Store

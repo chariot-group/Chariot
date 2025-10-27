@@ -1,0 +1,139 @@
+{
+      "title": "5. Infrastructure Overview",
+      "description": "Vue d'ensemble de l'infrastructure et des containers",
+      "id": null,
+      "uid": "infra-overview",
+      "timezone": "browser",
+      "schemaVersion": 37,
+      "version": 1,
+      "panels": [
+        {
+          "title": "All Services CPU Usage",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{name=~\"backend|frontend|mongodb|loki|prometheus|grafana\"}[5m]) * 100",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent"
+            }
+          }
+        },
+        {
+          "title": "All Services Memory Usage",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "container_memory_usage_bytes{name=~\"backend|frontend|mongodb|loki|prometheus|grafana\"} / 1024 / 1024",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "decmbytes"
+            }
+          }
+        },
+        {
+          "title": "Container Restart Count",
+          "type": "stat",
+          "gridPos": {"h": 4, "w": 24, "x": 0, "y": 8},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "sum by (name) (container_restart_count{name=~\"backend|frontend|mongodb\"})",
+              "legendFormat": "{{name}}"
+            }
+          ],
+          "options": {
+            "colorMode": "background"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "steps": [
+                  {"value": 0, "color": "green"},
+                  {"value": 1, "color": "yellow"},
+                  {"value": 3, "color": "red"}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "title": "Host CPU Usage",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+              "legendFormat": "CPU Usage %"
+            }
+          ]
+        },
+        {
+          "title": "Host Memory Usage",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100",
+              "legendFormat": "Memory Usage %"
+            }
+          ]
+        },
+        {
+          "title": "Host Disk Usage",
+          "type": "gauge",
+          "gridPos": {"h": 8, "w": 8, "x": 0, "y": 20},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "(node_filesystem_size_bytes{mountpoint=\"/\"} - node_filesystem_avail_bytes{mountpoint=\"/\"}) / node_filesystem_size_bytes{mountpoint=\"/\"} * 100"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "steps": [
+                  {"value": 0, "color": "green"},
+                  {"value": 80, "color": "yellow"},
+                  {"value": 95, "color": "red"}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "title": "Network Traffic (Host)",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 16, "x": 8, "y": 20},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*\"}[5m]) / 1024",
+              "legendFormat": "RX - {{device}}"
+            },
+            {
+              "expr": "rate(node_network_transmit_bytes_total{device!~\"lo|veth.*\"}[5m]) / 1024",
+              "legendFormat": "TX - {{device}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "KBs"
+            }
+          }
+        }
+      ]
+    }
