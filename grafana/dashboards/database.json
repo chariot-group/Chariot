@@ -1,5 +1,5 @@
 {
-      "title": "3. Database Monitoring - MongoDB",
+      "title": "Database Monitoring",
       "description": "Performance et santé de MongoDB",
       "id": null,
       "uid": "database-overview",
@@ -8,64 +8,9 @@
       "version": 1,
       "panels": [
         {
-          "title": "MongoDB CPU Usage",
-          "type": "timeseries",
-          "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
-          "datasource": "Prometheus",
-          "targets": [
-            {
-              "expr": "rate(container_cpu_usage_seconds_total{name=\"mongodb\"}[5m]) * 100",
-              "legendFormat": "CPU %"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "percent"
-            }
-          }
-        },
-        {
-          "title": "MongoDB Memory Usage",
-          "type": "timeseries",
-          "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0},
-          "datasource": "Prometheus",
-          "targets": [
-            {
-              "expr": "container_memory_usage_bytes{name=\"mongodb\"} / 1024 / 1024",
-              "legendFormat": "Memory (MB)"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "decmbytes"
-            }
-          }
-        },
-        {
-          "title": "MongoDB Network I/O",
-          "type": "timeseries",
-          "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
-          "datasource": "Prometheus",
-          "targets": [
-            {
-              "expr": "rate(container_network_receive_bytes_total{name=\"mongodb\"}[5m]) / 1024",
-              "legendFormat": "RX (KB/s)"
-            },
-            {
-              "expr": "rate(container_network_transmit_bytes_total{name=\"mongodb\"}[5m]) / 1024",
-              "legendFormat": "TX (KB/s)"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "KBs"
-            }
-          }
-        },
-        {
           "title": "MongoDB Connections",
           "type": "timeseries",
-          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
           "datasource": "Prometheus",
           "targets": [
             {
@@ -81,7 +26,7 @@
         {
           "title": "MongoDB Operations Rate",
           "type": "timeseries",
-          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
           "datasource": "Prometheus",
           "targets": [
             {
@@ -93,7 +38,7 @@
         {
           "title": "MongoDB Query Execution Time",
           "type": "timeseries",
-          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
           "datasource": "Prometheus",
           "targets": [
             {
@@ -101,34 +46,6 @@
               "legendFormat": "{{state}}"
             }
           ]
-        },
-        {
-          "title": "MongoDB Error Logs",
-          "type": "logs",
-          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
-          "datasource": "Loki",
-          "targets": [
-            {
-              "expr": "{job=\"mongodb-logs\"} |~ \"(?i)(error|fatal|exception)\""
-            }
-          ]
-        },
-        {
-          "title": "MongoDB Disk Usage",
-          "type": "timeseries",
-          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
-          "datasource": "Prometheus",
-          "targets": [
-            {
-              "expr": "container_fs_usage_bytes{name=\"mongodb\"} / 1024 / 1024 / 1024",
-              "legendFormat": "Disk Usage (GB)"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "decgbytes"
-            }
-          }
         }
       ]
     }
