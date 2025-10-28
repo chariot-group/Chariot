@@ -42,6 +42,12 @@ scrape_configs:
       - targets: ['mongodb-exporter:9216']
     scrape_interval: 15s
 
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+    metrics_path: '/loki/metrics'
+    scrape_interval: 15s
+
 # Configuration des alertes avec Alertmanager
 alerting:
   alertmanagers:

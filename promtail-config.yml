@@ -36,20 +36,20 @@ scrape_configs:
     
     pipeline_stages:
       # Parser les logs Winston (format: timestamp - level: [context] message)
-      # Ex: 2024-10-24 14:30:45.123 PM - info: [AppService] User login successful
+      # Ex: 2024-10-24 14:30:45.123 - info: [AppService] User login successful
       - regex:
-          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} [AP]M) - (?P<level>\w+): \[(?P<context>[\w\.]+)\] (?P<message>.*)$'
-      
-      # Parser les timestamps Winston
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) - (?P<level>\w+): \[(?P<context>[\w\.]+)\] (?P<message>.*)$'
+
+      # Parser les timestamps Winston (24h format)
       - timestamp:
-          format: '2006-01-02 15:04:05.000 PM'
+          format: '2006-01-02 15:04:05.000'
           source: timestamp
-      
+
       # Extraire le level et le context comme labels
       - labels:
-          level:
-          context:
-      
+          level: ""
+          context: ""
+
       # Utiliser le message comme contenu du log
       - output:
           source: message

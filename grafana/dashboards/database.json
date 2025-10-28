@@ -1,0 +1,51 @@
+{
+      "title": "Database Monitoring",
+      "description": "Performance et santé de MongoDB",
+      "id": null,
+      "uid": "database-overview",
+      "timezone": "browser",
+      "schemaVersion": 37,
+      "version": 1,
+      "panels": [
+        {
+          "title": "MongoDB Connections",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "mongodb_connections{state=\"current\"}",
+              "legendFormat": "Current"
+            },
+            {
+              "expr": "mongodb_connections{state=\"available\"}",
+              "legendFormat": "Available"
+            }
+          ]
+        },
+        {
+          "title": "MongoDB Operations Rate",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(mongodb_op_counters_total[5m])",
+              "legendFormat": "{{type}}"
+            }
+          ]
+        },
+        {
+          "title": "MongoDB Query Execution Time",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(mongodb_mongod_metrics_query_executor_total[5m])",
+              "legendFormat": "{{state}}"
+            }
+          ]
+        }
+      ]
+    }

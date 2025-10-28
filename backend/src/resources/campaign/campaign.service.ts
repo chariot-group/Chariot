@@ -24,6 +24,8 @@ export class CampaignService {
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
     @InjectMetric('chariot_campaigns_created_total')
     private readonly campaignsCreatedCounter: Counter,
+    @InjectMetric('chariot_active_campaigns')
+    private readonly campaignsActiveCounter: Counter,
   ) { }
 
   private readonly logger = new Logger(CampaignService.name);
@@ -42,6 +44,7 @@ export class CampaignService {
       });
       // Incrémentation du compteur Prometheus
       this.campaignsCreatedCounter.inc({ user_id: userId });
+      this.campaignsActiveCounter.inc();
       await this.groupModel.updateMany(
         { _id: { $in: totalGroups.map((id) => id) } },
         { $addToSet: { campaigns: campaign._id } },
