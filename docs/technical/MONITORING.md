@@ -48,7 +48,7 @@ Open these URLs:
 | **Prometheus** | http://localhost:9090 | Main monitoring interface |
 | **cAdvisor** | http://localhost:8080 | Container metrics UI |
 | **Node Exporter** | http://localhost:9100/metrics | Host metrics (raw) |
-| **Backend** | http://localhost:3001/metrics | Application metrics |
+| **Backend** | http://localhost:9000/metrics | Application metrics |
 
 **Check that all targets are UP:**
 ```bash
@@ -170,7 +170,7 @@ open http://localhost:9090/targets
 
 ### 1. Application Metrics (Backend)
 
-Exposed at: `http://localhost:3001/metrics`
+Exposed at: `http://localhost:9000/metrics`
 
 #### HTTP Metrics (Automatic)
 ```promql
@@ -420,7 +420,7 @@ docker compose restart prometheus cadvisor node-exporter
 open http://localhost:9090/targets
 
 # Test endpoints manually
-curl http://localhost:3001/metrics
+curl http://localhost:9000/metrics
 curl http://localhost:8080/metrics
 curl http://localhost:9100/metrics
 
@@ -435,7 +435,7 @@ curl -X POST http://localhost:9090/-/reload
 
 ```bash
 # Test backend metrics
-curl http://localhost:3001/metrics | head -50
+curl http://localhost:9000/metrics | head -50
 
 # Wait for scrape interval (15 seconds)
 sleep 15
@@ -548,10 +548,10 @@ docker compose down -v
 
 ```bash
 # View backend metrics
-curl http://localhost:3001/metrics | head -50
+curl http://localhost:9000/metrics | head -50
 
 # Count backend metrics
-curl -s http://localhost:3001/metrics | grep "^chariot_" | wc -l
+curl -s http://localhost:9000/metrics | grep "^chariot_" | wc -l
 
 # Check Prometheus targets
 curl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {job: .labels.job, health: .health}'

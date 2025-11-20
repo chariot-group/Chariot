@@ -1,0 +1,12 @@
+# Chariot Microservices - Main Orchestrator
+# This file orchestrates all microservices and infrastructure components
+
+# Main orchestration
+include:
+  # Infrastructure (monitoring, logging)
+  - path: ./infrastructure/docker-compose.yml
+    env_file: .env
+
+  # Chariot microservice (backend + frontend)
+  - path: ./services/chariot/docker-compose.yml
+    env_file: .env

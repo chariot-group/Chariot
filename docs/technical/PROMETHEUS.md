@@ -6,7 +6,7 @@
 This guide covers the complete implementation and troubleshooting of Prometheus and AlertManager configuration in the Chariot project.
 
 - **Architecture**: Environment variable-based configuration
-- **Security**: Credentials protected in `.env.prometheus` (Git-ignored)
+- **Security**: Credentials protected in `.env` (Git-ignored)
 - **Multi-environment**: Support for dev, integ, and prod
 - **Status**: ✅ Functional and stable
 
@@ -19,10 +19,10 @@ This guide covers the complete implementation and troubleshooting of Prometheus 
 ```
 ┌─────────────────────────────────────────────────┐
 │         Docker Compose Files                    │
-│  (compose.yml, integ, prod)                    │
+│  (docker-compose.yml, .integ.yml, .prod.yml)   │
 └─────────────────────────────────────────────────┘
            │
-           ├─ env_file: .env.prometheus
+           ├─ env_file: .env
            │  (Environment variables loaded at runtime)
            │
            ├─ volumes:
@@ -43,11 +43,11 @@ Prometheus configuration works on **all platforms** (Linux, macOS, Windows) than
 | **Linux** (Prod) | Service names via bridge network | `backend:9000` |
 | **macOS** (Docker Desktop) | host.docker.internal | `host.docker.internal:9000` |
 
-**Solution:** Targets are parameterizable via `.env.prometheus` → a single template configuration works everywhere! 🎉
+**Solution:** Targets are parameterizable via `.env` → a single template configuration works everywhere! 🎉
 
 ### Execution Flow
 
-1. **Docker Compose starts** → Loads `.env.prometheus` via `env_file:`
+1. **Docker Compose starts** → Loads `.env` via `env_file:`
 2. **Entrypoint script executed** → Reads environment variables
 3. **Sed substitution** → Replaces `${VAR}` in templates
 4. **Service launched** → Uses generated configuration
@@ -66,14 +66,16 @@ Prometheus configuration works on **all platforms** (Linux, macOS, Windows) than
 ### Configuration Files
 
 ```
-├── prometheus.yml.template           # Prometheus configuration template
-├── alertmanager.yml.template         # AlertManager configuration template
-├── .env.prometheus.example           # Environment variables example
-├── .env.prometheus                   # ⚠️ Secrets (Git-ignored, local only)
+├── infrastructure/
+│   ├── prometheus.yml.template       # Prometheus configuration template
+│   ├── alertmanager.yml.template     # AlertManager configuration template
+│   └── prometheus/alerts/            # Alert rules
+├── .env.example                      # Environment variables example
+├── .env                              # ⚠️ Secrets (Git-ignored, local only)
 │
-├── compose.yml                       # Docker Compose (development)
-├── compose.integ.yml                 # Docker Compose (integration)
-├── compose.prod.yml                  # Docker Compose (production)
+├── docker-compose.yml                # Docker Compose (development)
+├── docker-compose.integ.yml          # Docker Compose (integration)
+├── docker-compose.prod.yml           # Docker Compose (production)
 │
 └── scripts/
     ├── prometheus-entrypoint.sh      # Prometheus entrypoint script
@@ -88,7 +90,7 @@ Prometheus configuration works on **all platforms** (Linux, macOS, Windows) than
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `PROMETHEUS_ENVIRONMENT` | `development` | "environment" label on metrics |
+| `ENVIRONMENT` | `development` | "environment" label on metrics |
 | `PROMETHEUS_MONITOR_NAME` | `chariot-monitor` | "monitor" label on metrics |
 | `PROMETHEUS_SCRAPE_INTERVAL` | `15s` | Global collection frequency |
 | `PROMETHEUS_EVALUATION_INTERVAL` | `15s` | Rule evaluation interval |
@@ -119,12 +121,12 @@ Prometheus configuration works on **all platforms** (Linux, macOS, Windows) than
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `ALERTMANAGER_SMTP_FROM` | - | Sender email (required) |
-| `ALERTMANAGER_SMTP_HOST` | - | SMTP server (required) |
-| `ALERTMANAGER_SMTP_PORT` | - | SMTP port (587 for TLS) |
-| `ALERTMANAGER_SMTP_USER` | - | SMTP login (required) |
-| `ALERTMANAGER_SMTP_PASSWORD` | - | SMTP password (required) ⚠️ |
-| `ALERTMANAGER_SMTP_REQUIRE_TLS` | `true` | TLS required |
-| `ALERTMANAGER_RECEIVER_EMAIL` | - | Recipient email (required) |
+| `SMTP_HOST` | - | SMTP server (required) |
+| `SMTP_PORT` | - | SMTP port (587 for TLS) |
+| `SMTP_USER` | - | SMTP login (required) |
+| `SMTP_PASSWORD` | - | SMTP password (required) ⚠️ |
+| `SMTP_SECURE` | `true` | TLS required |
+| `RECEIVER_EMAIL` | - | Recipient email (required) |
 
 ### AlertManager - Timing and Grouping
 
@@ -138,7 +140,7 @@ Prometheus configuration works on **all platforms** (Linux, macOS, Windows) than
 | `ALERTMANAGER_CRITICAL_REPEAT_INTERVAL` | `30m` | Critical alerts repetition |
 | `ALERTMANAGER_RESOLVE_TIMEOUT` | `5m` | Resolution timeout |
 
-**⚠️ WARNING**: Never commit `.env.prometheus` with real secrets to Git!
+**⚠️ WARNING**: Never commit `.env` with real secrets to Git!
 
 ---
 
@@ -148,21 +150,21 @@ Prometheus configuration works on **all platforms** (Linux, macOS, Windows) than
 
 ```bash
 # 1. Create local configuration
-cp .env.prometheus.example .env.prometheus
+cp .env.example .env
 
 # 2. Edit with SMTP credentials
 # (Warning: never commit this file!)
-nano .env.prometheus
+nano .env
 
-# 3. Verify that .env.prometheus is in .gitignore
-grep ".env.prometheus" .gitignore
+# 3. Verify that .env is in .gitignore
+grep ".env" .gitignore
 ```
 
 ### ⚙️ Multi-OS Configuration (Linux vs macOS)
 
 #### 🐧 Configuration for LINUX (CI/Prod) - Default
 
-On Linux, containers communicate via Docker bridge network. **No modifications needed** - use the default configuration in `.env.prometheus.example`:
+On Linux, containers communicate via Docker bridge network. **No modifications needed** - use the default configuration in `.env.example`:
 
 ```bash
 # ✅ Default (Linux) - Use service names
@@ -178,7 +180,7 @@ PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093
 On macOS with Docker Desktop, containers cannot directly access local services. Use `host.docker.internal` to access the host:
 
 ```bash
-# 📝 Edit .env.prometheus and replace targets with:
+# 📝 Edit .env and replace targets with:
 PROMETHEUS_BACKEND_TARGET=host.docker.internal:9000
 PROMETHEUS_CADVISOR_TARGET=host.docker.internal:8080
 PROMETHEUS_NODE_EXPORTER_TARGET=host.docker.internal:9100
@@ -190,12 +192,12 @@ PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093  # AlertManager remains local
 - On macOS, Docker Desktop runs an intermediate Linux VM
 - Service names (`backend`, `cadvisor`) are only accessible within the VM
 - `host.docker.internal` is a special alias to access the host machine (macOS)
-- Prometheus/AlertManager containers remain accessible via `localhost` in compose.yml
+- Prometheus/AlertManager containers remain accessible via `localhost` in docker-compose.yml
 
 **macOS Checklist:**
 ```bash
 # Verify configuration
-grep "host.docker.internal" .env.prometheus
+grep "host.docker.internal" .env
 
 # Test connectivity from Prometheus
 docker exec prometheus wget -v http://host.docker.internal:9000/metrics
@@ -240,7 +242,7 @@ docker exec alertmanager cat /etc/alertmanager/alertmanager.yml | head -30
 
 # Verify a specific variable was replaced
 docker exec prometheus cat /etc/prometheus/prometheus.yml | grep -A2 "external_labels"
-docker exec alertmanager cat /etc/alertmanager/alertmanager.yml | grep "smtp_from"
+docker exec alertmanager cat /etc/alertmanager/alertmanager.yml | grep "ALERTMANAGER_SMTP_FROM"
 ```
 
 ---
@@ -288,7 +290,7 @@ docker-compose logs alertmanager --tail=50
 | Error | Cause | Solution |
 |-------|-------|----------|
 | `Error parsing command line arguments` | Incorrect shell syntax | Check entrypoint |
-| `parsing YAML: not a valid duration string: "${VAR}"` | Variable not substituted | Verify `env_file: .env.prometheus` is present |
+| `parsing YAML: not a valid duration string: "${VAR}"` | Variable not substituted | Verify `env_file: .env` is present |
 | `open prometheus.yml: no such file or directory` | Configuration not generated | Verify entrypoint script executed `sed` |
 
 ### Environment Variables Not Loaded
@@ -299,7 +301,7 @@ docker exec prometheus env | grep PROMETHEUS_
 docker exec alertmanager env | grep ALERTMANAGER_
 ```
 
-**Solution:** Verify that `.env.prometheus` exists and contains the variables.
+**Solution:** Verify that `.env` exists and contains the variables.
 
 ### Incorrect Configuration
 
@@ -312,7 +314,7 @@ docker exec prometheus cat /etc/prometheus/prometheus.yml
 docker exec prometheus cat /etc/prometheus/prometheus.yml | grep "\${"
 ```
 
-**Solution:** If `${VAR}` remains, the environment variable wasn't defined. Check `.env.prometheus`.
+**Solution:** If `${VAR}` remains, the environment variable wasn't defined. Check `.env`.
 
 ### Reload Configuration
 
@@ -332,8 +334,8 @@ docker-compose restart prometheus alertmanager
 
 | Element | Security | Action |
 |---------|----------|--------|
-| `.env.prometheus` | 🔴 SECRETS | Git-ignored (do not commit) |
-| `.env.prometheus.example` | 🟢 SAFE | Git-tracked (example only) |
+| `.env` | 🔴 SECRETS | Git-ignored (do not commit) |
+| `.env.example` | 🟢 SAFE | Git-tracked (example only) |
 | `prometheus.yml.template` | 🟢 SAFE | Git-tracked (no secrets) |
 | `alertmanager.yml.template` | 🟢 SAFE | Git-tracked (no secrets) |
 | Generated config in container | 🟡 MEMORY | Not persisted, encrypted in memory |
@@ -345,12 +347,12 @@ docker-compose restart prometheus alertmanager
 cat .gitignore | grep "\.env\|prometheus\.yml\|alertmanager\.yml"
 
 # Verify no secrets are tracked
-git ls-files | grep ".env.prometheus"  # Should return nothing
+git ls-files | grep ".env"  # Should return nothing
 ```
 
 ### Best Practices
 
-1. ✅ **Never commit** `.env.prometheus`
+1. ✅ **Never commit** `.env`
 2. ✅ **Use** environment variables for secrets in CI/CD
 3. ✅ **Validate** SMTP credentials are correct
 4. ✅ **Restrict** access to servers having secrets
@@ -400,10 +402,10 @@ process_resident_memory_bytes{job="chariot-backend"}
 
 ### Before Deployment
 
-- [ ] `.env.prometheus` created locally (not git-tracked)
+- [ ] `.env` created locally (not git-tracked)
 - [ ] Valid SMTP variables
 - [ ] Service endpoints accessible
-- [ ] `.gitignore` protects `.env.prometheus`
+- [ ] `.gitignore` protects `.env`
 
 ### After Deployment
 

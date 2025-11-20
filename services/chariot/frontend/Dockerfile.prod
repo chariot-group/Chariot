@@ -1,0 +1,44 @@
+FROM node:22-alpine AS builder
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /workspace
+
+# Copy workspace files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY shared ./shared
+COPY services/chariot/frontend ./services/chariot/frontend
+
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV ENVIRONMENT=production
+
+# Install dependencies and build
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @chariot/chariot-frontend run build
+
+# Production stage
+FROM node:22-alpine
+
+# Install wget for healthchecks
+RUN apk add --no-cache wget
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+# Copy built application and dependencies
+COPY --from=builder /workspace/services/chariot/frontend/.next/standalone ./
+COPY --from=builder /workspace/services/chariot/frontend/.next/static ./.next/static
+COPY --from=builder /workspace/services/chariot/frontend/public ./public
+
+USER node
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
