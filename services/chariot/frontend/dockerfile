@@ -10,8 +10,16 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY shared ./shared
 COPY services/chariot/frontend ./services/chariot/frontend
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Configure pnpm for better network reliability
+RUN pnpm config set network-timeout 300000 && \
+    pnpm config set fetch-retries 5 && \
+    pnpm config set fetch-retry-mintimeout 20000 && \
+    pnpm config set fetch-retry-maxtimeout 120000
+
+# Install dependencies with retry logic
+RUN pnpm install --frozen-lockfile || \
+    (sleep 10 && pnpm install --frozen-lockfile) || \
+    (sleep 30 && pnpm install --frozen-lockfile)
 
 WORKDIR /workspace/services/chariot/frontend
 

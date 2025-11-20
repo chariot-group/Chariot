@@ -5,36 +5,49 @@
       "uid": "app-overview",
       "timezone": "browser",
       "schemaVersion": 37,
-      "version": 1,
+      "version": 2,
+      "refresh": "5s",
       "panels": [
         {
+          "id": 1,
           "title": "Services Status",
           "type": "stat",
           "gridPos": {"h": 4, "w": 12, "x": 0, "y": 0},
           "datasource": "Prometheus",
           "targets": [
             {
-              "expr": "up{job=~\"chariot-backend|mongodb|loki|prometheus|cadvisor|node-exporter\"}",
-              "legendFormat": "{{job}}"
+              "expr": "up{job=~\"chariot-backend|loki|prometheus|node-exporter\"}",
+              "legendFormat": "{{job}}",
+              "refId": "A"
             }
           ],
           "options": {
             "colorMode": "background",
             "graphMode": "none",
-            "textMode": "value_and_name"
+            "textMode": "value_and_name",
+            "reduceOptions": {
+              "values": false,
+              "calcs": ["lastNotNull"]
+            }
           },
           "fieldConfig": {
             "defaults": {
               "thresholds": {
+                "mode": "absolute",
                 "steps": [
-                  {"value": 0, "color": "red"},
+                  {"value": null, "color": "red"},
                   {"value": 1, "color": "green"}
                 ]
-              }
+              },
+              "mappings": [
+                {"type": "value", "options": {"0": {"text": "DOWN"}}},
+                {"type": "value", "options": {"1": {"text": "UP"}}}
+              ]
             }
           }
         },
         {
+          "id": 2,
           "title": "Average CPU Usage",
           "type": "gauge",
           "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
@@ -42,7 +55,8 @@
           "targets": [
             {
               "expr": "100 - (avg by(instance)(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
-              "legendFormat": "{{instance}}"
+              "legendFormat": "{{instance}}",
+              "refId": "A"
             }
           ],
           "fieldConfig": {
@@ -60,6 +74,7 @@
           }
         },
         {
+          "id": 3,
           "title": "Average Memory Usage",
           "type": "gauge",
           "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
@@ -67,7 +82,8 @@
           "targets": [
             {
               "expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
-          "legendFormat": "{{instance}}"
+          "legendFormat": "{{instance}}",
+              "refId": "A"
             }
           ],
           "fieldConfig": {
@@ -85,6 +101,7 @@
           }
         },
         {
+          "id": 4,
           "title": "Request Rate (req/s)",
           "type": "timeseries",
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
@@ -92,11 +109,13 @@
           "targets": [
             {
               "expr": "rate(chariot_http_requests_total{service=\"backend\"}[5m])",
-              "legendFormat": "{{method}} {{route}}"
+              "legendFormat": "{{method}} {{route}}",
+              "refId": "A"
             }
           ]
         },
         {
+          "id": 5,
           "title": "Response Time (p95)",
           "type": "timeseries",
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
@@ -104,7 +123,8 @@
           "targets": [
             {
               "expr": "histogram_quantile(0.95, rate(chariot_http_request_duration_seconds_bucket{service=\"backend\"}[5m]))",
-              "legendFormat": "{{route}}"
+              "legendFormat": "{{route}}",
+              "refId": "A"
             }
           ],
           "fieldConfig": {
@@ -114,15 +134,17 @@
           }
         },
         {
+          "id": 6,
           "type": "logs",
           "title": "Logs",
+          "datasource": "Loki",
           "targets": [
             {
-              "expr": "{job=~\".+\"}",
-              "datasource": "Loki"
+              "expr": "{job=~\"chariot-backend|chariot-frontend\"}",
+              "refId": "A"
             }
           ],
-          "gridPos": { "x": 24, "y": 8, "w": 24, "h": 10 }
+          "gridPos": { "x": 0, "y": 12, "w": 24, "h": 10 }
         }
       ]
     }

@@ -64,6 +64,11 @@ services:
     platform: linux/amd64
     container_name: cadvisor
     restart: always
+    # ⚠️ cAdvisor is disabled on macOS ARM due to compatibility issues
+    # See: https://github.com/google/cadvisor/issues/3083
+    # Uncomment profiles to disable on macOS, comment out for production Linux
+    profiles:
+      - linux-only
     ports:
       - "${CADVISOR_PORT}:8080"
     volumes:
@@ -129,11 +134,14 @@ services:
     networks:
       - monitoring-network
       - shared-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3100/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # Note: Loki image is minimal and doesn't include curl/wget
+    # The service runs correctly, healthcheck disabled to avoid false negatives
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -f http://localhost:3100/ready || exit 1"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 10s
 
   promtail:
     image: grafana/promtail:latest
@@ -153,7 +161,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT}
     depends_on:
       loki:
-        condition: service_healthy
+        condition: service_started
     deploy:
       resources:
         limits:
@@ -190,7 +198,7 @@ services:
       prometheus:
         condition: service_healthy
       loki:
-        condition: service_healthy
+        condition: service_started
     networks:
       - monitoring-network
     healthcheck:

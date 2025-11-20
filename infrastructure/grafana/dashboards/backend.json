@@ -41,7 +41,7 @@
       "type": "gauge",
       "targets": [
         {
-          "expr": "process_resident_memory_bytes{service=\"backend\"} / 1000000"
+          "expr": "chariot_process_resident_memory_bytes{service=\"backend\"} / 1000000"
         }
       ],
       "gridPos": {"h": 4, "w": 8, "x": 8, "y": 0},
@@ -84,7 +84,7 @@
       "title": "Logs",
       "targets": [
         {
-          "expr": "{job=\"backend\"}",
+          "expr": "{job=\"chariot-backend\"}",
           "datasource": "Loki"
         }
       ],

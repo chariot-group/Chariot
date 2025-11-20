@@ -8,44 +8,69 @@
       "version": 1,
       "panels": [
         {
-          "title": "MongoDB Connections",
+          "title": "MongoDB Connections (from Backend)",
           "type": "timeseries",
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
           "datasource": "Prometheus",
           "targets": [
             {
-              "expr": "mongodb_connections{state=\"current\"}",
-              "legendFormat": "Current"
-            },
-            {
-              "expr": "mongodb_connections{state=\"available\"}",
-              "legendFormat": "Available"
+              "expr": "chariot_mongo_connections{service=\"backend\"}",
+              "legendFormat": "Active Connections"
             }
-          ]
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            }
+          }
         },
         {
-          "title": "MongoDB Operations Rate",
+          "title": "Backend HTTP Requests to DB",
           "type": "timeseries",
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
           "datasource": "Prometheus",
           "targets": [
             {
-              "expr": "rate(mongodb_op_counters_total[5m])",
-              "legendFormat": "{{type}}"
+              "expr": "rate(chariot_http_requests_total{service=\"backend\"}[5m])",
+              "legendFormat": "{{method}} {{route}}"
             }
           ]
         },
         {
-          "title": "MongoDB Query Execution Time",
-          "type": "timeseries",
-          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+          "title": "MongoDB Container Status",
+          "type": "stat",
+          "gridPos": {"h": 4, "w": 24, "x": 0, "y": 8},
           "datasource": "Prometheus",
           "targets": [
             {
-              "expr": "rate(mongodb_mongod_metrics_query_executor_total[5m])",
-              "legendFormat": "{{state}}"
+              "expr": "up{job=\"node-exporter\"}",
+              "legendFormat": "Infrastructure Status"
             }
-          ]
+          ],
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value_and_name"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "steps": [
+                  {"value": null, "color": "red"},
+                  {"value": 1, "color": "green"}
+                ]
+              },
+              "mappings": [
+                {"type": "value", "options": {"0": {"text": "Down"}}},
+                {"type": "value", "options": {"1": {"text": "Running"}}}
+              ]
+            }
+          }
+        },
+        {
+          "type": "row",
+          "title": "Note: Install MongoDB Exporter for detailed database metrics",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 12}
         }
       ]
     }

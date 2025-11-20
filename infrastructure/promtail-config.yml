@@ -29,10 +29,10 @@ scrape_configs:
       - targets:
           - localhost
         labels:
-          job: backend
+          job: chariot-backend
           service: nestjs
           component: application
-          __path__: /logs/backend/*.log
+          __path__: /logs/chariot-backend/*.log
     
     pipeline_stages:
       # Parser les logs Winston (format: timestamp - level: [context] message)
@@ -62,10 +62,10 @@ scrape_configs:
       - targets:
           - localhost
         labels:
-          job: frontend
+          job: chariot-frontend
           service: nextjs
           component: application
-          __path__: /logs/frontend/*.log
+          __path__: /logs/chariot-frontend/*.log
     
     pipeline_stages:
       # Simple extraction du message (les logs Next.js sont moins structurés)
