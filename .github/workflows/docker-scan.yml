@@ -34,7 +34,7 @@ jobs:
       - name: Check if Dockerfile exists
         id: check_dockerfile
         run: |
-          if [ -f "${{ matrix.project }}/dockerfile" ]; then
+          if [ -f "services/chariot/${{ matrix.project }}/dockerfile" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "❌ Dockerfile not found for ${{ matrix.project }}"
@@ -50,8 +50,8 @@ jobs:
         continue-on-error: true
         uses: docker/build-push-action@v5
         with:
-          context: ./${{ matrix.project }}
-          file: ./${{ matrix.project }}/dockerfile
+          context: .
+          file: ./services/chariot/${{ matrix.project }}/dockerfile
           push: false
           load: true
           tags: ${{ matrix.project }}:scan

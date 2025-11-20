@@ -35,24 +35,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js for ${{ matrix.project }}
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
-          cache: 'npm'
-          cache-dependency-path: ${{ matrix.project }}/package-lock.json
-
-      - name: Cache Node dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: node-${{ runner.os }}-${{ inputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            node-${{ runner.os }}-
+          cache: 'pnpm'
 
       - name: Install dependencies
-        working-directory: ./${{ matrix.project }}
-        run: npm install --no-audit --prefer-offline --no-fund
+        run: pnpm install --frozen-lockfile
 
       - name: Create reports directory
         run: mkdir -p security/reports
@@ -61,7 +56,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
-          scan-ref: './${{ matrix.project }}'
+          scan-ref: './services/chariot/${{ matrix.project }}'
           format: 'json'
           output: ${{ github.workspace }}/security/reports/trivy-deps-${{ matrix.project }}.json
           severity: 'CRITICAL,HIGH'
