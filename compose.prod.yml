@@ -1,0 +1,9 @@
+# Production overrides
+include:
+  - path: ./infrastructure/compose.yml
+    env_file: .env
+
+  - path: ./services/chariot/compose.yml
+    env_file: .env
+  - path: ./services/chariot/compose.prod.yml
+    env_file: .env

@@ -19,7 +19,7 @@ This guide covers the complete implementation and troubleshooting of Prometheus 
 ```
 ┌─────────────────────────────────────────────────┐
 │         Docker Compose Files                    │
-│  (docker-compose.yml, .integ.yml, .prod.yml)   │
+│  (compose.yml, .integ.yml, .prod.yml)   │
 └─────────────────────────────────────────────────┘
            │
            ├─ env_file: .env
@@ -73,9 +73,9 @@ Prometheus configuration works on **all platforms** (Linux, macOS, Windows) than
 ├── .env.example                      # Environment variables example
 ├── .env                              # ⚠️ Secrets (Git-ignored, local only)
 │
-├── docker-compose.yml                # Docker Compose (development)
-├── docker-compose.integ.yml          # Docker Compose (integration)
-├── docker-compose.prod.yml           # Docker Compose (production)
+├── compose.yml                # Docker Compose (development)
+├── compose.integ.yml          # Docker Compose (integration)
+├── compose.prod.yml           # Docker Compose (production)
 │
 └── scripts/
     ├── prometheus-entrypoint.sh      # Prometheus entrypoint script
@@ -192,7 +192,7 @@ PROMETHEUS_ALERTMANAGER_TARGET=alertmanager:9093  # AlertManager remains local
 - On macOS, Docker Desktop runs an intermediate Linux VM
 - Service names (`backend`, `cadvisor`) are only accessible within the VM
 - `host.docker.internal` is a special alias to access the host machine (macOS)
-- Prometheus/AlertManager containers remain accessible via `localhost` in docker-compose.yml
+- Prometheus/AlertManager containers remain accessible via `localhost` in compose.yml
 
 **macOS Checklist:**
 ```bash
@@ -207,24 +207,24 @@ docker exec prometheus wget -v http://host.docker.internal:9000/metrics
 
 ```bash
 # Development
-docker-compose up -d prometheus alertmanager
+docker compose up -d prometheus alertmanager
 
 # Integration
-docker-compose -f compose.integ.yml up -d prometheus alertmanager
+docker compose -f compose.integ.yml up -d prometheus alertmanager
 
 # Production
-docker-compose -f compose.prod.yml up -d prometheus alertmanager
+docker compose -f compose.prod.yml up -d prometheus alertmanager
 ```
 
 ### Verify Startup
 
 ```bash
 # See running services
-docker-compose ps prometheus alertmanager
+docker compose ps prometheus alertmanager
 
 # Check logs
-docker-compose logs prometheus --tail=20
-docker-compose logs alertmanager --tail=20
+docker compose logs prometheus --tail=20
+docker compose logs alertmanager --tail=20
 
 # Test endpoints
 curl http://localhost:9090/-/healthy
@@ -277,12 +277,12 @@ docker exec alertmanager cat /etc/alertmanager/alertmanager.yml | grep "ALERTMAN
 
 ### Services Restarting in Loop
 
-**Symptom:** Containers display `Restarting (1)` in `docker-compose ps`
+**Symptom:** Containers display `Restarting (1)` in `docker compose ps`
 
 **Diagnosis:**
 ```bash
-docker-compose logs prometheus --tail=50
-docker-compose logs alertmanager --tail=50
+docker compose logs prometheus --tail=50
+docker compose logs alertmanager --tail=50
 ```
 
 **Common Solutions:**
@@ -323,7 +323,7 @@ docker exec prometheus cat /etc/prometheus/prometheus.yml | grep "\${"
 curl -X POST http://localhost:9090/-/reload
 
 # Restart services
-docker-compose restart prometheus alertmanager
+docker compose restart prometheus alertmanager
 ```
 
 ---
@@ -409,7 +409,7 @@ process_resident_memory_bytes{job="chariot-backend"}
 
 ### After Deployment
 
-- [ ] `docker-compose ps` shows services `Up (healthy)`
+- [ ] `docker compose ps` shows services `Up (healthy)`
 - [ ] Health checks respond correctly
 - [ ] Configuration correctly generated (verify with `docker exec`)
 - [ ] Logs without errors
@@ -456,7 +456,7 @@ alertmanager   prom/alertmanager      Up 1 minute (healthy) ✅
 
 If you encounter a problem:
 
-1. Check logs: `docker-compose logs SERVICE --tail=50`
+1. Check logs: `docker compose logs SERVICE --tail=50`
 2. Verify no configuration errors: see Troubleshooting section
 3. Consult Prometheus/AlertManager documentation
 4. Open an issue if the problem persists

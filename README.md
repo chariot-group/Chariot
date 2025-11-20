@@ -56,7 +56,7 @@ Chariot/
    
    **Development** (with hot-reload):
    ```bash
-   docker-compose up
+   docker compose up
    # or
    ./scripts/deploy.sh dev
    ```
@@ -74,10 +74,10 @@ Chariot/
    Or start specific services:
    ```bash
    # Start only Chariot microservice
-   docker-compose --profile chariot up
+   docker compose --profile chariot up
 
    # Start only infrastructure
-   docker-compose --profile infrastructure up
+   docker compose --profile infrastructure up
    ```
 
 ## 📦 Microservices
@@ -125,28 +125,28 @@ pnpm format
 
 ```bash
 # Start all services (development)
-docker-compose up
+docker compose up
 
 # Start in production mode
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f compose.yml -f compose.prod.yml up -d
 
 # Start in integration mode
-docker-compose -f docker-compose.yml -f docker-compose.integ.yml up -d
+docker compose -f compose.yml -f compose.integ.yml up -d
 
 # Or use the deployment script (recommended)
 ./scripts/deploy.sh [dev|integ|prod]
 
 # Stop all services
-docker-compose down
+docker compose down
 
 # Clean all volumes and containers
-docker-compose down -v --remove-orphans
+docker compose down -v --remove-orphans
 
 # View logs
-docker-compose logs -f [service-name]
+docker compose logs -f [service-name]
 
 # Rebuild specific service
-docker-compose build [service-name]
+docker compose build [service-name]
 ```
 
 See [DOCKER_CHEATSHEET.md](./DOCKER_CHEATSHEET.md) for more commands.
@@ -179,7 +179,7 @@ This project supports three deployment environments:
 - **Database**: MongoDB (latest)
 - **Volumes**: Bind mounts for live code updates
 - **Logs**: Verbose console output
-- **Command**: `docker-compose up` or `./scripts/deploy.sh dev`
+- **Command**: `docker compose up` or `./scripts/deploy.sh dev`
 
 ### Integration
 - **Purpose**: Integration testing and QA
@@ -229,13 +229,13 @@ The script automatically:
 
 ```bash
 # Development
-docker-compose up -d
+docker compose up -d
 
 # Integration
-docker-compose -f docker-compose.yml -f docker-compose.integ.yml up -d
+docker compose -f compose.yml -f compose.integ.yml up -d
 
 # Production
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f compose.yml -f compose.prod.yml up -d
 ```
 
 ### Server Deployment
@@ -256,12 +256,12 @@ services/
 └── chariot/
     ├── backend/              # Chariot Backend (NestJS 11)
     ├── frontend/             # Chariot Frontend (Next.js 15)
-    ├── docker-compose.yml    # Dev configuration
-    ├── docker-compose.prod.yml
-    └── docker-compose.integ.yml
+    ├── compose.yml    # Dev configuration
+    ├── compose.prod.yml
+    └── compose.integ.yml
 
 infrastructure/
-├── docker-compose.yml        # Infrastructure services
+├── compose.yml        # Infrastructure services
 ├── prometheus/               # Metrics & alerts
 ├── grafana/                  # Dashboards
 ├── loki-config.yml          # Log aggregation

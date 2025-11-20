@@ -63,7 +63,7 @@ This project follows a **microservices architecture** with:
 8. **Test** your changes in all environments
    ```bash
    # Development
-   docker-compose up
+   docker compose up
    
    # Integration
    ./scripts/deploy.sh integ
@@ -158,7 +158,7 @@ Create `services/your-service/package.json`:
 
 ### 3. Configure Docker Compose
 
-Create `services/your-service/docker-compose.yml`:
+Create `services/your-service/compose.yml`:
 
 ```yaml
 services:
@@ -249,13 +249,13 @@ YOUR_SERVICE_DATABASE_URL=
 
 ### 6. Update Root Docker Compose
 
-Add service include in root `docker-compose.yml`:
+Add service include in root `compose.yml`:
 
 ```yaml
 include:
-  - services/chariot/docker-compose.yml
-  - services/your-service/docker-compose.yml  # Add this line
-  - infrastructure/docker-compose.yml
+  - services/chariot/compose.yml
+  - services/your-service/compose.yml  # Add this line
+  - infrastructure/compose.yml
 ```
 
 ### 7. Configure Monitoring
@@ -322,7 +322,7 @@ scrape_configs:
 
 #### Mount Logs Volume
 
-Update `infrastructure/docker-compose.yml` in promtail service:
+Update `infrastructure/compose.yml` in promtail service:
 
 ```yaml
 promtail:
@@ -381,7 +381,7 @@ Add workspace reference in root `package.json`:
 pnpm install
 
 # Start in development mode
-docker-compose up your-service
+docker compose up your-service
 
 # Verify health
 curl http://localhost:YOUR_SERVICE_PORT/health
@@ -407,7 +407,7 @@ Create `infrastructure/grafana/dashboards/your-service.json` following the struc
 - [ ] Docker Compose files created (dev, integ, prod if needed)
 - [ ] Dockerfile with multi-stage builds
 - [ ] Environment variables added to `.env`
-- [ ] Service included in root docker-compose.yml
+- [ ] Service included in root compose.yml
 - [ ] Prometheus scrape configuration added
 - [ ] Promtail log collection configured
 - [ ] Health check endpoint implemented

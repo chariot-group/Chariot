@@ -1,9 +1,0 @@
-# Production overrides
-include:
-  - path: ./infrastructure/docker-compose.yml
-    env_file: .env
-
-  - path: ./services/chariot/docker-compose.yml
-    env_file: .env
-  - path: ./services/chariot/docker-compose.prod.yml
-    env_file: .env

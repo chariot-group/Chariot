@@ -29,7 +29,7 @@ build
 .DS_Store
 Thumbs.db
 
-# Env files (will be passed via docker-compose)
+# Env files (will be passed via compose)
 .env
 .env.local
 .env.*.local
@@ -44,7 +44,7 @@ docs/
 
 # Docker
 Dockerfile*
-docker-compose*.yml
+compose*.yml
 .dockerignore
 
 # Test

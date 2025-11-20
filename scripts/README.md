@@ -86,7 +86,7 @@ Initialization script for Prometheus that:
 
 **Usage**:
 ```yaml
-# In docker-compose.yml (infrastructure/)
+# In compose.yml (infrastructure/)
 prometheus:
   entrypoint: /scripts/prometheus-entrypoint.sh
   command:
@@ -115,7 +115,7 @@ Initialization script for AlertManager that:
 
 **Usage**:
 ```yaml
-# In docker-compose.yml (infrastructure/)
+# In compose.yml (infrastructure/)
 alertmanager:
   entrypoint: /scripts/alertmanager-entrypoint.sh
   command:
@@ -145,7 +145,7 @@ Or use an image that already contains it (our infrastructure images already incl
 
 ### Error: Template not found
 
-Check the volume mounts in your docker-compose file:
+Check the volume mounts in your compose file:
 ```yaml
 volumes:
   - ./infrastructure/prometheus.yml.template:/etc/prometheus/prometheus.yml.template:ro

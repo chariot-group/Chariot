@@ -141,7 +141,7 @@ Test your changes across different environments:
 
 ```bash
 # Development (hot-reload)
-docker-compose up
+docker compose up
 
 # Integration (production build, fast healthchecks)
 ./scripts/deploy.sh integ
