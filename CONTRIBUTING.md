@@ -118,6 +118,305 @@ When modifying the shared library:
 3. Test across all consuming services
 4. Document breaking changes in CHANGELOG.md
 
+## 🔧 Adding a New Microservice
+
+Follow these steps to add a new microservice to the Chariot ecosystem:
+
+### 1. Create Service Directory Structure
+
+```bash
+# Create the service directory
+mkdir -p services/your-service/{backend,frontend}
+
+# Or for backend-only services
+mkdir -p services/your-service
+```
+
+### 2. Initialize Service Package
+
+Create `services/your-service/package.json`:
+
+```json
+{
+  "name": "@chariot/your-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Description of your service",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@chariot/shared": "workspace:*",
+    "@nestjs/core": "^11.0.13",
+    "@nestjs/common": "^11.0.13"
+  }
+}
+```
+
+### 3. Configure Docker Compose
+
+Create `services/your-service/docker-compose.yml`:
+
+```yaml
+services:
+  your-service:
+    container_name: your-service
+    build:
+      context: ../../
+      dockerfile: services/your-service/Dockerfile
+    env_file:
+      - ../../.env
+    ports:
+      - "${YOUR_SERVICE_PORT}:${YOUR_SERVICE_PORT}"
+    networks:
+      - chariot-network
+    depends_on:
+      chariot-mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:${YOUR_SERVICE_PORT}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  chariot-network:
+    name: chariot_chariot-network
+    external: true
+```
+
+### 4. Create Dockerfile
+
+Create `services/your-service/Dockerfile`:
+
+```dockerfile
+FROM node:22-alpine AS base
+WORKDIR /workspace
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy workspace files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY shared/ ./shared/
+COPY services/your-service/ ./services/your-service/
+
+# Configure pnpm for better network reliability
+RUN pnpm config set network-timeout 300000 && \
+    pnpm config set fetch-retries 5 && \
+    pnpm config set fetch-retry-mintimeout 20000 && \
+    pnpm config set fetch-retry-maxtimeout 120000
+
+# Install dependencies with retry logic
+RUN pnpm install --frozen-lockfile || \
+    (sleep 10 && pnpm install --frozen-lockfile) || \
+    (sleep 30 && pnpm install --frozen-lockfile)
+
+# Development
+FROM base AS development
+WORKDIR /workspace/services/your-service
+CMD ["pnpm", "dev"]
+
+# Production build
+FROM base AS builder
+WORKDIR /workspace
+RUN pnpm --filter @chariot/your-service build
+
+# Production runtime
+FROM node:22-alpine AS production
+WORKDIR /app
+COPY --from=builder /workspace/services/your-service/dist ./dist
+COPY --from=builder /workspace/services/your-service/node_modules ./node_modules
+COPY --from=builder /workspace/services/your-service/package.json ./
+
+CMD ["node", "dist/main"]
+```
+
+### 5. Add Environment Variables
+
+Update `.env` with service-specific variables:
+
+```bash
+# Your Service Configuration
+YOUR_SERVICE_PORT=
+YOUR_SERVICE_DATABASE_URL=
+# Add all required variables without default values
+```
+
+### 6. Update Root Docker Compose
+
+Add service include in root `docker-compose.yml`:
+
+```yaml
+include:
+  - services/chariot/docker-compose.yml
+  - services/your-service/docker-compose.yml  # Add this line
+  - infrastructure/docker-compose.yml
+```
+
+### 7. Configure Monitoring
+
+#### Add Prometheus Metrics
+
+In your service, expose metrics endpoint:
+
+```typescript
+// src/metrics/metrics.controller.ts
+import { Controller, Get } from '@nestjs/common';
+import { register } from 'prom-client';
+
+@Controller('metrics')
+export class MetricsController {
+  @Get()
+  getMetrics() {
+    return register.metrics();
+  }
+}
+```
+
+#### Update Prometheus Configuration
+
+Edit `infrastructure/prometheus.yml.template`:
+
+```yaml
+scrape_configs:
+  # ... existing jobs
+  
+  - job_name: 'your-service'
+    static_configs:
+      - targets: ['your-service:${YOUR_SERVICE_PORT}']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+```
+
+Add environment variables in `.env`:
+
+```bash
+PROMETHEUS_YOUR_SERVICE_TARGET=your-service:YOUR_SERVICE_PORT
+```
+
+### 8. Configure Logging
+
+#### Update Promtail Configuration
+
+Edit `infrastructure/promtail-config.yml`:
+
+```yaml
+scrape_configs:
+  # ... existing jobs
+  
+  - job_name: your-service-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: your-service
+          service: your-service
+          component: application
+          __path__: /logs/your-service/*.log
+```
+
+#### Mount Logs Volume
+
+Update `infrastructure/docker-compose.yml` in promtail service:
+
+```yaml
+promtail:
+  volumes:
+    # ... existing volumes
+    - ../services/your-service/logs:/logs/your-service:ro
+```
+
+### 9. Create Service Documentation
+
+Create `services/your-service/README.md`:
+
+```markdown
+# Your Service
+
+## Description
+Brief description of what this service does.
+
+## Environment Variables
+- `YOUR_SERVICE_PORT`: Port the service listens on
+- `YOUR_SERVICE_DATABASE_URL`: Database connection string
+
+## Endpoints
+- `GET /health`: Health check
+- `GET /metrics`: Prometheus metrics
+
+## Development
+\`\`\`bash
+pnpm --filter @chariot/your-service dev
+\`\`\`
+
+## Testing
+\`\`\`bash
+pnpm --filter @chariot/your-service test
+\`\`\`
+```
+
+### 10. Update Root Package.json
+
+Add workspace reference in root `package.json`:
+
+```json
+{
+  "scripts": {
+    "your-service:dev": "pnpm --filter @chariot/your-service dev",
+    "your-service:build": "pnpm --filter @chariot/your-service build",
+    "your-service:test": "pnpm --filter @chariot/your-service test"
+  }
+}
+```
+
+### 11. Test the Service
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start in development mode
+docker-compose up your-service
+
+# Verify health
+curl http://localhost:YOUR_SERVICE_PORT/health
+
+# Check metrics
+curl http://localhost:YOUR_SERVICE_PORT/metrics
+
+# Check Prometheus target
+curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | select(.job=="your-service")'
+
+# Check logs in Loki
+curl 'http://localhost:3100/loki/api/v1/label/job/values' | jq
+```
+
+### 12. Create Grafana Dashboard (Optional)
+
+Create `infrastructure/grafana/dashboards/your-service.json` following the structure of existing dashboards.
+
+### Checklist for New Service
+
+- [ ] Directory structure created
+- [ ] package.json configured with workspace reference
+- [ ] Docker Compose files created (dev, integ, prod if needed)
+- [ ] Dockerfile with multi-stage builds
+- [ ] Environment variables added to `.env`
+- [ ] Service included in root docker-compose.yml
+- [ ] Prometheus scrape configuration added
+- [ ] Promtail log collection configured
+- [ ] Health check endpoint implemented
+- [ ] Metrics endpoint implemented
+- [ ] Service documentation created
+- [ ] Shared library dependency added
+- [ ] Tests implemented
+- [ ] Tested in all three environments (dev/integ/prod)
+
 ## 🆘 Help
 
 - **Technical questions** → [Technical Documentation](docs/technical/README.md)  
