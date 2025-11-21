@@ -5,6 +5,7 @@ on:
     branches:
       - '**'
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,31 +18,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js for ${{ matrix.project }}
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: ${{ matrix.project }}/package-lock.json
+          cache: 'pnpm'
 
-      - name: Install dependencies for ${{ matrix.project }}
-        working-directory: ./${{ matrix.project }}
-        run: |
-          if [[ "$GITHUB_REF_NAME" == "main" || "$GITHUB_REF_NAME" == "integ" ]]; then
-            npm ci
-          else
-            npm install
-          fi
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Format check for ${{ matrix.project }}
-        working-directory: ./${{ matrix.project }}
-        run: npm run format
+        working-directory: ./services/chariot/${{ matrix.project }}
+        run: pnpm run format
 
       - name: Run unit tests for ${{ matrix.project }}
-        working-directory: ./${{ matrix.project }}
+        working-directory: ./services/chariot/${{ matrix.project }}
         if: matrix.project == 'backend'
-        run: npm test
+        run: pnpm test
 
       - name: Build ${{ matrix.project }}
-        working-directory: ./${{ matrix.project }}
-        run: npm run build
+        working-directory: ./services/chariot/${{ matrix.project }}
+        run: pnpm run build

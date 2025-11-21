@@ -7,18 +7,18 @@ LOG SOURCES
 │
 ├─ Backend (NestJS)
 │  │
-│  ├─ Configured Winston Logger (backend/src/logger/winston.logger.ts)
+│  ├─ Configured Winston Logger (services/chariot/backend/src/logger/winston.logger.ts)
 │  │  │
 │  │  ├─ this.logger.log('message', 'Context')
 │  │  │  │
-│  │  │  └─ Writes to: backend/logger/logs/combine.log
+│  │  │  └─ Writes to: services/chariot/backend/logger/logs/combine.log
 │  │  │     Format: 2024-10-24 14:30:45.123 PM - info: [AppService] message
 │  │  │
 │  │  ├─ this.logger.error('error', 'Context')
 │  │  │  │
 │  │  │  └─ Writes to: 
-│  │  │     ├─ backend/logger/logs/error.log (separate)
-│  │  │     └─ backend/logger/logs/combine.log (also)
+│  │  │     ├─ services/chariot/backend/logger/logs/error.log (separate)
+│  │  │     └─ services/chariot/backend/logger/logs/combine.log (also)
 │  │  │
 │  │  └─ Production ONLY: files rotate by size
 │  │
@@ -55,15 +55,15 @@ LOG SOURCES
 ```
 CREATED FILES
 │
-├─ backend/logger/logs/combine.log          ← Winston
-├─ backend/logger/logs/error.log            ← Winston (errors)
-├─ frontend/logs/frontend.log               ← Next.js
-└─ mongo/logs/mongod.log                    ← MongoDB
+├─ services/chariot/backend/logger/logs/combine.log    ← Winston
+├─ services/chariot/backend/logger/logs/error.log      ← Winston (errors)
+├─ services/chariot/frontend/logs/frontend.log         ← Next.js
+└─ infrastructure/mongo/logs/mongod.log                ← MongoDB
 
 │
 ▼ PROMTAIL SCRAPE (every 30s)
 │
-├─ /logs/backend/*.log
+├─ /logs/chariot-backend/*.log
 │  │
 │  └─ Applies backend parser:
 │     ├─ Regex: ^(?P<timestamp>...) - (?P<level>\w+): \[(?P<context>...)\] (?P<message>.*)$
@@ -78,7 +78,7 @@ CREATED FILES
 │        ├─ Labels: {job="backend", service="nestjs", level="error", context="AppService", environment="development"}
 │        └─ Content: "User login failed: invalid credentials"
 │
-├─ /logs/frontend/*.log
+├─ /logs/chariot-frontend/*.log
 │  │
 │  └─ Applies frontend parser:
 │     ├─ Simple regex: (?P<message>.*)
@@ -89,7 +89,7 @@ CREATED FILES
 │     │
 │     └─ Note: Logs not structured, only plain text
 │
-└─ /logs/mongodb/*.log
+└─ /logs/chariot-mongo/*.log
    │
    └─ Applies MongoDB parser:
       ├─ JSON parser: {"t":{"$date":"2024-10-24T14:30:45.123Z"},"s":"I","c":"CONN","msg":"..."}
