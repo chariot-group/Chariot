@@ -1,0 +1,66 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "username": "Username",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "login": {
+    "title": "Login",
+    "subtitle": "Sign in to your Chariot account",
+    "loginButton": "Sign In",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "signupLink": "Create account",
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "serverError": "Server error. Please try again."
+    }
+  },
+  "signup": {
+    "title": "Create Account",
+    "subtitle": "Join Chariot today",
+    "signupButton": "Sign Up",
+    "alreadyAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "errors": {
+      "usernameRequired": "Username is required",
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "userExists": "A user with this email already exists",
+      "serverError": "Server error. Please try again."
+    },
+    "success": {
+      "accountCreated": "Account created successfully! Redirecting to login..."
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your email to reset your password",
+    "resetButton": "Reset",
+    "backToLogin": "Back to login",
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email",
+      "userNotFound": "No user found with this email",
+      "serverError": "Server error. Please try again."
+    },
+    "success": {
+      "emailSent": "A reset email has been sent to your address"
+    }
+  }
+}

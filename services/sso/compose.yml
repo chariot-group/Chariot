@@ -1,0 +1,109 @@
+services:
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    env_file:
+      - ../../.env
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - sso-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak
+    env_file:
+      - ../../.env
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: ${KEYCLOAK_DB_URL}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HOSTNAME_PORT: ${KEYCLOAK_PORT}
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+      KC_PROXY: edge
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_SPI_REALM_RESTAPI_EXTENSION_ENABLED: true
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./keycloak/master-realm.json:/opt/keycloak/data/import/master-realm.json
+      - ./keycloak/themes:/opt/keycloak/themes
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - sso-network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  keycloak-config:
+    image: postgres:16-alpine
+    container_name: keycloak-config
+    env_file:
+      - ../../.env
+    networks:
+      - sso-network
+    volumes:
+      - ./keycloak/init-db.sql:/init-db.sql
+    depends_on:
+      keycloak:
+        condition: service_started
+    command: >
+      sh -c "
+        echo '⏳ Attente du démarrage complet de Keycloak...' &&
+        sleep 20 &&
+        echo '🔧 Configuration de SSL sur les realms...' &&
+        PGPASSWORD=${KEYCLOAK_DB_PASSWORD} psql -h keycloak-db -U ${KEYCLOAK_DB_USER} -d ${KEYCLOAK_DB_NAME} -f /init-db.sql &&
+        echo '✅ Configuration SSL terminée'
+      "
+    restart: "no"
+
+  sso-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sso-frontend
+    env_file:
+      - ../../.env
+    environment:
+      - VITE_KEYCLOAK_URL=${KEYCLOAK_URL}
+      - VITE_KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - VITE_KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - sso-network
+    depends_on:
+      - keycloak
+
+volumes:
+  keycloak-db-data:
+
+networks:
+  sso-network:
+    driver: bridge
