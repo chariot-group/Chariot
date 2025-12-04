@@ -55,7 +55,8 @@ export const keycloakService = {
                 firstName: userData.firstName,
                 lastName: userData.lastName,
                 enabled: true,
-                emailVerified: true,
+                emailVerified: false,
+                requiredActions: ['VERIFY_EMAIL'],
                 attributes: {
                     username: [userData.username]
                 }
@@ -120,6 +121,17 @@ export const keycloakService = {
                 })
             }
 
+            // Envoyer l'email de vérification
+            await adminApi.put(`/users/${userId}/execute-actions-email`,
+                ['VERIFY_EMAIL'],
+                {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            )
+
             return { success: true, userId }
         } catch (error) {
             console.error('Signup error:', error.response?.data || error)
@@ -165,13 +177,12 @@ export const keycloakService = {
 
     async getAdminToken() {
         try {
-            // Utiliser l'utilisateur admin du realm chariot
             const response = await api.post('/protocol/openid-connect/token',
                 new URLSearchParams({
                     grant_type: 'password',
-                    client_id: 'admin-client',
-                    username: 'admin@chariot.tools',
-                    password: 'admin123'
+                    client_id: CLIENT_ID,
+                    username: import.meta.env.VITE_KEYCLOAK_ADMIN_EMAIL,
+                    password: import.meta.env.VITE_KEYCLOAK_ADMIN_PASSWORD
                 }),
                 {
                     headers: {
