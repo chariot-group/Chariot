@@ -99,12 +99,9 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading || !keycloak) return;
 
-    const publicPaths = ["/auth/login", "/auth/register"];
-    const isPublicPath = publicPaths.some((path) => pathname.includes(path));
-
-    if (!authenticated && !isPublicPath) {
-      router.push(`/${locale}/auth/login`);
-    } else if (authenticated && isPublicPath) {
+    if (!authenticated) {
+      login();
+    } else {
       router.push(`/${locale}`);
     }
   }, [authenticated, loading, pathname, router, locale, keycloak]);

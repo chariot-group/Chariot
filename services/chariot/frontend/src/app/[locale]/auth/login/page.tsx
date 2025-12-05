@@ -5,18 +5,10 @@ import { Card } from "@/components/ui/card";
 import { useKeycloak } from "@/providers/KeycloakProvider";
 import LocaleSwitcher from "@/components/locale/LocaleSwitcher";
 import { useTranslations } from "next-intl";
-import { useEffect } from "react";
 
 export default function LoginPage() {
   const t = useTranslations("LoginPage");
-  const { authenticated, loading, login, register } = useKeycloak();
-
-  useEffect(() => {
-    // Si l'utilisateur est déjà authentifié, le KeycloakProvider le redirigera automatiquement
-    if (authenticated) {
-      console.log("User already authenticated");
-    }
-  }, [authenticated]);
+  const { loading, login } = useKeycloak();
 
   if (loading) {
     return (
@@ -39,16 +31,7 @@ export default function LoginPage() {
               className="w-full">
               {t("loginButton")}
             </Button>
-
-            <Button
-              onClick={register}
-              variant="outline"
-              className="w-full">
-              {t("registerButton")}
-            </Button>
           </div>
-
-          <p className="text-sm text-muted-foreground text-center">{t("keycloakInfo")}</p>
         </div>
       </Card>
     </div>
