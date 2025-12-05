@@ -38,7 +38,7 @@ export class NpcController {
 
   @Post()
   createNpc(@Req() request, @Body() createNpcDto: CreateNpcDto) {
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
 
     return this.npcService.create(createNpcDto, userId);
   }

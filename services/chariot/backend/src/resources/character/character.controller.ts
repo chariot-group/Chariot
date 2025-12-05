@@ -54,7 +54,7 @@ export class CharacterController {
     @Query('name') name?: string,
     @Query('sort') sort?: string,
   ) {
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
     return this.characterService.findAllByUser(userId, {
       page,
       offset,

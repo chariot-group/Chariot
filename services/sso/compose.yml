@@ -68,35 +68,13 @@ services:
         condition: service_healthy
     networks:
       - sso-network
+      - shared-network
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
-
-  sso-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: sso-frontend
-    env_file:
-      - ../../.env
-    environment:
-      - VITE_KEYCLOAK_URL=${KEYCLOAK_URL}
-      - VITE_KEYCLOAK_REALM=${KEYCLOAK_REALM}
-      - VITE_KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
-      - VITE_KEYCLOAK_ADMIN_EMAIL=${KEYCLOAK_ADMIN_EMAIL}
-      - VITE_KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    networks:
-      - sso-network
-    depends_on:
-      - keycloak
 
   keycloak-config:
     image: quay.io/keycloak/keycloak:23.0
@@ -136,3 +114,6 @@ volumes:
 networks:
   sso-network:
     driver: bridge
+  shared-network:
+    name: shared-network
+    external: true

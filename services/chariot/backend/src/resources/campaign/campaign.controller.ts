@@ -93,7 +93,7 @@ export class CampaignController {
       'Archived',
     );
 
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
 
     return this.campaignService.create(createCampaignDto, userId);
   }
@@ -106,7 +106,7 @@ export class CampaignController {
     @Query('sort') sort?: string,
     @Query('label') label?: string,
   ) {
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
 
     return this.campaignService.findAllByUser(userId, {
       page,
@@ -128,7 +128,7 @@ export class CampaignController {
     @Query('type') type: 'all' | 'main' | 'npc' | 'archived' = 'all',
     @Query('onlyWithMembers') onlyWithMembers?: boolean,
   ) {
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
 
     let checkCampaginId = await this.campaignService.findOne(id);
     if (checkCampaginId.data) {

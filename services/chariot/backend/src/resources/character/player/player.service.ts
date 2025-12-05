@@ -43,7 +43,7 @@ export class PlayerService {
       const start = Date.now();
       const newPlayer = new this.characterModel.discriminators['player']({
         ...createPlayerDto,
-        createdBy: new Types.ObjectId(userId),
+        createdBy: userId,
       });
       const savedPlayer = await newPlayer.save();
       await this.groupModel.updateMany(

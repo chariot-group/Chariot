@@ -26,13 +26,13 @@ export class IsCreatorGuard implements CanActivate {
     if (!serviceClass) return true; // No service specified
 
     const request = context.switchToHttp().getRequest();
-    const userId = request.user?.userId;
+    const keycloakId = request.user?.keycloakId;
     const resourceId = request.params?.id;
-    if (!userId) throw new UnauthorizedException('User not authenticated');
+    if (!keycloakId) throw new UnauthorizedException('User not authenticated');
     if (!resourceId) throw new ForbiddenException('Missing resource id');
 
     if (!Types.ObjectId.isValid(resourceId)) {
-      const message = `Error while fetching character #${resourceId}: Id is not a valid mongoose id`;
+      const message = `Error while fetching resource #${resourceId}: Id is not a valid mongoose id`;
       throw new BadRequestException(message);
     }
     try {
@@ -46,7 +46,7 @@ export class IsCreatorGuard implements CanActivate {
       const resource = await service.findOne(resourceId);
 
       if (!resource.data) throw new NotFoundException('Resource not found');
-      if (resource.data.createdBy?.toString() !== userId.toString()) {
+      if (resource.data.createdBy !== keycloakId) {
         throw new ForbiddenException('Forbidden: not the creator');
       }
 

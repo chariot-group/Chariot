@@ -9,22 +9,23 @@ import {
   CampaignDocument,
 } from '@/resources/campaign/schemas/campaign.schema';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
-import { User, UserDocument } from '@/resources/user/schemas/user.schema';
 import 'reflect-metadata';
-import * as bcrypt from 'bcrypt';
 import {
   Character,
   CharacterDocument,
 } from '@/resources/character/core/schemas/character.schema';
+import { KeycloakAdminService } from '@/seeder/keycloak-admin.service';
 
 @Injectable()
 export class SeederService {
+  private readonly logger = new Logger(SeederService.name);
+
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
+    private readonly keycloakAdminService: KeycloakAdminService,
   ) { }
 
   getRandomObjects() {
@@ -43,23 +44,32 @@ export class SeederService {
   async seed(clean: boolean) {
     if (clean) {
       Logger.log('Cleaning database...', this.SERVICE_NAME);
-      await this.userModel.deleteMany({});
       await this.campaignModel.deleteMany({});
       await this.groupModel.deleteMany({});
       await this.characterModel.deleteMany({});
+
+      Logger.log('Cleaning Keycloak users...', this.SERVICE_NAME);
+      await this.keycloakAdminService.deleteAllUsers();
+
       Logger.log('Database cleaned', this.SERVICE_NAME);
     }
 
     const userCount = faker.number.int({ min: 4, max: 8 });
 
     for (let i = 0; i < userCount; i++) {
-      let hashPassword = await bcrypt.hash(process.env.DEFAULT_PASSWORD, 10);
-      await this.userModel.create({
-        username: faker.person.fullName(),
-        email: faker.internet.email(),
-        password: hashPassword,
-      });
-      const users = await this.userModel.find();
+      const username = faker.internet.username();
+      const email = faker.internet.email();
+      const firstName = faker.person.firstName();
+      const lastName = faker.person.lastName();
+      const password = process.env.DEFAULT_PASSWORD;
+
+      const userId = await this.keycloakAdminService.createUser(
+        username,
+        email,
+        password,
+        firstName,
+        lastName,
+      );
 
       const campaigns = [];
       const campaignsPerUser: number = faker.number.int({ min: 0, max: 3 });
@@ -86,7 +96,7 @@ export class SeederService {
           const mainCharacters = await this.characterModel.create(
             this.getRandomObjects().map((character) => ({
               ...character,
-              createdBy: users[i]._id,
+              createdBy: userId,
             })),
           );
 
@@ -95,7 +105,7 @@ export class SeederService {
             description: faker.lorem.paragraph({ min: 0, max: 3 }),
             active: faker.number.int({ min: 0, max: 1 }) === 1,
             characters: mainCharacters.map((c) => c._id),
-            createdBy: users[i]._id,
+            createdBy: userId,
           });
 
           mainCharacters.forEach((c: CharacterDocument) => {
@@ -111,7 +121,7 @@ export class SeederService {
           const npcCharacters = await this.characterModel.create(
             this.getRandomObjects().map((character) => ({
               ...character,
-              createdBy: users[i]._id,
+              createdBy: userId,
             })),
           );
 
@@ -120,7 +130,7 @@ export class SeederService {
             description: faker.lorem.paragraph({ min: 0, max: 3 }),
             active: faker.number.int({ min: 0, max: 1 }) === 1,
             characters: npcCharacters.map((c) => c._id),
-            createdBy: users[i]._id,
+            createdBy: userId,
           });
 
           npcCharacters.forEach((c: CharacterDocument) => {
@@ -136,7 +146,7 @@ export class SeederService {
           const archivedCharacters = await this.characterModel.create(
             this.getRandomObjects().map((character) => ({
               ...character,
-              createdBy: users[i]._id,
+              createdBy: userId,
             })),
           );
 
@@ -145,7 +155,7 @@ export class SeederService {
             description: faker.lorem.paragraph({ min: 0, max: 3 }),
             active: faker.number.int({ min: 0, max: 1 }) === 1,
             characters: archivedCharacters.map((c) => c._id),
-            createdBy: users[i]._id,
+            createdBy: userId,
           });
 
           archivedCharacters.forEach((c: CharacterDocument) => {
@@ -165,14 +175,8 @@ export class SeederService {
             npc: npcGroups,
             archived: archivedGroups,
           },
-          users: [users[i]._id],
-          createdBy: users[i]._id,
+          createdBy: userId,
         });
-
-        await this.userModel.updateMany(
-          { _id: users[i]._id },
-          { $addToSet: { campaigns: campaign._id } },
-        );
 
         await this.groupModel.updateMany(
           { _id: { $in: mainGroups.map((id) => id) } },

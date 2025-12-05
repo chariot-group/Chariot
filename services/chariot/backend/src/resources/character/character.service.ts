@@ -26,7 +26,7 @@ export class CharacterService {
   private readonly logger = new Logger(this.SERVICE_NAME);
 
   async findAllByUser(
-    userId: Types.ObjectId,
+    userId: string,
     query: { page?: number; offset?: number; name?: string; sort?: string },
     groupId?: string,
   ) {
@@ -41,7 +41,7 @@ export class CharacterService {
       const filters = {
         name: { $regex: `${decodeURIComponent(name)}`, $options: 'i' },
         deletedAt: { $eq: null },
-        createdBy: new Types.ObjectId(userId),
+        createdBy: userId,
       };
       if (groupId) {
         filters['groups'] = { $in: [groupId] };

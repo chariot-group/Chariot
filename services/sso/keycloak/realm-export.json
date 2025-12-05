@@ -4,7 +4,7 @@
   "displayName": "Chariot SSO",
   "displayNameHtml": "<b>Chariot</b> SSO",
   "registrationAllowed": true,
-  "registrationEmailAsUsername": true,
+  "registrationEmailAsUsername": false,
   "rememberMe": true,
   "verifyEmail": true,
   "loginWithEmailAllowed": true,

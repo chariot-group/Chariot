@@ -46,7 +46,7 @@ export class GroupService {
         ...groupData,
         characters,
         campaigns: campaigns.map((campaign) => campaign.idCampaign),
-        createdBy: new Types.ObjectId(userId),
+        createdBy: userId,
       });
 
       await this.characterModel.updateMany(
@@ -81,7 +81,7 @@ export class GroupService {
   }
 
   async findAllByUser(
-    userId: Types.ObjectId,
+    userId: string,
     query: {
       page?: number;
       offset?: number;
@@ -111,7 +111,7 @@ export class GroupService {
       const filters: any = {
         label: { $regex: `${decodeURIComponent(label)}`, $options: 'i' },
         deletedAt: { $eq: null },
-        createdBy: new Types.ObjectId(userId),
+        createdBy: userId,
       };
 
       if (onlyWithMembers == 'true') {

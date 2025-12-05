@@ -50,7 +50,7 @@ export class NpcService {
     }
   }
 
-  async create(createNpcDto: CreateNpcDto, userId: Types.ObjectId) {
+  async create(createNpcDto: CreateNpcDto, userId: string) {
     try {
       if (createNpcDto.groups) {
         for (const groupId of createNpcDto.groups) {
@@ -66,7 +66,7 @@ export class NpcService {
       const start = Date.now();
       const newNpc = new this.characterModel.discriminators['npc']({
         ...createNpcDto,
-        createdBy: new Types.ObjectId(userId),
+        createdBy: userId,
       });
       const savedNpc = await newNpc.save();
       if (createNpcDto.groups && createNpcDto.groups.length > 0) {
@@ -79,7 +79,7 @@ export class NpcService {
       }
 
       // Incrémentation du compteur Prometheus
-      this.charactersCreatedCounter.inc({ user_id: userId.toString() });
+      this.charactersCreatedCounter.inc({ user_id: userId });
 
       const end = Date.now();
 

@@ -1,17 +1,14 @@
 import { useTranslations } from "next-intl";
 import { Button } from "../ui/button";
 import { ICampaign } from "@/models/campaigns/ICampaign";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import LocaleSwitcher from "@/components/locale/LocaleSwitcher";
-import { useParams } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import jwt from "jsonwebtoken";
-import AuthService from "@/services/authService";
-import { IUser } from "@/models/users/IUser";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import stringService from "@/services/stringService";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useRouter } from "next/navigation";
+import { useKeycloak } from "@/providers/KeycloakProvider";
 
 interface HeaderProps {
   campaign: ICampaign | null;
@@ -21,39 +18,21 @@ interface HeaderProps {
 export function Header({ campaign, battle }: HeaderProps) {
   const t = useTranslations("Header");
   const router = useRouter();
+  const { keycloak, authenticated, logout: keycloakLogout } = useKeycloak();
 
-  const [user, setUser] = useState<IUser>();
-
-  const getProfile = useCallback(
-    async (id: string) => {
-      try {
-        let response = await AuthService.profile(id);
-        if (!response.data) {
-          logout();
-          return;
-        }
-        setUser(response.data);
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      }
-    },
-    [router],
-  );
-
-  const logout = () => {
-    document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    router.push("/auth/login");
-  };
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
 
   useEffect(() => {
-    const token: string | undefined = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("accessToken="))
-      ?.split("=")[1];
-    const userId: string = jwt.decode(token ?? "")?.sub as string;
+    if (authenticated && keycloak?.tokenParsed) {
+      setUsername(keycloak.tokenParsed.preferred_username || "");
+      setEmail(keycloak.tokenParsed.email || "");
+    }
+  }, [authenticated, keycloak]);
 
-    getProfile(userId);
-  }, []);
+  const handleLogout = () => {
+    keycloakLogout();
+  };
 
   return (
     <header className="text-white p-4 bg-card border-b-2 border-ring shadow-md">
@@ -83,18 +62,18 @@ export function Header({ campaign, battle }: HeaderProps) {
         </div>
         <div className="flex flex-row items-center gap-4">
           <LocaleSwitcher />
-          {user && (
+          {authenticated && username && (
             <Popover>
               <PopoverTrigger asChild>
                 <Avatar className="cursor-pointer">
                   <AvatarFallback className="bg-background text-foreground border">
-                    {stringService.getInitials(user.username)}
+                    {stringService.getInitials(username)}
                   </AvatarFallback>
                 </Avatar>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-2 mr-5">
                 <a
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="hover:underline underline-offset-4 cursor-pointer">
                   {t("signout")}
                 </a>

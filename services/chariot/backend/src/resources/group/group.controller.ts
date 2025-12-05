@@ -115,7 +115,7 @@ export class GroupController {
       createGroupDto.campaigns.map((campaign) => campaign.idCampaign),
     );
 
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
 
     return this.groupService.create(createGroupDto, userId);
   }
@@ -129,7 +129,7 @@ export class GroupController {
     @Query('sort') sort?: string,
     @Query('onlyWithMembers') onlyWithMembers?: boolean,
   ) {
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
     return this.groupService.findAllByUser(userId, {
       page,
       offset,
@@ -149,7 +149,7 @@ export class GroupController {
     @Query('name') name?: string,
     @Query('sort') sort?: string,
   ) {
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
 
     return this.characterService.findAllByUser(
       userId,
