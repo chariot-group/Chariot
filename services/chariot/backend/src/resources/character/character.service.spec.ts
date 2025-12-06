@@ -15,7 +15,7 @@ describe('CharacterService - findAllByUser', () => {
   let characterModel: any;
   let groupModel: any;
 
-  const userId = new Types.ObjectId();
+  const userId = new Types.ObjectId().toHexString();
 
   const mockCharacter = {
     _id: new Types.ObjectId(),

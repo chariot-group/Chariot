@@ -27,7 +27,7 @@ describe('CampaignService - create', () => {
   const mockCreatedCampaign = {
     _id: new Types.ObjectId(),
     ...mockCampaignDto,
-    createdBy: new Types.ObjectId(userId),
+    createdBy: userId,
   };
 
   beforeEach(async () => {
@@ -60,7 +60,7 @@ describe('CampaignService - create', () => {
 
     expect(campaignModel.create).toHaveBeenCalledWith({
       ...mockCampaignDto,
-      createdBy: expect.any(Types.ObjectId),
+      createdBy: userId,
     });
 
     expect(groupModel.updateMany).toHaveBeenCalledWith(
@@ -154,7 +154,7 @@ describe('CampaignService - findAllByUser', () => {
     expect(campaignModel.countDocuments).toHaveBeenCalledWith({
       label: { $regex: 'Test', $options: 'i' },
       deletedAt: { $eq: null },
-      createdBy: new Types.ObjectId(userId),
+      createdBy: userId,
     });
 
     expect(campaignModel.find).toHaveBeenCalled();

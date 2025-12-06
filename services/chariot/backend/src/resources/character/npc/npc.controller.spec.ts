@@ -12,7 +12,7 @@ describe('NpcController - createNpc', () => {
   let npcService: any;
 
   const userId = new Types.ObjectId().toHexString();
-  const requestMock = { user: { userId } };
+  const requestMock = { user: { keycloakId: userId } };
 
   const createDto = {
     name: 'Test NPC',

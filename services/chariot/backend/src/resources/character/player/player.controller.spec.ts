@@ -14,7 +14,7 @@ describe('PlayerController - createPlayer', () => {
   let groupModel: any;
 
   const userId = new Types.ObjectId().toHexString();
-  const requestMock = { user: { userId } };
+  const requestMock = { user: { keycloakId: userId } };
 
   const createDto = {
     name: 'Test Player',

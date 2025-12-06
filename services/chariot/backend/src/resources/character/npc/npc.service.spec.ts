@@ -66,7 +66,7 @@ describe('NpcService - create', () => {
   let characterModel: any;
   let groupModel: any;
 
-  const userId = new Types.ObjectId();
+  const userId = new Types.ObjectId().toHexString();
 
   const groupId1 = new Types.ObjectId('64a1b2c3d4e5f6789012345a');
   const groupId2 = new Types.ObjectId('64a1b2c3d4e5f6789012345b');

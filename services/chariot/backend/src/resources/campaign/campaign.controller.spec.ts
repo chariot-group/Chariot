@@ -13,8 +13,8 @@ describe('CampaignController - create', () => {
   let campaignService: any;
   let groupModel: any;
 
-  const userId = new Types.ObjectId();
-  const requestMock = { user: { userId } };
+  const userId = new Types.ObjectId().toHexString();
+  const requestMock = { user: { keycloakId: userId } };
 
   const groupMainId = new Types.ObjectId().toHexString();
   const groupNpcId = new Types.ObjectId().toHexString();
@@ -117,7 +117,8 @@ describe('CampaignController - findAll', () => {
   });
 
   it('should return all campaigns for user with query options', async () => {
-    const mockReq = { user: { userId: 'userId123' } };
+    const userId = 'userId123';
+    const mockReq = { user: { keycloakId: userId } };
     const mockResult = { data: ['campaign1'], message: 'ok' };
 
     campaignService.findAllByUser.mockResolvedValue(mockResult);
@@ -130,7 +131,7 @@ describe('CampaignController - findAll', () => {
       'My Campaign'
     );
 
-    expect(campaignService.findAllByUser).toHaveBeenCalledWith('userId123', {
+    expect(campaignService.findAllByUser).toHaveBeenCalledWith(userId, {
       page: 1,
       offset: 20,
       sort: '-updatedAt',
@@ -288,7 +289,7 @@ describe('CampaignController - findAllGroups', () => {
   const userId = new Types.ObjectId().toHexString();
   const campaignId = new Types.ObjectId();
 
-  const requestMock = { user: { userId } };
+  const requestMock = { user: { keycloakId: userId } };
 
   beforeEach(async () => {
     campaignService = {
