@@ -20,6 +20,19 @@ See [services/chariot/backend/docs/](../../services/chariot/backend/docs/) for:
 - [Access rights](../../services/chariot/backend/docs/rights.md) - Permission system
 - [Backend Contribution](../../services/chariot/backend/docs/CONTRIBUTING.md) - Development standards
 
+## 🔐 Authentication & SSO
+See [services/sso/docs/](../../services/sso/docs/) for:
+- [SSO Integration Guide](../../services/sso/docs/SSO_INTEGRATION.md) - Complete Keycloak setup and integration
+  - Architecture overview with Keycloak 23.0.7
+  - Custom theme development (Tailwind CSS v4)
+  - Multi-language support (French, English, Spanish)
+  - Email templates and SMTP configuration
+  - Frontend integration (Next.js with keycloak-js)
+  - Backend integration (NestJS with passport-keycloak-bearer)
+  - Token management and security
+  - Troubleshooting guide
+  - **START HERE for authentication questions**
+
 ## 📊 Monitoring & Observability
 
 ### Logging
