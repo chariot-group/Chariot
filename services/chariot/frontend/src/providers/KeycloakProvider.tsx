@@ -99,12 +99,13 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading || !keycloak) return;
 
+    // Si l'utilisateur n'est pas authentifié, rediriger vers le login immédiatement
     if (!authenticated) {
-      login();
-    } else {
-      router.push(`/${locale}`);
+      keycloak.login({
+        redirectUri: window.location.origin + `/${locale}`,
+      });
     }
-  }, [authenticated, loading, pathname, router, locale, keycloak]);
+  }, [authenticated, loading, keycloak, locale]);
 
   const login = () => {
     keycloak?.login({

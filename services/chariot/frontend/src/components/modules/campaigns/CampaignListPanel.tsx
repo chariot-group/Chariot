@@ -9,6 +9,7 @@ import { ICampaign } from "@/models/campaigns/ICampaign";
 import CampaignService from "@/services/campaignService";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useKeycloak } from "@/providers/KeycloakProvider";
 
 interface Props {
   offset?: number;
@@ -29,6 +30,7 @@ const CampaignListPanel = ({
 }: Props) => {
   const currentLocale = useLocale();
   const t = useTranslations("CampaignListPanel");
+  const { authenticated, loading: authLoading } = useKeycloak();
 
   const { error, success } = useToast();
 
@@ -89,9 +91,12 @@ const CampaignListPanel = ({
   }, []);
 
   useEffect(() => {
-    setCampaigns([]);
-    fetchCampaigns(search, 1, true);
-  }, [currentLocale, search, selectedCampaign?.deletedAt]);
+    // Ne charger les données que si l'utilisateur est authentifié
+    if (!authLoading && authenticated) {
+      setCampaigns([]);
+      fetchCampaigns(search, 1, true);
+    }
+  }, [currentLocale, search, selectedCampaign?.deletedAt, authenticated, authLoading]);
 
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 
@@ -159,7 +164,10 @@ const CampaignListPanel = ({
           )}
         </div>
         {campaigns.length >= offset && (
-          <div ref={sentinelRef} className="h-1" />
+          <div
+            ref={sentinelRef}
+            className="h-1"
+          />
         )}
       </CardContent>
     </div>

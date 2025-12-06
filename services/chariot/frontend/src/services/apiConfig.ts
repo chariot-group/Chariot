@@ -47,39 +47,44 @@ const apiClient = (contentType: string) => {
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-      // En cas d'erreur 401, tenter de rafraîchir le token
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      // En cas d'erreur 401, tenter de rafraîchir le token (une seule fois)
+      if (error.response?.status === 401 && !originalRequest._retry && keycloakInstance) {
         originalRequest._retry = true;
 
         console.warn("401 Unauthorized - Attempting to refresh token");
 
         try {
-          if (keycloakInstance) {
-            // Tenter de rafraîchir le token (5 secondes de validité minimum)
-            const refreshed = await keycloakInstance.updateToken(5);
-
-            if (refreshed) {
-              console.log("Token refreshed successfully, retrying request");
-              // Mettre à jour le header Authorization avec le nouveau token
-              const newToken = keycloakInstance.token;
-              if (newToken && originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${newToken}`;
-              }
-              // Réessayer la requête avec le nouveau token
-              return instance(originalRequest);
-            }
+          // Vérifier si l'utilisateur est connecté
+          if (!keycloakInstance.authenticated) {
+            console.error("User not authenticated, redirecting to login");
+            keycloakInstance.login();
+            return Promise.reject(error);
           }
 
-          // Si le refresh échoue, rediriger vers login
-          console.error("Token refresh failed, redirecting to login");
-          if (typeof window !== "undefined") {
-            keycloakInstance?.login();
+          // Tenter de rafraîchir le token (5 secondes de validité minimum)
+          const refreshed = await keycloakInstance.updateToken(5);
+
+          if (refreshed) {
+            console.log("Token refreshed successfully, retrying request");
+            // Mettre à jour le header Authorization avec le nouveau token
+            const newToken = keycloakInstance.token;
+            if (newToken && originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            }
+            // Réessayer la requête avec le nouveau token
+            return instance(originalRequest);
+          } else {
+            // Token toujours valide mais requête échouée quand même
+            console.error("Token is valid but request still failed");
+            return Promise.reject(error);
           }
         } catch (refreshError) {
           console.error("Error refreshing token:", refreshError);
+          // Si le refresh échoue, rediriger vers login
           if (typeof window !== "undefined") {
-            keycloakInstance?.login();
+            keycloakInstance.login();
           }
+          return Promise.reject(error);
         }
       }
 
