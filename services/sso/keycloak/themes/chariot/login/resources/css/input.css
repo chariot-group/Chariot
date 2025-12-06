@@ -247,6 +247,30 @@ input[type="email"]::placeholder,
   color: #565656;
 }
 
+/* Fix pour l'auto-complétion des navigateurs */
+input[type="text"]:-webkit-autofill,
+input[type="password"]:-webkit-autofill,
+input[type="email"]:-webkit-autofill,
+input[type="text"]:-webkit-autofill:hover,
+input[type="password"]:-webkit-autofill:hover,
+input[type="email"]:-webkit-autofill:hover,
+input[type="text"]:-webkit-autofill:focus,
+input[type="password"]:-webkit-autofill:focus,
+input[type="email"]:-webkit-autofill:focus {
+  -webkit-text-fill-color: #FFFFFF !important;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input[type="text"]:-webkit-autofill:focus,
+input[type="password"]:-webkit-autofill:focus,
+input[type="email"]:-webkit-autofill:focus {
+  border-color: #AA00FF !important;
+}
+
 input[aria-invalid="true"] {
   border-color: #FF2D2D;
 }
