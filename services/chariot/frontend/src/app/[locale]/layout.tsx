@@ -4,7 +4,6 @@ import { routing } from "@/i18n/routing";
 import { Locale } from "@/i18n/locales.generated";
 import ToastContainer from "@/components/toast/ToastContainer";
 import { KeycloakProvider } from "@/providers/KeycloakProvider";
-import { setKeycloakTokenGetter } from "@/services/apiConfig";
 import RestraintMobile from "@/components/modules/mobile/restraintMobile";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "../globals.css";

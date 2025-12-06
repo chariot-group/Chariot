@@ -9,43 +9,44 @@
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #0C0C0C;
         }
         .container {
             max-width: 600px;
             margin: 40px auto;
-            background-color: #ffffff;
-            border-radius: 8px;
+            background-color: #19191C;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 16px rgba(170, 0, 255, 0.2);
         }
         .header {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #AA00FF 0%, #7700BB 100%);
             padding: 40px 20px;
             text-align: center;
         }
         .header h1 {
             margin: 0;
-            color: #ffffff;
+            color: #FFFFFF;
             font-size: 28px;
             font-weight: 600;
         }
         .content {
             padding: 40px 30px;
-            color: #1a1a1a;
+            color: #FFFFFF;
         }
         .content p {
             margin: 0 0 20px;
             line-height: 1.6;
             font-size: 16px;
+            color: #FFFFFF;
         }
         .button {
             display: inline-block;
             padding: 14px 32px;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: #ffffff !important;
+            background: linear-gradient(135deg, #AA00FF 0%, #7700BB 100%);
+            color: #FFFFFF !important;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 36px;
             font-weight: 600;
             font-size: 16px;
             margin: 20px 0;
@@ -53,34 +54,46 @@
         }
         .button:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(170, 0, 255, 0.4);
         }
         .footer {
             padding: 30px;
             text-align: center;
-            background-color: #f9f9f9;
-            border-top: 1px solid #e5e5e5;
-            color: #666666;
+            background-color: #0C0C0C;
+            border-top: 1px solid #2A2A2E;
+            color: #888888;
             font-size: 14px;
         }
         .footer p {
             margin: 5px 0;
+            color: #888888;
         }
         .footer a {
-            color: #6366f1;
+            color: #AA00FF;
             text-decoration: none;
         }
         .link-text {
             word-break: break-all;
-            color: #6366f1;
+            color: #AA00FF;
             font-size: 14px;
             margin-top: 20px;
         }
+        .link-text a {
+            color: #AA00FF;
+            text-decoration: none;
+        }
         .warning {
-            background-color: #fef3c7;
-            border-left: 4px solid #f59e0b;
+            background-color: #2A1A00;
+            border-left: 4px solid #F59E0B;
             padding: 15px;
             margin: 20px 0;
             border-radius: 4px;
+        }
+        .warning p {
+            color: #FCD34D !important;
+        }
+        .warning strong {
+            color: #FBBF24;
         }
     </style>
 </head>
@@ -90,18 +103,18 @@
             <h1>Chariot</h1>
         </div>
         <div class="content">
-            <p>${msg("passwordResetBodyHtml",link, linkExpiration, realmName, linkExpirationFormatter(linkExpiration))}</p>
+            <p>${msg("passwordResetBodyHtml")?no_esc}</p>
             
             <a href="${link}" class="button">${msg("passwordResetButton")}</a>
             
             <div class="warning">
-                <p style="margin: 0; color: #78350f; font-size: 14px;">
+                <p style="margin: 0; font-size: 14px;">
                     <strong>${msg("passwordResetWarning")}</strong><br>
                     ${msg("passwordResetWarningText")}
                 </p>
             </div>
             
-            <p style="margin-top: 30px; font-size: 14px; color: #666666;">
+            <p style="margin-top: 30px; font-size: 14px; color: #888888;">
                 ${msg("passwordResetInfo")}
             </p>
             

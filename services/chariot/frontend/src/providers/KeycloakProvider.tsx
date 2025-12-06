@@ -103,6 +103,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     if (!authenticated) {
       keycloak.login({
         redirectUri: window.location.origin + `/${locale}`,
+        locale: locale,
       });
     }
   }, [authenticated, loading, keycloak, locale]);
@@ -110,6 +111,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const login = () => {
     keycloak?.login({
       redirectUri: window.location.origin + `/${locale}`,
+      locale: locale,
     });
   };
 
@@ -122,6 +124,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const register = () => {
     keycloak?.register({
       redirectUri: window.location.origin + `/${locale}`,
+      locale: locale,
     });
   };
 

@@ -1,7 +1,7 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=true displayMessage=!messagesPerField.existsError('username'); section>
     <#if section = "header">
-        Réinitialiser votre mot de passe
+        ${msg('resetPassword.header')}
     <#elseif section = "form">
         <form id="kc-form-card" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
             <div class="form-fields">
@@ -23,12 +23,12 @@
 
 
             <div class="form-submit button-row">
-                <button class="cancel" onClick="location.href='${url.loginUrl}'">Annuler</button>
-                <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="Envoyer"/>
+                <button class="cancel" onClick="location.href='${url.loginUrl}'">${msg('doCancel')}</button>
+                <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg('doSubmit')}"/>
             </div>
             
         </form>
     <#elseif section = "info" >
-        <p class="instruction">Entrez votre nom d'utilisateur ou votre email et nous vous enverrons des instructions pour réinitialiser votre mot de passe.</p>
+        <p class="instruction">${msg('resetPassword.instruction')}</p>
     </#if>
 </@layout.registrationLayout>

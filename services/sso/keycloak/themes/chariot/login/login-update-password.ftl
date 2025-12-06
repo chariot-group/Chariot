@@ -1,7 +1,7 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('password','password-confirm'); section>
     <#if section = "header">
-        Réinitialiser votre mot de passe
+        ${msg('updatePassword.header')}
     <#elseif section = "form">
         <form id="kc-form-card" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
             <div class="form-fields">
@@ -13,7 +13,7 @@
                     <input type="password" id="password-new" name="password-new" 
                         autofocus autocomplete="new-password"
                         aria-invalid="<#if messagesPerField.existsError('password','password-confirm')>true</#if>"
-                        placeholder="Nouveau mot de passe"
+                        placeholder="${msg('passwordNew')}"
                     />
 
                     <#if messagesPerField.existsError('password')>
@@ -28,7 +28,7 @@
                         class="${properties.kcInputClass!}"
                         autocomplete="new-password"
                         aria-invalid="<#if messagesPerField.existsError('password-confirm')>true</#if>"
-                        placeholder="Confirmer le mot de passe"
+                        placeholder="${msg('passwordConfirm')}"
                     />
 
                     <#if messagesPerField.existsError('password-confirm')>
@@ -40,7 +40,7 @@
             </div>
 
             <div class="form-submit">
-                <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="Valider" />
+                <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg('doSave')}" />
             </div>
         </form>
     </#if>
