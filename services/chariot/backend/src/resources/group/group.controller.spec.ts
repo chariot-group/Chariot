@@ -19,8 +19,8 @@ describe('GroupController - create', () => {
   let campaignModel: any;
   let characterModel: any;
 
-  const userId = new Types.ObjectId();
-  const requestMock = { user: { userId } };
+  const userId = new Types.ObjectId().toHexString();
+  const requestMock = { user: { keycloakId: userId } };
 
   const characterId = new Types.ObjectId().toHexString();
   const campaignId = new Types.ObjectId().toHexString();
@@ -135,7 +135,8 @@ describe('GroupController - findAll', () => {
   });
 
   it('should return all groups for user with query options', async () => {
-    const mockReq = { user: { userId: 'userId123' } };
+    const userId = 'userId123';
+    const mockReq = { user: { keycloakId: userId } };
     const mockResult = { data: ['group1'], message: 'ok' };
 
     groupService.findAllByUser.mockResolvedValue(mockResult);
@@ -149,7 +150,7 @@ describe('GroupController - findAll', () => {
       true,
     );
 
-    expect(groupService.findAllByUser).toHaveBeenCalledWith('userId123', {
+    expect(groupService.findAllByUser).toHaveBeenCalledWith(userId, {
       page: 1,
       offset: 10,
       label: 'Label',
@@ -314,7 +315,7 @@ describe('GroupController - findAllCharacters', () => {
   const userId = new Types.ObjectId().toHexString();
   const groupId = new Types.ObjectId();
 
-  const requestMock = { user: { userId } };
+  const requestMock = { user: { keycloakId: userId } };
 
   beforeEach(async () => {
     characterService = {

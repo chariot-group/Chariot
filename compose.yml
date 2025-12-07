@@ -10,3 +10,7 @@ include:
   # Chariot microservice (backend + frontend)
   - path: ./services/chariot/compose.yml
     env_file: .env
+
+  # SSO microservice (Keycloak + frontend)
+  - path: ./services/sso/compose.yml
+    env_file: .env

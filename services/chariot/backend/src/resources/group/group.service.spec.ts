@@ -86,7 +86,7 @@ describe('GroupService', () => {
         description: createDto.description,
         characters: createDto.characters,
         campaigns: createDto.campaigns.map(c => c.idCampaign),
-        createdBy: expect.any(Types.ObjectId),
+        createdBy: userId,
       });
       expect(characterModel.updateMany).toHaveBeenCalledWith(
         { _id: { $in: createDto.characters } },
@@ -123,7 +123,7 @@ describe('GroupService', () => {
         description: dtoWithoutCharacters.description,
         characters: [],
         campaigns: dtoWithoutCharacters.campaigns.map(c => c.idCampaign),
-        createdBy: expect.any(Types.ObjectId),
+        createdBy: userId,
       }));
 
       expect(result).toHaveProperty('data');
@@ -156,7 +156,7 @@ describe('GroupService', () => {
           description: customCreateDto.description,
           characters: expectedCharacters,
           campaigns: expectedCampaigns,
-          createdBy: expect.any(Types.ObjectId),
+          createdBy: userId,
         })
       );
     });
@@ -204,7 +204,7 @@ describe('GroupService', () => {
       });
 
       await service.findAllByUser(
-        new Types.ObjectId(userId),
+        userId,
         { page: 1, offset: 10 },
         campaignId,
         'all'
@@ -236,7 +236,7 @@ describe('GroupService', () => {
       const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
 
       const result = await service.findAllByUser(
-        new Types.ObjectId(userId),
+        userId,
         { page: 1, offset: 10, label: '', sort: 'updatedAt', onlyWithMembers: 'false' },
         undefined,
         'all'
@@ -273,7 +273,7 @@ describe('GroupService', () => {
         return groupModel;
       });
       await service.findAllByUser(
-        new Types.ObjectId(userId),
+        userId,
         { page: 1, offset: 10, onlyWithMembers: 'true' }
       );
       expect(filtersArg).toBeDefined();
@@ -310,7 +310,7 @@ describe('GroupService', () => {
         return groupModel;
       });
       await service.findAllByUser(
-        new Types.ObjectId(userId),
+        userId,
         { page: 1, offset: 10 },
         campaignId,
         'npc'
@@ -331,7 +331,7 @@ describe('GroupService', () => {
       // Spy on sort
       const sortSpy = jest.spyOn(groupModel, 'sort');
       await service.findAllByUser(
-        new Types.ObjectId(userId),
+        userId,
         { page: 1, offset: 10, sort: '-createdAt' }
       );
       expect(sortSpy).toHaveBeenCalledWith(expect.objectContaining({ createdAt: 'desc' }));
@@ -344,7 +344,7 @@ describe('GroupService', () => {
       const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
 
       await expect(service.findAllByUser(
-        new Types.ObjectId(userId),
+        userId,
         { page: 1, offset: 10 },
         'nonexistentCampaignId'
       )).rejects.toThrow(NotFoundException);
@@ -365,7 +365,7 @@ describe('GroupService', () => {
       const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
 
       await expect(service.findAllByUser(
-        new Types.ObjectId(userId),
+        userId,
         { page: 1, offset: 10 }
       )).rejects.toThrow(InternalServerErrorException);
 
@@ -668,7 +668,7 @@ describe('GroupService', () => {
         });
 
         await service.findAllByUser(
-          new Types.ObjectId(userId),
+          userId,
           { label: '' }
         );
 
@@ -690,7 +690,7 @@ describe('GroupService', () => {
         });
 
         await service.findAllByUser(
-          new Types.ObjectId(userId),
+          userId,
           { label: 'Test%20Group' }
         );
 
@@ -708,7 +708,7 @@ describe('GroupService', () => {
         const skipSpy = jest.spyOn(groupModel, 'skip');
 
         await service.findAllByUser(
-          new Types.ObjectId(userId),
+          userId,
           { page: 1, offset: 10 }
         );
 
@@ -726,7 +726,7 @@ describe('GroupService', () => {
         const skipSpy = jest.spyOn(groupModel, 'skip');
 
         await service.findAllByUser(
-          new Types.ObjectId(userId),
+          userId,
           { page: 2, offset: 10 }
         );
 
@@ -744,7 +744,7 @@ describe('GroupService', () => {
         const sortSpy = jest.spyOn(groupModel, 'sort');
 
         await service.findAllByUser(
-          new Types.ObjectId(userId),
+          userId,
           { sort: 'createdAt' }
         );
 
@@ -766,7 +766,7 @@ describe('GroupService', () => {
         });
 
         await service.findAllByUser(
-          new Types.ObjectId(userId),
+          userId,
           { label: 'Test.*+?[](){}' }
         );
 
@@ -895,7 +895,7 @@ describe('GroupService', () => {
         // When groups is null, the service should handle it gracefully
         // and return results
         const result = await service.findAllByUser(
-          new Types.ObjectId(userId),
+          userId,
           { page: 1, offset: 10 },
           campaignId,
           'all'
@@ -936,7 +936,7 @@ describe('GroupService', () => {
         const skipSpy = jest.spyOn(groupModel, 'skip');
 
         await service.findAllByUser(
-          new Types.ObjectId(userId),
+          userId,
           { page: 1000, offset: 100 }
         );
 

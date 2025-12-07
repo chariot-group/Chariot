@@ -30,7 +30,8 @@ describe('CharacterController - findAll', () => {
   });
 
   it('should return all characters for user with query options', async () => {
-    const mockReq = { user: { userId: 'userId123' } };
+    const userId = 'userId123';
+    const mockReq = { user: { keycloakId: userId } };
     const mockResult = { data: ['character1'], message: 'ok' };
 
     characterService.findAllByUser.mockResolvedValue(mockResult);
@@ -43,7 +44,7 @@ describe('CharacterController - findAll', () => {
       '-updatedAt'
     );
 
-    expect(characterService.findAllByUser).toHaveBeenCalledWith('userId123', {
+    expect(characterService.findAllByUser).toHaveBeenCalledWith(userId, {
       page: 1,
       offset: 20,
       name: 'John Doe',

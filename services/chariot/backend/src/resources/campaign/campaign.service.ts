@@ -40,7 +40,7 @@ export class CampaignService {
       const campaign = await this.campaignModel.create({
         ...campaignData,
         groups,
-        createdBy: new Types.ObjectId(userId),
+        createdBy: userId,
       });
       // Incrémentation du compteur Prometheus
       this.campaignsCreatedCounter.inc({ user_id: userId });
@@ -80,7 +80,7 @@ export class CampaignService {
       const filters = {
         label: { $regex: `${decodeURIComponent(label)}`, $options: 'i' },
         deletedAt: { $eq: null },
-        createdBy: new Types.ObjectId(userId),
+        createdBy: userId,
       };
 
       const sort: { [key: string]: 1 | -1 } = { updatedAt: -1 };

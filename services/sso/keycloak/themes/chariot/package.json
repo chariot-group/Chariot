@@ -1,0 +1,18 @@
+{
+  "name": "keycloak-theme-chariot",
+  "version": "1.0.0",
+  "description": "Custom Keycloak theme for Chariot with Tailwind CSS",
+  "scripts": {
+    "build": "npx @tailwindcss/cli -i ./login/resources/css/input.css -o ./login/resources/css/styles.css --minify",
+    "watch": "npx @tailwindcss/cli -i ./login/resources/css/input.css -o ./login/resources/css/styles.css --watch"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.17",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.14",
+    "tailwindcss": "^4.1.14"
+  }
+}

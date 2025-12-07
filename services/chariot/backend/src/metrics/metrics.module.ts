@@ -15,7 +15,6 @@ import {
   authAttemptsCounterProvider,
   dbQueryDurationProvider,
   emailsSentCounterProvider,
-  stripePaymentsCounterProvider,
   mongoConnectionsGaugeProvider,
 } from '@/metrics/metrics.service';
 
@@ -51,7 +50,6 @@ import {
     authAttemptsCounterProvider,
     dbQueryDurationProvider,
     emailsSentCounterProvider,
-    stripePaymentsCounterProvider,
     mongoConnectionsGaugeProvider,
   ],
   exports: [
@@ -68,7 +66,6 @@ import {
     authAttemptsCounterProvider,
     dbQueryDurationProvider,
     emailsSentCounterProvider,
-    stripePaymentsCounterProvider,
     mongoConnectionsGaugeProvider,
   ],
 })

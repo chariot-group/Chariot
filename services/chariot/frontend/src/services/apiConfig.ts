@@ -1,43 +1,95 @@
 import { APIContentType } from "@/constants/APIContentType";
-import axios from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 const url = process.env.NEXT_PUBLIC_API_URL;
+
+let keycloakTokenGetter: (() => string | null) | null = null;
+let keycloakInstance: any | null = null;
+
+export const setKeycloakTokenGetter = (getter: () => string | null) => {
+  keycloakTokenGetter = getter;
+};
+
+export const setKeycloakInstance = (instance: any) => {
+  keycloakInstance = instance;
+};
 
 const apiClient = (contentType: string) => {
   if (!url) {
     throw new Error("API URL is not defined");
   }
+
   const instance = axios.create({
     baseURL: url,
     headers: {
       "Content-Type": contentType || APIContentType.JSON,
-      Authorization: `Bearer ${typeof window !== "undefined"
-        ? document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("accessToken="))
-          ?.split("=")[1] || ""
-        : ""
-        }`,
     },
     withCredentials: true,
   });
 
+  // Intercepteur de requête pour ajouter le token Keycloak
+  instance.interceptors.request.use(
+    (config) => {
+      const token = keycloakTokenGetter ? keycloakTokenGetter() : null;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
+  // Intercepteur de réponse pour gérer les erreurs d'authentification
   instance.interceptors.response.use(
     (response) => response,
-    (error) => {
-      console.error("API Error:", error);
-      if (error.response?.status === 401) {
-        if (!error.response.request.responseURL.includes("/auth/")) {
-          document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    async (error: AxiosError) => {
+      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-          if (typeof window !== "undefined") {
-            window.location.href = "/auth/login";
+      // En cas d'erreur 401, tenter de rafraîchir le token (une seule fois)
+      if (error.response?.status === 401 && !originalRequest._retry && keycloakInstance) {
+        originalRequest._retry = true;
+
+        console.warn("401 Unauthorized - Attempting to refresh token");
+
+        try {
+          // Vérifier si l'utilisateur est connecté
+          if (!keycloakInstance.authenticated) {
+            console.error("User not authenticated, redirecting to login");
+            keycloakInstance.login();
+            return Promise.reject(error);
           }
+
+          // Tenter de rafraîchir le token (5 secondes de validité minimum)
+          const refreshed = await keycloakInstance.updateToken(5);
+
+          if (refreshed) {
+            console.log("Token refreshed successfully, retrying request");
+            // Mettre à jour le header Authorization avec le nouveau token
+            const newToken = keycloakInstance.token;
+            if (newToken && originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            }
+            // Réessayer la requête avec le nouveau token
+            return instance(originalRequest);
+          } else {
+            // Token toujours valide mais requête échouée quand même
+            console.error("Token is valid but request still failed");
+            return Promise.reject(error);
+          }
+        } catch (refreshError) {
+          console.error("Error refreshing token:", refreshError);
+          // Si le refresh échoue, rediriger vers login
+          if (typeof window !== "undefined") {
+            keycloakInstance.login();
+          }
+          return Promise.reject(error);
         }
       }
 
       return Promise.reject(error);
-    },
+    }
   );
 
   return instance;

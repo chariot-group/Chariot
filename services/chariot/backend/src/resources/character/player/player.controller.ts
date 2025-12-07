@@ -61,7 +61,7 @@ export class PlayerController {
   @Post()
   async createPlayer(@Req() request, @Body() createPlayerDto: CreatePlayerDto) {
     await this.validateGroupRelations(createPlayerDto.groups);
-    const userId = request.user.userId;
+    const userId = request.user.keycloakId;
 
 
     return this.playerService.create(createPlayerDto, userId);

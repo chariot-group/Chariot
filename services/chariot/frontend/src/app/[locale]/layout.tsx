@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Locale } from "@/i18n/locales.generated";
 import ToastContainer from "@/components/toast/ToastContainer";
-import { AuthProvider } from "@/providers/authProvider";
+import { KeycloakProvider } from "@/providers/KeycloakProvider";
 import RestraintMobile from "@/components/modules/mobile/restraintMobile";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "../globals.css";
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Chariot",
@@ -32,7 +32,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <AuthProvider>
+      <KeycloakProvider>
         <ToastContainer />
         <div className="block lg:hidden">
           <RestraintMobile />
@@ -41,7 +41,7 @@ export default async function LocaleLayout({
         <div className="hidden lg:block">
           <TooltipProvider>{children}</TooltipProvider>
         </div>
-      </AuthProvider>
+      </KeycloakProvider>
     </NextIntlClientProvider>
   );
 }

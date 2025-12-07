@@ -2,6 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import { SeederService } from '@/seeder/seeder.service';
 import { Logger } from '@nestjs/common';
+import { config } from 'dotenv';
+
+// Charger les variables d'environnement
+config();
 
 async function bootstrap() {
   const SERVICE_NAME: string = 'SEEDER';
