@@ -11,7 +11,7 @@ COPY shared/package.json ./shared/
 COPY services/chariot/frontend/package.json ./services/chariot/frontend/
 
 # Installer les dépendances
-RUN pnpm install --frozen-lockfile --filter @my-app/chariot-frontend...
+RUN pnpm install --frozen-lockfile --filter @chariot/chariot-frontend...
 
 # Copier le code source
 COPY shared ./shared
