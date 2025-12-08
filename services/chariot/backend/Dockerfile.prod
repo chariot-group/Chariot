@@ -24,7 +24,7 @@ RUN pnpm run build
 
 # Déployer les dépendances dans un dossier sans liens symboliques
 WORKDIR /workspace
-RUN pnpm --filter @chariot/chariot-backend deploy --prod /deploy/chariot-backend
+RUN pnpm --filter @chariot/chariot-backend --prod deploy /deploy/chariot-backend
 
 # Copier les fichiers compilés dans le dossier de déploiement
 RUN cp -r /workspace/services/chariot/backend/dist /deploy/chariot-backend/
