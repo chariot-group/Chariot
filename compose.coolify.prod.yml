@@ -162,7 +162,6 @@ services:
     restart: unless-stopped
     command:
       - start
-      - --optimized
       - --import-realm
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"
@@ -174,7 +173,7 @@ services:
       KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KC_HOSTNAME_PORT: ${KEYCLOAK_PORT:-443}
       KC_HOSTNAME_STRICT: true
-      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HOSTNAME_STRICT_HTTPS: true
       KC_HTTP_ENABLED: true
       KC_PROXY: edge
       KC_HEALTH_ENABLED: true
