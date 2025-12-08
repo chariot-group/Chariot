@@ -141,8 +141,7 @@ services:
     container_name: keycloak
     restart: unless-stopped
     command:
-      - start
-      - --optimized
+      - start-dev
       - --import-realm
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"

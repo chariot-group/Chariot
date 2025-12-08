@@ -25,26 +25,21 @@ RUN pnpm run build
 # Stage 2: Production
 FROM node:22-alpine
 
-RUN corepack enable && corepack prepare pnpm@latest --activate && \
-    apk add --no-cache wget
+RUN apk add --no-cache wget
 
 WORKDIR /app
 
-# Copier les fichiers nécessaires
-COPY --from=builder /workspace/package.json /workspace/pnpm-lock.yaml /workspace/pnpm-workspace.yaml ./
-COPY --from=builder /workspace/shared ./shared
-COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
-COPY --from=builder /workspace/services/chariot/backend/dist ./services/chariot/backend/dist
+ENV NODE_ENV=production
 
-# Installer UNIQUEMENT les dépendances de production
-RUN pnpm install --frozen-lockfile --prod --filter @chariot/chariot-backend...
+# Copier les node_modules depuis le builder (plus fiable que réinstaller)
+COPY --from=builder /workspace/node_modules ./node_modules
+COPY --from=builder /workspace/shared ./shared
+COPY --from=builder /workspace/services/chariot/backend/node_modules ./services/chariot/backend/node_modules
+COPY --from=builder /workspace/services/chariot/backend/dist ./services/chariot/backend/dist
+COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
 
 WORKDIR /app/services/chariot/backend
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:${CHARIOT_API_PORT:-3003}/health || exit 1
-
-EXPOSE ${CHARIOT_API_PORT:-3003}
+EXPOSE 9000
 
 CMD ["node", "dist/main.js"]
