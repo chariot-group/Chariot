@@ -35,7 +35,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV HOSTNAME=0.0.0.0
 
 # Copier les fichiers Next.js standalone
-# Le standalone copie tout le workspace, server.js est dans services/chariot/frontend/
 COPY --from=builder /workspace/services/chariot/frontend/.next/standalone ./
 COPY --from=builder /workspace/services/chariot/frontend/.next/static ./services/chariot/frontend/.next/static
 COPY --from=builder /workspace/services/chariot/frontend/public ./services/chariot/frontend/public
