@@ -19,7 +19,7 @@
   "quickLoginCheckMilliSeconds": 1000,
   "maxDeltaTimeSeconds": 43200,
   "failureFactor": 5,
-  "sslRequired": "all",
+  "sslRequired": "external",
   "defaultLocale": "fr",
   "internationalizationEnabled": true,
   "supportedLocales": ["fr", "en", "es"],
