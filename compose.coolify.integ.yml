@@ -137,7 +137,9 @@ services:
       start_period: 20s
 
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0
+    build:
+      context: ./services/sso
+      dockerfile: Dockerfile.integ
     container_name: keycloak
     restart: unless-stopped
     command:
@@ -176,9 +178,6 @@ services:
       KEYCLOAK_DEFAULT_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME: ${KEYCLOAK_ADMIN_FIRSTNAME}
       KEYCLOAK_DEFAULT_ADMIN_LASTNAME: ${KEYCLOAK_ADMIN_LASTNAME}
-    volumes:
-      - ./services/sso/keycloak/realm-export.integ.json:/opt/keycloak/data/import/realm-export.json:ro
-      - ./services/sso/keycloak/themes:/opt/keycloak/themes:ro
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK' || exit 1"]
       interval: 30s
