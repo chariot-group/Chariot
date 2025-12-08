@@ -4,8 +4,8 @@
 # Main orchestration
 include:
   # Infrastructure (monitoring, logging)
-  - path: ./infrastructure/compose.yml
-    env_file: .env
+  #- path: ./infrastructure/compose.yml
+  #  env_file: .env
 
   # Chariot microservice (backend + frontend)
   - path: ./services/chariot/compose.yml
