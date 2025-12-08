@@ -99,14 +99,18 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
       "redirectUris": [
-        "http://*.chariot.tools/*",
-        "https://*.chariot.tools/*",
+        "http://integ.app.chariot.tools/*",
+        "https://integ.app.chariot.tools/*",
+        "http://codex.chariot.tools/*",
+        "https://codex.chariot.tools/*",
         "http://localhost:*/*",
         "https://localhost:*/*"
       ],
       "webOrigins": [
-        "http://*.chariot.tools",
-        "https://*.chariot.tools",
+        "http://integ.app.chariot.tools",
+        "https://integ.app.chariot.tools",
+        "http://codex.chariot.tools",
+        "https://codex.chariot.tools",
         "http://localhost:*",
         "https://localhost:*"
       ],
