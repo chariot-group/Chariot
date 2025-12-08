@@ -1,47 +1,44 @@
+# Stage 1: Builder
 FROM node:22-alpine AS builder
 
-# Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /workspace
 
-# Copy workspace files
+# Copier SEULEMENT les fichiers de dépendances
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY shared/package.json ./shared/
+COPY services/chariot/frontend/package.json ./services/chariot/frontend/
+
+# Installer les dépendances
+RUN pnpm install --frozen-lockfile --filter @my-app/chariot-frontend...
+
+# Copier le code source
 COPY shared ./shared
 COPY services/chariot/frontend ./services/chariot/frontend
 
+# Build Next.js
+WORKDIR /workspace/services/chariot/frontend
 ARG NEXT_PUBLIC_API_URL
-ARG CHARIOT_FRONT_PORT=3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV ENVIRONMENT=production
+RUN pnpm run build
 
-# Install dependencies and build
-RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chariot/chariot-frontend run build
-
-# Production stage
+# Stage 2: Production
 FROM node:22-alpine
 
-# Install wget for healthchecks
 RUN apk add --no-cache wget
 
 WORKDIR /app
 
-ARG CHARIOT_FRONT_PORT=3000
-
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV HOSTNAME=0.0.0.0
-ENV PORT=${CHARIOT_FRONT_PORT}
-
-# Copy built application and dependencies
+# Copier les fichiers Next.js buildés
 COPY --from=builder /workspace/services/chariot/frontend/.next/standalone ./
 COPY --from=builder /workspace/services/chariot/frontend/.next/static ./.next/static
 COPY --from=builder /workspace/services/chariot/frontend/public ./public
 
-USER node
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${CHARIOT_FRONT_PORT:-3002}/ || exit 1
 
-EXPOSE ${CHARIOT_FRONT_PORT}
+EXPOSE ${CHARIOT_FRONT_PORT:-3002}
 
 CMD ["node", "server.js"]
