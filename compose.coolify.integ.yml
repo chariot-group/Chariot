@@ -41,7 +41,7 @@ services:
     container_name: chariot-backend
     restart: unless-stopped
     ports:
-      - "${CHARIOT_API_PORT:-9000}:${CHARIOT_INTERNAL_API_PORT:-9000}"
+      - "9000"
     volumes:
       - chariot_backend_logs:/app/logger/logs
     environment:
@@ -92,7 +92,7 @@ services:
     container_name: chariot-frontend
     restart: unless-stopped
     ports:
-      - "${CHARIOT_FRONT_PORT:-3000}:${CHARIOT_FRONT_PORT:-3000}"
+      - "3000"
     environment:
       - CHARIOT_BACKEND_URL=${CHARIOT_BACKEND_URL}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
@@ -143,6 +143,8 @@ services:
     command:
       - start-dev
       - --import-realm
+    ports:
+      - "8080"
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB_NAME}
