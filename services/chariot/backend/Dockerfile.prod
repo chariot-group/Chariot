@@ -25,15 +25,17 @@ RUN corepack enable && corepack prepare pnpm@latest --activate && \
 
 WORKDIR /app
 
-# Copy workspace files
+# Copy workspace files for pnpm workspace resolution
 COPY --from=builder /workspace/pnpm-workspace.yaml /workspace/package.json /workspace/pnpm-lock.yaml ./
 COPY --from=builder /workspace/shared ./shared
 
-# Copy package.json for production dependencies
-COPY --from=builder /workspace/services/chariot/backend/package.json ./
+# Copy backend package.json
+COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Install production dependencies only (from workspace root)
+RUN pnpm install --frozen-lockfile --prod --filter @chariot/chariot-backend
+
+WORKDIR /app/services/chariot/backend
 
 # Copy built application
 COPY --from=builder /workspace/services/chariot/backend/dist ./dist
