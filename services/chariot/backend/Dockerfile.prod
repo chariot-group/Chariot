@@ -1,5 +1,5 @@
 # Stage 1: Builder
-FROM node:22-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Installer pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -23,20 +23,28 @@ WORKDIR /workspace/services/chariot/backend
 RUN pnpm run build
 
 # Stage 2: Production
-FROM node:22-alpine
+FROM node:20-alpine
 
 RUN apk add --no-cache wget
+
+# Installer pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copier les node_modules depuis le builder (plus fiable que réinstaller)
-COPY --from=builder /workspace/node_modules ./node_modules
+# Copier les fichiers de dépendances
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY shared/package.json ./shared/
+COPY services/chariot/backend/package.json ./services/chariot/backend/
+
+# Installer UNIQUEMENT les dépendances de production
+RUN pnpm install --frozen-lockfile --filter @chariot/chariot-backend... --prod
+
+# Copier le code source compilé et les fichiers nécessaires
 COPY --from=builder /workspace/shared ./shared
-COPY --from=builder /workspace/services/chariot/backend/node_modules ./services/chariot/backend/node_modules
 COPY --from=builder /workspace/services/chariot/backend/dist ./services/chariot/backend/dist
-COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
 
 WORKDIR /app/services/chariot/backend
 
