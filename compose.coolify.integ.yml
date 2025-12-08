@@ -192,6 +192,36 @@ services:
       - sso-network
       - shared-network
 
+  keycloak-config:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak-config
+    restart: "no"
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_SMTP_HOST: ${SMTP_HOST}
+      KEYCLOAK_SMTP_PORT: ${SMTP_PORT}
+      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM}
+      KEYCLOAK_SMTP_FROM_DISPLAY_NAME: ${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}
+      KEYCLOAK_SMTP_REPLY_TO: ${KEYCLOAK_SMTP_REPLY_TO}
+      KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME: ${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}
+      KEYCLOAK_SMTP_USER: ${SMTP_USER}
+      KEYCLOAK_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS}
+      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL}
+      KEYCLOAK_DEFAULT_ADMIN_EMAIL: ${KEYCLOAK_ADMIN_EMAIL}
+      KEYCLOAK_DEFAULT_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME: ${KEYCLOAK_ADMIN_FIRSTNAME}
+      KEYCLOAK_DEFAULT_ADMIN_LASTNAME: ${KEYCLOAK_ADMIN_LASTNAME}
+    volumes:
+      - ./services/sso/keycloak/configure-realm.sh:/configure-realm.sh:ro
+    networks:
+      - sso-network
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "/configure-realm.sh"]
+
 volumes:
   chariot_mongodb_data:
   chariot_backend_logs:
