@@ -30,8 +30,7 @@ services:
       KC_HOSTNAME_PORT: ${KEYCLOAK_PORT:-443}
       KC_HOSTNAME_STRICT: true
       KC_HOSTNAME_STRICT_HTTPS: true
-      KC_HTTP_ENABLED: false
-      KC_HTTPS_PORT: 8443
+      KC_HTTP_ENABLED: true
       KC_PROXY: edge
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
