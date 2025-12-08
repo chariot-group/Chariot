@@ -2,6 +2,7 @@ FROM quay.io/keycloak/keycloak:23.0 as builder
 
 # Configuration pour le build optimisé
 ENV KC_DB=postgres
+ENV KC_HTTP_ENABLED=true
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
 ENV KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.crt.pem
