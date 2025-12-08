@@ -37,10 +37,11 @@
     </#if>
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
-            const toggleBtn = document.querySelector('.toggle-password');
-            if (toggleBtn) {
+            const toggleBtns = document.querySelectorAll('.toggle-password');
+            toggleBtns.forEach(function(toggleBtn) {
                 toggleBtn.addEventListener('click', function() {
-                    const passwordInput = document.getElementById('password');
+                    const passwordWrapper = this.closest('.password-wrapper');
+                    const passwordInput = passwordWrapper.querySelector('input');
                     const eyeOpen = this.querySelector('.eye-open');
                     const eyeClosed = this.querySelector('.eye-closed');
                     
@@ -56,7 +57,7 @@
                         this.setAttribute('aria-label', 'Afficher le mot de passe');
                     }
                 });
-            }
+            });
         });
     </script>
 </head>
