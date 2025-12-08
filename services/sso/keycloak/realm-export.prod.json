@@ -128,10 +128,12 @@
       "protocol": "openid-connect",
       "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
       "webOrigins": [
-        "https://chariot.tools"
+        "https://chariot.tools",
+        "https://*.chariot.tools"
       ],
       "redirectUris": [
-        "https://chariot.tools/*"
+        "https://chariot.tools/*",
+        "https://*.chariot.tools/*"
       ]
     }
   ],

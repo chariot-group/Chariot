@@ -99,13 +99,13 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
       "redirectUris": [
-        "http://integ.chariot.tools:3000/*",
-        "http://integ.chariot.tools/*",
+        "http://integ.*.chariot.tools:3000/*",
+        "http://integ.*.chariot.tools/*",
         "http://localhost:3000/*"
       ],
       "webOrigins": [
-        "http://integ.chariot.tools:3000",
-        "http://integ.chariot.tools",
+        "http://integ.*.chariot.tools:3000",
+        "http://integ.*.chariot.tools",
         "http://localhost:3000"
       ],
       "publicClient": true,
