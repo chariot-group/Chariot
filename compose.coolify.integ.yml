@@ -103,10 +103,10 @@ services:
     command: ["node", "server.js"]
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${CHARIOT_FRONT_PORT:-3000}"]
-      interval: 20s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 120s
     depends_on:
       - chariot-backend
     networks:
@@ -180,10 +180,10 @@ services:
       - ./services/sso/keycloak/themes:/opt/keycloak/themes:ro
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 || exit 1"]
-      interval: 20s
-      timeout: 10s
+      interval: 30s
+      timeout: 30s
       retries: 10
-      start_period: 60s
+      start_period: 120s
     depends_on:
       keycloak-db:
         condition: service_healthy
