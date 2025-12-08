@@ -22,26 +22,39 @@ COPY services/chariot/backend ./services/chariot/backend
 WORKDIR /workspace/services/chariot/backend
 RUN pnpm run build
 
-# Déployer les dépendances dans un dossier sans liens symboliques
-WORKDIR /workspace
-RUN pnpm --filter @chariot/chariot-backend --prod deploy /deploy/chariot-backend
-
-# Copier les fichiers compilés dans le dossier de déploiement
-RUN cp -r /workspace/services/chariot/backend/dist /deploy/chariot-backend/
-RUN cp -r /workspace/shared /deploy/
-
 # Stage 2: Production
 FROM node:20-alpine
 
 RUN apk add --no-cache wget
 
+# Installer pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copier tout depuis le dossier de déploiement
-COPY --from=builder /deploy/chariot-backend ./services/chariot/backend
-COPY --from=builder /deploy/shared ./shared
+# Configurer pnpm pour utiliser une structure node_modules plate (compatibilité)
+RUN echo "node-linker=hoisted" > .npmrc
+
+# Copier les fichiers de configuration du workspace
+COPY --from=builder /workspace/pnpm-workspace.yaml ./
+COPY --from=builder /workspace/package.json ./
+COPY --from=builder /workspace/pnpm-lock.yaml ./
+COPY --from=builder /workspace/shared/package.json ./shared/
+COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
+
+# Installer toutes les dépendances (y compris les transitives comme express)
+RUN pnpm install --frozen-lockfile --filter @chariot/chariot-backend...
+
+# Copier le code compilé (sans les node_modules)
+COPY --from=builder /workspace/shared/constants ./shared/constants
+COPY --from=builder /workspace/shared/types ./shared/types
+COPY --from=builder /workspace/shared/utils ./shared/utils
+COPY --from=builder /workspace/shared/index.ts ./shared/index.ts
+COPY --from=builder /workspace/shared/package.json ./shared/package.json
+COPY --from=builder /workspace/shared/tsconfig.json ./shared/tsconfig.json
+COPY --from=builder /workspace/services/chariot/backend/dist ./services/chariot/backend/dist
 
 WORKDIR /app/services/chariot/backend
 
