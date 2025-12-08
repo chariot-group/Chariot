@@ -13,6 +13,9 @@ import { SeederModule } from '@/seeder/seeder.module';
 import { MetricsModule } from '@/metrics/metrics.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
+// Import du SeederModule uniquement en développement
+const devModules = process.env.NODE_ENV !== 'production' ? [SeederModule] : [];
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,7 +27,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     CampaignModule,
     AuthModule,
     MaillingModule,
-    SeederModule,
+    ...devModules,
     MetricsModule,
     PrometheusModule.register()
   ],
