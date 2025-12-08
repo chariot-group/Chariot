@@ -11,6 +11,7 @@ COPY shared ./shared
 COPY services/chariot/frontend ./services/chariot/frontend
 
 ARG NEXT_PUBLIC_API_URL
+ARG CHARIOT_FRONT_PORT=3000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV ENVIRONMENT=production
@@ -27,10 +28,12 @@ RUN apk add --no-cache wget
 
 WORKDIR /app
 
+ARG CHARIOT_FRONT_PORT=3000
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV HOSTNAME=0.0.0.0
-ENV PORT=3000
+ENV PORT=${CHARIOT_FRONT_PORT}
 
 # Copy built application and dependencies
 COPY --from=builder /workspace/services/chariot/frontend/.next/standalone ./
@@ -39,6 +42,6 @@ COPY --from=builder /workspace/services/chariot/frontend/public ./public
 
 USER node
 
-EXPOSE 3000
+EXPOSE ${CHARIOT_FRONT_PORT}
 
 CMD ["node", "server.js"]

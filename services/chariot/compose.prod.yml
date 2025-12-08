@@ -19,6 +19,8 @@ services:
     build:
       context: ../../
       dockerfile: services/chariot/backend/Dockerfile.prod
+      args:
+        CHARIOT_INTERNAL_API_PORT: ${CHARIOT_INTERNAL_API_PORT:-9000}
     restart: unless-stopped
     volumes:
       - ./backend/logger/logs:/app/logger/logs
@@ -40,10 +42,12 @@ services:
     build:
       context: ../../
       dockerfile: services/chariot/frontend/Dockerfile.prod
+      args:
+        CHARIOT_FRONT_PORT: ${CHARIOT_FRONT_PORT:-3000}
     restart: unless-stopped
     command: ["node", "server.js"]
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${CHARIOT_FRONT_PORT:-3000}"]
       interval: 30s
       timeout: 10s
       retries: 3

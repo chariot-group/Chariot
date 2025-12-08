@@ -1,0 +1,139 @@
+{
+  "realm": "chariot",
+  "enabled": true,
+  "displayName": "Chariot SSO",
+  "displayNameHtml": "<b>Chariot</b> SSO",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "rememberMe": true,
+  "verifyEmail": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "sslRequired": "all",
+  "defaultLocale": "fr",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["fr", "en", "es"],
+  "loginTheme": "chariot",
+  "emailTheme": "chariot",
+  "attributes": {
+    "frontendUrl": "${env.KEYCLOAK_FRONTEND_URL}"
+  },
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespan": 5184000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "smtpServer": {
+    "host": "${env.KEYCLOAK_SMTP_HOST}",
+    "port": "${env.KEYCLOAK_SMTP_PORT}",
+    "from": "${env.KEYCLOAK_SMTP_FROM}",
+    "fromDisplayName": "${env.KEYCLOAK_SMTP_FROM_DISPLAY_NAME}",
+    "replyTo": "${env.KEYCLOAK_SMTP_REPLY_TO}",
+    "replyToDisplayName": "${env.KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}",
+    "auth": "true",
+    "user": "${env.KEYCLOAK_SMTP_USER}",
+    "password": "${env.KEYCLOAK_SMTP_PASSWORD}",
+    "starttls": "${env.KEYCLOAK_SMTP_STARTTLS}",
+    "ssl": "${env.KEYCLOAK_SMTP_SSL}"
+  },
+  "requiredActions": [
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": true,
+      "defaultAction": true,
+      "priority": 50,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "users",
+        "description": "Default user role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "chariot"
+      },
+      {
+        "name": "admin",
+        "description": "Administrator role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "chariot"
+      }
+    ]
+  },
+  "defaultRoles": ["users"],
+  "clients": [
+    {
+      "clientId": "chariot-app",
+      "name": "Chariot Application",
+      "description": "Main Chariot application client",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
+      "redirectUris": [
+        "https://chariot.tools/auth/callback",
+        "https://chariot.tools/*"
+      ],
+      "webOrigins": [
+        "https://chariot.tools"
+      ],
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "attributes": {
+        "post.logout.redirect.uris": "https://chariot.tools/*",
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "admin-client",
+      "name": "Admin Client for User Management",
+      "enabled": true,
+      "publicClient": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
+      "webOrigins": [
+        "https://chariot.tools"
+      ],
+      "redirectUris": [
+        "https://chariot.tools/*"
+      ]
+    }
+  ],
+  "users": []
+}

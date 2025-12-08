@@ -10,6 +10,8 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY shared ./shared
 COPY services/chariot/backend ./services/chariot/backend
 
+ARG CHARIOT_INTERNAL_API_PORT=9000
+
 # Install dependencies and build
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @chariot/chariot-backend run build
@@ -40,8 +42,10 @@ COPY --from=builder /workspace/services/chariot/backend/logger ./logger
 # Create logs directory
 RUN mkdir -p logger/logs && chown -R node:node logger/logs
 
+ARG CHARIOT_INTERNAL_API_PORT=9000
+
 USER node
 
-EXPOSE 9000
+EXPOSE ${CHARIOT_INTERNAL_API_PORT}
 
 CMD ["node", "dist/main.js"]
