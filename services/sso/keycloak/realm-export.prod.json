@@ -25,9 +25,6 @@
   "supportedLocales": ["fr", "en", "es"],
   "loginTheme": "chariot",
   "emailTheme": "chariot",
-  "attributes": {
-    "frontendUrl": "${env.KEYCLOAK_FRONTEND_URL}"
-  },
   "accessTokenLifespan": 300,
   "accessTokenLifespanForImplicitFlow": 900,
   "ssoSessionIdleTimeout": 1800,
