@@ -16,10 +16,13 @@ services:
           memory: 256M
 
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0
+    build:
+      context: ./keycloak
+      dockerfile: Dockerfile.prod
     restart: unless-stopped
     command:
       - start
+      - --optimized
       - --import-realm
     environment:
       KC_DB: postgres
@@ -30,8 +33,8 @@ services:
       KC_HOSTNAME_PORT: ${KEYCLOAK_PORT:-443}
       KC_HOSTNAME_STRICT: true
       KC_HOSTNAME_STRICT_HTTPS: true
-      KC_HTTP_ENABLED: true
-      KC_PROXY_HEADERS: xforwarded
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/server.crt.pem
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/server.key.pem
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
       KC_LOG_LEVEL: info
@@ -58,8 +61,10 @@ services:
       - ./keycloak/realm-export.prod.json:/opt/keycloak/data/import/realm-export.json:ro
       - ./keycloak/themes:/opt/keycloak/themes:ro
       - ./keycloak/import-realm.sh:/opt/keycloak/import-realm.sh:ro
+      - ${SSL_CERT_PATH}:/opt/keycloak/conf/server.crt.pem:ro
+      - ${SSL_KEY_PATH}:/opt/keycloak/conf/server.key.pem:ro
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 || exit 1"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8443 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 10
