@@ -19,7 +19,7 @@
   "quickLoginCheckMilliSeconds": 1000,
   "maxDeltaTimeSeconds": 43200,
   "failureFactor": 5,
-  "sslRequired": "external",
+  "sslRequired": "none",
   "defaultLocale": "fr",
   "internationalizationEnabled": true,
   "supportedLocales": ["fr", "en", "es"],
@@ -99,14 +99,16 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
       "redirectUris": [
-        "https://integ.*.chariot.tools/*",
-        "https://integ.app.chariot.tools/*",
-        "http://localhost:3000/*"
+        "http://*.chariot.tools/*",
+        "https://*.chariot.tools/*",
+        "http://localhost:*/*",
+        "https://localhost:*/*"
       ],
       "webOrigins": [
-        "https://integ.*.chariot.tools",
-        "https://integ.app.chariot.tools",
-        "http://localhost:3000"
+        "http://*.chariot.tools",
+        "https://*.chariot.tools",
+        "http://localhost:*",
+        "https://localhost:*"
       ],
       "publicClient": true,
       "protocol": "openid-connect",
@@ -117,7 +119,7 @@
       "authorizationServicesEnabled": false,
       "fullScopeAllowed": true,
       "attributes": {
-        "post.logout.redirect.uris": "https://integ.app.chariot.tools/*##https://integ.sso.chariot.tools/*##http://localhost:3000/*",
+        "post.logout.redirect.uris": "+",
         "pkce.code.challenge.method": "S256"
       }
     },
@@ -130,15 +132,14 @@
       "serviceAccountsEnabled": false,
       "protocol": "openid-connect",
       "webOrigins": [
-        "https://integ.app.chariot.tools",
-        "https://integ.sso.chariot.tools",
-        "http://localhost:3000",
         "*"
       ],
       "redirectUris": [
-        "https://integ.app.chariot.tools/*",
-        "https://integ.sso.chariot.tools/*",
-        "http://localhost:3000/*"
+        "http://*.chariot.tools/*",
+        "https://*.chariot.tools/*",
+        "http://localhost:*/*",
+        "https://localhost:*/*",
+        "*"
       ]
     }
   ],
