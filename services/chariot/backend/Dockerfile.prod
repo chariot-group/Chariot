@@ -12,7 +12,7 @@ COPY shared/package.json ./shared/
 COPY services/chariot/backend/package.json ./services/chariot/backend/
 
 # Installer les dépendances (cette étape sera cachée si les fichiers n'ont pas changé)
-RUN pnpm install --frozen-lockfile --filter @my-app/chariot-backend...
+RUN pnpm install --frozen-lockfile --filter @chariot/chariot-backend...
 
 # Maintenant copier le code source
 COPY shared ./shared
@@ -37,7 +37,7 @@ COPY --from=builder /workspace/services/chariot/backend/package.json ./services/
 COPY --from=builder /workspace/services/chariot/backend/dist ./services/chariot/backend/dist
 
 # Installer UNIQUEMENT les dépendances de production
-RUN pnpm install --frozen-lockfile --prod --filter @my-app/chariot-backend...
+RUN pnpm install --frozen-lockfile --prod --filter @chariot/chariot-backend...
 
 WORKDIR /app/services/chariot/backend
 
