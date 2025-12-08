@@ -181,7 +181,7 @@ services:
       - ./services/sso/keycloak/realm-export.integ.json:/opt/keycloak/data/import/realm-export.json:ro
       - ./services/sso/keycloak/themes:/opt/keycloak/themes:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/realms/master || exit 1"]
       interval: 30s
       timeout: 30s
       retries: 10
