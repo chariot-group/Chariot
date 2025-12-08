@@ -27,26 +27,20 @@ FROM node:20-alpine
 
 RUN apk add --no-cache wget
 
-# Installer pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copier les fichiers nécessaires pour pnpm install
-COPY --from=builder /workspace/pnpm-workspace.yaml ./
+# Copier tous les node_modules depuis le builder (avec toutes les dépendances)
+COPY --from=builder /workspace/node_modules ./node_modules
 COPY --from=builder /workspace/package.json ./
+COPY --from=builder /workspace/pnpm-workspace.yaml ./
 COPY --from=builder /workspace/pnpm-lock.yaml ./
-COPY --from=builder /workspace/shared/package.json ./shared/
-COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
 
-# Installer UNIQUEMENT les dépendances de production (pas de dev dependencies)
-RUN pnpm install --frozen-lockfile --filter @chariot/chariot-backend... --prod
-
-# Copier le code source compilé
+# Copier le code source compilé et les packages
 COPY --from=builder /workspace/shared ./shared
 COPY --from=builder /workspace/services/chariot/backend/dist ./services/chariot/backend/dist
+COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
 
 WORKDIR /app/services/chariot/backend
 
