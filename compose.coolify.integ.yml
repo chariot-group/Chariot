@@ -217,9 +217,8 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      - /bin/bash
-      - -c
       - |
         set -e
         echo "Waiting for Keycloak to be ready..."
@@ -229,8 +228,8 @@ services:
         /opt/keycloak/bin/kcadm.sh config credentials \
           --server http://keycloak:8080 \
           --realm master \
-          --user "$$KEYCLOAK_ADMIN" \
-          --password "$$KEYCLOAK_ADMIN_PASSWORD"
+          --user "$${KEYCLOAK_ADMIN}" \
+          --password "$${KEYCLOAK_ADMIN_PASSWORD}"
         
         echo "Disabling SSL requirement on master realm..."
         /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
@@ -240,33 +239,33 @@ services:
         /opt/keycloak/bin/kcadm.sh update realms/chariot -s verifyEmail=false
         
         echo "Configuring SMTP for chariot realm..."
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.host=$$KEYCLOAK_SMTP_HOST"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.port=$$KEYCLOAK_SMTP_PORT"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.from=$$KEYCLOAK_SMTP_FROM"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.fromDisplayName=$$KEYCLOAK_SMTP_FROM_DISPLAY_NAME"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyTo=$$KEYCLOAK_SMTP_REPLY_TO"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyToDisplayName=$$KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.host=$${KEYCLOAK_SMTP_HOST}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.port=$${KEYCLOAK_SMTP_PORT}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.from=$${KEYCLOAK_SMTP_FROM}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.fromDisplayName=$${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyTo=$${KEYCLOAK_SMTP_REPLY_TO}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyToDisplayName=$${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}"
         /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.auth=true"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.user=$$KEYCLOAK_SMTP_USER"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s smtpServer.password="$$KEYCLOAK_SMTP_PASSWORD"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.starttls=$$KEYCLOAK_SMTP_STARTTLS"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.ssl=$$KEYCLOAK_SMTP_SSL"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.user=$${KEYCLOAK_SMTP_USER}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s smtpServer.password="$${KEYCLOAK_SMTP_PASSWORD}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.starttls=$${KEYCLOAK_SMTP_STARTTLS}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.ssl=$${KEYCLOAK_SMTP_SSL}"
         
         echo "Creating default admin user if needed..."
-        if /opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$$KEYCLOAK_DEFAULT_ADMIN_EMAIL" | grep -q '"id"'; then
+        if /opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$${KEYCLOAK_DEFAULT_ADMIN_EMAIL}" | grep -q '"id"'; then
           echo "Admin user already exists"
         else
           echo "Creating admin user..."
           /opt/keycloak/bin/kcadm.sh create users -r chariot \
-            -s username="$$KEYCLOAK_ADMIN" \
-            -s email="$$KEYCLOAK_DEFAULT_ADMIN_EMAIL" \
-            -s firstName="$$KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME" \
-            -s lastName="$$KEYCLOAK_DEFAULT_ADMIN_LASTNAME" \
+            -s username="$${KEYCLOAK_ADMIN}" \
+            -s email="$${KEYCLOAK_DEFAULT_ADMIN_EMAIL}" \
+            -s firstName="$${KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME}" \
+            -s lastName="$${KEYCLOAK_DEFAULT_ADMIN_LASTNAME}" \
             -s enabled=true \
             -s emailVerified=true
           
-          USER_ID=$$(/opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$$KEYCLOAK_DEFAULT_ADMIN_EMAIL" | grep -o '"id" : "[^"]*"' | cut -d'"' -f4)
-          /opt/keycloak/bin/kcadm.sh update users/$$USER_ID/reset-password -r chariot -s type=password -s value="$$KEYCLOAK_DEFAULT_ADMIN_PASSWORD" -s temporary=false -n
+          USER_ID=$$(/opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$${KEYCLOAK_DEFAULT_ADMIN_EMAIL}" | grep -o '"id" : "[^"]*"' | cut -d'"' -f4)
+          /opt/keycloak/bin/kcadm.sh update users/$${USER_ID}/reset-password -r chariot -s type=password -s value="$${KEYCLOAK_DEFAULT_ADMIN_PASSWORD}" -s temporary=false -n
           echo "Admin user created successfully"
         fi
         
