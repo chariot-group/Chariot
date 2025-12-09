@@ -9,7 +9,15 @@ import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  // Utiliser le module dev en développement, prod en production
+  let AppModuleToUse = AppModule;
+
+  if (process.env.NODE_ENV !== 'production') {
+    const { AppModuleDev } = await import('@/app.module.dev');
+    AppModuleToUse = AppModuleDev;
+  }
+
+  const app = await NestFactory.create(AppModuleToUse, {
     logger: WinstonModule.createLogger({
       instance: instance,
     }),

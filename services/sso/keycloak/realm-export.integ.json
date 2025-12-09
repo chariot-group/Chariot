@@ -19,15 +19,12 @@
   "quickLoginCheckMilliSeconds": 1000,
   "maxDeltaTimeSeconds": 43200,
   "failureFactor": 5,
-  "sslRequired": "external",
+  "sslRequired": "none",
   "defaultLocale": "fr",
   "internationalizationEnabled": true,
   "supportedLocales": ["fr", "en", "es"],
   "loginTheme": "chariot",
   "emailTheme": "chariot",
-  "attributes": {
-    "frontendUrl": "${env.KEYCLOAK_FRONTEND_URL}"
-  },
   "accessTokenLifespan": 300,
   "accessTokenLifespanForImplicitFlow": 900,
   "ssoSessionIdleTimeout": 1800,
@@ -38,19 +35,6 @@
   "accessCodeLifespanUserAction": 300,
   "accessCodeLifespanLogin": 1800,
   "actionTokenGeneratedByAdminLifespan": 43200,
-  "smtpServer": {
-    "host": "${env.KEYCLOAK_SMTP_HOST}",
-    "port": "${env.KEYCLOAK_SMTP_PORT}",
-    "from": "${env.KEYCLOAK_SMTP_FROM}",
-    "fromDisplayName": "${env.KEYCLOAK_SMTP_FROM_DISPLAY_NAME}",
-    "replyTo": "${env.KEYCLOAK_SMTP_REPLY_TO}",
-    "replyToDisplayName": "${env.KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}",
-    "auth": "true",
-    "user": "${env.KEYCLOAK_SMTP_USER}",
-    "password": "${env.KEYCLOAK_SMTP_PASSWORD}",
-    "starttls": "${env.KEYCLOAK_SMTP_STARTTLS}",
-    "ssl": "${env.KEYCLOAK_SMTP_SSL}"
-  },
   "requiredActions": [
     {
       "alias": "VERIFY_EMAIL",
@@ -96,17 +80,21 @@
       "name": "Chariot Application",
       "description": "Main Chariot application client",
       "enabled": true,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
       "redirectUris": [
-        "http://integ.chariot.tools:3000/*",
-        "http://integ.chariot.tools/*",
-        "http://localhost:3000/*"
+        "http://integ.app.chariot.tools/*",
+        "https://integ.app.chariot.tools/*",
+        "http://codex.chariot.tools/*",
+        "https://codex.chariot.tools/*",
+        "http://localhost:*/*",
+        "https://localhost:*/*"
       ],
       "webOrigins": [
-        "http://integ.chariot.tools:3000",
-        "http://integ.chariot.tools",
-        "http://localhost:3000"
+        "http://integ.app.chariot.tools",
+        "https://integ.app.chariot.tools",
+        "http://codex.chariot.tools",
+        "https://codex.chariot.tools",
+        "http://localhost:*",
+        "https://localhost:*"
       ],
       "publicClient": true,
       "protocol": "openid-connect",
@@ -117,7 +105,7 @@
       "authorizationServicesEnabled": false,
       "fullScopeAllowed": true,
       "attributes": {
-        "post.logout.redirect.uris": "http://integ.chariot.tools:3000/*##http://integ.chariot.tools/*##http://localhost:3000/*",
+        "post.logout.redirect.uris": "+",
         "pkce.code.challenge.method": "S256"
       }
     },
@@ -130,15 +118,14 @@
       "serviceAccountsEnabled": false,
       "protocol": "openid-connect",
       "webOrigins": [
-        "http://integ.chariot.tools:3000",
-        "http://integ.chariot.tools",
-        "http://localhost:3000",
         "*"
       ],
       "redirectUris": [
-        "http://integ.chariot.tools:3000/*",
-        "http://integ.chariot.tools/*",
-        "http://localhost:3000/*"
+        "http://*.chariot.tools/*",
+        "https://*.chariot.tools/*",
+        "http://localhost:*/*",
+        "https://localhost:*/*",
+        "*"
       ]
     }
   ],

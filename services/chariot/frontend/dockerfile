@@ -23,6 +23,6 @@ RUN pnpm install --frozen-lockfile || \
 
 WORKDIR /workspace/services/chariot/frontend
 
-EXPOSE ${CHARIOT_FRONT_PORT}
+EXPOSE 3000
 
 CMD ["pnpm", "run", "dev"]

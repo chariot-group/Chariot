@@ -19,15 +19,12 @@
   "quickLoginCheckMilliSeconds": 1000,
   "maxDeltaTimeSeconds": 43200,
   "failureFactor": 5,
-  "sslRequired": "all",
+  "sslRequired": "external",
   "defaultLocale": "fr",
   "internationalizationEnabled": true,
   "supportedLocales": ["fr", "en", "es"],
   "loginTheme": "chariot",
   "emailTheme": "chariot",
-  "attributes": {
-    "frontendUrl": "${env.KEYCLOAK_FRONTEND_URL}"
-  },
   "accessTokenLifespan": 300,
   "accessTokenLifespanForImplicitFlow": 900,
   "ssoSessionIdleTimeout": 1800,
@@ -128,10 +125,12 @@
       "protocol": "openid-connect",
       "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
       "webOrigins": [
-        "https://chariot.tools"
+        "https://chariot.tools",
+        "https://*.chariot.tools"
       ],
       "redirectUris": [
-        "https://chariot.tools/*"
+        "https://chariot.tools/*",
+        "https://*.chariot.tools/*"
       ]
     }
   ],

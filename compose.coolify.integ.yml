@@ -1,0 +1,285 @@
+# Chariot Integration Stack for Coolify
+# Flattened version without includes for Coolify compatibility
+# Environment: INTEGRATION
+
+services:
+  # ============================================
+  # CHARIOT SERVICE
+  # ============================================
+  
+  chariot-mongo:
+    image: mongo:8.0.15
+    platform: linux/amd64
+    container_name: chariot-mongodb
+    restart: unless-stopped
+    ports:
+      - "${CHARIOT_MONGO_PORT:-27017}:27017"
+    volumes:
+      - chariot_mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${CHARIOT_MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${CHARIOT_MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${CHARIOT_MONGO_INITDB_DATABASE}
+    command:
+      - "--logpath"
+      - "/var/log/mongodb/mongod.log"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - chariot-network
+
+  chariot-backend:
+    build:
+      context: .
+      dockerfile: services/chariot/backend/Dockerfile.prod
+      args:
+        CHARIOT_INTERNAL_API_PORT: ${CHARIOT_INTERNAL_API_PORT:-9000}
+    container_name: chariot-backend
+    restart: unless-stopped
+    ports:
+      - "9000"
+    volumes:
+      - chariot_backend_logs:/app/logger/logs
+    environment:
+      - CHARIOT_API_PORT=${CHARIOT_API_PORT}
+      - CHARIOT_MONGO_URL=${CHARIOT_MONGO_URL}
+      - CHARIOT_FRONTEND_URL=${CHARIOT_FRONTEND_URL}
+      - CHARIOT_BACKEND_URL=${CHARIOT_BACKEND_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_USER=${SMTP_USER}
+      - RECEIVER_EMAIL=${RECEIVER_EMAIL}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - ENVIRONMENT=integration
+      - DEFAULT_PASSWORD=${DEFAULT_PASSWORD}
+      - CHARIOT_INTERNAL_API_PORT=${CHARIOT_INTERNAL_API_PORT:-9000}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - KEYCLOAK_INTERNAL_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_ADMIN_USER=${KEYCLOAK_ADMIN_USER}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+    command: ["node", "dist/main.js"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${CHARIOT_INTERNAL_API_PORT:-9000}/metrics"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      chariot-mongo:
+        condition: service_healthy
+    networks:
+      - chariot-network
+      - shared-network
+
+  chariot-frontend:
+    build:
+      context: .
+      dockerfile: services/chariot/frontend/Dockerfile.prod
+      args:
+        CHARIOT_FRONT_PORT: ${CHARIOT_FRONT_PORT:-3000}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    container_name: chariot-frontend
+    restart: unless-stopped
+    ports:
+      - "3000"
+    environment:
+      - CHARIOT_BACKEND_URL=${CHARIOT_BACKEND_URL}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - ENVIRONMENT=integration
+      - NEXT_PUBLIC_KEYCLOAK_URL=${KEYCLOAK_URL}
+      - NEXT_PUBLIC_KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+    command: ["node", "server.js"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${CHARIOT_FRONT_PORT:-3000}"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 120s
+    depends_on:
+      - chariot-backend
+    networks:
+      - chariot-network
+      - shared-network
+
+  # ============================================
+  # SSO SERVICE (Keycloak)
+  # ============================================
+
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    networks:
+      - sso-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER}"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  keycloak:
+    build:
+      context: ./services/sso
+      dockerfile: Dockerfile.integ
+    container_name: keycloak
+    restart: unless-stopped
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - "8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB_NAME}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_LOG_LEVEL: info
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_FRONTEND_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_SMTP_HOST: ${SMTP_HOST}
+      KEYCLOAK_SMTP_PORT: ${SMTP_PORT}
+      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM}
+      KEYCLOAK_SMTP_FROM_DISPLAY_NAME: ${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}
+      KEYCLOAK_SMTP_REPLY_TO: ${KEYCLOAK_SMTP_REPLY_TO}
+      KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME: ${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}
+      KEYCLOAK_SMTP_USER: ${SMTP_USER}
+      KEYCLOAK_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS:-true}
+      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL:-false}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_DEFAULT_ADMIN_EMAIL: ${KEYCLOAK_ADMIN_EMAIL}
+      KEYCLOAK_DEFAULT_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME: ${KEYCLOAK_ADMIN_FIRSTNAME}
+      KEYCLOAK_DEFAULT_ADMIN_LASTNAME: ${KEYCLOAK_ADMIN_LASTNAME}
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK' || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 10
+      start_period: 120s
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - sso-network
+      - shared-network
+
+  keycloak-config:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak-config
+    restart: "no"
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_SMTP_HOST: ${SMTP_HOST}
+      KEYCLOAK_SMTP_PORT: ${SMTP_PORT}
+      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM}
+      KEYCLOAK_SMTP_FROM_DISPLAY_NAME: ${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}
+      KEYCLOAK_SMTP_REPLY_TO: ${KEYCLOAK_SMTP_REPLY_TO}
+      KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME: ${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}
+      KEYCLOAK_SMTP_USER: ${SMTP_USER}
+      KEYCLOAK_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS:-true}
+      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL:-false}
+      KEYCLOAK_DEFAULT_ADMIN_EMAIL: ${KEYCLOAK_ADMIN_EMAIL}
+      KEYCLOAK_DEFAULT_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME: ${KEYCLOAK_ADMIN_FIRSTNAME}
+      KEYCLOAK_DEFAULT_ADMIN_LASTNAME: ${KEYCLOAK_ADMIN_LASTNAME}
+    networks:
+      - sso-network
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        echo "Waiting for Keycloak to be ready..."
+        sleep 10
+        
+        echo "Configuring Keycloak..."
+        /opt/keycloak/bin/kcadm.sh config credentials \
+          --server http://keycloak:8080 \
+          --realm master \
+          --user "$${KEYCLOAK_ADMIN}" \
+          --password "$${KEYCLOAK_ADMIN_PASSWORD}"
+        
+        echo "Disabling SSL requirement on master realm..."
+        /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
+        
+        echo "Configuring chariot realm..."
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s sslRequired=NONE
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s verifyEmail=false
+        
+        echo "Configuring SMTP for chariot realm..."
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.host=$${KEYCLOAK_SMTP_HOST}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.port=$${KEYCLOAK_SMTP_PORT}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.from=$${KEYCLOAK_SMTP_FROM}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.fromDisplayName=$${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyTo=$${KEYCLOAK_SMTP_REPLY_TO}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyToDisplayName=$${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.auth=true"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.user=$${KEYCLOAK_SMTP_USER}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s smtpServer.password="$${KEYCLOAK_SMTP_PASSWORD}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.starttls=$${KEYCLOAK_SMTP_STARTTLS}"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.ssl=$${KEYCLOAK_SMTP_SSL}"
+        
+        echo "Creating default admin user if needed..."
+        if /opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$${KEYCLOAK_DEFAULT_ADMIN_EMAIL}" | grep -q '"id"'; then
+          echo "Admin user already exists"
+        else
+          echo "Creating admin user..."
+          /opt/keycloak/bin/kcadm.sh create users -r chariot \
+            -s username="$${KEYCLOAK_ADMIN}" \
+            -s email="$${KEYCLOAK_DEFAULT_ADMIN_EMAIL}" \
+            -s firstName="$${KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME}" \
+            -s lastName="$${KEYCLOAK_DEFAULT_ADMIN_LASTNAME}" \
+            -s enabled=true \
+            -s emailVerified=true
+          
+          USER_ID=$$(/opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$${KEYCLOAK_DEFAULT_ADMIN_EMAIL}" | grep -o '"id" : "[^"]*"' | cut -d'"' -f4)
+          /opt/keycloak/bin/kcadm.sh update users/$${USER_ID}/reset-password -r chariot -s type=password -s value="$${KEYCLOAK_DEFAULT_ADMIN_PASSWORD}" -s temporary=false -n
+          echo "Admin user created successfully"
+        fi
+        
+        echo "Configuration completed successfully"
+
+volumes:
+  chariot_mongodb_data:
+  chariot_backend_logs:
+  keycloak_db_data:
+
+networks:
+  chariot-network:
+    driver: bridge
+  sso-network:
+    driver: bridge
+  shared-network:
+    driver: bridge
