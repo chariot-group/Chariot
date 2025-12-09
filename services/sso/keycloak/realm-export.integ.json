@@ -81,20 +81,10 @@
       "description": "Main Chariot application client",
       "enabled": true,
       "redirectUris": [
-        "http://integ.app.chariot.tools/*",
-        "https://integ.app.chariot.tools/*",
-        "http://codex.chariot.tools/*",
-        "https://codex.chariot.tools/*",
-        "http://localhost:*/*",
-        "https://localhost:*/*"
+        "https://integ.app.chariot.tools/*"
       ],
       "webOrigins": [
-        "http://integ.app.chariot.tools",
-        "https://integ.app.chariot.tools",
-        "http://codex.chariot.tools",
-        "https://codex.chariot.tools",
-        "http://localhost:*",
-        "https://localhost:*"
+        "https://integ.app.chariot.tools"
       ],
       "publicClient": true,
       "protocol": "openid-connect",
@@ -121,11 +111,8 @@
         "*"
       ],
       "redirectUris": [
-        "http://*.chariot.tools/*",
-        "https://*.chariot.tools/*",
         "http://localhost:*/*",
-        "https://localhost:*/*",
-        "*"
+        "https://localhost:*/*"
       ]
     }
   ],
