@@ -1,0 +1,10 @@
+FROM quay.io/keycloak/keycloak:23.0
+
+# Force rebuild with version
+ARG REALM_VERSION=2
+
+# Copier le fichier realm dans l'image
+COPY keycloak/realm-export.integ.json /opt/keycloak/data/import/realm-export.json
+
+# Copier les thèmes si nécessaire
+COPY keycloak/themes /opt/keycloak/themes

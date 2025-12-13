@@ -37,11 +37,6 @@ KEYCLOAK_SMTP_STARTTLS=true
 KEYCLOAK_SMTP_SSL=false
 ```
 
-### Configuration Client
-```env
-KEYCLOAK_CLIENT_SECRET=votre_secret_client
-```
-
 ### Utilisateur par défaut
 ```env
 KEYCLOAK_DEFAULT_ADMIN_EMAIL=admin@chariot.tools

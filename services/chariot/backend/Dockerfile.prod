@@ -1,50 +1,64 @@
-FROM node:22-alpine AS builder
+# Stage 1: Builder
+FROM node:20-alpine AS builder
 
-# Install pnpm
+# Installer pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /workspace
 
-# Copy workspace files
+# Copier SEULEMENT les fichiers de dépendances d'abord (pour le cache)
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY shared/package.json ./shared/
+COPY services/chariot/backend/package.json ./services/chariot/backend/
+
+# Installer les dépendances (cette étape sera cachée si les fichiers n'ont pas changé)
+RUN pnpm install --frozen-lockfile --filter @chariot/chariot-backend...
+
+# Maintenant copier le code source
 COPY shared ./shared
 COPY services/chariot/backend ./services/chariot/backend
 
 ARG CHARIOT_INTERNAL_API_PORT=9000
 
-# Install dependencies and build
-RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chariot/chariot-backend run build
+# Build
+WORKDIR /workspace/services/chariot/backend
+RUN pnpm run build
 
-# Production stage
-FROM node:22-alpine
+# Stage 2: Production
+FROM node:20-alpine
 
-# Install pnpm and wget for healthchecks
-RUN corepack enable && corepack prepare pnpm@latest --activate && \
-    apk add --no-cache wget
+RUN apk add --no-cache wget
+
+# Installer pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy workspace files
-COPY --from=builder /workspace/pnpm-workspace.yaml /workspace/package.json /workspace/pnpm-lock.yaml ./
-COPY --from=builder /workspace/shared ./shared
+ENV NODE_ENV=production
 
-# Copy package.json for production dependencies
-COPY --from=builder /workspace/services/chariot/backend/package.json ./
+# Configurer pnpm pour utiliser une structure node_modules plate (compatibilité)
+RUN echo "node-linker=hoisted" > .npmrc
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Copier les fichiers de configuration du workspace
+COPY --from=builder /workspace/pnpm-workspace.yaml ./
+COPY --from=builder /workspace/package.json ./
+COPY --from=builder /workspace/pnpm-lock.yaml ./
+COPY --from=builder /workspace/shared/package.json ./shared/
+COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
 
-# Copy built application
-COPY --from=builder /workspace/services/chariot/backend/dist ./dist
-COPY --from=builder /workspace/services/chariot/backend/logger ./logger
+# Installer toutes les dépendances (y compris les transitives comme express)
+RUN pnpm install --frozen-lockfile --filter @chariot/chariot-backend...
 
-# Create logs directory
-RUN mkdir -p logger/logs && chown -R node:node logger/logs
+# Copier le code compilé (sans les node_modules)
+COPY --from=builder /workspace/shared/constants ./shared/constants
+COPY --from=builder /workspace/shared/types ./shared/types
+COPY --from=builder /workspace/shared/utils ./shared/utils
+COPY --from=builder /workspace/shared/index.ts ./shared/index.ts
+COPY --from=builder /workspace/shared/package.json ./shared/package.json
+COPY --from=builder /workspace/shared/tsconfig.json ./shared/tsconfig.json
+COPY --from=builder /workspace/services/chariot/backend/dist ./services/chariot/backend/dist
 
-ARG CHARIOT_INTERNAL_API_PORT=9000
-
-USER node
+WORKDIR /app/services/chariot/backend
 
 EXPOSE ${CHARIOT_INTERNAL_API_PORT}
 

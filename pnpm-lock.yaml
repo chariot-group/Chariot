@@ -24,6 +24,9 @@ importers:
       '@chariot/shared':
         specifier: workspace:*
         version: link:../../../shared
+      '@faker-js/faker':
+        specifier: ^10.0.0
+        version: 10.1.0
       '@keycloak/keycloak-admin-client':
         specifier: ^26.4.7
         version: 26.4.7
@@ -118,9 +121,6 @@ importers:
         specifier: ^3.17.0
         version: 3.18.3
     devDependencies:
-      '@faker-js/faker':
-        specifier: ^10.0.0
-        version: 10.1.0
       '@nestjs/schematics':
         specifier: ^11.0.0
         version: 11.0.9(chokidar@4.0.3)(typescript@5.9.3)

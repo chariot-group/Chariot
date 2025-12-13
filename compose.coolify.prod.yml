@@ -1,0 +1,230 @@
+# Chariot Production Stack for Coolify
+# Flattened version without includes for Coolify compatibility
+# Environment: PRODUCTION
+
+services:
+  # ============================================
+  # CHARIOT SERVICE
+  # ============================================
+  
+  chariot-mongo:
+    image: mongo:8.0.15
+    platform: linux/amd64
+    container_name: chariot-mongodb
+    restart: unless-stopped
+    ports:
+      - "${CHARIOT_MONGO_PORT:-27017}:27017"
+    volumes:
+      - chariot_mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${CHARIOT_MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${CHARIOT_MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${CHARIOT_MONGO_INITDB_DATABASE}
+    command:
+      - "--logpath"
+      - "/var/log/mongodb/mongod.log"
+      - "--logappend"
+      - "--quiet"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok", "--quiet"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - chariot-network
+
+  chariot-backend:
+    build:
+      context: .
+      dockerfile: services/chariot/backend/Dockerfile.prod
+      args:
+        CHARIOT_INTERNAL_API_PORT: ${CHARIOT_INTERNAL_API_PORT:-9000}
+    container_name: chariot-backend
+    restart: unless-stopped
+    ports:
+      - "${CHARIOT_API_PORT:-9000}:${CHARIOT_INTERNAL_API_PORT:-9000}"
+    volumes:
+      - chariot_backend_logs:/app/logger/logs
+    environment:
+      - CHARIOT_API_PORT=${CHARIOT_API_PORT}
+      - CHARIOT_MONGO_URL=${CHARIOT_MONGO_URL}
+      - CHARIOT_FRONTEND_URL=${CHARIOT_FRONTEND_URL}
+      - CHARIOT_BACKEND_URL=${CHARIOT_BACKEND_URL}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_USER=${SMTP_USER}
+      - RECEIVER_EMAIL=${RECEIVER_EMAIL}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - ENVIRONMENT=production
+      - DEFAULT_PASSWORD=${DEFAULT_PASSWORD}
+      - CHARIOT_INTERNAL_API_PORT=${CHARIOT_INTERNAL_API_PORT:-9000}
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - KEYCLOAK_INTERNAL_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_ADMIN_USER=${KEYCLOAK_ADMIN_USER}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+    command: ["node", "dist/main.js"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${CHARIOT_INTERNAL_API_PORT:-9000}/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    depends_on:
+      chariot-mongo:
+        condition: service_healthy
+    networks:
+      - chariot-network
+      - shared-network
+
+  chariot-frontend:
+    build:
+      context: .
+      dockerfile: services/chariot/frontend/Dockerfile.prod
+      args:
+        CHARIOT_FRONT_PORT: ${CHARIOT_FRONT_PORT:-3000}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    container_name: chariot-frontend
+    restart: unless-stopped
+    ports:
+      - "${CHARIOT_FRONT_PORT:-3000}:${CHARIOT_FRONT_PORT:-3000}"
+    environment:
+      - CHARIOT_BACKEND_URL=${CHARIOT_BACKEND_URL}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - ENVIRONMENT=production
+      - NEXT_PUBLIC_KEYCLOAK_URL=${KEYCLOAK_URL}
+      - NEXT_PUBLIC_KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+    command: ["node", "server.js"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${CHARIOT_FRONT_PORT:-3000}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    depends_on:
+      - chariot-backend
+    networks:
+      - chariot-network
+      - shared-network
+
+  # ============================================
+  # SSO SERVICE (Keycloak)
+  # ============================================
+
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    networks:
+      - sso-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak
+    restart: unless-stopped
+    command:
+      - start
+      - --import-realm
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB_NAME}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HOSTNAME_PORT: ${KEYCLOAK_PORT:-443}
+      KC_HOSTNAME_STRICT: true
+      KC_HOSTNAME_STRICT_HTTPS: true
+      KC_HTTP_ENABLED: true
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_LOG_LEVEL: info
+      KC_TRANSACTION_XA_ENABLED: false
+      KC_CACHE_CONFIG_FILE: cache-ispn.xml
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_FRONTEND_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_SMTP_HOST: ${SMTP_HOST}
+      KEYCLOAK_SMTP_PORT: ${SMTP_PORT}
+      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM}
+      KEYCLOAK_SMTP_FROM_DISPLAY_NAME: ${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}
+      KEYCLOAK_SMTP_REPLY_TO: ${KEYCLOAK_SMTP_REPLY_TO}
+      KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME: ${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}
+      KEYCLOAK_SMTP_USER: ${SMTP_USER}
+      KEYCLOAK_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS:-true}
+      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL:-false}
+      KEYCLOAK_DEFAULT_ADMIN_EMAIL: ${KEYCLOAK_ADMIN_EMAIL}
+      KEYCLOAK_DEFAULT_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME: ${KEYCLOAK_ADMIN_FIRSTNAME}
+      KEYCLOAK_DEFAULT_ADMIN_LASTNAME: ${KEYCLOAK_ADMIN_LASTNAME}
+    volumes:
+      - ./services/sso/keycloak/realm-export.prod.json:/opt/keycloak/data/import/realm-export.json:ro
+      - ./services/sso/keycloak/themes:/opt/keycloak/themes:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - sso-network
+      - shared-network
+
+volumes:
+  chariot_mongodb_data:
+  chariot_backend_logs:
+  keycloak_db_data:
+
+networks:
+  chariot-network:
+    driver: bridge
+  sso-network:
+    driver: bridge
+  shared-network:
+    driver: bridge

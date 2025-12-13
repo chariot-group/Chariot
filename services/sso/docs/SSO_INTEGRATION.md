@@ -565,7 +565,6 @@ KEYCLOAK_URL=http://localhost:8080
 KEYCLOAK_INTERNAL_URL=http://keycloak:8080
 KEYCLOAK_REALM=chariot
 KEYCLOAK_CLIENT_ID=chariot-app
-KEYCLOAK_CLIENT_SECRET=MfFXtKoKgHmKY8hk+ej5wmeX0VHDzD/poVmzLAdCaoY=
 
 # Keycloak Admin
 KEYCLOAK_ADMIN_USER=admin

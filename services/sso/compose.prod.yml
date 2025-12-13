@@ -20,7 +20,6 @@ services:
     restart: unless-stopped
     command:
       - start
-      - --optimized
       - --import-realm
     environment:
       KC_DB: postgres
@@ -31,8 +30,7 @@ services:
       KC_HOSTNAME_PORT: ${KEYCLOAK_PORT:-443}
       KC_HOSTNAME_STRICT: true
       KC_HOSTNAME_STRICT_HTTPS: true
-      KC_HTTP_ENABLED: false
-      KC_HTTPS_PORT: 8443
+      KC_HTTP_ENABLED: true
       KC_PROXY: edge
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
@@ -51,7 +49,6 @@ services:
       KEYCLOAK_SMTP_PASSWORD: ${SMTP_PASSWORD}
       KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS:-true}
       KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL:-false}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       KEYCLOAK_DEFAULT_ADMIN_EMAIL: ${KEYCLOAK_ADMIN_EMAIL}
       KEYCLOAK_DEFAULT_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KEYCLOAK_DEFAULT_ADMIN_FIRSTNAME: ${KEYCLOAK_ADMIN_FIRSTNAME}

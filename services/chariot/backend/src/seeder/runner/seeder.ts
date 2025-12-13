@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '@/app.module';
+import { AppModuleDev } from '@/app.module.dev';
 import { SeederService } from '@/seeder/seeder.service';
 import { Logger } from '@nestjs/common';
 import { config } from 'dotenv';
@@ -13,7 +13,7 @@ async function bootstrap() {
   const start: number = Date.now();
   Logger.log('Creating an application context...', SERVICE_NAME);
 
-  const app = await NestFactory.createApplicationContext(AppModule);
+  const app = await NestFactory.createApplicationContext(AppModuleDev);
 
   Logger.log('Application context created', SERVICE_NAME);
   Logger.log('Database currently being filled', SERVICE_NAME);

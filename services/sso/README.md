@@ -189,7 +189,6 @@ Les variables sont définies dans le fichier `.env` à la racine du projet :
 KEYCLOAK_URL=http://localhost:8180
 KEYCLOAK_REALM=chariot
 KEYCLOAK_CLIENT_ID=chariot-app
-KEYCLOAK_CLIENT_SECRET=MfFXtKoKgHmKY8hk+ej5wmeX0VHDzD/poVmzLAdCaoY=
 KEYCLOAK_ADMIN_USER=admin
 KEYCLOAK_ADMIN_PASSWORD=admin
 KEYCLOAK_PORT=8180
@@ -289,7 +288,6 @@ Les services incluent des health checks :
 
 1. **Modifier les secrets** :
    - Changer `KEYCLOAK_ADMIN_PASSWORD`
-   - Générer un nouveau `KEYCLOAK_CLIENT_SECRET`
    - Utiliser des mots de passe forts pour la base de données
 
 2. **HTTPS** :
