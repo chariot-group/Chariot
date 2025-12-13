@@ -6,7 +6,7 @@
   "registrationAllowed": true,
   "registrationEmailAsUsername": false,
   "rememberMe": true,
-  "verifyEmail": true,
+  "verifyEmail": false,
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,
   "resetPasswordAllowed": true,
@@ -19,8 +19,8 @@
   "quickLoginCheckMilliSeconds": 1000,
   "maxDeltaTimeSeconds": 43200,
   "failureFactor": 5,
-  "sslRequired": "external",
-  "defaultLocale": "fr",
+  "sslRequired": "none",
+  "defaultLocale": "en",
   "internationalizationEnabled": true,
   "supportedLocales": ["fr", "en", "es"],
   "loginTheme": "chariot",
@@ -35,26 +35,13 @@
   "accessCodeLifespanUserAction": 300,
   "accessCodeLifespanLogin": 1800,
   "actionTokenGeneratedByAdminLifespan": 43200,
-  "smtpServer": {
-    "host": "${env.KEYCLOAK_SMTP_HOST}",
-    "port": "${env.KEYCLOAK_SMTP_PORT}",
-    "from": "${env.KEYCLOAK_SMTP_FROM}",
-    "fromDisplayName": "${env.KEYCLOAK_SMTP_FROM_DISPLAY_NAME}",
-    "replyTo": "${env.KEYCLOAK_SMTP_REPLY_TO}",
-    "replyToDisplayName": "${env.KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}",
-    "auth": "true",
-    "user": "${env.KEYCLOAK_SMTP_USER}",
-    "password": "${env.KEYCLOAK_SMTP_PASSWORD}",
-    "starttls": "${env.KEYCLOAK_SMTP_STARTTLS}",
-    "ssl": "${env.KEYCLOAK_SMTP_SSL}"
-  },
   "requiredActions": [
     {
       "alias": "VERIFY_EMAIL",
       "name": "Verify Email",
       "providerId": "VERIFY_EMAIL",
-      "enabled": true,
-      "defaultAction": true,
+      "enabled": false,
+      "defaultAction": false,
       "priority": 50,
       "config": {}
     },
@@ -93,45 +80,48 @@
       "name": "Chariot Application",
       "description": "Main Chariot application client",
       "enabled": true,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
       "redirectUris": [
-        "https://chariot.tools/auth/callback",
-        "https://chariot.tools/*"
+        "https://app.chariot.tools/*"
       ],
       "webOrigins": [
-        "https://chariot.tools"
+        "https://app.chariot.tools"
       ],
       "publicClient": true,
       "protocol": "openid-connect",
-      "directAccessGrantsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
       "authorizationServicesEnabled": false,
       "fullScopeAllowed": true,
       "attributes": {
-        "post.logout.redirect.uris": "https://chariot.tools/*",
+        "post.logout.redirect.uris": "+",
         "pkce.code.challenge.method": "S256"
       }
     },
     {
-      "clientId": "admin-client",
-      "name": "Admin Client for User Management",
+      "clientId": "codex-api",
+      "name": "Codex API",
       "enabled": true,
-      "publicClient": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": true,
+      "publicClient": true,
       "protocol": "openid-connect",
-      "secret": "${env.KEYCLOAK_CLIENT_SECRET}",
-      "webOrigins": [
-        "https://chariot.tools",
-        "https://*.chariot.tools"
-      ],
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
       "redirectUris": [
-        "https://chariot.tools/*",
-        "https://*.chariot.tools/*"
-      ]
+        "https://codex.chariot.tools/*"
+      ],
+      "webOrigins": [
+        "https://codex.chariot.tools"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "+",
+        "pkce.code.challenge.method": "S256",
+        "oauth2.device.authorization.grant.enabled": "true"
+      }
     }
   ],
   "users": []

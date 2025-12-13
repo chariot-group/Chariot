@@ -20,7 +20,7 @@
   "maxDeltaTimeSeconds": 43200,
   "failureFactor": 5,
   "sslRequired": "none",
-  "defaultLocale": "fr",
+  "defaultLocale": "en",
   "internationalizationEnabled": true,
   "supportedLocales": ["fr", "en", "es"],
   "loginTheme": "chariot",
@@ -100,20 +100,28 @@
       }
     },
     {
-      "clientId": "admin-client",
-      "name": "Admin Client for User Management",
+      "clientId": "codex-api",
+      "name": "Codex API",
       "enabled": true,
       "publicClient": true,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": false,
       "protocol": "openid-connect",
-      "webOrigins": [
-        "*"
-      ],
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
       "redirectUris": [
-        "http://localhost:*/*",
-        "https://localhost:*/*"
-      ]
+        "https://integ.codex.chariot.tools/*"
+      ],
+      "webOrigins": [
+        "https://integ.codex.chariot.tools"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "+",
+        "pkce.code.challenge.method": "S256",
+        "oauth2.device.authorization.grant.enabled": "true"
+      }
     }
   ],
   "users": []
