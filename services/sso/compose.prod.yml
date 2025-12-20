@@ -59,7 +59,7 @@ services:
     networks:
       - sso-network
       - traefik-public
-      - chariot-group-network
+      - chariot-group-network-prod
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_HOSTNAME}`)"
@@ -155,5 +155,5 @@ networks:
     driver: bridge
   traefik-public:
     external: true
-  chariot-group-network:
+  chariot-group-network-prod:
     external: true

@@ -2,7 +2,7 @@ services:
   chariot-mongo:
     image: mongo:latest
     platform: linux/amd64
-    container_name: chariot-mongodb
+    container_name: chariot-mongodb-prod
     restart: unless-stopped
     ports:
       - "27017:27017"
@@ -24,16 +24,14 @@ services:
       - chariot-network
 
   chariot-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
-    container_name: chariot-backend
+    image: ghcr.io/chariot-group/chariot-backend-production:latest
+    container_name: chariot-backend-prod
     restart: unless-stopped
     working_dir: /app
     ports:
       - "9000:9000"
     environment:
-      NODE_ENV: integration
+      NODE_ENV: production
       CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}
       FRONTEND_URL: ${FRONTEND_URL}
       SMTP_HOST: ${SMTP_HOST}
@@ -52,27 +50,25 @@ services:
         condition: service_healthy
     networks:
       - chariot-network
-      - chariot-group-network
+      - chariot-group-network-prod
       - traefik-public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`${CHARIOT_BACKEND_HOST}`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=3000"
+      - "traefik.http.routers.chariot-backend-prod.rule=Host(`${CHARIOT_BACKEND_HOST}`)"
+      - "traefik.http.routers.chariot-backend-prod.entrypoints=websecure"
+      - "traefik.http.routers.chariot-backend-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-backend-prod.loadbalancer.server.port=9000"
       - "traefik.docker.network=traefik-public"
 
   chariot-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-    container_name: chariot-frontend
+    image: ghcr.io/chariot-group/chariot-frontend-production:latest
+    container_name: chariot-frontend-prod
     restart: unless-stopped
     working_dir: /app
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: integration
+      NODE_ENV: production
       NEXT_PUBLIC_API_URL: ${CHARIOT_BACKEND_URL}
       NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
       NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
@@ -81,14 +77,14 @@ services:
       - chariot-backend
     networks:
       - chariot-network
-      - chariot-group-network
+      - chariot-group-network-prod
       - traefik-public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`${FRONTEND_HOST}`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=3000"
+      - "traefik.http.routers.chariot-frontend-prod.rule=Host(`${FRONTEND_HOST}`)"
+      - "traefik.http.routers.chariot-frontend-prod.entrypoints=websecure"
+      - "traefik.http.routers.chariot-frontend-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-frontend-prod.loadbalancer.server.port=3000"
       - "traefik.docker.network=traefik-public"
 
 volumes:
@@ -99,7 +95,7 @@ volumes:
 networks:
   chariot-network:
     driver: bridge
-  chariot-group-network:
+  chariot-group-network-prod:
     external: true
   traefik-public:
     external: true

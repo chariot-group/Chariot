@@ -2,7 +2,7 @@ services:
   chariot-mongo:
     image: mongo:latest
     platform: linux/amd64
-    container_name: chariot-mongodb
+    container_name: chariot-mongodb-integ
     restart: unless-stopped
     ports:
       - "27017"
@@ -24,10 +24,8 @@ services:
       - chariot-network
 
   chariot-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
-    container_name: chariot-backend
+    image: ghcr.io/chariot-group/chariot-backend-integration:latest
+    container_name: chariot-backend-integ
     restart: unless-stopped
     working_dir: /app
     ports:
@@ -52,21 +50,19 @@ services:
         condition: service_healthy
     networks:
       - chariot-network
-      - chariot-group-network
+      - chariot-group-network-integ
       - traefik-public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`${CHARIOT_BACKEND_HOST}`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=3000"
+      - "traefik.http.routers.chariot-backend-integ.rule=Host(`${CHARIOT_BACKEND_HOST}`)"
+      - "traefik.http.routers.chariot-backend-integ.entrypoints=websecure"
+      - "traefik.http.routers.chariot-backend-integ.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-backend-integ.loadbalancer.server.port=9000"
       - "traefik.docker.network=traefik-public"
 
   chariot-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-    container_name: chariot-frontend
+    image: ghcr.io/chariot-group/chariot-frontend-integration:latest
+    container_name: chariot-frontend-integ
     restart: unless-stopped
     working_dir: /app
     ports:
@@ -81,14 +77,14 @@ services:
       - chariot-backend
     networks:
       - chariot-network
-      - chariot-group-network
+      - chariot-group-network-integ
       - traefik-public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`${FRONTEND_HOST}`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=3000"
+      - "traefik.http.routers.chariot-frontend-integ.rule=Host(`${FRONTEND_HOST}`)"
+      - "traefik.http.routers.chariot-frontend-integ.entrypoints=websecure"
+      - "traefik.http.routers.chariot-frontend-integ.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-frontend-integ.loadbalancer.server.port=3000"
       - "traefik.docker.network=traefik-public"
 
 volumes:
@@ -99,7 +95,7 @@ volumes:
 networks:
   chariot-network:
     driver: bridge
-  chariot-group-network:
+  chariot-group-network-integ:
     external: true
   traefik-public:
     external: true
