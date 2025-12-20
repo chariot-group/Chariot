@@ -12,7 +12,6 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["*"], // Permet de résoudre les imports commençant par @ vers le dossier src
-      "@shared/*": ["../../../shared/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

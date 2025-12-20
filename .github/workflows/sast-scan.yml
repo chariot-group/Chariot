@@ -25,17 +25,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
-          cache: 'pnpm'
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install backend dependencies
+        run: |
+          cd services/chariot/backend
+          npm ci
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
@@ -49,7 +48,7 @@ jobs:
         working-directory: ./services/chariot/backend
         continue-on-error: true
         run: |
-          if pnpm run test:cov 2>/dev/null; then
+          if npm run test:cov 2>/dev/null; then
             echo "✅ Backend tests completed with coverage"
           else
             echo "⚠️ Backend tests skipped or failed"

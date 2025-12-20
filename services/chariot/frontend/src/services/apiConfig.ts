@@ -1,8 +1,6 @@
 import { APIContentType } from "@/constants/APIContentType";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
-const url = process.env.NEXT_PUBLIC_API_URL;
-
 let keycloakTokenGetter: (() => string | null) | null = null;
 let keycloakInstance: any | null = null;
 
@@ -15,8 +13,11 @@ export const setKeycloakInstance = (instance: any) => {
 };
 
 const apiClient = (contentType: string) => {
+
+  const url = process.env.NEXT_PUBLIC_API_URL;
+
   if (!url) {
-    throw new Error("API URL is not defined");
+    throw new Error("API URL is not defined. Set NEXT_PUBLIC_API_URL in your environment.");
   }
 
   const instance = axios.create({
@@ -65,7 +66,6 @@ const apiClient = (contentType: string) => {
           const refreshed = await keycloakInstance.updateToken(5);
 
           if (refreshed) {
-            console.log("Token refreshed successfully, retrying request");
             // Mettre à jour le header Authorization avec le nouveau token
             const newToken = keycloakInstance.token;
             if (newToken && originalRequest.headers) {

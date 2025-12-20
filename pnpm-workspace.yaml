@@ -1,4 +1,0 @@
-packages:
-  - 'services/chariot/backend'
-  - 'services/chariot/frontend'
-  - 'shared'

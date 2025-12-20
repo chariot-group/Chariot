@@ -26,14 +26,18 @@ services:
   chariot-backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     container_name: chariot-backend
     restart: unless-stopped
     working_dir: /app
+    volumes:
+      # Mount source code for hot reload
+      - ./backend:/app
+      - /app/node_modules
     ports:
       - "9000:9000"
     environment:
-      NODE_ENV: integration
+      NODE_ENV: development
       CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}
       FRONTEND_URL: ${FRONTEND_URL}
       SMTP_HOST: ${SMTP_HOST}
@@ -43,7 +47,7 @@ services:
       RECEIVER_EMAIL: ${RECEIVER_EMAIL}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       DEFAULT_PASSWORD: ${DEFAULT_PASSWORD}
-      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -53,43 +57,34 @@ services:
     networks:
       - chariot-network
       - chariot-group-network
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`${CHARIOT_BACKEND_HOST}`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=3000"
-      - "traefik.docker.network=traefik-public"
 
   chariot-frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     container_name: chariot-frontend
     restart: unless-stopped
     working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /var/log/frontend.log:/var/log/frontend.log
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: integration
+      NODE_ENV: development
       NEXT_PUBLIC_API_URL: ${CHARIOT_BACKEND_URL}
       NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
       NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - chariot-backend
     networks:
       - chariot-network
       - chariot-group-network
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`${FRONTEND_HOST}`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=3000"
-      - "traefik.docker.network=traefik-public"
+    command: ["sh", "-c", "npm ci && npm run dev"]
 
 volumes:
   chariot_mongodb_data:
@@ -100,6 +95,4 @@ networks:
   chariot-network:
     driver: bridge
   chariot-group-network:
-    external: true
-  traefik-public:
     external: true

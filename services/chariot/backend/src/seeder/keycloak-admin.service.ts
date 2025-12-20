@@ -7,9 +7,7 @@ export class KeycloakAdminService {
     private adminClient: KcAdminClient;
 
     constructor() {
-        const keycloakUrl = process.env.KEYCLOAK_INTERNAL_URL
-            || process.env.KEYCLOAK_URL
-            || 'http://localhost:8080';
+        const keycloakUrl = process.env.KEYCLOAK_INTERNAL_URL || 'http://localhost:8080';
 
         this.adminClient = new KcAdminClient({
             baseUrl: keycloakUrl,

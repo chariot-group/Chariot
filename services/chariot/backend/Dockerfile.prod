@@ -1,65 +1,16 @@
-# Stage 1: Builder
-FROM node:20-alpine AS builder
-
-# Installer pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-WORKDIR /workspace
-
-# Copier SEULEMENT les fichiers de dépendances d'abord (pour le cache)
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY shared/package.json ./shared/
-COPY services/chariot/backend/package.json ./services/chariot/backend/
-
-# Installer les dépendances (cette étape sera cachée si les fichiers n'ont pas changé)
-RUN pnpm install --frozen-lockfile --filter @chariot/chariot-backend...
-
-# Maintenant copier le code source
-COPY shared ./shared
-COPY services/chariot/backend ./services/chariot/backend
-
-ARG CHARIOT_INTERNAL_API_PORT=9000
-
-# Build
-WORKDIR /workspace/services/chariot/backend
-RUN pnpm run build
-
-# Stage 2: Production
-FROM node:20-alpine
-
-RUN apk add --no-cache wget
-
-# Installer pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+FROM node:25-alpine AS base
 
 WORKDIR /app
 
-ENV NODE_ENV=production
+# Install dependencies (use npm install in CI to avoid lockfile mismatch)
+COPY package*.json ./
+# Use npm install --omit=dev to install only production deps and avoid failing when lockfile
+# is out of sync with package.json in this workspace environment.
+RUN npm install --omit=dev --no-audit --no-fund
 
-# Configurer pnpm pour utiliser une structure node_modules plate (compatibilité)
-RUN echo "node-linker=hoisted" > .npmrc
+COPY . .
 
-# Copier les fichiers de configuration du workspace
-COPY --from=builder /workspace/pnpm-workspace.yaml ./
-COPY --from=builder /workspace/package.json ./
-COPY --from=builder /workspace/pnpm-lock.yaml ./
-COPY --from=builder /workspace/shared/package.json ./shared/
-COPY --from=builder /workspace/services/chariot/backend/package.json ./services/chariot/backend/
+# Build the application
+RUN npm run build  && test -f dist/main.js
 
-# Installer toutes les dépendances (y compris les transitives comme express)
-RUN pnpm install --frozen-lockfile --filter @chariot/chariot-backend...
-
-# Copier le code compilé (sans les node_modules)
-COPY --from=builder /workspace/shared/constants ./shared/constants
-COPY --from=builder /workspace/shared/types ./shared/types
-COPY --from=builder /workspace/shared/utils ./shared/utils
-COPY --from=builder /workspace/shared/index.ts ./shared/index.ts
-COPY --from=builder /workspace/shared/package.json ./shared/package.json
-COPY --from=builder /workspace/shared/tsconfig.json ./shared/tsconfig.json
-COPY --from=builder /workspace/services/chariot/backend/dist ./services/chariot/backend/dist
-
-WORKDIR /app/services/chariot/backend
-
-EXPOSE ${CHARIOT_INTERNAL_API_PORT}
-
-CMD ["node", "dist/main.js"]
+CMD [ "node", "dist/main.js" ]

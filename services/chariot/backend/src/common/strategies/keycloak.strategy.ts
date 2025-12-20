@@ -10,7 +10,7 @@ export class KeycloakStrategy extends PassportStrategy(
     constructor() {
         super({
             realm: process.env.KEYCLOAK_REALM || 'chariot',
-            url: process.env.KEYCLOAK_INTERNAL_URL || process.env.KEYCLOAK_URL || 'http://localhost:8080',
+            url: process.env.KEYCLOAK_INTERNAL_URL,
         });
     } async validate(payload: any) {
         if (!payload || !payload.sub) {

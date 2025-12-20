@@ -277,7 +277,7 @@ describe('MaillingService', () => {
         const htmlTemplate = '<html>Welcome {{username}}, click here: {{activeLink}}</html>';
         mockReadFile.mockResolvedValue(htmlTemplate);
         mockSendMail.mockResolvedValue({});
-        process.env.CHARIOT_FRONTEND_URL = 'https://app.example.com';
+        process.env.FRONTEND_URL = 'https://app.example.com';
 
         await service.sendWelcomeEmail('testuser', 'test@example.com', 'activation_token_123');
 
@@ -307,7 +307,7 @@ describe('MaillingService', () => {
         const htmlTemplate = '<html>Hi {{username}}, go to {{activeLink}}</html>';
         mockReadFile.mockResolvedValue(htmlTemplate);
         mockSendMail.mockResolvedValue({});
-        process.env.CHARIOT_FRONTEND_URL = 'https://app.example.com';
+        process.env.FRONTEND_URL = 'https://app.example.com';
 
         await service.sendWelcomeEmail('alice', 'alice@example.com', 'token_abc');
 
@@ -401,7 +401,7 @@ describe('MaillingService', () => {
         process.env.SMTP_SECURE = 'false';
         process.env.SMTP_USER = 'user@example.com';
         process.env.SMTP_PASSWORD = 'password123';
-        process.env.CHARIOT_FRONTEND_URL = 'https://app.example.com';
+        process.env.FRONTEND_URL = 'https://app.example.com';
 
         mockReadFile.mockResolvedValue('<html>Welcome {{username}}</html>');
         mockSendMail.mockResolvedValue({});
@@ -425,7 +425,7 @@ describe('MaillingService', () => {
       it('should generate correct active link with frontend URL', async () => {
         mockReadFile.mockResolvedValue('<html>{{activeLink}}</html>');
         mockSendMail.mockResolvedValue({});
-        process.env.CHARIOT_FRONTEND_URL = 'https://example.com';
+        process.env.FRONTEND_URL = 'https://example.com';
 
         await service.sendWelcomeEmail('user', 'test@example.com', 'my_token');
 
