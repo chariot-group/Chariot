@@ -1,28 +1,15 @@
-FROM node:22-alpine
+FROM node:25-alpine
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+WORKDIR /app
 
-WORKDIR /workspace
+COPY package*.json ./
 
-# Copy workspace files
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY shared ./shared
-COPY services/chariot/frontend ./services/chariot/frontend
+RUN npm ci
 
-# Configure pnpm for better network reliability
-RUN pnpm config set network-timeout 300000 && \
-    pnpm config set fetch-retries 5 && \
-    pnpm config set fetch-retry-mintimeout 20000 && \
-    pnpm config set fetch-retry-maxtimeout 120000
+COPY . .
 
-# Install dependencies with retry logic
-RUN pnpm install --frozen-lockfile || \
-    (sleep 10 && pnpm install --frozen-lockfile) || \
-    (sleep 30 && pnpm install --frozen-lockfile)
-
-WORKDIR /workspace/services/chariot/frontend
+WORKDIR /app/services/chariot/frontend
 
 EXPOSE 3000
 
-CMD ["pnpm", "run", "dev"]
+CMD ["npm", "run", "dev"]

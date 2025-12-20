@@ -18,27 +18,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node.js for ${{ matrix.project }}
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'pnpm'
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install dependencies for project
+        run: |
+          cd services/chariot/${{ matrix.project }}
+          npm ci
 
       - name: Format check for ${{ matrix.project }}
         working-directory: ./services/chariot/${{ matrix.project }}
-        run: pnpm run format
+        run: npm run format
 
       - name: Run unit tests for ${{ matrix.project }}
         working-directory: ./services/chariot/${{ matrix.project }}
         if: matrix.project == 'backend'
-        run: pnpm test
+        run: npm test
 
       - name: Build ${{ matrix.project }}
         working-directory: ./services/chariot/${{ matrix.project }}
-        run: pnpm run build
+        run: npm run build

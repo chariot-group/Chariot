@@ -12,11 +12,6 @@ async function bootstrap() {
   // Utiliser le module dev en développement, prod en production
   let AppModuleToUse = AppModule;
 
-  if (process.env.NODE_ENV !== 'production') {
-    const { AppModuleDev } = await import('@/app.module.dev');
-    AppModuleToUse = AppModuleDev;
-  }
-
   const app = await NestFactory.create(AppModuleToUse, {
     logger: WinstonModule.createLogger({
       instance: instance,
@@ -24,7 +19,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: `${process.env.CHARIOT_FRONTEND_URL}`,
+    origin: `${process.env.FRONTEND_URL}`,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
@@ -43,8 +38,8 @@ async function bootstrap() {
   const metricsInterceptor = app.get(MetricsInterceptor);
   app.useGlobalInterceptors(metricsInterceptor);
 
-  await app.listen(process.env.CHARIOT_INTERNAL_API_PORT);
+  await app.listen(9000);
 
-  console.log('Chariot API running on port:', process.env.CHARIOT_API_PORT ?? 3000);
+  console.log('Chariot API running');
 }
 bootstrap();

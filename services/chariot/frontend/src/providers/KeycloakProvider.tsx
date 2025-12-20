@@ -1,6 +1,6 @@
 "use client";
 
-import Keycloak from "keycloak-js";
+import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { setKeycloakTokenGetter, setKeycloakInstance } from "@/services/apiConfig";
@@ -46,15 +46,42 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       const kc = new Keycloak(keycloakConfig);
 
       try {
-        const authenticated = await kc.init({
-          onLoad: "check-sso",
-          silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
-          checkLoginIframe: false, // Désactivé pour éviter les problèmes CORS en dev
-          pkceMethod: "S256",
-        });
+        // Enable iframe checks only in production (or when explicitly enabled)
+        const shouldCheckIframe = process.env.NODE_ENV === "production";
 
+        const initOptions: KeycloakInitOptions = {
+          onLoad: "check-sso",
+          checkLoginIframe: shouldCheckIframe,
+          pkceMethod: "S256",
+        };
+
+        if (shouldCheckIframe) {
+          initOptions.silentCheckSsoRedirectUri = window.location.origin + "/silent-check-sso.html";
+        }
+
+        let authenticated = false;
+
+        try {
+          authenticated = await kc.init(initOptions);
+        } catch (initErr) {
+          console.warn("Keycloak init failed (first attempt):", initErr);
+          // Fallback: disable iframe and require login to avoid silent-check iframe timeouts in dev-like envs
+          try {
+            const fallbackOptions: KeycloakInitOptions = {
+              onLoad: "login-required",
+              checkLoginIframe: false,
+              pkceMethod: "S256",
+            };
+            authenticated = await kc.init(fallbackOptions);
+          } catch (fallbackErr) {
+            console.error("Keycloak init fallback also failed:", fallbackErr);
+            // let authenticated remain false; we still set up kc so we can call login manually
+          }
+        }
+
+        // Common setup regardless of init success
         setKeycloak(kc);
-        setAuthenticated(authenticated);
+        setAuthenticated(Boolean(authenticated));
         setToken(kc.token || null);
 
         // Configurer le token getter pour apiClient - utiliser une fonction qui accède toujours au dernier token
@@ -64,17 +91,12 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
         // Configurer le rafraîchissement automatique du token
         if (authenticated) {
-          // Rafraîchir le token 30 secondes avant expiration
           const minValidity = 30;
-
           setInterval(() => {
             kc.updateToken(minValidity)
               .then((refreshed) => {
                 if (refreshed) {
-                  console.log("Token refreshed");
                   setToken(kc.token || null);
-                } else {
-                  console.log("Token still valid");
                 }
               })
               .catch(() => {
@@ -83,12 +105,12 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
                 setToken(null);
                 kc.login();
               });
-          }, 10000); // Vérifier toutes les 10 secondes
+          }, 10000);
         }
 
         setLoading(false);
       } catch (error) {
-        console.error("Failed to initialize Keycloak:", error);
+        console.error("Failed to initialize Keycloak (unexpected):", error);
         setLoading(false);
       }
     };

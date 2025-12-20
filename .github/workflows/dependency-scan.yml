@@ -35,17 +35,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node.js for ${{ matrix.project }}
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
-          cache: 'pnpm'
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install dependencies for project
+        run: |
+          cd services/chariot/${{ matrix.project }}
+          npm ci
 
       - name: Create reports directory
         run: mkdir -p security/reports

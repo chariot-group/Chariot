@@ -82,31 +82,28 @@ To record events or important messages, we use a centralized logger. This helps 
 
 For more details on usage and configuration of the logger, see: [logger.md](./logger.md).
 
-## Working with pnpm workspace
+## Working with npm (per-service)
 
-The Chariot backend is part of a pnpm monorepo workspace. Here's how to work effectively:
+The Chariot backend is maintained as a per-service package using `npm`. Work with it directly from the service folder:
 
 ### Running Commands
 
 ```bash
-# From project root - run backend commands
-pnpm --filter @chariot/backend [command]
-
-# Or navigate to backend directory
+# Navigate to the backend directory
 cd services/chariot/backend
-pnpm [command]
+# Run scripts defined in services/chariot/backend/package.json
+npm run <script>
 ```
 
-### Using Shared Library
+### Using Shared Code
 
-Import shared types, utilities, and constants from the shared library:
+If you rely on a shared library, import it with its published name (or relative path) after installing it for the service. Example usage remains the same in code:
 
 ```typescript
 import { ApiResponse, UserRole } from '@chariot/shared/types';
 import { formatResponse, validateEmail } from '@chariot/shared/utils';
 import { HTTP_STATUS, API_VERSION } from '@chariot/shared/constants';
 
-// Example usage
 const response: ApiResponse = formatResponse(
   true,
   { user: userData },
@@ -117,19 +114,18 @@ const response: ApiResponse = formatResponse(
 ### Adding Dependencies
 
 ```bash
-# From project root
-pnpm --filter @chariot/backend add package-name
-
-# Or from backend directory
+# From backend directory
 cd services/chariot/backend
-pnpm add package-name
+npm install package-name --save
+# or for dev deps
+npm install package-name --save-dev
 ```
 
 ### Development Workflow
 
 1. Make changes to backend code
 2. Hot-reload is enabled in development mode
-3. Test changes: `pnpm --filter @chariot/backend test`
-4. Build for production: `pnpm --filter @chariot/backend build`
+3. Test changes: `npm test` (run from the backend folder)
+4. Build for production: `npm run build`
 
 See the [main contributing guide](../../../../CONTRIBUTING.md) for overall project contribution guidelines.

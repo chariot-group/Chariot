@@ -111,7 +111,7 @@ export class MaillingService {
         subject: infos.subjetct,
         html: html
           .replaceAll('{{username}}', username)
-          .replaceAll('{{activeLink}}', `${process.env.CHARIOT_FRONTEND_URL}/auth/active/${activeLink}`),
+          .replaceAll('{{activeLink}}', `${process.env.FRONTEND_URL}/auth/active/${activeLink}`),
       });
 
       this.logger.verbose(

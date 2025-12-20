@@ -23,7 +23,6 @@
     "stripe:checkout": "ts-node -r tsconfig-paths/register src/resources/stripe/runner/createCheckout.ts"
   },
   "dependencies": {
-    "@chariot/shared": "workspace:*",
     "@faker-js/faker": "^10.0.0",
     "@keycloak/keycloak-admin-client": "^26.4.7",
     "@nestjs/cli": "^11.0.0",

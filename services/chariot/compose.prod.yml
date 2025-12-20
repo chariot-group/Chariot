@@ -1,60 +1,101 @@
 services:
   chariot-mongo:
-    image: mongo:8.0.15
+    image: mongo:latest
     platform: linux/amd64
+    container_name: chariot-mongodb-prod
     restart: unless-stopped
-    command:
-      - "--logpath"
-      - "/var/log/mongodb/mongod.log"
-      - "--logappend"
-      - "--quiet"
+    ports:
+      - "27017:27017"
+    volumes:
+      - chariot_mongodb_data:/data/db
+      - chariot_mongodb_logs:/var/log/mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${CHARIOT_MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${CHARIOT_MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${CHARIOT_MONGO_INITDB_DATABASE}
+    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend"]
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok", "--quiet"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
       retries: 5
       start_period: 40s
+    networks:
+      - chariot-network
 
   chariot-backend:
-    build:
-      context: ../../
-      dockerfile: services/chariot/backend/Dockerfile.prod
-      args:
-        CHARIOT_INTERNAL_API_PORT: ${CHARIOT_INTERNAL_API_PORT:-9000}
+    image: ghcr.io/chariot-group/chariot-backend-production:latest
+    container_name: chariot-backend-prod
     restart: unless-stopped
-    volumes:
-      - ./backend/logger/logs:/app/logger/logs
-    command: ["node", "dist/main.js"]
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${CHARIOT_INTERNAL_API_PORT}/metrics"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
+    working_dir: /app
+    ports:
+      - "9000:9000"
+    environment:
+      NODE_ENV: production
+      CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURE: ${SMTP_SECURE}
+      SMTP_USER: ${SMTP_USER}
+      RECEIVER_EMAIL: ${RECEIVER_EMAIL}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      DEFAULT_PASSWORD: ${DEFAULT_PASSWORD}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    depends_on:
+      chariot-mongo:
+        condition: service_healthy
+    networks:
+      - chariot-network
+      - chariot-group-network-prod
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-backend-prod.rule=Host(`${CHARIOT_BACKEND_HOST}`)"
+      - "traefik.http.routers.chariot-backend-prod.entrypoints=websecure"
+      - "traefik.http.routers.chariot-backend-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-backend-prod.loadbalancer.server.port=9000"
+      - "traefik.docker.network=traefik-public"
 
   chariot-frontend:
-    build:
-      context: ../../
-      dockerfile: services/chariot/frontend/Dockerfile.prod
-      args:
-        CHARIOT_FRONT_PORT: ${CHARIOT_FRONT_PORT:-3000}
+    image: ghcr.io/chariot-group/chariot-frontend-production:latest
+    container_name: chariot-frontend-prod
     restart: unless-stopped
-    command: ["node", "server.js"]
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${CHARIOT_FRONT_PORT:-3000}"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 1G
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${CHARIOT_BACKEND_URL}
+      NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
+      NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+    depends_on:
+      - chariot-backend
+    networks:
+      - chariot-network
+      - chariot-group-network-prod
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-frontend-prod.rule=Host(`${FRONTEND_HOST}`)"
+      - "traefik.http.routers.chariot-frontend-prod.entrypoints=websecure"
+      - "traefik.http.routers.chariot-frontend-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-frontend-prod.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik-public"
+
+volumes:
+  chariot_mongodb_data:
+  chariot_mongodb_logs:
+  chariot_backend_logs:
+
+networks:
+  chariot-network:
+    driver: bridge
+  chariot-group-network-prod:
+    external: true
+  traefik-public:
+    external: true

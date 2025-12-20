@@ -1,0 +1,106 @@
+name: Build and Publish Docker Images (GHCR)
+
+on:
+  push:
+    branches:
+      - integ
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      env_name: ${{ steps.set-env.outputs.env_name }}
+    steps:
+      - name: Determine environment
+        id: set-env
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=integration" >> $GITHUB_OUTPUT
+          fi
+
+  build-chariot-frontend:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Chariot Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/chariot/frontend
+          file: ./services/chariot/frontend/Dockerfile.prod
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ needs.setup.outputs.env_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ needs.setup.outputs.env_name }}:${{ github.sha }}
+          platforms: linux/amd64
+          build-args: |
+            NODE_ENV=production
+
+      - name: Output image tags
+        run: |
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ needs.setup.outputs.env_name }}:latest"
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ needs.setup.outputs.env_name }}:${{ github.sha }}"
+
+  build-chariot-backend:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Chariot Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/chariot/backend
+          file: ./services/chariot/backend/Dockerfile.prod
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ needs.setup.outputs.env_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ needs.setup.outputs.env_name }}:${{ github.sha }}
+          platforms: linux/amd64
+          build-args: |
+            NODE_ENV=production
+
+      - name: Output image tags
+        run: |
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ needs.setup.outputs.env_name }}:latest"
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ needs.setup.outputs.env_name }}:${{ github.sha }}"
