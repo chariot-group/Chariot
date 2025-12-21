@@ -22,7 +22,7 @@ services:
     build:
       context: .
       dockerfile_inline: |
-        FROM quay.io/keycloak/keycloak:23.0
+        FROM quay.io/keycloak/keycloak:26.4
         RUN /opt/keycloak/bin/kc.sh build --db=postgres --health-enabled=true --metrics-enabled=true
     restart: unless-stopped
     container_name: keycloak
@@ -44,7 +44,6 @@ services:
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
       # Hostname
       KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
-      KC_HOSTNAME_PORT: 8080
       KC_HOSTNAME_STRICT: false
       KC_HOSTNAME_STRICT_HTTPS: false
       KC_HTTP_ENABLED: true
@@ -60,14 +59,14 @@ services:
       - sso-network
       - chariot-group-network
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK' || exit 1"]
-      interval: 30s
-      timeout: 30s
+      test: ["CMD-SHELL", "/opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user $${KEYCLOAK_ADMIN} --password $${KEYCLOAK_ADMIN_PASSWORD} 2>&1 | grep -q 'Logging into'"]
+      interval: 10s
+      timeout: 5s
       retries: 10
-      start_period: 120s
+      start_period: 60s
 
   keycloak-config:
-    image: quay.io/keycloak/keycloak:23.0
+    image: quay.io/keycloak/keycloak:latest
     container_name: keycloak-config
     restart: "no"
     environment:
@@ -106,18 +105,27 @@ services:
         echo "Disabling SSL requirement on master realm..."
         /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
         
+        echo "Getting current realm configuration..."
+        /opt/keycloak/bin/kcadm.sh get realms/chariot > /tmp/realm.json
+        
+        echo "Clearing existing SMTP configuration..."
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s 'smtpServer={}'
+        
         echo "Configuring SMTP for chariot realm..."
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.host=$${KEYCLOAK_SMTP_HOST}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.port=$${KEYCLOAK_SMTP_PORT}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.from=$${KEYCLOAK_SMTP_FROM}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.fromDisplayName=$${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyTo=$${KEYCLOAK_SMTP_REPLY_TO}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyToDisplayName=$${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.auth=true"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.user=$${KEYCLOAK_SMTP_USER}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s smtpServer.password="$${KEYCLOAK_SMTP_PASSWORD}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.starttls=false"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.ssl=false"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot \
+          -s smtpServer.host="$${KEYCLOAK_SMTP_HOST}" \
+          -s smtpServer.port="$${KEYCLOAK_SMTP_PORT}" \
+          -s smtpServer.from="$${KEYCLOAK_SMTP_FROM}" \
+          -s smtpServer.fromDisplayName="$${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}" \
+          -s smtpServer.replyTo="$${KEYCLOAK_SMTP_REPLY_TO}" \
+          -s smtpServer.replyToDisplayName="$${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}" \
+          -s smtpServer.auth=true \
+          -s smtpServer.user="$${KEYCLOAK_SMTP_USER}" \
+          -s smtpServer.password="$${KEYCLOAK_SMTP_PASSWORD}" \
+          -s smtpServer.starttls=false \
+          -s smtpServer.ssl=false
+        
+        echo "SMTP configuration completed"
         
         echo "Creating default admin user if needed..."
         if /opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$${KEYCLOAK_ADMIN_EMAIL}" | grep -q '"id"'; then
