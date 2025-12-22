@@ -14,8 +14,6 @@ export class KeycloakStrategy extends PassportStrategy(
         });
     } async validate(payload: any) {
 
-        console.log('Keycloak token payload:', payload);
-
         if (!payload || !payload.sub) {
             throw new UnauthorizedException('Invalid token payload');
         }
