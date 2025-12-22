@@ -15,15 +15,14 @@ env:
   OWNER: ${{ github.repository_owner }}
 
 jobs:
-  setup:
+  build-chariot-frontend:
     runs-on: ubuntu-latest
-    outputs:
-      env_name: ${{ steps.set-env.outputs.env_name }}
-      api_url: ${{ steps.set-env.outputs.api_url }}
-      keycloak_url: ${{ steps.set-env.outputs.keycloak_url }}
     steps:
-      - name: Determine environment
-        id: set-env
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine environment and set variables
+        id: env
         run: |
           if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             echo "env_name=production" >> $GITHUB_OUTPUT
@@ -35,12 +34,11 @@ jobs:
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
           fi
 
-  build-chariot-frontend:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Debug environment variables
+        run: |
+          echo "Environment: ${{ steps.env.outputs.env_name }}"
+          echo "API URL exists: ${{ steps.env.outputs.api_url != '' }}"
+          echo "Keycloak URL exists: ${{ steps.env.outputs.keycloak_url != '' }}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -62,23 +60,22 @@ jobs:
           file: ./services/chariot/frontend/Dockerfile.prod
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ needs.setup.outputs.env_name }}:latest
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ needs.setup.outputs.env_name }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:${{ github.sha }}
           platforms: linux/amd64
           build-args: |
             NODE_ENV=production
-            NEXT_PUBLIC_API_URL=${{ needs.setup.outputs.api_url }}
-            NEXT_PUBLIC_KEYCLOAK_URL=${{ needs.setup.outputs.keycloak_url }}
+            NEXT_PUBLIC_API_URL=${{ steps.env.outputs.api_url }}
+            NEXT_PUBLIC_KEYCLOAK_URL=${{ steps.env.outputs.keycloak_url }}
             NEXT_PUBLIC_KEYCLOAK_REALM=chariot
             NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
 
       - name: Output image tags
         run: |
-          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ needs.setup.outputs.env_name }}:latest"
-          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ needs.setup.outputs.env_name }}:${{ github.sha }}"
-
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:latest"
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
+          
   build-chariot-backend:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
