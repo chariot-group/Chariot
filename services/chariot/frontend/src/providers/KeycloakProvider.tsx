@@ -35,6 +35,18 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
 
+  function getRuntimeConfig(key: string, fallback: string) {
+    if (typeof window !== "undefined") {
+      const runtimeValue = (window as any).__RUNTIME_CONFIG__?.[key];
+      // Si la valeur existe et n'est pas un placeholder
+      if (runtimeValue && !runtimeValue.startsWith("__")) {
+        return runtimeValue;
+      }
+    }
+    // Fallback sur les variables de build
+    return fallback;
+  }
+
   useEffect(() => {
     const initKeycloak = async () => {
       let url: string = "https://integ.sso.chariot.tools";
