@@ -1,16 +1,66 @@
-FROM node:20-alpine AS base
-
+# Étape 1 : Installation des dépendances uniquement
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies (use npm install in CI to avoid lockfile mismatch)
-COPY package*.json ./
-# Use npm install --omit=dev to install only production deps and avoid failing when lockfile
-# is out of sync with package.json in this workspace environment.
-RUN npm install --omit=dev --no-audit --no-fund
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production --no-audit --no-fund
 
+# Étape 2 : Build de l'application
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copie les node_modules depuis l'étape deps
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the application
-RUN npm run build  && test -f dist/main.js
+# Déclaration des ARG pour recevoir les variables du build
+ARG NODE_ENV
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_KEYCLOAK_URL
+ARG NEXT_PUBLIC_KEYCLOAK_REALM
+ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
 
-CMD [ "node", "dist/main.js" ]
+# Conversion des ARG en ENV pour que Next.js les voie pendant le build
+ENV NODE_ENV=${NODE_ENV}
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_KEYCLOAK_URL=${NEXT_PUBLIC_KEYCLOAK_URL}
+ENV NEXT_PUBLIC_KEYCLOAK_REALM=${NEXT_PUBLIC_KEYCLOAK_REALM}
+ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Debug : affiche les variables (retire après validation)
+RUN echo "🔍 Building with:" && \
+    echo "  - API_URL: ${NEXT_PUBLIC_API_URL}" && \
+    echo "  - KEYCLOAK_URL: ${NEXT_PUBLIC_KEYCLOAK_URL}" && \
+    echo "  - REALM: ${NEXT_PUBLIC_KEYCLOAK_REALM}" && \
+    echo "  - CLIENT_ID: ${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}"
+
+# Build de l'application
+RUN npm run build
+
+# Étape 3 : Image de production (la plus légère)
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Création d'un utilisateur non-root pour la sécurité
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copie uniquement les fichiers nécessaires pour la production
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Utilise le serveur standalone de Next.js (plus performant)
+CMD ["node", "server.js"]
