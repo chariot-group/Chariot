@@ -9,7 +9,6 @@ import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 
 async function bootstrap() {
-  // Utiliser le module dev en développement, prod en production
   let AppModuleToUse = AppModule;
 
   const app = await NestFactory.create(AppModuleToUse, {
@@ -18,16 +17,33 @@ async function bootstrap() {
     }),
   });
 
+  // CORS Configuration améliorée
+  const allowedOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',')
+    : ['http://localhost:3000'];
+
+  console.log('🌐 CORS enabled for origins:', allowedOrigins);
+
   app.enableCors({
-    origin: `${process.env.FRONTEND_URL}`,
+    origin: (origin, callback) => {
+      // Autoriser les requêtes sans origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.some(allowedOrigin => origin.startsWith(allowedOrigin))) {
+        callback(null, true);
+      } else {
+        console.warn(`⚠️ CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    exposedHeaders: ['Authorization'],
   });
 
-  // Body parser is already included in NestJS via express
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-
   app.use(cookieParser());
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
@@ -38,8 +54,11 @@ async function bootstrap() {
   const metricsInterceptor = app.get(MetricsInterceptor);
   app.useGlobalInterceptors(metricsInterceptor);
 
-  await app.listen(9000);
+  const port = 9000;
+  await app.listen(port);
 
-  console.log('Chariot API running');
+  console.log(`✅ Chariot API running on port ${port}`);
+  console.log(`🔐 Keycloak URL: ${process.env.KEYCLOAK_URL}`);
+  console.log(`🌍 Frontend URL: ${allowedOrigins.join(', ')}`);
 }
 bootstrap();
