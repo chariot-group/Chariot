@@ -27,10 +27,6 @@ export class KeycloakAuthGuard implements CanActivate {
 
         const jwksUri = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
 
-        console.log('🔐 Keycloak Guard initialized');
-        console.log('📍 JWKS URI:', jwksUri);
-        console.log('🎯 Client ID:', this.clientId);
-
         this.jwksClient = jwksClient({
             jwksUri,
             cache: true,
@@ -74,8 +70,6 @@ export class KeycloakAuthGuard implements CanActivate {
         try {
             // Valider et décoder le token
             const decoded = await this.verifyToken(token);
-
-            console.log('✅ Token validated for user:', decoded.sub);
 
             // Attacher les informations de l'utilisateur à la requête
             request.user = {

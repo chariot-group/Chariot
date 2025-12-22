@@ -31,12 +31,6 @@ const createApiClient = (): AxiosInstance => {
       // Récupérer le token directement depuis l'instance Keycloak
       const token = keycloakInstance?.token;
 
-      console.log('🔑 Request interceptor:', {
-        hasToken: !!token,
-        tokenPreview: token,
-        url: config.url
-      });
-
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -61,7 +55,6 @@ const createApiClient = (): AxiosInstance => {
         try {
           // Vérifier si l'utilisateur est authentifié
           if (!keycloakInstance.authenticated) {
-            console.error("❌ User not authenticated, redirecting to login");
             keycloakInstance.login();
             return Promise.reject(error);
           }
@@ -69,12 +62,10 @@ const createApiClient = (): AxiosInstance => {
           // Forcer le refresh du token
           const refreshed = await keycloakInstance.updateToken(-1); // -1 force le refresh
 
-          console.log('🔄 Token refresh result:', refreshed);
 
           if (refreshed || keycloakInstance.token) {
             // Mettre à jour le header avec le nouveau token
             const newToken = keycloakInstance.token;
-            console.log('✅ New token obtained:', newToken?.substring(0, 20) + '...');
 
             if (newToken && originalRequest.headers) {
               originalRequest.headers.Authorization = `Bearer ${newToken}`;

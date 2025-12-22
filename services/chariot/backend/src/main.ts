@@ -22,8 +22,6 @@ async function bootstrap() {
     ? process.env.FRONTEND_URL.split(',')
     : ['http://localhost:3000'];
 
-  console.log('🌐 CORS enabled for origins:', allowedOrigins);
-
   app.enableCors({
     origin: (origin, callback) => {
       // Autoriser les requêtes sans origin (mobile apps, curl, etc.)
@@ -32,7 +30,6 @@ async function bootstrap() {
       if (allowedOrigins.some(allowedOrigin => origin.startsWith(allowedOrigin))) {
         callback(null, true);
       } else {
-        console.warn(`⚠️ CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
@@ -57,8 +54,6 @@ async function bootstrap() {
   const port = 9000;
   await app.listen(port);
 
-  console.log(`✅ Chariot API running on port ${port}`);
-  console.log(`🔐 Keycloak URL: ${process.env.KEYCLOAK_URL}`);
-  console.log(`🌍 Frontend URL: ${allowedOrigins.join(', ')}`);
+  console.log(`Chariot API running on port ${port}`);
 }
 bootstrap();

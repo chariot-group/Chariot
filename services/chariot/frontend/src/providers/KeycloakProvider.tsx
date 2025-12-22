@@ -46,8 +46,6 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "chariot-app",
       };
 
-      console.log("🔐 Initializing Keycloak with config:", keycloakConfig);
-
       const kc = new Keycloak(keycloakConfig);
 
       try {
@@ -58,12 +56,6 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         };
 
         const authenticated = await kc.init(initOptions);
-
-        console.log("✅ Keycloak initialized:", {
-          authenticated,
-          hasToken: !!kc.token,
-          tokenPreview: kc.token,
-        });
 
         setKeycloak(kc);
         setAuthenticated(authenticated);
@@ -84,12 +76,10 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
             kc.updateToken(70) // Refresh si expire dans moins de 70 secondes
               .then((refreshed) => {
                 if (refreshed) {
-                  console.log("🔄 Token auto-refreshed");
                   setToken(kc.token || null);
                 }
               })
               .catch((err) => {
-                console.error("❌ Failed to refresh token:", err);
                 setAuthenticated(false);
                 setToken(null);
                 kc.login();
@@ -118,7 +108,6 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     if (loading || !keycloak) return;
 
     if (!authenticated) {
-      console.log("🔓 Not authenticated, redirecting to login");
       keycloak.login({
         redirectUri: window.location.origin + `/${locale}`,
         locale: locale,
