@@ -33,9 +33,6 @@ export default async function RootLayout({
     <html
       lang={locale}
       suppressHydrationWarning={true}>
-      <head>
-        <script src="/env-config.js" />
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
