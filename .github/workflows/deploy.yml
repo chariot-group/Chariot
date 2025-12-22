@@ -34,12 +34,6 @@ jobs:
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Debug environment variables
-        run: |
-          echo "Environment: ${{ steps.env.outputs.env_name }}"
-          echo "API URL exists: ${{ steps.env.outputs.api_url != '' }}"
-          echo "Keycloak URL exists: ${{ steps.env.outputs.keycloak_url != '' }}"
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -74,12 +68,25 @@ jobs:
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:latest"
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
-          
+
   build-chariot-backend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Determine environment and set variables
+        id: env
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+            echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
+            echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=integration" >> $GITHUB_OUTPUT
+            echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
+            echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -101,13 +108,13 @@ jobs:
           file: ./services/chariot/backend/Dockerfile.prod
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ needs.setup.outputs.env_name }}:latest
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ needs.setup.outputs.env_name }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ steps.env.outputs.env_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ steps.env.outputs.env_name }}:${{ github.sha }}
           platforms: linux/amd64
           build-args: |
             NODE_ENV=production
 
       - name: Output image tags
         run: |
-          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ needs.setup.outputs.env_name }}:latest"
-          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ needs.setup.outputs.env_name }}:${{ github.sha }}"
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ steps.env.outputs.env_name }}:latest"
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
