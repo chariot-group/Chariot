@@ -33,7 +33,7 @@ const createApiClient = (): AxiosInstance => {
 
       console.log('🔑 Request interceptor:', {
         hasToken: !!token,
-        tokenPreview: token?.substring(0, 20) + '...',
+        tokenPreview: token,
         url: config.url
       });
 

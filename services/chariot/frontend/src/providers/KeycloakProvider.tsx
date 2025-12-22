@@ -62,7 +62,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         console.log("✅ Keycloak initialized:", {
           authenticated,
           hasToken: !!kc.token,
-          tokenPreview: kc.token?.substring(0, 20) + "...",
+          tokenPreview: kc.token,
         });
 
         setKeycloak(kc);
