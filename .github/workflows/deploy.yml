@@ -19,14 +19,20 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       env_name: ${{ steps.set-env.outputs.env_name }}
+      api_url: ${{ steps.set-env.outputs.api_url }}
+      keycloak_url: ${{ steps.set-env.outputs.keycloak_url }}
     steps:
       - name: Determine environment
         id: set-env
         run: |
           if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             echo "env_name=production" >> $GITHUB_OUTPUT
+            echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
+            echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
           else
             echo "env_name=integration" >> $GITHUB_OUTPUT
+            echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
+            echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
           fi
 
   build-chariot-frontend:
@@ -61,6 +67,10 @@ jobs:
           platforms: linux/amd64
           build-args: |
             NODE_ENV=production
+            NEXT_PUBLIC_API_URL=${{ needs.setup.outputs.api_url }}
+            NEXT_PUBLIC_KEYCLOAK_URL=${{ needs.setup.outputs.keycloak_url }}
+            NEXT_PUBLIC_KEYCLOAK_REALM=chariot
+            NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
 
       - name: Output image tags
         run: |
