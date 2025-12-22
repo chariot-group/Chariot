@@ -43,8 +43,6 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "chariot-app",
       };
 
-      console.log("Keycloak config:", keycloakConfig, process.env.NODE_ENV, process.env.NEXT_PUBLIC_KEYCLOAK_URL); // Debug
-
       const kc = new Keycloak(keycloakConfig);
 
       try {
