@@ -1,7 +1,7 @@
 services:
   keycloak-db:
     image: postgres:16-alpine
-    container_name: keycloak-db
+    container_name: keycloak-db-integ
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${KEYCLOAK_DB_NAME}
@@ -10,7 +10,7 @@ services:
     volumes:
       - keycloak_db_data:/var/lib/postgresql/data
     networks:
-      - sso-network
+      - sso-network-integ
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER}"]
       interval: 15s
@@ -22,10 +22,10 @@ services:
     build:
       context: .
       dockerfile_inline: |
-        FROM quay.io/keycloak/keycloak:23.0
+        FROM quay.io/keycloak/keycloak:latest
         RUN /opt/keycloak/bin/kc.sh build --db=postgres --health-enabled=true --metrics-enabled=true
     restart: unless-stopped
-    container_name: keycloak
+    container_name: keycloak-integ
     command:
       - start
       - --optimized
@@ -44,10 +44,10 @@ services:
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
       # Hostname
       KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
-      KC_HOSTNAME_PORT: 443
       KC_HOSTNAME_STRICT: false
       KC_HOSTNAME_STRICT_HTTPS: false
       KC_HTTP_ENABLED: true
+      KC_PROXY_HEADERS: xforwarded
       KC_PROXY: edge
       KC_LOG_LEVEL: info
     volumes:
@@ -57,26 +57,29 @@ services:
       keycloak-db:
         condition: service_healthy
     networks:
-      - sso-network
+      - sso-network-integ
       - traefik-public
       - chariot-group-network-integ
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_HOSTNAME}`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+      - "traefik.http.routers.keycloak-integ.rule=Host(`${KEYCLOAK_HOSTNAME}`)"
+      - "traefik.http.routers.keycloak-integ.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-integ.tls.certresolver=letsencrypt"
+      - "traefik.http.services.keycloak-integ.loadbalancer.server.port=8080"
       - "traefik.docker.network=traefik-public"
+      - "traefik.http.middlewares.keycloak-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.keycloak-headers.headers.customrequestheaders.X-Forwarded-Port=443"
+      - "traefik.http.routers.keycloak-integ.middlewares=keycloak-headers"
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK' || exit 1"]
-      interval: 30s
-      timeout: 30s
+      test: ["CMD-SHELL", "/opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user $${KEYCLOAK_ADMIN} --password $${KEYCLOAK_ADMIN_PASSWORD} 2>&1 | grep -q 'Logging into'"]
+      interval: 10s
+      timeout: 5s
       retries: 10
       start_period: 120s
 
   keycloak-config:
-    image: quay.io/keycloak/keycloak:23.0
-    container_name: keycloak-config
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak-config-integ
     restart: "no"
     environment:
       KEYCLOAK_SMTP_HOST: ${SMTP_HOST}
@@ -93,7 +96,7 @@ services:
       KEYCLOAK_ADMIN_FIRSTNAME: ${KEYCLOAK_ADMIN_FIRSTNAME}
       KEYCLOAK_ADMIN_LASTNAME: ${KEYCLOAK_ADMIN_LASTNAME}
     networks:
-      - sso-network
+      - sso-network-integ
     depends_on:
       keycloak:
         condition: service_healthy
@@ -101,31 +104,49 @@ services:
     command:
       - |
         set -e
-        
+
         echo "Keycloak is ready, authenticating..."
         
-        echo "Configuring Keycloak..."
-        /opt/keycloak/bin/kcadm.sh config credentials \
-          --server http://keycloak:8080 \
+        # Attendre que Keycloak soit vraiment disponible
+        RETRIES=30
+        COUNT=0
+        until /opt/keycloak/bin/kcadm.sh config credentials \
+          --server http://keycloak-integ:8080 \
           --realm master \
           --user "$${KEYCLOAK_ADMIN_USER}" \
-          --password "$${KEYCLOAK_ADMIN_PASSWORD}"
+          --password "$${KEYCLOAK_ADMIN_PASSWORD}" 2>&1; do
+          COUNT=$$((COUNT+1))
+          if [ "$$COUNT" -ge "$$RETRIES" ]; then
+            echo "Timeout waiting for Keycloak authentication" >&2
+            exit 1
+          fi
+          echo "Keycloak not ready yet, retrying... ($$COUNT/$$RETRIES)"
+          sleep 5
+        done
         
-        echo "Disabling SSL requirement on master realm..."
-        /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
+        echo "Keycloak is ready, authenticated successfully!"
+        
+        echo "Getting current realm configuration..."
+        /opt/keycloak/bin/kcadm.sh get realms/chariot > /tmp/realm.json
+        
+        echo "Clearing existing SMTP configuration..."
+        /opt/keycloak/bin/kcadm.sh update realms/chariot -s 'smtpServer={}'
         
         echo "Configuring SMTP for chariot realm..."
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.host=$${KEYCLOAK_SMTP_HOST}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.port=$${KEYCLOAK_SMTP_PORT}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.from=$${KEYCLOAK_SMTP_FROM}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.fromDisplayName=$${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyTo=$${KEYCLOAK_SMTP_REPLY_TO}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.replyToDisplayName=$${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.auth=true"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.user=$${KEYCLOAK_SMTP_USER}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s smtpServer.password="$${KEYCLOAK_SMTP_PASSWORD}"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.starttls=true"
-        /opt/keycloak/bin/kcadm.sh update realms/chariot -s "smtpServer.ssl=true"
+        /opt/keycloak/bin/kcadm.sh update realms/chariot \
+          -s smtpServer.host="$${KEYCLOAK_SMTP_HOST}" \
+          -s smtpServer.port="$${KEYCLOAK_SMTP_PORT}" \
+          -s smtpServer.from="$${KEYCLOAK_SMTP_FROM}" \
+          -s smtpServer.fromDisplayName="$${KEYCLOAK_SMTP_FROM_DISPLAY_NAME}" \
+          -s smtpServer.replyTo="$${KEYCLOAK_SMTP_REPLY_TO}" \
+          -s smtpServer.replyToDisplayName="$${KEYCLOAK_SMTP_REPLY_TO_DISPLAY_NAME}" \
+          -s smtpServer.auth=true \
+          -s smtpServer.user="$${KEYCLOAK_SMTP_USER}" \
+          -s smtpServer.password="$${KEYCLOAK_SMTP_PASSWORD}" \
+          -s smtpServer.starttls=true \
+          -s smtpServer.ssl=true
+        
+        echo "SMTP configuration completed"
         
         echo "Creating default admin user if needed..."
         if /opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$${KEYCLOAK_ADMIN_EMAIL}" | grep -q '"id"'; then
@@ -151,7 +172,7 @@ volumes:
   keycloak_db_data:
 
 networks:
-  sso-network:
+  sso-network-integ:
     driver: bridge
   traefik-public:
     external: true
