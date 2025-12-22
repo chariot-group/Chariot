@@ -5,7 +5,7 @@ services:
     container_name: chariot-mongodb-prod
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "27017"
     volumes:
       - chariot_mongodb_data:/data/db
       - chariot_mongodb_logs:/var/log/mongodb
@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
     working_dir: /app
     ports:
-      - "9000:9000"
+      - "9000"
     environment:
       NODE_ENV: production
       CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}
@@ -41,7 +41,9 @@ services:
       RECEIVER_EMAIL: ${RECEIVER_EMAIL}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       DEFAULT_PASSWORD: ${DEFAULT_PASSWORD}
-      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -58,6 +60,7 @@ services:
       - "traefik.http.routers.chariot-backend-prod.entrypoints=websecure"
       - "traefik.http.routers.chariot-backend-prod.tls.certresolver=letsencrypt"
       - "traefik.http.services.chariot-backend-prod.loadbalancer.server.port=9000"
+      - "traefik.http.routers.chariot-backend-prod.service=chariot-backend-prod"
       - "traefik.docker.network=traefik-public"
 
   chariot-frontend:
@@ -66,13 +69,9 @@ services:
     restart: unless-stopped
     working_dir: /app
     ports:
-      - "3000:3000"
+      - "3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${CHARIOT_BACKEND_URL}
-      NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
-      NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
     depends_on:
       - chariot-backend
     networks:
@@ -85,6 +84,7 @@ services:
       - "traefik.http.routers.chariot-frontend-prod.entrypoints=websecure"
       - "traefik.http.routers.chariot-frontend-prod.tls.certresolver=letsencrypt"
       - "traefik.http.services.chariot-frontend-prod.loadbalancer.server.port=3000"
+      - "traefik.http.routers.chariot-frontend-prod.service=chariot-frontend-prod"
       - "traefik.docker.network=traefik-public"
 
 volumes:
