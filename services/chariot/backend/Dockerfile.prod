@@ -1,66 +1,56 @@
-# Étape 1 : Installation des dépendances uniquement
+# Étape 1 : Installation de TOUTES les dépendances (dev + prod) pour le build
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production --no-audit --no-fund
+# Install toutes les dépendances (TypeScript, etc. sont nécessaires pour le build)
+RUN npm ci --no-audit --no-fund
 
 # Étape 2 : Build de l'application
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copie les node_modules depuis l'étape deps
+# Copie les node_modules avec les devDependencies
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Déclaration des ARG pour recevoir les variables du build
-ARG NODE_ENV
-ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_KEYCLOAK_URL
-ARG NEXT_PUBLIC_KEYCLOAK_REALM
-ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
-
-# Conversion des ARG en ENV pour que Next.js les voie pendant le build
+# Déclaration des ARG si tu as des variables d'environnement au build
+ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-ENV NEXT_PUBLIC_KEYCLOAK_URL=${NEXT_PUBLIC_KEYCLOAK_URL}
-ENV NEXT_PUBLIC_KEYCLOAK_REALM=${NEXT_PUBLIC_KEYCLOAK_REALM}
-ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}
-ENV NEXT_TELEMETRY_DISABLED=1
 
-# Debug : affiche les variables (retire après validation)
-RUN echo "🔍 Building with:" && \
-    echo "  - API_URL: ${NEXT_PUBLIC_API_URL}" && \
-    echo "  - KEYCLOAK_URL: ${NEXT_PUBLIC_KEYCLOAK_URL}" && \
-    echo "  - REALM: ${NEXT_PUBLIC_KEYCLOAK_REALM}" && \
-    echo "  - CLIENT_ID: ${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}"
+# Build de l'application NestJS/Express
+RUN npm run build && \
+    # Vérifie que le build a bien créé le fichier
+    test -f dist/main.js && \
+    echo "✅ Build successful: dist/main.js created"
 
-# Build de l'application
-RUN npm run build
+# Étape 3 : Installation des dépendances de production uniquement
+FROM node:20-alpine AS prod-deps
+WORKDIR /app
 
-# Étape 3 : Image de production (la plus légère)
+COPY package.json package-lock.json* ./
+# Install uniquement les dépendances de production
+RUN npm ci --only=production --no-audit --no-fund
+
+# Étape 4 : Image finale de production (ultra légère)
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 
 # Création d'un utilisateur non-root pour la sécurité
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+    adduser --system --uid 1001 nestjs
 
-# Copie uniquement les fichiers nécessaires pour la production
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copie uniquement ce qui est nécessaire en production
+COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/package.json ./package.json
 
-USER nextjs
+USER nestjs
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-# Utilise le serveur standalone de Next.js (plus performant)
-CMD ["node", "server.js"]
+# Utilise node directement (plus performant que npm start)
+CMD ["node", "dist/main.js"]
