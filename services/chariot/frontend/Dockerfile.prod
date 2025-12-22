@@ -5,24 +5,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --no-audit --no-fund
 
-ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_KEYCLOAK_URL
-ARG NEXT_PUBLIC_KEYCLOAK_REALM
-ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
-
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_KEYCLOAK_URL=$NEXT_PUBLIC_KEYCLOAK_URL
-ENV NEXT_PUBLIC_KEYCLOAK_REALM=$NEXT_PUBLIC_KEYCLOAK_REALM
-ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=$NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
-
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 COPY . .
 
-# Build in /app (context is services/chariot/frontend)
 RUN npm run build
 
-CMD ["npm", "start"]
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 3000
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["npm", "start"]
