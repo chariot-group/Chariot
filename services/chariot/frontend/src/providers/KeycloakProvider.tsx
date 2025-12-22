@@ -37,15 +37,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initKeycloak = async () => {
-      let url: string = "https://integ.sso.chariot.tools";
-      if (process.env.NODE_ENV === "production") {
-        url = "https://sso.chariot.com";
-      } else if (process.env.NODE_ENV === "development") {
-        url = "http://localhost:8080";
-      }
-
       const keycloakConfig = {
-        url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || url,
+        url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || "http://localhost:8080",
         realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || "chariot",
         clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "chariot-app",
       };
