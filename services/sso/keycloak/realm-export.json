@@ -87,7 +87,8 @@
       ],
       "webOrigins": [
         "http://localhost:5173",
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "+"
       ],
       "publicClient": true,
       "protocol": "openid-connect",
@@ -100,7 +101,46 @@
       "attributes": {
         "post.logout.redirect.uris": "+",
         "pkce.code.challenge.method": "S256"
-      }
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "chariot-app",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "Client ID",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "clientId",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientId",
+            "jsonType.label": "String"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
     },
     {
       "clientId": "codex-api",
@@ -118,13 +158,40 @@
         "http://localhost:9000/*"
       ],
       "webOrigins": [
-        "http://localhost:9000"
+        "http://localhost:9000",
+        "+"
       ],
       "attributes": {
         "post.logout.redirect.uris": "+",
         "pkce.code.challenge.method": "S256",
         "oauth2.device.authorization.grant.enabled": "true"
-      }
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "codex-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
     }
   ],
   "users": []

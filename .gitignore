@@ -3,12 +3,11 @@
 .env.*.local
 
 # Generated configuration files (from templates)
-prometheus.yml
 alertmanager.yml
 
 # Logs
-backend/logger/logs/*.log
-frontend/logs/*.log
+adventure/logger/logs/*.log
+client/logs/*.log
 mongo/logs/*.log
 /var/log/promtail/
 

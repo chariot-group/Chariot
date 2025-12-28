@@ -66,7 +66,7 @@ services:
       start_period: 60s
 
   keycloak-config:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:26.4
     container_name: keycloak-config
     restart: "no"
     environment:
@@ -93,14 +93,24 @@ services:
       - |
         set -e
         
-        echo "Keycloak is ready, authenticating..."
-        
-        echo "Configuring Keycloak..."
-        /opt/keycloak/bin/kcadm.sh config credentials \
+        # Attendre que Keycloak soit vraiment disponible
+        RETRIES=30
+        COUNT=0
+        until /opt/keycloak/bin/kcadm.sh config credentials \
           --server http://keycloak:8080 \
           --realm master \
           --user "$${KEYCLOAK_ADMIN_USER}" \
-          --password "$${KEYCLOAK_ADMIN_PASSWORD}"
+          --password "$${KEYCLOAK_ADMIN_PASSWORD}" 2>&1; do
+          COUNT=$$((COUNT+1))
+          if [ "$$COUNT" -ge "$$RETRIES" ]; then
+            echo "Timeout waiting for Keycloak authentication" >&2
+            exit 1
+          fi
+          echo "Keycloak not ready yet, retrying... ($$COUNT/$$RETRIES)"
+          sleep 5
+        done
+        
+        echo "Keycloak is ready, authenticated successfully!"
         
         echo "Disabling SSL requirement on master realm..."
         /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE

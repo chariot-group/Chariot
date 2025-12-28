@@ -3,29 +3,23 @@ name: Docker Scan
 on:
   workflow_call:
     outputs:
-      has-critical-frontend:
-        description: "Frontend Docker image has critical vulnerabilities"
-        value: ${{ jobs.docker-scan.outputs.has-critical-frontend }}
+      has-critical-web:
+        description: "Web Docker image has critical vulnerabilities"
+        value: ${{ jobs.docker-scan-web.outputs.has-critical-web }}
       has-critical-backend:
         description: "Backend Docker image has critical vulnerabilities"
-        value: ${{ jobs.docker-scan.outputs.has-critical-backend }}
+        value: ${{ jobs.docker-scan-adventure.outputs.has-critical-adventure }}
 
 jobs:
-  docker-scan:
+  docker-scan-web:
     name: Scan des images Docker
     runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
     
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [frontend, backend]
-    
     outputs:
-      has-critical-frontend: ${{ steps.check-docker-frontend.outputs.has-critical }}
-      has-critical-backend: ${{ steps.check-docker-backend.outputs.has-critical }}
+      has-critical-web: ${{ steps.check-docker-web.outputs.has-critical }}
     
     steps:
       - name: Checkout code
@@ -34,7 +28,7 @@ jobs:
       - name: Check if Dockerfile exists
         id: check_dockerfile
         run: |
-          if [ -f "services/chariot/${{ matrix.project }}/dockerfile" ]; then
+          if [ -f "services/adventure/api/dockerfile" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "❌ Dockerfile not found for ${{ matrix.project }}"
@@ -51,10 +45,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./services/chariot/${{ matrix.project }}/dockerfile
+          file: ./services/adventure/api/dockerfile
           push: false
           load: true
-          tags: ${{ matrix.project }}:scan
+          tags: web:scan
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -67,9 +61,9 @@ jobs:
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
         with:
-          image-ref: ${{ matrix.project }}:scan
+          image-ref: web:scan
           format: 'json'
-          output: 'security/reports/trivy-${{ matrix.project }}.json'
+          output: 'security/reports/trivy-web.json'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
 
@@ -78,31 +72,18 @@ jobs:
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
         with:
-          image-ref: ${{ matrix.project }}:scan
+          image-ref: web:scan
           format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
 
-      - name: Check for critical vulnerabilities (frontend)
-        if: steps.check_dockerfile.outputs.exists == 'true' && matrix.project == 'frontend'
-        id: check-docker-frontend
+      - name: Check for critical vulnerabilities
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        id: check-docker-web
         working-directory: ./security/reports
         continue-on-error: true
         run: |
-          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-frontend.json 2>/dev/null || echo "0")
-          if [ "$CRITICAL" -gt 0 ]; then
-            echo "has-critical=true" >> $GITHUB_OUTPUT
-          else
-            echo "has-critical=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check for critical vulnerabilities (backend)
-        if: steps.check_dockerfile.outputs.exists == 'true' && matrix.project == 'backend'
-        id: check-docker-backend
-        working-directory: ./security/reports
-        continue-on-error: true
-        run: |
-          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-backend.json 2>/dev/null || echo "0")
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-web.json 2>/dev/null || echo "0")
           if [ "$CRITICAL" -gt 0 ]; then
             echo "has-critical=true" >> $GITHUB_OUTPUT
           else
@@ -113,7 +94,95 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: docker-scan-${{ matrix.project }}
+          name: docker-scan-web
+          path: security/reports/
+          retention-days: 30
+          if-no-files-found: warn
+    
+  docker-scan-adventure:
+    name: Scan des images Docker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    outputs:
+      has-critical-adventure: ${{ steps.check-docker-adventure.outputs.has-critical }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Check if Dockerfile exists
+        id: check_dockerfile
+        run: |
+          if [ -f "services/adventure/api/dockerfile" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Dockerfile not found for adventure"
+            exit 1
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        continue-on-error: true
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./services/adventure/api/dockerfile
+          push: false
+          load: true
+          tags: adventure:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create reports directory
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        run: mkdir -p security/reports
+
+      - name: Run Trivy vulnerability scanner on image
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: adventure:scan
+          format: 'json'
+          output: 'security/reports/trivy-adventure.json'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Display vulnerabilities summary
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: adventure:scan
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Check for critical vulnerabilities
+        if: steps.check_dockerfile.outputs.exists == 'true'
+        id: check-docker-adventure
+        working-directory: ./security/reports
+        continue-on-error: true
+        run: |
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-adventure.json 2>/dev/null || echo "0")
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "has-critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload Docker scan reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-scan-adventure
           path: security/reports/
           retention-days: 30
           if-no-files-found: warn

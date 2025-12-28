@@ -1,0 +1,28 @@
+services:
+
+  chariot-frontend:
+    image: ghcr.io/chariot-group/chariot-frontend-production:latest
+    container_name: chariot-frontend-prod
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3000"
+    environment:
+      NODE_ENV: production
+    networks:
+      - chariot-group-network-prod
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-frontend-prod.rule=Host(`${FRONTEND_HOST}`)"
+      - "traefik.http.routers.chariot-frontend-prod.entrypoints=websecure"
+      - "traefik.http.routers.chariot-frontend-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-frontend-prod.loadbalancer.server.port=3000"
+      - "traefik.http.routers.chariot-frontend-prod.service=chariot-frontend-prod"
+      - "traefik.docker.network=traefik-public"
+
+networks:
+  chariot-group-network-prod:
+    external: true
+  traefik-public:
+    external: true

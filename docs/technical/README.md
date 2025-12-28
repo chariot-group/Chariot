@@ -1,74 +1,48 @@
-# 🛠️ Technical Documentation
+# 🛠️ Documentation technique
+
+Ce document donne une vue d'ensemble technique et oriente vers la documentation spécifique
+présente dans le dépôt.
 
 ## 📡 API
-- [API Response Conventions](API_RESPONSE_CONVENTIONS.md) - API response standards
+- **Conventions de réponse** : [API_RESPONSE_CONVENTIONS.md](API_RESPONSE_CONVENTIONS.md)
 
-## 🚀 Deployment
-- [Deployment Guide](DEPLOYMENT.md) - Complete deployment instructions for all environments
-- [Environment Comparison](ENVIRONMENTS_COMPARISON.md) - Differences between dev/integ/prod
-- [Docker Cheatsheet](../../DOCKER_CHEATSHEET.md) - Quick reference for Docker commands
+## 🚀 Déploiement
+- Les configurations de déploiement se trouvent principalement dans les fichiers `compose.*.yml`
+  au niveau des services (par ex. `services/*/compose.dev.yml`, `compose.prod.yml`).
 
 ## 🎨 Frontend
-See [services/chariot/frontend/docs/](../../services/chariot/frontend/docs/) for:
-- [Internationalization](../../services/chariot/frontend/docs/i18n.md) - i18n configuration
-- [Frontend Contribution](../../services/chariot/frontend/docs/CONTRIBUTING.md) - Development standards
+- Code du frontend : [services/web/client](../../services/web/client)
+  - Documentation locale : [services/web/client/docs/CONTRIBUTING.md](../../services/web/client/docs/CONTRIBUTING.md)
+  - Internationalisation : [services/web/client/docs/i18n.md](../../services/web/client/docs/i18n.md)
 
-## ⚙️ Backend
-See [services/chariot/backend/docs/](../../services/chariot/backend/docs/) for:
-- [Logger](../../services/chariot/backend/docs/logger.md) - Log configuration
-- [Stripe](../../services/chariot/backend/docs/stripe.md) - Payments integration
-- [Access rights](../../services/chariot/backend/docs/rights.md) - Permission system
-- [Backend Contribution](../../services/chariot/backend/docs/CONTRIBUTING.md) - Development standards
+## ⚙️ Backend / API
+- API principale : [services/adventure/api](../../services/adventure/api)
+  - Logger, droits et contributions :
+    - [services/adventure/api/docs/logger.md](../../services/adventure/api/docs/logger.md)
+    - [services/adventure/api/docs/rights.md](../../services/adventure/api/docs/rights.md)
+    - [services/adventure/api/docs/CONTRIBUTING.md](../../services/adventure/api/docs/CONTRIBUTING.md)
 
-## 🔐 Authentication & SSO
-See [services/sso/docs/](../../services/sso/docs/) for:
-- [SSO Integration Guide](../../services/sso/docs/SSO_INTEGRATION.md) - Complete Keycloak setup and integration
-  - Architecture overview with Keycloak 23.0.7
-  - Custom theme development (Tailwind CSS v4)
-  - Multi-language support (French, English, Spanish)
-  - Email templates and SMTP configuration
-  - Frontend integration (Next.js with keycloak-js)
-  - Backend integration (NestJS with passport-keycloak-bearer)
-  - Token management and security
-  - Troubleshooting guide
-  - **START HERE for authentication questions**
+## 🔐 Authentification & SSO
+- Keycloak et configuration SSO : [services/sso](../../services/sso)
+  - Realm exports : `services/sso/keycloak/realm-export*.json`
+  - Thèmes personnalisés : `services/sso/keycloak/themes/chariot`
 
-## 📊 Monitoring & Observability
+## 📊 Observabilité
 
-### Logging
-- **[Logging Flow Diagram](LOG_FLOW_DIAGRAM.md)** - Complete centralized logging with Loki & Promtail
-  - Architecture and log flow
-  - Configuration for Backend, Frontend, and MongoDB
-  - Retention policies and troubleshooting
-  - Development behavior (console-only in dev)
-  - **START HERE for logging questions**
+- **Logging** : flux et architecture de logs décrits dans
+  [LOG_FLOW_DIAGRAM.md](LOG_FLOW_DIAGRAM.md)
 
-### Monitoring & Metrics
-- [Monitoring Guide](MONITORING.md) - Complete monitoring setup (Prometheus, cAdvisor, Node Exporter)
-- [Prometheus Configuration](PROMETHEUS.md) - Prometheus scrape jobs and alerts
-- [macOS Compatibility](MONITORING_MACOS.md) - Node Exporter on macOS
+## 📋 Architecture (vue d'ensemble)
 
-## 📋 Architecture
+- Monorepo contenant plusieurs services :
+  - `services/adventure` — API / backend
+  - `services/web` — UI (client)
+  - `services/sso` — Keycloak / SSO configuration
+- Chaque service contient ses propres fichiers de composition (`compose.*.yml`) pour
+  les environnements `dev`, `integ`, `prod`.
 
-### Microservices Architecture
-- **Structure**: Monorepo with pnpm workspaces
-- **Services**: 
-  - `services/chariot/backend`: NestJS 11 API
-  - `services/chariot/frontend`: Next.js 15 UI
-- **Infrastructure**: Centralized monitoring, logging, and alerting
-  - `infrastructure/prometheus`: Metrics collection and alerts
-  - `infrastructure/grafana`: Visualization dashboards
-  - `infrastructure/loki`: Log aggregation
-  - `infrastructure/alertmanager`: Alert management
-- **Shared Library**: `@chariot/shared` - Common types, utilities, and constants
-- **Database**: MongoDB 8.0.15 (production/integration), latest (development)
-- **Authentication**: Integrated system with permission management
-- **Payments**: Stripe integration
-- **Logs**: Winston (backend), console (development)
+## 🔎 Où commencer
+- Pour des questions d'authentification, voir `services/sso` (Keycloak)
+- Pour le frontend, voir `services/web/client/docs`
+- Pour l'API et la configuration backend, voir `services/adventure/api/docs`
 
-### Deployment Environments
-- **Development**: Hot-reload, verbose logs, development database
-- **Integration**: Production builds, testing infrastructure, fast healthchecks
-- **Production**: Optimized builds, resource limits, minimal logs, automatic restarts
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment documentation.

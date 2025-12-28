@@ -9,19 +9,16 @@ on:
       secret-scan-result:
         required: true
         type: string
-      sast-scan-result:
-        required: true
-        type: string
       docker-scan-result:
         required: true
         type: string
-      has-critical-dep-frontend:
+      has-critical-dep-web:
         required: true
         type: string
       has-critical-dep-backend:
         required: true
         type: string
-      has-critical-docker-frontend:
+      has-critical-docker-web:
         required: true
         type: string
       has-critical-docker-backend:
@@ -68,11 +65,10 @@ jobs:
           DEP_STATUS="${{ inputs.dependency-scan-result }}"
           SECRET_STATUS="${{ inputs.secret-scan-result }}"
           DOCKER_STATUS="${{ inputs.docker-scan-result }}"
-          SAST_STATUS="${{ inputs.sast-scan-result }}"
           
-          HAS_CRITICAL_DEP_FE="${{ inputs.has-critical-dep-frontend }}"
+          HAS_CRITICAL_DEP_FE="${{ inputs.has-critical-dep-web }}"
           HAS_CRITICAL_DEP_BE="${{ inputs.has-critical-dep-backend }}"
-          HAS_CRITICAL_DOCKER_FE="${{ inputs.has-critical-docker-frontend }}"
+          HAS_CRITICAL_DOCKER_FE="${{ inputs.has-critical-docker-web }}"
           HAS_CRITICAL_DOCKER_BE="${{ inputs.has-critical-docker-backend }}"
           HAS_SECRETS="${{ inputs.secrets-found }}"
           
@@ -84,8 +80,7 @@ jobs:
             echo "level=critical" >> $GITHUB_OUTPUT
             echo "🚨 CRITICAL issues detected"
           elif [[ "$DEP_STATUS" == "failure" ]] || \
-               [[ "$DOCKER_STATUS" == "failure" ]] || \
-               [[ "$SAST_STATUS" == "failure" ]]; then
+               [[ "$DOCKER_STATUS" == "failure" ]]; then
             echo "level=warning" >> $GITHUB_OUTPUT
             echo "⚠️ WARNING level issues detected"
           else
@@ -98,9 +93,9 @@ jobs:
         run: |
           mkdir -p security/reports
 
-          HAS_CRITICAL_DEP_FE="${{ inputs.has-critical-dep-frontend }}"
+          HAS_CRITICAL_DEP_FE="${{ inputs.has-critical-dep-web }}"
           HAS_CRITICAL_DEP_BE="${{ inputs.has-critical-dep-backend }}"
-          HAS_CRITICAL_DOCKER_FE="${{ inputs.has-critical-docker-frontend }}"
+          HAS_CRITICAL_DOCKER_FE="${{ inputs.has-critical-docker-web }}"
           HAS_CRITICAL_DOCKER_BE="${{ inputs.has-critical-docker-backend }}"
           HAS_SECRETS="${{ inputs.secrets-found }}"
 
@@ -123,10 +118,6 @@ jobs:
             SECRET_EMOJI="✅"; SECRET_STATUS="success"
           fi
 
-          # SAST
-          SAST_STATUS="${{ inputs.sast-scan-result }}"
-          if [[ "$SAST_STATUS" == "success" ]]; then SAST_EMOJI="✅"; elif [[ "$SAST_STATUS" == "skipped" ]]; then SAST_EMOJI="⏭️"; else SAST_EMOJI="⚠️"; fi
-
           # Générer le Markdown initial
           cat > security/reports/summary.md << EOF
           # 🔒 Rapport de Sécurité
@@ -141,7 +132,6 @@ jobs:
           | Type de Scan | Frontend | Backend | Statut Global |
           |--------------|----------|---------|---------------|
           | 📦 Dépendances | $DEP_EMOJI | $DEP_EMOJI | $DEP_STATUS |
-          | 🔍 SAST (Code) | $SAST_EMOJI | $SAST_EMOJI | $SAST_STATUS |
           | 🐳 Docker | $DOCKER_EMOJI | $DOCKER_EMOJI | $DOCKER_STATUS |
           | 🔑 Secrets | - | - | $SECRET_EMOJI $SECRET_STATUS |
 
@@ -171,7 +161,7 @@ jobs:
           }
 
           # === 1. NPM AUDIT JSON FILES ===
-          for JSON in security/reports/npm-audit-frontend.json security/reports/npm-audit-backend.json; do
+          for JSON in security/reports/npm-audit-web.json security/reports/npm-audit-backend.json; do
             if [ -f "$JSON" ]; then
               CRIT_COUNT=$(jq '[.advisories[]] | length' "$JSON" 2>/dev/null || echo "0")
               if [ "$CRIT_COUNT" != "0" ] && [ "$CRIT_COUNT" -gt 0 ]; then
@@ -190,7 +180,7 @@ jobs:
           done
 
           # === 2. TRIVY JSON FILES ===
-          for JSON in security/reports/docker-scan-frontend/trivy-frontend.json security/reports/docker-scan-backend/trivy-backend.json; do
+          for JSON in security/reports/docker-scan-web/trivy-web.json security/reports/docker-scan-backend/trivy-backend.json; do
             if [ -f "$JSON" ]; then
               CRIT_COUNT=$(jq '[.Results[]?.Vulnerabilities[]?] | length' "$JSON" 2>/dev/null || echo "0")
               
