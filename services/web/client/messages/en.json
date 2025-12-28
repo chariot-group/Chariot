@@ -1,0 +1,522 @@
+{
+  "HomePage": {
+    "title": "Welcome to Chariot!",
+    "about": "The ultimate roleplay tool."
+  },
+  "LocaleSwitcher": {
+    "locale": "{locale, select, fr {🇫🇷 French} en {🇬🇧 English} es {🇪🇸 Spanish} other {🏴‍☠️ Unknown}}"
+  },
+  "CampaignListPanel": {
+    "title": "Your campaigns",
+    "search": "Search a campaign",
+    "createTooltip": "Add a campaign",
+    "noCampaigns": "No campaigns found",
+    "error": "Error loading campaigns",
+    "create": "Add a campaign",
+    "created": "Campaign created successfully"
+  },
+  "LoginPage": {
+    "title": "Welcome to Chariot!",
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password ?",
+    "noAccount": {
+      "text": "Don't have an account ?",
+      "link": "Enjoy free access !"
+    },
+    "errors": {
+      "emailRequired": "The email is required",
+      "invalidEmail": "The email is invalid",
+      "passwordRequired": "The password is required",
+      "invalidCredentials": "Email or password invalid",
+      "internal": "An error occurred when we tried to log you in"
+    },
+    "success": {
+      "login": "Login successful !"
+    }
+  },
+  "CharacterListPanel": {
+    "addPlayer": "Add a player",
+    "addNpc": "Add an NPC",
+    "title": "Character List",
+    "search": "Search a character",
+    "create": "Add a character",
+    "noCharacters": "No characters found",
+    "error": "Error loading characters"
+  },
+  "GroupListPanel": {
+    "title": {
+      "main": "Main",
+      "npc": "NPC",
+      "default": "Your groups",
+      "archived": "Archived"
+    },
+    "newGroup": {
+      "label": "New group"
+    },
+    "search": "Search a group",
+    "create": "Add a group",
+    "noGroups": "No groups found",
+    "dropHere": "Drop here to add in the group",
+    "error": "Error loading groups"
+  },
+  "GroupListPanelItem": {
+    "members": "members",
+    "member": "member",
+    "newGroup": "New group"
+  },
+  "CharacterDetailsPanel": {
+    "npc": "NPC",
+    "player": "Player",
+    "actions": {
+      "deletePlayer": "Delete Player",
+      "deleteNpc": "Delete NPC",
+      "addClass": "Add Class",
+      "deleteClass": "Delete Class",
+      "addSens": "Add Sense",
+      "deleteSens": "Delete Sense",
+      "addLanguage": "Add Language",
+      "deleteLanguage": "Delete Language",
+      "addSpellCasting": "Add Spellcasting",
+      "deleteSpellCasting": "Delete Spellcasting",
+      "addSlot": "Add Slot",
+      "deleteSlot": "Delete Slot",
+      "addSpell": "Add Spell",
+      "deleteSpell": "Delete Spell",
+      "addVulnerability": "Add Vulnerability",
+      "deleteVulnerability": "Delete Vulnerability",
+      "addResistance": "Add Resistance",
+      "deleteResistance": "Delete Resistance",
+      "addImmunity": "Add Immunity",
+      "deleteImmunity": "Delete Immunity",
+      "addAbility": "Add Ability",
+      "deleteAbility": "Delete Ability",
+      "addAction": "Add Action",
+      "deleteAction": "Delete Action"
+    },
+    "action": {
+      "noActions": "No actions found",
+      "name": "Name",
+      "type": "Type",
+      "attackBonus": "Attack Bonus",
+      "damage": "Damage",
+      "damageType": "Damage Type",
+      "range": "Range",
+      "standard": "Standard",
+      "legendary": "Legendary",
+      "lair": "Lair"
+    },
+    "classes": {
+      "noClass": "No classes found",
+      "title": "Classes",
+      "className": "Class",
+      "subClass": "Subclass",
+      "level": "Level",
+      "hitDice": "Hit Dice"
+    },
+    "speed": {
+      "walking": "Walking",
+      "flying": "Flying",
+      "climbing": "Climbing",
+      "swimming": "Swimming",
+      "burrowing": "Burrowing"
+    },
+    "skills": {
+      "athletics": "Athletics",
+      "acrobatics": "Acrobatics",
+      "stealth": "Stealth",
+      "animalHandling": "Animal Handling",
+      "arcana": "Arcana",
+      "deception": "Deception",
+      "history": "History",
+      "insight": "Insight",
+      "intimidation": "Intimidation",
+      "investigation": "Investigation",
+      "medicine": "Medicine",
+      "nature": "Nature",
+      "perception": "Perception",
+      "performance": "Performance",
+      "persuasion": "Persuasion",
+      "religion": "Religion",
+      "sleightHand": "Sleight of Hand",
+      "survival": "Survival"
+    },
+    "senses": {
+      "title": "Senses",
+      "noSens": "No senses found",
+      "sensName": "Sense",
+      "value": "Value"
+    },
+    "languages": {
+      "title": "Languages",
+      "noLanguage": "No languages found",
+      "languageName": "Language",
+      "noMatch": "No match found",
+      "items": {
+        "common": "Common",
+        "dwarvish": "Dwarvish",
+        "elvish": "Elvish",
+        "giant": "Giant",
+        "gnomish": "Gnomish",
+        "goblin": "Goblin",
+        "orc": "Orc",
+        "abyssal": "Abyssal",
+        "celestial": "Celestial",
+        "draconic": "Draconic",
+        "deepSpeech": "Deep Speech",
+        "infernal": "Infernal",
+        "primordial": "Primordial",
+        "sylvan": "Sylvan",
+        "undercommon": "Undercommon"
+      }
+    },
+    "details": {
+      "proficiencyBonus": "Proficiency bonus",
+      "passivePerception": "Passive Perception",
+      "inspiration": "Inspiration"
+    },
+    "spellCasting": {
+      "title": "Spellcasting",
+      "noSpellCasting": "No spellcasting found",
+      "ability": "Ability",
+      "saveDice": "Saving Throw DC",
+      "attackBonus": "Attack Bonus",
+      "countSpell": "Number of Spells",
+      "totalSpellSlots": "Total Spell Slots",
+      "slots": {
+        "noSlots": "No slots found",
+        "level": "Level",
+        "totalSlots": "Total",
+        "usedSlots": "Used"
+      },
+      "spells": {
+        "title": "Spells",
+        "noSpells": "No spells found",
+        "name": "Name",
+        "level": "Level",
+        "castingTime": "Casting Time",
+        "range": "Range",
+        "components": "Components",
+        "description": "Description"
+      }
+    },
+    "vulnerabilities": {
+      "title": "Vulnerabilities",
+      "noVulnerabilities": "No vulnerabilities found",
+      "name": "Vulnerability"
+    },
+    "resistances": {
+      "title": "Resistances",
+      "noResistances": "No resistances found",
+      "name": "Resistance"
+    },
+    "immunities": {
+      "title": "Immunities",
+      "noImmunities": "No immunities found",
+      "name": "Immunity"
+    },
+    "abilities": {
+      "noAbilities": "No abilities found",
+      "title": "Abilities",
+      "name": "Name",
+      "description": "Description"
+    },
+    "treasure": {
+      "cp": "Copper Pieces",
+      "sp": "Silver Pieces",
+      "ep": "Electrum Pieces",
+      "gp": "Gold Pieces",
+      "pp": "Platinum Pieces",
+      "notes": "Notes"
+    },
+    "panels": {
+      "characterisitcs": "Characteristics",
+      "stats": "Stats",
+      "spells": "Spells",
+      "other": "Other"
+    },
+    "name": "Name",
+    "profile": {
+      "race": "Race",
+      "subrace": "Subrace",
+      "type": "Type",
+      "subtype": "Subtype",
+      "alignment": "Alignment",
+      "noMatch": "No matching alignment found",
+      "alignments": {
+        "lawful_good": "Lawful Good",
+        "neutral_good": "Neutral Good",
+        "chaotic_good": "Chaotic Good",
+        "lawful_neutral": "Lawful Neutral",
+        "neutral": "Neutral",
+        "chaotic_neutral": "Chaotic Neutral",
+        "lawful_evil": "Lawful Evil",
+        "neutral_evil": "Neutral Evil",
+        "chaotic_evil": "Chaotic Evil"
+      }
+    },
+    "batlle": {
+      "armorClass": "Armor Class",
+      "maxHP": "Max Hit Points",
+      "currentHP": "Current HP",
+      "temporaryHP": "Temporary HP",
+      "initiativeBonus": "Initiative"
+    },
+    "abilityScores": {
+      "strength": "Strength",
+      "dexterity": "Dexterity",
+      "constitution": "Constitution",
+      "intelligence": "Intelligence",
+      "wisdom": "Wisdom",
+      "charisma": "Charisma",
+      "save": "Saving Throw"
+    },
+    "progression": {
+      "level": "Level",
+      "experience": "Experience"
+    },
+    "background": {
+      "personalityTraits": "Personality Traits",
+      "ideals": "Ideals",
+      "bonds": "Bonds",
+      "flaws": "Flaws",
+      "backstory": "Backstory",
+      "alliesAndOrgs": "Allies and Organizations"
+    },
+    "challenge": {
+      "challengeRating": "Challenge Rating",
+      "experiencePoints": "XP"
+    },
+    "appearance": {
+      "age": "Age",
+      "height": "Height",
+      "weight": "Weight",
+      "eyes": "Eyes",
+      "hair": "Hair",
+      "skin": "Skin",
+      "description": "Physical Description",
+      "size": "Size"
+    }
+  },
+
+  "Global": {
+    "cancel": "Cancel"
+  },
+  "CampaignDetails": {
+    "errors": "Error updating campaign",
+    "labels": {
+      "description": "Description"
+    },
+    "placeholders": {
+      "description": "A great campaign"
+    },
+    "actions": {
+      "delete": "Delete campaign",
+      "update": "Update campaign",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "modal": {
+      "title": "Delete campaign",
+      "description": "This action is irreversible.",
+      "confirm": "Yes, delete"
+    }
+  },
+  "Header": {
+    "home": "CHARIOT",
+    "launchBattle": "Launch a battle",
+    "backToCampaign": "Back to campaign",
+    "signout": "Sign out"
+  },
+  "GroupDetailsPanel": {
+    "error": "Error updating the group",
+    "actions": {
+      "groupDelete": "Delete group",
+      "update": "Update group",
+      "backCampaign": "Back to campaign",
+      "cancel": "Cancel",
+      "save": "Save",
+      "modal": {
+        "title": "Delete group",
+        "description": "Are you sure you want to delete this group ?",
+        "confirm": "Yes, delete"
+      }
+    },
+    "labels": {
+      "name": "Group name",
+      "type": "Type",
+      "description": "Description"
+    },
+    "placeholders": {
+      "name": "Group name",
+      "type": "Main group",
+      "description": "Group description"
+    }
+  },
+  "GroupPage": {
+    "yourCharacters": "Your characters",
+    "form": {
+      "unsave": "You have unsaved changes. Do you want to continue?"
+    },
+    "toasts": {
+      "cancel": "Updating cancelled",
+      "save": "Group updated successfully",
+      "errorGroup": "Error updating group",
+      "errorCreateCharacter": "Error creating character",
+      "errorDeleteCharacter": "Error deleting character",
+      "errorDeleteGroup": "Error deleting group",
+      "groupDeleted": "Group deleted successfully",
+      "errorFindCampaign": "Error finding campaign"
+    }
+  },
+  "CampaignModal": {
+    "title": "Create a campaign",
+    "subTitles": {
+      "info": "To create a campaign, we need the campaign name.",
+      "warning": "Please note! You will not be able to modify it afterwards."
+    },
+    "placeholder": "Campaign name",
+    "actions": {
+      "create": "Create a campaign",
+      "cancel": "Cancel"
+    },
+    "emptyName": "The campaign name cannot be empty"
+  },
+  "CampaignPage": {
+    "tutorial": {
+      "step1": "Step 1: Create a campaign",
+      "step2": "Step 2: Create a main player group",
+      "step3": "Step 3: Create your NPC groups",
+      "step4": "Step 4: Launch your initiatives",
+      "step5": "Step 5: Let’s play!"
+    },
+    "form": {
+      "unsave": "You have unsaved changes. Do you want to continue?",
+      "newGroup": "New group"
+    },
+    "toasts": {
+      "cancel": "updating cancelled",
+      "save": "Campaign updated successfully",
+      "errorDetetingCampaign": "Error deleting campaign",
+      "deletedCampaign": "Campaign deleted successfully"
+  }
+  },
+  "InitiativeTracker": {
+    "reset": "Reset",
+    "start": "Start",
+    "next": "Next",
+    "previous": "Previous",
+    "round": "Round",
+    "backToSelection": "Back to selection"
+  },
+  "InitiativeList": {
+    "initiative": "Initiative",
+    "name": "Name",
+    "hitPoints": "HP",
+    "armorClass": "AC",
+    "group": "Group",
+    "actions": "Action(s)"
+  },
+  "InitiativeItem": {
+    "detail": "Detail"
+  },
+  "MobileRestraint": {
+    "title": "Mobile Restraint",
+    "subTitle": "This application is not compatible with small screens."
+  },
+  "HealthCheck": {
+    "status": {
+      "label": "API status",
+      "ok": "Ok",
+      "error": "Error",
+      "loading": "Loading..."
+    }
+  },
+  "GroupSelector": {
+    "versus": "VS"
+  },
+  "GroupSelectorPage": {
+    "title": "Choose the two groups that will face off",
+    "battle": "Start battle"
+  },
+  "BattlePage": {
+    "back": "Back to selection"
+  },
+  "confirmEmail": {
+    "title": "Reset your password",
+    "description": "Enter your email address. If an account exists with this email, you will receive an email containing a code to reset your password.",
+    "label": "Email",
+    "placeholder": "Enter your email",
+    "send": "Send code",
+    "toasts": {
+      "sendingEmail": "An email has been sent! Check your spam folder.",
+      "invalidEmail": "Invalid email",
+      "emailRequired": "The email is required",
+      "emailNotFound": "No account found with this email",
+      "internal": "An error occurred while trying to send the email"
+    },
+    "cancel": "Cancel"
+  },
+  "forgetPassword": {
+    "wrongEmail": "Used the wrong email?",
+    "step": {
+      "step1": "Enter your email",
+      "step2": "Verify your code",
+      "step3": "Change your password"
+    }
+  },
+  "confirmOTP": {
+    "title": "Reset your password",
+    "description": "Enter the code you received by email.",
+    "label": "OTP",
+    "placeholder": "Enter your code",
+    "send": "Verify code",
+    "cancel": "Cancel",
+    "toasts": {
+      "invalidOTP": "The code is invalid",
+      "otpRequired": "You must enter the code sent by email",
+      "otpValid": "Code validated, you can change your password."
+    }
+  },
+  "changePassword": {
+    "title": "Reset your password",
+    "description": "It's time to change your password!",
+    "password": "Password",
+    "placeholderPassword": "Enter your new password",
+    "confirmPassword": "Confirm password",
+    "placeholderConfirmPassword": "Confirm your password",
+    "send": "Change password",
+    "toasts": {
+      "passwordChanged": "Password changed!",
+      "passwordsNotMatching": "Passwords do not match",
+      "passwordRequired": "You must enter a password",
+      "confirmPasswordRequired": "You must confirm your password",
+      "internal": "An error occurred while trying to change the password"
+    },
+    "cancel": "Cancel"
+  },
+  "activateAccount": {
+    "title": "Activate your account",
+    "description": "It's time to activate your account!",
+    "password": "Password",
+    "placeholderPassword": "Enter your new password",
+    "confirmPassword": "Confirm password",
+    "placeholderConfirmPassword": "Confirm your password",
+    "send": "Activate account",
+    "toasts": {
+      "accountActivated": "Account activated!",
+      "passwordsNotMatching": "Passwords do not match",
+      "passwordRequired": "You must enter a password",
+      "confirmPasswordRequired": "You must confirm your password",
+      "internal": "An error occurred while trying to activate your account",
+      "accountAlreadyActivated": "Your account is already activated"
+    },
+    "cancel": "Cancel"
+  },
+  "NotFound": {
+    "title": "Critical failure, page not found",
+    "description": "Location roll: 1. The owlbear stares at the sign... but the sign doesn't respond.",
+    "backToHome": "Back to home page"
+  }
+}
