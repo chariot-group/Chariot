@@ -1,48 +1,49 @@
-# 🛠️ Documentation technique
+# 🛠️ Technical Documentation
 
-Ce document donne une vue d'ensemble technique et oriente vers la documentation spécifique
-présente dans le dépôt.
+This document provides a concise technical overview and points to the
+service-specific documentation available in the repository.
 
 ## 📡 API
-- **Conventions de réponse** : [API_RESPONSE_CONVENTIONS.md](API_RESPONSE_CONVENTIONS.md)
+- **Response conventions**: [API_RESPONSE_CONVENTIONS.md](API_RESPONSE_CONVENTIONS.md)
 
-## 🚀 Déploiement
-- Les configurations de déploiement se trouvent principalement dans les fichiers `compose.*.yml`
-  au niveau des services (par ex. `services/*/compose.dev.yml`, `compose.prod.yml`).
+## 🚀 Deployment
+- Deployment configurations are mainly located in `compose.*.yml` files at
+  each service level (for example: `services/*/compose.dev.yml`,
+  `compose.prod.yml`).
 
 ## 🎨 Frontend
-- Code du frontend : [services/web/client](../../services/web/client)
-  - Documentation locale : [services/web/client/docs/CONTRIBUTING.md](../../services/web/client/docs/CONTRIBUTING.md)
-  - Internationalisation : [services/web/client/docs/i18n.md](../../services/web/client/docs/i18n.md)
+- Frontend code: [services/web/client](../../services/web/client)
+  - Local documentation: [services/web/client/docs/CONTRIBUTING.md](../../services/web/client/docs/CONTRIBUTING.md)
+  - Internationalization: [services/web/client/docs/i18n.md](../../services/web/client/docs/i18n.md)
 
 ## ⚙️ Backend / API
-- API principale : [services/adventure/api](../../services/adventure/api)
-  - Logger, droits et contributions :
+- Main API: [services/adventure/api](../../services/adventure/api)
+  - Logger, rights and contribution guides:
     - [services/adventure/api/docs/logger.md](../../services/adventure/api/docs/logger.md)
     - [services/adventure/api/docs/rights.md](../../services/adventure/api/docs/rights.md)
     - [services/adventure/api/docs/CONTRIBUTING.md](../../services/adventure/api/docs/CONTRIBUTING.md)
 
-## 🔐 Authentification & SSO
-- Keycloak et configuration SSO : [services/sso](../../services/sso)
-  - Realm exports : `services/sso/keycloak/realm-export*.json`
-  - Thèmes personnalisés : `services/sso/keycloak/themes/chariot`
+## 🔐 Authentication & SSO
+- Keycloak and SSO configuration: [services/sso](../../services/sso)
+  - Realm exports: `services/sso/keycloak/realm-export*.json`
+  - Custom themes: `services/sso/keycloak/themes/chariot`
 
-## 📊 Observabilité
+## 📊 Observability
 
-- **Logging** : flux et architecture de logs décrits dans
+- **Logging**: log flow and architecture are described in
   [LOG_FLOW_DIAGRAM.md](LOG_FLOW_DIAGRAM.md)
 
-## 📋 Architecture (vue d'ensemble)
+## 📋 Architecture (overview)
 
-- Monorepo contenant plusieurs services :
+- Monorepo containing multiple services:
   - `services/adventure` — API / backend
   - `services/web` — UI (client)
   - `services/sso` — Keycloak / SSO configuration
-- Chaque service contient ses propres fichiers de composition (`compose.*.yml`) pour
-  les environnements `dev`, `integ`, `prod`.
+- Each service contains its own composition files (`compose.*.yml`) for
+  `dev`, `integ`, and `prod` environments.
 
-## 🔎 Où commencer
-- Pour des questions d'authentification, voir `services/sso` (Keycloak)
-- Pour le frontend, voir `services/web/client/docs`
-- Pour l'API et la configuration backend, voir `services/adventure/api/docs`
+## 🔎 Where to start
+- For authentication questions, see `services/sso` (Keycloak)
+- For frontend, see `services/web/client/docs`
+- For API and backend configuration, see `services/adventure/api/docs`
 
