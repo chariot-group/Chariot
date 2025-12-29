@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e
 
 # Configuration
 SERVICES_DIR := services
@@ -27,8 +27,10 @@ help: ## Affiche cette aide
 	@echo "$(BLUE)Exemples:$(NC)"
 	@echo "  make up ENV=dev"
 	@echo "  make down ENV=prod"
-	@echo "  make logs SERVICE=app1"
-	@echo "  make restart SERVICE=app2 ENV=integ"
+	@echo "  make logs SERVICE=adventure"
+	@echo "  make restart SERVICE=web ENV=integ"
+	@echo "  make test SERVICE=adventure"
+	@echo "  make test-cov SERVICE=adventure"
 
 network: ## Crée le réseau Docker si nécessaire
 	@docker network inspect $(NETWORK_NAME) >/dev/null 2>&1 || \
@@ -152,3 +154,59 @@ prod-up: ## Lance tous les services en prod
 
 integ-up: ## Lance tous les services en integ
 	@$(MAKE) up ENV=integ
+
+# Tests
+test: ## Lance les tests d'un service (SERVICE requis)
+ifndef SERVICE
+	@echo "$(RED)Veuillez spécifier un SERVICE: make test SERVICE=adventure$(NC)"
+	@exit 1
+else
+	@echo "$(YELLOW)Exécution des tests pour $(SERVICE)...$(NC)"
+	@if [ -f "$(SERVICES_DIR)/$(SERVICE)/api/package.json" ]; then \
+		cd $(SERVICES_DIR)/$(SERVICE)/api && npm test; \
+	elif [ -f "$(SERVICES_DIR)/$(SERVICE)/client/package.json" ]; then \
+		cd $(SERVICES_DIR)/$(SERVICE)/client && npm test; \
+	else \
+		echo "$(RED)✗ Service $(SERVICE) introuvable ou pas de package.json$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)✓ Tests terminés$(NC)"
+endif
+
+test-watch: ## Lance les tests en mode watch (SERVICE requis)
+ifndef SERVICE
+	@echo "$(RED)Veuillez spécifier un SERVICE: make test-watch SERVICE=adventure$(NC)"
+	@exit 1
+else
+	@if [ -f "$(SERVICES_DIR)/$(SERVICE)/api/package.json" ]; then \
+		cd $(SERVICES_DIR)/$(SERVICE)/api && npm run test:watch; \
+	elif [ -f "$(SERVICES_DIR)/$(SERVICE)/client/package.json" ]; then \
+		cd $(SERVICES_DIR)/$(SERVICE)/client && npm run test:watch; \
+	fi
+endif
+
+test-cov: ## Lance les tests avec couverture (SERVICE requis)
+ifndef SERVICE
+	@echo "$(RED)Veuillez spécifier un SERVICE: make test-cov SERVICE=adventure$(NC)"
+	@exit 1
+else
+	@echo "$(YELLOW)Exécution des tests avec couverture pour $(SERVICE)...$(NC)"
+	@if [ -f "$(SERVICES_DIR)/$(SERVICE)/api/package.json" ]; then \
+		cd $(SERVICES_DIR)/$(SERVICE)/api && npm run test:cov; \
+	elif [ -f "$(SERVICES_DIR)/$(SERVICE)/client/package.json" ]; then \
+		cd $(SERVICES_DIR)/$(SERVICE)/client && npm run test:cov; \
+	fi
+	@echo "$(GREEN)✓ Tests avec couverture terminés$(NC)"
+endif
+
+test-e2e: ## Lance les tests e2e (SERVICE requis)
+ifndef SERVICE
+	@echo "$(RED)Veuillez spécifier un SERVICE: make test-e2e SERVICE=adventure$(NC)"
+	@exit 1
+else
+	@echo "$(YELLOW)Exécution des tests e2e pour $(SERVICE)...$(NC)"
+	@if [ -f "$(SERVICES_DIR)/$(SERVICE)/api/package.json" ]; then \
+		cd $(SERVICES_DIR)/$(SERVICE)/api && npm run test:e2e; \
+	fi
+	@echo "$(GREEN)✓ Tests e2e terminés$(NC)"
+endif
