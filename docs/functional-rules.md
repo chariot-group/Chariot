@@ -1,21 +1,21 @@
-# Règles Fonctionnelles - Projet Chariot
+# Functional Rules - Chariot Project
 
-Ce document centralise toutes les règles fonctionnelles du projet Chariot.  
-Chaque règle possède un identifiant unique et doit être testée.
+This document centralizes all functional rules for the Chariot project.  
+Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-001 : Standardisation du système de logs
+## FR-001: Logging System Standardization
 
-**Règle** : Utiliser exclusivement le logger Winston avec injection NestJS et contexte explicite.
+**Rule**: Use Winston logger exclusively with NestJS injection and explicit context.
 
-**Obligations** :
+**Requirements**:
 - Injection via `private readonly logger = new Logger(ClassName.name)`
-- Niveaux appropriés : `debug`, `info`, `warn`, `error` (avec stack trace)
-- Logger les événements critiques : auth, démarrage, erreurs
+- Appropriate levels: `debug`, `info`, `warn`, `error` (with stack trace)
+- Log critical events: auth, startup, errors
 
-**Interdictions** :
-- Utiliser `console.log`, `console.error`, `console.warn`, `console.debug`
-- Logger des mots de passe, tokens complets ou données sensibles
+**Prohibitions**:
+- Use `console.log`, `console.error`, `console.warn`, `console.debug`
+- Log passwords, complete tokens, or sensitive data
 
-**Références** : `services/adventure/api/src/logger/winston.logger.ts` | `docs/logger.md`
+**References**: `services/adventure/api/src/logger/winston.logger.ts` | `docs/logger.md`
