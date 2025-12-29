@@ -22,7 +22,7 @@ services:
     build:
       context: .
       dockerfile_inline: |
-        FROM quay.io/keycloak/keycloak:latest
+        FROM quay.io/keycloak/keycloak:26.4
         RUN /opt/keycloak/bin/kc.sh build --db=postgres --health-enabled=true --metrics-enabled=true
     restart: unless-stopped
     container_name: keycloak-prod
@@ -78,7 +78,7 @@ services:
       start_period: 60s
 
   keycloak-config:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:26.4
     container_name: keycloak-config-prod
     restart: "no"
     environment:

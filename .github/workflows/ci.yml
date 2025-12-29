@@ -1,43 +1,192 @@
-name: CI - Frontend & Backend
+name: CI/CD - Build, Test & Deploy
 
 on:
   pull_request:
     branches:
       - '**'
+  push:
+    branches:
+      - integ
+      - main
   workflow_dispatch:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
+  packages: write
 
-    strategy:
-      matrix:
-        project: [frontend, backend]
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+
+jobs:
+  # Job CI pour le frontend web
+  ci-web:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup Node.js for ${{ matrix.project }}
+      - name: Setup Node.js for web
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
+          cache-dependency-path: services/web/client/package-lock.json
 
-      - name: Install dependencies for project
+      - name: Install dependencies for web
         run: |
-          cd services/chariot/${{ matrix.project }}
+          cd services/web/client
           npm ci
 
-      - name: Format check for ${{ matrix.project }}
-        working-directory: ./services/chariot/${{ matrix.project }}
+      - name: Format check for web
+        working-directory: ./services/web/client
         run: npm run format
 
-      - name: Run unit tests for ${{ matrix.project }}
-        working-directory: ./services/chariot/${{ matrix.project }}
-        if: matrix.project == 'backend'
+      - name: Build web
+        working-directory: ./services/web/client
+        run: npm run build
+
+  # Job CI pour le backend adventure
+  ci-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js for adventure
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/adventure/api/package-lock.json
+
+      - name: Install dependencies for adventure
+        run: |
+          cd services/adventure/api
+          npm ci
+
+      - name: Format check for adventure
+        working-directory: ./services/adventure/api
+        run: npm run format
+
+      - name: Run unit tests for adventure
+        working-directory: ./services/adventure/api
         run: npm test
 
-      - name: Build ${{ matrix.project }}
-        working-directory: ./services/chariot/${{ matrix.project }}
+      - name: Build adventure
+        working-directory: ./services/adventure/api
         run: npm run build
+
+  # Job CD pour déployer le frontend (seulement sur push vers integ/main)
+  deploy-web:
+    runs-on: ubuntu-latest
+    needs: [ci-web]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine environment and set variables
+        id: env
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+            echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
+            echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=integration" >> $GITHUB_OUTPUT
+            echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
+            echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Chariot Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/web/api
+          file: ./services/web/api/Dockerfile.prod
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:${{ github.sha }}
+          platforms: linux/amd64
+          build-args: |
+            NODE_ENV=production
+            NEXT_PUBLIC_API_URL=${{ steps.env.outputs.api_url }}
+            NEXT_PUBLIC_KEYCLOAK_URL=${{ steps.env.outputs.keycloak_url }}
+            NEXT_PUBLIC_KEYCLOAK_REALM=chariot
+            NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
+
+      - name: Output image tags
+        run: |
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:latest"
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
+
+  # Job CD pour déployer le backend (seulement sur push vers integ/main)
+  deploy-backend:
+    runs-on: ubuntu-latest
+    needs: [ci-backend]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine environment and set variables
+        id: env
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+            echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
+            echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=integration" >> $GITHUB_OUTPUT
+            echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
+            echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Chariot Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/chariot/backend
+          file: ./services/chariot/backend/Dockerfile.prod
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ steps.env.outputs.env_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ steps.env.outputs.env_name }}:${{ github.sha }}
+          platforms: linux/amd64
+          build-args: |
+            NODE_ENV=production
+
+      - name: Output image tags
+        run: |
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ steps.env.outputs.env_name }}:latest"
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-backend-${{ steps.env.outputs.env_name }}:${{ github.sha }}"

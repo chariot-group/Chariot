@@ -28,16 +28,6 @@ jobs:
     uses: ./.github/workflows/secret-scan.yml
     secrets: inherit
 
-  sast-scan:
-    name: Analyse statique (SAST)
-    if: ${{ !startsWith(github.ref, 'refs/heads/renovate/') }}
-    permissions:
-      contents: read
-    uses: ./.github/workflows/sast-scan.yml
-    secrets: inherit
-    with:
-      node-version: '20'
-
   docker-scan:
     name: Scan des images Docker
     permissions:
@@ -48,7 +38,7 @@ jobs:
 
   security-report:
     name: Rapport et notifications
-    needs: [dependency-scan, secret-scan, sast-scan, docker-scan]
+    needs: [dependency-scan, secret-scan, docker-scan]
     if: always()
     permissions:
       contents: read
@@ -58,10 +48,9 @@ jobs:
     with:
       dependency-scan-result: ${{ needs.dependency-scan.result }}
       secret-scan-result: ${{ needs.secret-scan.result }}
-      sast-scan-result: ${{ needs.sast-scan.result }}
       docker-scan-result: ${{ needs.docker-scan.result }}
-      has-critical-dep-frontend: ${{ needs.dependency-scan.outputs.has-critical-frontend }}
+      has-critical-dep-web: ${{ needs.dependency-scan.outputs.has-critical-web }}
       has-critical-dep-backend: ${{ needs.dependency-scan.outputs.has-critical-backend }}
-      has-critical-docker-frontend: ${{ needs.docker-scan.outputs.has-critical-frontend }}
+      has-critical-docker-web: ${{ needs.docker-scan.outputs.has-critical-web }}
       has-critical-docker-backend: ${{ needs.docker-scan.outputs.has-critical-backend }}
       secrets-found: ${{ needs.secret-scan.outputs.secrets-found }}

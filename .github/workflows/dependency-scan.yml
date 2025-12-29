@@ -8,42 +8,38 @@ on:
         type: string
         default: '20'
     outputs:
-      has-critical-frontend:
-        description: "Frontend has critical vulnerabilities"
-        value: ${{ jobs.dependency-scan.outputs.has-critical-frontend }}
+      has-critical-web:
+        description: "Web has critical vulnerabilities"
+        value: ${{ jobs.dependency-scan-web.outputs.has-critical-web }}
       has-critical-backend:
         description: "Backend has critical vulnerabilities"
-        value: ${{ jobs.dependency-scan.outputs.has-critical-backend }}
+        value: ${{ jobs.dependency-scan-backend.outputs.has-critical-backend }}
 
 jobs:
-  dependency-scan:
+  dependency-scan-web:
     name: Scan des dépendances
     runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
     
-    strategy:
-      matrix:
-        project: [frontend, backend]
-    
     outputs:
-      has-critical-frontend: ${{ steps.check-vuln-frontend.outputs.has-critical }}
-      has-critical-backend: ${{ steps.check-vuln-backend.outputs.has-critical }}
+      has-critical-web: ${{ steps.check-vuln-web.outputs.has-critical }}
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup Node.js for ${{ matrix.project }}
+      - name: Setup Node.js for web
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
           cache: 'npm'
+          cache-dependency-path: services/web/client/package-lock.json
 
       - name: Install dependencies for project
         run: |
-          cd services/chariot/${{ matrix.project }}
+          cd services/web/client
           npm ci
 
       - name: Create reports directory
@@ -53,27 +49,73 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
-          scan-ref: './services/chariot/${{ matrix.project }}'
+          scan-ref: './services/web/client'
           format: 'json'
-          output: ${{ github.workspace }}/security/reports/trivy-deps-${{ matrix.project }}.json
+          output: ${{ github.workspace }}/security/reports/trivy-deps-web.json
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
 
-      - name: Check for critical vulnerabilities (frontend)
-        if: matrix.project == 'frontend'
-        id: check-vuln-frontend
+      - name: Check for critical vulnerabilities
+        id: check-vuln-web
         working-directory: ./security/reports
         continue-on-error: true
         run: |
-          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-deps-frontend.json 2>/dev/null || echo "0")
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-deps-web.json 2>/dev/null || echo "0")
           if [ "$CRITICAL" -gt 0 ]; then
             echo "has-critical=true" >> $GITHUB_OUTPUT
           else
             echo "has-critical=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check for critical vulnerabilities (backend)
-        if: matrix.project == 'backend'
+      - name: Upload dependency scan reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-scan-web
+          path: security/reports/
+          retention-days: 30
+          if-no-files-found: warn
+  
+  dependency-scan-backend:
+    name: Scan des dépendances
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    outputs:
+      has-critical-backend: ${{ steps.check-vuln-backend.outputs.has-critical }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js for adventure
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+          cache-dependency-path: services/adventure/api/package-lock.json
+
+      - name: Install dependencies for project
+        run: |
+          cd services/adventure/api
+          npm ci
+
+      - name: Create reports directory
+        run: mkdir -p security/reports
+
+      - name: Run Trivy dependency scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './services/adventure/api'
+          format: 'json'
+          output: ${{ github.workspace }}/security/reports/trivy-deps-backend.json
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Check for critical vulnerabilities
         id: check-vuln-backend
         working-directory: ./security/reports
         continue-on-error: true
@@ -89,7 +131,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dependency-scan-${{ matrix.project }}
+          name: dependency-scan-adventure
           path: security/reports/
           retention-days: 30
           if-no-files-found: warn

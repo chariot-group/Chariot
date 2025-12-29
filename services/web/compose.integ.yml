@@ -1,0 +1,28 @@
+services:
+
+  chariot-frontend:
+    image: ghcr.io/chariot-group/chariot-frontend-integration:latest
+    container_name: chariot-frontend-integ
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3000"
+    environment:
+      NODE_ENV: integration
+    networks:
+      - chariot-group-network-integ
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-frontend-integ.rule=Host(`${FRONTEND_HOST}`)"
+      - "traefik.http.routers.chariot-frontend-integ.entrypoints=websecure"
+      - "traefik.http.routers.chariot-frontend-integ.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-frontend-integ.loadbalancer.server.port=3000"
+      - "traefik.http.routers.chariot-frontend-integ.service=chariot-frontend-integ"
+      - "traefik.docker.network=traefik-public"
+
+networks:
+  chariot-group-network-integ:
+    external: true
+  traefik-public:
+    external: true
