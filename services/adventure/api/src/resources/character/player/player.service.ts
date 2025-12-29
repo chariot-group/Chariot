@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   GoneException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -14,6 +15,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter } from 'prom-client';
+import { IResponse } from '@/common/dtos/reponse.dto';
+import { Player, PlayerDocument } from './schemas/player.schema';
 
 @Injectable()
 export class PlayerService {
@@ -28,7 +31,7 @@ export class PlayerService {
   private readonly SERVICE_NAME = PlayerService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
 
-  async create(createPlayerDto: CreatePlayerDto, userId: string) {
+  async create(createPlayerDto: CreatePlayerDto, userId: string): Promise<IResponse<Player>> {
     try {
       if (createPlayerDto.groups) {
         for (const groupId of createPlayerDto.groups) {
@@ -40,12 +43,12 @@ export class PlayerService {
         }
       }
 
-      const start = Date.now();
-      const newPlayer = new this.characterModel.discriminators['player']({
+      const start: number = Date.now();
+      const newPlayer: PlayerDocument = new this.characterModel.discriminators['player']({
         ...createPlayerDto,
         createdBy: userId,
       });
-      const savedPlayer = await newPlayer.save();
+      const savedPlayer: Player = await newPlayer.save();
       await this.groupModel.updateMany(
         {
           _id: {
@@ -59,49 +62,49 @@ export class PlayerService {
       // Incrémentation du compteur Prometheus
       this.charactersCreatedCounter.inc({ user_id: userId });
 
-      const end = Date.now();
+      const end: number = Date.now();
 
-      const message = `Player created in ${end - start}ms`;
+      const message: string = `Player created in ${end - start}ms`;
       return {
         message,
         data: savedPlayer,
       };
     } catch (error) {
-      if (error instanceof BadRequestException) {
+      if (error instanceof HttpException) {
         throw error;
       }
-      let message = `Error creating Player: ${error.message}`;
+      let message: string = `Error creating Player: ${error.message}`;
       this.logger.error(message);
       throw new InternalServerErrorException(message);
     }
   }
 
-  async update(id: Types.ObjectId, updatePlayerDto: UpdatePlayerDto) {
+  async update(id: Types.ObjectId, updatePlayerDto: UpdatePlayerDto): Promise<IResponse<Character>> {
     try {
       let { groups, ...playerData } = updatePlayerDto;
 
-      let player = await this.characterModel.findById(id).exec();
+      let player: Character = await this.characterModel.findById(id).exec();
 
       //Vérification ids characters
       if (groups) {
-        const groupCheckPromises = groups.map((groupId) =>
+        const groupCheckPromises: Promise<GroupDocument | null>[] = groups.map((groupId) =>
           this.groupModel.findById(groupId).exec(),
         );
-        const groupCheckResults = await Promise.all(groupCheckPromises);
-        const invalidGroups = groupCheckResults.filter((group) => !group);
+        const groupCheckResults: (GroupDocument | null)[] = await Promise.all(groupCheckPromises);
+        const invalidGroups: (GroupDocument | null)[] = groupCheckResults.filter((group) => !group);
         if (invalidGroups.length > 0) {
-          const invalidPlayerIds = groups.filter(
+          const invalidPlayerIds: string[] = groups.filter(
             (_, index) => !groupCheckResults[index],
           );
-          const message = `Invalid group IDs: ${invalidPlayerIds.join(', ')}`;
+          const message: string = `Invalid group IDs: ${invalidPlayerIds.join(', ')}`;
           this.logger.error(message, null, this.SERVICE_NAME);
           throw new BadRequestException(message);
         }
 
-        const goneGroups = groupCheckResults.filter((group) => group.deletedAt);
+        const goneGroups: (GroupDocument | null)[] = groupCheckResults.filter((group) => group.deletedAt);
         if (goneGroups.length > 0) {
-          const goneGroupIds = goneGroups.map((group) => group._id.toString());
-          const message = `Gone group IDs: #${goneGroupIds.join(', #')}`;
+          const goneGroupIds: string[] = goneGroups.map((group) => group._id.toString());
+          const message: string = `Gone group IDs: #${goneGroupIds.join(', #')}`;
           this.logger.error(message, null, this.SERVICE_NAME);
           throw new GoneException(message);
         }
@@ -109,7 +112,7 @@ export class PlayerService {
         groups = player.groups.map((group) => group._id.toString());
       }
 
-      const groupsToRemove = player.groups.filter(
+      const groupsToRemove: Group[] = player.groups.filter(
         (oldGroups) =>
           !groups.some((newGroups) => newGroups === oldGroups._id.toString()),
       );
@@ -138,7 +141,7 @@ export class PlayerService {
       const end: number = Date.now();
 
       if (playerUpdate.modifiedCount === 0) {
-        const message = `Player #${id} not found`;
+        const message: string = `Player #${id} not found`;
         this.logger.error(message, null, this.SERVICE_NAME);
         throw new NotFoundException(message);
       }
@@ -151,13 +154,11 @@ export class PlayerService {
       };
     } catch (error) {
       if (
-        error instanceof NotFoundException ||
-        error instanceof GoneException ||
-        error instanceof BadRequestException
+        error instanceof HttpException
       ) {
         throw error;
       }
-      const message = `Error while updating #${id} Player: ${error.message}`;
+      const message: string = `Error while updating #${id} Player: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }

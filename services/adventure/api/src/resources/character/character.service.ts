@@ -13,6 +13,7 @@ import {
 } from '@/resources/character/core/schemas/character.schema';
 import { Model, SortOrder, Types } from 'mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 
 @Injectable()
 export class CharacterService {
@@ -29,7 +30,7 @@ export class CharacterService {
     userId: string,
     query: { page?: number; offset?: number; name?: string; sort?: string },
     groupId?: string,
-  ) {
+  ): Promise<IPaginatedResponse<Character[]>> {
     try {
       let { name = '', page = 1, offset = 10 } = query;
       let sort: { [key: string]: SortOrder } = { updatedAt: 'asc' };
@@ -38,7 +39,7 @@ export class CharacterService {
           ? (sort[query.sort.substring(1)] = 'desc')
           : (sort[query.sort] = 'asc');
       }
-      const filters = {
+      const filters: Record<string, any> = {
         name: { $regex: `${decodeURIComponent(name)}`, $options: 'i' },
         deletedAt: { $eq: null },
         createdBy: userId,
@@ -47,15 +48,15 @@ export class CharacterService {
         filters['groups'] = { $in: [groupId] };
       }
       const start: number = Date.now();
-      const characters = await this.characterModel
+      const characters: Character[] = await this.characterModel
         .find(filters)
         .sort(sort)
         .limit(offset)
         .skip((page - 1) * offset);
-      const nbCharacters = await this.characterModel.countDocuments(filters);
+      const nbCharacters: number = await this.characterModel.countDocuments(filters);
       const end: number = Date.now();
 
-      let message = `Characters found in ${end - start}ms`;
+      let message: string = `Characters found in ${end - start}ms`;
       this.logger.verbose(message, this.SERVICE_NAME);
       return {
         message: message,
@@ -63,51 +64,51 @@ export class CharacterService {
         pagination: {
           page: page,
           offset: offset,
-          total: nbCharacters,
+          totalItems: nbCharacters,
         },
       };
     } catch (error) {
-      const message = `Error while fetching characters: ${error.message}`;
+      const message: string = `Error while fetching characters: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
   }
 
-  async findOne(id: Types.ObjectId) {
+  async findOne(id: Types.ObjectId): Promise<IResponse<Character>> {
     try {
       const start: number = Date.now();
-      const character = await this.characterModel
+      const character: Character = await this.characterModel
         .findById(id)
         .populate('groups')
         .exec();
       const end: number = Date.now();
 
-      const message = `Character #${id} found in ${end - start}ms`;
+      const message: string = `Character #${id} found in ${end - start}ms`;
       this.logger.verbose(message, this.SERVICE_NAME);
       return {
         message,
         data: character,
       };
     } catch (error) {
-      const message = `Error while fetching character #${id}: ${error.message}`;
+      const message: string = `Error while fetching character #${id}: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
   }
 
-  async remove(id: Types.ObjectId) {
+  async remove(id: Types.ObjectId): Promise<IResponse<Character>> {
     try {
       const start: number = Date.now();
 
-      const character = await this.characterModel.findById(id).exec();
+      const character: CharacterDocument = await this.characterModel.findById(id).exec();
       if (!character) {
-        const message = `Character #${id} not found`;
+        const message: string = `Character #${id} not found`;
         this.logger.error(message, null, this.SERVICE_NAME);
         throw new NotFoundException(message);
       }
 
       if (character.deletedAt) {
-        const message = `Character #${id} already deleted`;
+        const message: string = `Character #${id} already deleted`;
         this.logger.error(message, null, this.SERVICE_NAME);
         throw new GoneException(message);
       }
@@ -122,7 +123,7 @@ export class CharacterService {
 
       const end: number = Date.now();
 
-      const message = `Character #${id} delete in ${end - start}ms`;
+      const message: string = `Character #${id} delete in ${end - start}ms`;
       this.logger.verbose(message, this.SERVICE_NAME);
       return {
         message,
@@ -132,7 +133,7 @@ export class CharacterService {
       if (error instanceof HttpException) {
         throw error;
       }
-      const message = `Error while deleting character #${id}: ${error.message}`;
+      const message: string = `Error while deleting character #${id}: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }

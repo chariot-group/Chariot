@@ -18,6 +18,7 @@ import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, CharacterDocument } from '@/resources/character/core/schemas/character.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
+import { IResponse } from '@/common/dtos/reponse.dto';
 @UseGuards(IsCreatorGuard)
 @Controller('characters')
 export class CharacterController {
@@ -53,7 +54,7 @@ export class CharacterController {
     @Query('offset', ParseNullableIntPipe) offset?: number,
     @Query('name') name?: string,
     @Query('sort') sort?: string,
-  ) {
+  ): Promise<IResponse<Character[]>> {
     const userId = request.user.keycloakId;
     return this.characterService.findAllByUser(userId, {
       page,
@@ -65,7 +66,7 @@ export class CharacterController {
 
   @IsCreator(CharacterService)
   @Get(':id')
-  async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
+  async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId): Promise<IResponse<Character>> {
     await this.validateResource(id);
 
     return this.characterService.findOne(id);
@@ -73,7 +74,7 @@ export class CharacterController {
 
   @IsCreator(CharacterService)
   @Delete(':id')
-  async remove(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
+  async remove(@Param('id', ParseMongoIdPipe) id: Types.ObjectId): Promise<IResponse<Character>> {
     await this.validateResource(id);
 
     return this.characterService.remove(id);

@@ -16,6 +16,7 @@ import {
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 
 @Injectable()
 export class CampaignService {
@@ -28,16 +29,16 @@ export class CampaignService {
     private readonly campaignsActiveCounter: Counter,
   ) { }
 
-  private readonly logger = new Logger(CampaignService.name);
-  private readonly SERVICE_NAME = CampaignService.name;
+  private readonly logger: Logger = new Logger(CampaignService.name);
+  private readonly SERVICE_NAME: string = CampaignService.name;
 
-  async create(createCampaignDto: CreateCampaignDto, userId: string) {
+  async create(createCampaignDto: CreateCampaignDto, userId: string): Promise<IResponse<Campaign>> {
     try {
       const { groups, ...campaignData } = createCampaignDto;
-      const totalGroups = groups.main.concat(groups.npc, groups.archived);
+      const totalGroups: string[] = groups.main.concat(groups.npc, groups.archived);
 
       const start: number = Date.now();
-      const campaign = await this.campaignModel.create({
+      const campaign: Campaign = await this.campaignModel.create({
         ...campaignData,
         groups,
         createdBy: userId,
@@ -51,7 +52,7 @@ export class CampaignService {
       );
       const end: number = Date.now();
 
-      const message = `Campaign created in ${end - start}ms`;
+      const message: string = `Campaign created in ${end - start}ms`;
       this.logger.verbose(message, this.SERVICE_NAME);
       return {
         message,
@@ -72,12 +73,12 @@ export class CampaignService {
       sort?: string;
       label?: string;
     },
-  ) {
+  ): Promise<IPaginatedResponse<Campaign[]>> {
     try {
       const { page = 1, offset = 10, label = '' } = query;
-      const skip = (page - 1) * offset;
+      const skip: number = (page - 1) * offset;
 
-      const filters = {
+      const filters: Record<string, any> = {
         label: { $regex: `${decodeURIComponent(label)}`, $options: 'i' },
         deletedAt: { $eq: null },
         createdBy: userId,
@@ -91,10 +92,10 @@ export class CampaignService {
           : (sort[query.sort] = 1);
       }
 
-      const totalItems = await this.campaignModel.countDocuments(filters);
+      const totalItems: number = await this.campaignModel.countDocuments(filters);
 
       const start: number = Date.now();
-      const campaigns = await this.campaignModel
+      const campaigns: CampaignDocument[] = await this.campaignModel
         .find(filters)
         .skip(skip)
         .limit(offset)
@@ -117,7 +118,7 @@ export class CampaignService {
         .exec();
       const end: number = Date.now();
 
-      let campaignsWithGroupsClean = campaigns.map((doc) => ({
+      let campaignsWithGroupsClean: Campaign[] = campaigns.map((doc) => ({
         ...doc.toObject(),
         groups: {
           main: doc.groups.main.map((group) => group._id),
@@ -144,10 +145,10 @@ export class CampaignService {
     }
   }
 
-  async findOne(id: Types.ObjectId) {
+  async findOne(id: Types.ObjectId): Promise<IResponse<Campaign>> {
     try {
       const start: number = Date.now();
-      const campaign = await this.campaignModel
+      const campaign: Campaign = await this.campaignModel
         .findById(id)
         .populate({ path: 'groups.main', populate: { path: 'characters' } })
         .populate({ path: 'groups.npc', populate: { path: 'characters' } })
@@ -168,18 +169,18 @@ export class CampaignService {
     }
   }
 
-  async update(id: Types.ObjectId, updateCampaignDto: UpdateCampaignDto) {
+  async update(id: Types.ObjectId, updateCampaignDto: UpdateCampaignDto): Promise<IResponse<Campaign>> {
     try {
-      const start = Date.now();
+      const start: number = Date.now();
 
-      const existingCampaign = await this.campaignModel.findById(id);
+      const existingCampaign: Campaign = await this.campaignModel.findById(id);
 
       // Handle label update attempt
       if (
         updateCampaignDto.label &&
         updateCampaignDto.label !== existingCampaign.label
       ) {
-        const message = `Campaign label cannot be modified`;
+        const message: string = `Campaign label cannot be modified`;
         this.logger.error(message, null, this.SERVICE_NAME);
         throw new BadRequestException(message);
       }
@@ -187,15 +188,15 @@ export class CampaignService {
       // Handle groups update if present
       if (updateCampaignDto.groups) {
         const { main = [], npc = [], archived = [] } = updateCampaignDto.groups;
-        const newGroupIds = [...main, ...npc, ...archived];
-        const currentGroupIds = [
+        const newGroupIds: string[] = [...main, ...npc, ...archived];
+        const currentGroupIds: string[] = [
           ...existingCampaign.groups.main,
           ...existingCampaign.groups.npc,
           ...existingCampaign.groups.archived,
         ].map((id) => id.toString());
 
         // Remove campaign from old groups
-        const groupsToRemove = currentGroupIds.filter(
+        const groupsToRemove: string[] = currentGroupIds.filter(
           (id) => !newGroupIds.includes(id),
         );
         if (groupsToRemove.length > 0) {
@@ -206,7 +207,7 @@ export class CampaignService {
         }
 
         // Add campaign to new groups
-        const groupsToAdd = newGroupIds.filter(
+        const groupsToAdd: string[] = newGroupIds.filter(
           (id) => !currentGroupIds.includes(id),
         );
         if (groupsToAdd.length > 0) {
@@ -218,7 +219,7 @@ export class CampaignService {
       }
 
       // Update campaign
-      const updatedCampaign = await this.campaignModel
+      const updatedCampaign: Campaign = await this.campaignModel
         .findByIdAndUpdate(
           id,
           {
@@ -233,9 +234,9 @@ export class CampaignService {
           { path: 'groups.archived', populate: { path: 'characters' } },
         ]);
 
-      const end = Date.now();
+      const end: number = Date.now();
 
-      const message = `Campaign #${id} updated in ${end - start}ms`;
+      const message: string = `Campaign #${id} updated in ${end - start}ms`;
       this.logger.verbose(message, this.SERVICE_NAME);
 
       return {
@@ -246,17 +247,17 @@ export class CampaignService {
       if (error instanceof HttpException) {
         throw error;
       }
-      const message = `Error updating campaign #${id}: ${error.message}`;
+      const message: string = `Error updating campaign #${id}: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
   }
 
-  async remove(id: Types.ObjectId) {
+  async remove(id: Types.ObjectId): Promise<IResponse<Campaign>> {
     try {
       const start: number = Date.now();
 
-      const campaign = await this.campaignModel.findById(id).exec();
+      const campaign: CampaignDocument = await this.campaignModel.findById(id).exec();
 
       const groups: string[] = ["main", "npc", "archived"];
       groups.forEach((group) => {
@@ -276,14 +277,14 @@ export class CampaignService {
 
       const end: number = Date.now();
 
-      const message = `Campaign #${id} delete in ${end - start}ms`;
+      const message: string = `Campaign #${id} delete in ${end - start}ms`;
       this.logger.verbose(message, this.SERVICE_NAME);
       return {
         message,
         data: campaign,
       };
     } catch (error) {
-      const message = `Error while deleting campaign #${id}: ${error.message}`;
+      const message: string = `Error while deleting campaign #${id}: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }

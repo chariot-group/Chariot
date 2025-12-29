@@ -21,3 +21,5 @@ build
 security/reports/*
 !security/reports/.gitkeep
 *.sarif
+
+.github/copilot-instructions.md
