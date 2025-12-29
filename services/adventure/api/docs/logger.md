@@ -49,6 +49,95 @@ export class AppController {
 
 Adding the second parameter (`this.SERVICE_NAME`) specifies a context for each log, making tracking and debugging easier.
 
+## Usage in Guards and Interceptors
+
+Guards and interceptors should also use the Winston logger to trace authentication and authorization events:
+
+```typescript
+import { 
+  CanActivate, 
+  ExecutionContext, 
+  Injectable, 
+  Logger 
+} from '@nestjs/common';
+
+@Injectable()
+export class MyGuard implements CanActivate {
+  private readonly logger = new Logger(MyGuard.name);
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    try {
+      // Guard logic
+      this.logger.log('Access granted for user');
+      return true;
+    } catch (error) {
+      this.logger.error(`Access denied: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+}
+```
+
+## Best Practices
+
+### 1. Always Provide Context
+
+Always include the class name as context to identify the log source:
+
+```typescript
+private readonly logger = new Logger(MyClass.name);
+```
+
+### 2. Use Appropriate Log Levels
+
+- `debug`: Development information, verbose details
+- `log` (info): Normal system operations, user actions
+- `warn`: Unusual situations that don't prevent operation
+- `error`: Errors requiring attention (always include stack trace)
+
+### 3. Include Stack Traces for Errors
+
+Always pass the stack trace as the second parameter for errors:
+
+```typescript
+this.logger.error(`Operation failed: ${error.message}`, error.stack);
+```
+
+### 4. Never Log Sensitive Information
+
+❌ **Never log:**
+- Passwords
+- Complete tokens (JWT, API keys)
+- Credit card numbers
+- Personal identification numbers
+
+✅ **Instead, log:**
+- Partial identifiers (first/last characters)
+- User IDs
+- Request metadata
+
+Example:
+```typescript
+// ❌ Bad
+this.logger.log(`Token: ${token}`);
+
+// ✅ Good
+this.logger.log(`Token received for user: ${userId}`);
+```
+
+## Forbidden Practices
+
+**Never use `console.log`, `console.error`, `console.warn`, or `console.debug` in production code.**
+
+All logging must go through the Winston logger to ensure:
+- Consistent log format
+- Proper log level filtering
+- File persistence in production
+- Centralized log management
+
+See the functional rule **FR-001** in `docs/functional-rules.md` for complete requirements.
+
+
 ## Best Practices
 
 - Always use the logger instead of `console.log` (even if it works).
