@@ -45,10 +45,10 @@ else
 	@echo "$(YELLOW)Démarrage de tous les services ($(ENV))...$(NC)"
 	@for dir in $(SERVICES_DIR)/*/; do \
 		service=$$(basename $$dir); \
-		compose_file="$$dir/compose.$(ENV).yml"; \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Démarrage de $$service...$(NC)"; \
-			cd $$dir && docker compose -f compose.$(ENV).yml up --build -d && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up --build -d && cd ../..; \
 		else \
 			echo "$(RED)✗ Fichier $$compose_file introuvable$(NC)"; \
 		fi; \
@@ -65,10 +65,10 @@ else
 	@echo "$(YELLOW)Arrêt de tous les services ($(ENV))...$(NC)"
 	@for dir in $(SERVICES_DIR)/*/; do \
 		service=$$(basename $$dir); \
-		compose_file="$$dir/compose.$(ENV).yml"; \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Arrêt de $$service...$(NC)"; \
-			cd $$dir && docker compose -f compose.$(ENV).yml down && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml down && cd ../..; \
 		fi; \
 	done
 	@echo "$(GREEN)✓ Tous les services sont arrêtés$(NC)"
@@ -80,9 +80,9 @@ ifdef SERVICE
 else
 	@for dir in $(SERVICES_DIR)/*/; do \
 		service=$$(basename $$dir); \
-		compose_file="$$dir/compose.$(ENV).yml"; \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
-			cd $$dir && docker compose -f compose.$(ENV).yml down -v && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml down -v && cd ../..; \
 		fi; \
 	done
 endif
@@ -100,9 +100,9 @@ endif
 logs-all: ## Affiche les logs de tous les services
 	@for dir in $(SERVICES_DIR)/*/; do \
 		service=$$(basename $$dir); \
-		compose_file="$$dir/compose.$(ENV).yml"; \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
-			cd $$dir && docker compose -f compose.$(ENV).yml logs --tail=50 && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml logs --tail=50 && cd ../..; \
 		fi; \
 	done
 
@@ -110,10 +110,10 @@ ps: ## Liste tous les conteneurs en cours d'exécution
 	@echo "$(BLUE)État des services:$(NC)"
 	@for dir in $(SERVICES_DIR)/*/; do \
 		service=$$(basename $$dir); \
-		compose_file="$$dir/compose.$(ENV).yml"; \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(YELLOW)→ $$service:$(NC)"; \
-			cd $$dir && docker compose -f compose.$(ENV).yml ps && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml ps && cd ../..; \
 		fi; \
 	done
 
@@ -123,10 +123,10 @@ ifdef SERVICE
 else
 	@for dir in $(SERVICES_DIR)/*/; do \
 		service=$$(basename $$dir); \
-		compose_file="$$dir/compose.$(ENV).yml"; \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Build de $$service...$(NC)"; \
-			cd $$dir && docker compose -f compose.$(ENV).yml build && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml build && cd ../..; \
 		fi; \
 	done
 	@echo "$(GREEN)✓ Build terminé$(NC)"

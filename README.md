@@ -11,7 +11,7 @@ Chariot/
 ├── services/               # Main Chariot microservice
 │   ├── adventure/          # NestJS 11 API
 │   ├── sso/                # Keycloak
-│   └── web/                # NextJS 11 Frontend
+│   └── web/                # NextJS 15 Frontend
 └── docs/                   # Documentations
 ```
 
