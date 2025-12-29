@@ -3,6 +3,7 @@ import {
     ExecutionContext,
     Injectable,
     UnauthorizedException,
+    Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
@@ -11,6 +12,7 @@ import * as jwksClient from 'jwks-rsa';
 
 @Injectable()
 export class KeycloakAuthGuard implements CanActivate {
+    private readonly logger = new Logger(KeycloakAuthGuard.name);
     private jwksClient: jwksClient.JwksClient;
     private keycloakUrl: string;
     private realm: string;
@@ -56,14 +58,14 @@ export class KeycloakAuthGuard implements CanActivate {
         const authHeader = request.headers.authorization;
 
         if (!authHeader) {
-            console.error('❌ No authorization header');
+            this.logger.error('No authorization header');
             throw new UnauthorizedException('No authorization header');
         }
 
         const [bearer, token] = authHeader.split(' ');
 
         if (bearer !== 'Bearer' || !token) {
-            console.error('❌ Invalid authorization format');
+            this.logger.error('Invalid authorization format');
             throw new UnauthorizedException('Invalid authorization format');
         }
 
@@ -82,7 +84,7 @@ export class KeycloakAuthGuard implements CanActivate {
 
             return true;
         } catch (error) {
-            console.error('❌ Token validation failed:', error.message);
+            this.logger.error(`Token validation failed: ${error.message}`, error.stack);
             throw new UnauthorizedException('Invalid token');
         }
     }
@@ -105,7 +107,7 @@ export class KeycloakAuthGuard implements CanActivate {
             // Récupérer la clé publique correspondante
             this.jwksClient.getSigningKey(kid, (err, key) => {
                 if (err) {
-                    console.error('Error getting signing key:', err);
+                    this.logger.error(`Error getting signing key: ${err.message}`, err.stack);
                     return reject(err);
                 }
 
@@ -122,7 +124,7 @@ export class KeycloakAuthGuard implements CanActivate {
                     },
                     (verifyErr, decoded) => {
                         if (verifyErr) {
-                            console.error('JWT verify error:', verifyErr.message);
+                            this.logger.error(`JWT verify error: ${verifyErr.message}`, verifyErr.stack);
                             return reject(verifyErr);
                         }
                         resolve(decoded);
