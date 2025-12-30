@@ -22,15 +22,16 @@ help: ## Affiche cette aide
 	@echo ""
 	@echo "$(BLUE)Variables:$(NC)"
 	@echo "  $(GREEN)ENV$(NC)              Environnement (dev|integ|prod) [défaut: dev]"
-	@echo "  $(GREEN)SERVICE$(NC)          Service spécifique à cibler"
+	@echo "  $(GREEN)SERVICE$(NC)          Service spécifique à cibler (adventure|gateway|sso|web)"
 	@echo ""
 	@echo "$(BLUE)Exemples:$(NC)"
 	@echo "  make up ENV=dev"
 	@echo "  make down ENV=prod"
 	@echo "  make logs SERVICE=adventure"
+	@echo "  make logs SERVICE=gateway"
 	@echo "  make restart SERVICE=web ENV=integ"
 	@echo "  make test SERVICE=adventure"
-	@echo "  make test-cov SERVICE=adventure"
+	@echo "  make test-cov SERVICE=gateway"
 
 network: ## Crée le réseau Docker si nécessaire
 	@docker network inspect $(NETWORK_NAME) >/dev/null 2>&1 || \
