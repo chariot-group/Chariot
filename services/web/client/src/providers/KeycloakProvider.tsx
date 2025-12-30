@@ -3,7 +3,7 @@
 import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { setKeycloakInstance } from "@/services/apiConfig";
+import { setKeycloakInstance } from "@/services/api.service";
 
 interface KeycloakContextType {
   keycloak: Keycloak | null;
@@ -89,7 +89,6 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
         setLoading(false);
       } catch (error) {
-        console.error("❌ Failed to initialize Keycloak:", error);
         setLoading(false);
       }
     };
