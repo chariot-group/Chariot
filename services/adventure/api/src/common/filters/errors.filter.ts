@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { ProblemDetailsDto } from "@/common/dtos/errors.dto";
 
 @Catch()
-export class ProblemDetailsFilter implements ExceptionFilter {
+export class ErrorDetailsFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
