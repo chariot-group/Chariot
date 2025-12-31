@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { ServicesConfig } from '@/proxy/services.config';
 
 @Injectable()
 export class HealthService {
   private readonly logger = new Logger(HealthService.name);
-  private readonly adventureServiceUrl: string;
+  private readonly servicesConfig: ServicesConfig;
 
   constructor(private readonly httpService: HttpService) {
-    this.adventureServiceUrl =
-      process.env.ADVENTURE_SERVICE_URL || 'http://chariot-adventure:9000';
+    this.servicesConfig = new ServicesConfig();
   }
 
   async getHealth() {
@@ -22,25 +22,32 @@ export class HealthService {
   }
 
   async getReadiness() {
-    const checks = {
+    const checks: Record<string, boolean> = {
       gateway: true,
-      adventure: false,
     };
 
-    // Check adventure service connectivity
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.adventureServiceUrl}/`, {
-          timeout: 5000,
-        }),
-      );
-      checks.adventure = response.status === 200;
-    } catch (error) {
-      this.logger.warn(`Adventure service health check failed: ${error.message}`);
-      checks.adventure = false;
-    }
+    // Check all configured services connectivity
+    const services = this.servicesConfig.getEnabledServices();
 
-    const isReady = Object.values(checks).every(check => check === true);
+    await Promise.all(
+      services.map(async (service) => {
+        try {
+          const response = await firstValueFrom(
+            this.httpService.get(`${service.url}/`, {
+              timeout: 5000,
+            }),
+          );
+          checks[service.name] = response.status === 200;
+        } catch (error) {
+          this.logger.warn(
+            `${service.name} service health check failed: ${error.message}`,
+          );
+          checks[service.name] = false;
+        }
+      }),
+    );
+
+    const isReady = Object.values(checks).every((check) => check === true);
 
     return {
       status: isReady ? 'ready' : 'not_ready',

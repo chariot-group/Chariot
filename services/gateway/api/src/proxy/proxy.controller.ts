@@ -14,17 +14,57 @@ import { ProxyService } from '@/proxy/proxy.service';
 export class ProxyController {
   private readonly logger = new Logger(ProxyController.name);
 
-  constructor(private readonly proxyService: ProxyService) {}
+  constructor(private readonly proxyService: ProxyService) { }
 
   @All('*')
   async proxyRequest(@Req() req: Request, @Res() res: Response) {
     try {
-      const targetUrl = req.originalUrl.replace(/^\/api/, '');
-      this.logger.debug(`Proxying request to adventure service: ${req.method} ${targetUrl}`);
+      // Extract service name and path from URL
+      // Expected format: /api/{service}/{path}
+      const urlWithoutPrefix = req.originalUrl.replace(/^\/api/, '');
+      const segments = urlWithoutPrefix.split('/').filter(Boolean);
 
-      const response = await this.proxyService.forwardToAdventure(
+      if (segments.length === 0) {
+        // No service specified - return available services
+        const services = this.proxyService.getAvailableServices();
+        return res.status(200).json({
+          message: 'API Gateway',
+          available_services: services,
+        });
+      }
+
+      // Check if first segment is a configured service
+      const potentialService = segments[0];
+      let serviceName: string;
+      let targetPath: string;
+
+      if (this.proxyService.hasService(potentialService)) {
+        // First segment is a service name: /api/{service}/{path}
+        serviceName = potentialService;
+        targetPath = '/' + segments.slice(1).join('/');
+      } else {
+        // Fallback to Adventure service for backward compatibility: /api/{path}
+        serviceName = 'adventure';
+        targetPath = '/' + segments.join('/');
+        this.logger.debug(
+          `No service '${potentialService}' found, falling back to adventure service`,
+        );
+      }
+
+      // Preserve query string if present
+      const queryString = req.originalUrl.includes('?')
+        ? '?' + req.originalUrl.split('?')[1]
+        : '';
+      const fullTargetPath = targetPath + queryString;
+
+      this.logger.debug(
+        `Proxying request to ${serviceName} service: ${req.method} ${fullTargetPath}`,
+      );
+
+      const response = await this.proxyService.forward(
+        serviceName,
         req.method,
-        targetUrl,
+        fullTargetPath,
         req.body,
         req.headers as Record<string, string>,
       );
@@ -42,6 +82,13 @@ export class ProxyController {
 
       if (error.response) {
         res.status(error.response.status).send(error.response.data);
+      } else if (error.status) {
+        // Handle NestJS exceptions (like BadRequestException)
+        res.status(error.status).json({
+          statusCode: error.status,
+          message: error.message,
+          error: error.name,
+        });
       } else {
         throw new HttpException(
           'Service temporarily unavailable',

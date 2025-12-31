@@ -19,6 +19,7 @@ services:
       GATEWAY_LOG_LEVEL: ${GATEWAY_LOG_LEVEL:-debug}
       GATEWAY_RATE_LIMIT_MAX: ${GATEWAY_RATE_LIMIT_MAX:-100}
       GATEWAY_RATE_LIMIT_WINDOW: ${GATEWAY_RATE_LIMIT_WINDOW:-60000}
+      # Backend services - add more as needed with pattern {SERVICE_NAME}_SERVICE_URL
       ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL:-http://chariot-adventure:9000}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       KEYCLOAK_URL: ${KEYCLOAK_URL}
