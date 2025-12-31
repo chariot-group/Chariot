@@ -8,11 +8,12 @@ This project follows a microservices architecture with the following structure:
 
 ```
 Chariot/
-├── services/               # Main Chariot microservice
-│   ├── adventure/          # NestJS 11 API
-│   ├── sso/                # Keycloak
+├── services/               # Microservices
+│   ├── adventure/          # NestJS 11 API (Backend)
+│   ├── gateway/            # API Gateway (NestJS 10)
+│   ├── sso/                # Keycloak (Authentication)
 │   └── web/                # NextJS 15 Frontend
-└── docs/                   # Documentations
+└── docs/                   # Documentation
 ```
 
 ## 🚀 Quick Start
@@ -84,10 +85,11 @@ Chariot/
 
 ## 📦 Microservices
 
-### Chariot Service
-- **Adventure**: `http://localhost:9000`
-- **Frontend**: `http://localhost:3000`
-- **SSO**: `http://localhost:8080`
+### Chariot Services
+- **Gateway**: `http://localhost:8082` (API Gateway)
+- **Adventure**: `http://localhost:9000` (Backend API - internal)
+- **Frontend**: `http://localhost:3000` (Web Client)
+- **SSO**: `http://localhost:8180` (Keycloak)
 
 ## 🛠️ Development
 

@@ -121,7 +121,15 @@ export class CampaignController {
       'Archived',
     );
 
-    const userId = request.user.keycloakId;
+    // Debug logging
+    this.logger.debug(`Request user object: ${JSON.stringify(request.user)}`, this.CONTROLLER_NAME);
+    
+    const userId = request.user?.keycloakId;
+    
+    if (!userId) {
+      this.logger.error(`User authentication failed - user object: ${JSON.stringify(request.user)}`, null, this.CONTROLLER_NAME);
+      throw new BadRequestException('User authentication required');
+    }
 
     return this.campaignService.create(createCampaignDto, userId);
   }

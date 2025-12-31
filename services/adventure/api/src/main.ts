@@ -72,6 +72,7 @@ async function bootstrap() {
   const port = 9000;
   await app.listen(port);
 
-  console.log(`Chariot API running on port ${port}`);
+  // Utiliser instance.info au lieu de app.get('Logger')
+  instance.info(`Chariot API running on port ${port}`);
 }
 bootstrap();

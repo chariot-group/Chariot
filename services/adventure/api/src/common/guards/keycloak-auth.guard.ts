@@ -14,20 +14,24 @@ import * as jwksClient from 'jwks-rsa';
 export class KeycloakAuthGuard implements CanActivate {
     private readonly logger = new Logger(KeycloakAuthGuard.name);
     private jwksClient: jwksClient.JwksClient;
-    private keycloakUrl: string;
+    private keycloakInternalUrl: string;
+    private keycloakExternalUrl: string;
     private realm: string;
     private clientId: string;
 
     constructor(private reflector: Reflector) {
-        this.keycloakUrl = process.env.KEYCLOAK_URL;
+        // URL interne pour récupérer les clés JWKS
+        this.keycloakInternalUrl = process.env.KEYCLOAK_INTERNAL_URL || process.env.KEYCLOAK_URL;
+        // URL externe pour accepter les tokens émis par le frontend
+        this.keycloakExternalUrl = process.env.KEYCLOAK_URL;
         this.realm = process.env.KEYCLOAK_REALM;
         this.clientId = process.env.KEYCLOAK_CLIENT_ID;
 
-        if (!this.keycloakUrl || !this.realm) {
-            throw new Error('KEYCLOAK_URL and KEYCLOAK_REALM must be defined');
+        if (!this.keycloakInternalUrl || !this.realm) {
+            throw new Error('KEYCLOAK_INTERNAL_URL (or KEYCLOAK_URL) and KEYCLOAK_REALM must be defined');
         }
 
-        const jwksUri = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
+        const jwksUri = `${this.keycloakInternalUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
 
         this.jwksClient = jwksClient({
             jwksUri,
@@ -73,9 +77,20 @@ export class KeycloakAuthGuard implements CanActivate {
             // Valider et décoder le token
             const decoded = await this.verifyToken(token);
 
+            // Debug: voir le contenu du token décodé
+            this.logger.debug(`Decoded token: ${JSON.stringify(decoded)}`);
+
             // Attacher les informations de l'utilisateur à la requête
+            // Note: Utiliser preferred_username comme fallback si sub n'est pas disponible
+            const userId = decoded.sub || decoded.preferred_username || decoded.email;
+            
+            if (!userId) {
+                this.logger.error('No user identifier found in token (sub, preferred_username, or email)');
+                throw new UnauthorizedException('Invalid token: no user identifier');
+            }
+
             request.user = {
-                keycloakId: decoded.sub,
+                keycloakId: userId,
                 email: decoded.email,
                 username: decoded.preferred_username,
                 realm_access: decoded.realm_access,
@@ -113,20 +128,32 @@ export class KeycloakAuthGuard implements CanActivate {
 
                 const signingKey = key.getPublicKey();
 
-                // Vérifier le token avec la clé publique
+                // Vérifier le token avec la clé publique (sans vérifier l'issuer strictement)
                 jwt.verify(
                     token,
                     signingKey,
                     {
                         algorithms: ['RS256'],
-                        issuer: `${this.keycloakUrl}/realms/${this.realm}`,
-                        audience: this.clientId, // Optionnel, décommenter si nécessaire
+                        // Ne pas vérifier l'issuer ici, on le valide manuellement après
                     },
                     (verifyErr, decoded) => {
                         if (verifyErr) {
                             this.logger.error(`JWT verify error: ${verifyErr.message}`, verifyErr.stack);
                             return reject(verifyErr);
                         }
+
+                        // Valider manuellement l'issuer (accepter URL interne ou externe)
+                        const validIssuers = [
+                            `${this.keycloakInternalUrl}/realms/${this.realm}`,
+                            `${this.keycloakExternalUrl}/realms/${this.realm}`,
+                        ].filter(Boolean);
+
+                        const payload = decoded as jwt.JwtPayload;
+                        if (payload.iss && !validIssuers.includes(payload.iss)) {
+                            this.logger.error(`Invalid issuer: ${payload.iss}. Expected one of: ${validIssuers.join(', ')}`);
+                            return reject(new Error('Invalid token issuer'));
+                        }
+
                         resolve(decoded);
                     },
                 );

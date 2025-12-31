@@ -1,5 +1,6 @@
 import { Logger, Controller, Get } from '@nestjs/common';
 import { AppService } from '@/app.service';
+import { Public } from '@/common/decorators/public.decorator';
 import { ApiExcludeController } from '@nestjs/swagger';
 
 @ApiExcludeController()
@@ -12,9 +13,13 @@ export class AppController {
 
   readonly SERVICE = AppController.name;
 
+  @Public()
   @Get()
-  getHello(): string {
-    this.logger.log('Say Hello World', this.SERVICE);
-    return this.appService.getHello();
+  getHealth() {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      service: 'chariot-adventure',
+    };
   }
 }

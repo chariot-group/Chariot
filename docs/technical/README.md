@@ -6,6 +6,12 @@ service-specific documentation available in the repository.
 ## 📡 API
 - **Response conventions**: [API_RESPONSE_CONVENTIONS.md](API_RESPONSE_CONVENTIONS.md)
 
+## � Gateway
+- **API Gateway**: [services/gateway](../../services/gateway)
+  - Centralized entry point on port 8082
+  - Handles routing (`/api/*` → Adventure), rate limiting, CORS, health checks
+  - Prometheus metrics on `/metrics`
+
 ## 🚀 Deployment
 - Deployment configurations are mainly located in `compose.*.yml` files at
   each service level (for example: `services/*/compose.dev.yml`,
@@ -36,13 +42,15 @@ service-specific documentation available in the repository.
 ## 📋 Architecture (overview)
 
 - Monorepo containing multiple services:
-  - `services/adventure` — API / backend
-  - `services/web` — UI (client)
-  - `services/sso` — Keycloak / SSO configuration
+  - `services/gateway` — API Gateway (port 8082)
+  - `services/adventure` — API / backend (port 9000)
+  - `services/web` — UI (client, port 3000)
+  - `services/sso` — Keycloak / SSO configuration (port 8081)
 - Each service contains its own composition files (`compose.*.yml`) for
   `dev`, `integ`, and `prod` environments.
 
 ## 🔎 Where to start
+- For gateway/routing questions, see `services/gateway`
 - For authentication questions, see `services/sso` (Keycloak)
 - For frontend, see `services/web/client/docs`
 - For API and backend configuration, see `services/adventure/api/docs`
