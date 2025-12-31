@@ -78,11 +78,28 @@ export class CampaignService {
       const { page = 1, offset = 10, label = '' } = query;
       const skip: number = (page - 1) * offset;
 
-      const filters: Record<string, any> = {
-        label: { $regex: `${decodeURIComponent(label)}`, $options: 'i' },
+      // Decode and clean label - remove any query string artifacts
+      let cleanedLabel = decodeURIComponent(label).trim();
+      // Remove query string if accidentally included
+      if (cleanedLabel.startsWith('?')) {
+        cleanedLabel = '';
+      }
+
+      // Escape special regex characters and handle empty label
+      const escapedLabel = cleanedLabel.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        '\\$&',
+      );
+
+      const filters: any = {
         deletedAt: { $eq: null },
         createdBy: userId,
       };
+
+      // Only add label filter if label is not empty
+      if (escapedLabel) {
+        filters.label = { $regex: escapedLabel, $options: 'i' };
+      }
 
       const sort: { [key: string]: 1 | -1 } = { updatedAt: -1 };
 
@@ -121,9 +138,9 @@ export class CampaignService {
       let campaignsWithGroupsClean: Campaign[] = campaigns.map((doc) => ({
         ...doc.toObject(),
         groups: {
-          main: doc.groups.main.map((group) => group._id),
-          npc: doc.groups.npc.map((group) => group._id),
-          archived: doc.groups.archived.map((group) => group._id),
+          main: doc.groups.main.filter(group => group).map((group) => group._id),
+          npc: doc.groups.npc.filter(group => group).map((group) => group._id),
+          archived: doc.groups.archived.filter(group => group).map((group) => group._id),
         },
       }));
 
