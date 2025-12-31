@@ -56,18 +56,27 @@ const CampaignListPanel = ({
         const response = await CampaignService.getAllCampaigns({
           page: nextPage,
           offset,
-          label: encodeURIComponent(search),
+          label: search, // Removed encodeURIComponent - axios handles it
         });
         if (response.statusCode === 401) {
           return;
         }
-        setHasMore(response.data.length === offset);
+
+        // Extract data and pagination from API response
+        const campaignsData = response.data || [];
+        const totalItems = response.pagination?.totalItems || 0;
+
         if (reset) {
-          setCampaigns(response.data);
-          setSelectedCampaign(response.data[0] || null);
+          setCampaigns(campaignsData);
+          setSelectedCampaign(campaignsData[0] || null);
+          // After reset, check if there are more items
+          setHasMore(campaignsData.length < totalItems);
         } else {
           setCampaigns((prev) => {
-            return [...prev, ...response.data];
+            const newCampaigns = [...prev, ...campaignsData];
+            // Check if we've loaded all items
+            setHasMore(newCampaigns.length < totalItems);
+            return newCampaigns;
           });
         }
         setPage(nextPage);
@@ -150,9 +159,8 @@ const CampaignListPanel = ({
             campaigns.map((campaign) => (
               <Card
                 key={campaign._id}
-                className={`flex p-2 gap-3 border-ring shadow-md hover:shadow-[inset_0_0_0_1px_hsl(var(--ring))] cursor-pointer bg-background ${
-                  selectedCampaign?._id === campaign._id ? "shadow-[inset_0_0_0_1px_hsl(var(--ring))]" : "border"
-                }`}
+                className={`flex p-2 gap-3 border-ring shadow-md hover:shadow-[inset_0_0_0_1px_hsl(var(--ring))] cursor-pointer bg-background ${selectedCampaign?._id === campaign._id ? "shadow-[inset_0_0_0_1px_hsl(var(--ring))]" : "border"
+                  }`}
                 onClick={() => setSelectedCampaign(campaign)}>
                 <span className="text-foreground font-bold">{campaign.label}</span>
               </Card>
