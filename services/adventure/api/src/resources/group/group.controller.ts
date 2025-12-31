@@ -27,6 +27,7 @@ import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { Campaign, CampaignDocument } from '@/resources/campaign/schemas/campaign.schema';
 import { Character, CharacterDocument } from '@/resources/character/core/schemas/character.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 
 @UseGuards(IsCreatorGuard)
 @Controller('groups')
@@ -109,7 +110,7 @@ export class GroupController {
   }
 
   @Post()
-  async create(@Req() request, @Body() createGroupDto: CreateGroupDto) {
+  async create(@Req() request, @Body() createGroupDto: CreateGroupDto): Promise<IResponse<Group>> {
     await this.validateCharacterRelations(createGroupDto.characters);
     await this.validatecampaignRelations(
       createGroupDto.campaigns.map((campaign) => campaign.idCampaign),
@@ -128,7 +129,7 @@ export class GroupController {
     @Query('label') label?: string,
     @Query('sort') sort?: string,
     @Query('onlyWithMembers') onlyWithMembers?: boolean,
-  ) {
+  ): Promise<IPaginatedResponse<Group[]>> {
     const userId = request.user.keycloakId;
     return this.groupService.findAllByUser(userId, {
       page,
@@ -148,7 +149,7 @@ export class GroupController {
     @Query('offset', ParseNullableIntPipe) offset?: number,
     @Query('name') name?: string,
     @Query('sort') sort?: string,
-  ) {
+  ): Promise<IPaginatedResponse<Character[]>> {
     const userId = request.user.keycloakId;
 
     return this.characterService.findAllByUser(
@@ -160,7 +161,7 @@ export class GroupController {
 
   @IsCreator(GroupService)
   @Get(':id')
-  async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
+  async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId): Promise<IResponse<Group>> {
     await this.validateResource(id);
 
     return this.groupService.findOne(id);
@@ -168,7 +169,7 @@ export class GroupController {
 
   @IsCreator(GroupService)
   @Patch(':id')
-  async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updateGroupDto: UpdateGroupDto) {
+  async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updateGroupDto: UpdateGroupDto): Promise<IResponse<Group>> {
     await this.validateResource(id);
 
     const { characters, campaigns } = updateGroupDto;
@@ -188,7 +189,7 @@ export class GroupController {
 
   @IsCreator(GroupService)
   @Delete(':id')
-  async remove(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
+  async remove(@Param('id', ParseMongoIdPipe) id: Types.ObjectId): Promise<IResponse<Group>> {
     await this.validateResource(id);
 
     return this.groupService.remove(id);
