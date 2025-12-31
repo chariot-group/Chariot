@@ -86,7 +86,7 @@ describe('CharacterService - findAllByUser', () => {
       pagination: {
         page: 1,
         offset: 10,
-        total: 1,
+        totalItems: 1,
       },
     });
 
@@ -119,7 +119,7 @@ describe('CharacterService - findAllByUser', () => {
     expect(characterModel.sort).toHaveBeenCalledWith({ updatedAt: 'asc' });
     expect(characterModel.limit).toHaveBeenCalledWith(10);
     expect(characterModel.skip).toHaveBeenCalledWith(0);
-    expect(result.pagination).toEqual({ page: 1, offset: 10, total: 0 });
+    expect(result.pagination).toEqual({ page: 1, offset: 10, totalItems: 0 });
   });
 
   it('should handle ascending sort without dash prefix', async () => {

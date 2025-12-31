@@ -253,7 +253,7 @@ describe('GroupService', () => {
       expect(result).toEqual({
         message: expect.stringMatching(/Groups found in \d+ms/),
         data: expect.any(Array),
-        pagination: { page: 1, offset: 10, total: 1 }
+        pagination: { page: 1, offset: 10, totalItems: 1 }
       });
 
       loggerSpy.mockRestore();

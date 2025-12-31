@@ -22,6 +22,7 @@ import {
 } from '@/resources/character/core/schemas/character.schema';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter } from 'prom-client';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 
 @Injectable()
 export class GroupService {
@@ -37,12 +38,12 @@ export class GroupService {
   private readonly SERVICE_NAME = GroupService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
 
-  async create(createGroupDto: CreateGroupDto, userId: string) {
+  async create(createGroupDto: CreateGroupDto, userId: string): Promise<IResponse<Group>> {
     try {
       const { characters = [], campaigns, ...groupData } = createGroupDto;
 
       const start: number = Date.now();
-      const group = await this.groupModel.create({
+      const group: Group = await this.groupModel.create({
         ...groupData,
         characters,
         campaigns: campaigns.map((campaign) => campaign.idCampaign),
@@ -67,14 +68,14 @@ export class GroupService {
 
       const end: number = Date.now();
 
-      const message = `Group created in ${end - start}ms`;
+      const message: string = `Group created in ${end - start}ms`;
       this.logger.verbose(message, this.SERVICE_NAME);
       return {
         message,
         data: group,
       };
     } catch (error) {
-      const errorMessage = `Error while creating group: ${error.message}`;
+      const errorMessage: string = `Error while creating group: ${error.message}`;
       this.logger.error(errorMessage, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(errorMessage);
     }
@@ -91,7 +92,7 @@ export class GroupService {
     },
     campaignId?: string,
     type: 'all' | 'main' | 'npc' | 'archived' = 'all',
-  ) {
+  ): Promise<IPaginatedResponse<Group[]>> {
     try {
       const {
         label = '',
@@ -108,7 +109,7 @@ export class GroupService {
           : (sortCriteria[query.sort] = 'asc');
       }
 
-      const filters: any = {
+      const filters: Record<string, any> = {
         label: { $regex: `${decodeURIComponent(label)}`, $options: 'i' },
         deletedAt: { $eq: null },
         createdBy: userId,
@@ -121,7 +122,7 @@ export class GroupService {
       if (campaignId) {
         const campaign = await this.campaignModel.findById(campaignId).lean();
         if (!campaign) {
-          const message = `Error while fetching groups: Campaign #${campaignId} not found`;
+          const message: string = `Error while fetching groups: Campaign #${campaignId} not found`;
           this.logger.error(message, null, this.SERVICE_NAME);
           throw new NotFoundException(message);
         }
@@ -150,17 +151,17 @@ export class GroupService {
       }
 
       const start: number = Date.now();
-      const groups = await this.groupModel
+      const groups: Group[] = await this.groupModel
         .find(filters)
         .sort({ ...sortCriteria, _id: 'asc' })
         .limit(offset)
         .skip((page - 1) * offset)
         .exec();
 
-      const totalItems = await this.groupModel.countDocuments(filters);
+      const totalItems: number = await this.groupModel.countDocuments(filters);
       const end: number = Date.now();
 
-      const message = `Groups found in ${end - start}ms`;
+      const message: string = `Groups found in ${end - start}ms`;
       this.logger.verbose(message);
 
       return {
@@ -169,12 +170,12 @@ export class GroupService {
         pagination: {
           page: page,
           offset: offset,
-          total: totalItems,
+          totalItems: totalItems,
         },
       };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      const errorMessage = `Error while fetching groups: ${error.message}`;
+      const errorMessage: string = `Error while fetching groups: ${error.message}`;
       this.logger.error(errorMessage);
       throw new InternalServerErrorException(errorMessage);
     }

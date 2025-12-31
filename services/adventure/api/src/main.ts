@@ -7,6 +7,7 @@ import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
 import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
+import { ErrorDetailsFilter } from '@/common/filters/errors.filter';
 
 async function bootstrap() {
   let AppModuleToUse = AppModule;
@@ -42,6 +43,8 @@ async function bootstrap() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
+
+  app.useGlobalFilters(new ErrorDetailsFilter());
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 

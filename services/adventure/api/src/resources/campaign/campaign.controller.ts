@@ -26,6 +26,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { Campaign, CampaignDocument } from '@/resources/campaign/schemas/campaign.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
+import { IResponse } from '@/common/dtos/reponse.dto';
 
 @UseGuards(IsCreatorGuard)
 @Controller('campaigns')
@@ -85,7 +86,7 @@ export class CampaignController {
   }
 
   @Post()
-  async create(@Req() request, @Body() createCampaignDto: CreateCampaignDto) {
+  async create(@Req() request, @Body() createCampaignDto: CreateCampaignDto): Promise<IResponse<Campaign>> {
     await this.validateGroupRelations(createCampaignDto.groups.main, 'Main');
     await this.validateGroupRelations(createCampaignDto.groups.npc, 'NPC');
     await this.validateGroupRelations(
