@@ -33,6 +33,8 @@ services:
     environment:
       NODE_ENV: integration
       CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}
+      ADVENTURE_URL: ${ADVENTURE_URL}
+      ADVENTURE_VERSION: ${ADVENTURE_VERSION}
       FRONTEND_URL: ${FRONTEND_URL}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}

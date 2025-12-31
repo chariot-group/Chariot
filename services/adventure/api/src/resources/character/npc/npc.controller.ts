@@ -10,7 +10,13 @@ import { Character, CharacterDocument } from '@/resources/character/core/schemas
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
 import { NPC } from '@/resources/character/npc/schemas/npc.schema';
 import { IResponse } from '@/common/dtos/reponse.dto';
+import { ApiExtraModels, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 
+@ApiExtraModels(
+  IResponse,
+  NPC
+)
 @Controller('characters/npcs')
 export class NpcController {
   constructor(
@@ -39,6 +45,25 @@ export class NpcController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a new NPC' })
+  @ApiOkResponse({
+    description: 'The NPC has been successfully created.',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(NPC) }
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Validation error",
+    type: ProblemDetailsDto,
+  })
   createNpc(@Req() request, @Body() createNpcDto: CreateNpcDto): Promise<IResponse<NPC>> {
     const userId = request.user.keycloakId;
 
@@ -46,6 +71,34 @@ export class NpcController {
   }
 
   @IsCreator(CharacterService)
+  @ApiOperation({ summary: "Update a NPC by ID" })
+  @ApiParam({
+    name: "id",
+    type: String,
+    required: true,
+    description: "The ID of the NPC to update",
+    example: "507f1f77bcf86cd799439011",
+  })
+  @ApiOkResponse({
+    description: "Campaign updated successfully",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(NPC) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Validation error",
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({ status: 404, description: "NPC #ID not found", type: ProblemDetailsDto })
+  @ApiResponse({ status: 410, description: "NPC #ID has been deleted", type: ProblemDetailsDto })
   @Patch(':id')
   async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updateNpcDto: UpdateNpcDto): Promise<IResponse<Character>> {
     await this.validateResource(id);

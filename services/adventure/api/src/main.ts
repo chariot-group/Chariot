@@ -1,6 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from '@/app.module';
-import { WinstonModule } from 'nest-winston';
+import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { instance } from '@/logger/winston.logger';
 import { ValidationPipe } from '@nestjs/common';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
@@ -8,6 +8,8 @@ import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 import { ErrorDetailsFilter } from '@/common/filters/errors.filter';
+import { setupSwagger } from '@/config/swagger.config';
+import { SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   let AppModuleToUse = AppModule;
@@ -54,10 +56,22 @@ async function bootstrap() {
   const metricsInterceptor = app.get(MetricsInterceptor);
   app.useGlobalInterceptors(metricsInterceptor);
 
+  const document = setupSwagger(app);
+  SwaggerModule.setup("/docs", app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      oauth2RedirectUrl: `${process.env.ADVENTURE_URL}/oauth2-redirect.html`,
+      initOAuth: {
+        clientId: process.env.KEYCLOAK_CLIENT_ID,
+        scopes: ["openid", "profile", "email"],
+        usePkceWithAuthorizationCodeGrant: true,
+      },
+    },
+  });
+
   const port = 9000;
   await app.listen(port);
 
-  const logger = app.get('Logger');
-  logger.log(`Chariot API running on port ${port}`);
+  console.log(`Chariot API running on port ${port}`);
 }
 bootstrap();

@@ -10,11 +10,13 @@ import {
 } from '@/resources/character/core/constants/sizes.constant';
 import {
   Sense,
-  SenseSchema,
 } from '@/resources/character/core/schemas/stats/sub/sense';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Stats {
+
+  @ApiProperty({ example: 'Medium' })
   @Prop({
     type: String,
     required: true,
@@ -22,9 +24,11 @@ export class Stats {
   })
   size: Size;
 
+  @ApiProperty({ example: 100 })
   @Prop({ default: 0 })
   maxHitPoints: number;
 
+  @ApiProperty({ example: 100 })
   @Prop({
     default: function () {
       return this.maxHitPoints;
@@ -32,30 +36,39 @@ export class Stats {
   })
   currentHitPoints: number;
 
+  @ApiProperty({ example: 0 })
   @Prop({ default: 0 })
   tempHitPoints: number;
 
+  @ApiProperty({ example: 15 })
   @Prop({ default: 0 })
   armorClass: number;
 
+  @ApiProperty({ type: Speed })
   @Prop({ type: Speed, default: {} })
   speed: Speed;
 
+  @ApiProperty({ type: AbilityScores })
   @Prop({ type: AbilityScores, default: {} })
   abilityScores: AbilityScores;
 
+  @ApiProperty({ example: ['Common', 'Elvish'] })
   @Prop({ type: [String], default: [] })
   languages: string[];
 
+  @ApiProperty({ example: 10 })
   @Prop({ default: 0 })
   passivePerception: number;
 
+  @ApiProperty({ type: SavingThrows })
   @Prop({ type: SavingThrows, default: {} })
   savingThrows: SavingThrows;
 
+  @ApiProperty({ type: Skills })
   @Prop({ type: Skills, default: {} })
   skills: Skills;
 
+  @ApiProperty({ type: [Sense] })
   @Prop({ type: [Sense], default: [] })
   senses: Sense[];
 }

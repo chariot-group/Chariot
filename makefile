@@ -145,6 +145,11 @@ list: ## Liste tous les services disponibles
 		echo "  $(GREEN)→ $$service$(NC)"; \
 	done
 
+swagger-generate: ## Regénère le fichier swagger.json pour le service adventure
+	@echo "$(YELLOW)Génération de swagger.json pour adventure...$(NC)"
+	@cd services/adventure/api && npm run swagger:generate
+	@echo "$(GREEN)✓ swagger.json généré$(NC)"
+
 # Alias pratiques
 dev-up: ## Lance tous les services en dev
 	@$(MAKE) up ENV=dev

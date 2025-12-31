@@ -20,7 +20,8 @@
     "seed": "ts-node -r tsconfig-paths/register src/seeder/runner/seeder.ts",
     "seed:clean": "ts-node -r tsconfig-paths/register src/seeder/runner/seeder.ts --clean",
     "format": "prettier --write .",
-    "stripe:checkout": "ts-node -r tsconfig-paths/register src/resources/stripe/runner/createCheckout.ts"
+    "stripe:checkout": "ts-node -r tsconfig-paths/register src/resources/stripe/runner/createCheckout.ts",
+    "swagger:generate": "ts-node -r tsconfig-paths/register src/swagger-generator.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^10.0.0",
@@ -69,6 +70,7 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
+    "@nestjs/swagger": "^11.2.3",
     "typescript": "^5.1.3"
   }
 }
