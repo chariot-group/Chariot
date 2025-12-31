@@ -48,20 +48,20 @@
 
 :root {
   --radius: 36px;
-  --background: #0C0C0C;
-  --foreground: #B2B2B2;
-  --card: #19191C;
-  --card-foreground: #F7F7F7;
-  --popover: #19191C;
-  --popover-foreground: #B2B2B2;
-  --primary: #4E00DE;
-  --primary-foreground: #F7F7F7;
-  --secondary: #AA00FF;
-  --secondary-foreground: #4E00DE;
-  --muted: #AA00FF;
+  --background: #0c0c0c;
+  --foreground: #b2b2b2;
+  --card: #19191c;
+  --card-foreground: #f7f7f7;
+  --popover: #19191c;
+  --popover-foreground: #b2b2b2;
+  --primary: #4e00de;
+  --primary-foreground: #f7f7f7;
+  --secondary: #aa00ff;
+  --secondary-foreground: #4e00de;
+  --muted: #aa00ff;
   --muted-foreground: oklch(0.556 0 0);
-  --accent: #AA00FF;
-  --accent-foreground: #4E00DE;
+  --accent: #aa00ff;
+  --accent-foreground: #4e00de;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -71,29 +71,29 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: #F7F7F7;
+  --sidebar: #f7f7f7;
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #4E00DE;
-  --sidebar-primary-foreground: #F7F7F7;
-  --sidebar-accent: #AA00FF;
-  --sidebar-accent-foreground: #4E00DE;
+  --sidebar-primary: #4e00de;
+  --sidebar-primary-foreground: #f7f7f7;
+  --sidebar-accent: #aa00ff;
+  --sidebar-accent-foreground: #4e00de;
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --bleu-client: #61EBFF;
-  --vert-pomme: #9AE201;
-  --rouge: #FF2D2D;
-  --rose: #FFADFF;
-  --jaune: #FFC400;
-  --blanc: #F7F7F7;
-  --gris: #2B2B2B;
-  --gris-mi-claire: #B2B2B2;
-  --gris-claire: #D6D6D6;
-  --violet: #4E00DE;
+  --bleu-client: #61ebff;
+  --vert-pomme: #9ae201;
+  --rouge: #ff2d2d;
+  --rose: #ffadff;
+  --jaune: #ffc400;
+  --blanc: #f7f7f7;
+  --gris: #2b2b2b;
+  --gris-mi-claire: #b2b2b2;
+  --gris-claire: #d6d6d6;
+  --violet: #4e00de;
 
   /* Toast */
-  --toastify-color-light: #19191C;
+  --toastify-color-light: #19191c;
   --toastify-font-family: "Inter Tight", sans-serif;
-  --toastify-text-color-light: #B2B2B2;
+  --toastify-text-color-light: #b2b2b2;
   --toastify-toast-bd-radius: var(--radius);
 }
 
@@ -109,33 +109,73 @@
 /* Ajout d'utilitaires pour exposer les variables de couleur définies en :root
    Utilisez par exemple: className="bg-bleu-client" ou "text-rouge" */
 @layer utilities {
-  .bg-bleu-client { background-color: var(--bleu-client); }
-  .bleu-client { color: var(--bleu-client); }
+  .bg-bleu-client {
+    background-color: var(--bleu-client);
+  }
+  .bleu-client {
+    color: var(--bleu-client);
+  }
 
-  .bg-vert-pomme { background-color: var(--vert-pomme); }
-  .vert-pomme { color: var(--vert-pomme); }
+  .bg-vert-pomme {
+    background-color: var(--vert-pomme);
+  }
+  .vert-pomme {
+    color: var(--vert-pomme);
+  }
 
-  .bg-rouge { background-color: var(--rouge); }
-  .rouge { color: var(--rouge); }
+  .bg-rouge {
+    background-color: var(--rouge);
+  }
+  .rouge {
+    color: var(--rouge);
+  }
 
-  .bg-rose { background-color: var(--rose); }
-  .rose { color: var(--rose); }
+  .bg-rose {
+    background-color: var(--rose);
+  }
+  .rose {
+    color: var(--rose);
+  }
 
-  .bg-jaune { background-color: var(--jaune); }
-  .jaune { color: var(--jaune); }
+  .bg-jaune {
+    background-color: var(--jaune);
+  }
+  .jaune {
+    color: var(--jaune);
+  }
 
-  .bg-blanc { background-color: var(--blanc); }
-  .blanc { color: var(--blanc); }
+  .bg-blanc {
+    background-color: var(--blanc);
+  }
+  .blanc {
+    color: var(--blanc);
+  }
 
-  .bg-gris { background-color: var(--gris); }
-  .gris { color: var(--gris); }
+  .bg-gris {
+    background-color: var(--gris);
+  }
+  .gris {
+    color: var(--gris);
+  }
 
-  .bg-gris-mi-claire { background-color: var(--gris-mi-claire); }
-  .gris-mi-claire { color: var(--gris-mi-claire); }
+  .bg-gris-mi-claire {
+    background-color: var(--gris-mi-claire);
+  }
+  .gris-mi-claire {
+    color: var(--gris-mi-claire);
+  }
 
-  .bg-gris-claire { background-color: var(--gris-claire); }
-  .gris-claire { color: var(--gris-claire); }
+  .bg-gris-claire {
+    background-color: var(--gris-claire);
+  }
+  .gris-claire {
+    color: var(--gris-claire);
+  }
 
-  .bg-violet { background-color: var(--violet); }
-  .violet { color: var(--violet); }
+  .bg-violet {
+    background-color: var(--violet);
+  }
+  .violet {
+    color: var(--violet);
+  }
 }

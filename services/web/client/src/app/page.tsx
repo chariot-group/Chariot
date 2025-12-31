@@ -12,7 +12,7 @@ export default function Home() {
     error("This is an error message.");
     warning("This is a warning message.");
     info("This is an info message.");
-  }, []);
+  }, [error, info, success, warning]);
 
   return (
     <div className="">

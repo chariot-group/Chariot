@@ -2,7 +2,7 @@
 
 import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { setKeycloakInstance } from "@/services/api.service";
 
 interface KeycloakContextType {
@@ -26,7 +26,6 @@ const KeycloakContext = createContext<KeycloakContextType>({
 });
 
 export function KeycloakProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const pathname = usePathname();
   const locale = pathname.split("/")[1] || "en";
 
@@ -79,7 +78,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
                   setToken(kc.token || null);
                 }
               })
-              .catch((err) => {
+              .catch(() => {
                 setAuthenticated(false);
                 setToken(null);
                 kc.login();
@@ -89,6 +88,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
         setLoading(false);
       } catch (error) {
+        console.error("Keycloak initialization failed", error);
         setLoading(false);
       }
     };
