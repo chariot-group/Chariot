@@ -3,8 +3,8 @@ import { INestApplication } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 export const swaggerConfig = new DocumentBuilder()
-    .setTitle("Codex API")
-    .setDescription("Codex API Documentation")
+    .setTitle("Adventure API")
+    .setDescription("Adventure API Documentation")
     .setVersion(process.env.ADVENTURE_VERSION || "unknown")
     .addServer(`${process.env.ADVENTURE_URL || "unknown"}`)
     .addOAuth2({
