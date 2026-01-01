@@ -26,6 +26,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { Campaign, CampaignDocument } from '@/resources/campaign/schemas/campaign.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
+import { IResponse } from '@/common/dtos/reponse.dto';
 
 @UseGuards(IsCreatorGuard)
 @Controller('campaigns')
@@ -85,7 +86,7 @@ export class CampaignController {
   }
 
   @Post()
-  async create(@Req() request, @Body() createCampaignDto: CreateCampaignDto) {
+  async create(@Req() request, @Body() createCampaignDto: CreateCampaignDto): Promise<IResponse<Campaign>> {
     await this.validateGroupRelations(createCampaignDto.groups.main, 'Main');
     await this.validateGroupRelations(createCampaignDto.groups.npc, 'NPC');
     await this.validateGroupRelations(
@@ -93,7 +94,15 @@ export class CampaignController {
       'Archived',
     );
 
-    const userId = request.user.keycloakId;
+    // Debug logging
+    this.logger.debug(`Request user object: ${JSON.stringify(request.user)}`, this.CONTROLLER_NAME);
+    
+    const userId = request.user?.keycloakId;
+    
+    if (!userId) {
+      this.logger.error(`User authentication failed - user object: ${JSON.stringify(request.user)}`, null, this.CONTROLLER_NAME);
+      throw new BadRequestException('User authentication required');
+    }
 
     return this.campaignService.create(createCampaignDto, userId);
   }

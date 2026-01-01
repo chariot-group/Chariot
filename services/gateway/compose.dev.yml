@@ -1,0 +1,41 @@
+services:
+  chariot-gateway:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: chariot-gateway
+    platform: linux/amd64
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+      - ./api/logger/logs:/app/logger/logs
+    ports:
+      - "8082:8082"
+    environment:
+      NODE_ENV: development
+      GATEWAY_PORT: ${GATEWAY_PORT:-8082}
+      GATEWAY_LOG_LEVEL: ${GATEWAY_LOG_LEVEL:-debug}
+      GATEWAY_RATE_LIMIT_MAX: ${GATEWAY_RATE_LIMIT_MAX:-100}
+      GATEWAY_RATE_LIMIT_WINDOW: ${GATEWAY_RATE_LIMIT_WINDOW:-60000}
+      # Backend services - add more as needed with pattern {SERVICE_NAME}_SERVICE_URL
+      ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL:-http://chariot-adventure:9000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
+    networks:
+      - chariot-group-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    extra_hosts:
+      - "localhost:host-gateway"
+
+networks:
+  chariot-group-network:
+    external: true

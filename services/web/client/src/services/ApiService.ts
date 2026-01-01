@@ -17,8 +17,11 @@ const createApiClient = (): AxiosInstance => {
     throw new Error("API URL is not defined. Set NEXT_PUBLIC_API_URL in your environment.");
   }
 
+  // Ajouter le préfixe /api pour la gateway si l'URL ne le contient pas déjà
+  const baseURL = url.endsWith('/api') ? url : `${url}/api`;
+
   const instance = axios.create({
-    baseURL: url,
+    baseURL,
     headers: {
       "Content-Type": "application/json",
     },
@@ -27,13 +30,29 @@ const createApiClient = (): AxiosInstance => {
 
   // Intercepteur de requête - récupère le token à chaque requête
   instance.interceptors.request.use(
-    (config) => {
+    async (config) => {
+      // Attendre que Keycloak soit initialisé
+      if (typeof window !== 'undefined' && !keycloakInstance) {
+        // Attendre un court instant pour que Keycloak s'initialise
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
       // Récupérer le token directement depuis l'instance Keycloak
       const token = keycloakInstance?.token;
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+      } else if (typeof window !== 'undefined') {
+        // Si pas de token côté client, on attend encore un peu
+        console.warn('⚠️ No token available yet, waiting for Keycloak initialization...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const retryToken = keycloakInstance?.token;
+        if (retryToken) {
+          config.headers.Authorization = `Bearer ${retryToken}`;
+        }
       }
+      
       return config;
     },
     (error) => {

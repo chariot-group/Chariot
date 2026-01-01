@@ -9,6 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Character, CharacterDocument } from '@/resources/character/core/schemas/character.schema';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
+import { IResponse } from '@/common/dtos/reponse.dto';
+import { Player } from '@/resources/character/player/schemas/player.schema';
 
 @Controller('characters/players')
 export class PlayerController {
@@ -59,7 +61,7 @@ export class PlayerController {
   }
 
   @Post()
-  async createPlayer(@Req() request, @Body() createPlayerDto: CreatePlayerDto) {
+  async createPlayer(@Req() request, @Body() createPlayerDto: CreatePlayerDto): Promise<IResponse<Player>> {
     await this.validateGroupRelations(createPlayerDto.groups);
     const userId = request.user.keycloakId;
 
@@ -69,7 +71,7 @@ export class PlayerController {
 
   @IsCreator(CharacterService)
   @Patch(':id')
-  async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updatePlayerDto: UpdatePlayerDto) {
+  async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updatePlayerDto: UpdatePlayerDto): Promise<IResponse<Character>> {
     await this.validateResource(id);
     await this.validateGroupRelations(updatePlayerDto.groups);
 

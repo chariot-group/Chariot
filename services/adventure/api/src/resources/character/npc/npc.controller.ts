@@ -8,6 +8,8 @@ import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, CharacterDocument } from '@/resources/character/core/schemas/character.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
+import { NPC } from '@/resources/character/npc/schemas/npc.schema';
+import { IResponse } from '@/common/dtos/reponse.dto';
 
 @Controller('characters/npcs')
 export class NpcController {
@@ -37,7 +39,7 @@ export class NpcController {
   }
 
   @Post()
-  createNpc(@Req() request, @Body() createNpcDto: CreateNpcDto) {
+  createNpc(@Req() request, @Body() createNpcDto: CreateNpcDto): Promise<IResponse<NPC>> {
     const userId = request.user.keycloakId;
 
     return this.npcService.create(createNpcDto, userId);
@@ -45,7 +47,7 @@ export class NpcController {
 
   @IsCreator(CharacterService)
   @Patch(':id')
-  async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updateNpcDto: UpdateNpcDto) {
+  async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updateNpcDto: UpdateNpcDto): Promise<IResponse<Character>> {
     await this.validateResource(id);
 
     return this.npcService.update(id, updateNpcDto);

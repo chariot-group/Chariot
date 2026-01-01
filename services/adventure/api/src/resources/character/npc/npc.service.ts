@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   GoneException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -17,6 +18,8 @@ import {
 } from '@/resources/character/core/schemas/character.schema';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter } from 'prom-client';
+import { NPC, NPCDocument } from '@/resources/character/npc/schemas/npc.schema';
+import { IResponse } from '@/common/dtos/reponse.dto';
 
 @Injectable()
 export class NpcService {
@@ -50,7 +53,7 @@ export class NpcService {
     }
   }
 
-  async create(createNpcDto: CreateNpcDto, userId: string) {
+  async create(createNpcDto: CreateNpcDto, userId: string): Promise<IResponse<NPC>> {
     try {
       if (createNpcDto.groups) {
         for (const groupId of createNpcDto.groups) {
@@ -63,12 +66,12 @@ export class NpcService {
         await this.validateGroupRelations(createNpcDto.groups);
       }
 
-      const start = Date.now();
-      const newNpc = new this.characterModel.discriminators['npc']({
+      const start: number = Date.now();
+      const newNpc: NPCDocument = new this.characterModel.discriminators['npc']({
         ...createNpcDto,
         createdBy: userId,
       });
-      const savedNpc = await newNpc.save();
+      const savedNpc: NPC = await newNpc.save();
       if (createNpcDto.groups && createNpcDto.groups.length > 0) {
         await this.groupModel.updateMany(
           {
@@ -81,53 +84,51 @@ export class NpcService {
       // Incrémentation du compteur Prometheus
       this.charactersCreatedCounter.inc({ user_id: userId });
 
-      const end = Date.now();
+      const end: number = Date.now();
 
-      const message = `NPC created in ${end - start}ms`;
+      const message: string = `NPC created in ${end - start}ms`;
       return {
         message,
         data: savedNpc,
       };
     } catch (error) {
       if (
-        error instanceof BadRequestException ||
-        error instanceof NotFoundException ||
-        error instanceof GoneException
+        error instanceof HttpException
       ) {
         throw error;
       }
-      let message = `Error creating NPC: ${error.message}`;
+      let message: string = `Error creating NPC: ${error.message}`;
       this.logger.error(message);
       throw new InternalServerErrorException(message);
     }
   }
 
-  async update(id: Types.ObjectId, updateNpcDto: UpdateNpcDto) {
+  async update(id: Types.ObjectId, updateNpcDto: UpdateNpcDto): Promise<IResponse<Character>> {
     try {
       let { groups, ...npcData } = updateNpcDto;
 
-      let npc = await this.characterModel.findById(id).exec();
+      let npc: Character = await this.characterModel.findById(id).exec();
 
       //Vérification ids characters
       if (groups) {
-        const groupCheckPromises = groups.map((groupId) =>
+        const groupCheckPromises: Promise<GroupDocument | null>[] = groups.map((groupId) =>
           this.groupModel.findById(groupId).exec(),
         );
-        const groupCheckResults = await Promise.all(groupCheckPromises);
-        const invalidGroups = groupCheckResults.filter((group) => !group);
+        const groupCheckResults: (GroupDocument | null)[] = await Promise.all(groupCheckPromises);
+        const invalidGroups: (GroupDocument | null)[] = groupCheckResults.filter((group) => !group);
         if (invalidGroups.length > 0) {
-          const invalidNpcIds = groups.filter(
+          const invalidNpcIds: string[] = groups.filter(
             (_, index) => !groupCheckResults[index],
           );
-          const message = `Invalid group IDs: ${invalidNpcIds.join(', ')}`;
+          const message: string = `Invalid group IDs: ${invalidNpcIds.join(', ')}`;
           this.logger.error(message, null, this.SERVICE_NAME);
           throw new BadRequestException(message);
         }
 
-        const goneGroups = groupCheckResults.filter((group) => group.deletedAt);
+        const goneGroups: (GroupDocument | null)[] = groupCheckResults.filter((group) => group.deletedAt);
         if (goneGroups.length > 0) {
-          const goneGroupIds = goneGroups.map((group) => group._id.toString());
-          const message = `Gone group IDs: ${goneGroupIds.join(', ')}`;
+          const goneGroupIds: string[] = goneGroups.map((group) => group._id.toString());
+          const message: string = `Gone group IDs: ${goneGroupIds.join(', ')}`;
           this.logger.error(message, null, this.SERVICE_NAME);
           throw new GoneException(message);
         }
@@ -135,7 +136,7 @@ export class NpcService {
         groups = npc.groups.map((group) => group._id.toString());
       }
 
-      const groupsToRemove = npc.groups.filter(
+      const groupsToRemove: Group[] = npc.groups.filter(
         (oldGroups) =>
           !groups.some((newGroups) => newGroups === oldGroups._id.toString()),
       );
@@ -177,9 +178,7 @@ export class NpcService {
       };
     } catch (error) {
       if (
-        error instanceof NotFoundException ||
-        error instanceof GoneException ||
-        error instanceof BadRequestException
+        error instanceof HttpException
       ) {
         throw error;
       }
