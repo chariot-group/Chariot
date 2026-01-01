@@ -3,7 +3,7 @@
 import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { setKeycloakInstance } from "@/services/api.service";
+import { setKeycloakInstance } from "@/services/ApiService";
 
 interface KeycloakContextType {
   keycloak: Keycloak | null;

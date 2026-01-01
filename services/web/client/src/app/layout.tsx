@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter_Tight } from "next/font/google";
-import "./globals.css";
+import "@/globals.css";
 import { KeycloakProvider } from "@/providers/KeycloakProvider";
 import ToastContainer from "@/components/ToastContainer";
 

@@ -79,16 +79,16 @@
   --sidebar-accent-foreground: #4e00de;
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --bleu-client: #61ebff;
-  --vert-pomme: #9ae201;
-  --rouge: #ff2d2d;
-  --rose: #ffadff;
-  --jaune: #ffc400;
-  --blanc: #f7f7f7;
-  --gris: #2b2b2b;
-  --gris-mi-claire: #b2b2b2;
-  --gris-claire: #d6d6d6;
-  --violet: #4e00de;
+  --blue: #61ebff;
+  --green: #9ae201;
+  --red: #ff2d2d;
+  --pink: #ffadff;
+  --yellow: #ffc400;
+  --white: #f7f7f7;
+  --gray: #2b2b2b;
+  --gray-middle-light: #b2b2b2;
+  --gray-light: #d6d6d6;
+  --purple: #4e00de;
 
   /* Toast */
   --toastify-color-light: #19191c;
@@ -106,76 +106,74 @@
   }
 }
 
-/* Ajout d'utilitaires pour exposer les variables de couleur définies en :root
-   Utilisez par exemple: className="bg-bleu-client" ou "text-rouge" */
 @layer utilities {
-  .bg-bleu-client {
-    background-color: var(--bleu-client);
+  .bg-blue {
+    background-color: var(--blue);
   }
-  .bleu-client {
-    color: var(--bleu-client);
-  }
-
-  .bg-vert-pomme {
-    background-color: var(--vert-pomme);
-  }
-  .vert-pomme {
-    color: var(--vert-pomme);
+  .blue {
+    color: var(--blue);
   }
 
-  .bg-rouge {
-    background-color: var(--rouge);
+  .bg-green {
+    background-color: var(--green);
   }
-  .rouge {
-    color: var(--rouge);
-  }
-
-  .bg-rose {
-    background-color: var(--rose);
-  }
-  .rose {
-    color: var(--rose);
+  .green {
+    color: var(--green);
   }
 
-  .bg-jaune {
-    background-color: var(--jaune);
+  .bg-red {
+    background-color: var(--red);
   }
-  .jaune {
-    color: var(--jaune);
-  }
-
-  .bg-blanc {
-    background-color: var(--blanc);
-  }
-  .blanc {
-    color: var(--blanc);
+  .red {
+    color: var(--red);
   }
 
-  .bg-gris {
-    background-color: var(--gris);
+  .bg-pink {
+    background-color: var(--pink);
   }
-  .gris {
-    color: var(--gris);
-  }
-
-  .bg-gris-mi-claire {
-    background-color: var(--gris-mi-claire);
-  }
-  .gris-mi-claire {
-    color: var(--gris-mi-claire);
+  .pink {
+    color: var(--pink);
   }
 
-  .bg-gris-claire {
-    background-color: var(--gris-claire);
+  .bg-yellow {
+    background-color: var(--yellow);
   }
-  .gris-claire {
-    color: var(--gris-claire);
+  .yellow {
+    color: var(--yellow);
   }
 
-  .bg-violet {
-    background-color: var(--violet);
+  .bg-white {
+    background-color: var(--white);
   }
-  .violet {
-    color: var(--violet);
+  .white {
+    color: var(--white);
+  }
+
+  .bg-gray {
+    background-color: var(--gray);
+  }
+  .gray {
+    color: var(--gray);
+  }
+
+  .bg-gray-middle-light {
+    background-color: var(--gray-middle-light);
+  }
+  .gray-middle-light {
+    color: var(--gray-middle-light);
+  }
+
+  .bg-gray-light {
+    background-color: var(--gray-light);
+  }
+  .gray-light {
+    color: var(--gray-light);
+  }
+
+  .bg-purple {
+    background-color: var(--purple);
+  }
+  .purple {
+    color: var(--purple);
   }
 }
