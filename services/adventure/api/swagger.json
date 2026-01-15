@@ -217,6 +217,294 @@
         ]
       }
     },
+    "/metrics": {
+      "get": {
+        "operationId": "PrometheusController_index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Prometheus"
+        ]
+      }
+    },
+    "/characters/npcs": {
+      "post": {
+        "operationId": "NpcController_createNpc",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNpcDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The NPC has been successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/NPC"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new NPC",
+        "tags": [
+          "Npc"
+        ]
+      }
+    },
+    "/characters/npcs/{id}": {
+      "patch": {
+        "operationId": "NpcController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the NPC to update",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNpcDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Campaign updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/NPC"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NPC #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "NPC #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a NPC by ID",
+        "tags": [
+          "Npc"
+        ]
+      }
+    },
+    "/characters/players": {
+      "post": {
+        "operationId": "PlayerController_createPlayer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlayerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The player has been successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Player"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new player",
+        "tags": [
+          "Player"
+        ]
+      }
+    },
+    "/characters/players/{id}": {
+      "patch": {
+        "operationId": "PlayerController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the player to update",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlayerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Player updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Player"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Player #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Player #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a player by ID",
+        "tags": [
+          "Player"
+        ]
+      }
+    },
     "/groups": {
       "post": {
         "operationId": "GroupController_create",
@@ -1094,305 +1382,18 @@
           "Campaign"
         ]
       }
-    },
-    "/metrics": {
-      "get": {
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Prometheus"
-        ]
-      }
-    },
-    "/characters/npcs": {
-      "post": {
-        "operationId": "NpcController_createNpc",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateNpcDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The NPC has been successfully created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/IResponse"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/NPC"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Create a new NPC",
-        "tags": [
-          "Npc"
-        ]
-      }
-    },
-    "/characters/npcs/{id}": {
-      "patch": {
-        "operationId": "NpcController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "The ID of the NPC to update",
-            "schema": {
-              "example": "507f1f77bcf86cd799439011",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateNpcDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Campaign updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/IResponse"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/NPC"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "NPC #ID not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "NPC #ID has been deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Update a NPC by ID",
-        "tags": [
-          "Npc"
-        ]
-      }
-    },
-    "/characters/players": {
-      "post": {
-        "operationId": "PlayerController_createPlayer",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePlayerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The player has been successfully created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/IResponse"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/Player"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Create a new player",
-        "tags": [
-          "Player"
-        ]
-      }
-    },
-    "/characters/players/{id}": {
-      "patch": {
-        "operationId": "PlayerController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "The ID of the player to update",
-            "schema": {
-              "example": "507f1f77bcf86cd799439011",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePlayerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Player updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/IResponse"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/Player"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Player #ID not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Player #ID has been deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Update a player by ID",
-        "tags": [
-          "Player"
-        ]
-      }
     }
   },
   "info": {
-    "title": "Codex API",
-    "description": "Codex API Documentation",
-    "version": "unknown",
+    "title": "Adventure API",
+    "description": "Adventure API Documentation",
+    "version": "1.0.0",
     "contact": {}
   },
   "tags": [],
   "servers": [
     {
-      "url": "unknown"
+      "url": "http://localhost:9000"
     }
   ],
   "components": {
@@ -1456,48 +1457,6 @@
         "required": [
           "message",
           "data"
-        ]
-      },
-      "PaginationMeta": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "number",
-            "example": 1
-          },
-          "offset": {
-            "type": "number",
-            "example": 10
-          },
-          "totalItems": {
-            "type": "number",
-            "example": 100
-          }
-        },
-        "required": [
-          "page",
-          "offset",
-          "totalItems"
-        ]
-      },
-      "IPaginatedResponse": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "example": "Campaign #507f1f77bcf86cd799439011 found in 5ms"
-          },
-          "data": {
-            "type": "object"
-          },
-          "pagination": {
-            "$ref": "#/components/schemas/PaginationMeta"
-          }
-        },
-        "required": [
-          "message",
-          "data",
-          "pagination"
         ]
       },
       "SchemaObjectId": {
@@ -2034,268 +1993,6 @@
           "characters",
           "campaigns",
           "deletedAt"
-        ]
-      },
-      "Character": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "example": "60d21b4667d0d8992e610c85",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SchemaObjectId"
-              }
-            ]
-          },
-          "name": {
-            "type": "string",
-            "example": "Aragorn"
-          },
-          "stats": {
-            "$ref": "#/components/schemas/Stats"
-          },
-          "affinities": {
-            "$ref": "#/components/schemas/Affinities"
-          },
-          "abilities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Ability"
-            }
-          },
-          "spellcasting": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Spellcasting"
-            }
-          },
-          "groups": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Group"
-            }
-          },
-          "deletedAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": null
-          }
-        },
-        "required": [
-          "_id",
-          "name",
-          "stats",
-          "affinities",
-          "abilities",
-          "spellcasting",
-          "groups",
-          "deletedAt"
-        ]
-      },
-      "CampaignGroupDto": {
-        "type": "object",
-        "properties": {
-          "idCampaign": {
-            "type": "string",
-            "example": "507f1f77bcf86cd799439011"
-          },
-          "type": {
-            "type": "string",
-            "example": "main",
-            "enum": [
-              "main",
-              "npc",
-              "archived"
-            ]
-          }
-        },
-        "required": [
-          "idCampaign",
-          "type"
-        ]
-      },
-      "CreateGroupDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "example": "Adventurers"
-          },
-          "description": {
-            "type": "string",
-            "example": "A group of brave adventurers."
-          },
-          "characters": {
-            "example": [
-              "507f1f77bcf86cd799439011",
-              "507f1f77bcf86cd799439012"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "campaigns": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CampaignGroupDto"
-            }
-          }
-        },
-        "required": [
-          "label",
-          "description",
-          "characters",
-          "campaigns"
-        ]
-      },
-      "ObjectId": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateGroupDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "Groups": {
-        "type": "object",
-        "properties": {
-          "main": {
-            "example": [
-              "507f1f77bcf86cd799439011"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "npc": {
-            "example": [
-              "507f1f77bcf86cd799439012"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "archived": {
-            "example": [
-              "507f1f77bcf86cd799439013"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "main",
-          "npc",
-          "archived"
-        ]
-      },
-      "Campaign": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "example": "507f1f77bcf86cd799439011",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SchemaObjectId"
-              }
-            ]
-          },
-          "label": {
-            "type": "string",
-            "example": "Summer Campaign"
-          },
-          "description": {
-            "type": "string",
-            "example": "A fun summer campaign full of adventures."
-          },
-          "groups": {
-            "$ref": "#/components/schemas/Groups"
-          },
-          "deletedAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": null
-          }
-        },
-        "required": [
-          "_id",
-          "label",
-          "description",
-          "groups",
-          "deletedAt"
-        ]
-      },
-      "CreateGroupIdsDto": {
-        "type": "object",
-        "properties": {
-          "main": {
-            "example": [
-              "60d21b4667d0d8992e610c85"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "npc": {
-            "example": [
-              "60d21b4667d0d8992e610c86"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "archived": {
-            "example": [],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "main",
-          "npc",
-          "archived"
-        ]
-      },
-      "CreateCampaignDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "example": "Epic Adventure"
-          },
-          "description": {
-            "type": "string",
-            "example": "An epic journey through uncharted lands."
-          },
-          "groups": {
-            "$ref": "#/components/schemas/CreateGroupIdsDto"
-          }
-        },
-        "required": [
-          "label",
-          "description",
-          "groups"
-        ]
-      },
-      "UpdateCampaignDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "example": "Epic Adventure"
-          }
-        },
-        "required": [
-          "label"
         ]
       },
       "Damage": {
@@ -4093,6 +3790,310 @@
       "UpdatePlayerDto": {
         "type": "object",
         "properties": {}
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "offset": {
+            "type": "number",
+            "example": 10
+          },
+          "totalItems": {
+            "type": "number",
+            "example": 100
+          }
+        },
+        "required": [
+          "page",
+          "offset",
+          "totalItems"
+        ]
+      },
+      "IPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Campaign #507f1f77bcf86cd799439011 found in 5ms"
+          },
+          "data": {
+            "type": "object"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "required": [
+          "message",
+          "data",
+          "pagination"
+        ]
+      },
+      "Character": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "example": "60d21b4667d0d8992e610c85",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SchemaObjectId"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "example": "Aragorn"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/Stats"
+          },
+          "affinities": {
+            "$ref": "#/components/schemas/Affinities"
+          },
+          "abilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ability"
+            }
+          },
+          "spellcasting": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Spellcasting"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            }
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": null
+          }
+        },
+        "required": [
+          "_id",
+          "name",
+          "stats",
+          "affinities",
+          "abilities",
+          "spellcasting",
+          "groups",
+          "deletedAt"
+        ]
+      },
+      "CampaignGroupDto": {
+        "type": "object",
+        "properties": {
+          "idCampaign": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "type": {
+            "type": "string",
+            "example": "main",
+            "enum": [
+              "main",
+              "npc",
+              "archived"
+            ]
+          }
+        },
+        "required": [
+          "idCampaign",
+          "type"
+        ]
+      },
+      "CreateGroupDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Adventurers"
+          },
+          "description": {
+            "type": "string",
+            "example": "A group of brave adventurers."
+          },
+          "characters": {
+            "example": [
+              "507f1f77bcf86cd799439011",
+              "507f1f77bcf86cd799439012"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "campaigns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignGroupDto"
+            }
+          }
+        },
+        "required": [
+          "label",
+          "description",
+          "characters",
+          "campaigns"
+        ]
+      },
+      "ObjectId": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateGroupDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "Groups": {
+        "type": "object",
+        "properties": {
+          "main": {
+            "example": [
+              "507f1f77bcf86cd799439011"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "npc": {
+            "example": [
+              "507f1f77bcf86cd799439012"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "archived": {
+            "example": [
+              "507f1f77bcf86cd799439013"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "main",
+          "npc",
+          "archived"
+        ]
+      },
+      "Campaign": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "example": "507f1f77bcf86cd799439011",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SchemaObjectId"
+              }
+            ]
+          },
+          "label": {
+            "type": "string",
+            "example": "Summer Campaign"
+          },
+          "description": {
+            "type": "string",
+            "example": "A fun summer campaign full of adventures."
+          },
+          "groups": {
+            "$ref": "#/components/schemas/Groups"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": null
+          }
+        },
+        "required": [
+          "_id",
+          "label",
+          "description",
+          "groups",
+          "deletedAt"
+        ]
+      },
+      "CreateGroupIdsDto": {
+        "type": "object",
+        "properties": {
+          "main": {
+            "example": [
+              "60d21b4667d0d8992e610c85"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "npc": {
+            "example": [
+              "60d21b4667d0d8992e610c86"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "archived": {
+            "example": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "main",
+          "npc",
+          "archived"
+        ]
+      },
+      "CreateCampaignDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Epic Adventure"
+          },
+          "description": {
+            "type": "string",
+            "example": "An epic journey through uncharted lands."
+          },
+          "groups": {
+            "$ref": "#/components/schemas/CreateGroupIdsDto"
+          }
+        },
+        "required": [
+          "label",
+          "description",
+          "groups"
+        ]
+      },
+      "UpdateCampaignDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Epic Adventure"
+          }
+        },
+        "required": [
+          "label"
+        ]
       },
       "InvalidParamDto": {
         "type": "object",

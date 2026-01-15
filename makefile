@@ -148,7 +148,7 @@ list: ## Liste tous les services disponibles
 
 swagger-generate: ## Regénère le fichier swagger.json pour le service adventure
 	@echo "$(YELLOW)Génération de swagger.json pour adventure...$(NC)"
-	@cd services/adventure/api && npm run swagger:generate
+	@cd $(SERVICES_DIR)/adventure && docker compose -f compose.$(ENV).yml exec chariot-adventure npm run swagger:generate
 	@echo "$(GREEN)✓ swagger.json généré$(NC)"
 
 # Alias pratiques
