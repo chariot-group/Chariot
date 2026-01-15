@@ -1,9 +1,9 @@
-import { APIContentType } from "@/constants/APIContentType";
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import Keycloak from "keycloak-js";
 
-let keycloakInstance: any | null = null;
+let keycloakInstance: Keycloak | null = null;
 
-export const setKeycloakInstance = (instance: any) => {
+export const setKeycloakInstance = (instance: Keycloak) => {
   keycloakInstance = instance;
 };
 
@@ -23,7 +23,7 @@ const createApiClient = (): AxiosInstance => {
   const instance = axios.create({
     baseURL,
     headers: {
-      "Content-Type": APIContentType.JSON,
+      "Content-Type": "application/json",
     },
     withCredentials: true,
   });
@@ -57,7 +57,7 @@ const createApiClient = (): AxiosInstance => {
     },
     (error) => {
       return Promise.reject(error);
-    }
+    },
   );
 
   // Intercepteur de réponse pour gérer les erreurs 401
@@ -69,8 +69,6 @@ const createApiClient = (): AxiosInstance => {
       if (error.response?.status === 401 && !originalRequest._retry && keycloakInstance) {
         originalRequest._retry = true;
 
-        console.warn("⚠️ 401 Unauthorized - Attempting to refresh token");
-
         try {
           // Vérifier si l'utilisateur est authentifié
           if (!keycloakInstance.authenticated) {
@@ -80,7 +78,6 @@ const createApiClient = (): AxiosInstance => {
 
           // Forcer le refresh du token
           const refreshed = await keycloakInstance.updateToken(-1); // -1 force le refresh
-
 
           if (refreshed || keycloakInstance.token) {
             // Mettre à jour le header avec le nouveau token
@@ -93,12 +90,12 @@ const createApiClient = (): AxiosInstance => {
             // Réessayer la requête
             return instance(originalRequest);
           } else {
-            console.error("❌ Token refresh failed - no new token");
             keycloakInstance.login();
             return Promise.reject(error);
           }
         } catch (refreshError) {
-          console.error("❌ Error refreshing token:", refreshError);
+          console.error("Token refresh failed", refreshError);
+          // Rediriger vers la page de login
           if (typeof window !== "undefined") {
             keycloakInstance.login();
           }
@@ -107,7 +104,7 @@ const createApiClient = (): AxiosInstance => {
       }
 
       return Promise.reject(error);
-    }
+    },
   );
 
   return instance;
