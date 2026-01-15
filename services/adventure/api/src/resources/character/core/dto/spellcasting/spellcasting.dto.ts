@@ -7,27 +7,35 @@ import {
 } from 'class-validator';
 import { SpellDto } from '@/resources/character/core/dto/spellcasting/sub/spell.dto';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class SpellcastingDto {
+
+  @ApiProperty({ example: 'Intelligence' })
   @IsOptional()
   @IsString()
   ability?: string;
 
+  @ApiProperty({ example: 15 })
   @IsOptional()
   @IsNumber()
   saveDC?: number;
 
+  @ApiProperty({ example: 7 })
   @IsOptional()
   @IsNumber()
   attackBonus?: number;
 
+  @ApiProperty({ example: { 1: { total: 4, used: 1 }, 2: { total: 3, used: 0 } } })
   @IsOptional()
   spellSlotsByLevel?: Map<number, { total?: number; used?: number }>;
 
+  @ApiProperty({ example: 10 })
   @IsOptional()
   @IsNumber()
   totalSlots?: number;
 
+  @ApiProperty({ type: [SpellDto] })
   @ValidateNested({ each: true })
   @IsArray()
   @IsOptional()

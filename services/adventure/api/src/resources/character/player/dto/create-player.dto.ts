@@ -13,43 +13,53 @@ import { AppearanceDto } from '@/resources/character/player/dto/appearance/appea
 import { BackgroundDto } from '@/resources/character/player/dto/background/background.dto';
 import { TreasureDto } from '@/resources/character/player/dto/treasure/treasure.dto';
 import { PlayerStatsDto } from '@/resources/character/player/dto/stats/player-stats.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePlayerDto extends CreateCharacterDto {
+
+  @ApiProperty({ example: false })
   @IsOptional()
   @IsBoolean()
   inspiration: boolean;
 
+  @ApiProperty({ type: ProgressionDto })
   @ValidateNested()
   @IsOptional()
   @Type(() => ProgressionDto)
   progression: ProgressionDto;
 
+  @ApiProperty({ type: [ClassDto] })
   @ValidateNested({ each: true })
   @IsArray()
   @IsOptional()
   @Type(() => ClassDto)
   class: ClassDto[];
 
+  @ApiProperty({ type: PlayerProfileDto })
   @ValidateNested()
   @IsOptional()
   @Type(() => PlayerProfileDto)
   profile: PlayerProfileDto;
 
+  @ApiProperty({ type: AppearanceDto })
   @ValidateNested()
   @IsOptional()
   @Type(() => AppearanceDto)
   appearance: AppearanceDto;
 
+  @ApiProperty({ type: BackgroundDto })
   @ValidateNested()
   @IsOptional()
   @Type(() => BackgroundDto)
   background: BackgroundDto;
 
+  @ApiProperty({ type: TreasureDto })
   @ValidateNested()
   @IsOptional()
   @Type(() => TreasureDto)
   treasure: TreasureDto;
 
+  @ApiProperty({ type: PlayerStatsDto })
   @ValidateNested()
   @IsOptional()
   @Type(() => PlayerStatsDto)

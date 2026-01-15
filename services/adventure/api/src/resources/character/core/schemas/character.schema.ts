@@ -6,29 +6,38 @@ import { BaseSchema } from '@/common/schemas/base-schema';
 import { Ability } from '@/resources/character/core/schemas/ability/ability.schema';
 import { Spellcasting } from '@/resources/character/core/schemas/spellcasting/spellcasting.schema';
 import { Stats } from '@/resources/character/core/schemas/stats/stats.schema';
+import { ApiProperty } from '@nestjs/swagger';
 
 export type CharacterDocument = Character & Document;
 
 @Schema({ timestamps: true, discriminatorKey: 'kind' })
 export class Character extends BaseSchema {
+
+  @ApiProperty({ example: '60d21b4667d0d8992e610c85' })
   @Prop({ type: mongoose.Schema.Types.ObjectId, auto: true })
   _id: mongoose.Schema.Types.ObjectId;
 
+  @ApiProperty({ example: 'Aragorn' })
   @Prop({ required: true })
   name: string;
 
+  @ApiProperty({ type: Stats })
   @Prop({ type: Stats, default: {} })
   stats: Stats;
 
+  @ApiProperty({ type: Affinities })
   @Prop({ type: Affinities, default: {} })
   affinities: Affinities;
 
+  @ApiProperty({ type: [Ability] })
   @Prop({ type: [Ability], default: [] })
   abilities: Ability[];
 
+  @ApiProperty({ type: [Spellcasting] })
   @Prop({ type: [Spellcasting], default: [] })
   spellcasting: Spellcasting[];
 
+  @ApiProperty({ type: [Group] })
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
     default: [],
@@ -36,6 +45,7 @@ export class Character extends BaseSchema {
   })
   groups: Group[];
 
+  @ApiProperty({ example: null })
   @Prop({ default: null })
   deletedAt?: Date;
 }

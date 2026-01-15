@@ -11,7 +11,13 @@ import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
 import { IResponse } from '@/common/dtos/reponse.dto';
 import { Player } from '@/resources/character/player/schemas/player.schema';
+import { ApiExtraModels, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 
+@ApiExtraModels(
+  IResponse,
+  Player
+)
 @Controller('characters/players')
 export class PlayerController {
   constructor(
@@ -60,6 +66,25 @@ export class PlayerController {
     }
   }
 
+  @ApiOperation({ summary: 'Create a new player' })
+  @ApiOkResponse({
+    description: 'The player has been successfully created.',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(Player) }
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Validation error",
+    type: ProblemDetailsDto,
+  })
   @Post()
   async createPlayer(@Req() request, @Body() createPlayerDto: CreatePlayerDto): Promise<IResponse<Player>> {
     await this.validateGroupRelations(createPlayerDto.groups);
@@ -70,6 +95,34 @@ export class PlayerController {
   }
 
   @IsCreator(CharacterService)
+  @ApiOperation({ summary: "Update a player by ID" })
+  @ApiParam({
+    name: "id",
+    type: String,
+    required: true,
+    description: "The ID of the player to update",
+    example: "507f1f77bcf86cd799439011",
+  })
+  @ApiOkResponse({
+    description: "Player updated successfully",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(Player) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Validation error",
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({ status: 404, description: "Player #ID not found", type: ProblemDetailsDto })
+  @ApiResponse({ status: 410, description: "Player #ID has been deleted", type: ProblemDetailsDto })
   @Patch(':id')
   async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updatePlayerDto: UpdatePlayerDto): Promise<IResponse<Character>> {
     await this.validateResource(id);

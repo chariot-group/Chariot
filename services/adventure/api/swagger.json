@@ -1,0 +1,4117 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/characters": {
+      "get": {
+        "operationId": "CharacterController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Characters found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IPaginatedResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Character"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Get a collection of paginated characters",
+        "tags": [
+          "Character"
+        ]
+      }
+    },
+    "/characters/{id}": {
+      "get": {
+        "operationId": "CharacterController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the character to get",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Character found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Character"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error while fetching character #ID: Id is not a valid mongoose id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Character #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Character #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a character by ID",
+        "tags": [
+          "Character"
+        ]
+      },
+      "delete": {
+        "operationId": "CharacterController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the character to delete",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Character #ID deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Character"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error while fetching character #ID: Id is not a valid mongoose id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Character #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Character #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Delete a character by ID",
+        "tags": [
+          "Character"
+        ]
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "PrometheusController_index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Prometheus"
+        ]
+      }
+    },
+    "/characters/npcs": {
+      "post": {
+        "operationId": "NpcController_createNpc",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNpcDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The NPC has been successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/NPC"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new NPC",
+        "tags": [
+          "Npc"
+        ]
+      }
+    },
+    "/characters/npcs/{id}": {
+      "patch": {
+        "operationId": "NpcController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the NPC to update",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNpcDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Campaign updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/NPC"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NPC #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "NPC #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a NPC by ID",
+        "tags": [
+          "Npc"
+        ]
+      }
+    },
+    "/characters/players": {
+      "post": {
+        "operationId": "PlayerController_createPlayer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlayerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The player has been successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Player"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new player",
+        "tags": [
+          "Player"
+        ]
+      }
+    },
+    "/characters/players/{id}": {
+      "patch": {
+        "operationId": "PlayerController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the player to update",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlayerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Player updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Player"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Player #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Player #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a player by ID",
+        "tags": [
+          "Player"
+        ]
+      }
+    },
+    "/groups": {
+      "post": {
+        "operationId": "GroupController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The group has been successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Group"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new group",
+        "tags": [
+          "Group"
+        ]
+      },
+      "get": {
+        "operationId": "GroupController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "label",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "onlyWithMembers",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Groups found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IPaginatedResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Group"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Get a collection of paginated groups",
+        "tags": [
+          "Group"
+        ]
+      }
+    },
+    "/groups/{id}/characters": {
+      "get": {
+        "operationId": "GroupController_findAllCharacters",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Characters found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IPaginatedResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Character"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Get a collection of paginated groups's characters",
+        "tags": [
+          "Group"
+        ]
+      }
+    },
+    "/groups/{id}": {
+      "get": {
+        "operationId": "GroupController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to get",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Group"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error while fetching group #ID: Id is not a valid mongoose id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Group #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a group by ID",
+        "tags": [
+          "Group"
+        ]
+      },
+      "patch": {
+        "operationId": "GroupController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to update",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Group"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Group #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a group by ID",
+        "tags": [
+          "Group"
+        ]
+      },
+      "delete": {
+        "operationId": "GroupController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the group to delete",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group #ID deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Group"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error while fetching group #ID: Id is not a valid mongoose id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Group #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Delete a group by ID",
+        "tags": [
+          "Group"
+        ]
+      }
+    },
+    "/campaigns": {
+      "post": {
+        "operationId": "CampaignController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The campaign has been successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Campaign"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new campaign",
+        "tags": [
+          "Campaign"
+        ]
+      },
+      "get": {
+        "operationId": "CampaignController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "label",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaigns found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IPaginatedResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Campaign"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Get a collection of paginated campaigns",
+        "tags": [
+          "Campaign"
+        ]
+      }
+    },
+    "/campaigns/{id}/groups": {
+      "get": {
+        "operationId": "CampaignController_findAllGroups",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "label",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "onlyWithMembers",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Groups found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IPaginatedResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Group"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Get a collection of paginated campaigns's groups",
+        "tags": [
+          "Campaign"
+        ]
+      }
+    },
+    "/campaigns/{id}": {
+      "get": {
+        "operationId": "CampaignController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the campaign to get",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Campaign"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error while fetching campaign #ID: Id is not a valid mongoose id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campaign #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Campaign #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a campaign by ID",
+        "tags": [
+          "Campaign"
+        ]
+      },
+      "patch": {
+        "operationId": "CampaignController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the campaign to update",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCampaignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Campaign updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Campaign"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campaign #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Campaign #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a campaign by ID",
+        "tags": [
+          "Campaign"
+        ]
+      },
+      "delete": {
+        "operationId": "CampaignController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the campaign to delete",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign #ID deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Campaign"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error while fetching campaign #ID: Id is not a valid mongoose id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campaign #ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Campaign #ID has been deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Delete a campaign by ID",
+        "tags": [
+          "Campaign"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Adventure API",
+    "description": "Adventure API Documentation",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "http://localhost:9000"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/auth",
+            "tokenUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/token",
+            "scopes": {
+              "openid": "OpenID Connect"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ProblemDetailsDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "https://httpstatuses.io/400"
+          },
+          "title": {
+            "type": "string",
+            "example": "Bad request"
+          },
+          "status": {
+            "type": "number",
+            "example": 400
+          },
+          "instance": {
+            "type": "string",
+            "example": "/campaigns"
+          },
+          "detail": {
+            "type": "string",
+            "example": "The 'name' field is required."
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "instance"
+        ]
+      },
+      "IResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Campaign #507f1f77bcf86cd799439011 found in 5ms"
+          },
+          "data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "message",
+          "data"
+        ]
+      },
+      "SchemaObjectId": {
+        "type": "object",
+        "properties": {}
+      },
+      "Speed": {
+        "type": "object",
+        "properties": {
+          "walk": {
+            "type": "number",
+            "example": 30
+          },
+          "climb": {
+            "type": "number",
+            "example": 15
+          },
+          "swim": {
+            "type": "number",
+            "example": 20
+          },
+          "fly": {
+            "type": "number",
+            "example": 60
+          },
+          "burrow": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "walk",
+          "climb",
+          "swim",
+          "fly",
+          "burrow"
+        ]
+      },
+      "AbilityScores": {
+        "type": "object",
+        "properties": {
+          "strength": {
+            "type": "number",
+            "example": 10
+          },
+          "dexterity": {
+            "type": "number",
+            "example": 10
+          },
+          "constitution": {
+            "type": "number",
+            "example": 10
+          },
+          "intelligence": {
+            "type": "number",
+            "example": 10
+          },
+          "wisdom": {
+            "type": "number",
+            "example": 10
+          },
+          "charisma": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ]
+      },
+      "SavingThrows": {
+        "type": "object",
+        "properties": {
+          "strength": {
+            "type": "number",
+            "example": 0
+          },
+          "dexterity": {
+            "type": "number",
+            "example": 0
+          },
+          "constitution": {
+            "type": "number",
+            "example": 0
+          },
+          "intelligence": {
+            "type": "number",
+            "example": 0
+          },
+          "wisdom": {
+            "type": "number",
+            "example": 0
+          },
+          "charisma": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ]
+      },
+      "Skills": {
+        "type": "object",
+        "properties": {
+          "athletics": {
+            "type": "number",
+            "example": 0
+          },
+          "acrobatics": {
+            "type": "number",
+            "example": 0
+          },
+          "sleightHand": {
+            "type": "number",
+            "example": 0
+          },
+          "stealth": {
+            "type": "number",
+            "example": 0
+          },
+          "arcana": {
+            "type": "number",
+            "example": 0
+          },
+          "history": {
+            "type": "number",
+            "example": 0
+          },
+          "investigation": {
+            "type": "number",
+            "example": 0
+          },
+          "nature": {
+            "type": "number",
+            "example": 0
+          },
+          "religion": {
+            "type": "number",
+            "example": 0
+          },
+          "animalHandling": {
+            "type": "number",
+            "example": 0
+          },
+          "insight": {
+            "type": "number",
+            "example": 0
+          },
+          "medicine": {
+            "type": "number",
+            "example": 0
+          },
+          "perception": {
+            "type": "number",
+            "example": 0
+          },
+          "survival": {
+            "type": "number",
+            "example": 0
+          },
+          "deception": {
+            "type": "number",
+            "example": 0
+          },
+          "intimidation": {
+            "type": "number",
+            "example": 0
+          },
+          "performance": {
+            "type": "number",
+            "example": 0
+          },
+          "persuasion": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "athletics",
+          "acrobatics",
+          "sleightHand",
+          "stealth",
+          "arcana",
+          "history",
+          "investigation",
+          "nature",
+          "religion",
+          "animalHandling",
+          "insight",
+          "medicine",
+          "perception",
+          "survival",
+          "deception",
+          "intimidation",
+          "performance",
+          "persuasion"
+        ]
+      },
+      "Sense": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Darkvision"
+          },
+          "value": {
+            "type": "number",
+            "example": 60
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
+      "Stats": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "string",
+            "example": "Medium"
+          },
+          "maxHitPoints": {
+            "type": "number",
+            "example": 100
+          },
+          "currentHitPoints": {
+            "type": "number",
+            "example": 100
+          },
+          "tempHitPoints": {
+            "type": "number",
+            "example": 0
+          },
+          "armorClass": {
+            "type": "number",
+            "example": 15
+          },
+          "speed": {
+            "$ref": "#/components/schemas/Speed"
+          },
+          "abilityScores": {
+            "$ref": "#/components/schemas/AbilityScores"
+          },
+          "languages": {
+            "example": [
+              "Common",
+              "Elvish"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "passivePerception": {
+            "type": "number",
+            "example": 10
+          },
+          "savingThrows": {
+            "$ref": "#/components/schemas/SavingThrows"
+          },
+          "skills": {
+            "$ref": "#/components/schemas/Skills"
+          },
+          "senses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sense"
+            }
+          }
+        },
+        "required": [
+          "size",
+          "maxHitPoints",
+          "currentHitPoints",
+          "tempHitPoints",
+          "armorClass",
+          "speed",
+          "abilityScores",
+          "languages",
+          "passivePerception",
+          "savingThrows",
+          "skills",
+          "senses"
+        ]
+      },
+      "Affinities": {
+        "type": "object",
+        "properties": {
+          "resistances": {
+            "example": [
+              "Fire",
+              "Water"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "immunities": {
+            "example": [
+              "Ice",
+              "Poison"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "vulnerabilities": {
+            "example": [
+              "Earth",
+              "Lightning"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "resistances",
+          "immunities",
+          "vulnerabilities"
+        ]
+      },
+      "Ability": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Stealth"
+          },
+          "description": {
+            "type": "string",
+            "example": "Allows the character to move unseen and unheard"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      },
+      "Map": {
+        "type": "object",
+        "properties": {}
+      },
+      "Spell": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Fireball"
+          },
+          "level": {
+            "type": "number",
+            "example": 3
+          },
+          "school": {
+            "type": "string",
+            "example": "Evocation"
+          },
+          "description": {
+            "type": "string",
+            "example": "A bright streak flashes from your pointing finger to a point you choose within range..."
+          },
+          "components": {
+            "example": [
+              "V",
+              "S",
+              "M"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "castingTime": {
+            "type": "string",
+            "example": "1 action"
+          },
+          "duration": {
+            "type": "string",
+            "example": "1 minute"
+          },
+          "range": {
+            "type": "string",
+            "example": "60 feet"
+          },
+          "effectType": {
+            "type": "string",
+            "example": "attack",
+            "enum": [
+              "attack",
+              "heal",
+              "utility"
+            ]
+          },
+          "damage": {
+            "type": "string",
+            "example": "8d6"
+          },
+          "healing": {
+            "type": "string",
+            "example": "4d8"
+          }
+        },
+        "required": [
+          "name",
+          "level",
+          "school",
+          "description",
+          "components",
+          "castingTime",
+          "duration",
+          "range",
+          "effectType",
+          "damage",
+          "healing"
+        ]
+      },
+      "Spellcasting": {
+        "type": "object",
+        "properties": {
+          "ability": {
+            "type": "string",
+            "example": "Intelligence"
+          },
+          "saveDC": {
+            "type": "number",
+            "example": 15
+          },
+          "attackBonus": {
+            "type": "number",
+            "example": 7
+          },
+          "spellSlotsByLevel": {
+            "example": {
+              "1": {
+                "total": 4,
+                "used": 1
+              },
+              "2": {
+                "total": 3,
+                "used": 0
+              }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Map"
+              }
+            ]
+          },
+          "totalSlots": {
+            "type": "number",
+            "example": 10
+          },
+          "spells": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Spell"
+            }
+          }
+        },
+        "required": [
+          "ability",
+          "saveDC",
+          "attackBonus",
+          "spellSlotsByLevel",
+          "totalSlots",
+          "spells"
+        ]
+      },
+      "Group": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "example": "507f1f77bcf86cd799439011",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SchemaObjectId"
+              }
+            ]
+          },
+          "label": {
+            "type": "string",
+            "example": "Adventurers"
+          },
+          "description": {
+            "type": "string",
+            "example": "A group of brave adventurers."
+          },
+          "characters": {
+            "example": [
+              "507f1f77bcf86cd799439011",
+              "507f1f77bcf86cd799439012"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "campaigns": {
+            "example": [
+              "507f1f77bcf86cd799439011",
+              "507f1f77bcf86cd799439012"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": null
+          }
+        },
+        "required": [
+          "_id",
+          "label",
+          "description",
+          "characters",
+          "campaigns",
+          "deletedAt"
+        ]
+      },
+      "Damage": {
+        "type": "object",
+        "properties": {
+          "dice": {
+            "type": "string",
+            "example": "1d6+2"
+          },
+          "type": {
+            "type": "string",
+            "example": "slashing"
+          }
+        },
+        "required": [
+          "dice",
+          "type"
+        ]
+      },
+      "Action": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Bite"
+          },
+          "type": {
+            "type": "string",
+            "example": "Melee Weapon Attack"
+          },
+          "attackBonus": {
+            "type": "number",
+            "example": 5
+          },
+          "damage": {
+            "$ref": "#/components/schemas/Damage"
+          },
+          "range": {
+            "type": "string",
+            "example": "5 ft."
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "attackBonus",
+          "damage",
+          "range"
+        ]
+      },
+      "Actions": {
+        "type": "object",
+        "properties": {
+          "standard": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Action"
+            }
+          },
+          "legendary": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Action"
+            }
+          },
+          "lair": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Action"
+            }
+          }
+        },
+        "required": [
+          "standard",
+          "legendary",
+          "lair"
+        ]
+      },
+      "Challenge": {
+        "type": "object",
+        "properties": {
+          "challengeRating": {
+            "type": "number",
+            "example": 3
+          },
+          "experiencePoints": {
+            "type": "number",
+            "example": 700
+          }
+        },
+        "required": [
+          "challengeRating",
+          "experiencePoints"
+        ]
+      },
+      "NPCProfile": {
+        "type": "object",
+        "properties": {
+          "alignment": {
+            "type": "string",
+            "example": "A brave warrior from the north"
+          },
+          "type": {
+            "type": "string",
+            "example": "Goblin"
+          },
+          "subtype": {
+            "type": "string",
+            "example": "Humanoid"
+          }
+        },
+        "required": [
+          "alignment",
+          "type",
+          "subtype"
+        ]
+      },
+      "NPC": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "example": "60d21b4667d0d8992e610c85",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SchemaObjectId"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "example": "Aragorn"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/Stats"
+          },
+          "affinities": {
+            "$ref": "#/components/schemas/Affinities"
+          },
+          "abilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ability"
+            }
+          },
+          "spellcasting": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Spellcasting"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            }
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": null
+          },
+          "actions": {
+            "$ref": "#/components/schemas/Actions"
+          },
+          "challenge": {
+            "$ref": "#/components/schemas/Challenge"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/NPCProfile"
+          }
+        },
+        "required": [
+          "_id",
+          "name",
+          "stats",
+          "affinities",
+          "abilities",
+          "spellcasting",
+          "groups",
+          "deletedAt",
+          "actions",
+          "challenge",
+          "profile"
+        ]
+      },
+      "AbilityScoresDto": {
+        "type": "object",
+        "properties": {
+          "strength": {
+            "type": "number",
+            "example": 16
+          },
+          "dexterity": {
+            "type": "number",
+            "example": 14
+          },
+          "constitution": {
+            "type": "number",
+            "example": 15
+          },
+          "intelligence": {
+            "type": "number",
+            "example": 12
+          },
+          "wisdom": {
+            "type": "number",
+            "example": 13
+          },
+          "charisma": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ]
+      },
+      "SavingThrowsDto": {
+        "type": "object",
+        "properties": {
+          "strength": {
+            "type": "number",
+            "example": 16
+          },
+          "dexterity": {
+            "type": "number",
+            "example": 14
+          },
+          "constitution": {
+            "type": "number",
+            "example": 15
+          },
+          "intelligence": {
+            "type": "number",
+            "example": 12
+          },
+          "wisdom": {
+            "type": "number",
+            "example": 13
+          },
+          "charisma": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ]
+      },
+      "SpeedDto": {
+        "type": "object",
+        "properties": {
+          "walk": {
+            "type": "number",
+            "example": 30
+          },
+          "climb": {
+            "type": "number",
+            "example": 15
+          },
+          "swim": {
+            "type": "number",
+            "example": 20
+          },
+          "fly": {
+            "type": "number",
+            "example": 60
+          },
+          "burrow": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "walk",
+          "climb",
+          "swim",
+          "fly",
+          "burrow"
+        ]
+      },
+      "SkillDto": {
+        "type": "object",
+        "properties": {
+          "athletics": {
+            "type": "number",
+            "example": 5
+          },
+          "acrobatics": {
+            "type": "number",
+            "example": 3
+          },
+          "sleightHand": {
+            "type": "number",
+            "example": 4
+          },
+          "stealth": {
+            "type": "number",
+            "example": 2
+          },
+          "arcana": {
+            "type": "number",
+            "example": 6
+          },
+          "history": {
+            "type": "number",
+            "example": 1
+          },
+          "investigation": {
+            "type": "number",
+            "example": 2
+          },
+          "nature": {
+            "type": "number",
+            "example": 3
+          },
+          "religion": {
+            "type": "number",
+            "example": 4
+          },
+          "animalHandling": {
+            "type": "number",
+            "example": 5
+          },
+          "insight": {
+            "type": "number",
+            "example": 6
+          },
+          "medicine": {
+            "type": "number",
+            "example": 4
+          },
+          "perception": {
+            "type": "number",
+            "example": 7
+          },
+          "survival": {
+            "type": "number",
+            "example": 3
+          },
+          "deception": {
+            "type": "number",
+            "example": 2
+          },
+          "intimidation": {
+            "type": "number",
+            "example": 5
+          },
+          "performance": {
+            "type": "number",
+            "example": 4
+          },
+          "persuasion": {
+            "type": "number",
+            "example": 6
+          }
+        },
+        "required": [
+          "athletics",
+          "acrobatics",
+          "sleightHand",
+          "stealth",
+          "arcana",
+          "history",
+          "investigation",
+          "nature",
+          "religion",
+          "animalHandling",
+          "insight",
+          "medicine",
+          "perception",
+          "survival",
+          "deception",
+          "intimidation",
+          "performance",
+          "persuasion"
+        ]
+      },
+      "SenseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Darkvision"
+          },
+          "value": {
+            "type": "number",
+            "example": 60
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
+      "StatsDto": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "object",
+            "example": "Medium"
+          },
+          "maxHitPoints": {
+            "type": "number",
+            "example": 100
+          },
+          "currentHitPoints": {
+            "type": "number",
+            "example": 75
+          },
+          "tempHitPoints": {
+            "type": "number",
+            "example": 10
+          },
+          "armorClass": {
+            "type": "number",
+            "example": 15
+          },
+          "passivePerception": {
+            "type": "number",
+            "example": 12
+          },
+          "languages": {
+            "example": [
+              "Common",
+              "Elvish"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "abilityScores": {
+            "$ref": "#/components/schemas/AbilityScoresDto"
+          },
+          "savingThrows": {
+            "$ref": "#/components/schemas/SavingThrowsDto"
+          },
+          "speed": {
+            "$ref": "#/components/schemas/SpeedDto"
+          },
+          "skills": {
+            "$ref": "#/components/schemas/SkillDto"
+          },
+          "senses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SenseDto"
+            }
+          }
+        },
+        "required": [
+          "size",
+          "maxHitPoints",
+          "currentHitPoints",
+          "tempHitPoints",
+          "armorClass",
+          "passivePerception",
+          "languages",
+          "abilityScores",
+          "savingThrows",
+          "speed",
+          "skills",
+          "senses"
+        ]
+      },
+      "AffinitiesDto": {
+        "type": "object",
+        "properties": {
+          "resistances": {
+            "example": [
+              "Fire",
+              "Water"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "immunities": {
+            "example": [
+              "Ice",
+              "Poison"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "vulnerabilities": {
+            "example": [
+              "Earth",
+              "Lightning"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "resistances",
+          "immunities",
+          "vulnerabilities"
+        ]
+      },
+      "AbilityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Fireball"
+          },
+          "description": {
+            "type": "string",
+            "example": "A powerful fire-based attack that deals area damage"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      },
+      "SpellDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Fireball"
+          },
+          "level": {
+            "type": "number",
+            "example": 3
+          },
+          "school": {
+            "type": "string",
+            "example": "Evocation"
+          },
+          "description": {
+            "type": "string",
+            "example": "A bright streak flashes from your pointing finger to a point you choose within range..."
+          },
+          "components": {
+            "example": [
+              "V",
+              "S",
+              "M"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "castingTime": {
+            "type": "string",
+            "example": "1 action"
+          },
+          "duration": {
+            "type": "string",
+            "example": "Instantaneous"
+          },
+          "range": {
+            "type": "string",
+            "example": "150 feet"
+          },
+          "effectType": {
+            "type": "string",
+            "example": "attack",
+            "enum": [
+              "attack",
+              "heal",
+              "utility"
+            ]
+          },
+          "damage": {
+            "type": "string",
+            "example": "8d6"
+          },
+          "healing": {
+            "type": "string",
+            "example": "4d8"
+          }
+        },
+        "required": [
+          "name",
+          "level",
+          "school",
+          "description",
+          "components",
+          "castingTime",
+          "duration",
+          "range",
+          "effectType",
+          "damage",
+          "healing"
+        ]
+      },
+      "SpellcastingDto": {
+        "type": "object",
+        "properties": {
+          "ability": {
+            "type": "string",
+            "example": "Intelligence"
+          },
+          "saveDC": {
+            "type": "number",
+            "example": 15
+          },
+          "attackBonus": {
+            "type": "number",
+            "example": 7
+          },
+          "spellSlotsByLevel": {
+            "example": {
+              "1": {
+                "total": 4,
+                "used": 1
+              },
+              "2": {
+                "total": 3,
+                "used": 0
+              }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Map"
+              }
+            ]
+          },
+          "totalSlots": {
+            "type": "number",
+            "example": 10
+          },
+          "spells": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpellDto"
+            }
+          }
+        },
+        "required": [
+          "ability",
+          "saveDC",
+          "attackBonus",
+          "spellSlotsByLevel",
+          "totalSlots",
+          "spells"
+        ]
+      },
+      "DamageDto": {
+        "type": "object",
+        "properties": {
+          "dice": {
+            "type": "string",
+            "example": "2d6+3"
+          },
+          "type": {
+            "type": "string",
+            "example": "fire"
+          }
+        },
+        "required": [
+          "dice",
+          "type"
+        ]
+      },
+      "ActionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Fireball"
+          },
+          "type": {
+            "type": "string",
+            "example": "A ball of fire that explodes upon impact."
+          },
+          "attackBonus": {
+            "type": "number",
+            "example": 5
+          },
+          "damage": {
+            "$ref": "#/components/schemas/DamageDto"
+          },
+          "range": {
+            "type": "string",
+            "example": "30 feet"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "attackBonus",
+          "damage",
+          "range"
+        ]
+      },
+      "ActionsDto": {
+        "type": "object",
+        "properties": {
+          "standard": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionDto"
+            }
+          },
+          "legendary": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionDto"
+            }
+          },
+          "lair": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionDto"
+            }
+          }
+        },
+        "required": [
+          "standard",
+          "legendary",
+          "lair"
+        ]
+      },
+      "ChallengeDto": {
+        "type": "object",
+        "properties": {
+          "challengeRating": {
+            "type": "number",
+            "example": 3
+          },
+          "experiencePoints": {
+            "type": "number",
+            "example": 700
+          }
+        },
+        "required": [
+          "challengeRating",
+          "experiencePoints"
+        ]
+      },
+      "NPCProfileDto": {
+        "type": "object",
+        "properties": {
+          "alignment": {
+            "type": "string",
+            "example": "A brave warrior from the north"
+          },
+          "type": {
+            "type": "string",
+            "example": "Goblin"
+          },
+          "subtype": {
+            "type": "string",
+            "example": "Humanoid"
+          }
+        },
+        "required": [
+          "alignment",
+          "type",
+          "subtype"
+        ]
+      },
+      "CreateNpcDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Aragorn"
+          },
+          "groups": {
+            "example": "60f7c2ab4f1a256e1c8b4567",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stats": {
+            "$ref": "#/components/schemas/StatsDto"
+          },
+          "affinities": {
+            "$ref": "#/components/schemas/AffinitiesDto"
+          },
+          "abilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AbilityDto"
+            }
+          },
+          "spellcasting": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpellcastingDto"
+            }
+          },
+          "actions": {
+            "$ref": "#/components/schemas/ActionsDto"
+          },
+          "challenge": {
+            "$ref": "#/components/schemas/ChallengeDto"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/NPCProfileDto"
+          }
+        },
+        "required": [
+          "name",
+          "groups",
+          "stats",
+          "affinities",
+          "abilities",
+          "spellcasting",
+          "actions",
+          "challenge",
+          "profile"
+        ]
+      },
+      "UpdateNpcDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "Masteries": {
+        "type": "object",
+        "properties": {
+          "athletics": {
+            "type": "boolean",
+            "example": true
+          },
+          "acrobatics": {
+            "type": "boolean",
+            "example": true
+          },
+          "sleightHand": {
+            "type": "boolean",
+            "example": true
+          },
+          "stealth": {
+            "type": "boolean",
+            "example": true
+          },
+          "arcana": {
+            "type": "boolean",
+            "example": true
+          },
+          "history": {
+            "type": "boolean",
+            "example": true
+          },
+          "investigation": {
+            "type": "boolean",
+            "example": true
+          },
+          "nature": {
+            "type": "boolean",
+            "example": true
+          },
+          "religion": {
+            "type": "boolean",
+            "example": true
+          },
+          "animalHandling": {
+            "type": "boolean",
+            "example": true
+          },
+          "insight": {
+            "type": "boolean",
+            "example": true
+          },
+          "medicine": {
+            "type": "boolean",
+            "example": true
+          },
+          "perception": {
+            "type": "boolean",
+            "example": true
+          },
+          "survival": {
+            "type": "boolean",
+            "example": true
+          },
+          "deception": {
+            "type": "boolean",
+            "example": true
+          },
+          "intimidation": {
+            "type": "boolean",
+            "example": true
+          },
+          "performance": {
+            "type": "boolean",
+            "example": true
+          },
+          "persuasion": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "athletics",
+          "acrobatics",
+          "sleightHand",
+          "stealth",
+          "arcana",
+          "history",
+          "investigation",
+          "nature",
+          "religion",
+          "animalHandling",
+          "insight",
+          "medicine",
+          "perception",
+          "survival",
+          "deception",
+          "intimidation",
+          "performance",
+          "persuasion"
+        ]
+      },
+      "MasteriesAbility": {
+        "type": "object",
+        "properties": {
+          "strength": {
+            "type": "boolean",
+            "example": true
+          },
+          "dexterity": {
+            "type": "boolean",
+            "example": true
+          },
+          "constitution": {
+            "type": "boolean",
+            "example": true
+          },
+          "intelligence": {
+            "type": "boolean",
+            "example": true
+          },
+          "wisdom": {
+            "type": "boolean",
+            "example": true
+          },
+          "charisma": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ]
+      },
+      "PlayerStats": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "string",
+            "example": "Medium"
+          },
+          "maxHitPoints": {
+            "type": "number",
+            "example": 100
+          },
+          "currentHitPoints": {
+            "type": "number",
+            "example": 100
+          },
+          "tempHitPoints": {
+            "type": "number",
+            "example": 0
+          },
+          "armorClass": {
+            "type": "number",
+            "example": 15
+          },
+          "speed": {
+            "$ref": "#/components/schemas/Speed"
+          },
+          "abilityScores": {
+            "$ref": "#/components/schemas/AbilityScores"
+          },
+          "languages": {
+            "example": [
+              "Common",
+              "Elvish"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "passivePerception": {
+            "type": "number",
+            "example": 10
+          },
+          "savingThrows": {
+            "$ref": "#/components/schemas/SavingThrows"
+          },
+          "skills": {
+            "$ref": "#/components/schemas/Skills"
+          },
+          "senses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sense"
+            }
+          },
+          "proficiencyBonus": {
+            "type": "number",
+            "example": 0
+          },
+          "masteries": {
+            "$ref": "#/components/schemas/Masteries"
+          },
+          "masteriesAbility": {
+            "$ref": "#/components/schemas/MasteriesAbility"
+          }
+        },
+        "required": [
+          "size",
+          "maxHitPoints",
+          "currentHitPoints",
+          "tempHitPoints",
+          "armorClass",
+          "speed",
+          "abilityScores",
+          "languages",
+          "passivePerception",
+          "savingThrows",
+          "skills",
+          "senses",
+          "proficiencyBonus",
+          "masteries",
+          "masteriesAbility"
+        ]
+      },
+      "Progression": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "number",
+            "example": 1
+          },
+          "experience": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "level",
+          "experience"
+        ]
+      },
+      "Class": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Warrior"
+          },
+          "subclass": {
+            "type": "string",
+            "example": "Berserker"
+          },
+          "level": {
+            "type": "number",
+            "example": 1
+          },
+          "hitDice": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "name",
+          "subclass",
+          "level",
+          "hitDice"
+        ]
+      },
+      "PlayerProfile": {
+        "type": "object",
+        "properties": {
+          "alignment": {
+            "type": "string",
+            "example": "A brave warrior from the north"
+          },
+          "race": {
+            "type": "string",
+            "example": "Elf"
+          },
+          "subrace": {
+            "type": "string",
+            "example": "High Elf"
+          }
+        },
+        "required": [
+          "alignment",
+          "race",
+          "subrace"
+        ]
+      },
+      "Appearance": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "number",
+            "example": 25
+          },
+          "height": {
+            "type": "number",
+            "example": 180
+          },
+          "weight": {
+            "type": "number",
+            "example": 75
+          },
+          "eyes": {
+            "type": "string",
+            "example": "Blue"
+          },
+          "skin": {
+            "type": "string",
+            "example": "Light"
+          },
+          "hair": {
+            "type": "string",
+            "example": "Brown"
+          },
+          "description": {
+            "type": "string",
+            "example": "Athletic build with a friendly face."
+          }
+        },
+        "required": [
+          "age",
+          "height",
+          "weight",
+          "eyes",
+          "skin",
+          "hair",
+          "description"
+        ]
+      },
+      "Background": {
+        "type": "object",
+        "properties": {
+          "personalityTraits": {
+            "type": "string",
+            "example": "Born in a small village, raised by farmers."
+          },
+          "ideals": {
+            "type": "string",
+            "example": "To protect my loved ones at all costs."
+          },
+          "bonds": {
+            "type": "string",
+            "example": "My family is everything to me."
+          },
+          "flaws": {
+            "type": "string",
+            "example": "I have a quick temper and a tendency to act before thinking."
+          },
+          "alliesAndOrgs": {
+            "type": "string",
+            "example": "Member of the Silver Hand organization."
+          },
+          "backstory": {
+            "type": "string",
+            "example": "Born in a small village, I was trained as a warrior from a young age..."
+          }
+        },
+        "required": [
+          "personalityTraits",
+          "ideals",
+          "bonds",
+          "flaws",
+          "alliesAndOrgs",
+          "backstory"
+        ]
+      },
+      "Treasure": {
+        "type": "object",
+        "properties": {
+          "cp": {
+            "type": "number",
+            "example": 0
+          },
+          "sp": {
+            "type": "number",
+            "example": 0
+          },
+          "ep": {
+            "type": "number",
+            "example": 0
+          },
+          "gp": {
+            "type": "number",
+            "example": 0
+          },
+          "pp": {
+            "type": "number",
+            "example": 0
+          },
+          "notes": {
+            "type": "string",
+            "example": "Some notes about the treasure."
+          }
+        },
+        "required": [
+          "cp",
+          "sp",
+          "ep",
+          "gp",
+          "pp",
+          "notes"
+        ]
+      },
+      "Player": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "example": "60d21b4667d0d8992e610c85",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SchemaObjectId"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "example": "Aragorn"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/PlayerStats"
+          },
+          "affinities": {
+            "$ref": "#/components/schemas/Affinities"
+          },
+          "abilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ability"
+            }
+          },
+          "spellcasting": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Spellcasting"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            }
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": null
+          },
+          "inspiration": {
+            "type": "boolean",
+            "example": true
+          },
+          "progression": {
+            "$ref": "#/components/schemas/Progression"
+          },
+          "class": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Class"
+            }
+          },
+          "profile": {
+            "$ref": "#/components/schemas/PlayerProfile"
+          },
+          "appearance": {
+            "$ref": "#/components/schemas/Appearance"
+          },
+          "background": {
+            "$ref": "#/components/schemas/Background"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/Treasure"
+          }
+        },
+        "required": [
+          "_id",
+          "name",
+          "stats",
+          "affinities",
+          "abilities",
+          "spellcasting",
+          "groups",
+          "deletedAt",
+          "inspiration",
+          "progression",
+          "class",
+          "profile",
+          "appearance",
+          "background",
+          "treasure"
+        ]
+      },
+      "MasteryDto": {
+        "type": "object",
+        "properties": {
+          "athletics": {
+            "type": "boolean",
+            "example": true
+          },
+          "acrobatics": {
+            "type": "boolean",
+            "example": false
+          },
+          "sleightHand": {
+            "type": "boolean",
+            "example": true
+          },
+          "stealth": {
+            "type": "boolean",
+            "example": false
+          },
+          "arcana": {
+            "type": "boolean",
+            "example": true
+          },
+          "history": {
+            "type": "boolean",
+            "example": false
+          },
+          "investigation": {
+            "type": "boolean",
+            "example": true
+          },
+          "nature": {
+            "type": "boolean",
+            "example": false
+          },
+          "religion": {
+            "type": "boolean",
+            "example": true
+          },
+          "animalHandling": {
+            "type": "boolean",
+            "example": false
+          },
+          "insight": {
+            "type": "boolean",
+            "example": true
+          },
+          "medicine": {
+            "type": "boolean",
+            "example": false
+          },
+          "perception": {
+            "type": "boolean",
+            "example": true
+          },
+          "survival": {
+            "type": "boolean",
+            "example": false
+          },
+          "deception": {
+            "type": "boolean",
+            "example": true
+          },
+          "intimidation": {
+            "type": "boolean",
+            "example": false
+          },
+          "performance": {
+            "type": "boolean",
+            "example": true
+          },
+          "persuasion": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "athletics",
+          "acrobatics",
+          "sleightHand",
+          "stealth",
+          "arcana",
+          "history",
+          "investigation",
+          "nature",
+          "religion",
+          "animalHandling",
+          "insight",
+          "medicine",
+          "perception",
+          "survival",
+          "deception",
+          "intimidation",
+          "performance",
+          "persuasion"
+        ]
+      },
+      "MasteriesAbilityDto": {
+        "type": "object",
+        "properties": {
+          "strength": {
+            "type": "boolean",
+            "example": true
+          },
+          "dexterity": {
+            "type": "boolean",
+            "example": false
+          },
+          "constitution": {
+            "type": "boolean",
+            "example": true
+          },
+          "intelligence": {
+            "type": "boolean",
+            "example": false
+          },
+          "wisdom": {
+            "type": "boolean",
+            "example": true
+          },
+          "charisma": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ]
+      },
+      "PlayerStatsDto": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "object",
+            "example": "Medium"
+          },
+          "maxHitPoints": {
+            "type": "number",
+            "example": 100
+          },
+          "currentHitPoints": {
+            "type": "number",
+            "example": 75
+          },
+          "tempHitPoints": {
+            "type": "number",
+            "example": 10
+          },
+          "armorClass": {
+            "type": "number",
+            "example": 15
+          },
+          "passivePerception": {
+            "type": "number",
+            "example": 12
+          },
+          "languages": {
+            "example": [
+              "Common",
+              "Elvish"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "abilityScores": {
+            "$ref": "#/components/schemas/AbilityScoresDto"
+          },
+          "savingThrows": {
+            "$ref": "#/components/schemas/SavingThrowsDto"
+          },
+          "speed": {
+            "$ref": "#/components/schemas/SpeedDto"
+          },
+          "skills": {
+            "$ref": "#/components/schemas/SkillDto"
+          },
+          "senses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SenseDto"
+            }
+          },
+          "proficiencyBonus": {
+            "type": "number",
+            "example": 2
+          },
+          "masteries": {
+            "$ref": "#/components/schemas/MasteryDto"
+          },
+          "masteriesAbility": {
+            "$ref": "#/components/schemas/MasteriesAbilityDto"
+          }
+        },
+        "required": [
+          "size",
+          "maxHitPoints",
+          "currentHitPoints",
+          "tempHitPoints",
+          "armorClass",
+          "passivePerception",
+          "languages",
+          "abilityScores",
+          "savingThrows",
+          "speed",
+          "skills",
+          "senses",
+          "proficiencyBonus",
+          "masteries",
+          "masteriesAbility"
+        ]
+      },
+      "ProgressionDto": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "number",
+            "example": 3
+          },
+          "experience": {
+            "type": "number",
+            "example": 4500
+          }
+        },
+        "required": [
+          "level",
+          "experience"
+        ]
+      },
+      "ClassDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Warrior"
+          },
+          "subclass": {
+            "type": "number",
+            "example": 1
+          },
+          "level": {
+            "type": "number",
+            "example": 5
+          },
+          "hitDice": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "name",
+          "subclass",
+          "level",
+          "hitDice"
+        ]
+      },
+      "PlayerProfileDto": {
+        "type": "object",
+        "properties": {
+          "alignment": {
+            "type": "string",
+            "example": "A brave warrior from the north"
+          },
+          "race": {
+            "type": "string",
+            "example": "Elf"
+          },
+          "subrace": {
+            "type": "string",
+            "example": "High Elf"
+          }
+        },
+        "required": [
+          "alignment",
+          "race",
+          "subrace"
+        ]
+      },
+      "AppearanceDto": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "number",
+            "example": 25
+          },
+          "height": {
+            "type": "number",
+            "example": 180
+          },
+          "weight": {
+            "type": "number",
+            "example": 75
+          },
+          "eyes": {
+            "type": "string",
+            "example": "Blue"
+          },
+          "skin": {
+            "type": "string",
+            "example": "Light"
+          },
+          "hair": {
+            "type": "string",
+            "example": "Brown"
+          },
+          "description": {
+            "type": "string",
+            "example": "Athletic build with a friendly face."
+          }
+        },
+        "required": [
+          "age",
+          "height",
+          "weight",
+          "eyes",
+          "skin",
+          "hair",
+          "description"
+        ]
+      },
+      "BackgroundDto": {
+        "type": "object",
+        "properties": {
+          "personalityTraits": {
+            "type": "string",
+            "example": "Brave and cunning."
+          },
+          "ideals": {
+            "type": "string",
+            "example": "To protect my loved ones at all costs."
+          },
+          "bonds": {
+            "type": "string",
+            "example": "My family is everything to me."
+          },
+          "flaws": {
+            "type": "string",
+            "example": "I have a quick temper and a tendency to act before thinking."
+          },
+          "alliesAndOrgs": {
+            "type": "string",
+            "example": "Member of the Silver Hand organization."
+          },
+          "backstory": {
+            "type": "string",
+            "example": "Born in a small village, I was trained as a warrior from a young age..."
+          }
+        },
+        "required": [
+          "personalityTraits",
+          "ideals",
+          "bonds",
+          "flaws",
+          "alliesAndOrgs",
+          "backstory"
+        ]
+      },
+      "TreasureDto": {
+        "type": "object",
+        "properties": {
+          "cp": {
+            "type": "number",
+            "example": 150
+          },
+          "sp": {
+            "type": "number",
+            "example": 75
+          },
+          "ep": {
+            "type": "number",
+            "example": 200
+          },
+          "gp": {
+            "type": "number",
+            "example": 500
+          },
+          "pp": {
+            "type": "number",
+            "example": 20
+          },
+          "notes": {
+            "type": "string",
+            "example": "Found in a hidden chest behind the waterfall."
+          }
+        },
+        "required": [
+          "cp",
+          "sp",
+          "ep",
+          "gp",
+          "pp",
+          "notes"
+        ]
+      },
+      "CreatePlayerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Aragorn"
+          },
+          "groups": {
+            "example": "60f7c2ab4f1a256e1c8b4567",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stats": {
+            "$ref": "#/components/schemas/PlayerStatsDto"
+          },
+          "affinities": {
+            "$ref": "#/components/schemas/AffinitiesDto"
+          },
+          "abilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AbilityDto"
+            }
+          },
+          "spellcasting": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpellcastingDto"
+            }
+          },
+          "inspiration": {
+            "type": "boolean",
+            "example": false
+          },
+          "progression": {
+            "$ref": "#/components/schemas/ProgressionDto"
+          },
+          "class": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassDto"
+            }
+          },
+          "profile": {
+            "$ref": "#/components/schemas/PlayerProfileDto"
+          },
+          "appearance": {
+            "$ref": "#/components/schemas/AppearanceDto"
+          },
+          "background": {
+            "$ref": "#/components/schemas/BackgroundDto"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/TreasureDto"
+          }
+        },
+        "required": [
+          "name",
+          "groups",
+          "stats",
+          "affinities",
+          "abilities",
+          "spellcasting",
+          "inspiration",
+          "progression",
+          "class",
+          "profile",
+          "appearance",
+          "background",
+          "treasure"
+        ]
+      },
+      "UpdatePlayerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "offset": {
+            "type": "number",
+            "example": 10
+          },
+          "totalItems": {
+            "type": "number",
+            "example": 100
+          }
+        },
+        "required": [
+          "page",
+          "offset",
+          "totalItems"
+        ]
+      },
+      "IPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Campaign #507f1f77bcf86cd799439011 found in 5ms"
+          },
+          "data": {
+            "type": "object"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "required": [
+          "message",
+          "data",
+          "pagination"
+        ]
+      },
+      "Character": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "example": "60d21b4667d0d8992e610c85",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SchemaObjectId"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "example": "Aragorn"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/Stats"
+          },
+          "affinities": {
+            "$ref": "#/components/schemas/Affinities"
+          },
+          "abilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ability"
+            }
+          },
+          "spellcasting": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Spellcasting"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            }
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": null
+          }
+        },
+        "required": [
+          "_id",
+          "name",
+          "stats",
+          "affinities",
+          "abilities",
+          "spellcasting",
+          "groups",
+          "deletedAt"
+        ]
+      },
+      "CampaignGroupDto": {
+        "type": "object",
+        "properties": {
+          "idCampaign": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "type": {
+            "type": "string",
+            "example": "main",
+            "enum": [
+              "main",
+              "npc",
+              "archived"
+            ]
+          }
+        },
+        "required": [
+          "idCampaign",
+          "type"
+        ]
+      },
+      "CreateGroupDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Adventurers"
+          },
+          "description": {
+            "type": "string",
+            "example": "A group of brave adventurers."
+          },
+          "characters": {
+            "example": [
+              "507f1f77bcf86cd799439011",
+              "507f1f77bcf86cd799439012"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "campaigns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignGroupDto"
+            }
+          }
+        },
+        "required": [
+          "label",
+          "description",
+          "characters",
+          "campaigns"
+        ]
+      },
+      "ObjectId": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateGroupDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "Groups": {
+        "type": "object",
+        "properties": {
+          "main": {
+            "example": [
+              "507f1f77bcf86cd799439011"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "npc": {
+            "example": [
+              "507f1f77bcf86cd799439012"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "archived": {
+            "example": [
+              "507f1f77bcf86cd799439013"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "main",
+          "npc",
+          "archived"
+        ]
+      },
+      "Campaign": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "example": "507f1f77bcf86cd799439011",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SchemaObjectId"
+              }
+            ]
+          },
+          "label": {
+            "type": "string",
+            "example": "Summer Campaign"
+          },
+          "description": {
+            "type": "string",
+            "example": "A fun summer campaign full of adventures."
+          },
+          "groups": {
+            "$ref": "#/components/schemas/Groups"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": null
+          }
+        },
+        "required": [
+          "_id",
+          "label",
+          "description",
+          "groups",
+          "deletedAt"
+        ]
+      },
+      "CreateGroupIdsDto": {
+        "type": "object",
+        "properties": {
+          "main": {
+            "example": [
+              "60d21b4667d0d8992e610c85"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "npc": {
+            "example": [
+              "60d21b4667d0d8992e610c86"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "archived": {
+            "example": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "main",
+          "npc",
+          "archived"
+        ]
+      },
+      "CreateCampaignDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Epic Adventure"
+          },
+          "description": {
+            "type": "string",
+            "example": "An epic journey through uncharted lands."
+          },
+          "groups": {
+            "$ref": "#/components/schemas/CreateGroupIdsDto"
+          }
+        },
+        "required": [
+          "label",
+          "description",
+          "groups"
+        ]
+      },
+      "UpdateCampaignDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Epic Adventure"
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "InvalidParamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "label"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Must be at least 3 characters long"
+          }
+        },
+        "required": [
+          "name",
+          "reason"
+        ]
+      }
+    }
+  }
+}

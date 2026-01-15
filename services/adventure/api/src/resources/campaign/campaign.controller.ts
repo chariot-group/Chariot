@@ -26,8 +26,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { Campaign, CampaignDocument } from '@/resources/campaign/schemas/campaign.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
-import { IResponse } from '@/common/dtos/reponse.dto';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
+import { ApiExtraModels, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 
+@ApiExtraModels(
+  IResponse,
+  IPaginatedResponse,
+  Campaign,
+  Group
+)
 @UseGuards(IsCreatorGuard)
 @Controller('campaigns')
 export class CampaignController {
@@ -86,6 +94,25 @@ export class CampaignController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a new campaign' })
+  @ApiOkResponse({
+    description: 'The campaign has been successfully created.',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(Campaign) }
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Validation error",
+    type: ProblemDetailsDto,
+  })
   async create(@Req() request, @Body() createCampaignDto: CreateCampaignDto): Promise<IResponse<Campaign>> {
     await this.validateGroupRelations(createCampaignDto.groups.main, 'Main');
     await this.validateGroupRelations(createCampaignDto.groups.npc, 'NPC');
@@ -108,6 +135,26 @@ export class CampaignController {
   }
 
   @Get()
+  @ApiOperation({
+    summary: "Get a collection of paginated campaigns",
+    security: [],
+  })
+  @ApiOkResponse({
+    description: "Campaigns found successfully",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IPaginatedResponse) },
+        {
+          properties: {
+            data: {
+              type: "array",
+              items: { $ref: getSchemaPath(Campaign) },
+            },
+          },
+        },
+      ],
+    },
+  })
   findAll(
     @Req() request,
     @Query('page', ParseNullableIntPipe) page?: number,
@@ -127,6 +174,26 @@ export class CampaignController {
 
   @IsCreator(CampaignService)
   @Get(':id/groups')
+  @ApiOperation({
+    summary: "Get a collection of paginated campaigns's groups",
+    security: [],
+  })
+  @ApiOkResponse({
+    description: "Groups found successfully",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IPaginatedResponse) },
+        {
+          properties: {
+            data: {
+              type: "array",
+              items: { $ref: getSchemaPath(Group) },
+            },
+          },
+        },
+      ],
+    },
+  })
   async findAllGroups(
     @Req() request,
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
@@ -150,6 +217,34 @@ export class CampaignController {
     }
   }
 
+  @ApiOperation({ summary: "Get a campaign by ID" })
+  @ApiParam({
+    name: "id",
+    type: String,
+    required: true,
+    description: "The ID of the campaign to get",
+    example: "507f1f77bcf86cd799439011",
+  })
+  @ApiOkResponse({
+    description: "Campaign found successfully",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(Campaign) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({ status: 404, description: "Campaign #ID not found", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 400,
+    description: "Error while fetching campaign #ID: Id is not a valid mongoose id",
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({ status: 410, description: "Campaign #ID has been deleted", type: ProblemDetailsDto })
   @IsCreator(CampaignService)
   @Get(':id')
   async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
@@ -159,6 +254,34 @@ export class CampaignController {
   }
 
   @IsCreator(CampaignService)
+  @ApiOperation({ summary: "Update a campaign by ID" })
+  @ApiParam({
+    name: "id",
+    type: String,
+    required: true,
+    description: "The ID of the campaign to update",
+    example: "507f1f77bcf86cd799439011",
+  })
+  @ApiOkResponse({
+    description: "Campaign updated successfully",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(Campaign) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Validation error",
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({ status: 404, description: "Campaign #ID not found", type: ProblemDetailsDto })
+  @ApiResponse({ status: 410, description: "Campaign #ID has been deleted", type: ProblemDetailsDto })
   @Patch(':id')
   async update(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
@@ -182,6 +305,34 @@ export class CampaignController {
   }
 
   @IsCreator(CampaignService)
+  @ApiOperation({ summary: "Delete a campaign by ID" })
+  @ApiParam({
+    name: "id",
+    type: String,
+    required: true,
+    description: "The ID of the campaign to delete",
+    example: "507f1f77bcf86cd799439011",
+  })
+  @ApiOkResponse({
+    description: "Campaign #ID deleted",
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(Campaign) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({ status: 404, description: "Campaign #ID not found", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 400,
+    description: "Error while fetching campaign #ID: Id is not a valid mongoose id",
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({ status: 410, description: "Campaign #ID has been deleted", type: ProblemDetailsDto })
   @Delete(':id')
   async remove(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
     await this.validateResource(id);
