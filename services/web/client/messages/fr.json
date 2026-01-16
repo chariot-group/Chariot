@@ -1,0 +1,16 @@
+{
+  "common": {
+    "appName": "Chariot App",
+    "appDescription": "Application Chariot"
+  },
+  "home": {
+    "greeting": "Bonjour, Chariot!",
+    "primary": "Principal"
+  },
+  "toast": {
+    "success": "Ceci est un message de succès.",
+    "error": "Ceci est un message d'erreur.",
+    "warning": "Ceci est un message d'avertissement.",
+    "info": "Ceci est un message d'information."
+  }
+}
