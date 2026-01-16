@@ -2,22 +2,24 @@
 
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 export default function Home() {
   const { success, error, warning, info } = useToast();
+  const t = useTranslations();
 
   useEffect(() => {
-    success("This is a success message.");
-    error("This is an error message.");
-    warning("This is a warning message.");
-    info("This is an info message.");
-  }, [error, info, success, warning]);
+    success(t("toast.success"));
+    error(t("toast.error"));
+    warning(t("toast.warning"));
+    info(t("toast.info"));
+  }, [error, info, success, warning, t]);
 
   return (
     <div className="">
       <Card className="border-none">
-        Hello, Chariot! <span className="text-primary">Primary</span>
+        {t("home.greeting")} <span className="text-primary">{t("home.primary")}</span>
       </Card>
     </div>
   );

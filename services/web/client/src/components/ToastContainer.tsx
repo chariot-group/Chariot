@@ -1,7 +1,7 @@
 "use client";
 
 import { ToastContainer } from "react-toastify";
-import "@/app/globals.css";
+import "@/app/[locale]/globals.css";
 
 const CustomToastContainer = () => {
   return (
