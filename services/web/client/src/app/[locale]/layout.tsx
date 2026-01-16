@@ -3,6 +3,7 @@ import { Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { KeycloakProvider } from "@/providers/KeycloakProvider";
 import ToastContainer from "@/components/ToastContainer";
+import LocaleDetector from "@/components/LocaleDetector";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
@@ -36,6 +37,7 @@ export default async function RootLayout({
       <KeycloakProvider>
         <body className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover font-sans`}>
           <NextIntlClientProvider messages={messages}>
+            <LocaleDetector />
             <ToastContainer />
             {children}
           </NextIntlClientProvider>

@@ -2,8 +2,10 @@
 
 import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { setKeycloakInstance } from "@/services/ApiService";
+import { detectBrowserLocale, saveStoredLocale, getStoredLocale } from "@/hooks/useLocalePreference";
+import { Locale } from "@/i18n/request";
 
 interface KeycloakContextType {
   keycloak: Keycloak | null;
@@ -27,12 +29,14 @@ const KeycloakContext = createContext<KeycloakContextType>({
 
 export function KeycloakProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "en";
+  const router = useRouter();
+  const locale = pathname.split("/")[1] || "fr";
 
   const [keycloak, setKeycloak] = useState<Keycloak | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  const [isNewRegistration, setIsNewRegistration] = useState(false);
 
   // Ref pour stocker l'interval ID
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -106,13 +110,35 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading || !keycloak) return;
 
-    if (!authenticated) {
-      keycloak.login({
-        redirectUri: window.location.origin + `/${locale}`,
-        locale: locale,
-      });
+    // Si l'utilisateur vient de s'inscrire, sauvegarder sa locale et rediriger
+    if (isNewRegistration && authenticated) {
+      const detectedLocale = detectBrowserLocale();
+      saveStoredLocale(detectedLocale);
+
+      // Rediriger vers la locale détectée si différente de l'actuelle
+      if (locale !== detectedLocale) {
+        router.push(`/${detectedLocale}`);
+      }
+
+      setIsNewRegistration(false);
+      return;
     }
-  }, [authenticated, loading, keycloak, locale]);
+
+    // Si l'utilisateur n'est pas authentifié, rediriger vers login avec sa locale préférée
+    if (!authenticated) {
+      const preferredLocale = getStoredLocale() || locale;
+      keycloak.login({
+        redirectUri: window.location.origin + `/${preferredLocale}`,
+        locale: preferredLocale,
+      });
+    } else {
+      // Si l'utilisateur est authentifié, vérifier si on doit le rediriger vers sa locale préférée
+      const preferredLocale = getStoredLocale();
+      if (preferredLocale && preferredLocale !== locale) {
+        router.push(`/${preferredLocale}${pathname.substring(3)}`);
+      }
+    }
+  }, [authenticated, loading, keycloak, locale, isNewRegistration, router, pathname]);
 
   const login = () => {
     keycloak?.login({
@@ -133,9 +159,13 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   };
 
   const register = () => {
+    const detectedLocale = detectBrowserLocale();
+    saveStoredLocale(detectedLocale);
+    setIsNewRegistration(true);
+
     keycloak?.register({
-      redirectUri: window.location.origin + `/${locale}`,
-      locale: locale,
+      redirectUri: window.location.origin + `/${detectedLocale}`,
+      locale: detectedLocale,
     });
   };
 
