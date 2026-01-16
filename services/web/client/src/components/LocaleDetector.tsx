@@ -6,8 +6,8 @@ import { detectBrowserLocale, saveStoredLocale, getStoredLocale } from "@/hooks/
 import { Locale } from "@/i18n/request";
 
 /**
- * Composant qui détecte et gère la locale préférée de l'utilisateur
- * Doit être placé dans le layout pour s'exécuter au chargement de chaque page
+ * Component that detects and manages user's preferred locale
+ * Should be placed in layout to run on each page load
  */
 export default function LocaleDetector() {
   const params = useParams();
@@ -15,25 +15,25 @@ export default function LocaleDetector() {
   const currentLocale = params.locale as Locale;
 
   useEffect(() => {
-    // Ne rien faire côté serveur
+    // Do nothing server-side
     if (typeof window === "undefined") return;
 
-    // Vérifier si une locale est déjà sauvegardée
+    // Check if a locale is already saved
     let savedLocale = getStoredLocale();
 
-    // Si aucune locale n'est sauvegardée, détecter celle du navigateur
+    // If no locale is saved, detect from browser
     if (!savedLocale) {
       savedLocale = detectBrowserLocale();
       saveStoredLocale(savedLocale);
     }
 
-    // Si la locale actuelle est différente de la locale préférée,
-    // sauvegarder la locale actuelle comme nouvelle préférence
+    // If current locale is different from preferred locale,
+    // save current locale as new preference
     if (currentLocale && currentLocale !== savedLocale) {
       saveStoredLocale(currentLocale);
     }
   }, [currentLocale]);
 
-  // Ce composant ne rend rien
+  // This component renders nothing
   return null;
 }

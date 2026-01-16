@@ -38,7 +38,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isNewRegistration, setIsNewRegistration] = useState(false);
 
-  // Ref pour stocker l'interval ID
+  // Ref to store interval ID
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       try {
         const initOptions: KeycloakInitOptions = {
           onLoad: "check-sso",
-          checkLoginIframe: false, // Désactiver pour éviter les problèmes d'iframe
+          checkLoginIframe: false, // Disable to avoid iframe issues
           pkceMethod: "S256",
         };
 
@@ -64,19 +64,19 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         setAuthenticated(authenticated);
         setToken(kc.token || null);
 
-        // Passer l'instance Keycloak à apiClient
+        // Pass Keycloak instance to apiClient
         setKeycloakInstance(kc);
 
-        // Configurer le rafraîchissement automatique seulement si authentifié
+        // Configure automatic refresh only if authenticated
         if (authenticated && kc.token) {
-          // Nettoyer l'ancien interval s'il existe
+          // Clean up old interval if it exists
           if (refreshIntervalRef.current) {
             clearInterval(refreshIntervalRef.current);
           }
 
-          // Configurer un nouveau refresh automatique
+          // Configure new automatic refresh
           refreshIntervalRef.current = setInterval(() => {
-            kc.updateToken(70) // Refresh si expire dans moins de 70 secondes
+            kc.updateToken(70) // Refresh if expires in less than 70 seconds
               .then((refreshed) => {
                 if (refreshed) {
                   setToken(kc.token || null);
@@ -87,7 +87,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
                 setToken(null);
                 kc.login();
               });
-          }, 60000); // Vérifier toutes les 60 secondes
+          }, 60000); // Check every 60 seconds
         }
 
         setLoading(false);
@@ -110,12 +110,12 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading || !keycloak) return;
 
-    // Si l'utilisateur vient de s'inscrire, sauvegarder sa locale et rediriger
+    // If user just registered, save their locale and redirect
     if (isNewRegistration && authenticated) {
       const detectedLocale = detectBrowserLocale();
       saveStoredLocale(detectedLocale);
 
-      // Rediriger vers la locale détectée si différente de l'actuelle
+      // Redirect to detected locale if different from current
       if (locale !== detectedLocale) {
         router.push(`/${detectedLocale}`);
       }
@@ -124,7 +124,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Si l'utilisateur n'est pas authentifié, rediriger vers login avec sa locale préférée
+    // If user is not authenticated, redirect to login with their preferred locale
     if (!authenticated) {
       const preferredLocale = getStoredLocale() || locale;
       keycloak.login({
@@ -132,7 +132,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         locale: preferredLocale,
       });
     } else {
-      // Si l'utilisateur est authentifié, vérifier si on doit le rediriger vers sa locale préférée
+      // If user is authenticated, check if we should redirect to their preferred locale
       const preferredLocale = getStoredLocale();
       if (preferredLocale && preferredLocale !== locale) {
         router.push(`/${preferredLocale}${pathname.substring(3)}`);
@@ -148,7 +148,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    // Nettoyer l'interval avant de se déconnecter
+    // Clean up interval before logging out
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
     }

@@ -1,18 +1,18 @@
 import { getRequestConfig } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-// Locales supportées par l'application
+// Supported application locales
 export const locales = ["fr", "en", "es"] as const;
 export type Locale = (typeof locales)[number];
 
-// Locale par défaut
-export const defaultLocale: Locale = "fr";
+// Default locale
+export const defaultLocale: Locale = "en";
 
 export default getRequestConfig(async ({ requestLocale }) => {
-    // Récupère la locale depuis les paramètres de requête
+    // Get locale from request parameters
     const locale = await requestLocale;
 
-    // Valide que la locale est supportée
+    // Validate that locale is supported
     if (!locale || !locales.includes(locale as Locale)) {
         notFound();
     }

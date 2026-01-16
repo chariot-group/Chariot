@@ -2,15 +2,15 @@ import createMiddleware from "next-intl/middleware";
 import { locales, defaultLocale, Locale } from "./i18n/request";
 import { NextRequest } from "next/server";
 
-// Fonction pour obtenir la locale préférée depuis les cookies ou headers
+// Function to get the preferred locale from cookies or headers
 function getPreferredLocale(request: NextRequest): Locale | null {
-    // 1. Vérifier le cookie de préférence locale
+    // 1. Check the locale preference cookie
     const cookieLocale = request.cookies.get("user-preferred-locale")?.value as Locale | undefined;
     if (cookieLocale && locales.includes(cookieLocale)) {
         return cookieLocale;
     }
 
-    // 2. Vérifier l'en-tête Accept-Language du navigateur
+    // 2. Check the browser's Accept-Language header
     const acceptLanguage = request.headers.get("accept-language");
     if (acceptLanguage) {
         const browserLocales = acceptLanguage
@@ -28,35 +28,35 @@ function getPreferredLocale(request: NextRequest): Locale | null {
 }
 
 const intlMiddleware = createMiddleware({
-    // Locales supportées
+    // Supported locales
     locales,
 
-    // Locale par défaut
+    // Default locale
     defaultLocale,
 
-    // Toujours afficher le préfixe de locale dans l'URL
+    // Always display locale prefix in URL
     localePrefix: "always",
 
-    // Fonction personnalisée pour déterminer la locale par défaut
+    // Custom function to determine default locale
     localeDetection: true,
 });
 
 export default function middleware(request: NextRequest) {
-    // Obtenir la locale préférée de l'utilisateur
+    // Get user's preferred locale
     const preferredLocale = getPreferredLocale(request);
 
-    // Si une locale préférée existe et que l'URL est la racine, rediriger vers cette locale
+    // If a preferred locale exists and the URL is root, redirect to that locale
     if (preferredLocale && request.nextUrl.pathname === "/") {
         const url = request.nextUrl.clone();
         url.pathname = `/${preferredLocale}`;
         return Response.redirect(url);
     }
 
-    // Appeler le middleware next-intl standard
+    // Call the standard next-intl middleware
     return intlMiddleware(request);
 }
 
 export const config = {
-    // Matcher pour gérer toutes les routes sauf les fichiers statiques, _next et les API routes
+    // Matcher to handle all routes except static files, _next and API routes
     matcher: ["/((?!api|_next|.*\\..*).*)"],
 };

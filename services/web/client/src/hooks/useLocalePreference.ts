@@ -4,22 +4,22 @@ import { Locale, locales, defaultLocale } from "@/i18n/request";
 const LOCALE_STORAGE_KEY = "user-preferred-locale";
 
 /**
- * Hook pour gérer la locale préférée de l'utilisateur
- * Sauvegarde dans localStorage et dans un cookie pour le middleware
+ * Hook to manage the user's preferred locale
+ * Saves to localStorage and cookie for middleware
  */
 export function useLocalePreference() {
     const [preferredLocale, setPreferredLocale] = useState<Locale | null>(null);
 
     useEffect(() => {
-        // Récupérer la locale sauvegardée ou détecter celle du navigateur
+        // Get saved locale or detect from browser
         const savedLocale = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
 
         if (savedLocale && locales.includes(savedLocale)) {
             setPreferredLocale(savedLocale);
-            // Synchroniser avec le cookie
+            // Synchronize with cookie
             setCookie(LOCALE_STORAGE_KEY, savedLocale);
         } else {
-            // Détecter la locale du navigateur
+            // Detect browser locale
             const browserLocale = detectBrowserLocale();
             setPreferredLocale(browserLocale);
             localStorage.setItem(LOCALE_STORAGE_KEY, browserLocale);
@@ -51,15 +51,15 @@ export function useLocalePreference() {
 }
 
 /**
- * Détecte la locale du navigateur et retourne une locale supportée
+ * Detects browser locale and returns a supported locale
  */
 export function detectBrowserLocale(): Locale {
     if (typeof window === "undefined") return defaultLocale;
 
-    // Récupérer les langues du navigateur
+    // Get browser languages
     const browserLanguages = navigator.languages || [navigator.language];
 
-    // Chercher une correspondance exacte (ex: "fr-FR" -> "fr")
+    // Look for exact match (e.g.: "fr-FR" -> "fr")
     for (const lang of browserLanguages) {
         const shortLang = lang.split("-")[0].toLowerCase() as Locale;
         if (locales.includes(shortLang)) {
@@ -67,12 +67,12 @@ export function detectBrowserLocale(): Locale {
         }
     }
 
-    // Par défaut, retourner la locale par défaut
+    // By default, return the default locale
     return defaultLocale;
 }
 
 /**
- * Récupère la locale préférée depuis localStorage (fonction statique)
+ * Gets preferred locale from localStorage (static function)
  */
 export function getStoredLocale(): Locale | null {
     if (typeof window === "undefined") return null;
@@ -85,7 +85,7 @@ export function getStoredLocale(): Locale | null {
 }
 
 /**
- * Sauvegarde la locale préférée dans localStorage et cookie (fonction statique)
+ * Saves preferred locale to localStorage and cookie (static function)
  */
 export function saveStoredLocale(locale: Locale): void {
     if (typeof window === "undefined") return;
@@ -94,7 +94,7 @@ export function saveStoredLocale(locale: Locale): void {
 }
 
 /**
- * Définit un cookie
+ * Sets a cookie
  */
 function setCookie(name: string, value: string, days: number = 365): void {
     if (typeof document === "undefined") return;

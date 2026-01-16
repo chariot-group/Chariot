@@ -7,7 +7,7 @@ export const setKeycloakInstance = (instance: Keycloak) => {
   keycloakInstance = instance;
 };
 
-// Créer une seule instance axios partagée
+// Create a single shared axios instance
 let apiClientInstance: AxiosInstance | null = null;
 
 const createApiClient = (): AxiosInstance => {
@@ -17,7 +17,7 @@ const createApiClient = (): AxiosInstance => {
     throw new Error("API URL is not defined. Set NEXT_PUBLIC_API_URL in your environment.");
   }
 
-  // Ajouter le préfixe /api pour la gateway si l'URL ne le contient pas déjà
+  // Add /api prefix for gateway if URL doesn't already contain it
   const baseURL = url.endsWith('/api') ? url : `${url}/api`;
 
   const instance = axios.create({
@@ -28,31 +28,31 @@ const createApiClient = (): AxiosInstance => {
     withCredentials: true,
   });
 
-  // Intercepteur de requête - récupère le token à chaque requête
+  // Request interceptor - fetches token for each request
   instance.interceptors.request.use(
     async (config) => {
-      // Attendre que Keycloak soit initialisé
+      // Wait for Keycloak to be initialized
       if (typeof window !== 'undefined' && !keycloakInstance) {
-        // Attendre un court instant pour que Keycloak s'initialise
+        // Wait briefly for Keycloak to initialize
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Récupérer le token directement depuis l'instance Keycloak
+      // Get token directly from Keycloak instance
       const token = keycloakInstance?.token;
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       } else if (typeof window !== 'undefined') {
-        // Si pas de token côté client, on attend encore un peu
+        // If no token on client side, wait a bit more
         console.warn('⚠️ No token available yet, waiting for Keycloak initialization...');
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         const retryToken = keycloakInstance?.token;
         if (retryToken) {
           config.headers.Authorization = `Bearer ${retryToken}`;
         }
       }
-      
+
       return config;
     },
     (error) => {
@@ -60,7 +60,7 @@ const createApiClient = (): AxiosInstance => {
     },
   );
 
-  // Intercepteur de réponse pour gérer les erreurs 401
+  // Response interceptor to handle 401 errors
   instance.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
@@ -70,24 +70,24 @@ const createApiClient = (): AxiosInstance => {
         originalRequest._retry = true;
 
         try {
-          // Vérifier si l'utilisateur est authentifié
+          // Check if user is authenticated
           if (!keycloakInstance.authenticated) {
             keycloakInstance.login();
             return Promise.reject(error);
           }
 
-          // Forcer le refresh du token
-          const refreshed = await keycloakInstance.updateToken(-1); // -1 force le refresh
+          // Force token refresh
+          const refreshed = await keycloakInstance.updateToken(-1); // -1 forces refresh
 
           if (refreshed || keycloakInstance.token) {
-            // Mettre à jour le header avec le nouveau token
+            // Update header with new token
             const newToken = keycloakInstance.token;
 
             if (newToken && originalRequest.headers) {
               originalRequest.headers.Authorization = `Bearer ${newToken}`;
             }
 
-            // Réessayer la requête
+            // Retry request
             return instance(originalRequest);
           } else {
             keycloakInstance.login();
@@ -95,7 +95,7 @@ const createApiClient = (): AxiosInstance => {
           }
         } catch (refreshError) {
           console.error("Token refresh failed", refreshError);
-          // Rediriger vers la page de login
+          // Redirect to login page
           if (typeof window !== "undefined") {
             keycloakInstance.login();
           }
@@ -110,13 +110,13 @@ const createApiClient = (): AxiosInstance => {
   return instance;
 };
 
-// Fonction pour obtenir l'instance (créée une seule fois)
+// Function to get instance (created once)
 const apiClient = (contentType?: string): AxiosInstance => {
   if (!apiClientInstance) {
     apiClientInstance = createApiClient();
   }
 
-  // Si un content-type spécifique est demandé, le définir pour cette requête
+  // If a specific content-type is requested, set it for this request
   if (contentType) {
     apiClientInstance.defaults.headers.common["Content-Type"] = contentType;
   }
