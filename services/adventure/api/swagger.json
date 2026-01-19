@@ -1402,8 +1402,8 @@
         "type": "oauth2",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/auth",
-            "tokenUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/token",
+            "authorizationUrl": "http://localhost:8081/realms/chariot/protocol/openid-connect/auth",
+            "tokenUrl": "http://localhost:8081/realms/chariot/protocol/openid-connect/token",
             "scopes": {
               "openid": "OpenID Connect"
             }
@@ -1941,6 +1941,122 @@
           "spells"
         ]
       },
+      "Appearance": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "number",
+            "example": 25
+          },
+          "height": {
+            "type": "number",
+            "example": 180
+          },
+          "weight": {
+            "type": "number",
+            "example": 75
+          },
+          "eyes": {
+            "type": "string",
+            "example": "Blue"
+          },
+          "skin": {
+            "type": "string",
+            "example": "Light"
+          },
+          "hair": {
+            "type": "string",
+            "example": "Brown"
+          },
+          "description": {
+            "type": "string",
+            "example": "Athletic build with a friendly face."
+          }
+        },
+        "required": [
+          "age",
+          "height",
+          "weight",
+          "eyes",
+          "skin",
+          "hair",
+          "description"
+        ]
+      },
+      "Background": {
+        "type": "object",
+        "properties": {
+          "personalityTraits": {
+            "type": "string",
+            "example": "Born in a small village, raised by farmers."
+          },
+          "ideals": {
+            "type": "string",
+            "example": "To protect my loved ones at all costs."
+          },
+          "bonds": {
+            "type": "string",
+            "example": "My family is everything to me."
+          },
+          "flaws": {
+            "type": "string",
+            "example": "I have a quick temper and a tendency to act before thinking."
+          },
+          "alliesAndOrgs": {
+            "type": "string",
+            "example": "Member of the Silver Hand organization."
+          },
+          "backstory": {
+            "type": "string",
+            "example": "Born in a small village, I was trained as a warrior from a young age..."
+          }
+        },
+        "required": [
+          "personalityTraits",
+          "ideals",
+          "bonds",
+          "flaws",
+          "alliesAndOrgs",
+          "backstory"
+        ]
+      },
+      "Treasure": {
+        "type": "object",
+        "properties": {
+          "cp": {
+            "type": "number",
+            "example": 0
+          },
+          "sp": {
+            "type": "number",
+            "example": 0
+          },
+          "ep": {
+            "type": "number",
+            "example": 0
+          },
+          "gp": {
+            "type": "number",
+            "example": 0
+          },
+          "pp": {
+            "type": "number",
+            "example": 0
+          },
+          "notes": {
+            "type": "string",
+            "example": "Some notes about the treasure."
+          }
+        },
+        "required": [
+          "cp",
+          "sp",
+          "ep",
+          "gp",
+          "pp",
+          "notes"
+        ]
+      },
       "Group": {
         "type": "object",
         "properties": {
@@ -2143,6 +2259,15 @@
               "$ref": "#/components/schemas/Spellcasting"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/Appearance"
+          },
+          "background": {
+            "$ref": "#/components/schemas/Background"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/Treasure"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -2171,6 +2296,9 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
           "groups",
           "deletedAt",
           "actions",
@@ -2652,6 +2780,122 @@
           "spells"
         ]
       },
+      "AppearanceDto": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "number",
+            "example": 25
+          },
+          "height": {
+            "type": "number",
+            "example": 180
+          },
+          "weight": {
+            "type": "number",
+            "example": 75
+          },
+          "eyes": {
+            "type": "string",
+            "example": "Blue"
+          },
+          "skin": {
+            "type": "string",
+            "example": "Light"
+          },
+          "hair": {
+            "type": "string",
+            "example": "Brown"
+          },
+          "description": {
+            "type": "string",
+            "example": "Athletic build with a friendly face."
+          }
+        },
+        "required": [
+          "age",
+          "height",
+          "weight",
+          "eyes",
+          "skin",
+          "hair",
+          "description"
+        ]
+      },
+      "BackgroundDto": {
+        "type": "object",
+        "properties": {
+          "personalityTraits": {
+            "type": "string",
+            "example": "Brave and cunning."
+          },
+          "ideals": {
+            "type": "string",
+            "example": "To protect my loved ones at all costs."
+          },
+          "bonds": {
+            "type": "string",
+            "example": "My family is everything to me."
+          },
+          "flaws": {
+            "type": "string",
+            "example": "I have a quick temper and a tendency to act before thinking."
+          },
+          "alliesAndOrgs": {
+            "type": "string",
+            "example": "Member of the Silver Hand organization."
+          },
+          "backstory": {
+            "type": "string",
+            "example": "Born in a small village, I was trained as a warrior from a young age..."
+          }
+        },
+        "required": [
+          "personalityTraits",
+          "ideals",
+          "bonds",
+          "flaws",
+          "alliesAndOrgs",
+          "backstory"
+        ]
+      },
+      "TreasureDto": {
+        "type": "object",
+        "properties": {
+          "cp": {
+            "type": "number",
+            "example": 150
+          },
+          "sp": {
+            "type": "number",
+            "example": 75
+          },
+          "ep": {
+            "type": "number",
+            "example": 200
+          },
+          "gp": {
+            "type": "number",
+            "example": 500
+          },
+          "pp": {
+            "type": "number",
+            "example": 20
+          },
+          "notes": {
+            "type": "string",
+            "example": "Found in a hidden chest behind the waterfall."
+          }
+        },
+        "required": [
+          "cp",
+          "sp",
+          "ep",
+          "gp",
+          "pp",
+          "notes"
+        ]
+      },
       "DamageDto": {
         "type": "object",
         "properties": {
@@ -2799,6 +3043,15 @@
               "$ref": "#/components/schemas/SpellcastingDto"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/AppearanceDto"
+          },
+          "background": {
+            "$ref": "#/components/schemas/BackgroundDto"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/TreasureDto"
+          },
           "actions": {
             "$ref": "#/components/schemas/ActionsDto"
           },
@@ -2816,6 +3069,9 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
           "actions",
           "challenge",
           "profile"
@@ -3109,122 +3365,6 @@
           "subrace"
         ]
       },
-      "Appearance": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number",
-            "example": 25
-          },
-          "height": {
-            "type": "number",
-            "example": 180
-          },
-          "weight": {
-            "type": "number",
-            "example": 75
-          },
-          "eyes": {
-            "type": "string",
-            "example": "Blue"
-          },
-          "skin": {
-            "type": "string",
-            "example": "Light"
-          },
-          "hair": {
-            "type": "string",
-            "example": "Brown"
-          },
-          "description": {
-            "type": "string",
-            "example": "Athletic build with a friendly face."
-          }
-        },
-        "required": [
-          "age",
-          "height",
-          "weight",
-          "eyes",
-          "skin",
-          "hair",
-          "description"
-        ]
-      },
-      "Background": {
-        "type": "object",
-        "properties": {
-          "personalityTraits": {
-            "type": "string",
-            "example": "Born in a small village, raised by farmers."
-          },
-          "ideals": {
-            "type": "string",
-            "example": "To protect my loved ones at all costs."
-          },
-          "bonds": {
-            "type": "string",
-            "example": "My family is everything to me."
-          },
-          "flaws": {
-            "type": "string",
-            "example": "I have a quick temper and a tendency to act before thinking."
-          },
-          "alliesAndOrgs": {
-            "type": "string",
-            "example": "Member of the Silver Hand organization."
-          },
-          "backstory": {
-            "type": "string",
-            "example": "Born in a small village, I was trained as a warrior from a young age..."
-          }
-        },
-        "required": [
-          "personalityTraits",
-          "ideals",
-          "bonds",
-          "flaws",
-          "alliesAndOrgs",
-          "backstory"
-        ]
-      },
-      "Treasure": {
-        "type": "object",
-        "properties": {
-          "cp": {
-            "type": "number",
-            "example": 0
-          },
-          "sp": {
-            "type": "number",
-            "example": 0
-          },
-          "ep": {
-            "type": "number",
-            "example": 0
-          },
-          "gp": {
-            "type": "number",
-            "example": 0
-          },
-          "pp": {
-            "type": "number",
-            "example": 0
-          },
-          "notes": {
-            "type": "string",
-            "example": "Some notes about the treasure."
-          }
-        },
-        "required": [
-          "cp",
-          "sp",
-          "ep",
-          "gp",
-          "pp",
-          "notes"
-        ]
-      },
       "Player": {
         "type": "object",
         "properties": {
@@ -3258,6 +3398,15 @@
               "$ref": "#/components/schemas/Spellcasting"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/Appearance"
+          },
+          "background": {
+            "$ref": "#/components/schemas/Background"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/Treasure"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -3284,15 +3433,6 @@
           },
           "profile": {
             "$ref": "#/components/schemas/PlayerProfile"
-          },
-          "appearance": {
-            "$ref": "#/components/schemas/Appearance"
-          },
-          "background": {
-            "$ref": "#/components/schemas/Background"
-          },
-          "treasure": {
-            "$ref": "#/components/schemas/Treasure"
           }
         },
         "required": [
@@ -3302,15 +3442,15 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
           "groups",
           "deletedAt",
           "inspiration",
           "progression",
           "class",
-          "profile",
-          "appearance",
-          "background",
-          "treasure"
+          "profile"
         ]
       },
       "MasteryDto": {
@@ -3597,122 +3737,6 @@
           "subrace"
         ]
       },
-      "AppearanceDto": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number",
-            "example": 25
-          },
-          "height": {
-            "type": "number",
-            "example": 180
-          },
-          "weight": {
-            "type": "number",
-            "example": 75
-          },
-          "eyes": {
-            "type": "string",
-            "example": "Blue"
-          },
-          "skin": {
-            "type": "string",
-            "example": "Light"
-          },
-          "hair": {
-            "type": "string",
-            "example": "Brown"
-          },
-          "description": {
-            "type": "string",
-            "example": "Athletic build with a friendly face."
-          }
-        },
-        "required": [
-          "age",
-          "height",
-          "weight",
-          "eyes",
-          "skin",
-          "hair",
-          "description"
-        ]
-      },
-      "BackgroundDto": {
-        "type": "object",
-        "properties": {
-          "personalityTraits": {
-            "type": "string",
-            "example": "Brave and cunning."
-          },
-          "ideals": {
-            "type": "string",
-            "example": "To protect my loved ones at all costs."
-          },
-          "bonds": {
-            "type": "string",
-            "example": "My family is everything to me."
-          },
-          "flaws": {
-            "type": "string",
-            "example": "I have a quick temper and a tendency to act before thinking."
-          },
-          "alliesAndOrgs": {
-            "type": "string",
-            "example": "Member of the Silver Hand organization."
-          },
-          "backstory": {
-            "type": "string",
-            "example": "Born in a small village, I was trained as a warrior from a young age..."
-          }
-        },
-        "required": [
-          "personalityTraits",
-          "ideals",
-          "bonds",
-          "flaws",
-          "alliesAndOrgs",
-          "backstory"
-        ]
-      },
-      "TreasureDto": {
-        "type": "object",
-        "properties": {
-          "cp": {
-            "type": "number",
-            "example": 150
-          },
-          "sp": {
-            "type": "number",
-            "example": 75
-          },
-          "ep": {
-            "type": "number",
-            "example": 200
-          },
-          "gp": {
-            "type": "number",
-            "example": 500
-          },
-          "pp": {
-            "type": "number",
-            "example": 20
-          },
-          "notes": {
-            "type": "string",
-            "example": "Found in a hidden chest behind the waterfall."
-          }
-        },
-        "required": [
-          "cp",
-          "sp",
-          "ep",
-          "gp",
-          "pp",
-          "notes"
-        ]
-      },
       "CreatePlayerDto": {
         "type": "object",
         "properties": {
@@ -3745,6 +3769,15 @@
               "$ref": "#/components/schemas/SpellcastingDto"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/AppearanceDto"
+          },
+          "background": {
+            "$ref": "#/components/schemas/BackgroundDto"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/TreasureDto"
+          },
           "inspiration": {
             "type": "boolean",
             "example": false
@@ -3760,15 +3793,6 @@
           },
           "profile": {
             "$ref": "#/components/schemas/PlayerProfileDto"
-          },
-          "appearance": {
-            "$ref": "#/components/schemas/AppearanceDto"
-          },
-          "background": {
-            "$ref": "#/components/schemas/BackgroundDto"
-          },
-          "treasure": {
-            "$ref": "#/components/schemas/TreasureDto"
           }
         },
         "required": [
@@ -3778,13 +3802,13 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
           "inspiration",
           "progression",
           "class",
-          "profile",
-          "appearance",
-          "background",
-          "treasure"
+          "profile"
         ]
       },
       "UpdatePlayerDto": {
@@ -3866,6 +3890,15 @@
               "$ref": "#/components/schemas/Spellcasting"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/Appearance"
+          },
+          "background": {
+            "$ref": "#/components/schemas/Background"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/Treasure"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -3885,6 +3918,9 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
           "groups",
           "deletedAt"
         ]
