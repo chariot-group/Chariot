@@ -47,6 +47,9 @@ describe('NpcController - createNpc', () => {
       type: 'humanoid',
       subtype: 'human',
     },
+    appearance: {},
+    background: {},
+    treasure: {},
   };
 
   beforeEach(async () => {
