@@ -19,3 +19,26 @@ Each rule has a unique identifier and must be tested.
 - Log passwords, complete tokens, or sensitive data
 
 **References**: `services/adventure/api/src/logger/winston.logger.ts` | `docs/logger.md`
+
+---
+
+## FR-002: Character Universal Fields
+
+**Rule**: All character types (Player, NPC, etc.) must include shared narrative and economic fields at the base `Character` level.
+
+**Requirements**:
+- `appearance`: age, height, weight, eyes, skin, hair, description
+- `background`: personalityTraits, ideals, bonds, flaws, alliesAndOrgs, backstory
+- `treasure`: cp, sp, ep, gp, pp, notes
+- Exposed in Swagger on all endpoints that accept `Character` derivatives
+
+**Prohibitions**:
+- Duplicating these fields in discriminators (e.g., `Player`, `NPC`) when they already exist on `Character`
+
+**Tests**:
+- DTO validation accepts these nested structures on `CreateCharacterDto`
+- Invalid types in nested DTOs are rejected
+
+**References**:
+- `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
+- `services/adventure/api/src/resources/character/core/dto/create-character.dto.ts`
