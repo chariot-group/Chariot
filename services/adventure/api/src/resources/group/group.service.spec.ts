@@ -21,13 +21,13 @@ describe('GroupService', () => {
   const createDto: CreateGroupDto = {
     label: 'Test Group',
     characters: [new Types.ObjectId().toHexString()],
-    campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'main' }],
+    campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'active' }],
   };
 
   const updateDto: UpdateGroupDto = {
     label: 'Updated Group',
     characters: [new Types.ObjectId().toHexString()],
-    campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'main' }],
+    campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'active' }],
   };
 
   beforeEach(async () => {
@@ -104,7 +104,7 @@ describe('GroupService', () => {
     it('should handle create when characters is undefined', async () => {
       const dtoWithoutCharacters = {
         label: 'No Characters Group',
-        campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'main' as const }],
+        campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'active' as const }],
       };
 
       groupModel.create.mockResolvedValue({ _id: 'groupId', ...dtoWithoutCharacters });
@@ -135,8 +135,8 @@ describe('GroupService', () => {
         label: 'Group test',
         characters: [new Types.ObjectId().toHexString(), new Types.ObjectId().toHexString()],
         campaigns: [
-          { idCampaign: new Types.ObjectId().toHexString(), type: 'main' as const },
-          { idCampaign: new Types.ObjectId().toHexString(), type: 'npc' as const }
+          { idCampaign: new Types.ObjectId().toHexString(), type: 'active' as const },
+          { idCampaign: new Types.ObjectId().toHexString(), type: 'archived' as const }
         ]
       };
       const expectedCharacters = customCreateDto.characters;
@@ -168,16 +168,14 @@ describe('GroupService', () => {
   describe('findAllByUser', () => {
     it('should extract all groupIds when type is all', async () => {
       const campaignId = new Types.ObjectId().toHexString();
-      const mainGroups = [new Types.ObjectId(), new Types.ObjectId()];
-      const npcGroups = [new Types.ObjectId()];
+      const activeGroups = [new Types.ObjectId(), new Types.ObjectId()];
       const archivedGroups = [new Types.ObjectId()];
 
       campaignModel.findById.mockReturnValue({
         lean: jest.fn().mockResolvedValue({
           _id: campaignId,
           groups: {
-            main: mainGroups,
-            npc: npcGroups,
+            active: activeGroups,
             archived: archivedGroups,
           },
         }),
@@ -204,8 +202,7 @@ describe('GroupService', () => {
       );
 
       const expectedGroupIds = [
-        ...mainGroups,
-        ...npcGroups,
+        ...activeGroups,
         ...archivedGroups,
       ].map(id => id.toString());
 
@@ -215,7 +212,7 @@ describe('GroupService', () => {
     it('should find groups with filters and pagination', async () => {
       campaignModel.findById.mockReturnValue({
         lean: jest.fn().mockResolvedValue({
-          groups: { main: [new Types.ObjectId()], npc: [], archived: [] }
+          groups: { active: [new Types.ObjectId()], archived: [] }
         }),
       });
       groupModel.find.mockReturnThis();
@@ -275,9 +272,8 @@ describe('GroupService', () => {
     });
 
     it('should extract groupIds by type when campaignId and type are provided', async () => {
-      const mainGroups = [new Types.ObjectId(), new Types.ObjectId()];
-      const npcGroups = [new Types.ObjectId(), new Types.ObjectId()];
-      const expectedNpcGroupIds = npcGroups.map(id => id.toString());
+      const activeGroups = [new Types.ObjectId(), new Types.ObjectId()];
+      const expectedActiveGroupIds = activeGroups.map(id => id.toString());
       const archivedGroups = [new Types.ObjectId()];
       const campaignId = new Types.ObjectId().toHexString();
       // Mock campaignModel.findById().lean()
@@ -285,8 +281,7 @@ describe('GroupService', () => {
         lean: jest.fn().mockResolvedValue({
           _id: campaignId,
           groups: {
-            main: mainGroups,
-            npc: npcGroups,
+            active: activeGroups,
             archived: archivedGroups,
           }
         }),
@@ -306,11 +301,11 @@ describe('GroupService', () => {
         userId,
         { page: 1, offset: 10 },
         campaignId,
-        'npc'
+        'active'
       );
       expect(filtersArg).toBeDefined();
       expect(filtersArg).toHaveProperty('_id');
-      expect(filtersArg._id).toEqual({ $in: expectedNpcGroupIds });
+      expect(filtersArg._id).toEqual({ $in: expectedActiveGroupIds });
       expect(filtersArg._id.$in.every(id => typeof id === 'string')).toBe(true);
     });
 
@@ -610,8 +605,8 @@ describe('GroupService', () => {
 
     it('should use first campaign ID for metrics', async () => {
       const campaigns = [
-        { idCampaign: new Types.ObjectId().toHexString(), type: 'main' as const },
-        { idCampaign: new Types.ObjectId().toHexString(), type: 'npc' as const },
+        { idCampaign: new Types.ObjectId().toHexString(), type: 'active' as const },
+        { idCampaign: new Types.ObjectId().toHexString(), type: 'archived' as const },
       ];
       const dtoWithMultipleCampaigns = { ...createDto, campaigns };
 
