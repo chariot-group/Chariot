@@ -3,7 +3,10 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsInt,
   IsOptional,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { ProgressionDto } from '@/resources/character/player/dto/progression/progression.dto';
@@ -43,4 +46,17 @@ export class CreatePlayerDto extends CreateCharacterDto {
   @IsOptional()
   @Type(() => PlayerStatsDto)
   stats: PlayerStatsDto;
+
+  @ApiProperty({
+    example: 0,
+    description: 'Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death',
+    minimum: 0,
+    maximum: 6,
+    required: false
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(6)
+  exhaustionLevel?: number;
 }

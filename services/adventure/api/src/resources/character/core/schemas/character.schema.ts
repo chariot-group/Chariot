@@ -10,6 +10,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Appearance } from '@/resources/character/player/schemas/appearance/appearance.schema';
 import { Background } from '@/resources/character/player/schemas/background/background.schema';
 import { Treasure } from '@/resources/character/player/schemas/treasure/treasure.schema';
+import { Conditions } from '@/resources/character/core/schemas/conditions/conditions.schema';
 
 export type CharacterDocument = Character & Document;
 
@@ -51,6 +52,10 @@ export class Character extends BaseSchema {
   @ApiProperty({ type: Treasure })
   @Prop({ type: Treasure, default: {} })
   treasure: Treasure;
+
+  @ApiProperty({ type: Conditions })
+  @Prop({ type: Conditions, default: {} })
+  conditions: Conditions;
 
   @ApiProperty({ type: [Group] })
   @Prop({

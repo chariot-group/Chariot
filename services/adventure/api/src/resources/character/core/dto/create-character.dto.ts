@@ -14,6 +14,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { AppearanceDto } from '@/resources/character/player/dto/appearance/appearance.dto';
 import { BackgroundDto } from '@/resources/character/player/dto/background/background.dto';
 import { TreasureDto } from '@/resources/character/player/dto/treasure/treasure.dto';
+import { ConditionsDto } from '@/resources/character/core/dto/conditions/conditions.dto';
 
 export class CreateCharacterDto {
 
@@ -70,4 +71,10 @@ export class CreateCharacterDto {
   @IsOptional()
   @Type(() => TreasureDto)
   treasure: TreasureDto;
+
+  @ApiProperty({ type: ConditionsDto })
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => ConditionsDto)
+  conditions?: ConditionsDto;
 }
