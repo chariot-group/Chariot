@@ -3893,10 +3893,9 @@
           },
           "type": {
             "type": "string",
-            "example": "main",
+            "example": "active",
             "enum": [
-              "main",
-              "npc",
+              "active",
               "archived"
             ]
           }
@@ -3947,18 +3946,9 @@
       "Groups": {
         "type": "object",
         "properties": {
-          "main": {
+          "active": {
             "example": [
               "507f1f77bcf86cd799439011"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "npc": {
-            "example": [
-              "507f1f77bcf86cd799439012"
             ],
             "type": "array",
             "items": {
@@ -3976,8 +3966,7 @@
           }
         },
         "required": [
-          "main",
-          "npc",
+          "active",
           "archived"
         ]
       },
@@ -4015,18 +4004,9 @@
       "CreateGroupIdsDto": {
         "type": "object",
         "properties": {
-          "main": {
+          "active": {
             "example": [
               "60d21b4667d0d8992e610c85"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "npc": {
-            "example": [
-              "60d21b4667d0d8992e610c86"
             ],
             "type": "array",
             "items": {
@@ -4042,8 +4022,7 @@
           }
         },
         "required": [
-          "main",
-          "npc",
+          "active",
           "archived"
         ]
       },
