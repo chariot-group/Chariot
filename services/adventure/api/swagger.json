@@ -1941,6 +1941,221 @@
           "spells"
         ]
       },
+      "Appearance": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "number",
+            "example": 25
+          },
+          "height": {
+            "type": "number",
+            "example": 180
+          },
+          "weight": {
+            "type": "number",
+            "example": 75
+          },
+          "eyes": {
+            "type": "string",
+            "example": "Blue"
+          },
+          "skin": {
+            "type": "string",
+            "example": "Light"
+          },
+          "hair": {
+            "type": "string",
+            "example": "Brown"
+          },
+          "description": {
+            "type": "string",
+            "example": "Athletic build with a friendly face."
+          }
+        },
+        "required": [
+          "age",
+          "height",
+          "weight",
+          "eyes",
+          "skin",
+          "hair",
+          "description"
+        ]
+      },
+      "Background": {
+        "type": "object",
+        "properties": {
+          "personalityTraits": {
+            "type": "string",
+            "example": "Born in a small village, raised by farmers."
+          },
+          "ideals": {
+            "type": "string",
+            "example": "To protect my loved ones at all costs."
+          },
+          "bonds": {
+            "type": "string",
+            "example": "My family is everything to me."
+          },
+          "flaws": {
+            "type": "string",
+            "example": "I have a quick temper and a tendency to act before thinking."
+          },
+          "alliesAndOrgs": {
+            "type": "string",
+            "example": "Member of the Silver Hand organization."
+          },
+          "backstory": {
+            "type": "string",
+            "example": "Born in a small village, I was trained as a warrior from a young age..."
+          }
+        },
+        "required": [
+          "personalityTraits",
+          "ideals",
+          "bonds",
+          "flaws",
+          "alliesAndOrgs",
+          "backstory"
+        ]
+      },
+      "Treasure": {
+        "type": "object",
+        "properties": {
+          "cp": {
+            "type": "number",
+            "example": 0
+          },
+          "sp": {
+            "type": "number",
+            "example": 0
+          },
+          "ep": {
+            "type": "number",
+            "example": 0
+          },
+          "gp": {
+            "type": "number",
+            "example": 0
+          },
+          "pp": {
+            "type": "number",
+            "example": 0
+          },
+          "notes": {
+            "type": "string",
+            "example": "Some notes about the treasure."
+          }
+        },
+        "required": [
+          "cp",
+          "sp",
+          "ep",
+          "gp",
+          "pp",
+          "notes"
+        ]
+      },
+      "Conditions": {
+        "type": "object",
+        "properties": {
+          "blinded": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is blinded"
+          },
+          "charmed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is charmed"
+          },
+          "deafened": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is deafened"
+          },
+          "frightened": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is frightened"
+          },
+          "grappled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is grappled"
+          },
+          "incapacitated": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is incapacitated"
+          },
+          "invisible": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is invisible"
+          },
+          "paralyzed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is paralyzed"
+          },
+          "petrified": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is petrified"
+          },
+          "poisoned": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is poisoned"
+          },
+          "prone": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is prone"
+          },
+          "restrained": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is restrained"
+          },
+          "stunned": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is stunned"
+          },
+          "unconscious": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is unconscious"
+          },
+          "exhaustionLevel": {
+            "type": "number",
+            "example": 0,
+            "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
+            "minimum": 0,
+            "maximum": 6
+          }
+        },
+        "required": [
+          "blinded",
+          "charmed",
+          "deafened",
+          "frightened",
+          "grappled",
+          "incapacitated",
+          "invisible",
+          "paralyzed",
+          "petrified",
+          "poisoned",
+          "prone",
+          "restrained",
+          "stunned",
+          "unconscious",
+          "exhaustionLevel"
+        ]
+      },
       "Group": {
         "type": "object",
         "properties": {
@@ -2138,6 +2353,18 @@
               "$ref": "#/components/schemas/Spellcasting"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/Appearance"
+          },
+          "background": {
+            "$ref": "#/components/schemas/Background"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/Treasure"
+          },
+          "conditions": {
+            "$ref": "#/components/schemas/Conditions"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -2166,6 +2393,10 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
+          "conditions",
           "groups",
           "deletedAt",
           "actions",
@@ -2647,6 +2878,204 @@
           "spells"
         ]
       },
+      "AppearanceDto": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "number",
+            "example": 25
+          },
+          "height": {
+            "type": "number",
+            "example": 180
+          },
+          "weight": {
+            "type": "number",
+            "example": 75
+          },
+          "eyes": {
+            "type": "string",
+            "example": "Blue"
+          },
+          "skin": {
+            "type": "string",
+            "example": "Light"
+          },
+          "hair": {
+            "type": "string",
+            "example": "Brown"
+          },
+          "description": {
+            "type": "string",
+            "example": "Athletic build with a friendly face."
+          }
+        },
+        "required": [
+          "age",
+          "height",
+          "weight",
+          "eyes",
+          "skin",
+          "hair",
+          "description"
+        ]
+      },
+      "BackgroundDto": {
+        "type": "object",
+        "properties": {
+          "personalityTraits": {
+            "type": "string",
+            "example": "Brave and cunning."
+          },
+          "ideals": {
+            "type": "string",
+            "example": "To protect my loved ones at all costs."
+          },
+          "bonds": {
+            "type": "string",
+            "example": "My family is everything to me."
+          },
+          "flaws": {
+            "type": "string",
+            "example": "I have a quick temper and a tendency to act before thinking."
+          },
+          "alliesAndOrgs": {
+            "type": "string",
+            "example": "Member of the Silver Hand organization."
+          },
+          "backstory": {
+            "type": "string",
+            "example": "Born in a small village, I was trained as a warrior from a young age..."
+          }
+        },
+        "required": [
+          "personalityTraits",
+          "ideals",
+          "bonds",
+          "flaws",
+          "alliesAndOrgs",
+          "backstory"
+        ]
+      },
+      "TreasureDto": {
+        "type": "object",
+        "properties": {
+          "cp": {
+            "type": "number",
+            "example": 150
+          },
+          "sp": {
+            "type": "number",
+            "example": 75
+          },
+          "ep": {
+            "type": "number",
+            "example": 200
+          },
+          "gp": {
+            "type": "number",
+            "example": 500
+          },
+          "pp": {
+            "type": "number",
+            "example": 20
+          },
+          "notes": {
+            "type": "string",
+            "example": "Found in a hidden chest behind the waterfall."
+          }
+        },
+        "required": [
+          "cp",
+          "sp",
+          "ep",
+          "gp",
+          "pp",
+          "notes"
+        ]
+      },
+      "ConditionsDto": {
+        "type": "object",
+        "properties": {
+          "blinded": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is blinded"
+          },
+          "charmed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is charmed"
+          },
+          "deafened": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is deafened"
+          },
+          "frightened": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is frightened"
+          },
+          "grappled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is grappled"
+          },
+          "incapacitated": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is incapacitated"
+          },
+          "invisible": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is invisible"
+          },
+          "paralyzed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is paralyzed"
+          },
+          "petrified": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is petrified"
+          },
+          "poisoned": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is poisoned"
+          },
+          "prone": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is prone"
+          },
+          "restrained": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is restrained"
+          },
+          "stunned": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is stunned"
+          },
+          "unconscious": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is unconscious"
+          },
+          "exhaustionLevel": {
+            "type": "number",
+            "example": 0,
+            "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
+            "minimum": 0,
+            "maximum": 6
+          }
+        }
+      },
       "DamageDto": {
         "type": "object",
         "properties": {
@@ -2794,6 +3223,18 @@
               "$ref": "#/components/schemas/SpellcastingDto"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/AppearanceDto"
+          },
+          "background": {
+            "$ref": "#/components/schemas/BackgroundDto"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/TreasureDto"
+          },
+          "conditions": {
+            "$ref": "#/components/schemas/ConditionsDto"
+          },
           "actions": {
             "$ref": "#/components/schemas/ActionsDto"
           },
@@ -2811,6 +3252,10 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
+          "conditions",
           "actions",
           "challenge",
           "profile"
@@ -3104,122 +3549,6 @@
           "subrace"
         ]
       },
-      "Appearance": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number",
-            "example": 25
-          },
-          "height": {
-            "type": "number",
-            "example": 180
-          },
-          "weight": {
-            "type": "number",
-            "example": 75
-          },
-          "eyes": {
-            "type": "string",
-            "example": "Blue"
-          },
-          "skin": {
-            "type": "string",
-            "example": "Light"
-          },
-          "hair": {
-            "type": "string",
-            "example": "Brown"
-          },
-          "description": {
-            "type": "string",
-            "example": "Athletic build with a friendly face."
-          }
-        },
-        "required": [
-          "age",
-          "height",
-          "weight",
-          "eyes",
-          "skin",
-          "hair",
-          "description"
-        ]
-      },
-      "Background": {
-        "type": "object",
-        "properties": {
-          "personalityTraits": {
-            "type": "string",
-            "example": "Born in a small village, raised by farmers."
-          },
-          "ideals": {
-            "type": "string",
-            "example": "To protect my loved ones at all costs."
-          },
-          "bonds": {
-            "type": "string",
-            "example": "My family is everything to me."
-          },
-          "flaws": {
-            "type": "string",
-            "example": "I have a quick temper and a tendency to act before thinking."
-          },
-          "alliesAndOrgs": {
-            "type": "string",
-            "example": "Member of the Silver Hand organization."
-          },
-          "backstory": {
-            "type": "string",
-            "example": "Born in a small village, I was trained as a warrior from a young age..."
-          }
-        },
-        "required": [
-          "personalityTraits",
-          "ideals",
-          "bonds",
-          "flaws",
-          "alliesAndOrgs",
-          "backstory"
-        ]
-      },
-      "Treasure": {
-        "type": "object",
-        "properties": {
-          "cp": {
-            "type": "number",
-            "example": 0
-          },
-          "sp": {
-            "type": "number",
-            "example": 0
-          },
-          "ep": {
-            "type": "number",
-            "example": 0
-          },
-          "gp": {
-            "type": "number",
-            "example": 0
-          },
-          "pp": {
-            "type": "number",
-            "example": 0
-          },
-          "notes": {
-            "type": "string",
-            "example": "Some notes about the treasure."
-          }
-        },
-        "required": [
-          "cp",
-          "sp",
-          "ep",
-          "gp",
-          "pp",
-          "notes"
-        ]
-      },
       "Player": {
         "type": "object",
         "properties": {
@@ -3253,6 +3582,18 @@
               "$ref": "#/components/schemas/Spellcasting"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/Appearance"
+          },
+          "background": {
+            "$ref": "#/components/schemas/Background"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/Treasure"
+          },
+          "conditions": {
+            "$ref": "#/components/schemas/Conditions"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -3279,15 +3620,6 @@
           },
           "profile": {
             "$ref": "#/components/schemas/PlayerProfile"
-          },
-          "appearance": {
-            "$ref": "#/components/schemas/Appearance"
-          },
-          "background": {
-            "$ref": "#/components/schemas/Background"
-          },
-          "treasure": {
-            "$ref": "#/components/schemas/Treasure"
           }
         },
         "required": [
@@ -3297,15 +3629,16 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
+          "conditions",
           "groups",
           "deletedAt",
           "inspiration",
           "progression",
           "class",
-          "profile",
-          "appearance",
-          "background",
-          "treasure"
+          "profile"
         ]
       },
       "MasteryDto": {
@@ -3592,122 +3925,6 @@
           "subrace"
         ]
       },
-      "AppearanceDto": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number",
-            "example": 25
-          },
-          "height": {
-            "type": "number",
-            "example": 180
-          },
-          "weight": {
-            "type": "number",
-            "example": 75
-          },
-          "eyes": {
-            "type": "string",
-            "example": "Blue"
-          },
-          "skin": {
-            "type": "string",
-            "example": "Light"
-          },
-          "hair": {
-            "type": "string",
-            "example": "Brown"
-          },
-          "description": {
-            "type": "string",
-            "example": "Athletic build with a friendly face."
-          }
-        },
-        "required": [
-          "age",
-          "height",
-          "weight",
-          "eyes",
-          "skin",
-          "hair",
-          "description"
-        ]
-      },
-      "BackgroundDto": {
-        "type": "object",
-        "properties": {
-          "personalityTraits": {
-            "type": "string",
-            "example": "Brave and cunning."
-          },
-          "ideals": {
-            "type": "string",
-            "example": "To protect my loved ones at all costs."
-          },
-          "bonds": {
-            "type": "string",
-            "example": "My family is everything to me."
-          },
-          "flaws": {
-            "type": "string",
-            "example": "I have a quick temper and a tendency to act before thinking."
-          },
-          "alliesAndOrgs": {
-            "type": "string",
-            "example": "Member of the Silver Hand organization."
-          },
-          "backstory": {
-            "type": "string",
-            "example": "Born in a small village, I was trained as a warrior from a young age..."
-          }
-        },
-        "required": [
-          "personalityTraits",
-          "ideals",
-          "bonds",
-          "flaws",
-          "alliesAndOrgs",
-          "backstory"
-        ]
-      },
-      "TreasureDto": {
-        "type": "object",
-        "properties": {
-          "cp": {
-            "type": "number",
-            "example": 150
-          },
-          "sp": {
-            "type": "number",
-            "example": 75
-          },
-          "ep": {
-            "type": "number",
-            "example": 200
-          },
-          "gp": {
-            "type": "number",
-            "example": 500
-          },
-          "pp": {
-            "type": "number",
-            "example": 20
-          },
-          "notes": {
-            "type": "string",
-            "example": "Found in a hidden chest behind the waterfall."
-          }
-        },
-        "required": [
-          "cp",
-          "sp",
-          "ep",
-          "gp",
-          "pp",
-          "notes"
-        ]
-      },
       "CreatePlayerDto": {
         "type": "object",
         "properties": {
@@ -3740,6 +3957,18 @@
               "$ref": "#/components/schemas/SpellcastingDto"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/AppearanceDto"
+          },
+          "background": {
+            "$ref": "#/components/schemas/BackgroundDto"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/TreasureDto"
+          },
+          "conditions": {
+            "$ref": "#/components/schemas/ConditionsDto"
+          },
           "inspiration": {
             "type": "boolean",
             "example": false
@@ -3755,15 +3984,6 @@
           },
           "profile": {
             "$ref": "#/components/schemas/PlayerProfileDto"
-          },
-          "appearance": {
-            "$ref": "#/components/schemas/AppearanceDto"
-          },
-          "background": {
-            "$ref": "#/components/schemas/BackgroundDto"
-          },
-          "treasure": {
-            "$ref": "#/components/schemas/TreasureDto"
           }
         },
         "required": [
@@ -3773,13 +3993,14 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
+          "conditions",
           "inspiration",
           "progression",
           "class",
-          "profile",
-          "appearance",
-          "background",
-          "treasure"
+          "profile"
         ]
       },
       "UpdatePlayerDto": {
@@ -3861,6 +4082,18 @@
               "$ref": "#/components/schemas/Spellcasting"
             }
           },
+          "appearance": {
+            "$ref": "#/components/schemas/Appearance"
+          },
+          "background": {
+            "$ref": "#/components/schemas/Background"
+          },
+          "treasure": {
+            "$ref": "#/components/schemas/Treasure"
+          },
+          "conditions": {
+            "$ref": "#/components/schemas/Conditions"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -3880,6 +4113,10 @@
           "affinities",
           "abilities",
           "spellcasting",
+          "appearance",
+          "background",
+          "treasure",
+          "conditions",
           "groups",
           "deletedAt"
         ]

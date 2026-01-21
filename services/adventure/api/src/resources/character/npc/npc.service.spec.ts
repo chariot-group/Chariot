@@ -76,10 +76,7 @@ describe('NpcService - create', () => {
     description: 'Test description',
     groups: [groupId1.toHexString(), groupId2.toHexString()],
     profile: {
-      name: 'Test NPC',
-      race: 'Humanoïde',
       alignment: 'Neutre',
-      background: 'Villageois',
       type: 'PNJ',
       subtype: 'Humain',
     },
@@ -103,6 +100,9 @@ describe('NpcService - create', () => {
       legendary: [],
       lair: [],
     },
+    appearance: {},
+    background: {},
+    treasure: {},
     inventory: [],
     languages: ['Commun'],
     stats: {
@@ -193,10 +193,7 @@ describe('NpcService - create', () => {
       name: 'Test NPC',
       description: 'Test description',
       profile: {
-        name: 'Test NPC',
-        race: 'Humanoïde',
         alignment: 'Neutre',
-        background: 'Villageois',
         type: 'PNJ',
         subtype: 'Humain',
       },
@@ -239,6 +236,9 @@ describe('NpcService - create', () => {
       },
       abilities: [],
       spellcasting: null,
+      appearance: {},
+      background: {},
+      treasure: {},
     };
 
     const result = await service.create(npcDtoWithoutGroups, userId);

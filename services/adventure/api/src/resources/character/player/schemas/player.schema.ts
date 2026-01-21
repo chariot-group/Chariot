@@ -4,9 +4,6 @@ import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Progression } from '@/resources/character/player/schemas/progression/progression.schema';
 import { Class } from '@/resources/character/player/schemas/class/class.schema';
 import { PlayerProfile } from '@/resources/character/player/schemas/profile/player-profile.schema';
-import { Appearance } from '@/resources/character/player/schemas/appearance/appearance.schema';
-import { Background } from '@/resources/character/player/schemas/background/background.schema';
-import { Treasure } from '@/resources/character/player/schemas/treasure/treasure.schema';
 import { PlayerStats } from '@/resources/character/player/schemas/stats/player-stats.schema';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -31,21 +28,18 @@ export class Player extends Character {
   @Prop({ type: PlayerProfile, default: {} })
   profile: PlayerProfile;
 
-  @ApiProperty({ type: Appearance })
-  @Prop({ type: Appearance, default: {} })
-  appearance: Appearance;
-
-  @ApiProperty({ type: Background })
-  @Prop({ type: Background, default: {} })
-  background: Background;
-
-  @ApiProperty({ type: Treasure })
-  @Prop({ type: Treasure, default: {} })
-  treasure: Treasure;
-
   @ApiProperty({ type: PlayerStats })
   @Prop({ type: PlayerStats, default: {} })
   stats: PlayerStats;
+
+  @ApiProperty({
+    example: 0,
+    description: 'Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death',
+    minimum: 0,
+    maximum: 6
+  })
+  @Prop({ default: 0, min: 0, max: 6 })
+  exhaustionLevel: number;
 }
 
 export const PlayerSchema = SchemaFactory.createForClass(Player);

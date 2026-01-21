@@ -60,13 +60,9 @@ describe('PlayerController - createPlayer', () => {
       notes: '',
     },
     profile: {
-      name: 'Test Player',
       race: '',
       subrace: '',
       alignment: '',
-      background: '',
-      type: '',
-      subtype: '',
     },
   };
 

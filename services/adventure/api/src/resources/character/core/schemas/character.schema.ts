@@ -7,6 +7,10 @@ import { Ability } from '@/resources/character/core/schemas/ability/ability.sche
 import { Spellcasting } from '@/resources/character/core/schemas/spellcasting/spellcasting.schema';
 import { Stats } from '@/resources/character/core/schemas/stats/stats.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { Appearance } from '@/resources/character/player/schemas/appearance/appearance.schema';
+import { Background } from '@/resources/character/player/schemas/background/background.schema';
+import { Treasure } from '@/resources/character/player/schemas/treasure/treasure.schema';
+import { Conditions } from '@/resources/character/core/schemas/conditions/conditions.schema';
 
 export type CharacterDocument = Character & Document;
 
@@ -36,6 +40,22 @@ export class Character extends BaseSchema {
   @ApiProperty({ type: [Spellcasting] })
   @Prop({ type: [Spellcasting], default: [] })
   spellcasting: Spellcasting[];
+
+  @ApiProperty({ type: Appearance })
+  @Prop({ type: Appearance, default: {} })
+  appearance: Appearance;
+
+  @ApiProperty({ type: Background })
+  @Prop({ type: Background, default: {} })
+  background: Background;
+
+  @ApiProperty({ type: Treasure })
+  @Prop({ type: Treasure, default: {} })
+  treasure: Treasure;
+
+  @ApiProperty({ type: Conditions })
+  @Prop({ type: Conditions, default: {} })
+  conditions: Conditions;
 
   @ApiProperty({ type: [Group] })
   @Prop({

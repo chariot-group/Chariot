@@ -11,6 +11,10 @@ import { AffinitiesDto } from '@/resources/character/core/dto/affinities/affinit
 import { AbilityDto } from '@/resources/character/core/dto/ability/ability.dto';
 import { SpellcastingDto } from '@/resources/character/core/dto/spellcasting/spellcasting.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { AppearanceDto } from '@/resources/character/player/dto/appearance/appearance.dto';
+import { BackgroundDto } from '@/resources/character/player/dto/background/background.dto';
+import { TreasureDto } from '@/resources/character/player/dto/treasure/treasure.dto';
+import { ConditionsDto } from '@/resources/character/core/dto/conditions/conditions.dto';
 
 export class CreateCharacterDto {
 
@@ -49,4 +53,28 @@ export class CreateCharacterDto {
   @IsOptional()
   @Type(() => SpellcastingDto)
   spellcasting: SpellcastingDto[];
+
+  @ApiProperty({ type: AppearanceDto })
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => AppearanceDto)
+  appearance: AppearanceDto;
+
+  @ApiProperty({ type: BackgroundDto })
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => BackgroundDto)
+  background: BackgroundDto;
+
+  @ApiProperty({ type: TreasureDto })
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => TreasureDto)
+  treasure: TreasureDto;
+
+  @ApiProperty({ type: ConditionsDto })
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => ConditionsDto)
+  conditions?: ConditionsDto;
 }
