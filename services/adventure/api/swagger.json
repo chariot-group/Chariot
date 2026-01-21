@@ -1402,8 +1402,8 @@
         "type": "oauth2",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/auth",
-            "tokenUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/token",
+            "authorizationUrl": "http://localhost:8081/realms/chariot/protocol/openid-connect/auth",
+            "tokenUrl": "http://localhost:8081/realms/chariot/protocol/openid-connect/token",
             "scopes": {
               "openid": "OpenID Connect"
             }
@@ -1956,10 +1956,6 @@
             "type": "string",
             "example": "Adventurers"
           },
-          "description": {
-            "type": "string",
-            "example": "A group of brave adventurers."
-          },
           "characters": {
             "example": [
               "507f1f77bcf86cd799439011",
@@ -1989,7 +1985,6 @@
         "required": [
           "_id",
           "label",
-          "description",
           "characters",
           "campaigns",
           "deletedAt"
@@ -3918,10 +3913,6 @@
             "type": "string",
             "example": "Adventurers"
           },
-          "description": {
-            "type": "string",
-            "example": "A group of brave adventurers."
-          },
           "characters": {
             "example": [
               "507f1f77bcf86cd799439011",
@@ -3941,7 +3932,6 @@
         },
         "required": [
           "label",
-          "description",
           "characters",
           "campaigns"
         ]
@@ -4006,10 +3996,6 @@
             "type": "string",
             "example": "Summer Campaign"
           },
-          "description": {
-            "type": "string",
-            "example": "A fun summer campaign full of adventures."
-          },
           "groups": {
             "$ref": "#/components/schemas/Groups"
           },
@@ -4022,7 +4008,6 @@
         "required": [
           "_id",
           "label",
-          "description",
           "groups",
           "deletedAt"
         ]
@@ -4069,17 +4054,12 @@
             "type": "string",
             "example": "Epic Adventure"
           },
-          "description": {
-            "type": "string",
-            "example": "An epic journey through uncharted lands."
-          },
           "groups": {
             "$ref": "#/components/schemas/CreateGroupIdsDto"
           }
         },
         "required": [
           "label",
-          "description",
           "groups"
         ]
       },
