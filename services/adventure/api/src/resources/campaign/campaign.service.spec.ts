@@ -16,7 +16,6 @@ describe('CampaignService - create', () => {
 
   const mockCampaignDto = {
     label: 'Nouvelle campagne',
-    description: 'Campagne test',
     groups: {
       main: ['group1'],
       npc: ['group2'],

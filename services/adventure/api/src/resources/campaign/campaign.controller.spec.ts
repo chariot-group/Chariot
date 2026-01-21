@@ -22,7 +22,6 @@ describe('CampaignController - create', () => {
 
   const createDto = {
     label: 'Test',
-    description: 'Desc',
     groups: {
       main: [groupMainId],
       npc: [groupNpcId],

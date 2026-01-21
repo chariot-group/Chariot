@@ -20,14 +20,12 @@ describe('GroupService', () => {
 
   const createDto: CreateGroupDto = {
     label: 'Test Group',
-    description: 'Description',
     characters: [new Types.ObjectId().toHexString()],
     campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'main' }],
   };
 
   const updateDto: UpdateGroupDto = {
     label: 'Updated Group',
-    description: 'Updated Desc',
     characters: [new Types.ObjectId().toHexString()],
     campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'main' }],
   };
@@ -83,7 +81,6 @@ describe('GroupService', () => {
 
       expect(groupModel.create).toHaveBeenCalledWith({
         label: createDto.label,
-        description: createDto.description,
         characters: createDto.characters,
         campaigns: createDto.campaigns.map(c => c.idCampaign),
         createdBy: userId,
@@ -107,7 +104,6 @@ describe('GroupService', () => {
     it('should handle create when characters is undefined', async () => {
       const dtoWithoutCharacters = {
         label: 'No Characters Group',
-        description: 'test',
         campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'main' as const }],
       };
 
@@ -120,7 +116,6 @@ describe('GroupService', () => {
 
       expect(groupModel.create).toHaveBeenCalledWith(expect.objectContaining({
         label: dtoWithoutCharacters.label,
-        description: dtoWithoutCharacters.description,
         characters: [],
         campaigns: dtoWithoutCharacters.campaigns.map(c => c.idCampaign),
         createdBy: userId,
@@ -138,7 +133,6 @@ describe('GroupService', () => {
       campaignModel.updateMany.mockResolvedValue({});
       const customCreateDto = {
         label: 'Group test',
-        description: 'desc',
         characters: [new Types.ObjectId().toHexString(), new Types.ObjectId().toHexString()],
         campaigns: [
           { idCampaign: new Types.ObjectId().toHexString(), type: 'main' as const },
@@ -153,7 +147,6 @@ describe('GroupService', () => {
       expect(groupCreateSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           label: customCreateDto.label,
-          description: customCreateDto.description,
           characters: expectedCharacters,
           campaigns: expectedCampaigns,
           createdBy: userId,
@@ -635,7 +628,6 @@ describe('GroupService', () => {
     it('should use "none" as campaign_id when no campaigns', async () => {
       const dtoNoCampaigns = {
         label: 'No campaigns',
-        description: 'test',
         characters: [],
         campaigns: [],
       };
@@ -780,7 +772,6 @@ describe('GroupService', () => {
         const id = new Types.ObjectId();
         const updateDtoNoCharacters: any = {
           label: 'Updated',
-          description: 'Desc',
         };
 
         groupModel.findById.mockReturnValue({
@@ -802,7 +793,6 @@ describe('GroupService', () => {
         const id = new Types.ObjectId();
         const updateDtoNoCampaigns: any = {
           label: 'Updated',
-          description: 'Desc',
           characters: [new Types.ObjectId().toHexString()],
         };
 
@@ -832,7 +822,6 @@ describe('GroupService', () => {
 
         const updateDtoWithNewCharacters = {
           label: 'Updated',
-          description: 'Desc',
           characters: [newCharacterId.toHexString()],
           campaigns: [],
         };

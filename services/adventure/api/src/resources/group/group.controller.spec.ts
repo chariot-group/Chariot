@@ -27,7 +27,6 @@ describe('GroupController - create', () => {
 
   const createDto: CreateGroupDto = {
     label: 'Test Group',
-    description: 'Desc',
     characters: [characterId],
     campaigns: [{ idCampaign: campaignId, type: 'main' }],
   };
