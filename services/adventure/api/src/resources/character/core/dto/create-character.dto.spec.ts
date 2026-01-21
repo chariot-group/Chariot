@@ -51,4 +51,30 @@ describe('CreateCharacterDto - shared fields validation', () => {
     const errors = validateSync(dto, { whitelist: true });
     expect(errors.length).toBeGreaterThan(0);
   });
+
+  it('should validate a character with conditions - FR-003', () => {
+    const dto = plainToInstance(CreateCharacterDto, {
+      name: 'Frodo',
+      conditions: {
+        poisoned: true,
+        frightened: false
+      }
+    });
+
+    const errors = validateSync(dto, { whitelist: true });
+    expect(errors).toHaveLength(0);
+  });
+
+  it('should reject non-boolean condition values - FR-003', () => {
+    const dto = plainToInstance(CreateCharacterDto, {
+      name: 'Merry',
+      conditions: {
+        blinded: 'yes', // invalid: must be boolean
+        charmed: 1 // invalid: must be boolean
+      }
+    });
+
+    const errors = validateSync(dto, { whitelist: true });
+    expect(errors.length).toBeGreaterThan(0);
+  });
 });

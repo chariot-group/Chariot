@@ -285,4 +285,205 @@ describe('PlayerService', () => {
       await expect(service.update(playerId, dto)).rejects.toThrow(InternalServerErrorException);
     });
   });
+
+  describe('create with conditions - FR-003', () => {
+    it('should create a player with D&D conditions', async () => {
+      const dto: CreatePlayerDto = {
+        name: 'Exhausted Adventurer',
+        groups: [],
+        stats: { senses: [], size: 'M' },
+        affinities: { resistances: [], immunities: [], vulnerabilities: [] },
+        abilities: [],
+        spellcasting: [],
+        inspiration: false,
+        progression: { level: 1, experience: 0 },
+        class: [],
+        appearance: {},
+        background: {},
+        treasure: {},
+        profile: {
+          race: '',
+          subrace: '',
+          alignment: '',
+        },
+        conditions: {
+          poisoned: true,
+          frightened: false,
+          blinded: false,
+        },
+      };
+
+      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      expect(result.data._id).toBe('playerId');
+      expect(result.message).toContain('Player created in');
+    });
+
+    it('should create a player with exhaustion level - Player specific', async () => {
+      const dto: CreatePlayerDto = {
+        name: 'Exhausted Hero',
+        groups: [],
+        stats: { senses: [], size: 'M' },
+        affinities: { resistances: [], immunities: [], vulnerabilities: [] },
+        abilities: [],
+        spellcasting: [],
+        inspiration: false,
+        progression: { level: 1, experience: 0 },
+        class: [],
+        appearance: {},
+        background: {},
+        treasure: {},
+        profile: {
+          race: '',
+          subrace: '',
+          alignment: '',
+        },
+        exhaustionLevel: 2,
+      };
+
+      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      expect(result.data._id).toBe('playerId');
+      expect(result.message).toContain('Player created in');
+    });
+
+    it('should create a player with all conditions and exhaustion set', async () => {
+      const dto: CreatePlayerDto = {
+        name: 'Severely Afflicted',
+        groups: [],
+        stats: { senses: [], size: 'M' },
+        affinities: { resistances: [], immunities: [], vulnerabilities: [] },
+        abilities: [],
+        spellcasting: [],
+        inspiration: false,
+        progression: { level: 1, experience: 0 },
+        class: [],
+        appearance: {},
+        background: {},
+        treasure: {},
+        profile: {
+          race: '',
+          subrace: '',
+          alignment: '',
+        },
+        conditions: {
+          blinded: true,
+          charmed: true,
+          deafened: true,
+          frightened: true,
+          grappled: true,
+          incapacitated: true,
+          invisible: false,
+          paralyzed: true,
+          petrified: false,
+          poisoned: true,
+          prone: true,
+          restrained: true,
+          stunned: true,
+          unconscious: false,
+        },
+        exhaustionLevel: 5,
+      };
+
+      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      expect(result.data._id).toBe('playerId');
+      expect(result.message).toContain('Player created in');
+    });
+
+    it('should create a player without conditions (defaults applied)', async () => {
+      const dto: CreatePlayerDto = {
+        name: 'Healthy Hero',
+        groups: [],
+        stats: { senses: [], size: 'M' },
+        affinities: { resistances: [], immunities: [], vulnerabilities: [] },
+        abilities: [],
+        spellcasting: [],
+        inspiration: false,
+        progression: { level: 1, experience: 0 },
+        class: [],
+        appearance: {},
+        background: {},
+        treasure: {},
+        profile: {
+          race: '',
+          subrace: '',
+          alignment: '',
+        },
+        // conditions not provided - defaults should be applied by schema
+      };
+
+      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      expect(result.data._id).toBe('playerId');
+      expect(result.message).toContain('Player created in');
+    });
+  });
+
+  describe('update with conditions - FR-003', () => {
+    it('should update a player with new conditions', async () => {
+      const playerId = new Types.ObjectId();
+      const dto: UpdatePlayerDto = {
+        name: 'Updated with conditions',
+        groups: [],
+        conditions: {
+          paralyzed: true,
+        },
+      };
+
+      characterModel.findById.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue({
+          _id: playerId,
+          groups: [],
+        }),
+        populate: jest.fn().mockReturnThis(),
+      });
+
+      const result = await service.update(playerId, dto);
+      expect(result.data._id).toBeDefined();
+      expect(result.message).toContain('update in');
+    });
+
+    it('should update a player with new exhaustion level', async () => {
+      const playerId = new Types.ObjectId();
+      const dto: UpdatePlayerDto = {
+        name: 'Exhausted',
+        groups: [],
+        exhaustionLevel: 3,
+      };
+
+      characterModel.findById.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue({
+          _id: playerId,
+          groups: [],
+        }),
+        populate: jest.fn().mockReturnThis(),
+      });
+
+      const result = await service.update(playerId, dto);
+      expect(result.data._id).toBeDefined();
+      expect(result.message).toContain('update in');
+    });
+
+    it('should clear conditions and exhaustion when updated', async () => {
+      const playerId = new Types.ObjectId();
+      const dto: UpdatePlayerDto = {
+        name: 'Recovered',
+        groups: [],
+        conditions: {
+          poisoned: false,
+          paralyzed: false,
+        },
+        exhaustionLevel: 0,
+      };
+
+      characterModel.findById.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue({
+          _id: playerId,
+          groups: [],
+        }),
+        populate: jest.fn().mockReturnThis(),
+      });
+
+      const result = await service.update(playerId, dto);
+      expect(result.data._id).toBeDefined();
+      expect(result.message).toContain('update in');
+    });
+  });
 });
