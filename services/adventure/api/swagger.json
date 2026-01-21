@@ -2057,6 +2057,105 @@
           "notes"
         ]
       },
+      "Conditions": {
+        "type": "object",
+        "properties": {
+          "blinded": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is blinded"
+          },
+          "charmed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is charmed"
+          },
+          "deafened": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is deafened"
+          },
+          "frightened": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is frightened"
+          },
+          "grappled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is grappled"
+          },
+          "incapacitated": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is incapacitated"
+          },
+          "invisible": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is invisible"
+          },
+          "paralyzed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is paralyzed"
+          },
+          "petrified": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is petrified"
+          },
+          "poisoned": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is poisoned"
+          },
+          "prone": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is prone"
+          },
+          "restrained": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is restrained"
+          },
+          "stunned": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is stunned"
+          },
+          "unconscious": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is unconscious"
+          },
+          "exhaustionLevel": {
+            "type": "number",
+            "example": 0,
+            "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
+            "minimum": 0,
+            "maximum": 6
+          }
+        },
+        "required": [
+          "blinded",
+          "charmed",
+          "deafened",
+          "frightened",
+          "grappled",
+          "incapacitated",
+          "invisible",
+          "paralyzed",
+          "petrified",
+          "poisoned",
+          "prone",
+          "restrained",
+          "stunned",
+          "unconscious",
+          "exhaustionLevel"
+        ]
+      },
       "Group": {
         "type": "object",
         "properties": {
@@ -2268,6 +2367,9 @@
           "treasure": {
             "$ref": "#/components/schemas/Treasure"
           },
+          "conditions": {
+            "$ref": "#/components/schemas/Conditions"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -2299,6 +2401,7 @@
           "appearance",
           "background",
           "treasure",
+          "conditions",
           "groups",
           "deletedAt",
           "actions",
@@ -2896,6 +2999,88 @@
           "notes"
         ]
       },
+      "ConditionsDto": {
+        "type": "object",
+        "properties": {
+          "blinded": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is blinded"
+          },
+          "charmed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is charmed"
+          },
+          "deafened": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is deafened"
+          },
+          "frightened": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is frightened"
+          },
+          "grappled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is grappled"
+          },
+          "incapacitated": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is incapacitated"
+          },
+          "invisible": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is invisible"
+          },
+          "paralyzed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is paralyzed"
+          },
+          "petrified": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is petrified"
+          },
+          "poisoned": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is poisoned"
+          },
+          "prone": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is prone"
+          },
+          "restrained": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is restrained"
+          },
+          "stunned": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is stunned"
+          },
+          "unconscious": {
+            "type": "boolean",
+            "example": false,
+            "description": "Character is unconscious"
+          },
+          "exhaustionLevel": {
+            "type": "number",
+            "example": 0,
+            "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
+            "minimum": 0,
+            "maximum": 6
+          }
+        }
+      },
       "DamageDto": {
         "type": "object",
         "properties": {
@@ -3052,6 +3237,9 @@
           "treasure": {
             "$ref": "#/components/schemas/TreasureDto"
           },
+          "conditions": {
+            "$ref": "#/components/schemas/ConditionsDto"
+          },
           "actions": {
             "$ref": "#/components/schemas/ActionsDto"
           },
@@ -3072,6 +3260,7 @@
           "appearance",
           "background",
           "treasure",
+          "conditions",
           "actions",
           "challenge",
           "profile"
@@ -3407,6 +3596,9 @@
           "treasure": {
             "$ref": "#/components/schemas/Treasure"
           },
+          "conditions": {
+            "$ref": "#/components/schemas/Conditions"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -3445,6 +3637,7 @@
           "appearance",
           "background",
           "treasure",
+          "conditions",
           "groups",
           "deletedAt",
           "inspiration",
@@ -3778,6 +3971,9 @@
           "treasure": {
             "$ref": "#/components/schemas/TreasureDto"
           },
+          "conditions": {
+            "$ref": "#/components/schemas/ConditionsDto"
+          },
           "inspiration": {
             "type": "boolean",
             "example": false
@@ -3805,6 +4001,7 @@
           "appearance",
           "background",
           "treasure",
+          "conditions",
           "inspiration",
           "progression",
           "class",
@@ -3899,6 +4096,9 @@
           "treasure": {
             "$ref": "#/components/schemas/Treasure"
           },
+          "conditions": {
+            "$ref": "#/components/schemas/Conditions"
+          },
           "groups": {
             "type": "array",
             "items": {
@@ -3921,6 +4121,7 @@
           "appearance",
           "background",
           "treasure",
+          "conditions",
           "groups",
           "deletedAt"
         ]
