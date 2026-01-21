@@ -75,15 +75,10 @@ export class SeederService {
       const campaignsPerUser: number = faker.number.int({ min: 0, max: 3 });
 
       for (let j = 0; j < campaignsPerUser; j++) {
-        const mainGroups = [];
-        const npcGroups = [];
+        const activeGroups = [];
         const archivedGroups = [];
 
-        const groupsMainPerCampaign: number = faker.number.int({
-          min: 0,
-          max: 6,
-        });
-        const groupsNpcPerCampaign: number = faker.number.int({
+        const groupsActivePerCampaign: number = faker.number.int({
           min: 0,
           max: 6,
         });
@@ -92,52 +87,28 @@ export class SeederService {
           max: 6,
         });
 
-        for (let k = 0; k < groupsMainPerCampaign; k++) {
-          const mainCharacters = await this.characterModel.create(
+        for (let k = 0; k < groupsActivePerCampaign; k++) {
+          const activeCharacters = await this.characterModel.create(
             this.getRandomObjects().map((character) => ({
               ...character,
               createdBy: userId,
             })),
           );
 
-          const mainGroup = await this.groupModel.create({
+          const activeGroup = await this.groupModel.create({
             label: faker.company.name(),
             active: faker.number.int({ min: 0, max: 1 }) === 1,
-            characters: mainCharacters.map((c) => c._id),
+            characters: activeCharacters.map((c) => c._id),
             createdBy: userId,
           });
 
-          mainCharacters.forEach((c: CharacterDocument) => {
-            c.groups.push(mainGroup.id);
-            c.createdBy = mainGroup.createdBy;
+          activeCharacters.forEach((c: CharacterDocument) => {
+            c.groups.push(activeGroup.id);
+            c.createdBy = activeGroup.createdBy;
             c.save();
           });
 
-          mainGroups.push(mainGroup._id);
-        }
-
-        for (let k = 0; k < groupsNpcPerCampaign; k++) {
-          const npcCharacters = await this.characterModel.create(
-            this.getRandomObjects().map((character) => ({
-              ...character,
-              createdBy: userId,
-            })),
-          );
-
-          const npcGroup = await this.groupModel.create({
-            label: faker.company.name(),
-            active: faker.number.int({ min: 0, max: 1 }) === 1,
-            characters: npcCharacters.map((c) => c._id),
-            createdBy: userId,
-          });
-
-          npcCharacters.forEach((c: CharacterDocument) => {
-            c.groups.push(npcGroup.id);
-            c.createdBy = npcGroup.createdBy;
-            c.save();
-          });
-
-          npcGroups.push(npcGroup._id);
+          activeGroups.push(activeGroup._id);
         }
 
         for (let k = 0; k < groupsArchivedPerCampaign; k++) {
@@ -167,20 +138,14 @@ export class SeederService {
         const campaign = await this.campaignModel.create({
           label: faker.lorem.words(3),
           groups: {
-            main: mainGroups,
-            npc: npcGroups,
+            active: activeGroups,
             archived: archivedGroups,
           },
           createdBy: userId,
         });
 
         await this.groupModel.updateMany(
-          { _id: { $in: mainGroups.map((id) => id) } },
-          { $addToSet: { campaigns: campaign._id } },
-        );
-
-        await this.groupModel.updateMany(
-          { _id: { $in: npcGroups.map((id) => id) } },
+          { _id: { $in: activeGroups.map((id) => id) } },
           { $addToSet: { campaigns: campaign._id } },
         );
 

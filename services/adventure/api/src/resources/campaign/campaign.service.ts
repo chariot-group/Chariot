@@ -35,7 +35,7 @@ export class CampaignService {
   async create(createCampaignDto: CreateCampaignDto, userId: string): Promise<IResponse<Campaign>> {
     try {
       const { groups, ...campaignData } = createCampaignDto;
-      const totalGroups: string[] = groups.main.concat(groups.npc, groups.archived);
+      const totalGroups: string[] = groups.active.concat(groups.archived);
 
       const start: number = Date.now();
       const campaign: Campaign = await this.campaignModel.create({
@@ -118,12 +118,7 @@ export class CampaignService {
         .limit(offset)
         .sort(sort)
         .populate({
-          path: 'groups.main',
-          match: { deletedAt: null },
-          select: '_id',
-        })
-        .populate({
-          path: 'groups.npc',
+          path: 'groups.active',
           match: { deletedAt: null },
           select: '_id',
         })
@@ -138,8 +133,7 @@ export class CampaignService {
       let campaignsWithGroupsClean: Campaign[] = campaigns.map((doc) => ({
         ...doc.toObject(),
         groups: {
-          main: doc.groups.main.filter(group => group).map((group) => group._id),
-          npc: doc.groups.npc.filter(group => group).map((group) => group._id),
+          active: doc.groups.active.filter(group => group).map((group) => group._id),
           archived: doc.groups.archived.filter(group => group).map((group) => group._id),
         },
       }));
@@ -167,8 +161,7 @@ export class CampaignService {
       const start: number = Date.now();
       const campaign: Campaign = await this.campaignModel
         .findById(id)
-        .populate({ path: 'groups.main', populate: { path: 'characters' } })
-        .populate({ path: 'groups.npc', populate: { path: 'characters' } })
+        .populate({ path: 'groups.active', populate: { path: 'characters' } })
         .populate({ path: 'groups.archived', populate: { path: 'characters' } })
         .exec();
       const end: number = Date.now();
@@ -204,11 +197,10 @@ export class CampaignService {
 
       // Handle groups update if present
       if (updateCampaignDto.groups) {
-        const { main = [], npc = [], archived = [] } = updateCampaignDto.groups;
-        const newGroupIds: string[] = [...main, ...npc, ...archived];
+        const { active = [], archived = [] } = updateCampaignDto.groups;
+        const newGroupIds: string[] = [...active, ...archived];
         const currentGroupIds: string[] = [
-          ...existingCampaign.groups.main,
-          ...existingCampaign.groups.npc,
+          ...existingCampaign.groups.active,
           ...existingCampaign.groups.archived,
         ].map((id) => id.toString());
 
@@ -246,8 +238,7 @@ export class CampaignService {
           { new: true },
         )
         .populate([
-          { path: 'groups.main', populate: { path: 'characters' } },
-          { path: 'groups.npc', populate: { path: 'characters' } },
+          { path: 'groups.active', populate: { path: 'characters' } },
           { path: 'groups.archived', populate: { path: 'characters' } },
         ]);
 
@@ -276,7 +267,7 @@ export class CampaignService {
 
       const campaign: CampaignDocument = await this.campaignModel.findById(id).exec();
 
-      const groups: string[] = ["main", "npc", "archived"];
+      const groups: string[] = ["active", "archived"];
       groups.forEach((group) => {
         if (campaign.groups[group] && campaign.groups[group].length > 0) {
           campaign.groups[group].forEach(async (groupId) => {
@@ -287,8 +278,7 @@ export class CampaignService {
       });
 
       campaign.deletedAt = new Date();
-      campaign.groups.main = [];
-      campaign.groups.npc = [];
+      campaign.groups.active = [];
       campaign.groups.archived = [];
       await campaign.save();
 

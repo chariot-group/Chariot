@@ -13,15 +13,7 @@ export class Groups {
     default: [],
     required: true,
   })
-  main: Group[];
-
-  @ApiProperty({ type: [String], example: ['507f1f77bcf86cd799439012'] })
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
-    default: [],
-    required: true,
-  })
-  npc: Group[];
+  active: Group[];
 
   @ApiProperty({ type: [String], example: ['507f1f77bcf86cd799439013'] })
   @Prop({

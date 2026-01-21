@@ -8,9 +8,9 @@ export class CampaignGroupDto {
   @IsNotEmpty()
   readonly idCampaign: string;
 
-  @ApiProperty({ example: 'main', enum: ['main', 'npc', 'archived'] })
-  @IsEnum(['main', 'npc', 'archived'], {
-    message: "type must be one of 'npc', 'pc', or 'archived'",
+  @ApiProperty({ example: 'active', enum: ['active', 'archived'] })
+  @IsEnum(['active', 'archived'], {
+    message: "type must be one of 'active' or 'archived'",
   })
-  readonly type: 'main' | 'npc' | 'archived';
+  readonly type: 'active' | 'archived';
 }

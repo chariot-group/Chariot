@@ -91,7 +91,7 @@ export class GroupService {
       onlyWithMembers?: any;
     },
     campaignId?: string,
-    type: 'all' | 'main' | 'npc' | 'archived' = 'all',
+    type: 'all' | 'active' | 'archived' = 'all',
   ): Promise<IPaginatedResponse<Group[]>> {
     try {
       const {
@@ -130,10 +130,7 @@ export class GroupService {
         let groupIds: string[] = [];
         if (type === 'all') {
           groupIds = [
-            ...(campaign.groups?.main || []).map((group: any) =>
-              group.toString(),
-            ),
-            ...(campaign.groups?.npc || []).map((group: any) =>
+            ...(campaign.groups?.active || []).map((group: any) =>
               group.toString(),
             ),
             ...(campaign.groups?.archived || []).map((group: any) =>

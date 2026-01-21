@@ -51,7 +51,7 @@ export class CampaignController {
 
   private async validateGroupRelations(
     groupIds: string[],
-    type: 'Main' | 'NPC' | 'Archived',
+    type: 'Active' | 'Archived',
   ): Promise<void> {
     if (!groupIds || groupIds.length === 0) return;
 
@@ -114,8 +114,7 @@ export class CampaignController {
     type: ProblemDetailsDto,
   })
   async create(@Req() request, @Body() createCampaignDto: CreateCampaignDto): Promise<IResponse<Campaign>> {
-    await this.validateGroupRelations(createCampaignDto.groups.main, 'Main');
-    await this.validateGroupRelations(createCampaignDto.groups.npc, 'NPC');
+    await this.validateGroupRelations(createCampaignDto.groups.active, 'Active');
     await this.validateGroupRelations(
       createCampaignDto.groups.archived,
       'Archived',
@@ -123,9 +122,9 @@ export class CampaignController {
 
     // Debug logging
     this.logger.debug(`Request user object: ${JSON.stringify(request.user)}`, this.CONTROLLER_NAME);
-    
+
     const userId = request.user?.keycloakId;
-    
+
     if (!userId) {
       this.logger.error(`User authentication failed - user object: ${JSON.stringify(request.user)}`, null, this.CONTROLLER_NAME);
       throw new BadRequestException('User authentication required');
@@ -201,7 +200,7 @@ export class CampaignController {
     @Query('offset', ParseNullableIntPipe) offset?: number,
     @Query('sort') sort?: string,
     @Query('label') label?: string,
-    @Query('type') type: 'all' | 'main' | 'npc' | 'archived' = 'all',
+    @Query('type') type: 'all' | 'active' | 'archived' = 'all',
     @Query('onlyWithMembers') onlyWithMembers?: boolean,
   ) {
     const userId = request.user.keycloakId;
@@ -291,10 +290,9 @@ export class CampaignController {
 
     if (updateCampaignDto.groups) {
       await this.validateGroupRelations(
-        updateCampaignDto.groups.main,
-        'Main',
+        updateCampaignDto.groups.active,
+        'Active',
       );
-      await this.validateGroupRelations(updateCampaignDto.groups.npc, 'NPC');
       await this.validateGroupRelations(
         updateCampaignDto.groups.archived,
         'Archived',
