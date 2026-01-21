@@ -16,10 +16,8 @@ describe('CampaignService - create', () => {
 
   const mockCampaignDto = {
     label: 'Nouvelle campagne',
-    description: 'Campagne test',
     groups: {
-      main: ['group1'],
-      npc: ['group2'],
+      active: ['group1'],
       archived: ['group3'],
     },
   };
@@ -64,7 +62,7 @@ describe('CampaignService - create', () => {
     });
 
     expect(groupModel.updateMany).toHaveBeenCalledWith(
-      { _id: { $in: ['group1', 'group2', 'group3'] } },
+      { _id: { $in: ['group1', 'group3'] } },
       { $addToSet: { campaigns: mockCreatedCampaign._id } },
     );
 
@@ -108,8 +106,7 @@ describe('CampaignService - findAllByUser', () => {
     _id: new Types.ObjectId(),
     label: 'Test Campaign',
     groups: {
-      main: [{ _id: 'g1' }],
-      npc: [{ _id: 'g2' }],
+      active: [{ _id: 'g1' }],
       archived: [{ _id: 'g3' }],
     },
     toObject: function () {
@@ -168,8 +165,7 @@ describe('CampaignService - findAllByUser', () => {
         {
           ...mockCampaign,
           groups: {
-            main: ['g1'],
-            npc: ['g2'],
+            active: ['g1'],
             archived: ['g3'],
           },
         },
@@ -210,8 +206,7 @@ describe('CampaignService - findOne', () => {
     _id: new Types.ObjectId(),
     label: 'Test Campaign',
     groups: {
-      main: [],
-      npc: [],
+      active: [],
       archived: [],
     },
   };
@@ -241,7 +236,7 @@ describe('CampaignService - findOne', () => {
     const result = await service.findOne(mockCampaign._id);
 
     expect(campaignModel.findById).toHaveBeenCalledWith(mockCampaign._id);
-    expect(campaignModel.populate).toHaveBeenCalledTimes(3);
+    expect(campaignModel.populate).toHaveBeenCalledTimes(2);
     expect(campaignModel.exec).toHaveBeenCalled();
 
     expect(result).toEqual({
@@ -269,8 +264,7 @@ describe('CampaignService - update', () => {
     _id: campaignId,
     label: 'Original Label',
     groups: {
-      main: ['g1'],
-      npc: [],
+      active: ['g1'],
       archived: [],
     },
   };
@@ -305,8 +299,7 @@ describe('CampaignService - update', () => {
 
     const result = await service.update(campaignId, {
       groups: {
-        main: ['g2'], // changement de groupe
-        npc: [],
+        active: ['g2'], // changement de groupe
         archived: [],
       },
     });
@@ -346,8 +339,7 @@ describe('CampaignService - remove', () => {
   const campaign = {
     _id: campaignId,
     groups: {
-      main: ['g1'],
-      npc: [],
+      active: ['g1'],
       archived: ['g2'],
     },
     save: jest.fn(),

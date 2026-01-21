@@ -27,9 +27,8 @@ describe('GroupController - create', () => {
 
   const createDto: CreateGroupDto = {
     label: 'Test Group',
-    description: 'Desc',
     characters: [characterId],
-    campaigns: [{ idCampaign: campaignId, type: 'main' }],
+    campaigns: [{ idCampaign: campaignId, type: 'active' }],
   };
 
   beforeEach(async () => {
@@ -95,7 +94,7 @@ describe('GroupController - create', () => {
   it('should throw BadRequestException if a campaign ID is invalid', async () => {
     const invalidDto: CreateGroupDto = {
       ...createDto,
-      campaigns: [{ idCampaign: 'invalid-id', type: 'main' }]
+      campaigns: [{ idCampaign: 'invalid-id', type: 'active' }]
     };
     await expect(controller.create(requestMock, invalidDto)).rejects.toThrow(BadRequestException);
   });
@@ -217,7 +216,7 @@ describe('GroupController - update', () => {
   const updateDto: UpdateGroupDto = {
     label: 'Updated Group',
     characters: [characterId],
-    campaigns: [{ idCampaign: campaignId, type: 'main' }],
+    campaigns: [{ idCampaign: campaignId, type: 'active' }],
   };
 
   beforeEach(async () => {

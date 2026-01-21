@@ -16,16 +16,13 @@ describe('CampaignController - create', () => {
   const userId = new Types.ObjectId().toHexString();
   const requestMock = { user: { keycloakId: userId } };
 
-  const groupMainId = new Types.ObjectId().toHexString();
-  const groupNpcId = new Types.ObjectId().toHexString();
+  const groupActiveId = new Types.ObjectId().toHexString();
   const groupArchivedId = new Types.ObjectId().toHexString();
 
   const createDto = {
     label: 'Test',
-    description: 'Desc',
     groups: {
-      main: [groupMainId],
-      npc: [groupNpcId],
+      active: [groupActiveId],
       archived: [groupArchivedId],
     },
   };
@@ -64,13 +61,13 @@ describe('CampaignController - create', () => {
 
     const result = await controller.create(requestMock, createDto);
 
-    expect(groupModel.findById).toHaveBeenCalledTimes(3);
+    expect(groupModel.findById).toHaveBeenCalledTimes(2);
     expect(campaignService.create).toHaveBeenCalledWith(createDto, userId);
     expect(result).toEqual({ data: 'createdCampaign' });
   });
 
   it('should throw BadRequestException if group ID is invalid', async () => {
-    const invalidDto = { ...createDto, groups: { ...createDto.groups, main: ['invalid-id'] } };
+    const invalidDto = { ...createDto, groups: { ...createDto.groups, active: ['invalid-id'] } };
 
     await expect(controller.create(requestMock, invalidDto)).rejects.toThrow(BadRequestException);
   });
@@ -195,8 +192,7 @@ describe('CampaignController - update', () => {
   const updateDto = {
     label: 'Updated Campaign',
     groups: {
-      main: [groupId],
-      npc: [],
+      active: [groupId],
       archived: [],
     },
   };
@@ -324,7 +320,7 @@ describe('CampaignController - findAllGroups', () => {
       10,
       '-createdAt',
       'test',
-      'main',
+      'active',
       true
     );
 
@@ -335,7 +331,7 @@ describe('CampaignController - findAllGroups', () => {
       sort: '-createdAt',
       label: 'test',
       onlyWithMembers: true,
-    }, campaignId.toHexString(), 'main');
+    }, campaignId.toHexString(), 'active');
 
     expect(result).toEqual(['group1']);
   });

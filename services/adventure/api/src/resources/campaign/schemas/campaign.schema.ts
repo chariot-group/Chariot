@@ -16,10 +16,6 @@ export class Campaign extends BaseSchema {
   @Prop({ required: true })
   label: string;
 
-  @ApiProperty({ example: 'A fun summer campaign full of adventures.' })
-  @Prop({ required: false })
-  description: string;
-
   @ApiProperty({ type: Groups })
   @Prop({ type: Groups, required: true })
   groups: Groups;

@@ -19,10 +19,6 @@ export class Group extends BaseSchema {
   @Prop({ required: true })
   label: string;
 
-  @ApiProperty({ example: 'A group of brave adventurers.' })
-  @Prop({ required: false })
-  description: string;
-
   @ApiProperty({ example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'] })
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Character' }],

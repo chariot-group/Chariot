@@ -1402,8 +1402,8 @@
         "type": "oauth2",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/auth",
-            "tokenUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/token",
+            "authorizationUrl": "http://localhost:8081/realms/chariot/protocol/openid-connect/auth",
+            "tokenUrl": "http://localhost:8081/realms/chariot/protocol/openid-connect/token",
             "scopes": {
               "openid": "OpenID Connect"
             }
@@ -1956,10 +1956,6 @@
             "type": "string",
             "example": "Adventurers"
           },
-          "description": {
-            "type": "string",
-            "example": "A group of brave adventurers."
-          },
           "characters": {
             "example": [
               "507f1f77bcf86cd799439011",
@@ -1989,7 +1985,6 @@
         "required": [
           "_id",
           "label",
-          "description",
           "characters",
           "campaigns",
           "deletedAt"
@@ -3898,10 +3893,9 @@
           },
           "type": {
             "type": "string",
-            "example": "main",
+            "example": "active",
             "enum": [
-              "main",
-              "npc",
+              "active",
               "archived"
             ]
           }
@@ -3917,10 +3911,6 @@
           "label": {
             "type": "string",
             "example": "Adventurers"
-          },
-          "description": {
-            "type": "string",
-            "example": "A group of brave adventurers."
           },
           "characters": {
             "example": [
@@ -3941,7 +3931,6 @@
         },
         "required": [
           "label",
-          "description",
           "characters",
           "campaigns"
         ]
@@ -3957,18 +3946,9 @@
       "Groups": {
         "type": "object",
         "properties": {
-          "main": {
+          "active": {
             "example": [
               "507f1f77bcf86cd799439011"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "npc": {
-            "example": [
-              "507f1f77bcf86cd799439012"
             ],
             "type": "array",
             "items": {
@@ -3986,8 +3966,7 @@
           }
         },
         "required": [
-          "main",
-          "npc",
+          "active",
           "archived"
         ]
       },
@@ -4006,10 +3985,6 @@
             "type": "string",
             "example": "Summer Campaign"
           },
-          "description": {
-            "type": "string",
-            "example": "A fun summer campaign full of adventures."
-          },
           "groups": {
             "$ref": "#/components/schemas/Groups"
           },
@@ -4022,7 +3997,6 @@
         "required": [
           "_id",
           "label",
-          "description",
           "groups",
           "deletedAt"
         ]
@@ -4030,18 +4004,9 @@
       "CreateGroupIdsDto": {
         "type": "object",
         "properties": {
-          "main": {
+          "active": {
             "example": [
               "60d21b4667d0d8992e610c85"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "npc": {
-            "example": [
-              "60d21b4667d0d8992e610c86"
             ],
             "type": "array",
             "items": {
@@ -4057,8 +4022,7 @@
           }
         },
         "required": [
-          "main",
-          "npc",
+          "active",
           "archived"
         ]
       },
@@ -4069,17 +4033,12 @@
             "type": "string",
             "example": "Epic Adventure"
           },
-          "description": {
-            "type": "string",
-            "example": "An epic journey through uncharted lands."
-          },
           "groups": {
             "$ref": "#/components/schemas/CreateGroupIdsDto"
           }
         },
         "required": [
           "label",
-          "description",
           "groups"
         ]
       },
