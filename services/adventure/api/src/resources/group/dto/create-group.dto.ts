@@ -19,11 +19,6 @@ export class CreateGroupDto {
   @MaxLength(50)
   readonly label: string;
 
-  @ApiProperty({ example: 'A group of brave adventurers.' })
-  @IsString()
-  @IsOptional()
-  readonly description?: string;
-
   @ApiProperty({ example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'] })
   @IsArray()
   @IsOptional()

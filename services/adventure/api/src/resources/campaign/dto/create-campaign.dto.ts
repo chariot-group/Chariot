@@ -10,10 +10,6 @@ export class CreateCampaignDto {
   @MaxLength(50)
   readonly label: string;
 
-  @ApiProperty({ example: "An epic journey through uncharted lands." })
-  @IsString()
-  readonly description: string;
-
   @ApiProperty({ type: CreateGroupIdsDto })
   @ValidateNested()
   @Type(() => CreateGroupIdsDto)
