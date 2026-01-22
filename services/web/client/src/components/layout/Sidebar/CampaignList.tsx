@@ -76,18 +76,19 @@ export default function CampaignList() {
   }
 
   return (
-    <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto mt-1">
+    <div className="flex flex-col gap-2 max-h-75 overflow-y-auto mt-1">
       {campaigns.map((campaign) => {
         const isSelected = selectedCampaignId === campaign._id;
         return (
-          <span
+          <button
+            type="button"
             key={campaign._id}
             onClick={() => handleCampaignClick(campaign._id)}
-            className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white transition-all duration-100 w-full focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 block truncate ${
+            className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white text-left transition-all duration-100 w-full focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 truncate ${
               isSelected ? "bg-card font-bold" : "hover:bg-card hover:font-bold"
             }`}>
             {campaign.label}
-          </span>
+          </button>
         );
       })}
 

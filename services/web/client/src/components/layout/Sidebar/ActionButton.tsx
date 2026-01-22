@@ -153,7 +153,8 @@ export function ActionButton() {
   return (
     <Button
       onClick={button.action}
-      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} hover:${button.backgroundColor} cursor-pointer rounded-[12px] flex items-center gap-3`}>
+      disabled={button.disabled}
+      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} cursor-pointer rounded-[12px] flex items-center gap-3`}>
       {button.icon}
       <span className="text-lg">{button.label}</span>
     </Button>

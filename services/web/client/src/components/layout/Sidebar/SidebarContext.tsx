@@ -56,24 +56,23 @@ export default function SidebarContext() {
         open={openActive}
         onOpenChange={handleOpenActive}>
         <CollapsibleTrigger
-          className={`w-full ${openActive && "bg-white"} border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group`}>
+          className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group ${openActive ? "bg-white" : ""}`}>
           <span
-            className={`text-sm ${openActive && "text-black font-bold"} group-hover:font-bold group-hover:text-black`}>
+            className={`text-sm group-hover:font-bold group-hover:text-black ${openActive ? "text-black font-bold" : ""}`}>
             {t("yourGroups")}
           </span>
           <ChevronRight
-            className={`w-5 h-5 ${openActive && "rotate-90 text-black"} group-hover:text-black transition-all duration-100`}
+            className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${openActive ? "rotate-90 text-black" : ""}`}
           />
         </CollapsibleTrigger>
         <CollapsibleContent className="my-2 flex mx-5 flex-col gap-2">
           {/* Create group button */}
-          <span
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
             {t("createGroup")}
             <PlusCircleIcon className="w-5 h-5" />
-          </span>
+          </button>
 
           {loading ? (
             <div className="flex justify-center items-center py-4">
@@ -95,13 +94,13 @@ export default function SidebarContext() {
         open={openArchived}
         onOpenChange={handleOpenArchived}>
         <CollapsibleTrigger
-          className={`w-full ${openArchived && "bg-white"} border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group`}>
+          className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group ${openArchived ? "bg-white" : ""}`}>
           <span
-            className={`text-sm ${openArchived && "text-black font-bold"} group-hover:font-bold group-hover:text-black`}>
+            className={`text-sm group-hover:font-bold group-hover:text-black ${openArchived ? "text-black font-bold" : ""}`}>
             {t("yourArchives")}
           </span>
           <ChevronRight
-            className={`w-5 h-5 ${openArchived && "rotate-90 text-black"} group-hover:text-black transition-all duration-100`}
+            className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${openArchived ? "rotate-90 text-black" : ""}`}
           />
         </CollapsibleTrigger>
         <CollapsibleContent className="my-2 flex mx-5 flex-col gap-2">

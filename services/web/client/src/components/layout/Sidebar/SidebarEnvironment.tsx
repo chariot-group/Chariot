@@ -42,31 +42,32 @@ export default function SidebarEnvironment() {
       open={open}
       onOpenChange={handleOpenChange}>
       <CollapsibleTrigger
-        className={`w-full ${open && "bg-white"} border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group`}>
-        <span className={`text-sm ${open && "text-black font-bold"} group-hover:font-bold group-hover:text-black`}>
+        className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group ${open ? "bg-white" : ""}`}>
+        <span className={`text-sm group-hover:font-bold group-hover:text-black ${open ? "text-black font-bold" : ""}`}>
           {t("yourSpaces")}
         </span>
         <ChevronRight
-          className={`w-5 h-5 ${open && "rotate-90 text-black"} group-hover:text-black transition-all duration-100`}
+          className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${open ? "rotate-90 text-black" : ""}`}
         />
       </CollapsibleTrigger>
       <CollapsibleContent className="my-2 flex mx-5 flex-col gap-2">
-        {/* Player mode button */}
-        <span
+        <button
+          type="button"
           onClick={() => changeEnvironment("player")}
-          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-[12px] py-1.5 px-3 w-full">
+          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-xl py-1.5 px-3 w-full text-left">
           {t("yourCharacters")}
-        </span>
+        </button>
 
         <div className="w-full border" />
 
-        {/* Create campaign button (GM mode) */}
-        <span
+        {/* Switch to GM mode and create campaign */}
+        <button
+          type="button"
           onClick={() => changeEnvironment("gm")}
           className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full">
           {t("createCampaign")}
           <PlusCircleIcon className="w-5 h-5" />
-        </span>
+        </button>
 
         {/* Campaign list */}
         <CampaignList />

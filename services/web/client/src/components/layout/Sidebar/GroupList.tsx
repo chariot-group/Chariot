@@ -27,10 +27,10 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
   const t = useTranslations("sidebar");
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const pathname = usePathname();
-  
+
   // Extract character ID from current URL path
-  const selectedCharacterId = pathname?.includes("/characters/") 
-    ? pathname.split("/characters/")[1]?.split("/")[0] 
+  const selectedCharacterId = pathname?.includes("/characters/")
+    ? pathname.split("/characters/")[1]?.split("/")[0]
     : null;
 
   if (groups.length === 0) {
@@ -50,14 +50,13 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
             <CollapsibleTrigger className="w-full">
               <ContextMenu>
                 <ContextMenuTrigger
-                  className={`w-full ${isOpen && "font-bold"} bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center group`}>
-                  <span className={`text-sm ${isOpen && "font-bold"} text-left group-hover:font-bold`}>
+                  className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center group ${isOpen ? "font-bold" : ""}`}>
+                  <span className={`text-sm text-left group-hover:font-bold ${isOpen ? "font-bold" : ""}`}>
                     {group.label}
                   </span>
-                  <ChevronRight className={`w-4 h-4 ${isOpen && "rotate-90"} transition-all duration-100`} />
+                  <ChevronRight className={`w-4 h-4 transition-all duration-100 ${isOpen ? "rotate-90" : ""}`} />
                 </ContextMenuTrigger>
-                <ContextMenuContent
-                  className="w-full flex-col bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex group">
+                <ContextMenuContent className="w-full flex-col bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex group">
                   <ContextMenuItem
                     className="cursor-pointer"
                     onClick={() => {
@@ -79,7 +78,7 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                       className={`text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer ${
                         isSelected ? "bg-card/50 font-bold" : ""
                       }`}>
-                      <span>{character.name}</span>
+                      {character.name}
                     </Link>
                   );
                 })
