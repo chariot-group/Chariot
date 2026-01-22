@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { KeycloakProvider } from "@/providers/KeycloakProvider";
+import ReduxProvider from "@/providers/ReduxProvider";
 import ToastContainer from "@/components/ToastContainer";
 import LocaleDetector from "@/components/LocaleDetector";
 import { NextIntlClientProvider } from "next-intl";
@@ -36,11 +37,13 @@ export default async function RootLayout({
     <html lang={locale}>
       <KeycloakProvider>
         <body className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover font-sans`}>
-          <NextIntlClientProvider messages={messages}>
-            <LocaleDetector />
-            <ToastContainer />
-            {children}
-          </NextIntlClientProvider>
+          <ReduxProvider>
+            <NextIntlClientProvider messages={messages}>
+              <LocaleDetector />
+              <ToastContainer />
+              {children}
+            </NextIntlClientProvider>
+          </ReduxProvider>
         </body>
       </KeycloakProvider>
     </html>

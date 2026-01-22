@@ -12,5 +12,34 @@
     "error": "This is an error message.",
     "warning": "This is a warning message.",
     "info": "This is an info message."
+  },
+  "sidebar": {
+    "mainNavigation": "Main navigation",
+    "playerNavigation": "Player navigation",
+    "gmNavigation": "Game Master navigation",
+    "campaigns": "Campaigns",
+    "characters": "Characters",
+    "battle": "Battle",
+    "journal": "Journal",
+    "dashboard": "Dashboard",
+    "campaignManagement": "Campaign Management",
+    "npcManagement": "NPCs",
+    "encounters": "Encounters",
+    "worldBuilder": "World Builder",
+    "settings": "Settings",
+    "userMenu": "User menu",
+    "logout": "Logout",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "closeMenu": "Close menu"
+  },
+  "navbar": {
+    "openMenu": "Open menu"
+  },
+  "contextMode": {
+    "playerMode": "Player Mode",
+    "gmMode": "GM Mode",
+    "switchToPlayerMode": "Switch to Player Mode",
+    "switchToGmMode": "Switch to Game Master Mode"
   }
 }

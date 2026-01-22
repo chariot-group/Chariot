@@ -12,5 +12,34 @@
     "error": "Ceci est un message d'erreur.",
     "warning": "Ceci est un message d'avertissement.",
     "info": "Ceci est un message d'information."
+  },
+  "sidebar": {
+    "mainNavigation": "Navigation principale",
+    "playerNavigation": "Navigation joueur",
+    "gmNavigation": "Navigation maître du jeu",
+    "campaigns": "Campagnes",
+    "characters": "Personnages",
+    "battle": "Combat",
+    "journal": "Journal",
+    "dashboard": "Tableau de bord",
+    "campaignManagement": "Gestion des campagnes",
+    "npcManagement": "PNJs",
+    "encounters": "Rencontres",
+    "worldBuilder": "Créateur de monde",
+    "settings": "Paramètres",
+    "userMenu": "Menu utilisateur",
+    "logout": "Déconnexion",
+    "expandSidebar": "Développer la barre latérale",
+    "collapseSidebar": "Réduire la barre latérale",
+    "closeMenu": "Fermer le menu"
+  },
+  "navbar": {
+    "openMenu": "Ouvrir le menu"
+  },
+  "contextMode": {
+    "playerMode": "Mode Joueur",
+    "gmMode": "Mode MJ",
+    "switchToPlayerMode": "Passer en mode Joueur",
+    "switchToGmMode": "Passer en mode Maître du Jeu"
   }
 }
