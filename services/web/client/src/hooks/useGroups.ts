@@ -48,7 +48,11 @@ export function useGroups() {
             const campaign = campaigns.find(c => c._id === selectedCampaignId);
 
             if (!campaign) {
-                throw new Error('Campaign not found');
+                // La campagne n'est pas encore chargée (cas du refresh avec redux-persist)
+                // On retourne les groupes sans les séparer actifs/archivés
+                console.warn('Campaign not loaded yet, returning all groups as active');
+                dispatch(fetchGroupsSuccess({ active: allGroups, archived: [] }));
+                return;
             }
 
             // Vérifier que campaign.groups existe et a les propriétés nécessaires

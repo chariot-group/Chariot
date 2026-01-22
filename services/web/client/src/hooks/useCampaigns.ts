@@ -143,15 +143,24 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
 
     /**
      * Chargement automatique avec gestion du cache
+     * Pattern "stale-while-revalidate": affiche le cache puis rafraîchit en arrière-plan
      */
     useEffect(() => {
         if (autoFetch && !loading) {
-            // Ne charge que si le cache est invalide ou si forceRefresh est demandé
-            if (!isCacheValid || forceRefresh) {
-                fetchCampaigns();
+            // Si on a des données en cache, on les garde affichées et on rafraîchit en arrière-plan
+            if (campaigns.length > 0 && !forceRefresh) {
+                // Cache présent : rafraîchir silencieusement en arrière-plan si invalide
+                if (!isCacheValid) {
+                    fetchCampaigns();
+                }
+            } else {
+                // Pas de cache ou forceRefresh : charger normalement
+                if (!isCacheValid || forceRefresh) {
+                    fetchCampaigns();
+                }
             }
         }
-    }, [autoFetch, forceRefresh, isCacheValid, loading, fetchCampaigns]);
+    }, [autoFetch, forceRefresh, isCacheValid, loading, fetchCampaigns, campaigns.length]);
 
     return {
         campaigns,
