@@ -153,6 +153,11 @@ export class GroupService {
         .sort({ ...sortCriteria, _id: 'asc' })
         .limit(offset)
         .skip((page - 1) * offset)
+        .populate({
+          path: 'characters',
+          match: { deletedAt: null },
+          select: '_id name userId',
+        })
         .exec();
 
       const totalItems: number = await this.groupModel.countDocuments(filters);

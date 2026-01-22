@@ -1,48 +1,129 @@
 "use client";
 
-import { Swords, Users, Map, BookOpen, Settings, LayoutDashboard, UserCog, Scroll, Castle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
-import SidebarItem from "./SidebarItem";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronRight, PlusCircleIcon, Loader2 } from "lucide-react";
+import { useGroups } from "@/hooks/useGroups";
+import GroupList from "./GroupList";
+import { selectSelectedCampaign } from "@/store/slices/campaignSlice";
+import {
+  selectOpenActiveGroups,
+  selectOpenArchivedGroups,
+  setOpenActiveGroups,
+  setOpenArchivedGroups,
+} from "@/store/slices/sidebarSlice";
 
+/**
+ * Context navigation component for GM mode
+ * Displays active groups and archived groups
+ * Only visible in GM mode when a campaign is selected
+ */
 export default function SidebarContext() {
   const t = useTranslations("sidebar");
+  const dispatch = useAppDispatch();
   const contextMode = useAppSelector(selectContextMode);
+  const selectedCampaign = useAppSelector(selectSelectedCampaign);
+  const openActive = useAppSelector(selectOpenActiveGroups);
+  const openArchived = useAppSelector(selectOpenArchivedGroups);
+  const { activeGroups, archivedGroups, loading, openGroupId, toggleGroup } = useGroups();
 
-  // Player context navigation
-  const playerNavItems = [
-    { href: "/demo", icon: Map, label: t("campaigns") },
-    { href: "/characters", icon: Users, label: t("characters") },
-    { href: "/battle", icon: Swords, label: t("battle") },
-    { href: "/journal", icon: BookOpen, label: t("journal") },
-  ];
+  // Handle collapsible state changes
+  const handleOpenActive = (isOpen: boolean) => {
+    dispatch(setOpenActiveGroups(isOpen));
+  };
 
-  // Game Master context navigation
-  const gmNavItems = [
-    { href: "/gm/dashboard", icon: LayoutDashboard, label: t("dashboard") },
-    { href: "/gm/campaigns", icon: Castle, label: t("campaignManagement") },
-    { href: "/gm/npcs", icon: UserCog, label: t("npcManagement") },
-    { href: "/gm/encounters", icon: Swords, label: t("encounters") },
-    { href: "/gm/world", icon: Scroll, label: t("worldBuilder") },
-  ];
+  const handleOpenArchived = (isOpen: boolean) => {
+    dispatch(setOpenArchivedGroups(isOpen));
+  };
 
-  const navItems = contextMode === "gm" ? gmNavItems : playerNavItems;
+  // Only render in GM mode
+  if (contextMode !== "gm") {
+    return null;
+  }
 
   return (
     <nav
-      className="flex-1 overflow-y-auto px-3 py-4"
-      aria-label={contextMode === "gm" ? t("gmNavigation") : t("playerNavigation")}>
-      <div className="space-y-1">
-        {navItems.map((item) => (
-          <SidebarItem
-            key={item.href}
-            href={item.href}
-            icon={item.icon}
-            label={item.label}
+      className="flex gap-3 flex-col overflow-y-auto px-3 py-4"
+      aria-label={t("gmNavigation")}>
+      {/* Selected campaign name */}
+      {selectedCampaign && <h2 className="text-lg text-white">{selectedCampaign.label}</h2>}
+
+      {/* Active groups section */}
+      <Collapsible
+        className="rounded-[15px] border-2"
+        open={openActive}
+        onOpenChange={handleOpenActive}>
+        <CollapsibleTrigger
+          className={`w-full ${openActive && "bg-white"} border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group`}>
+          <span
+            className={`text-sm ${openActive && "text-black font-bold"} group-hover:font-bold group-hover:text-black`}>
+            {t("yourGroups")}
+          </span>
+          <ChevronRight
+            className={`w-5 h-5 ${openActive && "rotate-90 text-black"} group-hover:text-black transition-all duration-100`}
           />
-        ))}
-      </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="my-2 flex mx-5 flex-col gap-2">
+          {/* Create group button */}
+          <span
+            role="button"
+            tabIndex={0}
+            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+            {t("createGroup")}
+            <PlusCircleIcon className="w-5 h-5" />
+          </span>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-4">
+              <Loader2 className="w-5 h-5 animate-spin text-black" />
+            </div>
+          ) : (
+            <GroupList
+              groups={activeGroups}
+              openGroupId={openGroupId}
+              onToggleGroup={toggleGroup}
+            />
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Archived groups section */}
+      <Collapsible
+        className="rounded-[15px] border-2"
+        open={openArchived}
+        onOpenChange={handleOpenArchived}>
+        <CollapsibleTrigger
+          className={`w-full ${openArchived && "bg-white"} border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group`}>
+          <span
+            className={`text-sm ${openArchived && "text-black font-bold"} group-hover:font-bold group-hover:text-black`}>
+            {t("yourArchives")}
+          </span>
+          <ChevronRight
+            className={`w-5 h-5 ${openArchived && "rotate-90 text-black"} group-hover:text-black transition-all duration-100`}
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="my-2 flex mx-5 flex-col gap-2">
+          {loading ? (
+            <div className="flex justify-center items-center py-4">
+              <Loader2 className="w-5 h-5 animate-spin text-black" />
+            </div>
+          ) : archivedGroups.length === 0 ? (
+            <div className="text-sm text-gray-400 px-3 py-2">
+              {t("noArchives")}
+              <br />
+              {t("rightClickToAdd")}
+            </div>
+          ) : (
+            <GroupList
+              groups={archivedGroups}
+              openGroupId={openGroupId}
+              onToggleGroup={toggleGroup}
+            />
+          )}
+        </CollapsibleContent>
+      </Collapsible>
     </nav>
   );
 }

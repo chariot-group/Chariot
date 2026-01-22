@@ -40,6 +40,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
   // Ref to store interval ID
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Ref to track if we've already handled initial auth redirect
+  const hasHandledAuthRef = useRef(false);
 
   useEffect(() => {
     const initKeycloak = async () => {
@@ -54,7 +56,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       try {
         const initOptions: KeycloakInitOptions = {
           onLoad: "check-sso",
-          checkLoginIframe: false, // Disable to avoid iframe issues
+          silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
+          checkLoginIframe: false,
           pkceMethod: "S256",
         };
 
@@ -107,38 +110,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    if (loading || !keycloak) return;
-
-    // If user just registered, save their locale and redirect
-    if (isNewRegistration && authenticated) {
-      const detectedLocale = detectBrowserLocale();
-      saveStoredLocale(detectedLocale);
-
-      // Redirect to detected locale if different from current
-      if (locale !== detectedLocale) {
-        router.push(`/${detectedLocale}`);
-      }
-
-      setIsNewRegistration(false);
-      return;
-    }
-
-    // If user is not authenticated, redirect to login with their preferred locale
-    if (!authenticated) {
-      const preferredLocale = getStoredLocale() || locale;
-      keycloak.login({
-        redirectUri: window.location.origin + `/${preferredLocale}`,
-        locale: preferredLocale,
-      });
-    } else {
-      // If user is authenticated, check if we should redirect to their preferred locale
-      const preferredLocale = getStoredLocale();
-      if (preferredLocale && preferredLocale !== locale) {
-        router.push(`/${preferredLocale}${pathname.substring(3)}`);
-      }
-    }
-  }, [authenticated, loading, keycloak, locale, isNewRegistration, router, pathname]);
+  // Removed automatic URL cleaning that was causing infinite loop
 
   const login = () => {
     keycloak?.login({

@@ -4,16 +4,28 @@ import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import SidebarContext from "./SidebarContext";
-import React from "react";
 import SidebarEnvironment from "./SidebarEnvironment";
+import { ActionButton } from "./ActionButton";
+import { useCampaigns } from "@/hooks/useCampaigns";
 
+/**
+ * Main sidebar component
+ * Displays environment selector, context navigation, and action button
+ * Auto-loads campaigns on mount for GM mode
+ */
 export default function Sidebar() {
   const t = useTranslations("sidebar");
   const sidebarRef = useRef<HTMLElement>(null);
 
+  // Auto-fetch campaigns on component mount
+  useCampaigns({
+    autoFetch: true,
+    pageSize: 5,
+  });
+
   return (
-    <React.Fragment>
-      {/* Sidebar */}
+    <>
+      {/* Fixed sidebar */}
       <aside
         ref={sidebarRef}
         className={cn(
@@ -24,20 +36,27 @@ export default function Sidebar() {
         )}
         role="navigation"
         aria-label={t("mainNavigation")}>
-        {/* Environment */}
-        <div className={cn("mx-6 py-6 border-b ")}>
+        {/* Environment selector (player/GM mode) */}
+        <div className={cn("mx-6 py-6 border-b")}>
           <SidebarEnvironment />
         </div>
 
-        {/* Navigation */}
-        <SidebarContext />
+        {/* Campaign and group navigation */}
+        <div className={cn("flex-1 overflow-y-auto px-3")}>
+          <SidebarContext />
+        </div>
+
+        {/* Action button (context-dependent) */}
+        <div className={cn("mx-6 py-6 border-t")}>
+          <ActionButton />
+        </div>
       </aside>
 
-      {/* Spacer for desktop to prevent content overlap */}
+      {/* Spacer to prevent content overlap on desktop */}
       <div
         className={cn("hidden lg:block shrink-0 transition-all duration-300", "w-80")}
         aria-hidden="true"
       />
-    </React.Fragment>
+    </>
   );
 }
