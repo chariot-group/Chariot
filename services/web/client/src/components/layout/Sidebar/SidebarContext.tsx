@@ -56,22 +56,31 @@ export default function SidebarContext() {
         open={openActive}
         onOpenChange={handleOpenActive}>
         <CollapsibleTrigger
-          className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group ${openActive ? "bg-white" : ""}`}>
+          aria-expanded={openActive}
+          aria-controls="active-groups-content"
+          className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${openActive ? "bg-white" : ""}`}>
           <span
             className={`text-sm group-hover:font-bold group-hover:text-black ${openActive ? "text-black font-bold" : ""}`}>
             {t("yourGroups")}
           </span>
           <ChevronRight
+            aria-hidden="true"
             className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${openActive ? "rotate-90 text-black" : ""}`}
           />
         </CollapsibleTrigger>
-        <CollapsibleContent className="my-2 flex mx-5 flex-col gap-2">
+        <CollapsibleContent
+          id="active-groups-content"
+          className="my-2 flex mx-5 flex-col gap-2">
           {/* Create group button */}
           <button
             type="button"
-            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+            aria-label={t("createGroup")}
+            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2">
             {t("createGroup")}
-            <PlusCircleIcon className="w-5 h-5" />
+            <PlusCircleIcon
+              aria-hidden="true"
+              className="w-5 h-5"
+            />
           </button>
 
           {loading ? (
@@ -94,16 +103,21 @@ export default function SidebarContext() {
         open={openArchived}
         onOpenChange={handleOpenArchived}>
         <CollapsibleTrigger
-          className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group ${openArchived ? "bg-white" : ""}`}>
+          aria-expanded={openArchived}
+          aria-controls="archived-groups-content"
+          className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${openArchived ? "bg-white" : ""}`}>
           <span
             className={`text-sm group-hover:font-bold group-hover:text-black ${openArchived ? "text-black font-bold" : ""}`}>
             {t("yourArchives")}
           </span>
           <ChevronRight
+            aria-hidden="true"
             className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${openArchived ? "rotate-90 text-black" : ""}`}
           />
         </CollapsibleTrigger>
-        <CollapsibleContent className="my-2 flex mx-5 flex-col gap-2">
+        <CollapsibleContent
+          id="archived-groups-content"
+          className="my-2 flex mx-5 flex-col gap-2">
           {loading ? (
             <div className="flex justify-center items-center py-4">
               <Loader2 className="w-5 h-5 animate-spin text-black" />

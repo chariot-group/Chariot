@@ -42,29 +42,39 @@ export default function SidebarEnvironment() {
       open={open}
       onOpenChange={handleOpenChange}>
       <CollapsibleTrigger
-        className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group ${open ? "bg-white" : ""}`}>
+        aria-expanded={open}
+        aria-controls="spaces-content"
+        className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${open ? "bg-white" : ""}`}>
         <span className={`text-sm group-hover:font-bold group-hover:text-black ${open ? "text-black font-bold" : ""}`}>
           {t("yourSpaces")}
         </span>
         <ChevronRight
+          aria-hidden="true"
           className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${open ? "rotate-90 text-black" : ""}`}
         />
       </CollapsibleTrigger>
-      <CollapsibleContent className="my-2 flex mx-5 flex-col gap-2">
+      <CollapsibleContent
+        id="spaces-content"
+        className="my-2 flex mx-5 flex-col gap-2">
         <button
           type="button"
           onClick={() => changeEnvironment("player")}
-          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-xl py-1.5 px-3 w-full text-left">
+          aria-label={t("yourCharacters")}
+          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-xl py-1.5 px-3 w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2">
           {t("yourCharacters")}
         </button>
 
-        <div className="w-full border" />
+        <div
+          className="w-full border"
+          aria-hidden="true"
+        />
 
         {/* Switch to GM mode and create campaign */}
         <button
           type="button"
           onClick={() => changeEnvironment("gm")}
-          className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full">
+          aria-label={t("createCampaign")}
+          className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2">
           {t("createCampaign")}
           <PlusCircleIcon className="w-5 h-5" />
         </button>

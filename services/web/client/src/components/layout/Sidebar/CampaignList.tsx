@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { selectSelectedCampaignId, setSelectedCampaign } from "@/store/slices/campaignContextSlice";
+import { useTranslations } from "next-intl";
 
 /**
  * Campaign list component with infinite scroll
@@ -13,6 +14,7 @@ import { selectSelectedCampaignId, setSelectedCampaign } from "@/store/slices/ca
  * Auto-loads more campaigns when scrolling to bottom
  */
 export default function CampaignList() {
+  const t = useTranslations("sidebar");
   const { campaigns, loading, loadingMore, hasMore, loadMoreCampaigns, error } = useCampaigns({
     autoFetch: true,
     pageSize: 5,
@@ -84,7 +86,9 @@ export default function CampaignList() {
             type="button"
             key={campaign._id}
             onClick={() => handleCampaignClick(campaign._id)}
-            className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white text-left transition-all duration-100 w-full focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 truncate ${
+            aria-pressed={isSelected}
+            aria-label={`${isSelected ? t("selectedCampaign") : t("selectCampaign")} ${campaign.label}`}
+            className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white text-left transition-all duration-100 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 truncate ${
               isSelected ? "bg-card font-bold" : "hover:bg-card hover:font-bold"
             }`}>
             {campaign.label}

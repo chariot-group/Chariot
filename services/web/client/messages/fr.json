@@ -19,6 +19,9 @@
     "reset": "Réinitialiser",
     "returnToBattle": "Retour au combat",
     "joinSession": "Rejoindre la session",
-    "returnToSheet": "Retour à la fiche personnage"
+    "returnToSheet": "Retour à la fiche personnage",
+    "selectCampaign": "Sélectionner la campagne",
+    "selectedCampaign": "Campagne sélectionnée",
+    "selected": "sélectionné"
   }
 }

@@ -19,6 +19,9 @@
     "reset": "Reset",
     "returnToBattle": "Return to Battle",
     "joinSession": "Join Session",
-    "returnToSheet": "Return to Character Sheet"
+    "returnToSheet": "Return to Character Sheet",
+    "selectCampaign": "Select campaign",
+    "selectedCampaign": "Selected campaign",
+    "selected": "selected"
   }
 }

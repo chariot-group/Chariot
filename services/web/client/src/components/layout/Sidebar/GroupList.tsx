@@ -47,14 +47,20 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
             key={group._id}
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
-            <CollapsibleTrigger className="w-full">
+            <CollapsibleTrigger
+              aria-expanded={isOpen}
+              aria-controls={`group-${group._id}-content`}
+              className="w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 rounded-[12px]">
               <ContextMenu>
                 <ContextMenuTrigger
                   className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center group ${isOpen ? "font-bold" : ""}`}>
                   <span className={`text-sm text-left group-hover:font-bold ${isOpen ? "font-bold" : ""}`}>
                     {group.label}
                   </span>
-                  <ChevronRight className={`w-4 h-4 transition-all duration-100 ${isOpen ? "rotate-90" : ""}`} />
+                  <ChevronRight
+                    aria-hidden="true"
+                    className={`w-4 h-4 transition-all duration-100 ${isOpen ? "rotate-90" : ""}`}
+                  />
                 </ContextMenuTrigger>
                 <ContextMenuContent className="w-full flex-col bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex group">
                   <ContextMenuItem
@@ -67,7 +73,9 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                 </ContextMenuContent>
               </ContextMenu>
             </CollapsibleTrigger>
-            <CollapsibleContent className="mt-1 ml-3 flex flex-col gap-1">
+            <CollapsibleContent
+              id={`group-${group._id}-content`}
+              className="mt-1 ml-3 flex flex-col gap-1">
               {group.characters && group.characters.length > 0 ? (
                 group.characters.map((character) => {
                   const isSelected = selectedCharacterId === character._id;
@@ -75,7 +83,9 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                     <Link
                       href={`/campaigns/${selectedCampaignId}/groups/${group._id}/characters/${character._id}`}
                       key={character._id}
-                      className={`text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer ${
+                      aria-current={isSelected ? "page" : undefined}
+                      aria-label={`${character.name}${isSelected ? ` (${t("selected")})` : ""}`}
+                      className={`text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${
                         isSelected ? "bg-card/50 font-bold" : ""
                       }`}>
                       {character.name}
