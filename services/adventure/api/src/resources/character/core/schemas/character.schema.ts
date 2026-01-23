@@ -61,7 +61,7 @@ export class Character extends BaseSchema {
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
     default: [],
-    required: true,
+    required: false,
   })
   groups: Group[];
 

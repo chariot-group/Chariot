@@ -486,4 +486,158 @@ describe('PlayerService', () => {
       expect(result.message).toContain('update in');
     });
   });
+
+  describe('findPlayersWithoutGroup - FR-005', () => {
+    const userId = new Types.ObjectId().toHexString();
+
+    it('should return paginated players with empty groups array for authenticated user', async () => {
+      const mockPlayers = [
+        { _id: 'player1', name: 'Orphan Hero', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+        { _id: 'player2', name: 'Solo Warrior', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+      ];
+
+      characterModel.find = jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockPlayers),
+      });
+      characterModel.countDocuments = jest.fn().mockResolvedValue(2);
+
+      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+
+      expect(characterModel.find).toHaveBeenCalledWith({
+        kind: 'player',
+        createdBy: userId,
+        $or: [
+          { groups: { $exists: false } },
+          { groups: { $size: 0 } }
+        ],
+        deletedAt: null
+      });
+      expect(result.data).toEqual(mockPlayers);
+      expect(result.data).toHaveLength(2);
+      expect(result.pagination).toEqual({ page: 1, offset: 10, totalItems: 2 });
+      expect(result.message).toContain('Found 2 player(s) without group for user');
+    });
+
+    it('should return empty array with pagination when no players without group exist for user', async () => {
+      characterModel.find = jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([]),
+      });
+      characterModel.countDocuments = jest.fn().mockResolvedValue(0);
+
+      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+
+      expect(result.data).toEqual([]);
+      expect(result.data).toHaveLength(0);
+      expect(result.pagination).toEqual({ page: 1, offset: 10, totalItems: 0 });
+      expect(result.message).toContain('Found 0 player(s) without group for user');
+    });
+
+    it('should apply default pagination values', async () => {
+      characterModel.find = jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([]),
+      });
+      characterModel.countDocuments = jest.fn().mockResolvedValue(0);
+
+      const result = await service.findPlayersWithoutGroup(userId, {});
+
+      expect(result.pagination).toEqual({ page: 1, offset: 10, totalItems: 0 });
+    });
+
+    it('should handle page 2 with correct skip calculation', async () => {
+      const mockPlayers = [
+        { _id: 'player3', name: 'Another Hero', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+      ];
+
+      const mockFind = {
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockPlayers),
+      };
+      characterModel.find = jest.fn().mockReturnValue(mockFind);
+      characterModel.countDocuments = jest.fn().mockResolvedValue(11);
+
+      await service.findPlayersWithoutGroup(userId, { page: 2, offset: 10 });
+
+      expect(mockFind.skip).toHaveBeenCalledWith(10);
+      expect(mockFind.limit).toHaveBeenCalledWith(10);
+    });
+
+    it('should exclude deleted players', async () => {
+      const mockPlayers = [
+        { _id: 'player1', name: 'Active Hero', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+      ];
+
+      characterModel.find = jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockPlayers),
+      });
+      characterModel.countDocuments = jest.fn().mockResolvedValue(1);
+
+      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+
+      expect(characterModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({ deletedAt: null })
+      );
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should only return player kind characters for the authenticated user', async () => {
+      const mockPlayers = [
+        { _id: 'player1', name: 'Player Only', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+      ];
+
+      characterModel.find = jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockPlayers),
+      });
+      characterModel.countDocuments = jest.fn().mockResolvedValue(1);
+
+      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+
+      expect(characterModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          kind: 'player',
+          createdBy: userId
+        })
+      );
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should exclude players created by other users', async () => {
+      const otherUserId = new Types.ObjectId().toHexString();
+
+      characterModel.find = jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([]),
+      });
+      characterModel.countDocuments = jest.fn().mockResolvedValue(0);
+
+      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+
+      expect(characterModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({ createdBy: userId })
+      );
+      expect(result.data).toHaveLength(0);
+    });
+
+    it('should throw InternalServerErrorException on database error', async () => {
+      characterModel.find = jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockRejectedValue(new Error('Database connection lost')),
+      });
+
+      await expect(service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 })).rejects.toThrow(InternalServerErrorException);
+      await expect(service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 })).rejects.toThrow('Error retrieving players without group');
+    });
+  });
 });

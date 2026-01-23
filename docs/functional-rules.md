@@ -178,3 +178,49 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/store/` (Redux architecture)
 - `services/web/client/src/components/layout/Sidebar/` (Sidebar components)
 - `services/web/client/src/app/[locale]/layout.tsx` (Redux Provider integration)
+
+---
+
+## FR-005: Player Characters Without Group
+
+**Rule**: Player characters can be created and exist without being assigned to any group. A paginated route must be available to retrieve all player characters that are not currently assigned to any group and that were created by the authenticated user.
+
+**Requirements**:
+- Player characters can have an empty `groups` array (`[]`)
+- `groups` field is optional (not required) for all character types
+- A dedicated endpoint `GET /characters/players/without-group` must return paginated results of player characters with empty `groups` array created by the authenticated user
+- Only player characters created by the requesting user (`createdBy` matches user's `keycloakId`) are returned
+- Only player characters are returned (NPCs are excluded)
+- Standard authentication and authorization rules apply
+- Deleted characters (`deletedAt !== null`) are excluded from results
+- Supports pagination with query parameters `page` and `offset` (defaults: page=1, offset=10)
+- Returns `IPaginatedResponse` with `pagination` metadata (page, offset, totalItems)
+
+**Validation Rules**:
+- Creating a player character with `groups: []` is valid
+- Creating a player character without specifying `groups` defaults to `[]`
+- The route must filter by discriminator `kind: 'player'`, `groups: []`, and `createdBy: userId`
+- Page parameter must be >= 1
+- Offset parameter must be between 1 and 100
+
+**Prohibitions**:
+- Including NPC characters in the without-group endpoint
+- Returning soft-deleted characters (`deletedAt !== null`)
+- Returning characters created by other users
+- Allowing group assignment validation to fail when `groups` is empty
+
+**Tests**:
+- Player can be created with empty groups array
+- Player can be created without specifying groups (defaults to empty)
+- Route returns paginated players with empty groups created by the authenticated user
+- Route excludes players created by other users
+- Route excludes NPCs
+- Route excludes deleted players
+- Default pagination values are applied when not provided
+- Correct skip/limit calculation for different pages
+- Service method correctly queries MongoDB for players without groups filtered by createdBy
+
+**References**:
+- `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
+- `services/adventure/api/src/resources/character/player/player.controller.ts`
+- `services/adventure/api/src/resources/character/player/player.service.ts`

@@ -9,13 +9,13 @@ import {
 } from '@nestjs/common';
 import { CreatePlayerDto } from '@/resources/character/player/dto/create-player.dto';
 import { UpdatePlayerDto } from '@/resources/character/player/dto/update-player.dto';
-import { Model, Types } from 'mongoose';
+import { Model, SortOrder, Types } from 'mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter } from 'prom-client';
-import { IResponse } from '@/common/dtos/reponse.dto';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 import { Player, PlayerDocument } from './schemas/player.schema';
 
 @Injectable()
@@ -159,6 +159,60 @@ export class PlayerService {
         throw error;
       }
       const message: string = `Error while updating #${id} Player: ${error.message}`;
+      this.logger.error(message, null, this.SERVICE_NAME);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
+  async findPlayersWithoutGroup(
+    userId: string,
+    query: { page?: number; offset?: number; sort?: string },
+
+  ): Promise<IPaginatedResponse<Character[]>> {
+    try {
+      const { page = 1, offset = 10 } = query;
+      let sort: { [key: string]: SortOrder } = { updatedAt: 'asc' };
+      if (query.sort) {
+        query.sort.startsWith('-')
+          ? (sort[query.sort.substring(1)] = 'desc')
+          : (sort[query.sort] = 'asc');
+      }
+      const skip: number = (page - 1) * offset;
+      const filters = {
+        kind: 'player',
+        createdBy: userId,
+        $or: [
+          { groups: { $exists: false } },
+          { groups: { $size: 0 } }
+        ],
+        deletedAt: null
+      };
+
+      const start: number = Date.now();
+      const players: Character[] = await this.characterModel
+        .find(filters)
+        .limit(offset)
+        .skip(skip)
+        .sort(sort)
+        .exec();
+
+      const totalItems: number = await this.characterModel.countDocuments(filters);
+
+      const end: number = Date.now();
+      const message: string = `Players found in in ${end - start}ms`;
+      this.logger.log(message, this.SERVICE_NAME);
+
+      return {
+        message,
+        data: players,
+        pagination: {
+          page,
+          offset,
+          totalItems,
+        },
+      };
+    } catch (error) {
+      const message: string = `Error retrieving players without group: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
