@@ -22,13 +22,6 @@ interface ActionButtonConfig {
   state: ActionButtonState;
 }
 
-/**
- * Context-aware action button
- * Displays different actions based on:
- * - User context (GM vs Player)
- * - Session state (not started, started, battle initialized, battle started)
- * - Current page (initiativeTracker, character sheet, etc.)
- */
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const contextMode = useAppSelector((state) => state.environment.contextMode);

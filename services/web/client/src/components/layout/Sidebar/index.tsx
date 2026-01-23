@@ -3,9 +3,9 @@
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import SidebarContext from "./SidebarContext";
-import SidebarEnvironment from "./SidebarEnvironment";
-import { ActionButton } from "./ActionButton";
+import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
+import SidebarEnvironment from "@/components/layout/Sidebar/SidebarEnvironment";
+import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
 import { useCampaigns } from "@/hooks/useCampaigns";
 
 /**
@@ -41,7 +41,7 @@ export default function Sidebar() {
           <SidebarEnvironment />
         </div>
 
-        {/* Campaign and group navigation */}
+        {/* Navigation (context-dependent) */}
         <div className={cn("flex-1 overflow-y-auto px-3")}>
           <SidebarContext />
         </div>

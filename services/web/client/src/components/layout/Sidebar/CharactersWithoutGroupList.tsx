@@ -64,7 +64,7 @@ export default function CharactersWithoutGroupList() {
   }
 
   if (error) {
-    return <div className="text-sm text-red-500 py-4 px-3">{error}</div>;
+    return null;
   }
 
   return (

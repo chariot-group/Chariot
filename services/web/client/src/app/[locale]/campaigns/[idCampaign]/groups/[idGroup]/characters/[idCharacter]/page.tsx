@@ -13,19 +13,15 @@ export default function Character() {
 
   if (loading || error || !character) {
     return (
-      <AppLayout>
-        <div className="flex justify-center items-center h-full">
-          <Loader2 className="w-8 h-8 animate-spin" />
-        </div>
-      </AppLayout>
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
     );
   }
 
   return (
-    <AppLayout>
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-4">{character.name}</h1>
-      </div>
-    </AppLayout>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">{character.name}</h1>
+    </div>
   );
 }

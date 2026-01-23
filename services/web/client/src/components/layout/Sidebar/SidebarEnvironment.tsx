@@ -7,7 +7,7 @@ import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { selectOpenEnvironment, setOpenEnvironment } from "@/store/slices/sidebarSlice";
 import { ChevronRight, PlusCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import CampaignList from "./CampaignList";
+import CampaignList from "@/components/layout/Sidebar/CampaignList";
 
 /**
  * Environment selector component

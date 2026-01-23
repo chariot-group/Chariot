@@ -8,6 +8,7 @@ import LocaleDetector from "@/components/LocaleDetector";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
+import AppLayout from "@/components/layout/AppLayout";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -39,9 +40,11 @@ export default async function RootLayout({
         <body className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover font-sans`}>
           <ReduxProvider>
             <NextIntlClientProvider messages={messages}>
-              <LocaleDetector />
-              <ToastContainer />
-              {children}
+              <AppLayout>
+                <LocaleDetector />
+                <ToastContainer />
+                {children}
+              </AppLayout>
             </NextIntlClientProvider>
           </ReduxProvider>
         </body>
