@@ -47,13 +47,12 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
             key={group._id}
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
-            <CollapsibleTrigger
-              aria-expanded={isOpen}
-              aria-controls={`group-${group._id}-content`}
-              className="w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 rounded-[12px]">
-              <ContextMenu>
-                <ContextMenuTrigger
-                  className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center group ${isOpen ? "font-bold" : ""}`}>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <CollapsibleTrigger
+                  aria-expanded={isOpen}
+                  aria-controls={`group-${group._id}-content`}
+                  className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isOpen ? "font-bold" : ""}`}>
                   <span className={`text-sm text-left group-hover:font-bold ${isOpen ? "font-bold" : ""}`}>
                     {group.label}
                   </span>
@@ -61,18 +60,18 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                     aria-hidden="true"
                     className={`w-4 h-4 transition-all duration-100 ${isOpen ? "rotate-90" : ""}`}
                   />
-                </ContextMenuTrigger>
-                <ContextMenuContent className="w-full flex-col bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex group">
-                  <ContextMenuItem
-                    className="cursor-pointer"
-                    onClick={() => {
-                      console.log("Archived");
-                    }}>
-                    {t("archive")}
-                  </ContextMenuItem>
-                </ContextMenuContent>
-              </ContextMenu>
-            </CollapsibleTrigger>
+                </CollapsibleTrigger>
+              </ContextMenuTrigger>
+              <ContextMenuContent className="w-full flex-col bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex group">
+                <ContextMenuItem
+                  className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
+                  onClick={() => {
+                    console.log("Archived");
+                  }}>
+                  {t("archive")}
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
             <CollapsibleContent
               id={`group-${group._id}-content`}
               className="mt-1 ml-3 flex flex-col gap-1">

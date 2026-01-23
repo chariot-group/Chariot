@@ -19,7 +19,7 @@ const sidebarSlice = createSlice({
     reducers: {
         setOpenEnvironment: (state, action: PayloadAction<boolean>) => {
             state.openEnvironment = action.payload;
-            // Fermer les autres menus quand on ouvre l'environnement
+            // Close other menus when opening environment
             if (action.payload) {
                 state.openActiveGroups = false;
                 state.openArchivedGroups = false;
@@ -27,7 +27,7 @@ const sidebarSlice = createSlice({
         },
         setOpenActiveGroups: (state, action: PayloadAction<boolean>) => {
             state.openActiveGroups = action.payload;
-            // Fermer archived groups et environment quand on ouvre active groups
+            // Close archived groups and environment when opening active groups
             if (action.payload) {
                 state.openArchivedGroups = false;
                 state.openEnvironment = false;
@@ -35,7 +35,7 @@ const sidebarSlice = createSlice({
         },
         setOpenArchivedGroups: (state, action: PayloadAction<boolean>) => {
             state.openArchivedGroups = action.payload;
-            // Fermer active groups et environment quand on ouvre archived groups
+            // Close active groups and environment when opening archived groups
             if (action.payload) {
                 state.openActiveGroups = false;
                 state.openEnvironment = false;
