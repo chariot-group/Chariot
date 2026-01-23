@@ -499,6 +499,7 @@ describe('PlayerService', () => {
       characterModel.find = jest.fn().mockReturnValue({
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockPlayers),
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(2);
@@ -517,13 +518,14 @@ describe('PlayerService', () => {
       expect(result.data).toEqual(mockPlayers);
       expect(result.data).toHaveLength(2);
       expect(result.pagination).toEqual({ page: 1, offset: 10, totalItems: 2 });
-      expect(result.message).toContain('Found 2 player(s) without group for user');
+      expect(result.message).toContain('Players found in');
     });
 
     it('should return empty array with pagination when no players without group exist for user', async () => {
       characterModel.find = jest.fn().mockReturnValue({
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([]),
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(0);
@@ -533,13 +535,14 @@ describe('PlayerService', () => {
       expect(result.data).toEqual([]);
       expect(result.data).toHaveLength(0);
       expect(result.pagination).toEqual({ page: 1, offset: 10, totalItems: 0 });
-      expect(result.message).toContain('Found 0 player(s) without group for user');
+      expect(result.message).toContain('Players found in');
     });
 
     it('should apply default pagination values', async () => {
       characterModel.find = jest.fn().mockReturnValue({
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([]),
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(0);
@@ -557,6 +560,7 @@ describe('PlayerService', () => {
       const mockFind = {
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockPlayers),
       };
       characterModel.find = jest.fn().mockReturnValue(mockFind);
@@ -576,6 +580,7 @@ describe('PlayerService', () => {
       characterModel.find = jest.fn().mockReturnValue({
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockPlayers),
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(1);
@@ -596,6 +601,7 @@ describe('PlayerService', () => {
       characterModel.find = jest.fn().mockReturnValue({
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockPlayers),
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(1);
@@ -617,6 +623,7 @@ describe('PlayerService', () => {
       characterModel.find = jest.fn().mockReturnValue({
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([]),
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(0);
@@ -633,6 +640,7 @@ describe('PlayerService', () => {
       characterModel.find = jest.fn().mockReturnValue({
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
         exec: jest.fn().mockRejectedValue(new Error('Database connection lost')),
       });
 
