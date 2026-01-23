@@ -1,5 +1,5 @@
 import apiClient from './ApiService';
-import { Character } from '@/types/character';
+import { Character, PaginatedCharactersResponse } from '@/types/character';
 
 interface CharacterResponse {
     message: string;
@@ -43,6 +43,24 @@ class CharacterService {
             await apiClient().delete(`${this.BASE_PATH}/${characterId}`);
         } catch (error) {
             console.error(`Error deleting character ${characterId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Récupère tous les joueurs sans groupe pour l'utilisateur authentifié
+     */
+    async getPlayersWithoutGroup(page: number = 1, offset: number = 10): Promise<PaginatedCharactersResponse> {
+        try {
+            const response = await apiClient().get<PaginatedCharactersResponse>(
+                `${this.BASE_PATH}/players//without-group`,
+                {
+                    params: { page, offset }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching players without group:', error);
             throw error;
         }
     }

@@ -73,3 +73,13 @@ export interface Character {
     updatedAt: string;
     deletedAt?: string | null;
 }
+
+export interface PaginatedCharactersResponse {
+    message: string;
+    data: Character[];
+    pagination: {
+        page: number;
+        offset: number;
+        totalItems: number;
+    };
+}

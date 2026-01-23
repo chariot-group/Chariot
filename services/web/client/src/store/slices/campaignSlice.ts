@@ -2,8 +2,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../index';
 import { Campaign, CampaignState } from '@/types/campaign';
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
 const initialState: CampaignState = {
     campaigns: [],
     loading: false,
@@ -82,13 +80,6 @@ export const selectLastFetch = (state: RootState) => state.campaign.lastFetch;
 export const selectCurrentPage = (state: RootState) => state.campaign.currentPage;
 export const selectHasMore = (state: RootState) => state.campaign.hasMore;
 export const selectTotal = (state: RootState) => state.campaign.total;
-
-// Sélecteur pour vérifier si le cache est valide
-export const selectIsCacheValid = (state: RootState): boolean => {
-    const { lastFetch } = state.campaign;
-    if (!lastFetch) return false;
-    return Date.now() - lastFetch < CACHE_DURATION;
-};
 
 // Sélecteur pour obtenir la campagne sélectionnée
 export const selectSelectedCampaign = (state: RootState): Campaign | null => {

@@ -2,6 +2,7 @@
   "sidebar": {
     "mainNavigation": "Navegación principal",
     "gmNavigation": "Navegación de director de juego",
+    "playerNavigation": "Navegación de jugador",
     "yourSpaces": "Tus espacios",
     "yourCharacters": "Tus personajes",
     "createCampaign": "Crear una campaña",

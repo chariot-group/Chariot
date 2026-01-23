@@ -2,6 +2,7 @@
   "sidebar": {
     "mainNavigation": "Main navigation",
     "gmNavigation": "Game Master navigation",
+    "playerNavigation": "Player navigation",
     "yourSpaces": "Your Spaces",
     "yourCharacters": "Your Characters",
     "createCampaign": "Create a Campaign",

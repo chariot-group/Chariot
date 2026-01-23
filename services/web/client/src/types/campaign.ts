@@ -39,6 +39,7 @@ export interface GroupState {
     loading: boolean;
     error: string | null;
     openGroupId: string | null;
+    lastFetch: number | null;
 }
 
 export interface CampaignState {

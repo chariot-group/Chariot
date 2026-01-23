@@ -14,6 +14,7 @@ import {
   setOpenActiveGroups,
   setOpenArchivedGroups,
 } from "@/store/slices/sidebarSlice";
+import CharactersWithoutGroupList from "@/components/layout/Sidebar/CharactersWithoutGroupList";
 
 /**
  * Context navigation component for GM mode
@@ -40,7 +41,7 @@ export default function SidebarContext() {
 
   // Only render in GM mode
   if (contextMode !== "gm") {
-    return null;
+    return <CharactersWithoutGroupList />;
   }
 
   return (

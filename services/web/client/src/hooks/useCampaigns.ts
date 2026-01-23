@@ -10,7 +10,6 @@ import {
     selectCampaignsLoading,
     selectCampaignsLoadingMore,
     selectCampaignsError,
-    selectIsCacheValid,
     selectCurrentPage,
     selectHasMore,
     selectTotal,
@@ -41,7 +40,6 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
     const loading = useAppSelector(selectCampaignsLoading);
     const loadingMore = useAppSelector(selectCampaignsLoadingMore);
     const error = useAppSelector(selectCampaignsError);
-    const isCacheValid = useAppSelector(selectIsCacheValid);
     const currentPage = useAppSelector(selectCurrentPage);
     const hasMore = useAppSelector(selectHasMore);
     const total = useAppSelector(selectTotal);
@@ -142,32 +140,19 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
     }, [dispatch]);
 
     /**
-     * Chargement automatique avec gestion du cache
-     * Pattern "stale-while-revalidate": affiche le cache puis rafraîchit en arrière-plan
+     * Chargement automatique - charge uniquement si aucune donnée en cache
      */
     useEffect(() => {
-        if (autoFetch && !loading) {
-            // Si on a des données en cache, on les garde affichées et on rafraîchit en arrière-plan
-            if (campaigns.length > 0 && !forceRefresh) {
-                // Cache présent : rafraîchir silencieusement en arrière-plan si invalide
-                if (!isCacheValid) {
-                    fetchCampaigns();
-                }
-            } else {
-                // Pas de cache ou forceRefresh : charger normalement
-                if (!isCacheValid || forceRefresh) {
-                    fetchCampaigns();
-                }
-            }
+        if (autoFetch && !loading && campaigns.length === 0) {
+            fetchCampaigns();
         }
-    }, [autoFetch, forceRefresh, isCacheValid, loading, fetchCampaigns, campaigns.length]);
+    }, [autoFetch, loading, fetchCampaigns, campaigns.length]);
 
     return {
         campaigns,
         loading,
         loadingMore,
         error,
-        isCacheValid,
         hasMore,
         currentPage,
         total,

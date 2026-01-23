@@ -7,13 +7,14 @@ import actionButtonReducer from './slices/actionButtonSlice';
 import campaignContextReducer from './slices/campaignContextSlice';
 import groupReducer from './slices/groupSlice';
 import sidebarReducer from './slices/sidebarSlice';
+import characterReducer from './slices/characterSlice';
 
 // Configuration de redux-persist
 const persistConfig = {
     key: 'chariot',
     storage,
     // Persister les données de navigation ET les données API pour éviter le saut visuel
-    whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign'],
+    whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character'],
 };
 
 // Combine all reducers
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
     campaignContext: campaignContextReducer,
     group: groupReducer,
     sidebar: sidebarReducer,
+    character: characterReducer,
 });
 
 // Créer le reducer persisté

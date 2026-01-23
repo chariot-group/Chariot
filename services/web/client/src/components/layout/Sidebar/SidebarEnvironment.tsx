@@ -28,6 +28,7 @@ export default function SidebarEnvironment() {
 
     if (environment === "player") {
       window.location.href = "/";
+      handleOpenChange(false);
       dispatch(clearSelectedCampaign());
     }
   };

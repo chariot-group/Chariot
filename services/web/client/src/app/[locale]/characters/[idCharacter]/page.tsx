@@ -9,6 +9,8 @@ export default function Character() {
   const params = useParams();
   const characterId = params.idCharacter as string;
 
+  console.log("Character ID:", characterId);
+
   const { character, loading, error } = useCharacter(characterId);
 
   if (loading || error || !character) {

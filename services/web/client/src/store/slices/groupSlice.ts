@@ -8,6 +8,7 @@ const initialState: GroupState = {
     loading: false,
     error: null,
     openGroupId: null,
+    lastFetch: null,
 };
 
 const groupSlice = createSlice({
@@ -23,6 +24,7 @@ const groupSlice = createSlice({
             state.archivedGroups = action.payload.archived;
             state.loading = false;
             state.error = null;
+            state.lastFetch = Date.now();
         },
         fetchGroupsFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
@@ -36,6 +38,10 @@ const groupSlice = createSlice({
             state.archivedGroups = [];
             state.error = null;
             state.openGroupId = null;
+            state.lastFetch = null;
+        },
+        invalidateCache: (state) => {
+            state.lastFetch = null;
         },
     },
 });
@@ -46,6 +52,7 @@ export const {
     fetchGroupsFailure,
     setOpenGroup,
     clearGroups,
+    invalidateCache,
 } = groupSlice.actions;
 
 // Selectors

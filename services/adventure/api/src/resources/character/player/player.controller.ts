@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, Req, Logger, BadRequestException, GoneException, NotFoundException, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Req, Logger, BadRequestException, GoneException, NotFoundException, Get, Query, UseGuards } from '@nestjs/common';
 import { PlayerService } from '@/resources/character/player/player.service';
 import { CreatePlayerDto } from '@/resources/character/player/dto/create-player.dto';
 import { UpdatePlayerDto } from '@/resources/character/player/dto/update-player.dto';
@@ -14,6 +14,7 @@ import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 import { Player } from '@/resources/character/player/schemas/player.schema';
 import { ApiExtraModels, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
+import { IsCreatorGuard } from '@/common/guards/is-creator.guard';
 
 @ApiExtraModels(
   IResponse,
@@ -21,6 +22,7 @@ import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
   Player
 )
 @Controller('characters/players')
+@UseGuards(IsCreatorGuard)
 export class PlayerController {
   constructor(
     private readonly playerService: PlayerService,
@@ -113,7 +115,7 @@ export class PlayerController {
       ],
     },
   })
-  @Get()
+  @Get('/without-group')
   async getPlayersWithoutGroup(
     @Req() request,
     @Query('page', ParseNullableIntPipe) page?: number,
