@@ -45,7 +45,7 @@ export default function SidebarEnvironment() {
       <CollapsibleTrigger
         aria-expanded={open}
         aria-controls="spaces-content"
-        className={`w-full border cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${open ? "bg-white" : ""}`}>
+        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${open ? "bg-white" : ""}`}>
         <span className={`text-sm group-hover:font-bold group-hover:text-black ${open ? "text-black font-bold" : ""}`}>
           {t("yourSpaces")}
         </span>
