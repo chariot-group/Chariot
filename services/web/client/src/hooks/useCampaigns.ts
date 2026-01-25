@@ -18,6 +18,7 @@ import {
 } from '@/store/slices/campaignSlice';
 import { setSelectedCampaign, selectSelectedCampaignId } from '@/store/slices/campaignContextSlice';
 import { selectContextMode } from '@/store/slices/environmentSlice';
+import { useKeycloak } from '@/providers/KeycloakProvider';
 import CampaignService from '@/services/CampaignService';
 import { Campaign } from '@/types/campaign';
 
@@ -45,6 +46,9 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
     const total = useAppSelector(selectTotal);
     const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
     const contextMode = useAppSelector(selectContextMode);
+
+    // Wait for Keycloak to be ready before fetching campaigns
+    const { loading: keycloakLoading, authenticated } = useKeycloak();
 
     /**
      * Récupère les campagnes depuis l'API (première page)
@@ -141,12 +145,20 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
 
     /**
      * Chargement automatique - charge uniquement si aucune donnée en cache
+     * Attend que Keycloak soit prêt et que l'utilisateur soit authentifié
      */
     useEffect(() => {
-        if (autoFetch && !loading && campaigns.length === 0) {
-            fetchCampaigns();
+        // Don't fetch if:
+        // - autoFetch is disabled
+        // - Keycloak is still loading
+        // - User is not authenticated
+        // - Campaigns are already loaded
+        if (!autoFetch || keycloakLoading || !authenticated || campaigns.length > 0) {
+            return;
         }
-    }, [autoFetch, loading, fetchCampaigns, campaigns.length]);
+
+        fetchCampaigns();
+    }, [autoFetch, keycloakLoading, authenticated, fetchCampaigns, campaigns.length]);
 
     return {
         campaigns,
