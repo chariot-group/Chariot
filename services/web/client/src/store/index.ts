@@ -1,5 +1,5 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
+import { persistStore, persistReducer, Persistor } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import environmentReducer from './slices/environmentSlice';
 import campaignReducer from './slices/campaignSlice';
@@ -34,6 +34,9 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 // Export RootState type
 export type RootState = ReturnType<typeof rootReducer>;
 
+// Global persistor reference (singleton pattern)
+let globalPersistor: Persistor | null = null;
+
 // Export makeStore function
 export const makeStore = () => {
     const store = configureStore({
@@ -41,7 +44,7 @@ export const makeStore = () => {
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: {
-                    ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+                    ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/PURGE'],
                 },
             }),
         devTools: process.env.NODE_ENV !== 'production',
@@ -49,7 +52,29 @@ export const makeStore = () => {
 
     const persistor = persistStore(store);
 
+    // Stockage du persistor en global pour accès ultérieur
+    globalPersistor = persistor;
+
     return { store, persistor };
+};
+
+/**
+ * Purge all persisted state from localStorage
+ * Should be called on user logout to prevent data leakage between different users
+ */
+export const purgePersistedState = async (): Promise<void> => {
+    if (!globalPersistor) {
+        console.warn('Persistor not initialized, cannot purge state');
+        return;
+    }
+
+    try {
+        await globalPersistor.purge();
+        console.log('Redux persisted state successfully purged');
+    } catch (error) {
+        console.error('Failed to purge persisted state:', error);
+        throw error;
+    }
 };
 
 // Infer types from store

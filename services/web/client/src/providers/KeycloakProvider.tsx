@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef } fro
 import { usePathname, useRouter } from "next/navigation";
 import { setKeycloakInstance } from "@/services/ApiService";
 import { detectBrowserLocale, saveStoredLocale, getStoredLocale } from "@/hooks/useLocalePreference";
-import { Locale } from "@/i18n/request";
+import { purgePersistedState } from "@/store";
 
 interface KeycloakContextType {
   keycloak: Keycloak | null;
@@ -119,10 +119,17 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const logout = () => {
+  const logout = async () => {
     // Clean up interval before logging out
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
+    }
+
+    // Purge Redux persisted state to prevent data leakage between users
+    try {
+      await purgePersistedState();
+    } catch (error) {
+      console.error("Failed to purge persisted state on logout:", error);
     }
 
     keycloak?.logout({

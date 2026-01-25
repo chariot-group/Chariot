@@ -224,3 +224,41 @@ Each rule has a unique identifier and must be tested.
 - `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
 - `services/adventure/api/src/resources/character/player/player.controller.ts`
 - `services/adventure/api/src/resources/character/player/player.service.ts`
+
+---
+
+## FR-005: User Logout Cache Purge
+
+**Rule**: On user logout, all persisted application state (Redux Persist) must be completely purged to prevent data leakage between different user sessions.
+
+**Context**: When a user logs out and another user logs in on the same browser/device, any persisted data from the previous user could cause:
+- Permission errors (403) when the new user tries to access cached data they don't have rights to
+- Data contamination between user sessions
+- Security and privacy violations
+
+**Requirements**:
+- On logout action, Redux Persist state **must be purged** before the Keycloak logout redirect
+- The purge operation must be awaited to ensure completion before redirect
+- Purge must clear all whitelisted slices: `environment`, `campaignContext`, `sidebar`, `group`, `actionButton`, `campaign`, `character`
+- Any error during purge must be logged but not block the logout process
+
+**Expected Behavior**:
+1. User clicks logout
+2. Redux persisted state is purged from localStorage
+3. Keycloak logout is triggered
+4. User is redirected to login page
+5. On new login, application starts with empty state (no cached data from previous user)
+
+**Prohibitions**:
+- Skipping the purge step during logout
+- Allowing persisted state to survive across different user sessions
+- Assuming cache data belongs to the current user without validation
+
+**Tests**:
+- Manual test: Logout with user A, login with user B, verify no cached data from user A remains
+- Verify localStorage key `persist:chariot` is removed on logout
+- Verify no 403 errors on new user login due to cached data
+
+**References**:
+- `services/web/client/src/store/index.ts` - `purgePersistedState()` function
+- `services/web/client/src/providers/KeycloakProvider.tsx` - logout function with purge
