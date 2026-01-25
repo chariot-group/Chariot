@@ -31,5 +31,8 @@
   "auth": {
     "loading": "Chargement...",
     "pleaseWait": "Veuillez patienter pendant la vérification de votre session"
+  },
+  "notFound": {
+    "message": "Page introuvable. Redirection vers l'accueil..."
   }
 }

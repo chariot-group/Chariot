@@ -31,5 +31,8 @@
   "auth": {
     "loading": "Loading...",
     "pleaseWait": "Please wait while we verify your session"
+  },
+  "notFound": {
+    "message": "Page not found. Redirecting to home..."
   }
 }
