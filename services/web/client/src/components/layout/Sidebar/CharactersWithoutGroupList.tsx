@@ -71,6 +71,7 @@ export default function CharactersWithoutGroupList() {
     <nav
       className="flex gap-3 flex-col overflow-y-auto px-3 py-4"
       aria-label={t("playerNavigation")}>
+      <h2 className="text-lg text-white">{t("yourCharacters")}</h2>
       {characters.map((character) => {
         const isSelected = selectedCharacterId === character._id;
         return (
