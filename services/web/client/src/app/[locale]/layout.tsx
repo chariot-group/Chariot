@@ -34,15 +34,15 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <KeycloakProvider>
-        <body className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover font-sans`}>
-          <NextIntlClientProvider messages={messages}>
+      <body className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover font-sans`}>
+        <NextIntlClientProvider messages={messages}>
+          <KeycloakProvider>
             <LocaleDetector />
             <ToastContainer />
             {children}
-          </NextIntlClientProvider>
-        </body>
-      </KeycloakProvider>
+          </KeycloakProvider>
+        </NextIntlClientProvider>
+      </body>
     </html>
   );
 }

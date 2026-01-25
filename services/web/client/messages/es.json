@@ -27,5 +27,9 @@
       "retry": "Intentar de Nuevo",
       "home": "Volver al Inicio"
     }
+  },
+  "auth": {
+    "loading": "Cargando...",
+    "pleaseWait": "Por favor, espere mientras verificamos su sesión"
   }
 }

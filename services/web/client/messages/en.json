@@ -27,5 +27,9 @@
       "retry": "Try Again",
       "home": "Back to Home"
     }
+  },
+  "auth": {
+    "loading": "Loading...",
+    "pleaseWait": "Please wait while we verify your session"
   }
 }
