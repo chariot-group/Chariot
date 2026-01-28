@@ -419,6 +419,65 @@
         "tags": [
           "Player"
         ]
+      },
+      "get": {
+        "operationId": "PlayerController_getPlayersWithoutGroup",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Players found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IPaginatedResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Player"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a collection of paginated players",
+        "tags": [
+          "Player"
+        ]
       }
     },
     "/characters/players/{id}": {
@@ -1402,8 +1461,8 @@
         "type": "oauth2",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "http://localhost:8081/realms/chariot/protocol/openid-connect/auth",
-            "tokenUrl": "http://localhost:8081/realms/chariot/protocol/openid-connect/token",
+            "authorizationUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/auth",
+            "tokenUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/token",
             "scopes": {
               "openid": "OpenID Connect"
             }
@@ -2129,13 +2188,6 @@
             "type": "boolean",
             "example": false,
             "description": "Character is unconscious"
-          },
-          "exhaustionLevel": {
-            "type": "number",
-            "example": 0,
-            "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
-            "minimum": 0,
-            "maximum": 6
           }
         },
         "required": [
@@ -2152,8 +2204,7 @@
           "prone",
           "restrained",
           "stunned",
-          "unconscious",
-          "exhaustionLevel"
+          "unconscious"
         ]
       },
       "Group": {
@@ -3066,13 +3117,6 @@
             "type": "boolean",
             "example": false,
             "description": "Character is unconscious"
-          },
-          "exhaustionLevel": {
-            "type": "number",
-            "example": 0,
-            "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
-            "minimum": 0,
-            "maximum": 6
           }
         }
       },
@@ -3264,6 +3308,48 @@
       "UpdateNpcDto": {
         "type": "object",
         "properties": {}
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "offset": {
+            "type": "number",
+            "example": 10
+          },
+          "totalItems": {
+            "type": "number",
+            "example": 100
+          }
+        },
+        "required": [
+          "page",
+          "offset",
+          "totalItems"
+        ]
+      },
+      "IPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Campaign #507f1f77bcf86cd799439011 found in 5ms"
+          },
+          "data": {
+            "type": "object"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "required": [
+          "message",
+          "data",
+          "pagination"
+        ]
       },
       "Masteries": {
         "type": "object",
@@ -3620,6 +3706,13 @@
           },
           "profile": {
             "$ref": "#/components/schemas/PlayerProfile"
+          },
+          "exhaustionLevel": {
+            "type": "number",
+            "example": 0,
+            "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
+            "minimum": 0,
+            "maximum": 6
           }
         },
         "required": [
@@ -3638,7 +3731,8 @@
           "inspiration",
           "progression",
           "class",
-          "profile"
+          "profile",
+          "exhaustionLevel"
         ]
       },
       "MasteryDto": {
@@ -3984,6 +4078,13 @@
           },
           "profile": {
             "$ref": "#/components/schemas/PlayerProfileDto"
+          },
+          "exhaustionLevel": {
+            "type": "number",
+            "example": 0,
+            "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
+            "minimum": 0,
+            "maximum": 6
           }
         },
         "required": [
@@ -4006,48 +4107,6 @@
       "UpdatePlayerDto": {
         "type": "object",
         "properties": {}
-      },
-      "PaginationMeta": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "number",
-            "example": 1
-          },
-          "offset": {
-            "type": "number",
-            "example": 10
-          },
-          "totalItems": {
-            "type": "number",
-            "example": 100
-          }
-        },
-        "required": [
-          "page",
-          "offset",
-          "totalItems"
-        ]
-      },
-      "IPaginatedResponse": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "example": "Campaign #507f1f77bcf86cd799439011 found in 5ms"
-          },
-          "data": {
-            "type": "object"
-          },
-          "pagination": {
-            "$ref": "#/components/schemas/PaginationMeta"
-          }
-        },
-        "required": [
-          "message",
-          "data",
-          "pagination"
-        ]
       },
       "Character": {
         "type": "object",

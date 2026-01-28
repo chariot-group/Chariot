@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, Req, Logger, BadRequestException, GoneException, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Req, Logger, BadRequestException, GoneException, NotFoundException, Get, Query, UseGuards } from '@nestjs/common';
 import { PlayerService } from '@/resources/character/player/player.service';
 import { CreatePlayerDto } from '@/resources/character/player/dto/create-player.dto';
 import { UpdatePlayerDto } from '@/resources/character/player/dto/update-player.dto';
@@ -9,16 +9,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Character, CharacterDocument } from '@/resources/character/core/schemas/character.schema';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
-import { IResponse } from '@/common/dtos/reponse.dto';
+import { ParseNullableIntPipe } from '@/common/pipes/parse-nullable-int.pipe';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 import { Player } from '@/resources/character/player/schemas/player.schema';
 import { ApiExtraModels, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
+import { IsCreatorGuard } from '@/common/guards/is-creator.guard';
 
 @ApiExtraModels(
   IResponse,
+  IPaginatedResponse,
   Player
 )
 @Controller('characters/players')
+@UseGuards(IsCreatorGuard)
 export class PlayerController {
   constructor(
     private readonly playerService: PlayerService,
@@ -92,6 +96,34 @@ export class PlayerController {
 
 
     return this.playerService.create(createPlayerDto, userId);
+  }
+
+  @ApiOperation({ summary: 'Get a collection of paginated players' })
+  @ApiOkResponse({
+    description: 'Players found successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IPaginatedResponse) },
+        {
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: getSchemaPath(Player) }
+            }
+          },
+        },
+      ],
+    },
+  })
+  @Get('/without-group')
+  async getPlayersWithoutGroup(
+    @Req() request,
+    @Query('page', ParseNullableIntPipe) page?: number,
+    @Query('offset', ParseNullableIntPipe) offset?: number,
+    @Query('sort') sort?: string,
+  ): Promise<IPaginatedResponse<Character[]>> {
+    const userId = request.user.keycloakId;
+    return this.playerService.findPlayersWithoutGroup(userId, { page, offset, sort });
   }
 
   @IsCreator(CharacterService)

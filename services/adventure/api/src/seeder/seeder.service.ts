@@ -28,14 +28,18 @@ export class SeederService {
     private readonly keycloakAdminService: KeycloakAdminService,
   ) { }
 
-  getRandomObjects() {
+  getRandomObjects(kind?: string) {
     const filePath = path.join(__dirname, 'runner', 'characters.json');
     const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
     const shuffled = [...jsonData].sort(() => 0.5 - Math.random());
-    return shuffled.slice(
+    const filtered = kind
+      ? shuffled.filter((obj) => obj.kind === kind)
+      : shuffled;
+
+    return filtered.slice(
       0,
-      faker.number.int({ min: 0, max: shuffled.length }),
+      faker.number.int({ min: 0, max: filtered.length }),
     );
   }
 
@@ -69,6 +73,13 @@ export class SeederService {
         password,
         firstName,
         lastName,
+      );
+
+      await this.characterModel.create(
+        this.getRandomObjects('player').map((character) => ({
+          ...character,
+          createdBy: userId,
+        })),
       );
 
       const campaigns = [];

@@ -1,38 +1,28 @@
 {
-  "common": {
-    "appName": "Chariot App",
-    "appDescription": "Chariot Application"
-  },
-  "home": {
-    "greeting": "Hello, Chariot!",
-    "primary": "Primary"
-  },
-  "toast": {
-    "success": "This is a success message.",
-    "error": "This is an error message.",
-    "warning": "This is a warning message.",
-    "info": "This is an info message."
-  },
-  "error": {
-    "title": "Oops! Something went wrong",
-    "description": "We encountered an unexpected error while processing your request.",
-    "unknownError": "An unknown error occurred",
-    "suggestion": "Here are some things you can try:",
-    "suggestions": {
-      "refresh": "Refresh the page",
-      "retry": "Try your action again",
-      "contact": "Contact support if the problem persists"
-    },
-    "actions": {
-      "retry": "Try Again",
-      "home": "Back to Home"
-    }
-  },
-  "auth": {
-    "loading": "Loading...",
-    "pleaseWait": "Please wait while we verify your session"
-  },
-  "notFound": {
-    "message": "Page not found. Redirecting to home..."
+  "sidebar": {
+    "mainNavigation": "Main navigation",
+    "gmNavigation": "Game Master navigation",
+    "playerNavigation": "Player navigation",
+    "yourSpaces": "Your Spaces",
+    "yourCharacters": "Your Characters",
+    "createCampaign": "Create a Campaign",
+    "yourGroups": "Your Groups",
+    "createGroup": "Create a Group",
+    "yourArchives": "Your Archives",
+    "noArchives": "No archives.",
+    "rightClickToAdd": "Right click to add.",
+    "noGroups": "No groups",
+    "noCharacters": "No characters",
+    "archive": "Archive",
+    "launchSession": "Launch Session",
+    "initBattle": "Initialize Battle",
+    "startBattle": "Start Battle",
+    "reset": "Reset",
+    "returnToBattle": "Return to Battle",
+    "joinSession": "Join Session",
+    "returnToSheet": "Return to Character Sheet",
+    "selectCampaign": "Select campaign",
+    "selectedCampaign": "Selected campaign",
+    "selected": "selected"
   }
 }

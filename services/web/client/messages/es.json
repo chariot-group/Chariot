@@ -1,38 +1,28 @@
 {
-  "common": {
-    "appName": "Chariot App",
-    "appDescription": "Aplicación Chariot"
-  },
-  "home": {
-    "greeting": "¡Hola, Chariot!",
-    "primary": "Principal"
-  },
-  "toast": {
-    "success": "Este es un mensaje de éxito.",
-    "error": "Este es un mensaje de error.",
-    "warning": "Este es un mensaje de advertencia.",
-    "info": "Este es un mensaje de información."
-  },
-  "error": {
-    "title": "¡Ups! Algo salió mal",
-    "description": "Encontramos un error inesperado al procesar su solicitud.",
-    "unknownError": "Ocurrió un error desconocido",
-    "suggestion": "Aquí hay algunas cosas que puede intentar:",
-    "suggestions": {
-      "refresh": "Actualizar la página",
-      "retry": "Intentar su acción nuevamente",
-      "contact": "Contactar al soporte si el problema persiste"
-    },
-    "actions": {
-      "retry": "Intentar de Nuevo",
-      "home": "Volver al Inicio"
-    }
-  },
-  "auth": {
-    "loading": "Cargando...",
-    "pleaseWait": "Por favor, espere mientras verificamos su sesión"
-  },
-  "notFound": {
-    "message": "Página no encontrada. Redirigiendo al inicio..."
+  "sidebar": {
+    "mainNavigation": "Navegación principal",
+    "gmNavigation": "Navegación de director de juego",
+    "playerNavigation": "Navegación de jugador",
+    "yourSpaces": "Tus espacios",
+    "yourCharacters": "Tus personajes",
+    "createCampaign": "Crear una campaña",
+    "yourGroups": "Tus grupos",
+    "createGroup": "Crear un grupo",
+    "yourArchives": "Tus archivos",
+    "noArchives": "Sin archivos.",
+    "rightClickToAdd": "Clic derecho para añadir.",
+    "noGroups": "Sin grupos",
+    "noCharacters": "Sin personajes",
+    "archive": "Archivar",
+    "launchSession": "Iniciar sesión",
+    "initBattle": "Inicializar batalla",
+    "startBattle": "Comenzar batalla",
+    "reset": "Reiniciar",
+    "returnToBattle": "Volver a la batalla",
+    "joinSession": "Unirse a la sesión",
+    "returnToSheet": "Volver a la hoja de personaje",
+    "selectCampaign": "Seleccionar campaña",
+    "selectedCampaign": "Campaña seleccionada",
+    "selected": "seleccionado"
   }
 }

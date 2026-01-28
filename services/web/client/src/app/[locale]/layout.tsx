@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { KeycloakProvider } from "@/providers/KeycloakProvider";
+import ReduxProvider from "@/providers/ReduxProvider";
 import ToastContainer from "@/components/ToastContainer";
 import LocaleDetector from "@/components/LocaleDetector";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
+import AppLayout from "@/components/layout/AppLayout";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -35,13 +37,17 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover font-sans`}>
-        <NextIntlClientProvider messages={messages}>
-          <KeycloakProvider>
-            <LocaleDetector />
-            <ToastContainer />
-            {children}
-          </KeycloakProvider>
-        </NextIntlClientProvider>
+        <ReduxProvider>
+          <NextIntlClientProvider messages={messages}>
+            <KeycloakProvider>
+              <AppLayout>
+                <LocaleDetector />
+                <ToastContainer />
+                {children}
+              </AppLayout>
+            </KeycloakProvider>
+          </NextIntlClientProvider>
+        </ReduxProvider>
       </body>
     </html>
   );
