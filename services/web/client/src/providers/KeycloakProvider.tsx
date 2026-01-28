@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { setKeycloakInstance } from "@/services/ApiService";
 import { detectBrowserLocale, saveStoredLocale, getStoredLocale } from "@/hooks/useLocalePreference";
 import { purgePersistedState } from "@/store";
+import { useTranslations } from "next-intl";
 
 interface KeycloakContextType {
   keycloak: Keycloak | null;
@@ -31,6 +32,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const locale = pathname.split("/")[1] || "fr";
+  const t = useTranslations("auth");
 
   const [keycloak, setKeycloak] = useState<Keycloak | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
@@ -56,8 +58,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       try {
         const initOptions: KeycloakInitOptions = {
           onLoad: "check-sso",
+          checkLoginIframe: true,
           silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
-          checkLoginIframe: false,
           pkceMethod: "S256",
         };
 
@@ -159,7 +161,24 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         logout,
         register,
       }}>
-      {children}
+      {loading ? (
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="flex flex-col items-center gap-6">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-3 border-b-3 border-primary"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <div className="h-8 w-8 rounded-full bg-primary/20"></div>
+              </div>
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-white text-lg font-medium">{t("loading")}</p>
+              <p className="text-white/70 text-sm">{t("pleaseWait")}</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </KeycloakContext.Provider>
   );
 }
