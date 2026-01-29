@@ -32,7 +32,7 @@ export default function Sidebar() {
           "fixed left-0 top-0 z-50 h-screen",
           "bg-transparent text-white border-r border-sidebar-border",
           "flex flex-col transition-all duration-300",
-          "xl:w-80",
+          "w-80",
         )}
         role="navigation"
         aria-label={t("mainNavigation")}>

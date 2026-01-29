@@ -50,20 +50,21 @@
   "welcome": {
     "title": "Bienvenido a Chariot",
     "subTitle": "¿Cómo deseas comenzar tu aventura?",
+    "choices-list": "Opciones disponibles para empezar",
     "campaign": {
-      "alt": "Ilustración de la creación de una campaña",
       "title": "Crea tu primera <br /> campaña",
-      "button": "Crear una campaña"
+      "button": "Crear una campaña",
+      "button-aria": "Navegar hacia la creación de campaña"
     },
     "session": {
-      "alt": "Ilustración de la participación en una sesión",
       "title": "Únete a <br /> una sesión",
-      "button": "Unirse a una sesión"
+      "button": "Unirse a una sesión",
+      "button-aria": "Navegar hacia unirse a una sesión"
     },
     "character": {
-      "alt": "Ilustración de la creación de un personaje",
       "title": "Crea tu primer <br /> personaje",
-      "button": "Crear un personaje"
+      "button": "Crear un personaje",
+      "button-aria": "Navegar hacia la creación de personaje"
     }
   }
 }
