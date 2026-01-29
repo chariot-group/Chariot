@@ -32,7 +32,7 @@ export default function Sidebar() {
           "fixed left-0 top-0 z-50 h-screen",
           "bg-transparent text-white border-r border-sidebar-border",
           "flex flex-col transition-all duration-300",
-          "lg:w-80",
+          "xl:w-80",
         )}
         role="navigation"
         aria-label={t("mainNavigation")}>
@@ -54,7 +54,7 @@ export default function Sidebar() {
 
       {/* Spacer to prevent content overlap on desktop */}
       <div
-        className={cn("hidden lg:block shrink-0 transition-all duration-300", "w-80")}
+        className={cn("block shrink-0 transition-all duration-300", "w-80")}
         aria-hidden="true"
       />
     </>

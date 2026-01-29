@@ -65,6 +65,25 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
         const authenticated = await kc.init(initOptions);
 
+        // Detect user change and purge cache if different user
+        if (authenticated && kc.tokenParsed?.sub) {
+          const currentUserId = kc.tokenParsed.sub;
+          const storedUserId = localStorage.getItem("chariot_user_id");
+
+          if (storedUserId && storedUserId !== currentUserId) {
+            // Different user detected - purge all cached data
+            console.log("User change detected, purging cached data");
+            try {
+              await purgePersistedState();
+            } catch (error) {
+              console.error("Failed to purge cache on user change:", error);
+            }
+          }
+
+          // Store current user ID
+          localStorage.setItem("chariot_user_id", currentUserId);
+        }
+
         setKeycloak(kc);
         setAuthenticated(authenticated);
         setToken(kc.token || null);
@@ -130,6 +149,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     // Purge Redux persisted state to prevent data leakage between users
     try {
       await purgePersistedState();
+      // Remove stored user ID to ensure fresh start on next login
+      localStorage.removeItem("chariot_user_id");
     } catch (error) {
       console.error("Failed to purge persisted state on logout:", error);
     }

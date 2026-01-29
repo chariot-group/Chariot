@@ -24,5 +24,46 @@
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
     "selected": "selected"
+  },
+  "error": {
+    "title": "Oops! Something went wrong",
+    "description": "We encountered an unexpected error while processing your request.",
+    "unknownError": "An unknown error occurred",
+    "suggestion": "Here are some things you can try:",
+    "suggestions": {
+      "refresh": "Refresh the page",
+      "retry": "Try your action again",
+      "contact": "Contact support if the problem persists"
+    },
+    "actions": {
+      "retry": "Try Again",
+      "home": "Back to Home"
+    }
+  },
+  "auth": {
+    "loading": "Loading...",
+    "pleaseWait": "Please wait while we verify your session"
+  },
+  "notFound": {
+    "message": "Page not found. Redirecting to home..."
+  },
+  "welcome": {
+    "title": "Welcome to Chariot",
+    "subTitle": "How would you like to start your adventure ?",
+    "campaign": {
+      "alt": "Illustration of creating a campaign",
+      "title": "Create your first <br /> campaign",
+      "button": "Create a campaign"
+    },
+    "session": {
+      "alt": "Illustration of joining a session",
+      "title": "Join <br /> a session",
+      "button": "Join a session"
+    },
+    "character": {
+      "alt": "Illustration of creating a character",
+      "title": "Create your first <br /> character",
+      "button": "Create a character"
+    }
   }
 }

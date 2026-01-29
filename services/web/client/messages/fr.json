@@ -24,5 +24,46 @@
     "selectCampaign": "Sélectionner la campagne",
     "selectedCampaign": "Campagne sélectionnée",
     "selected": "sélectionné"
+  },
+  "error": {
+    "title": "Oups ! Une erreur s'est produite",
+    "description": "Nous avons rencontré une erreur inattendue lors du traitement de votre demande.",
+    "unknownError": "Une erreur inconnue s'est produite",
+    "suggestion": "Voici quelques actions que vous pouvez essayer :",
+    "suggestions": {
+      "refresh": "Actualiser la page",
+      "retry": "Réessayer votre action",
+      "contact": "Contacter le support si le problème persiste"
+    },
+    "actions": {
+      "retry": "Réessayer",
+      "home": "Retour à l'Accueil"
+    }
+  },
+  "auth": {
+    "loading": "Chargement...",
+    "pleaseWait": "Veuillez patienter pendant la vérification de votre session"
+  },
+  "notFound": {
+    "message": "Page introuvable. Redirection vers l'accueil..."
+  },
+  "welcome": {
+    "title": "Bienvenue sur Chariot",
+    "subTitle": "Comment souhaitez-vous commencer votre aventure ?",
+    "campaign": {
+      "alt": "Illustration de la création d'une campagne",
+      "title": "Créer votre première <br /> campagne",
+      "button": "Créer une campagne"
+    },
+    "session": {
+      "alt": "Illustration de la participation à une session",
+      "title": "Rejoindre <br /> une session",
+      "button": "Rejoindre une session"
+    },
+    "character": {
+      "alt": "Illustration de la création d'un personnage",
+      "title": "Créer votre premier <br /> personnage",
+      "button": "Créer un personnage"
+    }
   }
 }

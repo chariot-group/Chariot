@@ -3,7 +3,6 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ContextMode, setContextMode } from "@/store/slices/environmentSlice";
-import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { selectOpenEnvironment, setOpenEnvironment } from "@/store/slices/sidebarSlice";
 import { ChevronRight, PlusCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -27,9 +26,7 @@ export default function SidebarEnvironment() {
     dispatch(setContextMode(environment));
 
     if (environment === "player") {
-      window.location.href = "/";
       handleOpenChange(false);
-      dispatch(clearSelectedCampaign());
     }
   };
 
