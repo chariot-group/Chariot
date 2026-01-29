@@ -9,6 +9,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
 import AppLayout from "@/components/layout/AppLayout";
+import PostLoginNavigator from "@/components/PostLoginNavigator";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -41,6 +42,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <KeycloakProvider>
             <ReduxProvider>
+              <PostLoginNavigator />
               <AppLayout>
                 <LocaleDetector />
                 <ToastContainer />

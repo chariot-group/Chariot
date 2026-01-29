@@ -262,3 +262,55 @@ Each rule has a unique identifier and must be tested.
 **References**:
 - `services/web/client/src/store/index.ts` - `purgePersistedState()` function
 - `services/web/client/src/providers/KeycloakProvider.tsx` - logout function with purge
+
+---
+
+## FR-006: Post-Authentication Navigation Priority
+
+**Rule**: Upon successful authentication, the application must automatically redirect the user to the most relevant page based on their existing data. The redirection follows a strict priority hierarchy to ensure optimal user experience.
+
+**Priority Hierarchy**:
+1. **First Priority - Characters Without Group**: If the user has at least one player character without any group assignment, redirect to that character's page
+2. **Second Priority - Characters in Campaigns**: If no characters without group exist, but the user has at least one character within a campaign/group, redirect to the first character found in any campaign
+3. **Fallback - Welcome Page**: If the user has no characters at all, redirect to the welcome page (`/welcome`)
+
+**Requirements**:
+- Redirection logic executes **only once** immediately after successful authentication (`authenticated === true`)
+- Must check characters without group first by calling `GET /characters/players/without-group`
+- If no characters without group, fetch campaigns with `GET /campaigns` and extract the first character from the first campaign's first group
+- Redirection must preserve locale prefix in URL (e.g., `/fr/characters/...`)
+- Navigation must not trigger on every page load, only on the initial post-authentication event
+- Must use Next.js router for navigation to maintain proper history
+- Loading state should be maintained during data fetching to avoid flickering
+
+**URL Patterns**:
+- Character without group: `/{locale}/characters/{characterId}`
+- Character in campaign: `/{locale}/campaigns/{campaignId}/groups/{groupId}/characters/{characterId}`
+- Welcome page: `/{locale}/welcome`
+
+**Validation Rules**:
+- Only consider player characters (exclude NPCs)
+- Only consider characters created by the authenticated user (`createdBy` matches `keycloakId`)
+- Only consider non-deleted characters (`deletedAt === null`)
+- Skip redirection if user is already on a character or campaign page
+
+**Prohibitions**:
+- Redirecting on every route change (must be post-authentication only)
+- Ignoring locale prefix in redirect URLs
+- Hardcoding redirect URLs without considering user data
+- Causing infinite redirect loops
+- Exposing navigation logic errors to the user (must fail gracefully to welcome page)
+
+**Tests**:
+- User with characters without group redirects to first character without group
+- User with only characters in campaigns redirects to first character in campaign
+- User with no characters redirects to welcome page
+- Authenticated user already on a valid page does not get redirected
+- Locale is preserved in all redirect URLs
+- Navigation logic executes only once per authentication
+
+**References**:
+- `services/web/client/src/providers/KeycloakProvider.tsx` - Authentication flow
+- `services/web/client/src/services/CharacterService.ts` - Character data fetching
+- `services/web/client/src/services/CampaignService.ts` - Campaign data fetching
+

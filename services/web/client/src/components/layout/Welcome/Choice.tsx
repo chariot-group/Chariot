@@ -28,8 +28,8 @@ export default function Choice({ image, realm, link }: ChoiceProps) {
 
         <Link
           href={link}
-          className="w-full">
-          <Button className="w-full hover:bg-primary/90 text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-[2.5rem] sm:min-h-[2.75rem]">
+          className="w-full flex justify-center">
+          <Button className="w-[90%] hover:bg-primary/90 text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11">
             {t(`${realm}.button`)}
           </Button>
         </Link>
