@@ -24,5 +24,27 @@
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
     "selected": "selected"
+  },
+  "error": {
+    "title": "Oops! Something went wrong",
+    "description": "We encountered an unexpected error while processing your request.",
+    "unknownError": "An unknown error occurred",
+    "suggestion": "Here are some things you can try:",
+    "suggestions": {
+      "refresh": "Refresh the page",
+      "retry": "Try your action again",
+      "contact": "Contact support if the problem persists"
+    },
+    "actions": {
+      "retry": "Try Again",
+      "home": "Back to Home"
+    }
+  },
+  "auth": {
+    "loading": "Loading...",
+    "pleaseWait": "Please wait while we verify your session"
+  },
+  "notFound": {
+    "message": "Page not found. Redirecting to home..."
   }
 }

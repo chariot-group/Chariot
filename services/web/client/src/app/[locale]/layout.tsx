@@ -37,17 +37,17 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover font-sans`}>
-        <ReduxProvider>
-          <NextIntlClientProvider messages={messages}>
-            <KeycloakProvider>
+        <NextIntlClientProvider messages={messages}>
+          <KeycloakProvider>
+            <ReduxProvider>
               <AppLayout>
                 <LocaleDetector />
                 <ToastContainer />
                 {children}
               </AppLayout>
-            </KeycloakProvider>
-          </NextIntlClientProvider>
-        </ReduxProvider>
+            </ReduxProvider>
+          </KeycloakProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

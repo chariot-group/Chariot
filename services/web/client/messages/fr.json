@@ -24,5 +24,27 @@
     "selectCampaign": "Sélectionner la campagne",
     "selectedCampaign": "Campagne sélectionnée",
     "selected": "sélectionné"
+  },
+  "error": {
+    "title": "Oups ! Une erreur s'est produite",
+    "description": "Nous avons rencontré une erreur inattendue lors du traitement de votre demande.",
+    "unknownError": "Une erreur inconnue s'est produite",
+    "suggestion": "Voici quelques actions que vous pouvez essayer :",
+    "suggestions": {
+      "refresh": "Actualiser la page",
+      "retry": "Réessayer votre action",
+      "contact": "Contacter le support si le problème persiste"
+    },
+    "actions": {
+      "retry": "Réessayer",
+      "home": "Retour à l'Accueil"
+    }
+  },
+  "auth": {
+    "loading": "Chargement...",
+    "pleaseWait": "Veuillez patienter pendant la vérification de votre session"
+  },
+  "notFound": {
+    "message": "Page introuvable. Redirection vers l'accueil..."
   }
 }

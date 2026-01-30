@@ -24,5 +24,27 @@
     "selectCampaign": "Seleccionar campaña",
     "selectedCampaign": "Campaña seleccionada",
     "selected": "seleccionado"
+  },
+  "error": {
+    "title": "¡Ups! Algo salió mal",
+    "description": "Encontramos un error inesperado al procesar su solicitud.",
+    "unknownError": "Ocurrió un error desconocido",
+    "suggestion": "Aquí hay algunas cosas que puede intentar:",
+    "suggestions": {
+      "refresh": "Actualizar la página",
+      "retry": "Intentar su acción nuevamente",
+      "contact": "Contactar al soporte si el problema persiste"
+    },
+    "actions": {
+      "retry": "Intentar de Nuevo",
+      "home": "Volver al Inicio"
+    }
+  },
+  "auth": {
+    "loading": "Cargando...",
+    "pleaseWait": "Por favor, espere mientras verificamos su sesión"
+  },
+  "notFound": {
+    "message": "Página no encontrada. Redirigiendo al inicio..."
   }
 }
