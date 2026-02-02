@@ -85,6 +85,7 @@
       "type": "Type",
       "subtype": "Subtype",
       "challengeRating": "Challenge Rating",
+      "challengeRatingAbbr": "CR",
       "alignment": "Alignment"
     },
     "placeholder": {

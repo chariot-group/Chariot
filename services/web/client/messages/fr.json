@@ -85,6 +85,7 @@
       "type": "Type",
       "subtype": "Sous-type",
       "challengeRating": "Indice de dangerosité",
+      "challengeRatingAbbr": "ID",
       "alignment": "Alignement"
     },
     "placeholder": {

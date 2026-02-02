@@ -85,6 +85,7 @@
       "type": "Tipo",
       "subtype": "Subtipo",
       "challengeRating": "Índice de desafío",
+      "challengeRatingAbbr": "ID",
       "alignment": "Alineamiento"
     },
     "placeholder": {
