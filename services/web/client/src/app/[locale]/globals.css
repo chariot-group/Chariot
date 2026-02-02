@@ -86,14 +86,14 @@
   --yellow: #ffc400;
   --white: #f7f7f7;
   --gray: #2b2b2b;
-  --gray-middle-light: #b2b2b2;
+  --gray-middle-light: #565656;
   --gray-light: #d6d6d6;
   --purple: #4e00de;
 
   /* Toast */
   --toastify-color-light: #19191c;
   --toastify-font-family: "Inter Tight", sans-serif;
-  --toastify-text-color-light: #b2b2b2;
+  --toastify-text-color-light: #565656;
   --toastify-toast-bd-radius: var(--radius);
 }
 
