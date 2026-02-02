@@ -5,6 +5,14 @@ export interface User {
     firstName?: string;
     lastName?: string;
     avatar?: string;
+    balance: number;
+    history: History[];
+}
+
+export interface History {
+    date: Date;
+    campaignName: string;
+    value: number;
 }
 
 export interface UserState {

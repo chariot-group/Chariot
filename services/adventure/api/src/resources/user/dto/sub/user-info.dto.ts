@@ -1,4 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
+import { HistoryDto } from '@/resources/user/dto/sub/history.dto';
+import { Type } from 'class-transformer';
 
 export class UserInfoDto {
     @ApiProperty({
@@ -41,4 +44,15 @@ export class UserInfoDto {
         nullable: true,
     })
     avatar?: string;
+
+    @ApiProperty({ example: 500 })
+    @IsNotEmpty()
+    @IsNumber()
+    balance: number;
+
+    @ApiProperty({ type: [HistoryDto] })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => HistoryDto)
+    history: HistoryDto[];
 }

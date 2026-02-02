@@ -65,11 +65,11 @@ export class KeycloakAdminService {
             });
 
             const userId = userResponse.id;
-            this.logger.log(`User created in Keycloak: ${username} (${avatarUrl})`);
+            this.logger.log(`User created in Keycloak: ${username} (${userId})`);
 
             return userId;
         } catch (error) {
-            this.logger.error(`Failed to create user ${username} (${avatarUrl})`, error);
+            this.logger.error(`Failed to create user ${username}`, error);
             throw error;
         }
     }

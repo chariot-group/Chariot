@@ -11,6 +11,7 @@ import {
   CharacterSchema,
 } from '@/resources/character/core/schemas/character.schema';
 import { KeycloakAdminService } from '@/seeder/keycloak-admin.service';
+import { User, UserSchema } from '@/resources/user/schemas/user.schema';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { KeycloakAdminService } from '@/seeder/keycloak-admin.service';
       { name: Campaign.name, schema: CampaignSchema },
       { name: Character.name, schema: CharacterSchema },
       { name: Group.name, schema: GroupSchema },
+      { name: User.name, schema: UserSchema }
     ]),
   ],
   providers: [SeederService, KeycloakAdminService],

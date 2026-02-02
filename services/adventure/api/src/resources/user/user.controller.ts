@@ -1,7 +1,7 @@
 import { Controller, Get, Req } from '@nestjs/common';
 import { ApiExtraModels, ApiOperation, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { UserService } from '@/resources/user/user.service';
-import { UserInfoDto } from '@/resources/user/dto/user-info.dto';
+import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
 import { IResponse } from '@/common/dtos/reponse.dto';
 
 @ApiExtraModels(
