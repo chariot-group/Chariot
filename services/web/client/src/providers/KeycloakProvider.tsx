@@ -38,12 +38,9 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
-  const [isNewRegistration, setIsNewRegistration] = useState(false);
 
   // Ref to store interval ID
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  // Ref to track if we've already handled initial auth redirect
-  const hasHandledAuthRef = useRef(false);
 
   useEffect(() => {
     const initKeycloak = async () => {
@@ -122,6 +119,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    setLoading(true);
+
     // Clean up interval before logging out
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
@@ -134,15 +133,15 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       console.error("Failed to purge persisted state on logout:", error);
     }
 
+    // Redirect to root after logout - Keycloak will handle the login page
     keycloak?.logout({
-      redirectUri: window.location.origin + `/${locale}/auth/login`,
+      redirectUri: window.location.origin + `/${locale}`,
     });
   };
 
   const register = () => {
     const detectedLocale = detectBrowserLocale();
     saveStoredLocale(detectedLocale);
-    setIsNewRegistration(true);
 
     keycloak?.register({
       redirectUri: window.location.origin + `/${detectedLocale}`,

@@ -7,16 +7,18 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useUser } from "@/hooks/useUser";
+import { useKeycloak } from "@/providers/KeycloakProvider";
 
 export default function Profile() {
   const [isOpen, setIsOpen] = useState(false);
   const collapsibleTriggerRef = useRef<HTMLButtonElement>(null);
+  const buttonLogoutRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("Profile");
+  const { logout } = useKeycloak();
 
   // Récupère les informations de l'utilisateur depuis le cache Redux
   const { user, loading } = useUser({ autoFetch: true });
 
-  // Génère les initiales à partir du nom et prénom
   const getInitials = () => {
     if (!user) return "??";
     if (user.firstName && user.lastName) {
@@ -30,6 +32,11 @@ export default function Profile() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (buttonLogoutRef.current && buttonLogoutRef.current.contains(event.target as Node)) {
+        logout();
+        return;
+      }
+
       if (collapsibleTriggerRef.current && !collapsibleTriggerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
@@ -70,7 +77,9 @@ export default function Profile() {
           </Link>
         </div>
         <div className="px-2 py-1.5 text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
-          <span className="flex items-center gap-2 rounded-[12px]">
+          <span
+            ref={buttonLogoutRef}
+            className="flex items-center gap-2 rounded-[12px]">
             <LogOut className="shrink-0" /> <span className="inline-block min-w-[8rem]">{t("logout")}</span>
           </span>
         </div>
