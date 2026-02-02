@@ -66,5 +66,29 @@
       "button": "Crear un personaje",
       "button-aria": "Navegar hacia la creación de personaje"
     }
+  },
+  "characterDetail": {
+    "tabs": {
+      "general": "General",
+      "combat": "Combate",
+      "magic": "Magia",
+      "inventory": "Inventario",
+      "history": "Historia"
+    },
+    "player": {
+      "level": "Nivel",
+      "race": "Raza",
+      "class": "Clase",
+      "alignment": "Alineamiento"
+    },
+    "npc": {
+      "type": "Tipo",
+      "subtype": "Subtipo",
+      "challengeRating": "Índice de desafío",
+      "alignment": "Alineamiento"
+    },
+    "placeholder": {
+      "noImage": "Sin imagen"
+    }
   }
 }
