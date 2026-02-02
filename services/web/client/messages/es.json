@@ -46,5 +46,9 @@
   },
   "notFound": {
     "message": "Página no encontrada. Redirigiendo al inicio..."
+  },
+  "Profile": {
+    "profile": "Perfil",
+    "logout": "Cerrar sesión"
   }
 }

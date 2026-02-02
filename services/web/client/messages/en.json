@@ -46,5 +46,9 @@
   },
   "notFound": {
     "message": "Page not found. Redirecting to home..."
+  },
+  "Profile": {
+    "profile": "Profile",
+    "logout": "Log Out"
   }
 }
