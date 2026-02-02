@@ -51,6 +51,23 @@
     "profile": "Profile",
     "logout": "Log Out"
   },
+  "ProfilePage": {
+    "pageTitle": "User Profile",
+    "changePassword": "Change Password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "updatePassword": "Update my password",
+    "sessionHistory": "Session History",
+    "yourTokens": "Your tokens:",
+    "noHistory": "No history available",
+    "reloadTokens": "Reload my tokens",
+    "togglePasswordVisibility": "Toggle password visibility",
+    "passwordError": {
+      "min": "Password must contain at least 8 characters",
+      "mismatch": "Passwords do not match"
+    }
+  },
   "welcome": {
     "title": "Welcome to Chariot",
     "subTitle": "How would you like to start your adventure ?",

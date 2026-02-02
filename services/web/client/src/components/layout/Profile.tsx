@@ -58,24 +58,40 @@ export default function Profile() {
       <CollapsibleTrigger
         ref={collapsibleTriggerRef}
         className="w-auto"
-        disabled={loading}>
+        disabled={loading}
+        aria-label={t("profile")}
+        aria-expanded={isOpen}
+        aria-haspopup="true">
         <Avatar className="h-12 w-12 cursor-pointer">
           <AvatarImage
             src={user?.avatar || undefined}
-            alt={user?.username || "User"}
+            alt={user?.username ? `${user.username} avatar` : "User avatar"}
           />
           <AvatarFallback>{getInitials()}</AvatarFallback>
         </Avatar>
       </CollapsibleTrigger>
       <CollapsibleContent
         ref={collapsibleContentRef}
-        className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-14 right-0 text-popover-foreground rounded-[12px] border">
-        <div className="px-2 py-1.5 text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
+        role="menu"
+        aria-label={t("profile")}
+        className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-14 right-0 text-popover-foreground rounded-2xl border">
+        <div className="px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
           <Link
-            className="flex items-center gap-2 rounded-[12px]"
+            className="flex items-center gap-2 rounded-2xl"
             href={"/profile"}
-            onClick={() => setIsOpen(false)}>
-            <User className="shrink-0" /> <span className="inline-block min-w-[8rem]">{t("profile")}</span>
+            onClick={() => setIsOpen(false)}
+            role="menuitem"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsOpen(false);
+              }
+            }}>
+            <User
+              className="shrink-0"
+              aria-hidden="true"
+            />{" "}
+            <span className="inline-block min-w-32">{t("profile")}</span>
           </Link>
         </div>
         <div className="px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
@@ -84,8 +100,20 @@ export default function Profile() {
               setIsOpen(false);
               logout();
             }}
-            className="flex items-center gap-2 cursor-pointer rounded-[12px] w-full text-left">
-            <LogOut className="shrink-0" /> <span className="inline-block min-w-[8rem]">{t("logout")}</span>
+            role="menuitem"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsOpen(false);
+                logout();
+              }
+            }}
+            className="flex items-center gap-2 cursor-pointer rounded-2xl w-full text-left">
+            <LogOut
+              className="shrink-0"
+              aria-hidden="true"
+            />{" "}
+            <span className="inline-block min-w-32">{t("logout")}</span>
           </button>
         </div>
       </CollapsibleContent>
