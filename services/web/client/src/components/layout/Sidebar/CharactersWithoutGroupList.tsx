@@ -6,6 +6,8 @@ import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
+import { useAppDispatch } from "@/store/hooks";
 
 /**
  * Component to display players without group with infinite scroll
@@ -16,6 +18,7 @@ export default function CharactersWithoutGroupList() {
   const { characters, loading, loadingMore, hasMore, loadMoreCharacters, error } = usePlayersWithoutGroup(10);
 
   const observerTarget = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
 
   const pathname = usePathname();
 
@@ -80,6 +83,7 @@ export default function CharactersWithoutGroupList() {
             key={character._id}
             aria-current={isSelected ? "page" : undefined}
             aria-label={`${character.name}${isSelected ? ` (${t("selected")})` : ""}`}
+            onClick={() => dispatch(clearSelectedCampaign())}
             className={`w-full border-2 cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSelected ? "bg-white" : ""}`}>
             <span
               className={`text-sm group-hover:font-bold group-hover:text-black ${isSelected ? "font-bold text-black" : ""}`}>
