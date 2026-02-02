@@ -1,21 +1,24 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
 import SidebarEnvironment from "@/components/layout/Sidebar/SidebarEnvironment";
 import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
 import { useCampaigns } from "@/hooks/useCampaigns";
+import { Menu, X } from "lucide-react";
 
 /**
  * Main sidebar component
  * Displays environment selector, context navigation, and action button
- * Auto-loads campaigns on mount for GM mode
+ * Auto-loads campaigns on component mount
+ * Transforms into a burger menu on mobile (< 425px)
  */
 export default function Sidebar() {
   const t = useTranslations("sidebar");
   const sidebarRef = useRef<HTMLElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Auto-fetch campaigns on component mount
   useCampaigns({
@@ -25,6 +28,29 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* Burger menu button - visible only on mobile < 640px */}
+      <button
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className={cn(
+          "fixed top-4 left-4 z-[60] sm:hidden",
+          "bg-gray-800 text-white p-2 rounded-md",
+          "hover:bg-gray-700 transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        )}
+        aria-label={isMenuOpen ? t("closeMenu") : t("openMenu")}
+        aria-expanded={isMenuOpen}>
+        {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </button>
+
+      {/* Backdrop for mobile menu */}
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 sm:hidden"
+          onClick={() => setIsMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Fixed sidebar */}
       <aside
         ref={sidebarRef}
@@ -32,29 +58,31 @@ export default function Sidebar() {
           "fixed left-0 top-0 z-50 h-screen",
           "bg-transparent text-white border-r border-sidebar-border",
           "flex flex-col transition-all duration-300",
-          "w-80",
+          "w-52 sm:w-60 md:w-72 lg:w-80",
+          // Hide on mobile by default, show when menu is open
+          !isMenuOpen && "-translate-x-full sm:translate-x-0",
         )}
         role="navigation"
         aria-label={t("mainNavigation")}>
         {/* Environment selector (player/GM mode) */}
-        <div className={cn("mx-6 py-6 border-b")}>
+        <div className={cn("mx-3 sm:mx-4 md:mx-5 lg:mx-6 py-4 sm:py-5 md:py-6 border-b")}>
           <SidebarEnvironment />
         </div>
 
         {/* Navigation (context-dependent) */}
-        <div className={cn("flex-1 overflow-y-auto px-3")}>
+        <div className={cn("flex-1 overflow-y-auto px-2 sm:px-2.5 md:px-3")}>
           <SidebarContext />
         </div>
 
         {/* Action button (context-dependent) */}
-        <div className={cn("mx-6 py-6 border-t")}>
+        <div className={cn("mx-3 sm:mx-4 md:mx-5 lg:mx-6 py-4 sm:py-5 md:py-6 border-t")}>
           <ActionButton />
         </div>
       </aside>
 
       {/* Spacer to prevent content overlap on desktop */}
       <div
-        className={cn("block shrink-0 transition-all duration-300", "w-80")}
+        className={cn("shrink-0 transition-all duration-300", "hidden sm:block", "sm:w-60 md:w-72 lg:w-80")}
         aria-hidden="true"
       />
     </>

@@ -3,6 +3,8 @@
     "mainNavigation": "Navigation principale",
     "gmNavigation": "Navigation maître du jeu",
     "playerNavigation": "Navigation joueur",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
     "yourSpaces": "Vos espaces",
     "yourCharacters": "Vos personnages",
     "createCampaign": "Créer une campagne",

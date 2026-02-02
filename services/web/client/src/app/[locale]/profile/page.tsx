@@ -58,8 +58,8 @@ export default function ProfilePage() {
   return (
     <main className="flex flex-col items-center pt-4 sm:pt-6 md:pt-8 px-3 sm:px-4 md:px-6 lg:px-8">
       <h1 className="sr-only">{t("pageTitle")}</h1>
-      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-2 py-2 sm:py-4 md:py-6 lg:py-8">
-        <div className="flex flex-col gap-2">
+      <div className="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-2 gap-2 py-2 sm:py-4 md:py-6 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 gap-2">
           <Card className="flex flex-col xl:flex-row overflow-hidden">
             <div className="relative w-full xl:w-1/2 aspect-video">
               <Image
@@ -280,8 +280,8 @@ export default function ProfilePage() {
                       <Card
                         key={index}
                         role="listitem"
-                        className="bg-gray-middle-light px-2 sm:px-3 py-2 sm:py-2.5 rounded-[15px] flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 justify-between">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 md:gap-8 xl:gap-20 flex-1 min-w-0">
+                        className="bg-gray-middle-light px-2 sm:px-3 py-2 sm:py-2.5 rounded-[15px] flex flex-row items-center gap-2 sm:gap-6 justify-between">
+                        <div className="flex flex-row items-center gap-1 sm:gap-4 md:gap-8 xl:gap-20 flex-1 min-w-0">
                           <span className="text-xs sm:text-sm text-foreground shrink-0">
                             <time dateTime={entry.date.toString()}>{formattedDate}</time>
                           </span>
