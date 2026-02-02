@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 
 export default function Character() {
   const params = useParams();
-  const characterId = params.idCharacter as string;
+  const characterId = params.idCharacters as string;
 
   const { character, loading, error } = useCharacter(characterId);
 

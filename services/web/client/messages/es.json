@@ -50,5 +50,25 @@
   "Profile": {
     "profile": "Perfil",
     "logout": "Cerrar sesión"
+  },
+  "welcome": {
+    "title": "Bienvenido a Chariot",
+    "subTitle": "¿Cómo deseas comenzar tu aventura?",
+    "choices-list": "Opciones disponibles para empezar",
+    "campaign": {
+      "title": "Crea tu primera <br /> campaña",
+      "button": "Crear una campaña",
+      "button-aria": "Navegar hacia la creación de campaña"
+    },
+    "session": {
+      "title": "Únete a <br /> una sesión",
+      "button": "Unirse a una sesión",
+      "button-aria": "Navegar hacia unirse a una sesión"
+    },
+    "character": {
+      "title": "Crea tu primer <br /> personaje",
+      "button": "Crear un personaje",
+      "button-aria": "Navegar hacia la creación de personaje"
+    }
   }
 }
