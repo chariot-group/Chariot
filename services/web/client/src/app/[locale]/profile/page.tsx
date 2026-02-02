@@ -6,7 +6,7 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, SquarePen } from "lucide-react";
+import { Eye, EyeOff, ShoppingCart, SquarePen } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -60,7 +60,7 @@ export default function ProfilePage() {
       <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-2 py-4 md:py-8">
         <div className="flex flex-col gap-2">
           <Card className="flex flex-col sm:flex-row overflow-hidden">
-            <div className="relative w-full sm:w-1/2 aspect-4/3">
+            <div className="relative w-full aspect-3/2">
               <Image
                 fill
                 className="object-cover rounded-[15px]"
@@ -76,7 +76,7 @@ export default function ProfilePage() {
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </Card>
-          <Card>
+          <Card className="gap-10">
             <h2 className="text-xl font-bold">Changer de mot de passe</h2>
             <div className="px-2">
               <form
@@ -169,13 +169,13 @@ export default function ProfilePage() {
             </div>
           </Card>
         </div>
-        <Card>
-          <div className="flex flex-row justify-between">
+        <Card className="flex flex-col h-145">
+          <div className="flex flex-row justify-between items-center shrink-0">
             <h2 className="text-xl font-bold">Historique des sessions</h2>
             <Card className="bg-gray-middle-light px-3 py-2 rounded-[15px] flex flex-row items-center gap-6 justify-between">
               <span className="font-bold hidden xl:block">Vos tokens :</span>
-              <span className="flex flex-row gap-1">
-                20
+              <span className="flex flex-row gap-1 font-semibold">
+                {user?.balance ?? 0}
                 <Image
                   src={Token}
                   alt="token"
@@ -184,11 +184,50 @@ export default function ProfilePage() {
             </Card>
           </div>
           {/* historique des sessions */}
+          <div className="flex-1 overflow-hidden">
+            <div
+              className="h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              style={{
+                maskImage: "linear-gradient(to top, transparent 0, black 30%)",
+                WebkitMaskImage: "linear-gradient(to top, transparent 0, black 30%)",
+              }}>
+              {user?.history && user.history.length > 0 ? (
+                <div className="space-y-2">
+                  {user.history.map((entry, index) => {
+                    const entryDate = new Date(entry.date);
+                    const formattedDate = entryDate.toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    });
+
+                    return (
+                      <Card
+                        key={index}
+                        className="bg-gray-middle-light px-3 py-2 rounded-[15px] flex flex-row items-center gap-6 justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-20 flex-1">
+                          <span className="text-sm">{formattedDate}</span>
+                          <span className="text-sm">{entry.campaignName}</span>
+                        </div>
+                        <span className={"text-sm font-bold"}>{entry.value} to</span>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <p>Aucun historique disponible</p>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex justify-end">
             <Link
               href={"#"}
-              className="relative">
-              <Button className="rounded-[15px] px-5">Recharger mes tokens</Button>
+              className="pl-10 w-1/2">
+              <Button className="relative rounded-[15px] w-full px-5">
+                <ShoppingCart className="absolute left-3" /> Recharger mes tokens
+              </Button>
             </Link>
           </div>
         </Card>
