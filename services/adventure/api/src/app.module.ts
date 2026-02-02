@@ -12,6 +12,7 @@ import { CharacterModule } from '@/resources/character/character.module';
 import { MetricsModule } from '@/metrics/metrics.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { SeederModule } from '@/seeder/seeder.module';
+import { UserModule } from '@/resources/user/user.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { SeederModule } from '@/seeder/seeder.module';
     MaillingModule,
     MetricsModule,
     SeederModule,
-    PrometheusModule.register()
+    PrometheusModule.register(),
+    UserModule
   ],
   controllers: [AppController],
   providers: [AppService, Logger, MaillingService],

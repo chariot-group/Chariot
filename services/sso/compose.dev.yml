@@ -137,6 +137,107 @@ services:
         
         echo "SMTP configuration completed"
         
+        echo "Enabling user profile for chariot realm..."
+        /opt/keycloak/bin/kcadm.sh update realms/chariot \
+          -s 'attributes.userProfileEnabled=true'
+        
+        echo "Configuring user profile with custom avatar attribute..."
+        # Récupérer la configuration actuelle
+        /opt/keycloak/bin/kcadm.sh get realms/chariot/users/profile > /tmp/current-profile.json 2>/dev/null || echo "No existing profile"
+        
+        # Créer la nouvelle configuration avec l'attribut avatar
+        cat > /tmp/user-profile-update.json <<'PROFILE_EOF'
+        {
+          "attributes": [
+            {
+              "name": "username",
+              "displayName": "$${username}",
+              "validations": {
+                "length": { "min": 3, "max": 255 },
+                "username-prohibited-characters": {},
+                "up-username-not-idn-homograph": {}
+              },
+              "permissions": {
+                "view": ["admin", "user"],
+                "edit": ["admin", "user"]
+              },
+              "multivalued": false
+            },
+            {
+              "name": "email",
+              "displayName": "$${email}",
+              "validations": {
+                "email": {},
+                "length": { "max": 255 }
+              },
+              "required": {
+                "roles": ["user"]
+              },
+              "permissions": {
+                "view": ["admin", "user"],
+                "edit": ["admin", "user"]
+              },
+              "multivalued": false
+            },
+            {
+              "name": "firstName",
+              "displayName": "$${firstName}",
+              "validations": {
+                "length": { "max": 255 },
+                "person-name-prohibited-characters": {}
+              },
+              "required": {
+                "roles": ["user"]
+              },
+              "permissions": {
+                "view": ["admin", "user"],
+                "edit": ["admin", "user"]
+              },
+              "multivalued": false
+            },
+            {
+              "name": "lastName",
+              "displayName": "$${lastName}",
+              "validations": {
+                "length": { "max": 255 },
+                "person-name-prohibited-characters": {}
+              },
+              "required": {
+                "roles": ["user"]
+              },
+              "permissions": {
+                "view": ["admin", "user"],
+                "edit": ["admin", "user"]
+              },
+              "multivalued": false
+            },
+            {
+              "name": "avatar",
+              "displayName": "$${avatar}",
+              "validations": {},
+              "annotations": {},
+              "permissions": {
+                "view": ["admin", "user"],
+                "edit": ["admin", "user"]
+              },
+              "multivalued": false
+            }
+          ],
+          "groups": [
+            {
+              "name": "user-metadata",
+              "displayHeader": "User metadata",
+              "displayDescription": "Attributes, which refer to user metadata"
+            }
+          ]
+        }
+        PROFILE_EOF
+        
+        echo "Updating user profile with avatar attribute..."
+        /opt/keycloak/bin/kcadm.sh update realms/chariot/users/profile -f /tmp/user-profile-update.json
+        
+        echo "User profile configuration completed!"
+        
         echo "Creating default admin user if needed..."
         if /opt/keycloak/bin/kcadm.sh get users -r chariot -q email="$${KEYCLOAK_ADMIN_EMAIL}" | grep -q '"id"'; then
           echo "Admin user already exists"

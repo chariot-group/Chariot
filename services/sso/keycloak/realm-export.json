@@ -35,6 +35,9 @@
   "accessCodeLifespanUserAction": 300,
   "accessCodeLifespanLogin": 1800,
   "smtpServer": {},
+  "attributes": {
+    "userProfileEnabled": "true"
+  },
   "requiredActions": [
     {
       "alias": "VERIFY_EMAIL",

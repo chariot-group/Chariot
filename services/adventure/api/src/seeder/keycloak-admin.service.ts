@@ -38,6 +38,7 @@ export class KeycloakAdminService {
         password: string,
         firstName?: string,
         lastName?: string,
+        avatarUrl?: string,
     ): Promise<string> {
         await this.authenticate();
 
@@ -50,6 +51,7 @@ export class KeycloakAdminService {
                 email,
                 firstName: firstName || username,
                 lastName: lastName || 'User',
+                attributes: avatarUrl ? { avatar: [avatarUrl] } : {},
                 enabled: true,
                 emailVerified: true,
                 credentials: [
@@ -63,11 +65,11 @@ export class KeycloakAdminService {
             });
 
             const userId = userResponse.id;
-            this.logger.log(`User created in Keycloak: ${username} (${userId})`);
+            this.logger.log(`User created in Keycloak: ${username} (${avatarUrl})`);
 
             return userId;
         } catch (error) {
-            this.logger.error(`Failed to create user ${username}`, error);
+            this.logger.error(`Failed to create user ${username} (${avatarUrl})`, error);
             throw error;
         }
     }

@@ -6,11 +6,27 @@ import { LogOut, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useUser } from "@/hooks/useUser";
 
 export default function Profile() {
   const [isOpen, setIsOpen] = useState(false);
   const collapsibleTriggerRef = useRef<HTMLButtonElement>(null);
   const t = useTranslations("Profile");
+
+  // Récupère les informations de l'utilisateur depuis le cache Redux
+  const { user, loading } = useUser({ autoFetch: true });
+
+  // Génère les initiales à partir du nom et prénom
+  const getInitials = () => {
+    if (!user) return "??";
+    if (user.firstName && user.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    }
+    if (user.username) {
+      return user.username.substring(0, 2).toUpperCase();
+    }
+    return "??";
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -35,10 +51,14 @@ export default function Profile() {
       className="relative">
       <CollapsibleTrigger
         ref={collapsibleTriggerRef}
-        className="w-auto">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
+        className="w-auto"
+        disabled={loading}>
+        <Avatar className="h-12 w-12 cursor-pointer">
+          <AvatarImage
+            src={user?.avatar || undefined}
+            alt={user?.username || "User"}
+          />
+          <AvatarFallback>{getInitials()}</AvatarFallback>
         </Avatar>
       </CollapsibleTrigger>
       <CollapsibleContent className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-14 right-0 text-popover-foreground rounded-[12px] border">

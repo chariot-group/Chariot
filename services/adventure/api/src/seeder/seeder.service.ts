@@ -67,12 +67,18 @@ export class SeederService {
       const lastName = faker.person.lastName();
       const password = process.env.DEFAULT_PASSWORD;
 
+      // Générer une URL d'avatar aléatoire
+      // Utilise DiceBear API pour des avatars SVG générés aléatoirement
+      const avatarSeed = faker.string.alphanumeric(10);
+      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`;
+
       const userId = await this.keycloakAdminService.createUser(
         username,
         email,
         password,
         firstName,
         lastName,
+        avatarUrl,
       );
 
       await this.characterModel.create(
