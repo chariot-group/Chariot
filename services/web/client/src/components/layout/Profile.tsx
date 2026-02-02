@@ -12,7 +12,7 @@ import { useKeycloak } from "@/providers/KeycloakProvider";
 export default function Profile() {
   const [isOpen, setIsOpen] = useState(false);
   const collapsibleTriggerRef = useRef<HTMLButtonElement>(null);
-  const buttonLogoutRef = useRef<HTMLDivElement>(null);
+  const collapsibleContentRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("Profile");
   const { logout } = useKeycloak();
 
@@ -32,12 +32,11 @@ export default function Profile() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (buttonLogoutRef.current && buttonLogoutRef.current.contains(event.target as Node)) {
-        logout();
-        return;
-      }
+      const target = event.target as Node;
+      const isOutsideTrigger = collapsibleTriggerRef.current && !collapsibleTriggerRef.current.contains(target);
+      const isOutsideContent = collapsibleContentRef.current && !collapsibleContentRef.current.contains(target);
 
-      if (collapsibleTriggerRef.current && !collapsibleTriggerRef.current.contains(event.target as Node)) {
+      if (isOutsideTrigger && isOutsideContent) {
         setIsOpen(false);
       }
     };
@@ -68,20 +67,26 @@ export default function Profile() {
           <AvatarFallback>{getInitials()}</AvatarFallback>
         </Avatar>
       </CollapsibleTrigger>
-      <CollapsibleContent className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-14 right-0 text-popover-foreground rounded-[12px] border">
+      <CollapsibleContent
+        ref={collapsibleContentRef}
+        className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-14 right-0 text-popover-foreground rounded-[12px] border">
         <div className="px-2 py-1.5 text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
           <Link
             className="flex items-center gap-2 rounded-[12px]"
-            href={"/profile"}>
+            href={"/profile"}
+            onClick={() => setIsOpen(false)}>
             <User className="shrink-0" /> <span className="inline-block min-w-[8rem]">{t("profile")}</span>
           </Link>
         </div>
-        <div className="px-2 py-1.5 text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
-          <span
-            ref={buttonLogoutRef}
-            className="flex items-center gap-2 rounded-[12px]">
+        <div className="px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              logout();
+            }}
+            className="flex items-center gap-2 cursor-pointer rounded-[12px] w-full text-left">
             <LogOut className="shrink-0" /> <span className="inline-block min-w-[8rem]">{t("logout")}</span>
-          </span>
+          </button>
         </div>
       </CollapsibleContent>
     </Collapsible>
