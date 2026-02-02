@@ -39,19 +39,23 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
             >
                 {/* Header avec onglets et infos du personnage */}
                 <div>
-                    <div className="max-w-480 mx-auto px-8 py-4">
-                        <div className="flex items-end justify-between gap-8">
-                            {/* Onglets à gauche */}
-                            <TabsList className="bg-transparent gap-4">
+                    <div className="max-w-480 mx-auto px-4 sm:px-6 md:px-8 py-4">
+                        <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 lg:gap-8">
+                            {/* Onglets */}
+                            <TabsList className="bg-transparent gap-2 sm:gap-3 md:gap-4 flex-wrap" role="tablist" aria-label={t("tabs.general")}>
                                 {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
                                     <TabsTrigger
                                         key={tab}
                                         value={tab}
+                                        role="tab"
+                                        aria-selected={activeTab === tab}
+                                        aria-controls={`${tab}-content`}
                                         className={`
-                                            px-5 py-4 text-base font-medium rounded-[13px] transition-all 
+                                            px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all 
+                                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-dark focus:ring-white
                                             ${activeTab === tab
                                                 ? `${TAB_COLORS[tab].bg} ${tab === 'combat' ? 'text-white' : 'text-black'}`
-                                                : `text-white bg-gray`
+                                                : `text-white bg-gray hover:bg-gray-middle`
                                             }
                                         `}
                                     >
@@ -60,15 +64,15 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                                 ))}
                             </TabsList>
 
-                            {/* Infos du personnage à droite */}
-                            <div className="flex items-end gap-5 shrink-0">
-                                <div className="text-right mb-2">
-                                    <h1 className="text-3xl font-bold text-white">
+                            {/* Infos du personnage */}
+                            <div className="flex flex-row items-end gap-3 sm:gap-4 md:gap-5 shrink-0 w-full lg:w-auto">
+                                <div className="text-left lg:text-right mb-2 flex-1">
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-white break-words">
                                         {character.name}
                                     </h1>
                                     {isPlayer(character) ? (
                                         <>
-                                            <p className="text-base text-white font-semibold">
+                                            <p className="text-sm sm:text-base text-white font-semibold">
                                                 {character.class.map((cls: { name: string; level: number }, index: number) => (
                                                     <span key={index}>
                                                         {cls.name} Niv {cls.level}
@@ -79,8 +83,10 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                                         </>
                                     ) : (
                                         <>
-                                            <p className="text-base text-white font-semibold">
-                                                CR {
+                                            <p className="text-sm sm:text-base text-white font-semibold">
+                                                <abbr title={t("npc.challengeRating")} className="no-underline cursor-help">
+                                                    {t("npc.challengeRatingAbbr")}
+                                                </abbr> {
                                                     character.challenge.challengeRating < 1
                                                         ? character.challenge.challengeRating === 0.125 ? "1/8"
                                                             : character.challenge.challengeRating === 0.25 ? "1/4"
@@ -92,15 +98,15 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                                         </>
                                     )}
                                     {character.groups && character.groups.length > 0 && (
-                                        <p className="text-sm text-white">
+                                        <p className="text-xs sm:text-sm text-white">
                                             Groupe : {character.groups[0].label}
                                         </p>
                                     )}
                                 </div>
 
                                 {/* Photo de profil */}
-                                <div className="w-[7vw] h-[9vh] rounded-[18px] bg-gray flex items-center justify-center overflow-hidden shrink-0">
-                                    <User className="w-12 h-12 text-gray-middle-light" />
+                                <div className="w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 rounded-[18px] bg-gray flex items-center justify-center overflow-hidden shrink-0" role="img" aria-label={t("placeholder.noImage")}>
+                                    <User className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-middle-light" aria-hidden="true" />
                                 </div>
                             </div>
                         </div>
@@ -108,9 +114,17 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                 </div>
 
                 {/* Contenu des onglets */}
-                <div className="max-w-480 mx-auto px-8 py-8">
+                <div className="max-w-480 mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
                     {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
-                        <TabsContent key={tab} value={tab} className="mt-0">
+                        <TabsContent
+                            key={tab}
+                            value={tab}
+                            className="mt-0 focus:outline-none"
+                            role="tabpanel"
+                            id={`${tab}-content`}
+                            aria-labelledby={tab}
+                            tabIndex={0}
+                        >
                             <TabContentPlaceholder tab={tab} accentColor={TAB_COLORS[tab].text} />
                         </TabsContent>
                     ))}
