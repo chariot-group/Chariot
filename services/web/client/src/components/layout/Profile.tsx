@@ -62,7 +62,7 @@ export default function Profile() {
         aria-label={t("profile")}
         aria-expanded={isOpen}
         aria-haspopup="true">
-        <Avatar className="h-12 w-12 cursor-pointer">
+        <Avatar className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer">
           <AvatarImage
             src={user?.avatar || undefined}
             alt={user?.username ? `${user.username} avatar` : "User avatar"}
@@ -74,10 +74,10 @@ export default function Profile() {
         ref={collapsibleContentRef}
         role="menu"
         aria-label={t("profile")}
-        className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-14 right-0 text-popover-foreground rounded-2xl border">
+        className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-12 sm:top-14 right-0 text-popover-foreground rounded-[15px] border shadow-lg z-50">
         <div className="px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
           <Link
-            className="flex items-center gap-2 rounded-2xl"
+            className="flex items-center gap-2 rounded-[15px]"
             href={"/profile"}
             onClick={() => setIsOpen(false)}
             role="menuitem"
@@ -88,10 +88,10 @@ export default function Profile() {
               }
             }}>
             <User
-              className="shrink-0"
+              className="shrink-0 h-4 w-4 sm:h-5 sm:w-5"
               aria-hidden="true"
             />{" "}
-            <span className="inline-block min-w-32">{t("profile")}</span>
+            <span className="inline-block min-w-24 sm:min-w-32 text-sm sm:text-base">{t("profile")}</span>
           </Link>
         </div>
         <div className="px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
@@ -108,12 +108,12 @@ export default function Profile() {
                 logout();
               }
             }}
-            className="flex items-center gap-2 cursor-pointer rounded-2xl w-full text-left">
+            className="flex items-center gap-2 cursor-pointer rounded-[15px] w-full text-left">
             <LogOut
-              className="shrink-0"
+              className="shrink-0 h-4 w-4 sm:h-5 sm:w-5"
               aria-hidden="true"
             />{" "}
-            <span className="inline-block min-w-32">{t("logout")}</span>
+            <span className="inline-block min-w-24 sm:min-w-32 text-sm sm:text-base">{t("logout")}</span>
           </button>
         </div>
       </CollapsibleContent>

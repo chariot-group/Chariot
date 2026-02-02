@@ -56,31 +56,32 @@ export default function ProfilePage() {
   }, [user]);
 
   return (
-    <main className="flex flex-col items-center pt-8 h-full px-4 sm:px-6 md:px-8">
+    <main className="flex flex-col items-center pt-4 sm:pt-6 md:pt-8 px-3 sm:px-4 md:px-6 lg:px-8">
       <h1 className="sr-only">{t("pageTitle")}</h1>
-      <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-2 py-4 md:py-8">
+      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-2 py-2 sm:py-4 md:py-6 lg:py-8">
         <div className="flex flex-col gap-2">
-          <Card className="flex flex-col sm:flex-row overflow-hidden">
-            <div className="relative w-full aspect-3/2">
+          <Card className="flex flex-col xl:flex-row overflow-hidden">
+            <div className="relative w-full xl:w-1/2 aspect-video">
               <Image
                 fill
                 className="object-cover rounded-[15px]"
                 src={user?.avatar || "/default-avatar.png"}
                 alt={user?.username ? `${user.username} ${t("pageTitle")}` : t("pageTitle")}
                 priority
+                sizes="(max-width: 640px) 100vw, 50vw"
               />
             </div>
-            <div className="flex flex-col justify-between gap-2 p-4 sm:w-1/2">
+            <div className="flex flex-col justify-between gap-2 sm:gap-3 w-full xl:w-1/2">
               <div>
-                <h2 className="text-4xl font-bold">{user?.username}</h2>
-                <p className="text-xl font-semibold">{`${user?.firstName} ${user?.lastName}`}</p>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold wrap-break-word">{user?.username}</h2>
+                <p className="text-base sm:text-lg lg:text-xl font-semibold wrap-break-word">{`${user?.firstName} ${user?.lastName}`}</p>
               </div>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground break-all">{user?.email}</p>
             </div>
           </Card>
-          <Card className="gap-10">
-            <h2 className="text-xl font-bold">{t("changePassword")}</h2>
-            <div className="px-2">
+          <Card className="gap-6 sm:gap-8 md:gap-10">
+            <h2 className="text-lg sm:text-xl font-bold">{t("changePassword")}</h2>
+            <div className="px-0 sm:px-2">
               <form
                 id="form-reset-password"
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -221,41 +222,41 @@ export default function ProfilePage() {
               </form>
             </div>
             <div className="flex justify-end">
-              <Field className="pl-10 w-1/2">
+              <Field className="w-full sm:w-auto">
                 <Button
                   type="submit"
                   form="form-reset-password"
-                  className="relative"
+                  className="w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
                   aria-label={t("updatePassword")}>
                   <SquarePen
-                    className="absolute left-3"
+                    className="h-4 w-4 sm:h-5 sm:w-5"
                     aria-hidden="true"
                   />
-                  {t("updatePassword")}
+                  <span>{t("updatePassword")}</span>
                 </Button>
               </Field>
             </div>
           </Card>
         </div>
-        <Card className="flex flex-col h-145">
-          <div className="flex flex-row justify-between items-center shrink-0">
-            <h2 className="text-xl font-bold">{t("sessionHistory")}</h2>
+        <Card className="flex flex-col h-100 sm:h-125 lg:h-145">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between sm:items-center shrink-0">
+            <h2 className="text-lg sm:text-xl font-bold">{t("sessionHistory")}</h2>
             <Card
-              className="bg-gray-middle-light px-3 py-2 rounded-[15px] flex flex-row items-center gap-6 justify-between"
+              className="bg-gray-middle-light px-2 sm:px-3 py-1.5 sm:py-2 rounded-[15px] flex flex-row items-center gap-2 sm:gap-4 lg:gap-6 justify-between self-start sm:self-auto"
               role="status"
               aria-live="polite">
-              <span className="font-bold hidden xl:block">{t("yourTokens")}</span>
-              <span className="flex flex-row gap-1 font-semibold">
+              <span className="font-bold text-xs sm:text-sm hidden xl:inline">{t("yourTokens")}</span>
+              <span className="flex flex-row gap-1 font-semibold text-sm sm:text-base">
                 {user?.balance ?? 0}
                 <Image
                   src={Token}
                   alt=""
                   aria-hidden="true"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                 />
               </span>
             </Card>
           </div>
-          {/* historique des sessions */}
           <div className="flex-1 overflow-hidden">
             <div
               className="h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
@@ -279,15 +280,15 @@ export default function ProfilePage() {
                       <Card
                         key={index}
                         role="listitem"
-                        className="bg-gray-middle-light px-3 py-2 rounded-[15px] flex flex-row items-center gap-6 justify-between">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-20 flex-1">
-                          <span className="text-sm">
+                        className="bg-gray-middle-light px-2 sm:px-3 py-2 sm:py-2.5 rounded-[15px] flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 md:gap-8 xl:gap-20 flex-1 min-w-0">
+                          <span className="text-xs sm:text-sm text-foreground shrink-0">
                             <time dateTime={entry.date.toString()}>{formattedDate}</time>
                           </span>
-                          <span className="text-sm">{entry.campaignName}</span>
+                          <span className="text-sm sm:text-base truncate">{entry.campaignName}</span>
                         </div>
                         <span
-                          className={"text-sm font-bold"}
+                          className={"text-sm sm:text-base font-bold shrink-0 self-end sm:self-auto"}
                           aria-label={`${entry.value > 0 ? "+" : ""}${entry.value} tokens`}>
                           {entry.value} to
                         </span>
@@ -307,14 +308,14 @@ export default function ProfilePage() {
           <div className="flex justify-end">
             <Link
               href={"#"}
-              className="pl-10 w-1/2"
+              className="w-full sm:w-auto"
               aria-label={t("reloadTokens")}>
-              <Button className="relative rounded-[15px] w-full px-5">
+              <Button className="rounded-[15px] w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2">
                 <ShoppingCart
-                  className="absolute left-3"
+                  className="h-4 w-4 sm:h-5 sm:w-5"
                   aria-hidden="true"
-                />{" "}
-                {t("reloadTokens")}
+                />
+                <span>{t("reloadTokens")}</span>
               </Button>
             </Link>
           </div>

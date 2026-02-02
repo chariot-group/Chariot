@@ -57,11 +57,11 @@
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
     "confirmNewPassword": "Confirmar nueva contraseña",
-    "updatePassword": "Actualizar mi contraseña",
+    "updatePassword": "Actualizar",
     "sessionHistory": "Historial de sesiones",
     "yourTokens": "Tus tokens:",
     "noHistory": "No hay historial disponible",
-    "reloadTokens": "Recargar mis tokens",
+    "reloadTokens": "Recargar",
     "togglePasswordVisibility": "Mostrar/ocultar contraseña",
     "passwordError": {
       "min": "La contraseña debe contener al menos 8 caracteres",
