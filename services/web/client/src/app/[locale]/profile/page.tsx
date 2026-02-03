@@ -24,7 +24,7 @@ export default function ProfilePage() {
 
   const passwordSchema = z
     .object({
-      currentPassword: z.string().min(8, t("passwordError.min")),
+      currentPassword: z.string().min(1, t("passwordError.required")),
       newPassword: z.string().min(8, t("passwordError.min")),
       confirmNewPassword: z.string().min(8, t("passwordError.min")),
     })
@@ -288,9 +288,17 @@ export default function ProfilePage() {
                           <span className="text-sm sm:text-base truncate">{entry.campaignName}</span>
                         </div>
                         <span
-                          className={"text-sm sm:text-base font-bold shrink-0 self-end sm:self-auto"}
+                          className={
+                            "text-sm sm:text-base font-bold shrink-0 self-end sm:self-auto flex flex-row items-center gap-1"
+                          }
                           aria-label={`${entry.value > 0 ? "+" : ""}${entry.value} tokens`}>
-                          {entry.value} to
+                          {entry.value}
+                          <Image
+                            src={Token}
+                            alt=""
+                            aria-hidden="true"
+                            className="w-4 h-4 sm:w-5 sm:h-5"
+                          />
                         </span>
                       </Card>
                     );

@@ -59,15 +59,16 @@
     "currentPassword": "Mot de passe actuel",
     "newPassword": "Nouveau mot de passe",
     "confirmNewPassword": "Confirmer le nouveau mot de passe",
-    "updatePassword": "Modifier",
+    "updatePassword": "Modifier le mot de passe",
     "sessionHistory": "Historique des sessions",
     "yourTokens": "Vos tokens :",
     "noHistory": "Aucun historique disponible",
-    "reloadTokens": "Recharger",
+    "reloadTokens": "Recharger vos tokens",
     "togglePasswordVisibility": "Afficher/masquer le mot de passe",
     "passwordError": {
       "min": "Le mot de passe doit contenir au moins 8 caractères",
-      "mismatch": "Les mots de passe ne correspondent pas"
+      "mismatch": "Les mots de passe ne correspondent pas",
+      "required": "Ce champ est requis"
     }
   },
   "welcome": {

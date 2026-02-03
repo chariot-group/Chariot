@@ -32,10 +32,11 @@ export default function Sidebar() {
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className={cn(
-          "fixed top-4 left-4 z-[60] sm:hidden",
-          "bg-gray-800 text-white p-2 rounded-md",
-          "hover:bg-gray-700 transition-colors",
+          "fixed top-4 left-4 z-[60] sm:hidden cursor-pointer",
+          "bg-background text-white p-2 rounded-md",
+          "hover:bg-card transition-all duration-300",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          isMenuOpen && "translate-x-[13rem]",
         )}
         aria-label={isMenuOpen ? t("closeMenu") : t("openMenu")}
         aria-expanded={isMenuOpen}>
@@ -56,7 +57,7 @@ export default function Sidebar() {
         ref={sidebarRef}
         className={cn(
           "fixed left-0 top-0 z-50 h-screen",
-          "bg-transparent text-white border-r border-sidebar-border",
+          "bg-card sm:bg-transparent text-white border-r border-sidebar-border",
           "flex flex-col transition-all duration-300",
           "w-52 sm:w-60 md:w-72 lg:w-80",
           // Hide on mobile by default, show when menu is open

@@ -59,15 +59,16 @@
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
     "confirmNewPassword": "Confirmar nueva contraseña",
-    "updatePassword": "Actualizar",
+    "updatePassword": "Actualizar contraseña",
     "sessionHistory": "Historial de sesiones",
     "yourTokens": "Tus tokens:",
     "noHistory": "No hay historial disponible",
-    "reloadTokens": "Recargar",
+    "reloadTokens": "Recargar tus tokens",
     "togglePasswordVisibility": "Mostrar/ocultar contraseña",
     "passwordError": {
       "min": "La contraseña debe contener al menos 8 caracteres",
-      "mismatch": "Las contraseñas no coinciden"
+      "mismatch": "Las contraseñas no coinciden",
+      "required": "Este campo es obligatorio"
     }
   },
   "welcome": {

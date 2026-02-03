@@ -59,15 +59,16 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmNewPassword": "Confirm new password",
-    "updatePassword": "Update",
+    "updatePassword": "Update your password",
     "sessionHistory": "Session History",
     "yourTokens": "Your tokens:",
     "noHistory": "No history available",
-    "reloadTokens": "Reload",
+    "reloadTokens": "Reload your tokens",
     "togglePasswordVisibility": "Toggle password visibility",
     "passwordError": {
       "min": "Password must contain at least 8 characters",
-      "mismatch": "Passwords do not match"
+      "mismatch": "Passwords do not match",
+      "required": "This field is required"
     }
   },
   "welcome": {
