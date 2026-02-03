@@ -7,6 +7,21 @@
       "type": "humanoid",
       "subtype": "goblinoid"
     },
+    "appearance": {
+      "age": 8,
+      "height": 3.5,
+      "weight": 45,
+      "eyes": "red",
+      "skin": "green and leathery"
+    },
+    "background": {
+      "personalityTraits": "Sneaky and cowardly, I prefer to attack from the shadows or in groups.",
+      "bonds": "My tribe is my only family, and I follow the strongest leader.",
+      "flaws": "I flee at the first sign of real danger.",
+      "ideals": "Survival above all. The weak deserve to be exploited.",
+      "alliesAndOrgs": "Member of a goblin tribe that raids nearby settlements.",
+      "backstory": "Born in the dark caves of the mountains, I learned early that cunning and speed are the keys to survival in a world that wants us dead."
+    },
     "challenge": {
       "challengeRating": 0.25,
       "experiencePoints": 50
@@ -85,6 +100,22 @@
       "challengeRating": 3,
       "experiencePoints": 700
     },
+    "appearance": {
+      "age": 12,
+      "height": 8.0,
+      "weight": 1500,
+      "eyes": "yellow and piercing",
+      "hair": "brown feathers on head, bear fur on body",
+      "skin": "covered in fur and feathers"
+    },
+    "background": {
+      "personalityTraits": "Fiercely territorial and aggressive when threatened or hungry.",
+      "bonds": "My den and hunting grounds are sacred to me.",
+      "flaws": "I attack anything that enters my territory without thinking.",
+      "ideals": "Instinct. Hunt, eat, protect territory, survive.",
+      "alliesAndOrgs": "Solitary creature, no alliances.",
+      "backstory": "A bizarre fusion of bear and owl, I am a predator feared by all who wander the deep forests. Created by ancient magic or nature's mistake, I exist to hunt."
+    },
     "stats": {
       "size": "Large",
       "maxHitPoints": 59,
@@ -160,6 +191,22 @@
       "challengeRating": 0.125,
       "experiencePoints": 25
     },
+    "appearance": {
+      "age": 32,
+      "height": 5.8,
+      "weight": 150,
+      "eyes": "dark and fanatical",
+      "hair": "unkempt black",
+      "skin": "pale from living underground"
+    },
+    "background": {
+      "personalityTraits": "Devoted to my dark master, I will do anything to further the cause.",
+      "bonds": "My cult is my family, and my deity is my purpose.",
+      "flaws": "I am easily manipulated by those who claim to speak for my god.",
+      "ideals": "Devotion. My deity's will is absolute and must be obeyed without question.",
+      "alliesAndOrgs": "Member of a secret cult dedicated to a dark entity.",
+      "backstory": "Lost and desperate, I found purpose in the forbidden rituals and dark promises of the cult. Now I serve without question, ready to sacrifice everything."
+    },
     "stats": {
       "size": "Medium",
       "maxHitPoints": 9,
@@ -224,6 +271,22 @@
     "challenge": {
       "challengeRating": 6,
       "experiencePoints": 2300
+    },
+    "appearance": {
+      "age": 150,
+      "height": 6.0,
+      "weight": 600,
+      "eyes": "eight red glowing eyes",
+      "hair": "white",
+      "skin": "dark elf torso, giant spider lower body"
+    },
+    "background": {
+      "personalityTraits": "Bitter and vengeful, I despise both drow and surface dwellers alike.",
+      "bonds": "I was cast out by Lolth and seek to prove my worth or find revenge.",
+      "flaws": "My transformation has driven me to madness and cruelty.",
+      "ideals": "Power. Only the strong survive in the Underdark, and I will be strongest.",
+      "alliesAndOrgs": "Outcast from drow society, occasionally allied with other aberrations.",
+      "backstory": "Once a proud drow, I failed Lolth's test and was cursed with this monstrous form. Now I haunt the depths, a twisted reminder of the Spider Queen's wrath."
     },
     "stats": {
       "size": "Large",
@@ -331,6 +394,22 @@
       "challengeRating": 1,
       "experiencePoints": 200
     },
+    "appearance": {
+      "age": 25,
+      "height": 10.0,
+      "weight": 500,
+      "eyes": "golden and keen",
+      "hair": "golden-brown feathers",
+      "skin": "covered in magnificent plumage"
+    },
+    "background": {
+      "personalityTraits": "Noble and wise, I judge mortals by their actions and intentions.",
+      "bonds": "I protect the mountains and those who respect nature.",
+      "flaws": "I can be prideful and overconfident in my aerial superiority.",
+      "ideals": "Freedom. The sky belongs to those with wings and the courage to soar.",
+      "alliesAndOrgs": "Part of an aerie of giant eagles who serve as messengers and guardians.",
+      "backstory": "Born in the highest peaks, I have watched over the lands below for decades, serving as both guardian and guide to worthy travelers."
+    },
     "stats": {
       "size": "Large",
       "maxHitPoints": 26,
@@ -408,6 +487,22 @@
     "challenge": {
       "challengeRating": 21,
       "experiencePoints": 33000
+    },
+    "appearance": {
+      "age": 800,
+      "height": 5.9,
+      "weight": 80,
+      "eyes": "empty sockets with pinpoints of cold light",
+      "hair": "a few wisps of white",
+      "skin": "desiccated flesh stretched over bones"
+    },
+    "background": {
+      "personalityTraits": "Cold, calculating, and utterly devoid of mortal concerns like mercy or compassion.",
+      "bonds": "My phylactery is hidden and protected at all costs. My knowledge must be preserved eternally.",
+      "flaws": "My arrogance knows no bounds. I view all mortals as insects.",
+      "ideals": "Immortality and ultimate knowledge are the only pursuits worthy of existence.",
+      "alliesAndOrgs": "Commands legions of undead and has cultivated networks of cults across centuries.",
+      "backstory": "Centuries ago, I was a powerful archmage who defied death itself through dark rituals. Now, neither time nor blade can end my eternal quest for power and knowledge."
     },
     "stats": {
       "size": "Medium",
@@ -520,6 +615,22 @@
     "challenge": {
       "challengeRating": 0.5,
       "experiencePoints": 100
+    },
+    "appearance": {
+      "age": 18,
+      "height": 6.5,
+      "weight": 280,
+      "eyes": "red and bloodshot",
+      "hair": "black, tied in warrior's braids",
+      "skin": "gray-green with ritual scars"
+    },
+    "background": {
+      "personalityTraits": "Aggressive and direct, I respect only strength and brutality.",
+      "bonds": "My tribe and warchief command my absolute loyalty.",
+      "flaws": "I rush into battle without thinking, craving combat and glory.",
+      "ideals": "Might makes right. The strong rule, the weak serve or die.",
+      "alliesAndOrgs": "Warrior in an orc warband that raids and pillages settlements.",
+      "backstory": "Raised in a brutal society where only the strongest survive, I have earned my place through blood and battle, proving myself worthy to wield my tribe's weapons."
     },
     "stats": {
       "size": "Medium",
@@ -738,7 +849,6 @@
       "height": 7.5,
       "weight": 340,
       "eyes": "brown",
-      "hair": "none",
       "skin": "gray"
     },
     "background": {
