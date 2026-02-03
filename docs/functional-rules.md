@@ -316,6 +316,52 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
+## FR-006: User Balance and Transaction History
+
+**Rule**: Each user must have a balance tracking system linked to their Keycloak identity, with complete transaction history for audit purposes.
+
+**Requirements**:
+
+**User Schema**:
+- `keycloakId`: UUID v4 linking to Keycloak user (required, unique)
+- `balance`: Numeric value representing user's current balance (required, default: 0)
+- `history`: Array of transaction records
+
+**History Entry Structure**:
+- `date`: Timestamp of the transaction (required)
+- `campaignName`: Name of the campaign associated with the transaction (required)
+- `value`: Numeric value of the transaction, positive or negative (required)
+
+**Validation Rules**:
+- `keycloakId` must be a valid UUID v4 format
+- `keycloakId` must be unique across all users
+- `balance` must be a number
+- History entries must contain all three fields: date, campaignName, value
+- History is immutable once created (no updates or deletions of history entries)
+
+**Prohibitions**:
+- Creating a user without a valid Keycloak ID
+- Modifying `keycloakId` after user creation
+- Deleting history entries
+- Creating history entries without all required fields
+
+**Tests**:
+- DTO validation accepts valid User structure with all fields
+- Invalid Keycloak ID format is rejected
+- Duplicate Keycloak ID is rejected
+- History entries can be added to existing users
+- Balance updates are properly tracked in history
+- Default balance is 0 for new users
+
+**References**:
+- `services/adventure/api/src/resources/user/schemas/user.schema.ts`
+- `services/adventure/api/src/resources/user/schemas/sub/history.schema.ts`
+- `services/adventure/api/src/resources/user/dto/create-user.dto.ts`
+- `services/adventure/api/src/resources/user/dto/history.dto.ts`
+
+
+---
+
 ## FR-007: Character Detail View Display
 
 **Rule**: The web application must provide a detailed, tabbed view for displaying both Player and NPC characters with appropriate information differentiation and accessibility compliance.

@@ -8,7 +8,9 @@ import campaignContextReducer from './slices/campaignContextSlice';
 import groupReducer from './slices/groupSlice';
 import sidebarReducer from './slices/sidebarSlice';
 import characterReducer from './slices/characterSlice';
+import userReducer from './slices/userSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
+import { UserState } from '@/types/user';
 
 // Transform to exclude transient states from persistence
 // Transient states (loading, error, etc.) should always start fresh
@@ -66,13 +68,29 @@ const characterTransform = createTransform(
     { whitelist: ['character'] }
 );
 
+const userTransform = createTransform(
+    (inboundState: UserState) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { loading, error, ...rest } = inboundState;
+        return rest;
+    },
+    (outboundState: Partial<UserState>) => {
+        return {
+            ...outboundState,
+            loading: false,
+            error: null,
+        } as UserState;
+    },
+    { whitelist: ['user'] }
+);
+
 // Configuration de redux-persist
 const persistConfig = {
     key: 'chariot',
     storage,
     // Persister les données de navigation ET les données API pour éviter le saut visuel
-    whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character'],
-    transforms: [campaignTransform, groupTransform, characterTransform],
+    whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character', 'user'],
+    transforms: [campaignTransform, groupTransform, characterTransform, userTransform],
 };
 
 // Combine all reducers
@@ -84,6 +102,7 @@ const rootReducer = combineReducers({
     group: groupReducer,
     sidebar: sidebarReducer,
     character: characterReducer,
+    user: userReducer,
 });
 
 // Créer le reducer persisté

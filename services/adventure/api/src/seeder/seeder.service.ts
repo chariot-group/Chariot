@@ -15,6 +15,7 @@ import {
   CharacterDocument,
 } from '@/resources/character/core/schemas/character.schema';
 import { KeycloakAdminService } from '@/seeder/keycloak-admin.service';
+import { User, UserDocument } from '@/resources/user/schemas/user.schema';
 
 @Injectable()
 export class SeederService {
@@ -23,6 +24,7 @@ export class SeederService {
   constructor(
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
     private readonly keycloakAdminService: KeycloakAdminService,
@@ -66,6 +68,12 @@ export class SeederService {
       const firstName = faker.person.firstName();
       const lastName = faker.person.lastName();
       const password = process.env.DEFAULT_PASSWORD;
+      const balance = faker.number.int({ min: 0, max: 1000 });
+
+      // Générer une URL d'avatar aléatoire
+      // Utilise DiceBear API pour des avatars SVG générés aléatoirement
+      const avatarSeed = faker.string.alphanumeric(10);
+      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`;
 
       const userId = await this.keycloakAdminService.createUser(
         username,
@@ -73,7 +81,29 @@ export class SeederService {
         password,
         firstName,
         lastName,
+        avatarUrl,
       );
+
+      // Générer un nombre aléatoire d'entrées d'historique
+      const historyCount = faker.number.int({ min: 0, max: 60 });
+      const history = [];
+
+      for (let h = 0; h < historyCount; h++) {
+        history.push({
+          date: faker.date.past({ years: 2 }),
+          campaignName: faker.lorem.words(3),
+          value: faker.number.int({ min: 1, max: 10 }),
+        });
+      }
+
+      // Trier l'historique par date (du plus ancien au plus récent)
+      history.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+      await this.userModel.create({
+        keycloakId: userId,
+        balance: balance,
+        history: history,
+      });
 
       await this.characterModel.create(
         this.getRandomObjects('player').map((character) => ({

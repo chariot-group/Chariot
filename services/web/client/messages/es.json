@@ -3,6 +3,8 @@
     "mainNavigation": "Navegación principal",
     "gmNavigation": "Navegación de director de juego",
     "playerNavigation": "Navegación de jugador",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
     "yourSpaces": "Tus espacios",
     "yourCharacters": "Tus personajes",
     "createCampaign": "Crear una campaña",
@@ -46,6 +48,28 @@
   },
   "notFound": {
     "message": "Página no encontrada. Redirigiendo al inicio..."
+  },
+  "Profile": {
+    "profile": "Perfil",
+    "logout": "Cerrar sesión"
+  },
+  "ProfilePage": {
+    "pageTitle": "Perfil de usuario",
+    "changePassword": "Cambiar contraseña",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña",
+    "confirmNewPassword": "Confirmar nueva contraseña",
+    "updatePassword": "Actualizar contraseña",
+    "sessionHistory": "Historial de sesiones",
+    "yourTokens": "Tus tokens:",
+    "noHistory": "No hay historial disponible",
+    "reloadTokens": "Recargar tus tokens",
+    "togglePasswordVisibility": "Mostrar/ocultar contraseña",
+    "passwordError": {
+      "min": "La contraseña debe contener al menos 8 caracteres",
+      "mismatch": "Las contraseñas no coinciden",
+      "required": "Este campo es obligatorio"
+    }
   },
   "welcome": {
     "title": "Bienvenido a Chariot",

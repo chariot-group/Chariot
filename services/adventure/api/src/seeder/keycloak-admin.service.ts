@@ -38,6 +38,7 @@ export class KeycloakAdminService {
         password: string,
         firstName?: string,
         lastName?: string,
+        avatarUrl?: string,
     ): Promise<string> {
         await this.authenticate();
 
@@ -50,6 +51,7 @@ export class KeycloakAdminService {
                 email,
                 firstName: firstName || username,
                 lastName: lastName || 'User',
+                attributes: avatarUrl ? { avatar: [avatarUrl] } : {},
                 enabled: true,
                 emailVerified: true,
                 credentials: [
