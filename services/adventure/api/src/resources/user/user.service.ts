@@ -27,11 +27,10 @@ export class UserService {
         throw new NotFoundException(message);
       }
 
-      const user = await this.userModel.findOne({ keycloakId: id }).exec();
+      let user = await this.userModel.findOne({ keycloakId: id }).exec();
       if (!user) {
-        const message = `User #${id} not found`;
-        this.logger.error(message, null, this.SERVICE_NAME);
-        throw new NotFoundException(message);
+        this.logger.debug(`User #${id} not found in database, creating new user`, this.SERVICE_NAME);
+        user = await this.userModel.create({ keycloakId: id, balance: 1, history: [] });
       }
       const end: number = Date.now();
 

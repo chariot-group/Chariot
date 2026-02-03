@@ -64,10 +64,11 @@ export default function Profile() {
         aria-haspopup="true">
         <Avatar className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer">
           <AvatarImage
+            className="bg-gray-middle-light"
             src={user?.avatar || undefined}
             alt={user?.username ? `${user.username} avatar` : "User avatar"}
           />
-          <AvatarFallback>{getInitials()}</AvatarFallback>
+          <AvatarFallback className="bg-gray-middle-light">{getInitials()}</AvatarFallback>
         </Avatar>
       </CollapsibleTrigger>
       <CollapsibleContent

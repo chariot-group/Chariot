@@ -6,7 +6,7 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, ShoppingCart, SquarePen } from "lucide-react";
+import { Eye, EyeOff, ShoppingCart, SquarePen, User } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -62,14 +62,23 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 gap-2">
           <Card className="flex flex-col xl:flex-row overflow-hidden">
             <div className="relative w-full xl:w-1/2 aspect-video">
-              <Image
-                fill
-                className="object-cover rounded-[15px]"
-                src={user?.avatar || "/default-avatar.png"}
-                alt={user?.username ? `${user.username} ${t("pageTitle")}` : t("pageTitle")}
-                priority
-                sizes="(max-width: 640px) 100vw, 50vw"
-              />
+              {user?.avatar === null || user?.avatar === undefined ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-middle-light rounded-[15px]">
+                  <User
+                    className="h-16 w-16"
+                    aria-hidden="true"
+                  />
+                </div>
+              ) : (
+                <Image
+                  fill
+                  className="object-cover rounded-[15px] bg-gray-middle-light"
+                  src={user?.avatar || "/default-avatar.png"}
+                  alt={user?.username ? `${user.username} ${t("pageTitle")}` : t("pageTitle")}
+                  priority
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                />
+              )}
             </div>
             <div className="flex flex-col justify-between gap-2 sm:gap-3 w-full xl:w-1/2">
               <div>
