@@ -1,7 +1,7 @@
 "use client";
 
 import Sidebar from "@/components/layout/Sidebar";
-import Profile from "./Profile";
+import Profile from "@/components/layout/Profile";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 

@@ -1,4 +1,4 @@
-import apiClient from './ApiService';
+import apiClient from '@/services/ApiService';
 import { User } from '@/types/user';
 
 interface IResponse<T> {
