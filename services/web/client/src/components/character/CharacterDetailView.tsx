@@ -5,7 +5,7 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TabContentPlaceholder from "@/components/character/TabContentPlaceholder";
-import { useState } from "react";
+import React, { useState } from "react";
 import CharacterHistoryTabContent from "./tabContents/CharacterHistoryTabContent";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
@@ -54,7 +54,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     aria-selected={activeTab === tab}
                     aria-controls={`${tab}-content`}
                     className={`
-                                            flex-none px-3 sm:px-4 md:px-5 py-6 sm:py-4 md:py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
+                                            flex-none py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
                                             focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
                                             ${
                                               activeTab === tab
@@ -72,7 +72,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                 <div className="text-left xl:text-right mb-2 flex-1">
                   <h1 className="text-2xl sm:text-3xl font-bold text-white">{character.name}</h1>
                   {isPlayer(character) ? (
-                    <>
+                    <React.Fragment>
                       <p className="text-sm sm:text-base text-white font-semibold">
                         {character.class.map((cls: { name: string; level: number }, index: number) => (
                           <span key={index}>
@@ -81,9 +81,9 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                           </span>
                         ))}
                       </p>
-                    </>
+                    </React.Fragment>
                   ) : (
-                    <>
+                    <React.Fragment>
                       <p className="text-sm sm:text-base text-white font-semibold">
                         <abbr
                           title={t("npc.challengeRating")}
@@ -101,7 +101,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                           : character.challenge.challengeRating}{" "}
                         ({character.challenge.experiencePoints} XP)
                       </p>
-                    </>
+                    </React.Fragment>
                   )}
                   {character.groups && character.groups.length > 0 && (
                     <p className="text-xs sm:text-sm text-white">Groupe : {character.groups[0].label}</p>
