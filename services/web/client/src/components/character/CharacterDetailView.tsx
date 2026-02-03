@@ -6,15 +6,16 @@ import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TabContentPlaceholder from "@/components/character/TabContentPlaceholder";
 import { useState } from "react";
+import CharacterInventoryTabContent from "./tabContents/CharacterInventoryTabContent";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
 
-const TAB_COLORS: Record<CharacterTab, { bg: string; text: string }> = {
-    general: { bg: "bg-blue", text: "blue" },
-    combat: { bg: "bg-red", text: "red" },
-    magic: { bg: "bg-pink", text: "pink" },
-    inventory: { bg: "bg-yellow", text: "yellow" },
-    history: { bg: "bg-green", text: "green" },
+const TAB_COLORS: Record<CharacterTab, string> = {
+    general: "blue",
+    combat: "red",
+    magic: "pink",
+    inventory: "yellow",
+    history: "green",
 };
 
 function isPlayer(character: Player | NPC): character is Player {
@@ -30,7 +31,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
     const [activeTab, setActiveTab] = useState<CharacterTab>("general");
 
     return (
-        <div className="min-h-screen">
+        <main className="min-h-screen">
             <Tabs
                 defaultValue="general"
                 value={activeTab}
@@ -54,7 +55,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                                             flex-none px-3 sm:px-4 md:px-5 py-6 sm:py-4 md:py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
                                             focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
                                             ${activeTab === tab
-                                                ? `${TAB_COLORS[tab].bg} ${tab === 'combat' ? 'text-white' : 'text-black'}`
+                                                ? `bg-${TAB_COLORS[tab]} ${tab === 'combat' ? 'text-white' : 'text-black'}`
                                                 : `text-white bg-gray hover:bg-gray-middle`
                                             }
                                         `}
@@ -114,7 +115,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                 </div>
 
                 {/* Contenu des onglets */}
-                <div className="max-w-480 mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
+                <div className="w-full mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-4">
                     {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
                         <TabsContent
                             key={tab}
@@ -125,11 +126,26 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                             aria-labelledby={tab}
                             tabIndex={0}
                         >
-                            <TabContentPlaceholder tab={tab} accentColor={TAB_COLORS[tab].text} />
+                            {(() => {
+                                switch (tab) {
+                                    case "general":
+                                        return <TabContentPlaceholder tab={tab} accentColor={TAB_COLORS[tab]} />;
+                                    case "combat":
+                                        return <TabContentPlaceholder tab={tab} accentColor={TAB_COLORS[tab]} />;
+                                    case "magic":
+                                        return <TabContentPlaceholder tab={tab} accentColor={TAB_COLORS[tab]} />;
+                                    case "inventory":
+                                        return <CharacterInventoryTabContent character={character} accentColor={TAB_COLORS[tab]} />;
+                                    case "history":
+                                        return <TabContentPlaceholder tab={tab} accentColor={TAB_COLORS[tab]} />;
+                                    default:
+                                        return null;
+                                }
+                            })()}
                         </TabsContent>
                     ))}
                 </div>
             </Tabs>
-        </div>
+        </main>
     );
 }
