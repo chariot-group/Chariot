@@ -24,60 +24,68 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("appearance")}
           </h2>
-          <div className="flex flex-col w-full gap-1 md:gap-2">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-0">
-              <span className="flex flex-row gap-2 text-sm items-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 w-full">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Eye
-                  className="text-muted-foreground shrink-0"
+                  className="shrink-0 w-4 h-4"
                   aria-hidden="true"
                 />
-                <span className="sr-only">{t("eyes")}:</span>
-                <span className="truncate">{character.appearance?.eyes}</span>
-              </span>
-              <span className="flex flex-row gap-2 text-sm items-center">
+                <span className="text-xs font-medium">{t("eyes")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.eyes}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Cake
-                  className="text-muted-foreground shrink-0"
+                  className="shrink-0 w-4 h-4"
                   aria-hidden="true"
                 />
-                <span className="sr-only">{t("age")}:</span>
-                <span className="truncate">{character.appearance?.age}</span>
-              </span>
-              <span className="flex flex-row gap-2 text-sm items-center">
+                <span className="text-xs font-medium">{t("age")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.age}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <PersonStanding
-                  className="text-muted-foreground shrink-0"
+                  className="shrink-0 w-4 h-4"
                   aria-hidden="true"
                 />
-                <span className="sr-only">{t("skin")}:</span>
-                <span className="truncate">{character.appearance?.skin}</span>
+                <span className="text-xs font-medium">{t("skin")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.skin}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Ruler
+                  className="shrink-0 w-4 h-4"
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-medium">{t("height")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">
+                {character.appearance?.height} ({character.stats?.size.charAt(0).toUpperCase()})
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-0">
-              <span className="flex flex-row gap-2 text-sm items-center">
-                <Ruler
-                  className="text-muted-foreground shrink-0"
-                  aria-hidden="true"
-                />
-                <span className="sr-only">{t("height")}:</span>
-                <span className="truncate">
-                  {character.appearance?.height} ({character.stats?.size.charAt(0).toUpperCase()})
-                </span>
-              </span>
-              <span className="flex flex-row gap-2 text-sm items-center">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Weight
-                  className="text-muted-foreground shrink-0"
+                  className="shrink-0 w-4 h-4"
                   aria-hidden="true"
                 />
-                <span className="sr-only">{t("weight")}:</span>
-                <span className="truncate">{character.appearance?.weight}</span>
-              </span>
-              <span className="flex flex-row gap-2 text-sm items-center">
+                <span className="text-xs font-medium">{t("weight")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.weight}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Scissors
-                  className="text-muted-foreground shrink-0"
+                  className="shrink-0 w-4 h-4"
                   aria-hidden="true"
                 />
-                <span className="sr-only">{t("hair")}:</span>
-                <span className="truncate">{character.appearance?.hair}</span>
-              </span>
+                <span className="text-xs font-medium">{t("hair")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.hair}</span>
             </div>
           </div>
         </Card>
