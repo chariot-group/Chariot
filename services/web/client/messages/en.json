@@ -90,5 +90,30 @@
       "button": "Create a character",
       "button-aria": "Navigate to character creation"
     }
+  },
+  "characterDetail": {
+    "tabs": {
+      "general": "General",
+      "combat": "Combat",
+      "magic": "Magic",
+      "inventory": "Inventory",
+      "history": "History"
+    },
+    "player": {
+      "level": "Level",
+      "race": "Race",
+      "class": "Class",
+      "alignment": "Alignment"
+    },
+    "npc": {
+      "type": "Type",
+      "subtype": "Subtype",
+      "challengeRating": "Challenge Rating",
+      "challengeRatingAbbr": "CR",
+      "alignment": "Alignment"
+    },
+    "placeholder": {
+      "noImage": "No image"
+    }
   }
 }
