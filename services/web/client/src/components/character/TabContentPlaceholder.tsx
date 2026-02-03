@@ -1,6 +1,6 @@
 "use client";
 
-import { CharacterTab } from "./CharacterDetailView";
+import { CharacterTab } from "@/components/character/CharacterDetailView";
 
 interface TabContentPlaceholderProps {
     tab: CharacterTab;

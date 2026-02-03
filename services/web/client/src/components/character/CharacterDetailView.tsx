@@ -4,7 +4,7 @@ import { User } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TabContentPlaceholder from "./TabContentPlaceholder";
+import TabContentPlaceholder from "@/components/character/TabContentPlaceholder";
 import { useState } from "react";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";

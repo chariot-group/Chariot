@@ -20,14 +20,8 @@ export default function Character() {
     );
   }
 
-  if (error || !character) {
-    return (
-      <div className="flex flex-col justify-center items-center h-full gap-4">
-        <p className="text-red text-xl">
-          {error || "Character not found"}
-        </p>
-      </div>
-    );
+  if (!loading && (error || !character)) {
+    window.location.href = `/404`;
   }
 
   return <CharacterDetailView character={character as Player | NPC} />;
