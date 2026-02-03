@@ -27,7 +27,11 @@ export class Treasure {
 
   @ApiProperty({ example: 'Some notes about the treasure.' })
   @Prop()
-  notes?: string;
+  treasure?: string;
+
+  @ApiProperty({ example: 'Some notes about the equipment.' })
+  @Prop()
+  equipment?: string;
 }
 
 export const TreasureSchema = SchemaFactory.createForClass(Treasure);
