@@ -314,3 +314,132 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/services/CharacterService.ts` - Character data fetching
 - `services/web/client/src/services/CampaignService.ts` - Campaign data fetching
 
+---
+
+## FR-007: Character Detail View Display
+
+**Rule**: The web application must provide a detailed, tabbed view for displaying both Player and NPC characters with appropriate information differentiation and accessibility compliance.
+
+**Requirements**:
+
+**Page Structure**:
+- Full-screen layout with tabbed navigation interface
+- Fixed header section containing character identity and navigation tabs
+- Content area displaying tab-specific information
+- Responsive design adapting to mobile (overlay), tablet, and desktop viewports
+- Maximum content width of 480px centered on screen with appropriate padding
+
+**Tab Navigation System**:
+- Five mandatory tabs with fixed color scheme:
+  - **Général** (General): Blue accent (`bg-blue`)
+  - **Combat** (Combat): Red accent (`bg-red`, white text)
+  - **Magie** (Magic): Pink accent (`bg-pink`)
+  - **Inventaire** (Inventory): Yellow accent (`bg-yellow`)
+  - **Histoire** (History): Green accent (`bg-green`)
+- Tab state management using React state (`useState`)
+- Visual indication of active tab through background color and text color
+- Inactive tabs display gray background with hover state
+- Tab labels must be internationalized using `next-intl` with key `characterDetail.tabs.{tabName}`
+
+**Character Header Information**:
+
+**For Player Characters**:
+- Character name (prominent display)
+- Class(es) with level(s) in format: "ClassName Niv X" (e.g., "Guerrier Niv 5 / Magicien Niv 3")
+- Multi-class support with "/" separator
+- Group label if character belongs to a group (first group only)
+
+**For NPC Characters**:
+- Character name (prominent display)
+- Challenge Rating (CR) with abbreviated label "ID" and tooltip "Indice de dangerosité"
+- Fractional CR display for values < 1:
+  - 0.125 → "1/8"
+  - 0.25 → "1/4"
+  - 0.5 → "1/2"
+- Experience Points (XP) in parentheses after CR
+- Group label if character belongs to a group (first group only)
+
+**Character Avatar**:
+- Placeholder icon (User icon from Lucide) when no image is available
+- Fixed dimensions: 16x20 (mobile), 20x24 (sm), 24x28 (md+)
+- Rounded corners (`rounded-[18px]`)
+- Gray background (`bg-gray`)
+- Positioned to the right of character information
+
+**Accessibility Requirements**:
+- ARIA role `tablist` on tab container with descriptive `aria-label`
+- ARIA role `tab` on each tab trigger with `aria-selected` and `aria-controls` attributes
+- ARIA role `tabpanel` on each content panel with corresponding `id` and `aria-labelledby`
+- Keyboard navigation: Tab key for focus, arrow keys for tab switching
+- Focus management: Visible focus indicators on all interactive elements (ring-2, ring-offset-2)
+- Screen reader support: Appropriate ARIA attributes for no-image state
+- WCAG AA compliance: Sufficient color contrast for all text elements
+- Tab index management for sequential keyboard navigation
+
+**Type Discrimination**:
+- TypeScript type guard function `isPlayer()` to differentiate Player from NPC
+- Type guard checks for presence of `progression` property
+- Proper TypeScript typing for all props and return types
+
+**Internationalization (i18n)**:
+- All labels, tabs, and tooltips must use translation keys
+- Translation namespace: `characterDetail`
+- Supported languages: English (en), Spanish (es), French (fr)
+- Translation keys structure:
+  - `characterDetail.tabs.{general|combat|magic|inventory|history}`
+  - `characterDetail.player.{level|race|class|alignment}`
+  - `characterDetail.npc.{type|subtype|challengeRating|challengeRatingAbbr|alignment}`
+  - `characterDetail.placeholder.noImage`
+
+**Routing Support**:
+- Two routes must display character detail view:
+  - Standalone character: `/[locale]/characters/[idCharacters]`
+  - Character in campaign: `/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]`
+- Both routes use the same `CharacterDetailView` component
+- Character data fetched via `useCharacter` hook with character ID
+- Loading state displays centered spinner (Lucide `Loader2` component)
+- Error state displays centered error message in red
+
+**Component Architecture**:
+- **CharacterDetailView**: Main component accepting `Player | NPC` prop
+- **TabContentPlaceholder**: Temporary placeholder for tab content implementation
+- Uses Shadcn/UI Tabs component for tab functionality
+- Client-side component (`"use client"` directive)
+
+**Prohibitions**:
+- Displaying NPC-specific fields (challenge rating, XP) for Player characters
+- Displaying Player-specific fields (class, level, exhaustion) for NPCs
+- Hardcoding labels or text without internationalization
+- Missing accessibility attributes on interactive elements
+- Inconsistent color schemes across tabs
+- Exposing character data without proper loading/error handling
+- Creating separate components for Player and NPC views (must use discriminated union)
+
+**Tab Content Status**:
+- All five tabs currently display placeholder content
+- Final tab content implementation is pending and not covered by this rule
+- Placeholder displays tab name in large text with accent color
+
+**Tests**:
+- Component renders correctly with Player character data
+- Component renders correctly with NPC character data
+- Type guard correctly identifies Player vs NPC
+- Tab switching updates active state correctly
+- Keyboard navigation works (Tab, Enter, Arrow keys)
+- ARIA attributes are properly set
+- Challenge rating fractions display correctly for NPCs (1/8, 1/4, 1/2)
+- Multi-class display formats correctly with "/" separator
+- Character without group doesn't display group label
+- Loading state displays spinner
+- Error state displays error message
+- Translations are applied correctly for all three locales
+- Focus indicators are visible and meet WCAG standards
+
+**References**:
+- `services/web/client/src/components/character/CharacterDetailView.tsx` - Main component
+- `services/web/client/src/components/character/TabContentPlaceholder.tsx` - Placeholder component
+- `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx` - Standalone route
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx` - Campaign route
+- `services/web/client/src/types/character.ts` - TypeScript types
+- `services/web/client/messages/{en|es|fr}.json` - Internationalization files
+
