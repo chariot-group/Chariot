@@ -11,8 +11,8 @@ import { AffinitiesDto } from '@/resources/character/core/dto/affinities/affinit
 import { AbilityDto } from '@/resources/character/core/dto/ability/ability.dto';
 import { SpellcastingDto } from '@/resources/character/core/dto/spellcasting/spellcasting.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { AppearanceDto } from '@/resources/character/core/dto/appearance/appearance.dto';
-import { BackgroundDto } from '@/resources/character/core/dto/background/background.dto';
+import { AppearanceDto } from '@/resources/character/player/dto/appearance/appearance.dto';
+import { BackgroundDto } from '@/resources/character/player/dto/background/background.dto';
 import { TreasureDto } from '@/resources/character/player/dto/treasure/treasure.dto';
 import { ConditionsDto } from '@/resources/character/core/dto/conditions/conditions.dto';
 
