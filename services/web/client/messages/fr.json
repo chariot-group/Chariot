@@ -114,6 +114,16 @@
     },
     "placeholder": {
       "noImage": "Aucune image"
+    },
+    "inventory": {
+      "coins": "Pièces",
+      "equipment": "Équipement",
+      "treasure": "Trésor",
+      "pp": "pp",
+      "gp": "po",
+      "ep": "pe",
+      "sp": "pa",
+      "cp": "pc"
     }
   }
 }
