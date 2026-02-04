@@ -123,7 +123,12 @@
       "gp": "gp",
       "ep": "ep",
       "sp": "sp",
-      "cp": "cp"
+      "cp": "cp",
+      "platinumPieces": "Platinum pieces",
+      "goldPieces": "Gold pieces",
+      "electrumPieces": "Electrum pieces",
+      "silverPieces": "Silver pieces",
+      "copperPieces": "Copper pieces"
     }
   }
 }

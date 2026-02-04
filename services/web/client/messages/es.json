@@ -123,7 +123,12 @@
       "gp": "po",
       "ep": "pe",
       "sp": "pp",
-      "cp": "pc"
+      "cp": "pc",
+      "platinumPieces": "Piezas de platino",
+      "goldPieces": "Piezas de oro",
+      "electrumPieces": "Piezas de electrum",
+      "silverPieces": "Piezas de plata",
+      "copperPieces": "Piezas de cobre"
     }
   }
 }
