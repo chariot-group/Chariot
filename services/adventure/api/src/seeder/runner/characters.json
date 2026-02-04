@@ -90,6 +90,23 @@
       "type": "monstrosity",
       "subtype": ""
     },
+    "appearance": {
+      "age": 8,
+      "height": 8.0,
+      "weight": 1500,
+      "eyes": "amber",
+      "hair": "brown feathers",
+      "skin": "feathered hide",
+      "description": "A massive beast combining the worst features of an owl and a bear. Its head is that of a giant owl with piercing amber eyes, while its body is covered in thick brown feathers over a muscular ursine frame. Sharp talons tip its powerful limbs."
+    },
+    "background": {
+      "personalityTraits": "Aggressive and territorial. Attacks anything that enters its domain.",
+      "bonds": "Fiercely protective of its nest and young.",
+      "flaws": "Driven purely by instinct and hunger.",
+      "ideals": "Territory. This land is mine and I will defend it.",
+      "alliesAndOrgs": "Solitary creature, no alliances.",
+      "backstory": "This owlbear was born from magical experiments, a fusion of owl and bear. It now roams the forests, driven by primal instincts to hunt and defend its territory from all intruders."
+    },
     "challenge": {
       "challengeRating": 3,
       "experiencePoints": 700
@@ -174,6 +191,11 @@
       "type": "humanoid",
       "subtype": "any race"
     },
+    "appearance": {
+      "age": 32,
+      "eyes": "dark brown",
+      "skin": "pale"
+    },
     "challenge": {
       "challengeRating": 0.125,
       "experiencePoints": 25
@@ -247,6 +269,23 @@
       "alignment": "chaotic evil",
       "type": "monstrosity",
       "subtype": ""
+    },
+    "appearance": {
+      "age": 142,
+      "height": 6.5,
+      "weight": 600,
+      "eyes": "red",
+      "hair": "white",
+      "skin": "obsidian chitin",
+      "description": "A horrific fusion of drow elf and giant spider. The upper body retains elven features with pale skin and white hair, but the lower half is a massive arachnid body covered in black chitinous plates. Eight spindly legs support the creature, and venomous fangs drip with poison."
+    },
+    "background": {
+      "personalityTraits": "Bitter and resentful. Takes pleasure in the suffering of others.",
+      "bonds": "I seek revenge against those who transformed me.",
+      "flaws": "My hatred blinds me to potential allies.",
+      "ideals": "Chaos. The natural order must be overthrown.",
+      "alliesAndOrgs": "Outcast from drow society, serves dark spider goddesses.",
+      "backstory": "This drider was once a drow who failed Lolth's tests and was transformed into this monstrous form as punishment. Cast out from their city, they now dwell in the darkest depths, hunting those who venture too close and plotting revenge against their former kin."
     },
     "challenge": {
       "challengeRating": 6,
@@ -363,6 +402,9 @@
       "type": "beast",
       "subtype": ""
     },
+    "background": {
+      "backstory": "This giant eagle has nested in the high peaks for many years, watching over the valleys below. It has formed alliances with good-hearted travelers and druids, occasionally serving as a mount or messenger for those who prove themselves worthy."
+    },
     "challenge": {
       "challengeRating": 1,
       "experiencePoints": 200
@@ -449,6 +491,23 @@
       "alignment": "any evil alignment",
       "type": "undead",
       "subtype": ""
+    },
+    "appearance": {
+      "age": 847,
+      "height": 6.2,
+      "weight": 110,
+      "eyes": "glowing blue flames",
+      "hair": "none",
+      "skin": "desiccated gray",
+      "description": "A skeletal figure wrapped in tattered arcane robes of ancient make. Parchment-thin skin clings to bones, and empty eye sockets burn with cold blue flames. Jeweled rings adorn bony fingers, and a crown of twisted metal sits upon the skull. The air around it crackles with necromantic energy."
+    },
+    "background": {
+      "personalityTraits": "Coldly logical and utterly ruthless. Views mortals as insects.",
+      "bonds": "My phylactery is hidden and protected at all costs.",
+      "flaws": "My arrogance has led me to underestimate opponents before.",
+      "ideals": "Knowledge. Death is but a tool to achieve ultimate understanding.",
+      "alliesAndOrgs": "Commands legions of undead and has pacts with dark entities.",
+      "backstory": "Once a mortal archmage obsessed with immortality, this lich sacrificed their humanity in a dark ritual centuries ago. Now an undead master of necromancy, they pursue forbidden knowledge while expanding their empire of the dead from a lightless tower."
     },
     "challenge": {
       "challengeRating": 21,
@@ -571,6 +630,15 @@
       "type": "humanoid",
       "subtype": "orc"
     },
+    "appearance": {
+      "height": 6.8,
+      "weight": 280,
+      "skin": "gray-green"
+    },
+    "background": {
+      "personalityTraits": "Aggressive and straightforward. Respects only strength.",
+      "ideals": "Strength. The strong take what they want from the weak."
+    },
     "challenge": {
       "challengeRating": 0.5,
       "experiencePoints": 100
@@ -679,10 +747,7 @@
     },
     "background": {
       "personalityTraits": "I love a good story, especially if it involves me. I am always ready to entertain.",
-      "bonds": "I have a family heirloom that I will protect at all costs.",
       "flaws": "I have a weakness for beautiful",
-      "ideals": "I believe in the power of creativity and self-expression.",
-      "alliesAndOrgs": "I have a network of contacts in the entertainment industry.",
       "backstory": "I grew up in a small village, where I learned the art of storytelling and music from my family. I left home to seek adventure and fame."
     },
     "treasure": {
@@ -898,14 +963,6 @@
       "subrace": null,
       "background": "Criminal"
     },
-    "appearance": {
-      "age": 27,
-      "height": 6.0,
-      "weight": 180,
-      "eyes": "green",
-      "hair": "black",
-      "skin": "tan"
-    },
     "background": {
       "personalityTraits": "I always have a plan for what to do when things go wrong.",
       "bonds": "My sister means everything to me.",
@@ -998,11 +1055,8 @@
     },
     "appearance": {
       "age": 27,
-      "height": 5.9,
-      "weight": 150,
-      "eyes": "green",
       "hair": "brown",
-      "skin": "fair"
+      "eyes": "green"
     },
     "background": {
       "personalityTraits": "I watch over my friends as if they were a litter of newborn pups.",
@@ -1446,14 +1500,6 @@
       "eyes": "gray",
       "hair": "white",
       "skin": "pale"
-    },
-    "background": {
-      "personalityTraits": "Toujours analytique, j'observe avant d'agir.",
-      "ideals": "La justice ne peut exister sans vérité.",
-      "bonds": "Ma famille perdue me guide encore.",
-      "flaws": "Je suis hanté par mon désir de vengeance.",
-      "alliesAndOrgs": "Vox Machina, nobles de Whitestone",
-      "backstory": "Héritier de Whitestone, Percy a vu sa famille massacrée par les Briarwoods. Ayant fui, il forgea une arme jamais vue en Tal'Dorei : un pistolet. Depuis, il se bat pour venger les siens et redonner honneur à son nom."
     },
     "treasure": {
       "cp": 0,
