@@ -106,10 +106,14 @@ export class SeederService {
       });
 
       await this.characterModel.create(
-        this.getRandomObjects('player').map((character) => ({
-          ...character,
-          createdBy: userId,
-        })),
+        this.getRandomObjects('player').map((character) => {
+          const avatarSeed = `${character.firstname || character.name || faker.string.alphanumeric(10)}-${faker.string.alphanumeric(6)}`;
+          return {
+            ...character,
+            createdBy: userId,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
+          };
+        }),
       );
 
       const campaigns = [];
@@ -130,10 +134,14 @@ export class SeederService {
 
         for (let k = 0; k < groupsActivePerCampaign; k++) {
           const activeCharacters = await this.characterModel.create(
-            this.getRandomObjects().map((character) => ({
-              ...character,
-              createdBy: userId,
-            })),
+            this.getRandomObjects().map((character) => {
+              const avatarSeed = `${character.firstname || character.name || faker.string.alphanumeric(10)}-${faker.string.alphanumeric(6)}`;
+              return {
+                ...character,
+                createdBy: userId,
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
+              };
+            }),
           );
 
           const activeGroup = await this.groupModel.create({
@@ -154,10 +162,14 @@ export class SeederService {
 
         for (let k = 0; k < groupsArchivedPerCampaign; k++) {
           const archivedCharacters = await this.characterModel.create(
-            this.getRandomObjects().map((character) => ({
-              ...character,
-              createdBy: userId,
-            })),
+            this.getRandomObjects().map((character) => {
+              const avatarSeed = `${character.firstname || character.name || faker.string.alphanumeric(10)}-${faker.string.alphanumeric(6)}`;
+              return {
+                ...character,
+                createdBy: userId,
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
+              };
+            }),
           );
 
           const archivedGroup = await this.groupModel.create({

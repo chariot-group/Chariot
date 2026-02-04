@@ -22,6 +22,8 @@ class GroupService {
                 params,
             });
 
+            console.log('Fetched groups:', response);
+
             return response.data.data;
         } catch (error) {
             console.error(`Error fetching groups for campaign ${campaignId}:`, error);
@@ -35,6 +37,7 @@ class GroupService {
     async getGroupById(groupId: string): Promise<Group> {
         try {
             const response = await apiClient().get<{ data: Group }>(`/groups/${groupId}`);
+            console.log('Fetched group:', response);
             return response.data.data;
         } catch (error) {
             console.error(`Error fetching group ${groupId}:`, error);

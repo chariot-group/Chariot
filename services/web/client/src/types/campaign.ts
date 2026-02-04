@@ -12,14 +12,18 @@ export interface Campaign {
 
 export interface Player {
     _id: string;
-    name: string;
+    firstname: string;
+    lastname: string;
+    surname: string;
     characterId?: string;
     userId: string;
 }
 
 export interface Character {
     _id: string;
-    name: string;
+    firstname: string;
+    lastname: string;
+    surname: string;
     userId: string;
 }
 

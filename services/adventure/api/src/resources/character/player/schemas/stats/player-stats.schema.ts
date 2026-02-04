@@ -11,6 +11,18 @@ export class PlayerStats extends Stats {
   @Prop({ default: 0 })
   proficiencyBonus: number;
 
+  @ApiProperty({ example: ['Leather', 'Chainmail'] })
+  @Prop({ type: [String], default: [] })
+  armors: string[];
+
+  @ApiProperty({ example: ['Thieves\' Tools', 'Smith\'s Tools'] })
+  @Prop({ type: [String], default: [] })
+  tools: string[];
+
+  @ApiProperty({ example: ['Shortsword', 'Longbow'] })
+  @Prop({ type: [String], default: [] })
+  weapons: string[];
+
   @ApiProperty({ type: Masteries })
   @Prop({ type: Masteries, default: {} })
   masteries: Masteries;

@@ -15,6 +15,7 @@ class CharacterService {
     async getCharacterById(characterId: string): Promise<Character> {
         try {
             const response = await apiClient().get<CharacterResponse>(`${this.BASE_PATH}/${characterId}`);
+            console.log('Fetched character:', response);
             return response.data.data;
         } catch (error) {
             console.error(`Error fetching character ${characterId}:`, error);
