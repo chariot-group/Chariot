@@ -1,28 +1,69 @@
 import { Card } from "@/components/ui/card";
 import { Player } from "@/types/character";
-import { User2Icon } from "lucide-react";
-import { useEffect } from "react";
+import {
+  Brain,
+  Church,
+  CircleQuestionMark,
+  CrossIcon,
+  Drama,
+  Eye,
+  Footprints,
+  LockKeyhole,
+  MessageSquare,
+  MicVocal,
+  Notebook,
+  PawPrint,
+  Sparkles,
+  Sprout,
+  Star,
+  TreePine,
+  User2Icon,
+  VenetianMask,
+} from "lucide-react";
+import { useState } from "react";
 import Competence from "./Competence";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import Caracteristics from "./Caracteristics";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
   accentColor: string;
 }
 
-{
-  /* Ajouter inspiration */
-  /* Ajouter exhaustionLevel */
-  /* Ajouter jet de sauvegarde */
-}
-
 export default function PlayerGeneralTabContent({ player, accentColor }: PlayerGeneralTabContentProps) {
+  const [checked, setChecked] = useState<boolean>(player.inspiration);
+
+  function infoExhaustionLevel(level: number): string {
+    switch (level) {
+      case 0:
+        return "Aucun effet";
+      case 1:
+        return "Désavantage sur les jets de compétence";
+      case 2:
+        return "Vitesse réduite de moitié";
+      case 3:
+        return "Désavantage sur les jets d'attaque et de sauvegarde";
+      case 4:
+        return "Points de vie maximum réduits de moitié";
+      case 5:
+        return "Vitesse réduite à 0";
+      default:
+        return "Mort";
+    }
+  }
+
+  function isMastered(competence: string): boolean {
+    return player.stats.masteriesAbility[competence as keyof typeof player.stats.masteriesAbility] === true;
+  }
+
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="grid grid-cols-3 gap-2">
         <div className="flex flex-col gap-2">
           {/* Personnage */}
-          <Card className="gap-2 p-3">
+          <Card className="gap-2 py-3">
             <h2 className={`text-2xl font-semibold ${accentColor}`}>Personnage</h2>
             <div className="flex flex-col">
               <p className="text-sm">
@@ -45,7 +86,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </div>
           </Card>
           {/* Maitrise */}
-          <Card className="gap-2">
+          <Card className="gap-2 py-3">
             <h2 className={`text-2xl font-semibold ${accentColor}`}>Maitrises</h2>
             <div className="flex flex-col gap-0">
               <p className="text-sm">
@@ -62,39 +103,225 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               </p>
             </div>
           </Card>
+          {/* Inspiration */}
+          <Card className="gap-2 py-3 flex-row items-center">
+            <h2 className={`text-2xl font-semibold ${accentColor}`}>Inspiration</h2>
+            <Checkbox
+              checked={checked}
+              onCheckedChange={(value) => setChecked(value === true)}
+              disabled
+            />
+          </Card>
+          {/* Epuisement */}
+          <Card className="gap-2 py-3 flex-row items-center">
+            <h2 className={`text-2xl font-semibold ${accentColor}`}>Epuisement</h2>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="font-semibold">{player.exhaustionLevel}</p>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{infoExhaustionLevel(player.exhaustionLevel)}</p>
+              </TooltipContent>
+            </Tooltip>
+          </Card>
+          {/* Jet de sauvegarde */}
+          <Card className="gap-2 py-3">
+            <h2 className={`text-2xl font-semibold ${accentColor}`}>Jet de sauvegarde</h2>
+            <div className="flex flex-col gap-0">
+              {player?.stats &&
+                Object.entries(player?.stats?.savingThrows).map(([key, value]) => (
+                  <p
+                    key={key}
+                    className="text-sm">
+                    <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {value >= 0 ? `+${value}` : value}
+                    <Checkbox
+                      checked={isMastered(key)}
+                      disabled
+                      className="ml-2"
+                    />
+                  </p>
+                ))}
+            </div>
+          </Card>
         </div>
         <div className="flex flex-col gap-2">
-          <Card className="p-3 gap-0">
+          {/* Caractéristiques */}
+          <Caracteristics
+            character={player}
+            accentColor={accentColor}
+          />
+          {/* Compétences */}
+          <Card className="gap-0 py-3">
             <h2 className={`text-xl md:text-2xl font-semibold ${accentColor}`}>Compétences</h2>
             <span className="text-sm font-semibold">
               <strong>Bonus de maitrise:</strong> {player?.stats?.proficiencyBonus}
             </span>
           </Card>
           <div className="grid grid-cols-2 gap-1">
-            {player?.stats?.masteries &&
-              Object.entries(player.stats.masteries).map(([key, value]) => (
-                <Competence
-                  key={key}
-                  competence={key}
-                  value={value}
-                  icon={<User2Icon />}
-                  accentColor={accentColor}
-                />
-              ))}
+            <Competence
+              competence={"Acrobaties"}
+              value={player?.stats?.masteries.acrobatics}
+              icon={<User2Icon />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.dexterity}
+            />
+            <Competence
+              competence={"Arcanes"}
+              value={player?.stats?.masteries.arcana}
+              icon={<Sparkles />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={"Athlétisme"}
+              value={player?.stats?.masteries.athletics}
+              icon={<Footprints />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.strength}
+            />
+            <Competence
+              competence={"Discrétion"}
+              value={player?.stats?.masteries.stealth}
+              icon={<VenetianMask />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.dexterity}
+            />
+            <Competence
+              competence={"Dressage"}
+              value={player?.stats?.masteries.animalHandling}
+              icon={<PawPrint />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={"Escamotage"}
+              value={player?.stats?.masteries.sleightHand}
+              icon={<LockKeyhole />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.dexterity}
+            />
+            <Competence
+              competence={"Histoire"}
+              value={player?.stats?.masteries.history}
+              icon={<Notebook />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={"Intimidation"}
+              value={player?.stats?.masteries.intimidation}
+              icon={<User2Icon />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.charisma}
+            />
+            <Competence
+              competence={"Intuition"}
+              value={player?.stats?.masteries.insight}
+              icon={<Brain />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={"Investigation"}
+              value={player?.stats?.masteries.investigation}
+              icon={<CircleQuestionMark />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={"Medecine"}
+              value={player?.stats?.masteries.medicine}
+              icon={<CrossIcon />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={"Nature"}
+              value={player?.stats?.masteries.nature}
+              icon={<Sprout />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={"Perception"}
+              value={player?.stats?.masteries.perception}
+              icon={<Eye />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={"Persuasion"}
+              value={player?.stats?.masteries.persuasion}
+              icon={<MessageSquare />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.charisma}
+            />
+            <Competence
+              competence={"Religion"}
+              value={player?.stats?.masteries.religion}
+              icon={<Church />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={"Représentation"}
+              value={player?.stats?.masteries.performance}
+              icon={<MicVocal />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.charisma}
+            />
+            <Competence
+              competence={"Survie"}
+              value={player?.stats?.masteries.survival}
+              icon={<TreePine />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={"Tromperie"}
+              value={player?.stats?.masteries.deception}
+              icon={<Drama />}
+              accentColor={accentColor}
+              proficiencyBonus={player?.stats?.proficiencyBonus}
+              masteriesAbility={player?.stats?.abilityScores.charisma}
+            />
           </div>
         </div>
         <div className="flex flex-col gap-2">
           {/* Alignement */}
-          <Card className="gap-2 p-3 flex-row items-center">
+          <Card className="gap-2 py-3 flex-row items-center">
             <h2 className={`text-2xl font-semibold ${accentColor}`}>Alignement</h2>
             <p className="font-semibold">{player?.profile?.alignment}</p>
           </Card>
+          {/* Perception passive */}
+          <Card className="gap-2 py-3 flex-row items-center">
+            <h2 className={`text-2xl font-semibold ${accentColor}`}>Perception passive</h2>
+            <p className="font-semibold">{player?.stats?.passivePerception}</p>
+          </Card>
           {/* Historique */}
-          <Card className="gap-2 p-3 flex-row items-center">
+          <Card className="gap-2 py-3 flex-row items-center">
             <h2 className={`text-2xl font-semibold ${accentColor}`}>Historique</h2>
             <p className="font-semibold">{player?.profile?.history}</p>
           </Card>
-          <Card className="gap-2 md:gap-4">
+          {/* Aptitudes */}
+          <Card className="gap-2 py-3">
             <h2 className={`text-xl md:text-2xl font-semibold ${accentColor}`}>Aptitudes</h2>
             <Accordion
               type="single"

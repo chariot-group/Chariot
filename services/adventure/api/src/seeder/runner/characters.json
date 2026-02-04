@@ -815,6 +815,14 @@
         "performance": 3,
         "persuasion": 2
       },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": true,
+        "constitution": false,
+        "intelligence": false,
+        "wisdom": false,
+        "charisma": true
+      },
       "senses": [],
       "languages": ["Common", "Gnomish", "Sylvan"],
       "passivePerception": 10
@@ -969,6 +977,14 @@
         "performance": 0,
         "persuasion": 0
       },
+      "masteriesAbility": {
+        "strength": true,
+        "dexterity": false,
+        "constitution": true,
+        "intelligence": false,
+        "wisdom": false,
+        "charisma": false
+      },
       "senses": [],
       "languages": ["Common", "Giant"],
       "passivePerception": 10
@@ -1087,6 +1103,14 @@
         "intimidation": 0,
         "performance": 0,
         "persuasion": 1
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": true,
+        "constitution": false,
+        "intelligence": true,
+        "wisdom": false,
+        "charisma": false
       },
       "senses": [],
       "languages": ["Common", "Elvish", "Thieves' Cant"],
@@ -1207,6 +1231,14 @@
         "intimidation": 0,
         "performance": 0,
         "persuasion": 1
+      },
+      "masteriesAbility": {
+        "strength": true,
+        "dexterity": true,
+        "constitution": false,
+        "intelligence": false,
+        "wisdom": false,
+        "charisma": false
       },
       "senses": [],
       "languages": ["Common", "Elvish", "Sylvan"],
@@ -1352,6 +1384,14 @@
         "intimidation": 0,
         "performance": 0,
         "persuasion": 1
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": false,
+        "constitution": false,
+        "intelligence": true,
+        "wisdom": true,
+        "charisma": false
       },
       "senses": [],
       "languages": ["Common", "Elvish", "Druidic", "Primordial"],
@@ -1530,6 +1570,14 @@
         "intimidation": 1,
         "performance": 0,
         "persuasion": 2
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": false,
+        "constitution": false,
+        "intelligence": false,
+        "wisdom": true,
+        "charisma": true
       },
       "senses": [],
       "languages": ["Common", "Gnomish", "Celestial"],
@@ -1723,6 +1771,14 @@
         "performance": 0,
         "persuasion": 2
       },
+      "masteriesAbility": {
+        "strength": true,
+        "dexterity": false,
+        "constitution": true,
+        "intelligence": false,
+        "wisdom": false,
+        "charisma": false
+      },
       "senses": [],
       "languages": ["Common", "Draconic", "Dwarvish"],
       "passivePerception": 10
@@ -1884,6 +1940,14 @@
         "intimidation": 0,
         "performance": 0,
         "persuasion": 1
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": false,
+        "constitution": false,
+        "intelligence": true,
+        "wisdom": true,
+        "charisma": true
       },
       "senses": [
         {

@@ -11,9 +11,18 @@ interface CompetenceProps {
   value: number;
   icon: React.ReactElement;
   accentColor: string;
+  proficiencyBonus: number;
+  masteriesAbility: number;
 }
 
-export default function Competence({ competence, value, icon, accentColor }: CompetenceProps) {
+export default function Competence({
+  competence,
+  value,
+  icon,
+  accentColor,
+  proficiencyBonus,
+  masteriesAbility,
+}: CompetenceProps) {
   function getIconForValue(value: number): string {
     switch (value) {
       case 1:
@@ -27,11 +36,23 @@ export default function Competence({ competence, value, icon, accentColor }: Com
     }
   }
 
+  function calculateModifier(score: number): number {
+    return Math.floor((score - 10) / 2);
+  }
+
+  function calculateMasteryLevel(masteryLevel: number): string {
+    let value = calculateModifier(masteriesAbility) + proficiencyBonus * 2;
+    if (masteryLevel === 0) value = calculateModifier(masteriesAbility);
+    if (masteryLevel === 1) value = calculateModifier(masteriesAbility) + proficiencyBonus / 2;
+    if (masteryLevel === 2) value = calculateModifier(masteriesAbility) + proficiencyBonus;
+    return value >= 0 ? `+${value}` : `${value}`;
+  }
+
   return (
     <Card className="p-2">
       <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
         {icon}
-        {competence}
+        {competence} {calculateMasteryLevel(value)}
         <Image
           src={getIconForValue(value)}
           alt={`Niveau ${value}`}
