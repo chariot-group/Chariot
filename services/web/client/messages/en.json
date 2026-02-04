@@ -99,6 +99,22 @@
       "inventory": "Inventory",
       "history": "History"
     },
+    "history": {
+      "appearance": "Appearance",
+      "eyes": "Eyes",
+      "age": "Age",
+      "skin": "Skin",
+      "height": "Height",
+      "weight": "Weight",
+      "hair": "Hair",
+      "alliesAndOrgs": "Allies and Organizations",
+      "bonds": "Bonds",
+      "description": "Description",
+      "personalityTraits": "Personality Traits",
+      "ideals": "Ideals",
+      "flaws": "Flaws",
+      "backstory": "Backstory"
+    },
     "player": {
       "level": "Level",
       "race": "Race",
@@ -114,6 +130,26 @@
     },
     "placeholder": {
       "noImage": "No image"
+    },
+    "inventory": {
+      "coins": "Coins",
+      "equipment": "Equipment",
+      "treasure": "Treasure",
+      "pp": "pp",
+      "gp": "gp",
+      "ep": "ep",
+      "sp": "sp",
+      "cp": "cp",
+      "platinumPieces": "Platinum pieces",
+      "goldPieces": "Gold pieces",
+      "electrumPieces": "Electrum pieces",
+      "silverPieces": "Silver pieces",
+      "copperPieces": "Copper pieces",
+      "noEquipment": "No equipment at the moment.",
+      "noTreasure": "No treasure at the moment.",
+      "coinsRegion": "Coins section",
+      "equipmentRegion": "Equipment section",
+      "treasureRegion": "Treasure section"
     }
   }
 }

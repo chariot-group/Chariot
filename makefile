@@ -216,3 +216,13 @@ else
 	fi
 	@echo "$(GREEN)✓ Tests e2e terminés$(NC)"
 endif
+
+seed: ## Lance le seeder pour adventure
+	@echo "$(YELLOW)Exécution du seeder pour adventure...$(NC)"
+	@cd $(SERVICES_DIR)/adventure && docker compose -f compose.$(ENV).yml exec chariot-adventure npm run seed
+	@echo "$(GREEN)✓ Seeder exécuté$(NC)"
+
+seed-clean: ## Lance le seeder avec nettoyage pour adventure
+	@echo "$(YELLOW)Nettoyage et exécution du seeder pour adventure...$(NC)"
+	@cd $(SERVICES_DIR)/adventure && docker compose -f compose.$(ENV).yml exec chariot-adventure npm run seed:clean
+	@echo "$(GREEN)✓ Base de données nettoyée et seeder exécuté$(NC)"

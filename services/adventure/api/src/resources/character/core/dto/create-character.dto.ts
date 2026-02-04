@@ -13,7 +13,7 @@ import { SpellcastingDto } from '@/resources/character/core/dto/spellcasting/spe
 import { ApiProperty } from '@nestjs/swagger';
 import { AppearanceDto } from '@/resources/character/player/dto/appearance/appearance.dto';
 import { BackgroundDto } from '@/resources/character/player/dto/background/background.dto';
-import { TreasureDto } from '@/resources/character/player/dto/treasure/treasure.dto';
+import { TreasureDto } from '@/resources/character/core/dto/treasure/treasure.dto';
 import { ConditionsDto } from '@/resources/character/core/dto/conditions/conditions.dto';
 
 export class CreateCharacterDto {

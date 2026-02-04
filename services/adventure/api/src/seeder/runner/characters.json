@@ -67,6 +67,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 15,
+      "sp": 8,
+      "ep": 0,
+      "gp": 2,
+      "pp": 0,
+      "treasure": "A few coins stolen from travelers.",
+      "equipment": "Scimitar, shortbow, leather armor, quiver with 20 arrows."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -80,6 +89,23 @@
       "alignment": "unaligned",
       "type": "monstrosity",
       "subtype": ""
+    },
+    "appearance": {
+      "age": 8,
+      "height": 8.0,
+      "weight": 1500,
+      "eyes": "amber",
+      "hair": "brown feathers",
+      "skin": "feathered hide",
+      "description": "A massive beast combining the worst features of an owl and a bear. Its head is that of a giant owl with piercing amber eyes, while its body is covered in thick brown feathers over a muscular ursine frame. Sharp talons tip its powerful limbs."
+    },
+    "background": {
+      "personalityTraits": "Aggressive and territorial. Attacks anything that enters its domain.",
+      "bonds": "Fiercely protective of its nest and young.",
+      "flaws": "Driven purely by instinct and hunger.",
+      "ideals": "Territory. This land is mine and I will defend it.",
+      "alliesAndOrgs": "Solitary creature, no alliances.",
+      "backstory": "This owlbear was born from magical experiments, a fusion of owl and bear. It now roams the forests, driven by primal instincts to hunt and defend its territory from all intruders."
     },
     "challenge": {
       "challengeRating": 3,
@@ -142,6 +168,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 0,
+      "sp": 0,
+      "ep": 0,
+      "gp": 0,
+      "pp": 0,
+      "treasure": "Bits of bone and feathers in its nest.",
+      "equipment": "Natural weapons (beak and claws)."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -155,6 +190,11 @@
       "alignment": "any non-good alignment",
       "type": "humanoid",
       "subtype": "any race"
+    },
+    "appearance": {
+      "age": 32,
+      "eyes": "dark brown",
+      "skin": "pale"
     },
     "challenge": {
       "challengeRating": 0.125,
@@ -207,6 +247,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 5,
+      "sp": 3,
+      "ep": 0,
+      "gp": 0,
+      "pp": 0,
+      "treasure": "A dark amulet with a mysterious symbol.",
+      "equipment": "Scimitar, tattered robes, unholy symbol."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -220,6 +269,23 @@
       "alignment": "chaotic evil",
       "type": "monstrosity",
       "subtype": ""
+    },
+    "appearance": {
+      "age": 142,
+      "height": 6.5,
+      "weight": 600,
+      "eyes": "red",
+      "hair": "white",
+      "skin": "obsidian chitin",
+      "description": "A horrific fusion of drow elf and giant spider. The upper body retains elven features with pale skin and white hair, but the lower half is a massive arachnid body covered in black chitinous plates. Eight spindly legs support the creature, and venomous fangs drip with poison."
+    },
+    "background": {
+      "personalityTraits": "Bitter and resentful. Takes pleasure in the suffering of others.",
+      "bonds": "I seek revenge against those who transformed me.",
+      "flaws": "My hatred blinds me to potential allies.",
+      "ideals": "Chaos. The natural order must be overthrown.",
+      "alliesAndOrgs": "Outcast from drow society, serves dark spider goddesses.",
+      "backstory": "This drider was once a drow who failed Lolth's tests and was transformed into this monstrous form as punishment. Cast out from their city, they now dwell in the darkest depths, hunting those who venture too close and plotting revenge against their former kin."
     },
     "challenge": {
       "challengeRating": 6,
@@ -313,6 +379,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 0,
+      "sp": 25,
+      "ep": 10,
+      "gp": 45,
+      "pp": 5,
+      "treasure": "Dark elven coins and a spider silk pouch with gems.",
+      "equipment": "Longsword, longbow, hand crossbow, chain shirt, web traps."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -327,6 +402,9 @@
       "alignment": "neutral good",
       "type": "beast",
       "subtype": ""
+    },
+    "background": {
+      "backstory": "This giant eagle has nested in the high peaks for many years, watching over the valleys below. It has formed alliances with good-hearted travelers and druids, occasionally serving as a mount or messenger for those who prove themselves worthy."
     },
     "challenge": {
       "challengeRating": 1,
@@ -392,6 +470,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 0,
+      "sp": 0,
+      "ep": 0,
+      "gp": 10,
+      "pp": 0,
+      "treasure": "Shiny objects collected in its eyrie.",
+      "equipment": "Natural weapons (beak and talons)."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -405,6 +492,23 @@
       "alignment": "any evil alignment",
       "type": "undead",
       "subtype": ""
+    },
+    "appearance": {
+      "age": 847,
+      "height": 6.2,
+      "weight": 110,
+      "eyes": "glowing blue flames",
+      "hair": "none",
+      "skin": "desiccated gray",
+      "description": "A skeletal figure wrapped in tattered arcane robes of ancient make. Parchment-thin skin clings to bones, and empty eye sockets burn with cold blue flames. Jeweled rings adorn bony fingers, and a crown of twisted metal sits upon the skull. The air around it crackles with necromantic energy."
+    },
+    "background": {
+      "personalityTraits": "Coldly logical and utterly ruthless. Views mortals as insects.",
+      "bonds": "My phylactery is hidden and protected at all costs.",
+      "flaws": "My arrogance has led me to underestimate opponents before.",
+      "ideals": "Knowledge. Death is but a tool to achieve ultimate understanding.",
+      "alliesAndOrgs": "Commands legions of undead and has pacts with dark entities.",
+      "backstory": "Once a mortal archmage obsessed with immortality, this lich sacrificed their humanity in a dark ritual centuries ago. Now an undead master of necromancy, they pursue forbidden knowledge while expanding their empire of the dead from a lightless tower."
     },
     "challenge": {
       "challengeRating": 21,
@@ -501,6 +605,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 100,
+      "sp": 200,
+      "ep": 50,
+      "gp": 500,
+      "pp": 150,
+      "treasure": "Ancient phylactery, spellbooks, rare gems, cursed artifacts from centuries of conquest.",
+      "equipment": "Staff of power, robes of the archmagi, ring of spell storing, amulet of the planes."
+    },
     "affinities": {
       "resistances": ["cold", "lightning", "necrotic"],
       "immunities": [
@@ -517,6 +630,15 @@
       "alignment": "chaotic evil",
       "type": "humanoid",
       "subtype": "orc"
+    },
+    "appearance": {
+      "height": 6.8,
+      "weight": 280,
+      "skin": "gray-green"
+    },
+    "background": {
+      "personalityTraits": "Aggressive and straightforward. Respects only strength.",
+      "ideals": "Strength. The strong take what they want from the weak."
     },
     "challenge": {
       "challengeRating": 0.5,
@@ -579,6 +701,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 20,
+      "sp": 10,
+      "ep": 0,
+      "gp": 5,
+      "pp": 0,
+      "treasure": "Tribal trophies from defeated foes.",
+      "equipment": "Greataxe, javelin, hide armor, tribal fetishes."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -619,10 +750,7 @@
     },
     "background": {
       "personalityTraits": "I love a good story, especially if it involves me. I am always ready to entertain.",
-      "bonds": "I have a family heirloom that I will protect at all costs.",
       "flaws": "I have a weakness for beautiful",
-      "ideals": "I believe in the power of creativity and self-expression.",
-      "alliesAndOrgs": "I have a network of contacts in the entertainment industry.",
       "backstory": "I grew up in a small village, where I learned the art of storytelling and music from my family. I left home to seek adventure and fame."
     },
     "treasure": {
@@ -631,7 +759,8 @@
       "ep": 0,
       "gp": 50,
       "pp": 0,
-      "notes": "Scanlan carries a lute and a dagger, as well as a few trinkets from his travels."
+      "treasure": "A collection of love letters, a signed portrait from a famous actress, and a lucky coin.",
+      "equipment": "Scanlan carries a lute and a dagger, as well as a few trinkets from his travels."
     },
     "stats": {
       "size": "Small",
@@ -784,7 +913,8 @@
       "ep": 0,
       "gp": 20,
       "pp": 0,
-      "notes": "Grog carries a greataxe, a few simple belongings, and enjoys collecting skulls and tankards."
+      "treasure": "Skull collection, enchanted ale tankard, trophy teeth from worthy opponents.",
+      "equipment": "Grog carries a greataxe, a few simple belongings, and enjoys collecting skulls and tankards."
     },
     "stats": {
       "size": "Medium",
@@ -887,14 +1017,6 @@
       "background": "Criminal",
       "history": "Criminel"
     },
-    "appearance": {
-      "age": 27,
-      "height": 6.0,
-      "weight": 180,
-      "eyes": "green",
-      "hair": "black",
-      "skin": "tan"
-    },
     "background": {
       "personalityTraits": "I always have a plan for what to do when things go wrong.",
       "bonds": "My sister means everything to me.",
@@ -909,7 +1031,8 @@
       "ep": 0,
       "gp": 15,
       "pp": 0,
-      "notes": "Carries daggers, thieves' tools, and a locket from his mother."
+      "treasure": "Mother's locket, stolen jewels hidden in various pockets, a map to a secret cache.",
+      "equipment": "Carries daggers, thieves' tools, and a locket from his mother."
     },
     "stats": {
       "size": "Medium",
@@ -1011,11 +1134,8 @@
     },
     "appearance": {
       "age": 27,
-      "height": 5.9,
-      "weight": 150,
-      "eyes": "green",
       "hair": "brown",
-      "skin": "fair"
+      "eyes": "green"
     },
     "background": {
       "personalityTraits": "I watch over my friends as if they were a litter of newborn pups.",
@@ -1031,7 +1151,8 @@
       "ep": 0,
       "gp": 20,
       "pp": 0,
-      "notes": "Carries a longbow, quiver of arrows, and a compass."
+      "treasure": "A pouch of carefully counted coins, a small dragon scale, and a deed to a forest cabin.",
+      "equipment": "Carries a longbow, quiver of arrows, and a compass."
     },
     "stats": {
       "size": "Medium",
@@ -1174,7 +1295,8 @@
       "ep": 0,
       "gp": 10,
       "pp": 0,
-      "notes": "Bâton, besace d'herboriste, journal de voyage."
+      "treasure": "Graines rares, cristaux élémentaires, plume de phénix, fiole d'eau sacrée.",
+      "equipment": "Bâton, besace d'herboriste, journal de voyage."
     },
     "stats": {
       "size": "Medium",
@@ -1351,7 +1473,8 @@
       "ep": 0,
       "gp": 250,
       "pp": 10,
-      "notes": "Masse sacrée, bouclier orné de Sarenrae, armure lourde bénie, amulette sainte."
+      "treasure": "Reliques sacrées de Sarenrae, encens béni, fioles d'eau bénite, parchemins de prière.",
+      "equipment": "Masse sacrée, bouclier orné de Sarenrae, armure lourde bénie, amulette sainte."
     },
     "stats": {
       "size": "Small",
@@ -1535,21 +1658,14 @@
       "hair": "white",
       "skin": "pale"
     },
-    "background": {
-      "personalityTraits": "Toujours analytique, j'observe avant d'agir.",
-      "ideals": "La justice ne peut exister sans vérité.",
-      "bonds": "Ma famille perdue me guide encore.",
-      "flaws": "Je suis hanté par mon désir de vengeance.",
-      "alliesAndOrgs": "Vox Machina, nobles de Whitestone",
-      "backstory": "Héritier de Whitestone, Percy a vu sa famille massacrée par les Briarwoods. Ayant fui, il forgea une arme jamais vue en Tal'Dorei : un pistolet. Depuis, il se bat pour venger les siens et redonner honneur à son nom."
-    },
     "treasure": {
       "cp": 0,
       "sp": 0,
       "ep": 0,
       "gp": 1200,
       "pp": 50,
-      "notes": "Bad News (long rifle), Animus (revolver), lunettes de visée, munitions spécialisées, cape de protection, pistolet expérimental, outils d’artisan."
+      "treasure": "Family signet ring, blueprints for firearms, rare gunpowder ingredients, jeweled pocket watch.",
+      "equipment": "Bad News (long rifle), Animus (revolver), lunettes de visée, munitions spécialisées, cape de protection, pistolet expérimental, outils d’artisan."
     },
     "stats": {
       "size": "Medium",
@@ -1711,7 +1827,8 @@
       "ep": 5,
       "gp": 300,
       "pp": 2,
-      "notes": "Arcane focus shaped like a black eye, ring of mind shielding, spellbook bound in starmetal."
+      "treasure": "Eldritch tomes, star charts, crystallized nightmares, forbidden scrolls, void-touched gems.",
+      "equipment": "Arcane focus shaped like a black eye, ring of mind shielding, spellbook bound in starmetal."
     },
     "stats": {
       "size": "Medium",
