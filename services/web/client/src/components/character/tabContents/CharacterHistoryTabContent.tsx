@@ -33,7 +33,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
                 />
                 <span className="text-xs font-medium">{t("eyes")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.eyes}</span>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.eyes}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -43,7 +43,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
                 />
                 <span className="text-xs font-medium">{t("age")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.age}</span>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.age}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -53,7 +53,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
                 />
                 <span className="text-xs font-medium">{t("skin")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.skin}</span>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.skin}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -64,7 +64,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
                 <span className="text-xs font-medium">{t("height")}</span>
               </div>
               <span className="text-sm pl-6 wrap-break-words">
-                {character.appearance?.height} ({character.stats?.size.charAt(0).toUpperCase()})
+                {character?.appearance?.height} ({character?.stats?.size.charAt(0).toUpperCase()})
               </span>
             </div>
             <div className="flex flex-col gap-1">
@@ -75,7 +75,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
                 />
                 <span className="text-xs font-medium">{t("weight")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.weight}</span>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.weight}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -85,7 +85,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
                 />
                 <span className="text-xs font-medium">{t("hair")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character.appearance?.hair}</span>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.hair}</span>
             </div>
           </div>
         </Card>
@@ -98,7 +98,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("alliesAndOrgs")}
           </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character.background?.alliesAndOrgs}</p>
+          <p className="text-sm md:text-base wrap-break-words">{character?.background?.alliesAndOrgs}</p>
         </Card>
         <Card
           className="gap-2 md:gap-4"
@@ -109,7 +109,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("bonds")}
           </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character.background?.bonds}</p>
+          <p className="text-sm md:text-base wrap-break-words">{character?.background?.bonds}</p>
         </Card>
       </div>
 
@@ -124,7 +124,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("description")}
           </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character.appearance?.description}</p>
+          <p className="text-sm md:text-base wrap-break-words">{character?.appearance?.description}</p>
         </Card>
       </div>
 
@@ -139,7 +139,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("personalityTraits")}
           </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character.background.personalityTraits}</p>
+          <p className="text-sm md:text-base wrap-break-words">{character?.background?.personalityTraits}</p>
         </Card>
         <Card
           className="gap-2 md:gap-4"
@@ -150,7 +150,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("ideals")}
           </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character.background.ideals}</p>
+          <p className="text-sm md:text-base wrap-break-words">{character?.background?.ideals}</p>
         </Card>
         <Card
           className="gap-2 md:gap-4"
@@ -161,7 +161,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("flaws")}
           </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character.background.flaws}</p>
+          <p className="text-sm md:text-base wrap-break-words">{character?.background?.flaws}</p>
         </Card>
       </div>
 
@@ -176,7 +176,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("backstory")}
           </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character.background.backstory}</p>
+          <p className="text-sm md:text-base wrap-break-words">{character?.background?.backstory}</p>
         </Card>
       </div>
     </div>

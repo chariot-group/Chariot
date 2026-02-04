@@ -142,12 +142,12 @@ export interface Appearance {
 }
 
 export interface Background {
-    personalityTraits?: string | null; //
-    ideals?: string | null; //
-    bonds?: string | null; //
+    personalityTraits?: string | null;
+    ideals?: string | null;
+    bonds?: string | null;
     flaws?: string | null;
     alliesAndOrgs?: string | null;
-    backstory?: string | null; //
+    backstory?: string | null;
 }
 
 export interface Treasure {

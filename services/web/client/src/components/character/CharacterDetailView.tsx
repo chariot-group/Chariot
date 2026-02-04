@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TabContentPlaceholder from "@/components/character/TabContentPlaceholder";
 import React, { useState } from "react";
-import CharacterHistoryTabContent from "./tabContents/CharacterHistoryTabContent";
+import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
 
