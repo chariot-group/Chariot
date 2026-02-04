@@ -1,8 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Player } from "@/types/character";
-import { User } from "lucide-react";
+import { User, User2Icon } from "lucide-react";
 import Image from "next/image";
 import { useEffect } from "react";
+import Competence from "./Competence";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -95,7 +97,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
           {/* Maitrise */}
           <Card className="gap-2">
-            <h2 className={`text-2xl font-semibold ${accentColor}`}>Maitrise</h2>
+            <h2 className={`text-2xl font-semibold ${accentColor}`}>Maitrises</h2>
             <div className="flex flex-col gap-0">
               <p className="text-sm">
                 <strong>Langue(s):</strong> {player?.stats?.languages.join(", ")}
@@ -114,7 +116,19 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
         </div>
         <div>
           <Card className="gap-2 md:gap-4">
-            <h2 className={`text-xl md:text-2xl font-semibold ${accentColor}`}>Description</h2>
+            <h2 className={`text-xl md:text-2xl font-semibold ${accentColor}`}>Aptitudes</h2>
+            <Accordion
+              type="single"
+              collapsible>
+              {player?.abilities.map((ability) => (
+                <AccordionItem
+                  key={ability.name}
+                  value={ability.name}>
+                  <AccordionTrigger>{ability.name}</AccordionTrigger>
+                  <AccordionContent className="">{ability.description}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </Card>
         </div>
         <div className="flex flex-col gap-2">
@@ -124,13 +138,13 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           <div className="grid grid-cols-2 gap-1">
             {player?.stats?.masteries &&
               Object.entries(player.stats.masteries).map(([key, value]) => (
-                <Card
+                <Competence
                   key={key}
-                  className="p-2">
-                  <p className="text-sm">
-                    <strong>{key}:</strong> {value}
-                  </p>
-                </Card>
+                  competence={key}
+                  value={value}
+                  icon={<User2Icon />}
+                  accentColor={accentColor}
+                />
               ))}
           </div>
         </div>
