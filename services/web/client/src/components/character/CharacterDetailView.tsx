@@ -141,7 +141,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
         </div>
 
         {/* Contenu des onglets */}
-        <div className="w-full mx-auto px-4 sm:px-6 md:px-8 py-10 md:py-4">
+        <div className="w-full mx-auto px-4 sm:px-6 md:px-8 py-10 lg:py-4">
           {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
             <TabsContent
               key={tab}
