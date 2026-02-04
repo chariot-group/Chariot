@@ -195,6 +195,7 @@ export interface PlayerProfile {
     alignment: string;
     race: string;
     subrace: string;
+    history: string;
 }
 
 export interface Group {

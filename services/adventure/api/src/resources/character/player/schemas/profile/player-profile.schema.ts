@@ -12,6 +12,10 @@ export class PlayerProfile extends Profile {
   @ApiProperty({ example: 'High Elf' })
   @Prop()
   subrace?: string;
+
+  @ApiProperty({ example: 'A skilled archer from the northern forests.' })
+  @Prop()
+  history?: string;
 }
 
 export const PlayerProfileSchema = SchemaFactory.createForClass(PlayerProfile);

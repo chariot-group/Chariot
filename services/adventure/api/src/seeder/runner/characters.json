@@ -606,7 +606,8 @@
       "alignment": "chaotic good",
       "race": "gnome",
       "subrace": "forest gnome",
-      "background": "Entertainer"
+      "background": "Entertainer",
+      "history": "Artiste"
     },
     "appearance": {
       "age": 30,
@@ -634,6 +635,7 @@
     },
     "stats": {
       "size": "Small",
+      "proficiencyBonus": 2,
       "maxHitPoints": 20,
       "currentHitPoints": 20,
       "tempHitPoints": 0,
@@ -757,7 +759,8 @@
       "alignment": "chaotic neutral",
       "race": "goliath",
       "subrace": null,
-      "background": "Outlander"
+      "background": "Outlander",
+      "history": "Barbare nomade"
     },
     "appearance": {
       "age": 30,
@@ -785,6 +788,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 2,
       "maxHitPoints": 45,
       "currentHitPoints": 45,
       "tempHitPoints": 0,
@@ -880,7 +884,8 @@
       "alignment": "chaotic good",
       "race": "half-elf",
       "subrace": null,
-      "background": "Criminal"
+      "background": "Criminal",
+      "history": "Criminel"
     },
     "appearance": {
       "age": 27,
@@ -908,6 +913,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 2,
       "maxHitPoints": 24,
       "currentHitPoints": 24,
       "tempHitPoints": 0,
@@ -1000,7 +1006,8 @@
       "alignment": "neutral good",
       "race": "half-elf",
       "subrace": null,
-      "background": "Outlander"
+      "background": "Outlander",
+      "history": "Chasseuse"
     },
     "appearance": {
       "age": 27,
@@ -1028,6 +1035,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 2,
       "maxHitPoints": 28,
       "currentHitPoints": 28,
       "tempHitPoints": 0,
@@ -1141,7 +1149,8 @@
       "alignment": "neutral good",
       "race": "half-elf",
       "subrace": null,
-      "background": "Hermit"
+      "background": "Hermit",
+      "history": "Ermite"
     },
     "appearance": {
       "age": 23,
@@ -1169,6 +1178,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 2,
       "maxHitPoints": 24,
       "currentHitPoints": 24,
       "tempHitPoints": 0,
@@ -1316,7 +1326,8 @@
       "alignment": "lawful good",
       "race": "gnome",
       "subrace": "rock gnome",
-      "background": "Acolyte"
+      "background": "Acolyte",
+      "history": "Acolyte"
     },
     "appearance": {
       "age": 47,
@@ -1344,6 +1355,7 @@
     },
     "stats": {
       "size": "Small",
+      "proficiencyBonus": 4,
       "maxHitPoints": 85,
       "currentHitPoints": 85,
       "tempHitPoints": 0,
@@ -1512,7 +1524,8 @@
       "alignment": "chaotic good",
       "race": "human",
       "subrace": "variant human",
-      "background": "Noble"
+      "background": "Noble",
+      "history": "Noble"
     },
     "appearance": {
       "age": 28,
@@ -1540,6 +1553,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 5,
       "maxHitPoints": 145,
       "currentHitPoints": 145,
       "tempHitPoints": 0,
@@ -1672,7 +1686,8 @@
     "profile": {
       "alignment": "neutral",
       "race": "half-elf",
-      "background": "Sage"
+      "background": "Sage",
+      "history": "Érudit"
     },
     "appearance": {
       "age": 135,
@@ -1700,6 +1715,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 4,
       "maxHitPoints": 74,
       "currentHitPoints": 74,
       "tempHitPoints": 0,

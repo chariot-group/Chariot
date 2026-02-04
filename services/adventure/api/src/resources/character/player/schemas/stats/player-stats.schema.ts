@@ -8,7 +8,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class PlayerStats extends Stats {
 
   @ApiProperty({ example: 0 })
-  @Prop({ default: 0 })
+  @Prop({ default: 2 })
   proficiencyBonus: number;
 
   @ApiProperty({ example: ['Leather', 'Chainmail'] })
