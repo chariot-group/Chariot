@@ -132,22 +132,22 @@ export interface Spellcasting {
 }
 
 export interface Appearance {
-    age: number;
-    height: string;
-    weight: string;
-    eyes: string;
-    skin: string;
-    hair: string;
-    description: string;
+    age?: number | null;
+    height?: string | null;
+    weight?: string | null;
+    eyes?: string | null;
+    skin?: string | null;
+    hair?: string | null;
+    description?: string | null;
 }
 
 export interface Background {
-    personalityTraits: string;
-    ideals: string;
-    bonds: string;
-    flaws: string;
-    alliesAndOrgs: string;
-    backstory: string;
+    personalityTraits?: string | null;
+    ideals?: string | null;
+    bonds?: string | null;
+    flaws?: string | null;
+    alliesAndOrgs?: string | null;
+    backstory?: string | null;
 }
 
 export interface Treasure {

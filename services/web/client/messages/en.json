@@ -99,6 +99,22 @@
       "inventory": "Inventory",
       "history": "History"
     },
+    "history": {
+      "appearance": "Appearance",
+      "eyes": "Eyes",
+      "age": "Age",
+      "skin": "Skin",
+      "height": "Height",
+      "weight": "Weight",
+      "hair": "Hair",
+      "alliesAndOrgs": "Allies and Organizations",
+      "bonds": "Bonds",
+      "description": "Description",
+      "personalityTraits": "Personality Traits",
+      "ideals": "Ideals",
+      "flaws": "Flaws",
+      "backstory": "Backstory"
+    },
     "player": {
       "level": "Level",
       "race": "Race",
