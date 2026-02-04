@@ -130,6 +130,26 @@
     },
     "placeholder": {
       "noImage": "Aucune image"
+    },
+    "inventory": {
+      "coins": "Pièces",
+      "equipment": "Équipement",
+      "treasure": "Trésor",
+      "pp": "pp",
+      "gp": "po",
+      "ep": "pe",
+      "sp": "pa",
+      "cp": "pc",
+      "platinumPieces": "Pièces de platine",
+      "goldPieces": "Pièces d'or",
+      "electrumPieces": "Pièces d'électrum",
+      "silverPieces": "Pièces d'argent",
+      "copperPieces": "Pièces de cuivre",
+      "noEquipment": "Aucun équipement pour le moment.",
+      "noTreasure": "Aucun trésor pour le moment.",
+      "coinsRegion": "Section des pièces de monnaie",
+      "equipmentRegion": "Section de l'équipement",
+      "treasureRegion": "Section du trésor"
     }
   }
 }

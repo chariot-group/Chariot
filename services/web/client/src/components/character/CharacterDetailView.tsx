@@ -5,6 +5,7 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TabContentPlaceholder from "@/components/character/TabContentPlaceholder";
+import CharacterInventoryTabContent from "@/components/character/tabContents/CharacterInventoryTabContent";
 import React, { useState } from "react";
 import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
 
@@ -31,7 +32,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
   const [activeTab, setActiveTab] = useState<CharacterTab>("general");
 
   return (
-    <div className="min-h-screen">
+    <main className="min-h-screen">
       <Tabs
         defaultValue="general"
         value={activeTab}
@@ -56,11 +57,10 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     className={`
                                             flex-none py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
                                             focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                                            ${
-                                              activeTab === tab
-                                                ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
-                                                : `text-white bg-gray hover:bg-gray-middle`
-                                            }
+                                            ${activeTab === tab
+                        ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
+                        : `text-white bg-gray hover:bg-gray-middle`
+                      }
                                         `}>
                     {t(`tabs.${tab}`)}
                   </TabsTrigger>
@@ -124,7 +124,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
         </div>
 
         {/* Contenu des onglets */}
-        <div className="w-full mx-auto px-4 sm:px-6 md:px-8 py-10 lg:py-4">
+        <div className="w-full mx-auto px-4 sm:px-6 md:px-8 py-10 md:py-4">
           {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
             <TabsContent
               key={tab}
@@ -158,12 +158,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                       />
                     );
                   case "inventory":
-                    return (
-                      <TabContentPlaceholder
-                        tab={tab}
-                        accentColor={TAB_COLORS[tab]}
-                      />
-                    );
+                    return (<CharacterInventoryTabContent character={character} accentColor={TAB_COLORS[tab]} />);
                   case "history":
                     return (
                       <CharacterHistoryTabContent
@@ -179,6 +174,6 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
           ))}
         </div>
       </Tabs>
-    </div>
+    </main >
   );
 }

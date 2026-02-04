@@ -156,7 +156,8 @@ export interface Treasure {
     ep: number;
     gp: number;
     pp: number;
-    notes: string;
+    treasure: string;
+    equipment: string;
 }
 
 export interface Conditions {

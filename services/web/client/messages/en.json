@@ -130,6 +130,26 @@
     },
     "placeholder": {
       "noImage": "No image"
+    },
+    "inventory": {
+      "coins": "Coins",
+      "equipment": "Equipment",
+      "treasure": "Treasure",
+      "pp": "pp",
+      "gp": "gp",
+      "ep": "ep",
+      "sp": "sp",
+      "cp": "cp",
+      "platinumPieces": "Platinum pieces",
+      "goldPieces": "Gold pieces",
+      "electrumPieces": "Electrum pieces",
+      "silverPieces": "Silver pieces",
+      "copperPieces": "Copper pieces",
+      "noEquipment": "No equipment at the moment.",
+      "noTreasure": "No treasure at the moment.",
+      "coinsRegion": "Coins section",
+      "equipmentRegion": "Equipment section",
+      "treasureRegion": "Treasure section"
     }
   }
 }

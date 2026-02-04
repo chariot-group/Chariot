@@ -31,5 +31,10 @@ export class TreasureDto {
   @ApiProperty({ example: 'Found in a hidden chest behind the waterfall.' })
   @IsOptional()
   @IsString()
-  notes?: string;
+  treasure?: string;
+
+  @ApiProperty({ example: 'Sword, shield, and leather armor.' })
+  @IsOptional()
+  @IsString()
+  equipment?: string;
 }

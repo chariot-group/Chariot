@@ -67,6 +67,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 15,
+      "sp": 8,
+      "ep": 0,
+      "gp": 2,
+      "pp": 0,
+      "treasure": "A few coins stolen from travelers.",
+      "equipment": "Scimitar, shortbow, leather armor, quiver with 20 arrows."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -159,6 +168,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 0,
+      "sp": 0,
+      "ep": 0,
+      "gp": 0,
+      "pp": 0,
+      "treasure": "Bits of bone and feathers in its nest.",
+      "equipment": "Natural weapons (beak and claws)."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -228,6 +246,15 @@
       ],
       "legendary": [],
       "lair": []
+    },
+    "treasure": {
+      "cp": 5,
+      "sp": 3,
+      "ep": 0,
+      "gp": 0,
+      "pp": 0,
+      "treasure": "A dark amulet with a mysterious symbol.",
+      "equipment": "Scimitar, tattered robes, unholy symbol."
     },
     "affinities": {
       "resistances": [],
@@ -352,6 +379,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 0,
+      "sp": 25,
+      "ep": 10,
+      "gp": 45,
+      "pp": 5,
+      "treasure": "Dark elven coins and a spider silk pouch with gems.",
+      "equipment": "Longsword, longbow, hand crossbow, chain shirt, web traps."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -432,6 +468,15 @@
       ],
       "legendary": [],
       "lair": []
+    },
+    "treasure": {
+      "cp": 0,
+      "sp": 0,
+      "ep": 0,
+      "gp": 10,
+      "pp": 0,
+      "treasure": "Shiny objects collected in its eyrie.",
+      "equipment": "Natural weapons (beak and talons)."
     },
     "affinities": {
       "resistances": [],
@@ -559,6 +604,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 100,
+      "sp": 200,
+      "ep": 50,
+      "gp": 500,
+      "pp": 150,
+      "treasure": "Ancient phylactery, spellbooks, rare gems, cursed artifacts from centuries of conquest.",
+      "equipment": "Staff of power, robes of the archmagi, ring of spell storing, amulet of the planes."
+    },
     "affinities": {
       "resistances": ["cold", "lightning", "necrotic"],
       "immunities": [
@@ -646,6 +700,15 @@
       "legendary": [],
       "lair": []
     },
+    "treasure": {
+      "cp": 20,
+      "sp": 10,
+      "ep": 0,
+      "gp": 5,
+      "pp": 0,
+      "treasure": "Tribal trophies from defeated foes.",
+      "equipment": "Greataxe, javelin, hide armor, tribal fetishes."
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -693,7 +756,8 @@
       "ep": 0,
       "gp": 50,
       "pp": 0,
-      "notes": "Scanlan carries a lute and a dagger, as well as a few trinkets from his travels."
+      "treasure": "A collection of love letters, a signed portrait from a famous actress, and a lucky coin.",
+      "equipment": "Scanlan carries a lute and a dagger, as well as a few trinkets from his travels."
     },
     "stats": {
       "size": "Small",
@@ -820,7 +884,8 @@
       "ep": 0,
       "gp": 20,
       "pp": 0,
-      "notes": "Grog carries a greataxe, a few simple belongings, and enjoys collecting skulls and tankards."
+      "treasure": "Skull collection, enchanted ale tankard, trophy teeth from worthy opponents.",
+      "equipment": "Grog carries a greataxe, a few simple belongings, and enjoys collecting skulls and tankards."
     },
     "stats": {
       "size": "Medium",
@@ -912,7 +977,8 @@
       "ep": 0,
       "gp": 15,
       "pp": 0,
-      "notes": "Carries daggers, thieves' tools, and a locket from his mother."
+      "treasure": "Mother's locket, stolen jewels hidden in various pockets, a map to a secret cache.",
+      "equipment": "Carries daggers, thieves' tools, and a locket from his mother."
     },
     "stats": {
       "size": "Medium",
@@ -1006,7 +1072,8 @@
       "ep": 0,
       "gp": 20,
       "pp": 0,
-      "notes": "Carries a longbow, quiver of arrows, and a compass."
+      "treasure": "A pouch of carefully counted coins, a small dragon scale, and a deed to a forest cabin.",
+      "equipment": "Carries a longbow, quiver of arrows, and a compass."
     },
     "stats": {
       "size": "Medium",
@@ -1124,7 +1191,8 @@
       "ep": 0,
       "gp": 10,
       "pp": 0,
-      "notes": "Bâton, besace d'herboriste, journal de voyage."
+      "treasure": "Graines rares, cristaux élémentaires, plume de phénix, fiole d'eau sacrée.",
+      "equipment": "Bâton, besace d'herboriste, journal de voyage."
     },
     "stats": {
       "size": "Medium",
@@ -1275,7 +1343,8 @@
       "ep": 0,
       "gp": 250,
       "pp": 10,
-      "notes": "Masse sacrée, bouclier orné de Sarenrae, armure lourde bénie, amulette sainte."
+      "treasure": "Reliques sacrées de Sarenrae, encens béni, fioles d'eau bénite, parchemins de prière.",
+      "equipment": "Masse sacrée, bouclier orné de Sarenrae, armure lourde bénie, amulette sainte."
     },
     "stats": {
       "size": "Small",
@@ -1438,7 +1507,8 @@
       "ep": 0,
       "gp": 1200,
       "pp": 50,
-      "notes": "Bad News (long rifle), Animus (revolver), lunettes de visée, munitions spécialisées, cape de protection, pistolet expérimental, outils d’artisan."
+      "treasure": "Family signet ring, blueprints for firearms, rare gunpowder ingredients, jeweled pocket watch.",
+      "equipment": "Bad News (long rifle), Animus (revolver), lunettes de visée, munitions spécialisées, cape de protection, pistolet expérimental, outils d’artisan."
     },
     "stats": {
       "size": "Medium",
@@ -1574,7 +1644,8 @@
       "ep": 5,
       "gp": 300,
       "pp": 2,
-      "notes": "Arcane focus shaped like a black eye, ring of mind shielding, spellbook bound in starmetal."
+      "treasure": "Eldritch tomes, star charts, crystallized nightmares, forbidden scrolls, void-touched gems.",
+      "equipment": "Arcane focus shaped like a black eye, ring of mind shielding, spellbook bound in starmetal."
     },
     "stats": {
       "size": "Medium",
