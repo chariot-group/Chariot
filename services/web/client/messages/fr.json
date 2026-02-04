@@ -128,7 +128,12 @@
       "goldPieces": "Pièces d'or",
       "electrumPieces": "Pièces d'électrum",
       "silverPieces": "Pièces d'argent",
-      "copperPieces": "Pièces de cuivre"
+      "copperPieces": "Pièces de cuivre",
+      "noEquipment": "Aucun équipement pour le moment.",
+      "noTreasure": "Aucun trésor pour le moment.",
+      "coinsRegion": "Section des pièces de monnaie",
+      "equipmentRegion": "Section de l'équipement",
+      "treasureRegion": "Section du trésor"
     }
   }
 }

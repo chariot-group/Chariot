@@ -128,7 +128,12 @@
       "goldPieces": "Gold pieces",
       "electrumPieces": "Electrum pieces",
       "silverPieces": "Silver pieces",
-      "copperPieces": "Copper pieces"
+      "copperPieces": "Copper pieces",
+      "noEquipment": "No equipment at the moment.",
+      "noTreasure": "No treasure at the moment.",
+      "coinsRegion": "Coins section",
+      "equipmentRegion": "Equipment section",
+      "treasureRegion": "Treasure section"
     }
   }
 }

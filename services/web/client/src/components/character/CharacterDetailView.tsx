@@ -66,8 +66,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                             </TabsList>
 
                             {/* Infos du personnage */}
-                            <div className="flex flex-row items-end gap-3 sm:gap-4 md:gap-5 shrink-0 w-full xl:w-auto">
-                                <div className="text-left xl:text-right mb-2 flex-1">
+                            <div className="flex flex-row justify-end items-end gap-3 sm:gap-4 md:gap-5 shrink-0 w-full xl:w-auto">
+                                <div className="text-left sm:text-end mb-2 flex-1 xl:max-w-1/2">
                                     <h1 className="text-2xl sm:text-3xl font-bold text-white">
                                         {character.name}
                                     </h1>

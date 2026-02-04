@@ -128,7 +128,12 @@
       "goldPieces": "Piezas de oro",
       "electrumPieces": "Piezas de electrum",
       "silverPieces": "Piezas de plata",
-      "copperPieces": "Piezas de cobre"
+      "copperPieces": "Piezas de cobre",
+      "noEquipment": "Sin equipamiento por el momento.",
+      "noTreasure": "Sin tesoro por el momento.",
+      "coinsRegion": "Sección de monedas",
+      "equipmentRegion": "Sección de equipamiento",
+      "treasureRegion": "Sección de tesoro"
     }
   }
 }
