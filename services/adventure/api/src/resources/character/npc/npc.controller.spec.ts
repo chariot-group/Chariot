@@ -15,7 +15,7 @@ describe('NpcController - createNpc', () => {
   const requestMock = { user: { keycloakId: userId } };
 
   const createDto = {
-    name: 'Test NPC',
+    firstname: 'Test NPC',
     groups: [new Types.ObjectId().toHexString()],
     stats: {
       strength: 10,
@@ -90,7 +90,7 @@ describe('NpcController - update', () => {
   const npcId = new Types.ObjectId();
 
   const updateDto = {
-    name: 'Updated NPC',
+    firstname: 'Updated NPC',
     description: 'Updated description',
     level: 10,
   };

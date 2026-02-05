@@ -25,17 +25,17 @@ export class CreateCharacterDto {
   @ApiProperty({ example: 'Elessar' })
   @IsOptional()
   @IsString()
-  lastname: string;
+  lastname?: string;
 
   @ApiProperty({ example: 'Fils d\'Arathorn' })
   @IsOptional()
   @IsString()
-  surname: string;
+  surname?: string;
 
   @ApiProperty({ example: 'http://example.com/avatar.png' })
   @IsOptional()
   @IsString()
-  avatar: string;
+  avatar?: string;
 
   @ApiProperty({ example: '60f7c2ab4f1a256e1c8b4567' })
   @IsMongoId({ each: true })
