@@ -19,11 +19,21 @@ export default function Character() {
     );
   }
 
+  // Redirection conditionnelle après le chargement complet
   if (!loading && (error || !character)) {
-    window.location.href = `/404`;
+    // Utiliser un délai de grâce pour éviter les redirections pendant transition
+    setTimeout(() => {
+      if (!character) {
+        window.location.href = `/404`;
+      }
+    }, 500);
+
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return <CharacterDetailView character={character as Player | NPC} />;
 }
-
-

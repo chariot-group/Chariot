@@ -489,3 +489,76 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/types/character.ts` - TypeScript types
 - `services/web/client/messages/{en|es|fr}.json` - Internationalization files
 
+---
+
+## FR-008: User Cache Isolation and Session Transition
+
+**Rule**: Each user must have an isolated cache to prevent data leakage and 404 redirect loops when switching accounts or after session expiration.
+
+**Context**: When a session expires and a user reconnects (same or different account), the frontend may attempt to access cached resources from the previous user, causing 404 errors and infinite redirect loops.
+
+**Requirements**:
+- **Cache Versioning by User**: Redux persist cache key must include the user ID (`chariot_user_${userId}`)
+- **Transition State Management**: Add `userTransitioning` boolean state in `KeycloakContext` to signal user changes
+- **Store Recreation**: Automatically recreate Redux store with the correct cache when user changes
+- **Event-Based Communication**: Use `chariot:user-changed` custom event to signal user change from Keycloak to Redux
+- **Grace Period for Redirects**: Add 500ms delay before redirecting to 404 to avoid premature redirections during cache transition
+- **Loading State Respect**: Pages must not redirect while `loading` or `userTransitioning` is true
+
+**Implementation Details**:
+1. **Store Configuration**:
+   - `makeStore(userId)` accepts optional userId parameter
+   - `getCurrentUserId()` retrieves userId from localStorage
+   - `makePersistConfig(userId)` creates user-specific persist configuration
+   - `isStoreForCurrentUser(userId)` checks if current store matches userId
+
+2. **User Change Detection** (KeycloakProvider):
+   - Compare `kc.tokenParsed.sub` with stored `chariot_user_id`
+   - If different, set `userTransitioning = true`
+   - Dispatch `chariot:user-changed` event with new userId
+   - Reset `userTransitioning = false` after 300ms
+
+3. **Store Recreation** (ReduxProvider):
+   - Listen to `chariot:user-changed` events
+   - Purge old persistor
+   - Create new store with new userId
+   - Force re-render with updated store
+
+4. **404 Redirect Protection**:
+   - Check `loading` state before redirecting
+   - Use `setTimeout` with 500ms grace period
+   - Fallback to welcome page instead of generic 404 when appropriate
+
+**Benefits**:
+- ✅ Eliminates 404 redirect loops on user change
+- ✅ Prevents data leakage between users
+- ✅ No need to manually purge cache (automatic isolation)
+- ✅ Improved UX during session transitions
+- ✅ Graceful handling of expired sessions
+
+**Prohibitions**:
+- Using `window.location.href` for redirects without grace period
+- Redirecting during `loading` or `userTransitioning` states
+- Sharing cache between different users
+- Ignoring user change events
+- Hard-coding user IDs in cache keys
+- Using single global cache key for all users
+
+**Tests**:
+- User A logs in → cache uses `chariot_user_${userA_id}`
+- User A logs out, User B logs in → cache switches to `chariot_user_${userB_id}`
+- User A's cached data is not accessible by User B
+- Session expiration followed by relogin does not cause 404 loop
+- `userTransitioning` state prevents premature redirects
+- Store is recreated when `chariot:user-changed` event fires
+- Grace period (500ms) allows cache to load before 404 redirect
+- Anonymous users use `chariot_anonymous` cache key
+- Multiple browser tabs maintain correct user isolation
+
+**References**:
+- `services/web/client/src/store/index.ts` - Redux store with user versioning
+- `services/web/client/src/providers/KeycloakProvider.tsx` - User transition state management
+- `services/web/client/src/providers/ReduxProvider.tsx` - Store recreation on user change
+- `services/web/client/src/app/[locale]/profile/page.tsx` - Protected redirect example
+- `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx` - Grace period implementation
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx` - Grace period implementation

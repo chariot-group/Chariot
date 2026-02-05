@@ -13,6 +13,7 @@ interface KeycloakContextType {
   authenticated: boolean;
   loading: boolean;
   token: string | null;
+  userTransitioning: boolean; // Solution 1: État de transition utilisateur
   login: () => void;
   logout: () => void;
   register: () => void;
@@ -23,6 +24,7 @@ const KeycloakContext = createContext<KeycloakContextType>({
   authenticated: false,
   loading: true,
   token: null,
+  userTransitioning: false,
   login: () => {},
   logout: () => {},
   register: () => {},
@@ -38,6 +40,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  const [userTransitioning, setUserTransitioning] = useState(false); // Solution 1
 
   // Ref to store interval ID
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,22 +65,39 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
         const authenticated = await kc.init(initOptions);
 
-        // Detect user change and purge cache if different user
+        // Detect user change and handle cache transition (Solution 5 + Solution 1)
         if (authenticated && kc.tokenParsed?.sub) {
           const currentUserId = kc.tokenParsed.sub;
           const storedUserId = localStorage.getItem("chariot_user_id");
 
           if (storedUserId && storedUserId !== currentUserId) {
-            // Different user detected - purge all cached data
-            try {
-              await purgePersistedState();
-            } catch (error) {
-              console.error("Failed to purge cache on user change:", error);
-            }
-          }
+            // Different user detected - signal transition state
+            console.log(`User change detected: ${storedUserId} -> ${currentUserId}`);
+            setUserTransitioning(true);
 
-          // Store current user ID
-          localStorage.setItem("chariot_user_id", currentUserId);
+            // With Solution 5, each user has isolated cache - no need to purge
+            // Just update the stored user ID and the store will use the correct cache
+            localStorage.setItem("chariot_user_id", currentUserId);
+
+            // Signal that we need to recreate the Redux store with new user cache
+            // This will be handled by ReduxProvider
+            window.dispatchEvent(
+              new CustomEvent("chariot:user-changed", {
+                detail: { userId: currentUserId },
+              }),
+            );
+
+            // Transition completes after a short delay to ensure store recreation
+            setTimeout(() => {
+              setUserTransitioning(false);
+            }, 300);
+          } else {
+            // First login or same user - just store ID
+            localStorage.setItem("chariot_user_id", currentUserId);
+          }
+        } else if (!authenticated) {
+          // User logged out - clear stored ID
+          localStorage.removeItem("chariot_user_id");
         }
 
         setKeycloak(kc);
@@ -176,11 +196,12 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         authenticated,
         loading,
         token,
+        userTransitioning,
         login,
         logout,
         register,
       }}>
-      {loading ? (
+      {loading || userTransitioning ? (
         <div className="flex min-h-screen items-center justify-center">
           <div className="flex flex-col items-center gap-6">
             <div className="relative">

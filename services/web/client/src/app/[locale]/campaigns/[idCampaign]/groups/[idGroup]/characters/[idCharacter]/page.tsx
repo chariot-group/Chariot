@@ -21,7 +21,17 @@ export default function Character() {
   }
 
   if (!loading && (error || !character)) {
-    window.location.href = `/404`;
+    setTimeout(() => {
+      if (!character) {
+        window.location.href = `/404`;
+      }
+    }, 500);
+
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return <CharacterDetailView character={character as Player | NPC} />;

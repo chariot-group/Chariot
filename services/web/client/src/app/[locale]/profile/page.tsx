@@ -15,9 +15,12 @@ import { useTranslations } from "next-intl";
 
 import Token from "@public/assets/token.svg";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function ProfilePage() {
-  const { user } = useUser({ autoFetch: true });
+  const pathname = usePathname();
+  const locale = pathname.split("/")[1] || "fr";
+  const { user, loading } = useUser({ autoFetch: true });
   const [viewNewPassword, setViewNewPassword] = useState<boolean>(false);
   const [viewConfirmNewPassword, setViewConfirmNewPassword] = useState<boolean>(false);
   const t = useTranslations("ProfilePage");
@@ -48,12 +51,18 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
+    // Ne pas rediriger pendant la transition utilisateur ou le chargement
+    if (loading) return;
+
     if (!user) {
-      // redirect 404 or login
-      window.location.href = "/404";
-      return;
+      // Utiliser Next.js router au lieu de window.location pour éviter les boucles
+      const timer = setTimeout(() => {
+        window.location.href = `/${locale}/welcome`;
+      }, 500); // Délai de grâce pour attendre le chargement
+
+      return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, loading, locale]);
 
   return (
     <main
