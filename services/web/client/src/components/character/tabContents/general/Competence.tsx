@@ -70,13 +70,15 @@ export default function Competence({
         <TooltipTrigger asChild>
           <Card className="p-2">
             <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
-              {icon}
-              {competence} <span className="font-bold">{calculateMasteryLevel(value)}</span>
+              <span className="shrink-0">{icon}</span>
+              <span className="truncate">{competence}</span>{" "}
+              <span className="font-bold shrink-0">{calculateMasteryLevel(value)}</span>
               <Image
                 src={getIconForValue(value)}
                 alt={t("masteryLevelIcon", { level: value })}
-                width={16}
-                height={16}
+                width={20}
+                height={20}
+                className="shrink-0"
                 aria-hidden="true"
               />
             </p>
@@ -92,13 +94,15 @@ export default function Competence({
   return (
     <Card className="p-2">
       <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
-        {icon}
-        {competence} <span className="font-bold">{calculateMasteryLevel(value)}</span>
+        <span className="shrink-0">{icon}</span>
+        <span className="truncate">{competence}</span>{" "}
+        <span className="font-bold shrink-0">{calculateMasteryLevel(value)}</span>
         <Image
           src={getIconForValue(value)}
           alt={t("masteryLevelIcon", { level: value })}
-          width={16}
-          height={16}
+          width={20}
+          height={20}
+          className="shrink-0"
           aria-hidden="true"
         />
       </p>

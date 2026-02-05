@@ -165,7 +165,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </h2>
           </Card>
           <div
-            className="grid grid-cols-1 min-[770px]:grid-cols-2 gap-2"
+            className="grid grid-cols-1 md:grid-cols-2 gap-2"
             role="list">
             {player?.stats &&
               Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
@@ -195,7 +195,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </h2>
           </Card>
           <div
-            className="grid grid-cols-1 min-[770px]:grid-cols-2 gap-2"
+            className="grid grid-cols-1 md:grid-cols-2 gap-2"
             role="list"
             aria-label={t("skillsList")}>
             <Competence
