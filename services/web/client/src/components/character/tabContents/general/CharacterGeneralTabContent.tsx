@@ -1,5 +1,5 @@
 import { NPC, Player } from "@/types/character";
-import PlayerGeneralTabContent from "./PlayerGeneralTabContent";
+import PlayerGeneralTabContent from "@/components/character/tabContents/general/PlayerGeneralTabContent";
 
 interface CharacterGeneralTabContentProps {
   character: Player | NPC;

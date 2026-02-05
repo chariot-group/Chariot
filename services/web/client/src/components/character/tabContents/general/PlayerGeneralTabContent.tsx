@@ -15,15 +15,15 @@ import {
   PawPrint,
   Sparkles,
   Sprout,
-  Star,
   TreePine,
   User2Icon,
   VenetianMask,
 } from "lucide-react";
 import { useState } from "react";
-import Competence from "./Competence";
+import { useTranslations } from "next-intl";
+import Competence from "@/components/character/tabContents/general/Competence";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import Caracteristics from "./Caracteristics";
+import Characteristics from "@/components/character/tabContents/general/Characteristics";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -33,25 +33,12 @@ interface PlayerGeneralTabContentProps {
 }
 
 export default function PlayerGeneralTabContent({ player, accentColor }: PlayerGeneralTabContentProps) {
+  const t = useTranslations("characterDetail.player.general");
+  const tPlayer = useTranslations("characterDetail.player");
   const [checked, setChecked] = useState<boolean>(player.inspiration);
 
   function infoExhaustionLevel(level: number): string {
-    switch (level) {
-      case 0:
-        return "Aucun effet";
-      case 1:
-        return "Désavantage sur les jets de compétence";
-      case 2:
-        return "Vitesse réduite de moitié";
-      case 3:
-        return "Désavantage sur les jets d'attaque et de sauvegarde";
-      case 4:
-        return "Points de vie maximum réduits de moitié";
-      case 5:
-        return "Vitesse réduite à 0";
-      default:
-        return "Mort";
-    }
+    return t(`exhaustionLevels.${level}`);
   }
 
   function isMastered(competence: string): boolean {
@@ -62,7 +49,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
     <div
       className="w-full flex flex-col gap-2 px-2 sm:px-0"
       role="main"
-      aria-label="Informations générales du personnage">
+      aria-label={t("characterInfoLabel")}>
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
         {/* Colonne 1 : Personnage et Maitrises */}
         <section
@@ -76,30 +63,32 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="character-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Personnage
+              {t("character")}
             </h2>
             <dl className="flex flex-col gap-2">
               <div className="flex flex-col sm:flex-row gap-2">
-                <dt className="text-sm sm:text-base font-semibold">Race :</dt>
+                <dt className="text-sm sm:text-base font-semibold">{t("raceLabel")} :</dt>
                 <dd className="text-sm sm:text-base">{player?.profile?.race}</dd>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <dt className="text-sm sm:text-base font-semibold">Niveau global :</dt>
+                <dt className="text-sm sm:text-base font-semibold">{t("globalLevel")} :</dt>
                 <dd className="text-sm sm:text-base">
                   {player?.progression?.level ?? 0} ({player?.progression?.experience ?? 0} XP)
                 </dd>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <dt className="text-sm sm:text-base font-semibold">Classe(s) :</dt>
+                <dt className="text-sm sm:text-base font-semibold">{t("classes")} :</dt>
                 <dd className="text-sm sm:text-base">
-                  {player?.class.map((c) => `${c.name} Niv ${c.level}`).join(" / ")}
+                  {player?.class.map((c) => `${c.name} ${t("levelLabel")} ${c.level}`).join(" / ")}
                 </dd>
               </div>
               {player?.class.map((c) => (
                 <div
                   key={c.name}
                   className="flex flex-col sm:flex-row gap-2">
-                  <dt className="text-sm sm:text-base font-semibold">Sous classe de {c.name} :</dt>
+                  <dt className="text-sm sm:text-base font-semibold">
+                    {t("subclassOf")} {c.name} :
+                  </dt>
                   <dd className="text-sm sm:text-base">{c.subclass}</dd>
                 </div>
               ))}
@@ -114,26 +103,26 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="proficiencies-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Maitrises
+              {t("proficiencies")}
             </h2>
             <dl className="flex flex-col gap-2">
               <div className="flex flex-col">
-                <dt className="text-sm sm:text-base font-semibold">Langue(s) :</dt>
-                <dd className="text-sm sm:text-base">{player?.stats?.languages.join(", ") || "Aucune"}</dd>
+                <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
+                <dd className="text-sm sm:text-base">{player?.stats?.languages.join(", ") || t("none")}</dd>
               </div>
               <div className="flex flex-col">
-                <dt className="text-sm sm:text-base font-semibold">Outil(s) :</dt>
-                <dd className="text-sm sm:text-base">{player?.stats?.tools.join(", ") || "Aucun"}</dd>
+                <dt className="text-sm sm:text-base font-semibold">{t("tools")} :</dt>
+                <dd className="text-sm sm:text-base">{player?.stats?.tools.join(", ") || t("noneTools")}</dd>
               </div>
               <div className="flex flex-col">
-                <dt className="text-sm sm:text-base font-semibold">Arme(s) :</dt>
+                <dt className="text-sm sm:text-base font-semibold">{t("weapons")} :</dt>
                 <dd className="text-sm sm:text-base wrap-break-words">
-                  {player?.stats?.weapons.join(", ") || "Aucune"}
+                  {player?.stats?.weapons.join(", ") || t("none")}
                 </dd>
               </div>
               <div className="flex flex-col">
-                <dt className="text-sm sm:text-base font-semibold">Armure(s) :</dt>
-                <dd className="text-sm sm:text-base">{player?.stats?.armors.join(", ") || "Aucune"}</dd>
+                <dt className="text-sm sm:text-base font-semibold">{t("armors")} :</dt>
+                <dd className="text-sm sm:text-base">{player?.stats?.armors.join(", ") || t("none")}</dd>
               </div>
             </dl>
           </Card>
@@ -146,7 +135,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="inspiration-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Inspiration
+              {t("inspiration")}
             </h2>
             <div className="flex items-center gap-2">
               <Checkbox
@@ -154,13 +143,13 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 checked={checked}
                 onCheckedChange={(value) => setChecked(value === true)}
                 disabled
-                aria-label={`Inspiration ${checked ? "active" : "inactive"}`}
+                aria-label={`${t("inspiration")} ${checked ? t("inspirationActive") : t("inspirationInactive")}`}
                 aria-describedby="inspiration-heading"
               />
               <label
                 htmlFor="inspiration-checkbox"
                 className="sr-only">
-                État d'inspiration
+                {t("inspirationState")}
               </label>
             </div>
           </Card>
@@ -173,13 +162,13 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="exhaustion-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Épuisement
+              {t("exhaustion")}
             </h2>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   className="font-semibold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 rounded px-2"
-                  aria-label={`Niveau d'épuisement ${player.exhaustionLevel}`}
+                  aria-label={`${t("exhaustionLevel")} ${player.exhaustionLevel}`}
                   aria-describedby="exhaustion-description">
                   {player.exhaustionLevel}
                 </button>
@@ -198,7 +187,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="saving-throws-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Jets de sauvegarde
+              {t("savingThrows")}
             </h2>
             <dl
               className="flex flex-col gap-2"
@@ -206,7 +195,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               {player?.stats &&
                 Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
                   const isMasteredKey = isMastered(key);
-                  const abilityName = key.charAt(0).toUpperCase() + key.slice(1);
+                  const abilityName = t(`abilities.${key}`);
                   return (
                     <div
                       key={key}
@@ -220,12 +209,12 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                         id={`mastery-${key}`}
                         checked={isMasteredKey}
                         disabled
-                        aria-label={`Maîtrise de ${abilityName} ${isMasteredKey ? "active" : "inactive"}`}
+                        aria-label={`${t("masteryOf")} ${abilityName} ${isMasteredKey ? t("masteryActive") : t("masteryInactive")}`}
                       />
                       <label
                         htmlFor={`mastery-${key}`}
                         className="sr-only">
-                        Maîtrise {abilityName}
+                        {t("mastery")} {abilityName}
                       </label>
                     </div>
                   );
@@ -239,7 +228,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           className="flex flex-col gap-2"
           aria-labelledby="characteristics-skills-section">
           {/* Caractéristiques */}
-          <Caracteristics
+          <Characteristics
             character={player}
             accentColor={accentColor}
           />
@@ -252,14 +241,14 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="skills-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Compétences
+              {t("skills")}
             </h2>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-sm sm:text-base font-semibold">Bonus de maîtrise :</span>
+                <span className="text-sm sm:text-base font-semibold">{t("proficiencyBonus")} :</span>
                 <span
                   className="text-sm sm:text-base"
-                  aria-label={`Bonus de maîtrise ${player?.stats?.proficiencyBonus}`}>
+                  aria-label={`${t("proficiencyBonus")} ${player?.stats?.proficiencyBonus}`}>
                   {player?.stats?.proficiencyBonus}
                 </span>
               </div>
@@ -269,9 +258,9 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           <div
             className="grid grid-cols-1 xl:grid-cols-2 gap-2"
             role="list"
-            aria-label="Liste des compétences du personnage">
+            aria-label={t("skillsList")}>
             <Competence
-              competence={"Acrobaties"}
+              competence={t("skillNames.acrobatics")}
               value={player?.stats?.masteries.acrobatics}
               icon={<User2Icon aria-hidden="true" />}
               accentColor={accentColor}
@@ -279,7 +268,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.dexterity}
             />
             <Competence
-              competence={"Arcanes"}
+              competence={t("skillNames.arcana")}
               value={player?.stats?.masteries.arcana}
               icon={<Sparkles aria-hidden="true" />}
               accentColor={accentColor}
@@ -287,7 +276,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.intelligence}
             />
             <Competence
-              competence={"Athlétisme"}
+              competence={t("skillNames.athletics")}
               value={player?.stats?.masteries.athletics}
               icon={<Footprints aria-hidden="true" />}
               accentColor={accentColor}
@@ -295,7 +284,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.strength}
             />
             <Competence
-              competence={"Discrétion"}
+              competence={t("skillNames.stealth")}
               value={player?.stats?.masteries.stealth}
               icon={<VenetianMask aria-hidden="true" />}
               accentColor={accentColor}
@@ -303,7 +292,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.dexterity}
             />
             <Competence
-              competence={"Dressage"}
+              competence={t("skillNames.animalHandling")}
               value={player?.stats?.masteries.animalHandling}
               icon={<PawPrint aria-hidden="true" />}
               accentColor={accentColor}
@@ -311,7 +300,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.wisdom}
             />
             <Competence
-              competence={"Escamotage"}
+              competence={t("skillNames.sleightHand")}
               value={player?.stats?.masteries.sleightHand}
               icon={<LockKeyhole aria-hidden="true" />}
               accentColor={accentColor}
@@ -319,7 +308,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.dexterity}
             />
             <Competence
-              competence={"Histoire"}
+              competence={t("skillNames.history")}
               value={player?.stats?.masteries.history}
               icon={<Notebook aria-hidden="true" />}
               accentColor={accentColor}
@@ -327,7 +316,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.intelligence}
             />
             <Competence
-              competence={"Intimidation"}
+              competence={t("skillNames.intimidation")}
               value={player?.stats?.masteries.intimidation}
               icon={<User2Icon aria-hidden="true" />}
               accentColor={accentColor}
@@ -335,7 +324,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.charisma}
             />
             <Competence
-              competence={"Intuition"}
+              competence={t("skillNames.insight")}
               value={player?.stats?.masteries.insight}
               icon={<Brain aria-hidden="true" />}
               accentColor={accentColor}
@@ -343,7 +332,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.wisdom}
             />
             <Competence
-              competence={"Investigation"}
+              competence={t("skillNames.investigation")}
               value={player?.stats?.masteries.investigation}
               icon={<CircleQuestionMark aria-hidden="true" />}
               accentColor={accentColor}
@@ -351,7 +340,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.intelligence}
             />
             <Competence
-              competence={"Médecine"}
+              competence={t("skillNames.medicine")}
               value={player?.stats?.masteries.medicine}
               icon={<CrossIcon aria-hidden="true" />}
               accentColor={accentColor}
@@ -359,7 +348,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.wisdom}
             />
             <Competence
-              competence={"Nature"}
+              competence={t("skillNames.nature")}
               value={player?.stats?.masteries.nature}
               icon={<Sprout aria-hidden="true" />}
               accentColor={accentColor}
@@ -367,7 +356,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.intelligence}
             />
             <Competence
-              competence={"Perception"}
+              competence={t("skillNames.perception")}
               value={player?.stats?.masteries.perception}
               icon={<Eye aria-hidden="true" />}
               accentColor={accentColor}
@@ -375,7 +364,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.wisdom}
             />
             <Competence
-              competence={"Persuasion"}
+              competence={t("skillNames.persuasion")}
               value={player?.stats?.masteries.persuasion}
               icon={<MessageSquare aria-hidden="true" />}
               accentColor={accentColor}
@@ -383,7 +372,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.charisma}
             />
             <Competence
-              competence={"Religion"}
+              competence={t("skillNames.religion")}
               value={player?.stats?.masteries.religion}
               icon={<Church aria-hidden="true" />}
               accentColor={accentColor}
@@ -391,7 +380,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.intelligence}
             />
             <Competence
-              competence={"Représentation"}
+              competence={t("skillNames.performance")}
               value={player?.stats?.masteries.performance}
               icon={<MicVocal aria-hidden="true" />}
               accentColor={accentColor}
@@ -399,7 +388,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.charisma}
             />
             <Competence
-              competence={"Survie"}
+              competence={t("skillNames.survival")}
               value={player?.stats?.masteries.survival}
               icon={<TreePine aria-hidden="true" />}
               accentColor={accentColor}
@@ -407,7 +396,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               masteriesAbility={player?.stats?.abilityScores.wisdom}
             />
             <Competence
-              competence={"Tromperie"}
+              competence={t("skillNames.deception")}
               value={player?.stats?.masteries.deception}
               icon={<Drama aria-hidden="true" />}
               accentColor={accentColor}
@@ -429,11 +418,11 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="alignment-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Alignement
+              {tPlayer("alignment")}
             </h2>
             <p
               className="font-semibold text-sm sm:text-base"
-              aria-label={`Alignement du personnage : ${player?.profile?.alignment}`}>
+              aria-label={`${tPlayer("alignment")} : ${player?.profile?.alignment}`}>
               {player?.profile?.alignment}
             </p>
           </Card>
@@ -446,11 +435,11 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="passive-perception-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Perception passive
+              {t("passivePerception")}
             </h2>
             <p
               className="font-semibold text-lg sm:text-xl"
-              aria-label={`Perception passive : ${player?.stats?.passivePerception}`}>
+              aria-label={`${t("passivePerception")} : ${player?.stats?.passivePerception}`}>
               {player?.stats?.passivePerception}
             </p>
           </Card>
@@ -463,11 +452,11 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="background-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Historique
+              {t("background")}
             </h2>
             <p
               className="font-semibold text-sm sm:text-base text-right"
-              aria-label={`Historique du personnage : ${player?.profile?.history}`}>
+              aria-label={`${t("background")} : ${player?.profile?.history}`}>
               {player?.profile?.history}
             </p>
           </Card>
@@ -480,7 +469,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <h2
               id="abilities-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              Aptitudes
+              {t("characterAbilities")}
             </h2>
             <Accordion
               type="single"
@@ -492,13 +481,13 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                   value={ability.name}>
                   <AccordionTrigger
                     className="text-left hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 rounded py-3"
-                    aria-label={`Détails de l'aptitude ${ability.name}`}>
+                    aria-label={`${t("abilityDetails")} ${ability.name}`}>
                     <span className="text-sm sm:text-base font-medium">{ability.name}</span>
                   </AccordionTrigger>
                   <AccordionContent
                     className="text-sm sm:text-base pb-3 pt-1"
                     role="region"
-                    aria-label={`Description de ${ability.name}`}>
+                    aria-label={`${t("abilityDescription")} ${ability.name}`}>
                     {ability.description}
                   </AccordionContent>
                 </AccordionItem>
