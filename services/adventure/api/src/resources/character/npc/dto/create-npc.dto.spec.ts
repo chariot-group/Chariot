@@ -6,7 +6,7 @@ describe('CreateNpcDto - FR-003: NPC Conditions (No Exhaustion)', () => {
   describe('NPC should accept standard conditions but NOT exhaustion', () => {
     it('should accept NPC with standard conditions', () => {
       const dto = plainToInstance(CreateNpcDto, {
-        name: 'Goblin',
+        firstname: 'Goblin',
         conditions: {
           frightened: true,
           poisoned: false,
@@ -19,7 +19,7 @@ describe('CreateNpcDto - FR-003: NPC Conditions (No Exhaustion)', () => {
 
     it('should accept NPC without any conditions', () => {
       const dto = plainToInstance(CreateNpcDto, {
-        name: 'Dragon',
+        firstname: 'Dragon',
       });
 
       const errors = validateSync(dto, { whitelist: true });
@@ -28,7 +28,7 @@ describe('CreateNpcDto - FR-003: NPC Conditions (No Exhaustion)', () => {
 
     it('should NOT have exhaustionLevel field available for NPCs', () => {
       const dto = plainToInstance(CreateNpcDto, {
-        name: 'Orc',
+        firstname: 'Orc',
         conditions: {
           blinded: true,
         }

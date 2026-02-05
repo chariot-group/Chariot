@@ -74,7 +74,7 @@ describe('PlayerService', () => {
   describe('create', () => {
     it('should create a player', async () => {
       const dto: CreatePlayerDto = {
-        name: 'Test',
+        firstname: 'Test',
         groups: [],
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
@@ -100,7 +100,7 @@ describe('PlayerService', () => {
 
     it('should throw BadRequestException if a group ID is invalid', async () => {
       const dto: CreatePlayerDto = {
-        name: 'Test',
+        firstname: 'Test',
         groups: ['not-an-objectid'], // invalid
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
@@ -124,7 +124,7 @@ describe('PlayerService', () => {
 
     it('should throw InternalServerErrorException on unexpected error', async () => {
       const dto: CreatePlayerDto = {
-        name: 'Test',
+        firstname: 'Test',
         groups: [],
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
@@ -154,7 +154,7 @@ describe('PlayerService', () => {
     it('should call updateMany with provided group IDs', async () => {
       const groupIds = [new Types.ObjectId().toHexString(), new Types.ObjectId().toHexString()];
       const dto: CreatePlayerDto = {
-        name: 'Test with groups',
+        firstname: 'Test with groups',
         groups: groupIds,
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
@@ -187,7 +187,7 @@ describe('PlayerService', () => {
     it('should update a player', async () => {
       const playerId = new Types.ObjectId();
       const dto: UpdatePlayerDto = {
-        name: 'Updated',
+        firstname: 'Updated',
         groups: [new Types.ObjectId().toString()],
       };
 
@@ -203,7 +203,7 @@ describe('PlayerService', () => {
     it('should throw BadRequestException if some group IDs are invalid', async () => {
       const playerId = new Types.ObjectId();
       const dto: UpdatePlayerDto = {
-        name: 'Invalid Group Test',
+        firstname: 'Invalid Group Test',
         groups: ['validId', 'invalidId'],
       };
 
@@ -217,7 +217,7 @@ describe('PlayerService', () => {
     it('should throw GoneException if a group is marked as deleted', async () => {
       const playerId = new Types.ObjectId();
       const dto: UpdatePlayerDto = {
-        name: 'Gone Group',
+        firstname: 'Gone Group',
         groups: [new Types.ObjectId().toHexString()],
       };
 
@@ -233,7 +233,7 @@ describe('PlayerService', () => {
 
     it('should use existing player groups if groups not provided', async () => {
       const playerId = new Types.ObjectId();
-      const dto: UpdatePlayerDto = { name: 'No Groups' };
+      const dto: UpdatePlayerDto = { firstname: 'No Groups' };
 
       characterModel.findById.mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue({
@@ -255,7 +255,7 @@ describe('PlayerService', () => {
 
     it('should throw NotFoundException if update did not modify any document', async () => {
       const playerId = new Types.ObjectId();
-      const dto: UpdatePlayerDto = { name: 'No Match', groups: [] };
+      const dto: UpdatePlayerDto = { firstname: 'No Match', groups: [] };
 
       characterModel.findById.mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue({
@@ -276,7 +276,7 @@ describe('PlayerService', () => {
 
     it('should throw InternalServerErrorException on unexpected failure', async () => {
       const playerId = new Types.ObjectId();
-      const dto: UpdatePlayerDto = { name: 'Crash', groups: [] };
+      const dto: UpdatePlayerDto = { firstname: 'Crash', groups: [] };
 
       characterModel.findById.mockImplementationOnce(() => {
         throw new Error('Unexpected DB Error');
@@ -289,7 +289,7 @@ describe('PlayerService', () => {
   describe('create with conditions - FR-003', () => {
     it('should create a player with D&D conditions', async () => {
       const dto: CreatePlayerDto = {
-        name: 'Exhausted Adventurer',
+        firstname: 'Exhausted Adventurer',
         groups: [],
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
@@ -320,7 +320,7 @@ describe('PlayerService', () => {
 
     it('should create a player with exhaustion level - Player specific', async () => {
       const dto: CreatePlayerDto = {
-        name: 'Exhausted Hero',
+        firstname: 'Exhausted Hero',
         groups: [],
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
@@ -347,7 +347,7 @@ describe('PlayerService', () => {
 
     it('should create a player with all conditions and exhaustion set', async () => {
       const dto: CreatePlayerDto = {
-        name: 'Severely Afflicted',
+        firstname: 'Severely Afflicted',
         groups: [],
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
@@ -390,7 +390,7 @@ describe('PlayerService', () => {
 
     it('should create a player without conditions (defaults applied)', async () => {
       const dto: CreatePlayerDto = {
-        name: 'Healthy Hero',
+        firstname: 'Healthy Hero',
         groups: [],
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
@@ -420,7 +420,7 @@ describe('PlayerService', () => {
     it('should update a player with new conditions', async () => {
       const playerId = new Types.ObjectId();
       const dto: UpdatePlayerDto = {
-        name: 'Updated with conditions',
+        firstname: 'Updated with conditions',
         groups: [],
         conditions: {
           paralyzed: true,
@@ -443,7 +443,7 @@ describe('PlayerService', () => {
     it('should update a player with new exhaustion level', async () => {
       const playerId = new Types.ObjectId();
       const dto: UpdatePlayerDto = {
-        name: 'Exhausted',
+        firstname: 'Exhausted',
         groups: [],
         exhaustionLevel: 3,
       };
@@ -464,7 +464,7 @@ describe('PlayerService', () => {
     it('should clear conditions and exhaustion when updated', async () => {
       const playerId = new Types.ObjectId();
       const dto: UpdatePlayerDto = {
-        name: 'Recovered',
+        firstname: 'Recovered',
         groups: [],
         conditions: {
           poisoned: false,

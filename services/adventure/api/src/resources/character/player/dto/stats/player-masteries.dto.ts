@@ -1,95 +1,77 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class MasteryDto {
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    athletics?: boolean;
+    @ApiProperty({ example: 3 })
+    @IsNumber()
+    athletics: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    acrobatics?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    acrobatics: number;
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    sleightHand?: boolean;
+    @ApiProperty({ example: 1 })
+    @IsNumber()
+    sleightHand: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    stealth?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    stealth: number;
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    arcana?: boolean;
+    @ApiProperty({ example: 1 })
+    @IsNumber()
+    arcana: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    history?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    history: number;
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    investigation?: boolean;
+    @ApiProperty({ example: 1 })
+    @IsNumber()
+    investigation: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    nature?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    nature: number;
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    religion?: boolean;
+    @ApiProperty({ example: 3 })
+    @IsNumber()
+    religion: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    animalHandling?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    animalHandling: number;
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    insight?: boolean;
+    @ApiProperty({ example: 1 })
+    @IsNumber()
+    insight: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    medicine?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    medicine: number;
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    perception?: boolean;
+    @ApiProperty({ example: 2 })
+    @IsNumber()
+    perception: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    survival?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    survival: number;
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    deception?: boolean;
+    @ApiProperty({ example: 3 })
+    @IsNumber()
+    deception: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    intimidation?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    intimidation: number;
 
-    @ApiProperty({ example: true })
-    @IsOptional()
-    @IsBoolean()
-    performance?: boolean;
+    @ApiProperty({ example: 2 })
+    @IsNumber()
+    performance: number;
 
-    @ApiProperty({ example: false })
-    @IsOptional()
-    @IsBoolean()
-    persuasion?: boolean;
+    @ApiProperty({ example: 0 })
+    @IsNumber()
+    persuasion: number;
 }

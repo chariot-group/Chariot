@@ -6,7 +6,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
   describe('Exhaustion level validation - Player specific', () => {
     it('should accept valid exhaustion level 0 (no exhaustion)', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Test Hero',
+        firstname: 'Test Hero',
         exhaustionLevel: 0
       });
 
@@ -16,7 +16,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should accept valid exhaustion level 1 (disadvantage on ability checks)', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Tired Hero',
+        firstname: 'Tired Hero',
         exhaustionLevel: 1
       });
 
@@ -26,7 +26,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should accept valid exhaustion level 2 (speed halved)', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Weary Hero',
+        firstname: 'Weary Hero',
         exhaustionLevel: 2
       });
 
@@ -36,7 +36,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should accept valid exhaustion level 3 (disadvantage on attacks and saves)', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Exhausted Hero',
+        firstname: 'Exhausted Hero',
         exhaustionLevel: 3
       });
 
@@ -46,7 +46,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should accept valid exhaustion level 4 (hit point maximum halved)', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Severely Exhausted Hero',
+        firstname: 'Severely Exhausted Hero',
         exhaustionLevel: 4
       });
 
@@ -56,7 +56,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should accept valid exhaustion level 5 (speed reduced to 0)', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Barely Moving Hero',
+        firstname: 'Barely Moving Hero',
         exhaustionLevel: 5
       });
 
@@ -66,7 +66,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should accept valid exhaustion level 6 (death)', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Dying Hero',
+        firstname: 'Dying Hero',
         exhaustionLevel: 6
       });
 
@@ -76,7 +76,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should reject exhaustion level below 0', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Invalid Hero',
+        firstname: 'Invalid Hero',
         exhaustionLevel: -1
       });
 
@@ -90,7 +90,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should reject exhaustion level above 6', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Invalid Hero',
+        firstname: 'Invalid Hero',
         exhaustionLevel: 7
       });
 
@@ -104,7 +104,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should reject non-integer exhaustion level', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Invalid Hero',
+        firstname: 'Invalid Hero',
         exhaustionLevel: 2.5
       });
 
@@ -118,7 +118,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should reject string exhaustion level', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Invalid Hero',
+        firstname: 'Invalid Hero',
         exhaustionLevel: 'three' as any
       });
 
@@ -133,7 +133,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
   describe('Player with conditions and exhaustion', () => {
     it('should accept player with both conditions and exhaustion level', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Afflicted Hero',
+        firstname: 'Afflicted Hero',
         conditions: {
           poisoned: true,
           frightened: false,
@@ -147,7 +147,7 @@ describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
 
     it('should accept player without exhaustion (optional field)', () => {
       const dto = plainToInstance(CreatePlayerDto, {
-        name: 'Fresh Hero',
+        firstname: 'Fresh Hero',
         conditions: {
           blinded: false,
         }

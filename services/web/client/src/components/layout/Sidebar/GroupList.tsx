@@ -83,11 +83,11 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                       href={`/campaigns/${selectedCampaignId}/groups/${group._id}/characters/${character._id}`}
                       key={character._id}
                       aria-current={isSelected ? "page" : undefined}
-                      aria-label={`${character.name}${isSelected ? ` (${t("selected")})` : ""}`}
+                      aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
                       className={`text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${
                         isSelected ? "bg-card/50 font-bold" : ""
                       }`}>
-                      {character.name}
+                      {character.firstname} {character.lastname}
                     </Link>
                   );
                 })

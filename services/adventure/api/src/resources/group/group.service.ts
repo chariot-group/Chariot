@@ -156,7 +156,7 @@ export class GroupService {
         .populate({
           path: 'characters',
           match: { deletedAt: null },
-          select: '_id name userId',
+          select: '_id firstname lastname surname userId',
         })
         .exec();
 

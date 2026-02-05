@@ -13,4 +13,9 @@ export class PlayerProfileDto extends ProfileDto {
   @IsOptional()
   @IsString()
   subrace?: string;
+
+  @ApiProperty({ example: 'A skilled archer from the northern forests.' })
+  @IsOptional()
+  @IsString()
+  history?: string;
 }

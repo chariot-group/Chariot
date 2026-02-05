@@ -1,6 +1,6 @@
 [
   {
-    "name": "Goblin",
+    "firstname": "Goblin",
     "kind": "npc",
     "profile": {
       "alignment": "Neutral Evil",
@@ -83,7 +83,7 @@
     }
   },
   {
-    "name": "Owlbear",
+    "firstname": "Owlbear",
     "kind": "npc",
     "profile": {
       "alignment": "unaligned",
@@ -184,7 +184,7 @@
     }
   },
   {
-    "name": "Cultist",
+    "firstname": "Cultist",
     "kind": "npc",
     "profile": {
       "alignment": "any non-good alignment",
@@ -263,7 +263,7 @@
     }
   },
   {
-    "name": "Drider",
+    "firstname": "Drider",
     "kind": "npc",
     "profile": {
       "alignment": "chaotic evil",
@@ -395,7 +395,8 @@
     }
   },
   {
-    "name": "Giant Eagle",
+    "firstname": "Giant",
+    "lastname": "Eagle",
     "kind": "npc",
     "profile": {
       "alignment": "neutral good",
@@ -485,7 +486,7 @@
     }
   },
   {
-    "name": "Lich",
+    "firstname": "Lich",
     "kind": "npc",
     "profile": {
       "alignment": "any evil alignment",
@@ -623,7 +624,7 @@
     }
   },
   {
-    "name": "Orc",
+    "firstname": "Orc",
     "kind": "npc",
     "profile": {
       "alignment": "chaotic evil",
@@ -716,7 +717,8 @@
     }
   },
   {
-    "name": "Scanlan Shorthalt",
+    "firstname": "Scanlan",
+    "lastname": "Shorthalt",
     "kind": "player",
     "inspiration": true,
     "progression": {
@@ -735,7 +737,8 @@
       "alignment": "chaotic good",
       "race": "gnome",
       "subrace": "forest gnome",
-      "background": "Entertainer"
+      "background": "Entertainer",
+      "history": "Artiste"
     },
     "appearance": {
       "age": 30,
@@ -761,6 +764,7 @@
     },
     "stats": {
       "size": "Small",
+      "proficiencyBonus": 2,
       "maxHitPoints": 20,
       "currentHitPoints": 20,
       "tempHitPoints": 0,
@@ -787,6 +791,37 @@
       "skills": {
         "deception": 7,
         "performance": 7
+      },
+      "tools": ["Lute", "Flute"],
+      "armors": ["Light armor"],
+      "weapons": ["Simple weapons", "Hand crossbow", "Longsword", "Rapier", "Shortsword"],
+      "masteries": {
+        "athletics": 0,
+        "acrobatics": 1,
+        "sleightHand": 1,
+        "stealth": 0,
+        "arcana": 1,
+        "history": 1,
+        "investigation": 0,
+        "nature": 0,
+        "religion": 0,
+        "animalHandling": 0,
+        "insight": 2,
+        "medicine": 0,
+        "perception": 1,
+        "survival": 0,
+        "deception": 3,
+        "intimidation": 0,
+        "performance": 3,
+        "persuasion": 2
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": true,
+        "constitution": false,
+        "intelligence": false,
+        "wisdom": false,
+        "charisma": true
       },
       "senses": [],
       "languages": ["Common", "Gnomish", "Sylvan"],
@@ -841,7 +876,8 @@
     }
   },
   {
-    "name": "Grog Strongjaw",
+    "firstname": "Grog",
+    "lastname": "Strongjaw",
     "kind": "player",
     "inspiration": false,
     "progression": {
@@ -860,7 +896,8 @@
       "alignment": "chaotic neutral",
       "race": "goliath",
       "subrace": null,
-      "background": "Outlander"
+      "background": "Outlander",
+      "history": "Barbare nomade"
     },
     "appearance": {
       "age": 30,
@@ -889,6 +926,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 2,
       "maxHitPoints": 45,
       "currentHitPoints": 45,
       "tempHitPoints": 0,
@@ -916,6 +954,37 @@
         "athletics": 6,
         "intimidation": 1
       },
+      "tools": [],
+      "armors": ["Light armor", "Medium armor", "Heavy armor", "Shields"],
+      "weapons": ["Simple weapons", "Martial weapons"],
+      "masteries": {
+        "athletics": 3,
+        "acrobatics": 0,
+        "sleightHand": 0,
+        "stealth": 0,
+        "arcana": 0,
+        "history": 0,
+        "investigation": 0,
+        "nature": 1,
+        "religion": 0,
+        "animalHandling": 1,
+        "insight": 0,
+        "medicine": 0,
+        "perception": 1,
+        "survival": 2,
+        "deception": 0,
+        "intimidation": 2,
+        "performance": 0,
+        "persuasion": 0
+      },
+      "masteriesAbility": {
+        "strength": true,
+        "dexterity": false,
+        "constitution": true,
+        "intelligence": false,
+        "wisdom": false,
+        "charisma": false
+      },
       "senses": [],
       "languages": ["Common", "Giant"],
       "passivePerception": 10
@@ -942,7 +1011,7 @@
     }
   },
   {
-    "name": "Vax'ildan",
+    "firstname": "Vax'ildan",
     "kind": "player",
     "inspiration": false,
     "progression": {
@@ -961,7 +1030,8 @@
       "alignment": "chaotic good",
       "race": "half-elf",
       "subrace": null,
-      "background": "Criminal"
+      "background": "Criminal",
+      "history": "Criminel"
     },
     "background": {
       "personalityTraits": "I always have a plan for what to do when things go wrong.",
@@ -982,6 +1052,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 2,
       "maxHitPoints": 24,
       "currentHitPoints": 24,
       "tempHitPoints": 0,
@@ -1010,6 +1081,37 @@
         "stealth": 6,
         "sleight of hand": 6
       },
+      "tools": ["Thieves' tools"],
+      "armors": ["Light armor"],
+      "weapons": ["Simple weapons", "Hand crossbow", "Longsword", "Rapier", "Shortsword"],
+      "masteries": {
+        "athletics": 1,
+        "acrobatics": 2,
+        "sleightHand": 3,
+        "stealth": 3,
+        "arcana": 0,
+        "history": 0,
+        "investigation": 2,
+        "nature": 0,
+        "religion": 0,
+        "animalHandling": 0,
+        "insight": 1,
+        "medicine": 0,
+        "perception": 2,
+        "survival": 0,
+        "deception": 2,
+        "intimidation": 0,
+        "performance": 0,
+        "persuasion": 1
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": true,
+        "constitution": false,
+        "intelligence": true,
+        "wisdom": false,
+        "charisma": false
+      },
       "senses": [],
       "languages": ["Common", "Elvish", "Thieves' Cant"],
       "passivePerception": 11
@@ -1032,7 +1134,7 @@
     }
   },
   {
-    "name": "Vex'ahlia",
+    "firstname": "Vex'ahlia",
     "kind": "player",
     "inspiration": false,
     "progression": {
@@ -1051,7 +1153,8 @@
       "alignment": "neutral good",
       "race": "half-elf",
       "subrace": null,
-      "background": "Outlander"
+      "background": "Outlander",
+      "history": "Chasseuse"
     },
     "appearance": {
       "age": 27,
@@ -1077,6 +1180,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 2,
       "maxHitPoints": 28,
       "currentHitPoints": 28,
       "tempHitPoints": 0,
@@ -1104,6 +1208,37 @@
         "survival": 4,
         "nature": 3,
         "animal handling": 4
+      },
+      "tools": [],
+      "armors": ["Light armor", "Medium armor", "Shields"],
+      "weapons": ["Simple weapons", "Martial weapons"],
+      "masteries": {
+        "athletics": 1,
+        "acrobatics": 0,
+        "sleightHand": 0,
+        "stealth": 2,
+        "arcana": 0,
+        "history": 0,
+        "investigation": 1,
+        "nature": 2,
+        "religion": 0,
+        "animalHandling": 2,
+        "insight": 1,
+        "medicine": 0,
+        "perception": 2,
+        "survival": 3,
+        "deception": 0,
+        "intimidation": 0,
+        "performance": 0,
+        "persuasion": 1
+      },
+      "masteriesAbility": {
+        "strength": true,
+        "dexterity": true,
+        "constitution": false,
+        "intelligence": false,
+        "wisdom": false,
+        "charisma": false
       },
       "senses": [],
       "languages": ["Common", "Elvish", "Sylvan"],
@@ -1148,7 +1283,7 @@
     }
   },
   {
-    "name": "Keyleth",
+    "firstname": "Keyleth",
     "kind": "player",
     "inspiration": false,
     "progression": {
@@ -1167,7 +1302,8 @@
       "alignment": "neutral good",
       "race": "half-elf",
       "subrace": null,
-      "background": "Hermit"
+      "background": "Hermit",
+      "history": "Ermite"
     },
     "appearance": {
       "age": 23,
@@ -1196,6 +1332,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 2,
       "maxHitPoints": 24,
       "currentHitPoints": 24,
       "tempHitPoints": 0,
@@ -1224,6 +1361,37 @@
         "nature": 3,
         "insight": 5,
         "arcana": 3
+      },
+      "tools": ["Herbalism kit"],
+      "armors": ["Light armor", "Medium armor", "Shields"],
+      "weapons": ["Club", "Dagger", "Dart", "Javelin", "Mace", "Quarterstaff", "Scimitar", "Sickle", "Sling", "Spear"],
+      "masteries": {
+        "athletics": 0,
+        "acrobatics": 0,
+        "sleightHand": 0,
+        "stealth": 0,
+        "arcana": 2,
+        "history": 1,
+        "investigation": 0,
+        "nature": 3,
+        "religion": 1,
+        "animalHandling": 2,
+        "insight": 2,
+        "medicine": 2,
+        "perception": 1,
+        "survival": 2,
+        "deception": 0,
+        "intimidation": 0,
+        "performance": 0,
+        "persuasion": 1
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": false,
+        "constitution": false,
+        "intelligence": true,
+        "wisdom": true,
+        "charisma": false
       },
       "senses": [],
       "languages": ["Common", "Elvish", "Druidic", "Primordial"],
@@ -1300,7 +1468,8 @@
     }
   },
   {
-    "name": "Pike Trickfoot",
+    "firstname": "Pike",
+    "lastname": "Trickfoot",
     "kind": "player",
     "inspiration": true,
     "progression": {
@@ -1319,7 +1488,8 @@
       "alignment": "lawful good",
       "race": "gnome",
       "subrace": "rock gnome",
-      "background": "Acolyte"
+      "background": "Acolyte",
+      "history": "Acolyte"
     },
     "appearance": {
       "age": 47,
@@ -1348,6 +1518,7 @@
     },
     "stats": {
       "size": "Small",
+      "proficiencyBonus": 4,
       "maxHitPoints": 85,
       "currentHitPoints": 85,
       "tempHitPoints": 0,
@@ -1376,6 +1547,37 @@
         "insight": 9,
         "medicine": 9,
         "persuasion": 5
+      },
+      "tools": [],
+      "armors": ["Light armor", "Medium armor", "Heavy armor", "Shields"],
+      "weapons": ["Simple weapons", "Martial weapons"],
+      "masteries": {
+        "athletics": 1,
+        "acrobatics": 0,
+        "sleightHand": 0,
+        "stealth": 0,
+        "arcana": 1,
+        "history": 2,
+        "investigation": 0,
+        "nature": 0,
+        "religion": 3,
+        "animalHandling": 0,
+        "insight": 2,
+        "medicine": 3,
+        "perception": 1,
+        "survival": 0,
+        "deception": 0,
+        "intimidation": 1,
+        "performance": 0,
+        "persuasion": 2
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": false,
+        "constitution": false,
+        "intelligence": false,
+        "wisdom": true,
+        "charisma": true
       },
       "senses": [],
       "languages": ["Common", "Gnomish", "Celestial"],
@@ -1472,7 +1674,9 @@
     }
   },
   {
-    "name": "Percival Fredrickstein Von Musel Klossowski de Rolo III",
+    "firstname": "Percival",
+    "lastname": "de Rolo",
+    "surname": "Percy",
     "kind": "player",
     "inspiration": true,
     "progression": {
@@ -1491,7 +1695,8 @@
       "alignment": "chaotic good",
       "race": "human",
       "subrace": "variant human",
-      "background": "Noble"
+      "background": "Noble",
+      "history": "Noble"
     },
     "appearance": {
       "age": 28,
@@ -1512,6 +1717,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 5,
       "maxHitPoints": 145,
       "currentHitPoints": 145,
       "tempHitPoints": 0,
@@ -1541,6 +1747,37 @@
         "history": 7,
         "intimidation": 6,
         "sleightOfHand": 9
+      },
+      "tools": ["Tinker's tools", "Smith's tools"],
+      "armors": ["Light armor", "Medium armor", "Heavy armor", "Shields"],
+      "weapons": ["Simple weapons", "Martial weapons", "Firearms"],
+      "masteries": {
+        "athletics": 0,
+        "acrobatics": 1,
+        "sleightHand": 3,
+        "stealth": 1,
+        "arcana": 2,
+        "history": 2,
+        "investigation": 3,
+        "nature": 1,
+        "religion": 0,
+        "animalHandling": 0,
+        "insight": 1,
+        "medicine": 0,
+        "perception": 2,
+        "survival": 0,
+        "deception": 1,
+        "intimidation": 2,
+        "performance": 0,
+        "persuasion": 2
+      },
+      "masteriesAbility": {
+        "strength": true,
+        "dexterity": false,
+        "constitution": true,
+        "intelligence": false,
+        "wisdom": false,
+        "charisma": false
       },
       "senses": [],
       "languages": ["Common", "Draconic", "Dwarvish"],
@@ -1596,7 +1833,8 @@
     }
   },
   {
-    "name": "Varis Umbros",
+    "firstname": "Varis",
+    "lastname": "Umbros",
     "kind": "player",
     "inspiration": false,
     "progression": {
@@ -1620,7 +1858,8 @@
     "profile": {
       "alignment": "neutral",
       "race": "half-elf",
-      "background": "Sage"
+      "background": "Sage",
+      "history": "Érudit"
     },
     "appearance": {
       "age": 135,
@@ -1649,6 +1888,7 @@
     },
     "stats": {
       "size": "Medium",
+      "proficiencyBonus": 4,
       "maxHitPoints": 74,
       "currentHitPoints": 74,
       "tempHitPoints": 0,
@@ -1677,6 +1917,37 @@
         "history": 9,
         "investigation": 9,
         "insight": 5
+      },
+      "tools": [],
+      "armors": ["Light armor"],
+      "weapons": ["Dagger", "Dart", "Sling", "Quarterstaff", "Light crossbow"],
+      "masteries": {
+        "athletics": 0,
+        "acrobatics": 0,
+        "sleightHand": 0,
+        "stealth": 1,
+        "arcana": 3,
+        "history": 2,
+        "investigation": 2,
+        "nature": 1,
+        "religion": 1,
+        "animalHandling": 0,
+        "insight": 2,
+        "medicine": 0,
+        "perception": 1,
+        "survival": 0,
+        "deception": 1,
+        "intimidation": 0,
+        "performance": 0,
+        "persuasion": 1
+      },
+      "masteriesAbility": {
+        "strength": false,
+        "dexterity": false,
+        "constitution": false,
+        "intelligence": true,
+        "wisdom": true,
+        "charisma": true
       },
       "senses": [
         {

@@ -72,7 +72,7 @@ describe('NpcService - create', () => {
   const groupId2 = new Types.ObjectId('64a1b2c3d4e5f6789012345b');
 
   const mockCreateNpcDto = {
-    name: 'Test NPC',
+    firstname: 'Test NPC',
     description: 'Test description',
     groups: [groupId1.toHexString(), groupId2.toHexString()],
     profile: {
@@ -190,7 +190,7 @@ describe('NpcService - create', () => {
 
   it('should create an NPC without groups', async () => {
     const npcDtoWithoutGroups = {
-      name: 'Test NPC',
+      firstname: 'Test NPC',
       description: 'Test description',
       profile: {
         alignment: 'Neutre',
@@ -350,7 +350,7 @@ describe('NpcService - update', () => {
   };
 
   const mockUpdateNpcDto = {
-    name: 'Updated NPC',
+    firstname: 'Updated NPC',
     groups: ['64a1b2c3d4e5f6789012345c'],
   };
 
@@ -402,7 +402,7 @@ describe('NpcService - update', () => {
     expect(characterModel.discriminators.npc.updateOne).toHaveBeenCalledWith(
       { _id: npcId },
       {
-        name: 'Updated NPC',
+        firstname: 'Updated NPC',
         groups: ['64a1b2c3d4e5f6789012345c'],
       },
     );
@@ -415,7 +415,7 @@ describe('NpcService - update', () => {
   });
 
   it('should update NPC without changing groups when groups not provided', async () => {
-    const updateDtoWithoutGroups = { name: 'Updated NPC' };
+    const updateDtoWithoutGroups = { firstname: 'Updated NPC' };
 
     characterModel.exec
       .mockResolvedValueOnce(existingNpc)
@@ -429,7 +429,7 @@ describe('NpcService - update', () => {
     expect(characterModel.discriminators.npc.updateOne).toHaveBeenCalledWith(
       { _id: npcId },
       {
-        name: 'Updated NPC',
+        firstname: 'Updated NPC',
         groups: ['64a1b2c3d4e5f6789012345a', '64a1b2c3d4e5f6789012345b'],
       },
     );
@@ -526,7 +526,7 @@ describe('NpcService - update', () => {
 
   it('should not throw and skip group validation if groups is empty or undefined', async () => {
     // Cas avec groups = []
-    const updateDtoEmptyGroups = { name: 'NPC without groups', groups: [] };
+    const updateDtoEmptyGroups = { firstname: 'NPC without groups', groups: [] };
     characterModel.discriminators.npc.updateOne.mockReturnValueOnce({
       exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     });
@@ -536,7 +536,7 @@ describe('NpcService - update', () => {
     await expect(service.update(npcId, updateDtoEmptyGroups)).resolves.not.toThrow();
 
     // Cas avec groups = undefined
-    const updateDtoNoGroups = { name: 'NPC no groups field' };
+    const updateDtoNoGroups = { firstname: 'NPC no groups field' };
     characterModel.discriminators.npc.updateOne.mockReturnValueOnce({
       exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     });
@@ -547,7 +547,7 @@ describe('NpcService - update', () => {
   });
 
   it('should throw BadRequestException for invalid group ID format in update', async () => {
-    const invalidGroupsDto = { name: 'NPC with invalid group', groups: ['invalid-id'] };
+    const invalidGroupsDto = { firstname: 'NPC with invalid group', groups: ['invalid-id'] };
 
     characterModel.exec.mockResolvedValueOnce(existingNpc);
     groupModel.exec.mockResolvedValue(null);

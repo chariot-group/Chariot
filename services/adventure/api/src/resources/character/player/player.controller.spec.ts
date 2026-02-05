@@ -17,7 +17,7 @@ describe('PlayerController - createPlayer', () => {
   const requestMock = { user: { keycloakId: userId } };
 
   const createDto = {
-    name: 'Test Player',
+    firstname: 'Test Player',
     groups: [new Types.ObjectId().toHexString()],
     stats: {
       strength: 10,
@@ -148,7 +148,7 @@ describe('PlayerController - update', () => {
   const groupId = new Types.ObjectId().toHexString();
 
   const updateDto = {
-    name: 'Updated Player',
+    firstname: 'Updated Player',
     description: 'Updated description',
     level: 10,
     groups: [groupId],
