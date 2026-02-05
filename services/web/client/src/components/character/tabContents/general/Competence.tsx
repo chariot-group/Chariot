@@ -5,14 +5,18 @@ import NoMastery from "@public/assets/mastery/no-mastery.svg";
 import HalfMastery from "@public/assets/mastery/half-mastery.svg";
 import Mastery from "@public/assets/mastery/mastery.svg";
 import Expert from "@public/assets/mastery/expert.svg";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 interface CompetenceProps {
   competence: string;
   value: number;
-  icon: React.ReactElement;
+  icon?: React.ReactElement | undefined;
   accentColor: string;
-  proficiencyBonus: number;
-  masteriesAbility: number;
+  proficiencyBonus?: number | undefined;
+  masteriesAbility?: number | undefined;
+  skills?: number | undefined;
+  tooltip?: string | undefined;
 }
 
 export default function Competence({
@@ -22,7 +26,11 @@ export default function Competence({
   accentColor,
   proficiencyBonus,
   masteriesAbility,
+  skills,
+  tooltip,
 }: CompetenceProps) {
+  const t = useTranslations("characterDetail.player.general");
+
   function getIconForValue(value: number): string {
     switch (value) {
       case 1:
@@ -41,11 +49,44 @@ export default function Competence({
   }
 
   function calculateMasteryLevel(masteryLevel: number): string {
-    let value = calculateModifier(masteriesAbility) + proficiencyBonus * 2;
-    if (masteryLevel === 0) value = calculateModifier(masteriesAbility);
-    if (masteryLevel === 1) value = calculateModifier(masteriesAbility) + proficiencyBonus / 2;
-    if (masteryLevel === 2) value = calculateModifier(masteriesAbility) + proficiencyBonus;
-    return value >= 0 ? `+${value}` : `${value}`;
+    let result: number = 0;
+    if (skills!) {
+      result = skills;
+    } else {
+      if (!proficiencyBonus || !masteriesAbility) return "+0";
+      let value = calculateModifier(masteriesAbility) + proficiencyBonus * 2;
+      if (masteryLevel === 0) value = calculateModifier(masteriesAbility);
+      if (masteryLevel === 1) value = calculateModifier(masteriesAbility) + proficiencyBonus / 2;
+      if (masteryLevel === 2) value = calculateModifier(masteriesAbility) + proficiencyBonus;
+      result = value;
+    }
+    let arroundedResult = Math.floor(result);
+    return arroundedResult > 0 ? `+${arroundedResult}` : `${arroundedResult}`;
+  }
+
+  if (tooltip !== undefined) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Card className="p-2">
+            <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
+              {icon}
+              {competence} {calculateMasteryLevel(value)}
+              <Image
+                src={getIconForValue(value)}
+                alt={t("masteryLevelIcon", { level: value })}
+                width={16}
+                height={16}
+                aria-hidden="true"
+              />
+            </p>
+          </Card>
+        </TooltipTrigger>
+        <TooltipContent role="tooltip">
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
   }
 
   return (
@@ -55,9 +96,10 @@ export default function Competence({
         {competence} {calculateMasteryLevel(value)}
         <Image
           src={getIconForValue(value)}
-          alt={`Niveau ${value}`}
+          alt={t("masteryLevelIcon", { level: value })}
           width={16}
           height={16}
+          aria-hidden="true"
         />
       </p>
     </Card>

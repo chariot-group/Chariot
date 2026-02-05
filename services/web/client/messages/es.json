@@ -170,6 +170,8 @@
         "abilityDetails": "Detalles de la aptitud",
         "abilityDescription": "Descripción de",
         "characteristics": "Características",
+        "masteryLevelIcon": "Nivel de competencia {level}",
+        "noLanguages": "Ninguno",
         "skillNames": {
           "acrobatics": "Acrobacias",
           "arcana": "Arcanos",

@@ -170,6 +170,8 @@
         "abilityDetails": "Détails de l'aptitude",
         "abilityDescription": "Description de",
         "characteristics": "Caractéristiques",
+        "masteryLevelIcon": "Niveau de maîtrise {level}",
+        "noLanguages": "Aucune",
         "skillNames": {
           "acrobatics": "Acrobaties",
           "arcana": "Arcanes",
