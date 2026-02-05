@@ -67,25 +67,28 @@ export interface Stats {
 
 export interface PlayerStats extends Stats {
     proficiencyBonus: number;
+    armors: string[];
+    weapons: string[];
+    tools: string[];
     masteries: {
-        athletics: boolean;
-        acrobatics: boolean;
-        sleightHand: boolean;
-        stealth: boolean;
-        arcana: boolean;
-        history: boolean;
-        investigation: boolean;
-        nature: boolean;
-        religion: boolean;
-        animalHandling: boolean;
-        insight: boolean;
-        medicine: boolean;
-        perception: boolean;
-        survival: boolean;
-        deception: boolean;
-        intimidation: boolean;
-        performance: boolean;
-        persuasion: boolean;
+        athletics: number;
+        acrobatics: number;
+        sleightHand: number;
+        stealth: number;
+        arcana: number;
+        history: number;
+        investigation: number;
+        nature: number;
+        religion: number;
+        animalHandling: number;
+        insight: number;
+        medicine: number;
+        perception: number;
+        survival: number;
+        deception: number;
+        intimidation: number;
+        performance: number;
+        persuasion: number;
     };
     masteriesAbility: {
         strength: boolean;
@@ -193,6 +196,7 @@ export interface PlayerProfile {
     alignment: string;
     race: string;
     subrace: string;
+    history: string;
 }
 
 export interface Group {
@@ -205,7 +209,10 @@ export interface Group {
 
 export interface Character {
     _id: string;
-    name: string;
+    firstname: string;
+    lastname: string;
+    surname: string;
+    avatar: string;
     stats: Stats;
     affinities: Affinities;
     abilities: Ability[];

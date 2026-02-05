@@ -8,6 +8,8 @@ import TabContentPlaceholder from "@/components/character/TabContentPlaceholder"
 import CharacterInventoryTabContent from "@/components/character/tabContents/CharacterInventoryTabContent";
 import React, { useState } from "react";
 import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
+import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
+import Image from "next/image";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
 
@@ -32,7 +34,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
   const [activeTab, setActiveTab] = useState<CharacterTab>("general");
 
   return (
-    <main className="min-h-screen">
+    <main>
       <Tabs
         defaultValue="general"
         value={activeTab}
@@ -57,10 +59,11 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     className={`
                                             flex-none py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
                                             focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                                            ${activeTab === tab
-                        ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
-                        : `text-white bg-gray hover:bg-gray-middle`
-                      }
+                                            ${
+                                              activeTab === tab
+                                                ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
+                                                : `text-white bg-gray hover:bg-gray-middle`
+                                            }
                                         `}>
                     {t(`tabs.${tab}`)}
                   </TabsTrigger>
@@ -70,7 +73,9 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
               {/* Infos du personnage */}
               <div className="flex flex-row items-end gap-3 sm:gap-4 md:gap-5 shrink-0 w-full xl:w-auto">
                 <div className="text-left xl:text-right mb-2 flex-1">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">{character.name}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                    {character.firstname} {character.lastname}
+                  </h1>
                   {isPlayer(character) ? (
                     <React.Fragment>
                       <p className="text-sm sm:text-base text-white font-semibold">
@@ -109,22 +114,34 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                 </div>
 
                 {/* Photo de profil */}
-                <div
-                  className="w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[18px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
-                  role="img"
-                  aria-label={t("placeholder.noImage")}>
-                  <User
-                    className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-middle-light"
-                    aria-hidden="true"
-                  />
-                </div>
+                {character.avatar ? (
+                  <div className="w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[18px] bg-gray flex items-center justify-center overflow-hidden shrink-0 relative">
+                    <Image
+                      src={character.avatar}
+                      priority
+                      fill
+                      alt={`${character.firstname} ${character.lastname}`}
+                      className="object-cover rounded-[15px] bg-gray-middle-light"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[15px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
+                    role="img"
+                    aria-label={t("placeholder.noImage")}>
+                    <User
+                      className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-middle-light"
+                      aria-hidden="true"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
         {/* Contenu des onglets */}
-        <div className="w-full mx-auto px-4 sm:px-6 md:px-8 py-10 md:py-4">
+        <div className="w-full mx-auto px-4 sm:px-6 min-[325px]:py-10 md:px-8 py-16 lg:py-4">
           {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
             <TabsContent
               key={tab}
@@ -138,8 +155,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                 switch (tab) {
                   case "general":
                     return (
-                      <TabContentPlaceholder
-                        tab={tab}
+                      <CharacterGeneralTabContent
+                        character={character}
                         accentColor={TAB_COLORS[tab]}
                       />
                     );
@@ -158,7 +175,12 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                       />
                     );
                   case "inventory":
-                    return (<CharacterInventoryTabContent character={character} accentColor={TAB_COLORS[tab]} />);
+                    return (
+                      <CharacterInventoryTabContent
+                        character={character}
+                        accentColor={TAB_COLORS[tab]}
+                      />
+                    );
                   case "history":
                     return (
                       <CharacterHistoryTabContent
@@ -174,6 +196,6 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
           ))}
         </div>
       </Tabs>
-    </main >
+    </main>
   );
 }

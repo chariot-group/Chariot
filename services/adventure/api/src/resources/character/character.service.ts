@@ -40,7 +40,7 @@ export class CharacterService {
           : (sort[query.sort] = 'asc');
       }
       const filters: Record<string, any> = {
-        name: { $regex: `${decodeURIComponent(name)}`, $options: 'i' },
+        firstname: { $regex: `${decodeURIComponent(name)}`, $options: 'i' },
         deletedAt: { $eq: null },
         createdBy: userId,
       };

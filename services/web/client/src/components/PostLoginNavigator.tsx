@@ -29,14 +29,12 @@ export default function PostLoginNavigator() {
       // 2. Le chargement est terminé
       // 3. On n'a pas déjà géré la redirection
       // 4. L'utilisateur est sur une page qui nécessite une redirection
-      console.log(`PostLoginNavigator: authenticated=${authenticated}, loading=${loading}, pathname=${pathname}`);
       if (authenticated && !loading && !hasHandledAuthRef.current) {
         if (NavigationService.shouldRedirectAfterLogin(pathname)) {
           hasHandledAuthRef.current = true;
 
           try {
             const destination = await NavigationService.determinePostLoginDestination(locale, dispatch, () => getState);
-            console.log(`Post-login navigation: ${destination.reason} -> ${destination.path}`);
             router.push(destination.path);
           } catch (error) {
             console.error("Failed to determine post-login destination:", error);

@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, ValidateNested } from 'class-validator';
+import { IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { StatsDto } from '@/resources/character/core/dto/stats/stats.dto';
 import { Type } from 'class-transformer';
 import { MasteryDto } from '@/resources/character/player/dto/stats/player-masteries.dto';
@@ -12,9 +12,23 @@ export class PlayerStatsDto extends StatsDto {
   @IsNumber()
   proficiencyBonus?: number;
 
+  @ApiProperty({ example: ['Leather', 'Chainmail'] })
+  @IsOptional()
+  @IsString({ each: true })
+  armors?: string[];
+
+  @ApiProperty({ example: ['Thieves\' Tools', 'Smith\'s Tools'] })
+  @IsOptional()
+  @IsString({ each: true })
+  tools?: string[];
+
+  @ApiProperty({ example: ['Shortsword', 'Longbow'] })
+  @IsOptional()
+  @IsString({ each: true })
+  weapons?: string[];
+
   @ApiProperty({ type: MasteryDto })
   @ValidateNested()
-  @IsOptional()
   @Type(() => MasteryDto)
   masteries?: MasteryDto;
 

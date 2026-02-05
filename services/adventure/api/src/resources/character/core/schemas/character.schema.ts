@@ -23,7 +23,19 @@ export class Character extends BaseSchema {
 
   @ApiProperty({ example: 'Aragorn' })
   @Prop({ required: true })
-  name: string;
+  firstname: string;
+
+  @ApiProperty({ example: 'Elessar' })
+  @Prop({ required: false })
+  lastname: string;
+
+  @ApiProperty({ example: 'Fils d\'Arathorn' })
+  @Prop({ required: false })
+  surname: string;
+
+  @ApiProperty({ example: 'http://example.com/avatar.png' })
+  @Prop({ required: false })
+  avatar: string;
 
   @ApiProperty({ type: Stats })
   @Prop({ type: Stats, default: {} })

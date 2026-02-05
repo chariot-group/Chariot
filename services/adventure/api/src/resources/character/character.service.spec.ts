@@ -60,7 +60,7 @@ describe('CharacterService - findAllByUser', () => {
     });
 
     expect(characterModel.find).toHaveBeenCalledWith({
-      name: { $regex: 'Test', $options: 'i' },
+      firstname: { $regex: 'Test', $options: 'i' },
       deletedAt: { $eq: null },
       createdBy: userId,
     });
@@ -70,7 +70,7 @@ describe('CharacterService - findAllByUser', () => {
     expect(characterModel.skip).toHaveBeenCalledWith(0);
 
     expect(characterModel.countDocuments).toHaveBeenCalledWith({
-      name: { $regex: 'Test', $options: 'i' },
+      firstname: { $regex: 'Test', $options: 'i' },
       deletedAt: { $eq: null },
       createdBy: userId,
     });
@@ -101,7 +101,7 @@ describe('CharacterService - findAllByUser', () => {
     const result = await service.findAllByUser(userId, { page: 1, offset: 10 }, groupId);
 
     expect(characterModel.find).toHaveBeenCalledWith({
-      name: { $regex: '', $options: 'i' },
+      firstname: { $regex: '', $options: 'i' },
       deletedAt: { $eq: null },
       createdBy: userId,
       groups: { $in: [groupId] },

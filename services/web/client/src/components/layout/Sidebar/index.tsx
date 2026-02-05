@@ -28,15 +28,15 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Burger menu button - visible only on mobile < 640px */}
+      {/* Burger menu button - visible only on mobile < 1280px */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className={cn(
-          "fixed top-4 left-4 z-[60] sm:hidden cursor-pointer",
+          "fixed top-4 left-4 z-[60] xl:hidden cursor-pointer",
           "bg-background text-white p-2 rounded-md",
           "hover:bg-card transition-all duration-300",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          isMenuOpen && "translate-x-[13rem]",
+          isMenuOpen && "translate-x-[13rem] sm:translate-x-[20rem]",
         )}
         aria-label={isMenuOpen ? t("closeMenu") : t("openMenu")}
         aria-expanded={isMenuOpen}>
@@ -46,7 +46,7 @@ export default function Sidebar() {
       {/* Backdrop for mobile menu */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 sm:hidden"
+          className="fixed inset-0 bg-black/50 z-40 xl:hidden"
           onClick={() => setIsMenuOpen(false)}
           aria-hidden="true"
         />
@@ -57,11 +57,11 @@ export default function Sidebar() {
         ref={sidebarRef}
         className={cn(
           "fixed left-0 top-0 z-50 h-screen",
-          "bg-card sm:bg-transparent text-white border-r border-sidebar-border",
+          "bg-card xl:bg-transparent text-white border-r border-sidebar-border",
           "flex flex-col transition-all duration-300",
-          "w-52 sm:w-60 md:w-72 lg:w-80",
+          "w-52 sm:w-80",
           // Hide on mobile by default, show when menu is open
-          !isMenuOpen && "-translate-x-full sm:translate-x-0",
+          !isMenuOpen && "-translate-x-full xl:translate-x-0",
         )}
         role="navigation"
         aria-label={t("mainNavigation")}>
@@ -83,7 +83,7 @@ export default function Sidebar() {
 
       {/* Spacer to prevent content overlap on desktop */}
       <div
-        className={cn("shrink-0 transition-all duration-300", "hidden sm:block", "sm:w-60 md:w-72 lg:w-80")}
+        className={cn("shrink-0 transition-all duration-300", "hidden xl:block", "xl:w-80")}
         aria-hidden="true"
       />
     </>

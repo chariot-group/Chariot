@@ -5,7 +5,7 @@ import { CreateCharacterDto } from '@/resources/character/core/dto/create-charac
 describe('CreateCharacterDto - shared fields validation', () => {
   it('should validate a character with appearance, background, and treasure', () => {
     const dto = plainToInstance(CreateCharacterDto, {
-      name: 'Aragorn',
+      firstname: 'Aragorn',
       appearance: {
         age: 87,
         height: 190,
@@ -39,7 +39,7 @@ describe('CreateCharacterDto - shared fields validation', () => {
 
   it('should invalidate incorrect types in nested DTOs', () => {
     const dto = plainToInstance(CreateCharacterDto, {
-      name: 'Legolas',
+      firstname: 'Legolas',
       appearance: {
         age: 'young', // invalid type
       },
@@ -54,7 +54,7 @@ describe('CreateCharacterDto - shared fields validation', () => {
 
   it('should validate a character with conditions - FR-003', () => {
     const dto = plainToInstance(CreateCharacterDto, {
-      name: 'Frodo',
+      firstname: 'Frodo',
       conditions: {
         poisoned: true,
         frightened: false
@@ -67,7 +67,7 @@ describe('CreateCharacterDto - shared fields validation', () => {
 
   it('should reject non-boolean condition values - FR-003', () => {
     const dto = plainToInstance(CreateCharacterDto, {
-      name: 'Merry',
+      firstname: 'Merry',
       conditions: {
         blinded: 'yes', // invalid: must be boolean
         charmed: 1 // invalid: must be boolean

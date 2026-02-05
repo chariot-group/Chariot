@@ -4,77 +4,77 @@ import { ApiProperty } from '@nestjs/swagger';
 @Schema({ _id: false })
 export class Masteries {
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    athletics: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    athletics: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    acrobatics: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    acrobatics: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    sleightHand: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    sleightHand: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    stealth: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    stealth: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    arcana: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    arcana: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    history: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    history: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    investigation: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    investigation: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    nature: boolean;
+    @ApiProperty({ example: 2 })
+    @Prop({ default: 0 })
+    nature: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    religion: boolean;
+    @ApiProperty({ example: 3 })
+    @Prop({ default: 0 })
+    religion: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    animalHandling: boolean;
+    @ApiProperty({ example: 1 })
+    @Prop({ default: 0 })
+    animalHandling: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    insight: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    insight: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    medicine: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    medicine: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    perception: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    perception: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    survival: boolean;
+    @ApiProperty({ example: 1 })
+    @Prop({ default: 0 })
+    survival: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    deception: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    deception: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    intimidation: boolean;
+    @ApiProperty({ example: 2 })
+    @Prop({ default: 0 })
+    intimidation: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    performance: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    performance: number;
 
-    @ApiProperty({ example: true })
-    @Prop({ default: false })
-    persuasion: boolean;
+    @ApiProperty({ example: 0 })
+    @Prop({ default: 0 })
+    persuasion: number;
 }
 
 export const MasteriesSchema = SchemaFactory.createForClass(Masteries);
