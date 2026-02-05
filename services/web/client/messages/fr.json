@@ -194,10 +194,18 @@
     },
     "npc": {
       "type": "Type",
+      "typeLabel": "Type",
       "subtype": "Sous-type",
+      "subtypeLabel": "Sous-type",
       "challengeRating": "Indice de dangerosité",
       "challengeRatingAbbr": "ID",
-      "alignment": "Alignement"
+      "alignment": "Alignement",
+      "general": {
+        "npcInfoLabel": "Informations générales du PNJ",
+        "characterInfo": "Informations du personnage",
+        "characteristicsSkills": "Caractéristiques et compétences",
+        "additionalInfo": "Informations additionnelles"
+      }
     },
     "placeholder": {
       "noImage": "Aucune image"

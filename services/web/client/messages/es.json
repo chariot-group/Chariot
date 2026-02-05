@@ -194,10 +194,18 @@
     },
     "npc": {
       "type": "Tipo",
+      "typeLabel": "Tipo",
       "subtype": "Subtipo",
+      "subtypeLabel": "Subtipo",
       "challengeRating": "Índice de desafío",
       "challengeRatingAbbr": "ID",
-      "alignment": "Alineamiento"
+      "alignment": "Alineamiento",
+      "general": {
+        "npcInfoLabel": "Información general del PNJ",
+        "characterInfo": "Información del personaje",
+        "characteristicsSkills": "Características y habilidades",
+        "additionalInfo": "Información adicional"
+      }
     },
     "placeholder": {
       "noImage": "Sin imagen"

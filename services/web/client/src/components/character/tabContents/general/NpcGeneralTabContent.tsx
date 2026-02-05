@@ -19,13 +19,10 @@ import {
   User2Icon,
   VenetianMask,
 } from "lucide-react";
-import { useState } from "react";
 import { useTranslations } from "next-intl";
-import Competence from "@/components/character/tabContents/general/Competence";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Characteristics from "@/components/character/tabContents/general/Characteristics";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import Competence from "@/components/character/tabContents/general/Competence";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -35,6 +32,7 @@ interface NpcGeneralTabContentProps {
 export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
   const tPlayer = useTranslations("characterDetail.player");
+  const tNpc = useTranslations("characterDetail.npc");
 
   function infoExhaustionLevel(level: number): string {
     return t(`exhaustionLevels.${level}`);
@@ -44,12 +42,13 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
     <div
       className="w-full flex flex-col gap-2 px-2 sm:px-0"
       role="main"
-      aria-label={t("characterInfoLabel")}>
+      aria-label={tNpc("general.npcInfoLabel")}>
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
         {/* Colonne 1 : Personnage et Maitrises */}
         <section
           className="flex flex-col gap-2"
-          aria-labelledby="character-info-section">
+          aria-labelledby="character-info-section"
+          aria-label={tNpc("general.characterInfo")}>
           {/* Personnage */}
           <Card
             className="gap-3 py-4 px-4 md:px-6"
@@ -62,11 +61,11 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             </h2>
             <dl className="flex flex-col gap-2">
               <div className="flex flex-col sm:flex-row gap-2">
-                <dt className="text-sm sm:text-base font-semibold">{t("raceLabel")} :</dt>
+                <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
                 <dd className="text-sm sm:text-base">{npc?.profile?.type}</dd>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <dt className="text-sm sm:text-base font-semibold">{t("classes")} :</dt>
+                <dt className="text-sm sm:text-base font-semibold">{tNpc("subtypeLabel")} :</dt>
                 <dd className="text-sm sm:text-base">{npc?.profile?.subtype}</dd>
               </div>
             </dl>
@@ -76,15 +75,19 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           <Card
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
-            aria-labelledby="proficiencies-heading">
+            aria-labelledby="languages-heading">
             <h2
-              id="proficiencies-heading"
+              id="languages-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("languages")}
             </h2>
             <dl className="flex flex-col gap-2">
               <div className="flex flex-col">
-                <dd className="text-sm sm:text-base">{npc?.stats?.languages.join(", ")}</dd>
+                <dd
+                  className="text-sm sm:text-base"
+                  aria-label={`${t("languages")} : ${npc?.stats?.languages?.length > 0 ? npc.stats.languages.join(", ") : t("none")}`}>
+                  {npc?.stats?.languages?.length > 0 ? npc.stats.languages.join(", ") : t("none")}
+                </dd>
               </div>
             </dl>
           </Card>
@@ -112,7 +115,11 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                       role="listitem">
                       <div className="flex items-center gap-2 flex-1">
                         <dt className="text-sm sm:text-base font-semibold">{abilityName} :</dt>
-                        <dd className="text-sm sm:text-base">{value >= 0 ? `+${value}` : value}</dd>
+                        <dd
+                          className="text-sm sm:text-base"
+                          aria-label={`${abilityName} ${t("savingThrows")} : ${value >= 0 ? `+${value}` : value}`}>
+                          {value >= 0 ? `+${value}` : value}
+                        </dd>
                       </div>
                     </div>
                   );
@@ -124,18 +131,180 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
         {/* Colonne 2 : Caractéristiques et Compétences */}
         <section
           className="flex flex-col gap-2"
-          aria-labelledby="characteristics-skills-section">
+          aria-labelledby="characteristics-skills-section"
+          aria-label={tNpc("general.characteristicsSkills")}>
           {/* Caractéristiques */}
           <Characteristics
             character={npc}
             accentColor={accentColor}
           />
+          <Card
+            className="gap-3 py-4 px-4 md:px-6"
+            role="region"
+            aria-labelledby="skills-heading">
+            <h2
+              id="skills-heading"
+              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              {t("skills")}
+            </h2>
+          </Card>
+
+          <div
+            className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+            role="list"
+            aria-label={t("skillsList")}>
+            <Competence
+              competence={t("skillNames.acrobatics")}
+              value={0}
+              icon={<User2Icon aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.dexterity}
+            />
+            <Competence
+              competence={t("skillNames.arcana")}
+              value={0}
+              icon={<Sparkles aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={t("skillNames.athletics")}
+              value={0}
+              icon={<Footprints aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.strength}
+            />
+            <Competence
+              competence={t("skillNames.stealth")}
+              value={0}
+              icon={<VenetianMask aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.dexterity}
+            />
+            <Competence
+              competence={t("skillNames.animalHandling")}
+              value={0}
+              icon={<PawPrint aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={t("skillNames.sleightHand")}
+              value={0}
+              icon={<LockKeyhole aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.dexterity}
+            />
+            <Competence
+              competence={t("skillNames.history")}
+              value={0}
+              icon={<Notebook aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={t("skillNames.intimidation")}
+              value={0}
+              icon={<User2Icon aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.charisma}
+            />
+            <Competence
+              competence={t("skillNames.insight")}
+              value={0}
+              icon={<Brain aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={t("skillNames.investigation")}
+              value={0}
+              icon={<CircleQuestionMark aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={t("skillNames.medicine")}
+              value={0}
+              icon={<CrossIcon aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={t("skillNames.nature")}
+              value={0}
+              icon={<Sprout aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={t("skillNames.perception")}
+              value={0}
+              icon={<Eye aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={t("skillNames.persuasion")}
+              value={0}
+              icon={<MessageSquare aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.charisma}
+            />
+            <Competence
+              competence={t("skillNames.religion")}
+              value={0}
+              icon={<Church aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.intelligence}
+            />
+            <Competence
+              competence={t("skillNames.performance")}
+              value={0}
+              icon={<MicVocal aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.charisma}
+            />
+            <Competence
+              competence={t("skillNames.survival")}
+              value={0}
+              icon={<TreePine aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.wisdom}
+            />
+            <Competence
+              competence={t("skillNames.deception")}
+              value={0}
+              icon={<Drama aria-hidden="true" />}
+              accentColor={accentColor}
+              proficiencyBonus={0}
+              masteriesAbility={npc?.stats?.abilityScores.charisma}
+            />
+          </div>
         </section>
 
         {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
         <section
           className="flex flex-col gap-2"
-          aria-labelledby="additional-info-section">
+          aria-labelledby="additional-info-section"
+          aria-label={tNpc("general.additionalInfo")}>
           {/* Alignement */}
           <Card
             className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"

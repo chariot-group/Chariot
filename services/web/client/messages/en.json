@@ -194,10 +194,18 @@
     },
     "npc": {
       "type": "Type",
+      "typeLabel": "Type",
       "subtype": "Subtype",
+      "subtypeLabel": "Subtype",
       "challengeRating": "Challenge Rating",
       "challengeRatingAbbr": "CR",
-      "alignment": "Alignment"
+      "alignment": "Alignment",
+      "general": {
+        "npcInfoLabel": "NPC general information",
+        "characterInfo": "Character information",
+        "characteristicsSkills": "Characteristics and skills",
+        "additionalInfo": "Additional information"
+      }
     },
     "placeholder": {
       "noImage": "No image"
