@@ -69,7 +69,6 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
           if (storedUserId && storedUserId !== currentUserId) {
             // Different user detected - purge all cached data
-            console.log("User change detected, purging cached data");
             try {
               await purgePersistedState();
             } catch (error) {
