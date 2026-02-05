@@ -36,7 +36,7 @@ export default function Sidebar() {
           "bg-background text-white p-2 rounded-md",
           "hover:bg-card transition-all duration-300",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          isMenuOpen && "translate-x-[13rem] lg:translate-x-[20rem]",
+          isMenuOpen && "translate-x-[13rem] sm:translate-x-[20rem]",
         )}
         aria-label={isMenuOpen ? t("closeMenu") : t("openMenu")}
         aria-expanded={isMenuOpen}>
@@ -59,7 +59,7 @@ export default function Sidebar() {
           "fixed left-0 top-0 z-50 h-screen",
           "bg-card xl:bg-transparent text-white border-r border-sidebar-border",
           "flex flex-col transition-all duration-300",
-          "w-52 sm:w-60 md:w-72 lg:w-80",
+          "w-52 sm:w-80",
           // Hide on mobile by default, show when menu is open
           !isMenuOpen && "-translate-x-full xl:translate-x-0",
         )}
