@@ -50,7 +50,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
       className="w-full flex flex-col gap-2 px-2 sm:px-0"
       role="main"
       aria-label={t("characterInfoLabel")}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 min-[325px]:grid-cols-2 xl:grid-cols-3 gap-2">
         {/* Colonne 1 : Personnage et Maitrises */}
         <section
           className="flex flex-col gap-2"
@@ -66,17 +66,17 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               {t("character")}
             </h2>
             <dl className="flex flex-col gap-2">
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{t("raceLabel")} :</dt>
                 <dd className="text-sm sm:text-base">{player?.profile?.race}</dd>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{t("globalLevel")} :</dt>
                 <dd className="text-sm sm:text-base">
                   {player?.progression?.level ?? 0} ({player?.progression?.experience ?? 0} XP)
                 </dd>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{t("classes")} :</dt>
                 <dd className="text-sm sm:text-base">
                   {player?.class.map((c) => `${c.name} ${t("levelLabel")} ${c.level}`).join(" / ")}
@@ -85,7 +85,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               {player?.class.map((c) => (
                 <div
                   key={c.name}
-                  className="flex flex-col sm:flex-row gap-2">
+                  className="flex flex-col gap-2">
                   <dt className="text-sm sm:text-base font-semibold">
                     {t("subclassOf")} {c.name} :
                   </dt>
@@ -138,7 +138,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           aria-labelledby="characteristics-skills-section">
           {/* Bonus */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
+            className="gap-3 py-4 px-4 md:px-6 flex-col sm:flex-row sm:items-center justify-between"
             role="region"
             aria-labelledby="exhaustion-heading">
             <h2
@@ -165,7 +165,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </h2>
           </Card>
           <div
-            className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+            className="grid grid-cols-1 min-[770px]:grid-cols-2 gap-2"
             role="list">
             {player?.stats &&
               Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
@@ -195,7 +195,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </h2>
           </Card>
           <div
-            className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+            className="grid grid-cols-1 min-[770px]:grid-cols-2 gap-2"
             role="list"
             aria-label={t("skillsList")}>
             <Competence
@@ -365,11 +365,11 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
         {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
         <section
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-2 min-[325px]:col-span-2 xl:col-span-1"
           aria-labelledby="additional-info-section">
           {/* Epuisement */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
+            className="gap-3 py-4 px-4 md:px-6 flex-col sm:flex-row sm:items-center justify-between"
             role="region"
             aria-labelledby="exhaustion-heading">
             <h2
@@ -379,12 +379,12 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </h2>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
+                <span
                   className="font-semibold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 rounded px-2"
                   aria-label={`${t("exhaustionLevel")} ${player.exhaustionLevel}`}
                   aria-describedby="exhaustion-description">
                   {player.exhaustionLevel}
-                </button>
+                </span>
               </TooltipTrigger>
               <TooltipContent>
                 <p id="exhaustion-description">{infoExhaustionLevel(player.exhaustionLevel)}</p>
@@ -394,7 +394,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
           {/* Alignement */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
+            className="gap-3 py-4 px-4 md:px-6 flex-col sm:flex-row sm:items-center justify-between"
             role="region"
             aria-labelledby="alignment-heading">
             <h2
@@ -411,7 +411,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
           {/* Perception passive */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
+            className="gap-3 py-4 px-4 md:px-6 flex-col sm:flex-row sm:items-center justify-between"
             role="region"
             aria-labelledby="passive-perception-heading">
             <h2
@@ -428,7 +428,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
           {/* Inspiration */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
+            className="gap-3 py-4 px-4 md:px-6 flex-col sm:flex-row sm:items-center justify-between"
             role="region"
             aria-labelledby="inspiration-heading">
             <h2
@@ -455,7 +455,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
           {/* Historique */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
+            className="gap-3 py-4 px-4 md:px-6 flex-col sm:flex-row sm:items-center justify-between"
             role="region"
             aria-labelledby="background-heading">
             <h2
@@ -464,7 +464,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               {t("background")}
             </h2>
             <p
-              className="font-semibold text-sm sm:text-base text-right"
+              className="font-semibold text-sm sm:text-base sm:text-right"
               aria-label={`${t("background")} : ${player?.profile?.history}`}>
               {player?.profile?.history}
             </p>

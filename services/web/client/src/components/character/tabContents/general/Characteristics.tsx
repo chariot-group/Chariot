@@ -24,12 +24,12 @@ export default function Characteristics({ character, accentColor }: Characterist
         aria-labelledby="characteristics-heading">
         <h2
           id="characteristics-heading"
-          className={`text-2xl font-semibold ${accentColor}`}>
+          className={`text-2xl font-semibold truncate ${accentColor}`}>
           {t("characteristics")}
         </h2>
       </Card>
       <div
-        className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+        className="grid grid-cols-1 min-[770px]:grid-cols-2 gap-2"
         role="list"
         aria-label={t("characteristics")}>
         {character?.stats &&
@@ -44,7 +44,7 @@ export default function Characteristics({ character, accentColor }: Characterist
                 <p
                   className="text-sm flex items-center gap-2"
                   aria-label={`${abilityName} : ${value} (${modifier})`}>
-                  {abilityName} {value} ({modifier})
+                  {abilityName} <span className="italic">{value}</span> <span className="font-bold">({modifier})</span>
                 </p>
               </Card>
             );

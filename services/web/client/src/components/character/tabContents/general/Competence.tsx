@@ -71,7 +71,7 @@ export default function Competence({
           <Card className="p-2">
             <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
               {icon}
-              {competence} {calculateMasteryLevel(value)}
+              {competence} <span className="font-bold">{calculateMasteryLevel(value)}</span>
               <Image
                 src={getIconForValue(value)}
                 alt={t("masteryLevelIcon", { level: value })}
@@ -93,7 +93,7 @@ export default function Competence({
     <Card className="p-2">
       <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
         {icon}
-        {competence} {calculateMasteryLevel(value)}
+        {competence} <span className="font-bold">{calculateMasteryLevel(value)}</span>
         <Image
           src={getIconForValue(value)}
           alt={t("masteryLevelIcon", { level: value })}
