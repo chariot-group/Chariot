@@ -8,6 +8,7 @@ import TabContentPlaceholder from "@/components/character/TabContentPlaceholder"
 import CharacterInventoryTabContent from "@/components/character/tabContents/CharacterInventoryTabContent";
 import React, { useState } from "react";
 import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
+import CharacterBattleTabContent from "@/components/character/tabContents/CharacterBattleTabContent";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
 
@@ -54,14 +55,12 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     role="tab"
                     aria-selected={activeTab === tab}
                     aria-controls={`${tab}-content`}
-                    className={`
-                                            flex-none py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
-                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                                            ${activeTab === tab
+                    className={`flex-none py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
+                        focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
+                        ${activeTab === tab
                         ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
                         : `text-white bg-gray hover:bg-gray-middle`
-                      }
-                                        `}>
+                      }`}>
                     {t(`tabs.${tab}`)}
                   </TabsTrigger>
                 ))}
@@ -145,8 +144,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     );
                   case "combat":
                     return (
-                      <TabContentPlaceholder
-                        tab={tab}
+                      <CharacterBattleTabContent
+                        character={character}
                         accentColor={TAB_COLORS[tab]}
                       />
                     );
