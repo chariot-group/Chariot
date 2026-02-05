@@ -108,21 +108,19 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <dl className="flex flex-col gap-2">
               <div className="flex flex-col">
                 <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
-                <dd className="text-sm sm:text-base">{player?.stats?.languages.join(", ") || t("none")}</dd>
+                <dd className="text-sm sm:text-base">{player?.stats?.languages.join(", ")}</dd>
               </div>
               <div className="flex flex-col">
                 <dt className="text-sm sm:text-base font-semibold">{t("tools")} :</dt>
-                <dd className="text-sm sm:text-base">{player?.stats?.tools.join(", ") || t("noneTools")}</dd>
+                <dd className="text-sm sm:text-base">{player?.stats?.tools.join(", ")}</dd>
               </div>
               <div className="flex flex-col">
                 <dt className="text-sm sm:text-base font-semibold">{t("weapons")} :</dt>
-                <dd className="text-sm sm:text-base wrap-break-words">
-                  {player?.stats?.weapons.join(", ") || t("none")}
-                </dd>
+                <dd className="text-sm sm:text-base wrap-break-words">{player?.stats?.weapons.join(", ")}</dd>
               </div>
               <div className="flex flex-col">
                 <dt className="text-sm sm:text-base font-semibold">{t("armors")} :</dt>
-                <dd className="text-sm sm:text-base">{player?.stats?.armors.join(", ") || t("none")}</dd>
+                <dd className="text-sm sm:text-base">{player?.stats?.armors.join(", ")}</dd>
               </div>
             </dl>
           </Card>

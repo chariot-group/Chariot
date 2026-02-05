@@ -1,5 +1,6 @@
 import { NPC, Player } from "@/types/character";
 import PlayerGeneralTabContent from "@/components/character/tabContents/general/PlayerGeneralTabContent";
+import NpcGeneralTabContent from "@/components/character/tabContents/general/NpcGeneralTabContent";
 
 interface CharacterGeneralTabContentProps {
   character: Player | NPC;
@@ -16,12 +17,10 @@ export default function CharacterGeneralTabContent({ character, accentColor }: C
     );
   } else {
     return (
-      <div>
-        <h1 className={accentColor}>
-          NPC Character: {character.firstname} {character.lastname}
-        </h1>
-        {/* Additional NPC-specific details */}
-      </div>
+      <NpcGeneralTabContent
+        npc={character as NPC}
+        accentColor={accentColor}
+      />
     );
   }
 }

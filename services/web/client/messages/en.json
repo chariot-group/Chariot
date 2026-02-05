@@ -133,8 +133,6 @@
         "tools": "Tool(s)",
         "weapons": "Weapon(s)",
         "armors": "Armor(s)",
-        "none": "None",
-        "noneTools": "None",
         "inspiration": "Inspiration",
         "inspirationActive": "active",
         "inspirationInactive": "inactive",
