@@ -26,6 +26,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import Characteristics from "@/components/character/tabContents/general/Characteristics";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { isMastered } from "@/utils/global.utils";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -41,10 +42,6 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
   function infoExhaustionLevel(level: number): string {
     return t(`exhaustionLevels.${level}`);
-  }
-
-  function isMastered(competence: string): boolean {
-    return player.stats.masteriesAbility[competence as keyof typeof player.stats.masteriesAbility] === true;
   }
 
   return (
@@ -171,7 +168,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             role="list">
             {player?.stats &&
               Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
-                const isMasteredKey = isMastered(key);
+                const isMasteredKey = isMastered(player, key);
                 const abilityName = t(`abilities.${key}`);
                 return (
                   <Competence

@@ -11,6 +11,7 @@ import CharacterHistoryTabContent from "@/components/character/tabContents/Chara
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
 import Image from "next/image";
 import CharacterMagicTabContent from "./tabContents/CharacterMagicTabContent";
+import { isPlayer } from "@/utils/global.utils";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
 
@@ -21,10 +22,6 @@ const TAB_COLORS: Record<CharacterTab, string> = {
   inventory: "yellow",
   history: "green",
 };
-
-function isPlayer(character: Player | NPC): character is Player {
-  return "progression" in character;
-}
 
 interface CharacterDetailViewProps {
   character: Player | NPC;

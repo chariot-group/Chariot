@@ -23,6 +23,7 @@ import { useTranslations } from "next-intl";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Characteristics from "@/components/character/tabContents/general/Characteristics";
 import Competence from "@/components/character/tabContents/general/Competence";
+import { calculateAbilityBonus } from "@/utils/global.utils";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -119,14 +120,13 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
                 const abilityName = t(`abilities.${key}`);
                 const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
-                const valeurCalculer = Math.floor((abilityScore - 10) / 2);
                 return (
                   <Competence
                     key={key}
                     competence={abilityName}
                     value={value > 0 ? 2 : 0}
                     accentColor={accentColor}
-                    skills={value > 0 ? value : valeurCalculer}
+                    skills={value > 0 ? value : calculateAbilityBonus(abilityScore)}
                   />
                 );
               })}
@@ -156,7 +156,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.acrobatics > 0
                   ? npc?.stats?.skills?.acrobatics
-                  : Math.floor((npc?.stats?.abilityScores.dexterity - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
               }
               tooltip={t("abilities.dexterity")}
             />
@@ -169,7 +169,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.arcana > 0
                   ? npc?.stats?.skills?.arcana
-                  : Math.floor((npc?.stats?.abilityScores.intelligence - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
               }
               tooltip={t("abilities.intelligence")}
             />
@@ -182,7 +182,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.athletics > 0
                   ? npc?.stats?.skills?.athletics
-                  : Math.floor((npc?.stats?.abilityScores.strength - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.strength)
               }
               tooltip={t("abilities.strength")}
             />
@@ -195,7 +195,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.stealth > 0
                   ? npc?.stats?.skills?.stealth
-                  : Math.floor((npc?.stats?.abilityScores.dexterity - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
               }
               tooltip={t("abilities.dexterity")}
             />
@@ -208,7 +208,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.animalHandling > 0
                   ? npc?.stats?.skills?.animalHandling
-                  : Math.floor((npc?.stats?.abilityScores.wisdom - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
               }
               tooltip={t("abilities.wisdom")}
             />
@@ -221,7 +221,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.sleightHand > 0
                   ? npc?.stats?.skills?.sleightHand
-                  : Math.floor((npc?.stats?.abilityScores.dexterity - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
               }
               tooltip={t("abilities.dexterity")}
             />
@@ -234,7 +234,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.history > 0
                   ? npc?.stats?.skills?.history
-                  : Math.floor((npc?.stats?.abilityScores.intelligence - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
               }
               tooltip={t("abilities.intelligence")}
             />
@@ -247,7 +247,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.intimidation > 0
                   ? npc?.stats?.skills?.intimidation
-                  : Math.floor((npc?.stats?.abilityScores.charisma - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
               }
               tooltip={t("abilities.charisma")}
             />
@@ -260,7 +260,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.insight > 0
                   ? npc?.stats?.skills?.insight
-                  : Math.floor((npc?.stats?.abilityScores.wisdom - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
               }
               tooltip={t("abilities.wisdom")}
             />
@@ -273,7 +273,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.investigation > 0
                   ? npc?.stats?.skills?.investigation
-                  : Math.floor((npc?.stats?.abilityScores.intelligence - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
               }
               tooltip={t("abilities.intelligence")}
             />
@@ -286,7 +286,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.medicine > 0
                   ? npc?.stats?.skills?.medicine
-                  : Math.floor((npc?.stats?.abilityScores.wisdom - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
               }
               tooltip={t("abilities.wisdom")}
             />
@@ -299,7 +299,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.nature > 0
                   ? npc?.stats?.skills?.nature
-                  : Math.floor((npc?.stats?.abilityScores.intelligence - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
               }
               tooltip={t("abilities.intelligence")}
             />
@@ -312,7 +312,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.perception > 0
                   ? npc?.stats?.skills?.perception
-                  : Math.floor((npc?.stats?.abilityScores.wisdom - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
               }
               tooltip={t("abilities.wisdom")}
             />
@@ -325,7 +325,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.persuasion > 0
                   ? npc?.stats?.skills?.persuasion
-                  : Math.floor((npc?.stats?.abilityScores.charisma - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
               }
               tooltip={t("abilities.charisma")}
             />
@@ -338,7 +338,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.religion > 0
                   ? npc?.stats?.skills?.religion
-                  : Math.floor((npc?.stats?.abilityScores.intelligence - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
               }
               tooltip={t("abilities.intelligence")}
             />
@@ -351,7 +351,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.performance > 0
                   ? npc?.stats?.skills?.performance
-                  : Math.floor((npc?.stats?.abilityScores.charisma - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
               }
               tooltip={t("abilities.charisma")}
             />
@@ -364,7 +364,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.survival > 0
                   ? npc?.stats?.skills?.survival
-                  : Math.floor((npc?.stats?.abilityScores.wisdom - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
               }
               tooltip={t("abilities.wisdom")}
             />
@@ -377,7 +377,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               skills={
                 npc?.stats?.skills?.deception > 0
                   ? npc?.stats?.skills?.deception
-                  : Math.floor((npc?.stats?.abilityScores.charisma - 10) / 2)
+                  : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
               }
               tooltip={t("abilities.charisma")}
             />

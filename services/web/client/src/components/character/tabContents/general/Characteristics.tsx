@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Character } from "@/types/character";
+import { calculateAbilityBonus } from "@/utils/global.utils";
 import { useTranslations } from "next-intl";
 import React from "react";
 
@@ -10,11 +11,6 @@ interface CharacteristicsProps {
 
 export default function Characteristics({ character, accentColor }: CharacteristicsProps) {
   const t = useTranslations("characterDetail.player.general");
-
-  function calculateModifier(score: number): string {
-    const modifier = Math.floor((score - 10) / 2);
-    return modifier >= 0 ? `+${modifier}` : `${modifier}`;
-  }
 
   return (
     <React.Fragment>
@@ -35,7 +31,8 @@ export default function Characteristics({ character, accentColor }: Characterist
         {character?.stats &&
           Object.entries(character?.stats?.abilityScores).map(([key, value]) => {
             const abilityName = t(`abilities.${key}`);
-            const modifier = calculateModifier(value);
+            const modifier = calculateAbilityBonus(value);
+            const displayModifier = modifier >= 0 ? `+${modifier}` : `${modifier}`;
             return (
               <Card
                 key={key}
@@ -43,8 +40,9 @@ export default function Characteristics({ character, accentColor }: Characterist
                 role="listitem">
                 <p
                   className="text-sm flex items-center gap-2"
-                  aria-label={`${abilityName} : ${value} (${modifier})`}>
-                  {abilityName} <span className="italic">{value}</span> <span className="font-bold">({modifier})</span>
+                  aria-label={`${abilityName} : ${value} (${displayModifier})`}>
+                  {abilityName} <span className="italic">{value}</span>{" "}
+                  <span className="font-bold">({displayModifier})</span>
                 </p>
               </Card>
             );

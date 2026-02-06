@@ -7,6 +7,8 @@ import { Book, Dice5, Target } from "lucide-react";
 import React from "react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
+import { isPlayer } from "@/utils/global.utils";
 
 interface CharacterMagicTabContentProps {
   character: Character;
@@ -31,44 +33,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
     return selectedSpellcasting.spellSlotsByLevel ? Number(Object.keys(selectedSpellcasting.spellSlotsByLevel)[0]) : 0;
   });
 
-  console.log("Selected Spellcasting:", selectedSpellcasting);
-
-  function hasLevel0Spells(spellcasting: Spellcasting): boolean {
-    return spellcasting.spells.some((spell) => spell.level === 0);
-  }
-
-  function getSpellByLevel(level: number): Spell[] {
-    if (!selectedSpellcasting) return [];
-    return selectedSpellcasting.spells.filter((spell) => spell.level === level);
-  }
-
-  function numberSpellsPrepare(): number {
-    if (!selectedSpellcasting) return 0;
-    let total: number = 0;
-
-    if ("progression" in character) {
-      const classObj: Class | undefined = (character as Player).class.find(
-        (cls) => cls.name.toLocaleLowerCase() === selectedSpellcasting.className.toLocaleLowerCase(),
-      );
-      if (classObj?.name.toLocaleLowerCase() === "druid") {
-        total = classObj.level + Math.floor((character?.stats?.abilityScores?.wisdom - 10) / 2);
-      } else if (classObj?.name.toLocaleLowerCase() === "paladin") {
-        total = Math.floor(classObj.level / 2) + Math.floor((character?.stats?.abilityScores?.charisma - 10) / 2);
-      } else if (classObj?.name.toLocaleLowerCase() === "cleric") {
-        total = classObj.level + Math.floor((character?.stats?.abilityScores?.wisdom - 10) / 2);
-      } else if (classObj?.name.toLocaleLowerCase() === "mage") {
-        total = classObj.level + Math.floor((character?.stats?.abilityScores?.intelligence - 10) / 2);
-      }
-    }
-
-    return total;
-  }
-
-  function isPlayer(): boolean {
-    return "progression" in character;
-  }
-
-  if (!character.spellcasting || character.spellcasting.length === 0) {
+  if (!character.spellcasting || character.spellcasting.length === 0 || selectedSpellcasting === null) {
     return (
       <div
         className="w-full flex flex-col gap-2 px-2 sm:px-0"
@@ -88,7 +53,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
             <div className="flex flex-row gap-2">
               {character?.spellcasting?.map((spellcasting, index) => {
                 let className = "";
-                if (isPlayer()) {
+                if (isPlayer(character)) {
                   let classObj = (character as Player).class.find(
                     (cls) => cls.name.toLocaleLowerCase() === spellcasting.className.toLocaleLowerCase(),
                   );
@@ -111,11 +76,11 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
             </div>
           )}
           <div className="flex flex-wrap gap-2">
-            {isPlayer() && numberSpellsPrepare() > 0 && (
+            {isPlayer(character) && numberSpellsPrepare(selectedSpellcasting, character) > 0 && (
               <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
                 <Book />
                 <span> Nombre de sorts préparés: </span>
-                {numberSpellsPrepare()}
+                {numberSpellsPrepare(selectedSpellcasting, character)}
               </Card>
             )}
             <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
@@ -146,7 +111,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 </span>
               </Card>
               <div className="flex flex-wrap gap-2">
-                {getSpellByLevel(0).map((spell, index) => (
+                {getSpellByLevel(selectedSpellcasting, 0).map((spell, index) => (
                   <Card
                     key={index}
                     className="gap-3 py-4 px-4 md:px-6 flex-col">
@@ -168,7 +133,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                   </span>
                 </Card>
                 <div className="flex flex-wrap gap-2">
-                  {getSpellByLevel(parseInt(level)).map((spell, index) => (
+                  {getSpellByLevel(selectedSpellcasting, parseInt(level)).map((spell, index) => (
                     <Card
                       key={index}
                       className="gap-3 py-4 px-4 md:px-6 flex-col">
@@ -187,7 +152,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
             type="single"
             collapsible
             className="w-full flex flex-col gap-2">
-            {getSpellByLevel(levelSelected).map((spell, index) => (
+            {getSpellByLevel(selectedSpellcasting, levelSelected).map((spell, index) => (
               <AccordionItem
                 key={index}
                 value={spell.name}
