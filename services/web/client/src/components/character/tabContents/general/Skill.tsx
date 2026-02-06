@@ -4,6 +4,7 @@ import Image from "next/image";
 import NoMastery from "@public/assets/mastery/no-mastery.svg";
 import HalfMastery from "@public/assets/mastery/half-mastery.svg";
 import BlueCircle from "@public/assets/icons/blue-circle.svg";
+import RedCircle from "@public/assets/icons/red-circle.svg";
 import Expert from "@public/assets/mastery/expert.svg";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
@@ -36,6 +37,9 @@ export default function Skill({
             case 1:
                 return HalfMastery;
             case 2:
+                if (accentColor === "red") {
+                    return RedCircle;
+                }
                 return BlueCircle;
             case 3:
                 return Expert;
