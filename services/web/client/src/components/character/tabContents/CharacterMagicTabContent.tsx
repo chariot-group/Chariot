@@ -37,7 +37,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   if (!character.spellcasting || character.spellcasting.length === 0 || selectedSpellcasting === null) {
     return (
       <div
-        className="w-full flex flex-col gap-2 px-2 sm:px-4 lg:px-0"
+        className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0"
         role="region"
         aria-label={tMagic("mainRegion")}>
         <p className="text-center text-muted-foreground py-8">{tMagic("noMagicAbilities")}</p>
@@ -47,11 +47,11 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
 
   return (
     <div
-      className="w-full flex flex-col gap-2 px-2 sm:px-4 lg:px-0"
+      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0"
       role="region"
       aria-label={tMagic("mainRegion")}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-        <div className="flex flex-col gap-2 sm:gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4">
+        <div className="flex flex-col gap-2 md:gap-4">
           {character?.spellcasting?.length > 1 && (
             <nav
               className="flex flex-col sm:flex-row gap-2"
@@ -82,8 +82,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                     aria-pressed={isSelected}
                     aria-label={tMagic("selectSpellcasting", { className })}
                     key={index}>
-                    <h2
-                      className={`${isSelected ? `text-black` : `${accentColor}`} text-lg sm:text-xl md:text-2xl font-semibold`}>
+                    <h2 className={`${isSelected ? `text-black` : `${accentColor}`} text-xl md:text-2xl font-semibold`}>
                       {className}
                     </h2>
                   </Card>
@@ -135,7 +134,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               </Card>
             )}
             {selectedSpellcasting && hasLevel0Spells(selectedSpellcasting) && (
-              <React.Fragment>
+              <div className="flex-col flex gap-2">
                 <Card
                   className={`gap-3 py-4 px-4 md:px-6 flex-row items-center cursor-pointer transition-all duration-200 hover:shadow-md focus-within:ring-1 focus-within:ring-offset-2 ${levelSelected === 0 && `bg-${accentColor}`}`}
                   onClick={() => setLevelSelected(0)}
@@ -149,10 +148,10 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                   tabIndex={0}
                   aria-pressed={levelSelected === 0}
                   aria-label={tMagic("selectSpellLevel", { level: 0 })}>
-                  <span
-                    className={`${levelSelected === 0 ? `text-black` : `${accentColor}`} text-base md:text-lg font-medium`}>
+                  <h2
+                    className={`${levelSelected === 0 ? `text-black` : `${accentColor}`} text-xl md:text-2xl font-semibold`}>
                     {tMagic("cantrips")}
-                  </span>
+                  </h2>
                 </Card>
                 <div
                   className="flex flex-wrap gap-2"
@@ -163,15 +162,17 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                       key={index}
                       className="gap-3 py-4 px-4 md:px-6 flex-col"
                       role="listitem">
-                      <span className="text-sm md:text-base lg:text-lg font-semibold">{spell.name}</span>
+                      <span className="text-sm md:text-base font-semibold">{spell.name}</span>
                     </Card>
                   ))}
                 </div>
-              </React.Fragment>
+              </div>
             )}
             {selectedSpellcasting?.spellSlotsByLevel &&
               Object.entries(selectedSpellcasting.spellSlotsByLevel).map(([level, slot]) => (
-                <React.Fragment key={level}>
+                <div
+                  key={level}
+                  className="flex-col flex gap-2">
                   <Card
                     className={`gap-3 py-4 px-4 md:px-6 flex-row items-center cursor-pointer transition-all duration-200 hover:shadow-md focus-within:ring-1 focus-within:ring-offset-2 ${levelSelected === parseInt(level) && `bg-${accentColor}`}`}
                     onClick={() => setLevelSelected(parseInt(level))}
@@ -185,10 +186,10 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                     tabIndex={0}
                     aria-pressed={levelSelected === parseInt(level)}
                     aria-label={tMagic("selectSpellLevel", { level })}>
-                    <span
-                      className={`text-sm md:text-base lg:text-lg font-medium ${levelSelected === parseInt(level) ? `text-black` : `${accentColor}`}`}>
+                    <h2
+                      className={`text-xl md:text-2xl font-semibold ${levelSelected === parseInt(level) ? `text-black` : `${accentColor}`}`}>
                       {tMagic("spellLevel", { level })}: {tMagic("spellSlots", { used: slot.used, total: slot.total })}
-                    </span>
+                    </h2>
                   </Card>
                   <div
                     className="flex flex-wrap gap-2"
@@ -203,12 +204,12 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                       </Card>
                     ))}
                   </div>
-                </React.Fragment>
+                </div>
               ))}
           </nav>
         </div>
         <div
-          className="flex flex-col gap-2 sm:gap-3"
+          className="flex flex-col gap-2 md:gap-4"
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
           <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
