@@ -5,6 +5,7 @@ import { Progression } from '@/resources/character/player/schemas/progression/pr
 import { Class } from '@/resources/character/player/schemas/class/class.schema';
 import { PlayerProfile } from '@/resources/character/player/schemas/profile/player-profile.schema';
 import { PlayerStats } from '@/resources/character/player/schemas/stats/player-stats.schema';
+import { DeathSaves } from '@/resources/character/player/schemas/stats/death-saves.schema';
 import { ApiProperty } from '@nestjs/swagger';
 import { Action } from '@/resources/character/core/schemas/actions/action.schema';
 
@@ -45,6 +46,10 @@ export class Player extends Character {
   })
   @Prop({ default: 0, min: 0, max: 6 })
   exhaustionLevel: number;
+
+  @ApiProperty({ type: DeathSaves })
+  @Prop({ type: DeathSaves, default: { successes: 0, failures: 0 } })
+  deathSaves: DeathSaves;
 }
 
 export const PlayerSchema = SchemaFactory.createForClass(Player);

@@ -50,6 +50,11 @@ export interface SavingThrows {
     charisma: number;
 }
 
+export interface DeathSaves {
+    successes: number;
+    failures: number;
+}
+
 export interface Stats {
     size: string;
     maxHitPoints: number;
@@ -233,6 +238,7 @@ export interface Player extends Character {
     class: Class[];
     profile: PlayerProfile;
     exhaustionLevel: number;
+    deathSaves: DeathSaves;
 }
 
 export interface Damage {

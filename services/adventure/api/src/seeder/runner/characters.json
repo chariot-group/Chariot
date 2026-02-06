@@ -882,6 +882,10 @@
       }
     ],
     "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 1,
+      "failures": 0
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1034,7 +1038,11 @@
         "range": "5 feet"
       }
     ],
-    "exhaustionLevel": 0
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 2,
+      "failures": 2
+    }
   },
   {
     "firstname": "Vax'ildan",
@@ -1325,6 +1333,10 @@
       }
     ],
     "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 0,
+      "failures": 0
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1523,6 +1535,10 @@
       }
     ],
     "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 3,
+      "failures": 1
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1742,6 +1758,10 @@
       }
     ],
     "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 0,
+      "failures": 1
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1928,7 +1948,11 @@
         "range": "40/120 feet"
       }
     ],
-    "exhaustionLevel": 0
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 0,
+      "failures": 1
+    }
   },
   {
     "firstname": "Varis",
@@ -2192,6 +2216,10 @@
       }
     ],
     "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 1,
+      "failures": 2
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],

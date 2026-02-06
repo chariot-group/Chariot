@@ -21,9 +21,6 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
         return player.stats.masteriesAbility[competence as keyof typeof player.stats.masteriesAbility] === true;
     }
 
-    console.log(player.actions
-
-    )
     return (
         <div className="w-full flex flex-col gap-4 items-start">
             <div className="flex flex-row gap-4">
@@ -109,59 +106,31 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                     <div className="flex flex-row gap-3 items-center">
                         <span>Succès :</span>
                         <div className="grid grid-cols-3 gap-2">
-                            <Image
-                                src={PerformedThrow}
-                                alt={"Mastery Icon"}
-                                width={20}
-                                height={20}
-                                className="shrink-0"
-                                aria-hidden="true"
-                            />
-                            <Image
-                                src={PerformedThrow}
-                                alt={"Mastery Icon"}
-                                width={20}
-                                height={20}
-                                className="shrink-0"
-                                aria-hidden="true"
-                            />
-                            <Image
-                                src={UnperformedThrow}
-                                alt={"Mastery Icon"}
-                                width={20}
-                                height={20}
-                                className="shrink-0"
-                                aria-hidden="true"
-                            />
+                            {Array.from({ length: 3 }).map((_, index) => (
+                                <Image
+                                    key={"death-save-success-" + index}
+                                    src={index < player.deathSaves.successes ? PerformedThrow : UnperformedThrow}
+                                    alt={index < player.deathSaves.successes ? "Performed Throw" : "Unperformed Throw"}
+                                    width={20}
+                                    height={20}
+                                    className="shrink-0"
+                                    aria-hidden="true"
+                                />))}
                         </div>
                     </div>
                     <div className="flex flex-row gap-3 items-center">
                         <span>Échecs :</span>
                         <div className="grid grid-cols-3 gap-2">
-                            <Image
-                                src={PerformedThrow}
-                                alt={"Mastery Icon"}
-                                width={20}
-                                height={20}
-                                className="shrink-0"
-                                aria-hidden="true"
-                            />
-                            <Image
-                                src={UnperformedThrow}
-                                alt={"Mastery Icon"}
-                                width={20}
-                                height={20}
-                                className="shrink-0"
-                                aria-hidden="true"
-                            />
-                            <Image
-                                src={UnperformedThrow}
-                                alt={"Mastery Icon"}
-                                width={20}
-                                height={20}
-                                className="shrink-0"
-                                aria-hidden="true"
-                            />
+                            {Array.from({ length: 3 }).map((_, index) => (
+                                <Image
+                                    key={"death-save-failure-" + index}
+                                    src={index < player.deathSaves.failures ? PerformedThrow : UnperformedThrow}
+                                    alt={index < player.deathSaves.failures ? "Performed Throw" : "Unperformed Throw"}
+                                    width={20}
+                                    height={20}
+                                    className="shrink-0"
+                                    aria-hidden="true"
+                                />))}
                         </div>
                     </div>
                 </Card >
@@ -211,8 +180,8 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                             Dégats/Type
                         </span>
                     </Card >
-                    {player.actions.map((action) =>
-                    (<Card className='gap-2 h-fit grid grid-cols-7 items-center rounded-full'>
+                    {player.actions.map((action, index) =>
+                    (<Card key={index} className='gap-2 h-fit grid grid-cols-7 items-center rounded-full'>
                         <span className={`text-xl sm:text-xl col-start-1 col-end-3`}>
                             {action.name}({action.type})
                         </span>
