@@ -33,6 +33,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
   const t = useTranslations("characterDetail.player.general");
   const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
+  const tAlignment = useTranslations("alignments");
 
   return (
     <div
@@ -400,8 +401,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             </h2>
             <p
               className="font-semibold text-sm sm:text-base"
-              aria-label={`${tPlayer("alignment")} : ${npc?.profile?.alignment}`}>
-              {npc?.profile?.alignment}
+              aria-label={`${tPlayer("alignment")} : ${tAlignment(npc?.profile?.alignment)}`}>
+              {tAlignment(npc?.profile?.alignment)}
             </p>
           </Card>
 

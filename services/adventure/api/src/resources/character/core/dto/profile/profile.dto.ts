@@ -1,10 +1,15 @@
+import { Prop } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { Alignment, ALIGNMENT } from '@/resources/character/core/constants/alignment.constant';
 
 export class ProfileDto {
 
-  @ApiProperty({ example: 'A brave warrior from the north' })
-  @IsOptional()
-  @IsString()
-  alignment?: string;
+  @ApiProperty({ example: 'Lawful Good' })
+  @Prop({
+    type: String,
+    required: true,
+    enum: ALIGNMENT,
+  })
+  alignment: Alignment;
+
 }

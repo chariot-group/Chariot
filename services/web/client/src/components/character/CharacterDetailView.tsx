@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
 import Image from "next/image";
+import CharacterMagicTabContent from "./tabContents/CharacterMagicTabContent";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
 
@@ -31,6 +32,7 @@ interface CharacterDetailViewProps {
 
 export default function CharacterDetailView({ character }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
+  const tClass = useTranslations("classes");
   const [activeTab, setActiveTab] = useState<CharacterTab>("general");
 
   return (
@@ -81,7 +83,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                       <p className="text-sm sm:text-base text-white font-semibold">
                         {character.class.map((cls: { name: string; level: number }, index: number) => (
                           <span key={index}>
-                            {cls.name} Niv {cls.level}
+                            {tClass(cls.name)} Niv {cls.level}
                             {index < character.class.length - 1 && " / "}
                           </span>
                         ))}
@@ -169,8 +171,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     );
                   case "magic":
                     return (
-                      <TabContentPlaceholder
-                        tab={tab}
+                      <CharacterMagicTabContent
+                        character={character}
                         accentColor={TAB_COLORS[tab]}
                       />
                     );

@@ -231,6 +231,35 @@
       "coinsRegion": "Sección de monedas",
       "equipmentRegion": "Sección de equipamiento",
       "treasureRegion": "Sección de tesoro"
-    }
-  }
+    }  },
+  "classes": {
+    "Artificer": "Artífice",
+    "Barbarian": "Bárbaro",
+    "Bard": "Bardo",
+    "Cleric": "Clérigo",
+    "Druid": "Druida",
+    "Fighter": "Guerrero",
+    "Monk": "Monje",
+    "Paladin": "Paladín",
+    "Ranger": "Guardabosques",
+    "Rogue": "Pícaro",
+    "Sorcerer": "Hechicero",
+    "Warlock": "Brujo",
+    "Wizard": "Mago"
+  },
+  "alignments": {
+    "Lawful Good": "Legal Bueno",
+    "Neutral Good": "Neutral Bueno",
+    "Chaotic Good": "Caótico Bueno",
+    "Lawful Neutral": "Legal Neutral",
+    "True Neutral": "Neutral Verdadero",
+    "Chaotic Neutral": "Caótico Neutral",
+    "Lawful Evil": "Legal Malvado",
+    "Neutral Evil": "Neutral Malvado",
+    "Chaotic Evil": "Caótico Malvado",
+    "Unaligned": "Sin alineación",
+    "Any Good Alignment": "Cualquier alineación buena",
+    "Any Evil Alignment": "Cualquier alineación malvada",
+    "Any Lawful Alignment": "Cualquier alineación legal",
+    "Any Chaotic Alignment": "Cualquier alineación caótica"  }
 }

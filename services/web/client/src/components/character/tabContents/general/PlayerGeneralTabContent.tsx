@@ -35,6 +35,8 @@ interface PlayerGeneralTabContentProps {
 export default function PlayerGeneralTabContent({ player, accentColor }: PlayerGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
   const tPlayer = useTranslations("characterDetail.player");
+  const tAlignment = useTranslations("alignments");
+  const tClass = useTranslations("classes");
   const [checked, setChecked] = useState<boolean>(player.inspiration);
 
   function infoExhaustionLevel(level: number): string {
@@ -79,7 +81,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               <div className="flex flex-col gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{t("classes")} :</dt>
                 <dd className="text-sm sm:text-base">
-                  {player?.class.map((c) => `${c.name} ${t("levelLabel")} ${c.level}`).join(" / ")}
+                  {player?.class.map((c) => `${tClass(c.name)} ${t("levelLabel")} ${c.level}`).join(" / ")}
                 </dd>
               </div>
               {player?.class.map((c) => (
@@ -87,7 +89,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                   key={c.name}
                   className="flex flex-col gap-2">
                   <dt className="text-sm sm:text-base font-semibold">
-                    {t("subclassOf")} {c.name} :
+                    {t("subclassOf")} {tClass(c.name)} :
                   </dt>
                   <dd className="text-sm sm:text-base">{c.subclass}</dd>
                 </div>
@@ -404,8 +406,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </h2>
             <p
               className="font-semibold text-sm sm:text-base"
-              aria-label={`${tPlayer("alignment")} : ${player?.profile?.alignment}`}>
-              {player?.profile?.alignment}
+              aria-label={`${tPlayer("alignment")} : ${tAlignment(player?.profile?.alignment)}`}>
+              {tAlignment(player?.profile?.alignment)}
             </p>
           </Card>
 
