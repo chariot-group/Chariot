@@ -99,6 +99,27 @@
       "inventory": "Inventory",
       "history": "History"
     },
+    "combat": {
+      "stats": "Stats",
+      "hitDice": "Hit Dice:",
+      "hitPointsRoll": "Hit Points Roll:",
+      "savingThrows": "Saving Throws",
+      "deathSaves": "Death Saving Throws",
+      "successes": "Successes:",
+      "failures": "Failures:",
+      "performedThrow": "Performed Throw",
+      "unperformedThrow": "Unperformed Throw",
+      "abilitiesAndTraits": "Abilities and Traits",
+      "actions": "Actions",
+      "legendaryActions": "Legendary Actions",
+      "lairActions": "Lair Actions",
+      "actionDetails": "Action details for",
+      "attackDC": "Attack/DC:",
+      "damageType": "Damage/Type:",
+      "description": "Description:",
+      "details": "details",
+      "descriptionPrefix": "description"
+    },
     "history": {
       "appearance": "Appearance",
       "eyes": "Eyes",

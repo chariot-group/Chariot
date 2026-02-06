@@ -99,6 +99,27 @@
       "inventory": "Inventario",
       "history": "Historia"
     },
+    "combat": {
+      "stats": "Estadísticas",
+      "hitDice": "Dados de Golpe:",
+      "hitPointsRoll": "Tirada de Puntos de Golpe:",
+      "savingThrows": "Tiradas de salvación",
+      "deathSaves": "Tiradas de Salvación de Muerte",
+      "successes": "Éxitos:",
+      "failures": "Fallos:",
+      "performedThrow": "Tirada realizada",
+      "unperformedThrow": "Tirada no realizada",
+      "abilitiesAndTraits": "Habilidades y rasgos",
+      "actions": "Acciones",
+      "legendaryActions": "Acciones Legendarias",
+      "lairActions": "Acciones de guarida",
+      "actionDetails": "Detalles de la acción",
+      "attackDC": "Ataque/CD:",
+      "damageType": "Daño/Tipo:",
+      "description": "Descripción:",
+      "details": "detalles",
+      "descriptionPrefix": "descripción"
+    },
     "history": {
       "appearance": "Apariencia",
       "eyes": "Ojos",

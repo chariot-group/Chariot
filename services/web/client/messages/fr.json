@@ -99,6 +99,27 @@
       "inventory": "Inventaire",
       "history": "Histoire"
     },
+    "combat": {
+      "stats": "Statistiques",
+      "hitDice": "Dés de Vie :",
+      "hitPointsRoll": "Dés de points de Vie :",
+      "savingThrows": "Jets de sauvegarde",
+      "deathSaves": "Jets de Sauvegarde contre la Mort",
+      "successes": "Succès :",
+      "failures": "Échecs :",
+      "performedThrow": "Jet effectué",
+      "unperformedThrow": "Jet non effectué",
+      "abilitiesAndTraits": "Capacités et traits",
+      "actions": "Actions",
+      "legendaryActions": "Actions Légendaires",
+      "lairActions": "Actions de repère",
+      "actionDetails": "Détails de l'action",
+      "attackDC": "Attaque/DD :",
+      "damageType": "Dégâts/Type :",
+      "description": "Description :",
+      "details": "détails",
+      "descriptionPrefix": "description"
+    },
     "history": {
       "appearance": "Apparence",
       "eyes": "Yeux",

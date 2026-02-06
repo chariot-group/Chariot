@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { NPC } from "@/types/character";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
@@ -16,6 +17,9 @@ interface Props {
 }
 
 const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
+    const t = useTranslations("characterDetail.combat");
+    const tAbilities = useTranslations("characterDetail.player.general.abilities");
+    
     // Configuration des badges de statistiques
     const speedBadges = [
         { key: 'walk', value: npc.stats.speed.walk, icon: <Image src={RunningIcon} alt="" aria-hidden="true" className="size-6" /> },
@@ -30,7 +34,7 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
             <div className="flex flex-row gap-2 md:gap-4 w-full">
                 <Card className='gap-2 max-w-1/4 h-fit'>
                     <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                        Statistiques PNJ
+                        {t("stats")}
                     </h2>
                     <div className="flex flex-row justify-start gap-2 text-xl font-extrabold flex-wrap">
                         <div className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
@@ -63,7 +67,7 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
                     <CharacterHealthBar currentHP={npc.stats.currentHitPoints} maxHP={npc.stats.maxHitPoints} tempHP={npc.stats.tempHitPoints} />
                     <div className="text-lg px-2">
                         <span>
-                            Dés de point de Vie :
+                            {t("hitPointsRoll")}
                         </span>
                         {npc.hitPointsRoll && (
                             <span className="font-bold"> {npc.hitPointsRoll}</span>
@@ -79,7 +83,7 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
                         <h2
                             id="saving-throws-heading"
                             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                            Jets de sauvegarde
+                            {t("savingThrows")}
                         </h2>
                     </Card>
                     <div
@@ -87,7 +91,7 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
                         role="list">
                         {npc?.stats &&
                             Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
-                                const abilityName = `${key}`;
+                                const abilityName = tAbilities(key as any);
                                 const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
                                 const valeurCalculer = Math.floor((abilityScore - 10) / 2);
                                 return (
@@ -104,7 +108,7 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
                 </div>
                 <Card className='gap-2 md:gap-4 w-1/2 h-fit'>
                     <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                        Capacités et traits
+                        {t("abilitiesAndTraits")}
                     </h2>
                     <Accordion
                         type="single"
@@ -116,13 +120,13 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
                                 value={ability.name}>
                                 <AccordionTrigger
                                     className="text-left hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 py-3"
-                                    aria-label={`details ${ability.name}`}>
+                                    aria-label={`${t("details")} ${ability.name}`}>
                                     <span className="text-sm sm:text-base font-medium">{ability.name}</span>
                                 </AccordionTrigger>
                                 <AccordionContent
                                     className="text-sm sm:text-base pb-3 pt-1"
                                     role="region"
-                                    aria-label={`description ${ability.name}`}>
+                                    aria-label={`${t("descriptionPrefix")} ${ability.name}`}>
                                     {ability.description}
                                 </AccordionContent>
                             </AccordionItem>
@@ -132,17 +136,17 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
             </div>
             <div className="grid grid-cols-3 gap-2 md:gap-4 w-full">
                 <ActionSection
-                    title="Actions"
+                    title={t("actions")}
                     actions={npc.actions.standard}
                     accentColor={accentColor}
                 />
                 <ActionSection
-                    title="Actions Légendaires"
+                    title={t("legendaryActions")}
                     actions={npc.actions.legendary}
                     accentColor={accentColor}
                 />
                 <ActionSection
-                    title="Actions de repère"
+                    title={t("lairActions")}
                     actions={npc.actions.lair}
                     accentColor={accentColor}
                 />

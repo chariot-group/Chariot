@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Action } from "@/types/character";
+import { useTranslations } from "next-intl";
 
 interface ActionSectionProps {
     title: string;
@@ -9,6 +10,8 @@ interface ActionSectionProps {
 }
 
 const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
+    const t = useTranslations("characterDetail.combat");
+    
     if (actions.length === 0) return null;
 
     return (
@@ -30,7 +33,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                         <Card className="gap-2 p-0 flex-col">
                             <AccordionTrigger
                                 className="py-3 px-3 md:py-4 md:px-6"
-                                aria-label={`Détails de l'action ${action.name}`}>
+                                aria-label={`${t("actionDetails")} ${action.name}`}>
                                 <span className="text-base md:text-lg font-medium text-left">
                                     {action.name}{action.type && ` (${action.type})`}
                                 </span>
@@ -40,7 +43,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                             <div className="flex flex-wrap gap-2 items-start">
                                 <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                                     <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                        Attaque/DD:
+                                        {t("attackDC")}
                                     </span>
                                     <span className="text-sm md:text-base">
                                         {action.attackBonus ? `+${action.attackBonus}` : '-'}
@@ -48,7 +51,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                                 </Card>
                                 <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                                     <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                        Dégats/Type:
+                                        {t("damageType")}
                                     </span>
                                     <span className="text-sm md:text-base">
                                         {action.damage && action.damage.length > 0
@@ -62,7 +65,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                                 {action.description && (
                                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
                                         <span className={`${accentColor} font-semibold text-sm md:text-base`}>
-                                            Description:
+                                            {t("description")}
                                         </span>
                                         <span className="text-sm md:text-base italic">
                                             {action.description}
