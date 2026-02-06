@@ -61,6 +61,7 @@ export interface Stats {
     currentHitPoints: number;
     tempHitPoints: number;
     armorClass: number;
+    initiative: number;
     speed: Speed;
     abilityScores: AbilityScores;
     languages: string[];

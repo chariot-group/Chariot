@@ -10,6 +10,7 @@ import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import Skill from "@/components/character/tabContents/general/Skill";
 import ActionSection from "@/components/character/tabContents/ActionSection";
+import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 
 interface Props {
     player: Player;
@@ -17,6 +18,14 @@ interface Props {
 }
 
 const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
+    // Configuration des badges de statistiques
+    const speedBadges = [
+        { key: 'walk', value: player.stats.speed.walk, icon: <Image src={RunningIcon} alt="" aria-hidden="true" className="size-6" /> },
+        { key: 'climb', value: player.stats.speed.climb, icon: <Mountain size={24} className='text-black' /> },
+        { key: 'swim', value: player.stats.speed.swim, icon: <Waves size={24} className='text-black' /> },
+        { key: 'fly', value: player.stats.speed.fly, icon: <Bird size={24} className='text-black' /> },
+        { key: 'burrow', value: player.stats.speed.burrow, icon: <Shovel size={24} className='text-black' /> },
+    ];
 
     function isMastered(skill: string): boolean {
         return player.stats.masteriesAbility[skill as keyof typeof player.stats.masteriesAbility] === true;
@@ -25,11 +34,11 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
     return (
         <div className="w-full flex flex-col gap-4 items-start">
             <div className="flex flex-row gap-4">
-                <Card className='gap-2 md:gap-4 max-w-1/4 rounded-xl'>
+                <Card className='gap-2 max-w-1/4 h-fit'>
                     <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                        Statistiques Principales
+                        Statistiques PNJ
                     </h2>
-                    <div className="flex flex-row justify-start gap-2 text-xl font-extrabold">
+                    <div className="flex flex-row justify-start gap-2 text-xl font-extrabold flex-wrap">
                         <div className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
                             <Image
                                 src={ShieldIcon}
@@ -44,19 +53,18 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                                 src={FeatherIcon}
                                 alt=""
                                 aria-hidden="true"
-                                className="size-6"
+                                className="size-5"
                             />
-                            <span aria-hidden="true"></span>
+                            <span aria-hidden="true">{player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}</span>
                         </div>
-                        <div className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
-                            <Image
-                                src={RunningIcon}
-                                alt=""
-                                aria-hidden="true"
-                                className="size-6"
-                            />
-                            <span aria-hidden="true">{player.stats.speed.walk}</span>
-                        </div>
+                        {speedBadges.map((badge) =>
+                            badge.value && (
+                                <div key={badge.key} className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
+                                    {badge.icon}
+                                    <span aria-hidden="true">{badge.value}ft</span>
+                                </div>
+                            )
+                        )}
                     </div>
                     <CharacterHealthBar currentHP={player.stats.currentHitPoints} maxHP={player.stats.maxHitPoints} tempHP={player.stats.tempHitPoints} />
                     <div className="text-lg px-2">

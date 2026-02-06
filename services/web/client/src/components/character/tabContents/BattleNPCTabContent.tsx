@@ -49,7 +49,7 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
                                 aria-hidden="true"
                                 className="size-5"
                             />
-                            <span aria-hidden="true">{npc.stats.armorClass}</span>
+                            <span aria-hidden="true">{npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}</span>
                         </div>
                         {speedBadges.map((badge) =>
                             badge.value && (

@@ -18,6 +18,7 @@
       "currentHitPoints": 7,
       "tempHitPoints": 0,
       "armorClass": 15,
+      "initiative": 2,
       "speed": {
         "walk": 30
       },
@@ -123,6 +124,7 @@
       "currentHitPoints": 59,
       "tempHitPoints": 0,
       "armorClass": 13,
+      "initiative": 1,
       "speed": {
         "walk": 40
       },
@@ -217,6 +219,7 @@
       "currentHitPoints": 9,
       "tempHitPoints": 0,
       "armorClass": 12,
+      "initiative": 1,
       "speed": {
         "walk": 30
       },
@@ -311,6 +314,7 @@
       "currentHitPoints": 123,
       "tempHitPoints": 0,
       "armorClass": 19,
+      "initiative": 3,
       "speed": {
         "walk": 30,
         "climb": 30
@@ -437,6 +441,7 @@
       "currentHitPoints": 26,
       "tempHitPoints": 0,
       "armorClass": 13,
+      "initiative": 3,
       "speed": {
         "walk": 10,
         "fly": 80
@@ -546,6 +551,7 @@
       "currentHitPoints": 135,
       "tempHitPoints": 0,
       "armorClass": 17,
+      "initiative": 3,
       "speed": {
         "walk": 30
       },
@@ -752,6 +758,7 @@
       "currentHitPoints": 15,
       "tempHitPoints": 0,
       "armorClass": 13,
+      "initiative": 1,
       "speed": {
         "walk": 30
       },
@@ -875,6 +882,7 @@
       "currentHitPoints": 20,
       "tempHitPoints": 0,
       "armorClass": 15,
+      "initiative": 2,
       "speed": {
         "walk": 25
       },
@@ -1056,6 +1064,7 @@
       "currentHitPoints": 45,
       "tempHitPoints": 0,
       "armorClass": 14,
+      "initiative": 2,
       "speed": {
         "walk": 30
       },
@@ -1201,6 +1210,7 @@
       "currentHitPoints": 24,
       "tempHitPoints": 0,
       "armorClass": 15,
+      "initiative": 4,
       "speed": {
         "walk": 30
       },
@@ -1329,6 +1339,7 @@
       "currentHitPoints": 28,
       "tempHitPoints": 0,
       "armorClass": 14,
+      "initiative": 3,
       "speed": {
         "walk": 30
       },
@@ -1512,6 +1523,7 @@
       "currentHitPoints": 24,
       "tempHitPoints": 0,
       "armorClass": 13,
+      "initiative": 2,
       "speed": {
         "walk": 30
       },
@@ -1717,6 +1729,7 @@
       "currentHitPoints": 85,
       "tempHitPoints": 0,
       "armorClass": 20,
+      "initiative": 0,
       "speed": {
         "walk": 25
       },
@@ -1935,6 +1948,7 @@
       "currentHitPoints": 145,
       "tempHitPoints": 0,
       "armorClass": 18,
+      "initiative": 5,
       "speed": {
         "walk": 30
       },
@@ -2137,6 +2151,7 @@
       "currentHitPoints": 74,
       "tempHitPoints": 0,
       "armorClass": 15,
+      "initiative": 2,
       "speed": {
         "walk": 30
       },

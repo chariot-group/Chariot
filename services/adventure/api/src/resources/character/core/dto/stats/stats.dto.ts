@@ -41,6 +41,11 @@ export class StatsDto {
   @IsNumber()
   armorClass?: number;
 
+  @ApiProperty({ example: 3 })
+  @IsOptional()
+  @IsNumber()
+  initiative?: number;
+
   @ApiProperty({ example: 12 })
   @IsOptional()
   @IsNumber()
