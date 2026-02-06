@@ -35,7 +35,7 @@ export default function Sidebar() {
           "fixed top-4 left-4 z-[60] xl:hidden cursor-pointer",
           "bg-background text-white p-2 rounded-md",
           "hover:bg-card transition-all duration-300",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
           isMenuOpen && "translate-x-[13rem] sm:translate-x-[20rem]",
         )}
         aria-label={isMenuOpen ? t("closeMenu") : t("openMenu")}

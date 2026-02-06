@@ -442,7 +442,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                   key={ability.name}
                   value={ability.name}>
                   <AccordionTrigger
-                    className="text-left hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 rounded py-3"
+                    className="text-left hover:no-underline focus:outline-none focus:ring-1 focus:ring-offset-2 rounded py-3"
                     aria-label={`${t("abilityDetails")} ${ability.name}`}>
                     <span className="text-sm sm:text-base font-medium">{ability.name}</span>
                   </AccordionTrigger>

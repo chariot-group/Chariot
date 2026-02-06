@@ -34,7 +34,7 @@ const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
-                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded"
+                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary rounded"
                     role="text"
                     tabIndex={0}
                     aria-label={`${formatNumberWithSpaces(character?.treasure.pp ?? 0)} ${t("platinumPieces")}`}>
@@ -58,7 +58,7 @@ const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
-                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded"
+                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary rounded"
                     role="text"
                     tabIndex={0}
                     aria-label={`${formatNumberWithSpaces(character?.treasure.gp ?? 0)} ${t("goldPieces")}`}>
@@ -82,7 +82,7 @@ const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
-                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded"
+                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary rounded"
                     role="text"
                     tabIndex={0}
                     aria-label={`${formatNumberWithSpaces(character?.treasure.ep ?? 0)} ${t("electrumPieces")}`}>
@@ -106,7 +106,7 @@ const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
-                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded"
+                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary rounded"
                     role="text"
                     tabIndex={0}
                     aria-label={`${formatNumberWithSpaces(character?.treasure.sp ?? 0)} ${t("silverPieces")}`}>
@@ -130,7 +130,7 @@ const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
-                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded"
+                    className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary rounded"
                     role="text"
                     tabIndex={0}
                     aria-label={`${formatNumberWithSpaces(character?.treasure.cp ?? 0)} ${t("copperPieces")}`}>
