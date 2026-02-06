@@ -90,10 +90,12 @@ describe('NpcService - create', () => {
           name: 'Coup de bâton',
           type: 'attaque',
           attackBonus: 2,
-          damage: {
-            dice: '1d6',
-            type: 'contondant',
-          },
+          damage: [
+            {
+              dice: '1d6',
+              type: 'contondant',
+            },
+          ],
           range: '1.5m',
         },
       ],
@@ -207,10 +209,12 @@ describe('NpcService - create', () => {
             name: 'Coup de bâton',
             type: 'attaque',
             attackBonus: 2,
-            damage: {
-              dice: '1d6',
-              type: 'contondant',
-            },
+            damage: [
+              {
+                dice: '1d6',
+                type: 'contondant',
+              },
+            ],
             range: '1.5m',
           },
         ],

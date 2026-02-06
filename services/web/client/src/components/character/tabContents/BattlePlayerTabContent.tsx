@@ -163,7 +163,7 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                         ))}
                     </Accordion>
                 </Card >
-                <div className="w-3/5 flex flex-col gap-2">
+                <div className="w-3/5 flex flex-row gap-2">
                     <Card className='gap-2 h-fit rounded-full'>
                         <h2 className={`text-2xl sm:text-3xl font-semibold ${accentColor}`}>
                             Actions
@@ -189,7 +189,12 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                             +{action.attackBonus}
                         </span>
                         <span className={`text-xl sm:text-xl col-start-4 col-end-8 w-full`}>
-                            {action.damage.dice} {action.damage.type} ({action.range})
+                            {action.damage && action.damage.length > 0
+                                ? action.damage.map((d, i) => (
+                                    <span key={i}>{d.dice} {d.type}{i < action.damage!.length - 1 ? ' + ' : ''}</span>
+                                ))
+                                : 'N/A'
+                            } ({action.range})
                         </span>
                     </Card >))}
                 </div>

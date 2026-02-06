@@ -246,12 +246,21 @@ export interface Damage {
     type: string;
 }
 
+export interface DifficultyClass {
+    dcType?: string;
+    dcValue?: number;
+    successType?: string;
+}
+
 export interface Action {
     name: string;
     type: string;
+    description?: string;
     attackBonus: number;
-    damage: Damage;
+    damage?: Damage[];
     range: string;
+    dc?: DifficultyClass;
+    cost?: number;
 }
 
 export interface Actions {

@@ -47,20 +47,24 @@
           "name": "Scimitar",
           "type": "melee",
           "attackBonus": 4,
-          "damage": {
-            "dice": "1d6",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "1d6",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Shortbow",
           "type": "ranged",
           "attackBonus": 4,
-          "damage": {
-            "dice": "1d6",
-            "type": "piercing"
-          },
+          "damage": [
+            {
+              "dice": "1d6",
+              "type": "piercing"
+            }
+          ],
           "range": "80/320 feet"
         }
       ],
@@ -148,20 +152,24 @@
           "name": "Beak",
           "type": "melee",
           "attackBonus": 7,
-          "damage": {
-            "dice": "1d10+5",
-            "type": "piercing"
-          },
+          "damage": [
+            {
+              "dice": "1d10+5",
+              "type": "piercing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Claws",
           "type": "melee",
           "attackBonus": 7,
-          "damage": {
-            "dice": "2d8+5",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "2d8+5",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         }
       ],
@@ -237,10 +245,12 @@
           "name": "Scimitar",
           "type": "melee",
           "attackBonus": 3,
-          "damage": {
-            "dice": "1d6+1",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "1d6+1",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         }
       ],
@@ -349,30 +359,36 @@
           "name": "Bite",
           "type": "melee",
           "attackBonus": 6,
-          "damage": {
-            "dice": "1d4 + 2d8",
-            "type": "piercing + poison"
-          },
+          "damage": [
+            {
+              "dice": "1d4 + 2d8",
+              "type": "piercing + poison"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Longsword",
           "type": "melee",
           "attackBonus": 6,
-          "damage": {
-            "dice": "1d8+3 / 1d10+3",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "1d8+3 / 1d10+3",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Longbow",
           "type": "ranged",
           "attackBonus": 6,
-          "damage": {
-            "dice": "1d8+3 + 1d8",
-            "type": "piercing + poison"
-          },
+          "damage": [
+            {
+              "dice": "1d8+3 + 1d8",
+              "type": "piercing + poison"
+            }
+          ],
           "range": "150/600 feet"
         }
       ],
@@ -450,20 +466,24 @@
           "name": "Beak",
           "type": "melee",
           "attackBonus": 5,
-          "damage": {
-            "dice": "1d6+3",
-            "type": "piercing"
-          },
+          "damage": [
+            {
+              "dice": "1d6+3",
+              "type": "piercing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Talons",
           "type": "melee",
           "attackBonus": 5,
-          "damage": {
-            "dice": "2d6+3",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "2d6+3",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         }
       ],
@@ -601,9 +621,84 @@
       }
     ],
     "actions": {
-      "standard": [],
-      "legendary": [],
-      "lair": []
+      "standard": [
+        {
+          "name": "Paralyzing Touch",
+          "type": "melee",
+          "description": "Melee Spell Attack: +12 to hit, reach 5 ft., one creature. The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+          "attackBonus": 12,
+          "damage": [
+            {
+              "dice": "3d6",
+              "type": "cold"
+            }
+          ],
+          "range": "5 feet",
+          "dc": {
+            "dcType": "con",
+            "dcValue": 18,
+            "successType": "none"
+          }
+        }
+      ],
+      "legendary": [
+        {
+          "name": "Cantrip",
+          "description": "The lich casts a cantrip.",
+          "cost": 1
+        },
+        {
+          "name": "Paralyzing Touch",
+          "description": "The lich uses its Paralyzing Touch.",
+          "cost": 2
+        },
+        {
+          "name": "Frightening Gaze",
+          "description": "The lich fixes its gaze on one creature it can see within 10 feet of it. The target must succeed on a DC 18 Wisdom saving throw against this magic or become frightened for 1 minute. The frightened target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a target's saving throw is successful or the effect ends for it, the target is immune to the lich's gaze for the next 24 hours.",
+          "cost": 2,
+          "dc": {
+            "dcType": "wis",
+            "dcValue": 18,
+            "successType": "none"
+          }
+        },
+        {
+          "name": "Disrupt Life",
+          "description": "Each living creature within 20 feet of the lich must make a DC 18 Constitution saving throw against this magic, taking 21 (6d6) necrotic damage on a failed save, or half as much damage on a successful one.",
+          "cost": 3,
+          "damage": [
+            {
+              "dice": "6d6",
+              "type": "necrotic"
+            }
+          ],
+          "dc": {
+            "dcType": "con",
+            "dcValue": 18,
+            "successType": "half"
+          }
+        }
+      ],
+      "lair": [
+        {
+          "name": "Tormenting Spirits",
+          "description": "The lich targets one creature it can see within 30 feet of it. A crackling cord of negative energy tethers the lich to the target. Whenever the lich takes damage, the target must make a DC 18 Constitution saving throw. On a failed save, the lich takes half the damage (rounded down), and the target takes the remaining damage. This tether lasts until initiative count 20 on the next round or until the lich or the target is no longer in the lich's lair.",
+          "dc": {
+            "dcType": "con",
+            "dcValue": 18,
+            "successType": "none"
+          }
+        },
+        {
+          "name": "Grasping Tomb",
+          "description": "The lich targets any number of creatures it can see within 30 feet of it. Each target must succeed on a DC 18 Constitution saving throw or be restrained by tendrils of necrotic energy until initiative count 20 on the next round.",
+          "dc": {
+            "dcType": "con",
+            "dcValue": 18,
+            "successType": "none"
+          }
+        }
+      ]
     },
     "treasure": {
       "cp": 100,
@@ -681,20 +776,24 @@
           "name": "Greataxe",
           "type": "melee",
           "attackBonus": 5,
-          "damage": {
-            "dice": "1d12+3",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "1d12+3",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Javelin",
           "type": "melee or ranged",
           "attackBonus": 5,
-          "damage": {
-            "dice": "1d6+3",
-            "type": "piercing"
-          },
+          "damage": [
+            {
+              "dice": "1d6+3",
+              "type": "piercing"
+            }
+          ],
           "range": "5 feet or 30/120 feet"
         }
       ],
@@ -874,10 +973,12 @@
         "name": "Rapier",
         "type": "melee",
         "attackBonus": 4,
-        "damage": {
-          "dice": "1d8+2",
-          "type": "piercing"
-        },
+        "damage": [
+          {
+            "dice": "1d8+2",
+            "type": "piercing"
+          }
+        ],
         "range": "5 feet"
       }
     ],
@@ -1031,10 +1132,12 @@
         "name": "Greataxe",
         "type": "melee",
         "attackBonus": 5,
-        "damage": {
-          "dice": "1d12+3",
-          "type": "slashing"
-        },
+        "damage": [
+          {
+            "dice": "1d12+3",
+            "type": "slashing"
+          }
+        ],
         "range": "5 feet"
       }
     ],
@@ -1315,20 +1418,24 @@
         "name": "Longbow",
         "type": "ranged",
         "attackBonus": 4,
-        "damage": {
-          "dice": "1d8+2",
-          "type": "piercing"
-        },
+        "damage": [
+          {
+            "dice": "1d8+2",
+            "type": "piercing"
+          }
+        ],
         "range": "150/600 feet"
       },
       {
         "name": "Dagger",
         "type": "melee",
         "attackBonus": 4,
-        "damage": {
-          "dice": "1d4+2",
-          "type": "piercing"
-        },
+        "damage": [
+          {
+            "dice": "1d4+2",
+            "type": "piercing"
+          }
+        ],
         "range": "5 feet"
       }
     ],
@@ -1527,10 +1634,12 @@
         "name": "Quarterstaff",
         "type": "melee",
         "attackBonus": 3,
-        "damage": {
-          "dice": "1d6+1",
-          "type": "bludgeoning"
-        },
+        "damage": [
+          {
+            "dice": "1d6+1",
+            "type": "bludgeoning"
+          }
+        ],
         "range": "5 feet"
       }
     ],
@@ -1750,10 +1859,12 @@
         "name": "Mace",
         "type": "melee",
         "attackBonus": 7,
-        "damage": {
-          "dice": "1d6+3",
-          "type": "bludgeoning"
-        },
+        "damage": [
+          {
+            "dice": "1d6+3",
+            "type": "bludgeoning"
+          }
+        ],
         "range": "5 feet"
       }
     ],
@@ -1931,20 +2042,24 @@
         "name": "Bad News (Rifle)",
         "type": "ranged",
         "attackBonus": 12,
-        "damage": {
-          "dice": "2d12+5",
-          "type": "piercing"
-        },
+        "damage": [
+          {
+            "dice": "2d12+5",
+            "type": "piercing"
+          }
+        ],
         "range": "200/800 feet"
       },
       {
         "name": "Animus (Revolver)",
         "type": "ranged",
         "attackBonus": 12,
-        "damage": {
-          "dice": "1d10+5",
-          "type": "piercing"
-        },
+        "damage": [
+          {
+            "dice": "1d10+5",
+            "type": "piercing"
+          }
+        ],
         "range": "40/120 feet"
       }
     ],
@@ -2198,20 +2313,24 @@
         "name": "Eldritch Blast",
         "type": "ranged",
         "attackBonus": 5,
-        "damage": {
-          "dice": "2d10",
-          "type": "force"
-        },
+        "damage": [
+          {
+            "dice": "2d10",
+            "type": "force"
+          }
+        ],
         "range": "120 feet"
       },
       {
         "name": "Dagger",
         "type": "melee",
         "attackBonus": 3,
-        "damage": {
-          "dice": "1d4+1",
-          "type": "piercing"
-        },
+        "damage": [
+          {
+            "dice": "1d4+1",
+            "type": "piercing"
+          }
+        ],
         "range": "5 feet"
       }
     ],
