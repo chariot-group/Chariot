@@ -111,7 +111,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
             </div>
           )}
           <div className="flex flex-wrap gap-2">
-            {isPlayer() && (
+            {isPlayer() && numberSpellsPrepare() > 0 && (
               <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
                 <Book />
                 <span> Nombre de sorts préparés: </span>
