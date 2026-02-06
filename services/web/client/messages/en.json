@@ -104,7 +104,7 @@
       "hitDice": "Hit Dice:",
       "hitPointsRoll": "Hit Points Roll:",
       "savingThrows": "Saving Throws",
-      "deathSaves": "Death Saving Throws",
+      "deathSaves": "Death Saves",
       "successes": "Successes:",
       "failures": "Failures:",
       "performedThrow": "Performed Throw",
@@ -118,7 +118,18 @@
       "damageType": "Damage/Type:",
       "description": "Description:",
       "details": "details",
-      "descriptionPrefix": "description"
+      "descriptionPrefix": "description",
+      "armorClass": "Armor Class",
+      "armorClassTooltip": "Character's armor class (AC)",
+      "initiativeTooltip": "Initiative bonus",
+      "walkSpeedTooltip": "Walking speed",
+      "climbSpeedTooltip": "Climbing speed",
+      "swimSpeedTooltip": "Swimming speed",
+      "flySpeedTooltip": "Flying speed",
+      "burrowSpeedTooltip": "Burrowing speed",
+      "statsRegion": "Combat statistics",
+      "healthPoints": "Hit Points",
+      "healthPointsTooltip": "Current HP / Maximum HP (Temporary HP)"
     },
     "history": {
       "appearance": "Appearance",

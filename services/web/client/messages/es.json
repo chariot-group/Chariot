@@ -118,7 +118,18 @@
       "damageType": "Daño/Tipo:",
       "description": "Descripción:",
       "details": "detalles",
-      "descriptionPrefix": "descripción"
+      "descriptionPrefix": "descripción",
+      "armorClass": "Clase de Armadura",
+      "armorClassTooltip": "Clase de armadura (CA) del personaje",
+      "initiativeTooltip": "Bonificación de iniciativa",
+      "walkSpeedTooltip": "Velocidad de marcha",
+      "climbSpeedTooltip": "Velocidad de escalada",
+      "swimSpeedTooltip": "Velocidad de natación",
+      "flySpeedTooltip": "Velocidad de vuelo",
+      "burrowSpeedTooltip": "Velocidad de excavación",
+      "statsRegion": "Estadísticas de combate",
+      "healthPoints": "Puntos de Golpe",
+      "healthPointsTooltip": "PG actuales / PG máximos (PG temporales)"
     },
     "history": {
       "appearance": "Apariencia",

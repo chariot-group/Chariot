@@ -11,13 +11,17 @@ interface ActionSectionProps {
 
 const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
     const t = useTranslations("characterDetail.combat");
-    
+
     if (actions.length === 0) return null;
 
     return (
-        <div className="flex flex-col gap-2 w-full">
+        <section
+            className="flex flex-col gap-2 w-full"
+            aria-labelledby={`${title.toLowerCase().replace(/\s+/g, '-')}-heading`}>
             <Card className='gap-2 h-fit'>
-                <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                <h2
+                    id={`${title.toLowerCase().replace(/\s+/g, '-')}-heading`}
+                    className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                     {title}
                 </h2>
             </Card>
@@ -27,12 +31,12 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                 className="w-full flex flex-col gap-2">
                 {actions.map((action, index) => (
                     <AccordionItem
-                        key={index}
-                        value={action.name}
+                        key={`${action.name}-${index}`}
+                        value={`${action.name}-${index}`}
                         className="flex flex-col gap-2">
                         <Card className="gap-2 p-0 flex-col">
                             <AccordionTrigger
-                                className="py-3 px-3 md:py-4 md:px-6"
+                                className="py-3 px-3 md:py-4 md:px-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
                                 aria-label={`${t("actionDetails")} ${action.name}`}>
                                 <span className="text-base md:text-lg font-medium text-left">
                                     {action.name}{action.type && ` (${action.type})`}
@@ -40,12 +44,15 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                             </AccordionTrigger>
                         </Card>
                         <AccordionContent>
-                            <div className="flex flex-wrap gap-2 items-start">
+                            <div
+                                className="flex flex-wrap gap-2 items-start"
+                                role="region"
+                                aria-label={`${t("details")} ${action.name}`}>
                                 <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                                     <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                                         {t("attackDC")}
                                     </span>
-                                    <span className="text-sm md:text-base">
+                                    <span className="text-sm md:text-base" aria-label={`${t("attackDC")} ${action.attackBonus ? `+${action.attackBonus}` : t("noValue") || 'none'}`}>
                                         {action.attackBonus ? `+${action.attackBonus}` : '-'}
                                     </span>
                                 </Card>
@@ -77,7 +84,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                     </AccordionItem>
                 ))}
             </Accordion>
-        </div>
+        </section>
     );
 };
 

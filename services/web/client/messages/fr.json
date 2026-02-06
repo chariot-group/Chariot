@@ -118,7 +118,18 @@
       "damageType": "Dégâts/Type :",
       "description": "Description :",
       "details": "détails",
-      "descriptionPrefix": "description"
+      "descriptionPrefix": "description",
+      "armorClass": "Classe d'Armure",
+      "armorClassTooltip": "Classe d'armure (CA) du personnage",
+      "initiativeTooltip": "Bonus d'initiative",
+      "walkSpeedTooltip": "Vitesse de marche",
+      "climbSpeedTooltip": "Vitesse d'escalade",
+      "swimSpeedTooltip": "Vitesse de nage",
+      "flySpeedTooltip": "Vitesse de vol",
+      "burrowSpeedTooltip": "Vitesse de fouissage",
+      "statsRegion": "Statistiques de combat",
+      "healthPoints": "Points de Vie",
+      "healthPointsTooltip": "PV actuels / PV maximum (PV temporaires)"
     },
     "history": {
       "appearance": "Apparence",

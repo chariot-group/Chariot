@@ -12,6 +12,7 @@ import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import Skill from "@/components/character/tabContents/general/Skill";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 import ActionSection from "@/components/character/tabContents/battle/ActionSection";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Props {
     player: Player;
@@ -24,11 +25,11 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
 
     // Configuration des badges de statistiques
     const speedBadges = [
-        { key: 'walk', value: player.stats.speed.walk, icon: <Image src={RunningIcon} alt="" aria-hidden="true" className="size-6" /> },
-        { key: 'climb', value: player.stats.speed.climb, icon: <Mountain size={24} className='text-black' /> },
-        { key: 'swim', value: player.stats.speed.swim, icon: <Waves size={24} className='text-black' /> },
-        { key: 'fly', value: player.stats.speed.fly, icon: <Bird size={24} className='text-black' /> },
-        { key: 'burrow', value: player.stats.speed.burrow, icon: <Shovel size={24} className='text-black' /> },
+        { key: 'walk', value: player.stats.speed.walk, icon: <Image src={RunningIcon} alt="" aria-hidden="true" className="size-6" />, tooltipKey: 'walkSpeedTooltip' },
+        { key: 'climb', value: player.stats.speed.climb, icon: <Mountain size={24} className='text-black' aria-hidden="true" />, tooltipKey: 'climbSpeedTooltip' },
+        { key: 'swim', value: player.stats.speed.swim, icon: <Waves size={24} className='text-black' aria-hidden="true" />, tooltipKey: 'swimSpeedTooltip' },
+        { key: 'fly', value: player.stats.speed.fly, icon: <Bird size={24} className='text-black' aria-hidden="true" />, tooltipKey: 'flySpeedTooltip' },
+        { key: 'burrow', value: player.stats.speed.burrow, icon: <Shovel size={24} className='text-black' aria-hidden="true" />, tooltipKey: 'burrowSpeedTooltip' },
     ];
 
     function isMastered(skill: string): boolean {
@@ -37,36 +38,74 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
 
     return (
         <div className="w-full flex flex-col gap-4 items-start">
-            <div className="flex flex-row gap-4">
-                <Card className='gap-2 max-w-1/4 h-fit'>
-                    <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+            <div className="flex flex-row gap-2 md:gap-4 w-full">
+                <Card
+                    className='gap-2 max-w-1/4 h-fit'
+                    role="region"
+                    aria-labelledby="stats-heading">
+                    <h2
+                        id="stats-heading"
+                        className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                         {t("stats")}
                     </h2>
                     <div className="flex flex-row justify-start gap-2 text-xl font-extrabold flex-wrap">
-                        <div className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
-                            <Image
-                                src={ShieldIcon}
-                                alt=""
-                                aria-hidden="true"
-                                className="size-5"
-                            />
-                            <span aria-hidden="true">{player.stats.armorClass}</span>
-                        </div>
-                        <div className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
-                            <Image
-                                src={FeatherIcon}
-                                alt=""
-                                aria-hidden="true"
-                                className="size-5"
-                            />
-                            <span aria-hidden="true">{player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}</span>
-                        </div>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div
+                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    tabIndex={0}
+                                    role="img"
+                                    aria-label={`${t("armorClass")} ${player.stats.armorClass}`}>
+                                    <Image
+                                        src={ShieldIcon}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="size-5"
+                                    />
+                                    <span aria-hidden="true">{player.stats.armorClass}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {t("armorClassTooltip")}
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div
+                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    tabIndex={0}
+                                    role="img"
+                                    aria-label={`${t("initiativeTooltip")} ${player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}`}>
+                                    <Image
+                                        src={FeatherIcon}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="size-5"
+                                    />
+                                    <span aria-hidden="true">{player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {t("initiativeTooltip")}
+                            </TooltipContent>
+                        </Tooltip>
                         {speedBadges.map((badge) =>
                             badge.value && (
-                                <div key={badge.key} className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
-                                    {badge.icon}
-                                    <span aria-hidden="true">{badge.value}ft</span>
-                                </div>
+                                <Tooltip key={badge.key}>
+                                    <TooltipTrigger asChild>
+                                        <div
+                                            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            tabIndex={0}
+                                            role="img"
+                                            aria-label={`${t(badge.tooltipKey as any)} ${badge.value} feet`}>
+                                            {badge.icon}
+                                            <span aria-hidden="true">{badge.value}ft</span>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {t(badge.tooltipKey as any)}
+                                    </TooltipContent>
+                                </Tooltip>
                             )
                         )}
                     </div>
@@ -82,19 +121,19 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                 </Card >
 
                 {/* Jet de sauvegarde */}
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col w-1/4 gap-2">
                     <Card
-                        className="gap-3 py-4 px-4 md:px-6 h-fit"
+                        className="gap-2 py-4 px-4 md:px-6 h-fit"
                         role="region"
                         aria-labelledby="saving-throws-heading">
                         <h2
                             id="saving-throws-heading"
-                            className={`ttext-xl sm:text-2xl font-semibold ${accentColor}`}>
+                            className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                             {t("savingThrows")}
                         </h2>
                     </Card>
                     <div
-                        className="grid grid-cols-1 md:grid-cols-2 gap-2"
+                        className="grid grid-cols-1 xl:grid-cols-2 gap-2"
                         role="list">
                         {player?.stats &&
                             Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
@@ -112,18 +151,26 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                             })}
                     </div>
                 </div>
-                <Card className='gap-2 rounded-xl h-fit'>
-                    <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                <Card
+                    className='gap-2 rounded-xl h-fit'
+                    role="region"
+                    aria-labelledby="death-saves-heading">
+                    <h2
+                        id="death-saves-heading"
+                        className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                         {t("deathSaves")}
                     </h2>
                     <div className="flex flex-row gap-2 items-center">
                         <span>{t("successes")}</span>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div
+                            className="grid grid-cols-3 gap-2"
+                            role="status"
+                            aria-label={`${t("successes")} ${player.deathSaves.successes} ${t("unperformedThrow")}`}>
                             {Array.from({ length: 3 }).map((_, index) => (
                                 <Image
                                     key={"death-save-success-" + index}
                                     src={index < player.deathSaves.successes ? RedCircle : WhiteCircle}
-                                    alt={index < player.deathSaves.successes ? t("performedThrow") : t("unperformedThrow")}
+                                    alt=""
                                     width={20}
                                     height={20}
                                     className="shrink-0"
@@ -133,12 +180,15 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                     </div>
                     <div className="flex flex-row gap-2 items-center">
                         <span>{t("failures")}</span>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div
+                            className="grid grid-cols-3 gap-2"
+                            role="status"
+                            aria-label={`${t("failures")} ${player.deathSaves.failures} ${t("unperformedThrow")}`}>
                             {Array.from({ length: 3 }).map((_, index) => (
                                 <Image
                                     key={"death-save-failure-" + index}
                                     src={index < player.deathSaves.failures ? RedCircle : WhiteCircle}
-                                    alt={index < player.deathSaves.failures ? t("performedThrow") : t("unperformedThrow")}
+                                    alt=""
                                     width={20}
                                     height={20}
                                     className="shrink-0"
@@ -149,8 +199,13 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                 </Card >
             </div>
             <div className="flex flex-row gap-2 md:gap-4 w-full">
-                <Card className='gap-2 md:gap-4 w-2/5 rounded-xl h-fit'>
-                    <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                <Card
+                    className='gap-2 md:gap-4 w-2/5 rounded-xl h-fit'
+                    role="region"
+                    aria-labelledby="abilities-traits-heading">
+                    <h2
+                        id="abilities-traits-heading"
+                        className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                         {t("abilitiesAndTraits")}
                     </h2>
                     <Accordion
@@ -159,10 +214,10 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                         className="w-full">
                         {player?.abilities.map((ability, index) => (
                             <AccordionItem
-                                key={ability.name}
-                                value={ability.name}>
+                                key={`${ability.name}-${index}`}
+                                value={`${ability.name}-${index}`}>
                                 <AccordionTrigger
-                                    className="text-left hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 rounded py-3"
+                                    className="text-left hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md py-3 px-2"
                                     aria-label={`${t("details")} ${ability.name}`}>
                                     <span className="text-sm sm:text-base font-medium">{ability.name}</span>
                                 </AccordionTrigger>

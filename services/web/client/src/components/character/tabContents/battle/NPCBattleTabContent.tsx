@@ -10,6 +10,7 @@ import Skill from "@/components/character/tabContents/general/Skill";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 import ActionSection from "@/components/character/tabContents/battle/ActionSection";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Props {
     npc: NPC;
@@ -19,48 +20,86 @@ interface Props {
 const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
     const t = useTranslations("characterDetail.combat");
     const tAbilities = useTranslations("characterDetail.player.general.abilities");
-    
+
     // Configuration des badges de statistiques
     const speedBadges = [
-        { key: 'walk', value: npc.stats.speed.walk, icon: <Image src={RunningIcon} alt="" aria-hidden="true" className="size-6" /> },
-        { key: 'climb', value: npc.stats.speed.climb, icon: <Mountain size={24} className='text-black' /> },
-        { key: 'swim', value: npc.stats.speed.swim, icon: <Waves size={24} className='text-black' /> },
-        { key: 'fly', value: npc.stats.speed.fly, icon: <Bird size={24} className='text-black' /> },
-        { key: 'burrow', value: npc.stats.speed.burrow, icon: <Shovel size={24} className='text-black' /> },
+        { key: 'walk', value: npc.stats.speed.walk, icon: <Image src={RunningIcon} alt="" aria-hidden="true" className="size-6" />, tooltipKey: 'walkSpeedTooltip' },
+        { key: 'climb', value: npc.stats.speed.climb, icon: <Mountain size={24} className='text-black' aria-hidden="true" />, tooltipKey: 'climbSpeedTooltip' },
+        { key: 'swim', value: npc.stats.speed.swim, icon: <Waves size={24} className='text-black' aria-hidden="true" />, tooltipKey: 'swimSpeedTooltip' },
+        { key: 'fly', value: npc.stats.speed.fly, icon: <Bird size={24} className='text-black' aria-hidden="true" />, tooltipKey: 'flySpeedTooltip' },
+        { key: 'burrow', value: npc.stats.speed.burrow, icon: <Shovel size={24} className='text-black' aria-hidden="true" />, tooltipKey: 'burrowSpeedTooltip' },
     ];
 
     return (
         <div className="w-full flex flex-col gap-2 md:gap-4 items-start">
             <div className="flex flex-row gap-2 md:gap-4 w-full">
-                <Card className='gap-2 max-w-1/4 h-fit'>
-                    <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                <Card
+                    className='gap-2 max-w-1/4 h-fit'
+                    role="region"
+                    aria-labelledby="stats-heading-npc">
+                    <h2
+                        id="stats-heading-npc"
+                        className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                         {t("stats")}
                     </h2>
                     <div className="flex flex-row justify-start gap-2 text-xl font-extrabold flex-wrap">
-                        <div className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
-                            <Image
-                                src={ShieldIcon}
-                                alt=""
-                                aria-hidden="true"
-                                className="size-5"
-                            />
-                            <span aria-hidden="true">{npc.stats.armorClass}</span>
-                        </div>
-                        <div className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
-                            <Image
-                                src={FeatherIcon}
-                                alt=""
-                                aria-hidden="true"
-                                className="size-5"
-                            />
-                            <span aria-hidden="true">{npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}</span>
-                        </div>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div
+                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    tabIndex={0}
+                                    role="img"
+                                    aria-label={`${t("armorClass")} ${npc.stats.armorClass}`}>
+                                    <Image
+                                        src={ShieldIcon}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="size-5"
+                                    />
+                                    <span aria-hidden="true">{npc.stats.armorClass}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {t("armorClassTooltip")}
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div
+                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    tabIndex={0}
+                                    role="img"
+                                    aria-label={`${t("initiativeTooltip")} ${npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}`}>
+                                    <Image
+                                        src={FeatherIcon}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="size-5"
+                                    />
+                                    <span aria-hidden="true">{npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {t("initiativeTooltip")}
+                            </TooltipContent>
+                        </Tooltip>
                         {speedBadges.map((badge) =>
                             badge.value && (
-                                <div key={badge.key} className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
-                                    {badge.icon}
-                                    <span aria-hidden="true">{badge.value}ft</span>
-                                </div>
+                                <Tooltip key={badge.key}>
+                                    <TooltipTrigger asChild>
+                                        <div
+                                            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            tabIndex={0}
+                                            role="img"
+                                            aria-label={`${t(badge.tooltipKey as any)} ${badge.value} feet`}>
+                                            {badge.icon}
+                                            <span aria-hidden="true">{badge.value}ft</span>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {t(badge.tooltipKey as any)}
+                                    </TooltipContent>
+                                </Tooltip>
                             )
                         )}
                     </div>
@@ -106,8 +145,13 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                             })}
                     </div>
                 </div>
-                <Card className='gap-2 md:gap-4 w-1/2 h-fit'>
-                    <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                <Card
+                    className='gap-2 md:gap-4 w-1/2 h-fit'
+                    role="region"
+                    aria-labelledby="abilities-traits-heading-npc">
+                    <h2
+                        id="abilities-traits-heading-npc"
+                        className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                         {t("abilitiesAndTraits")}
                     </h2>
                     <Accordion
@@ -116,10 +160,10 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                         className="w-full">
                         {npc?.abilities.map((ability, index) => (
                             <AccordionItem
-                                key={ability.name}
-                                value={ability.name}>
+                                key={`${ability.name}-${index}`}
+                                value={`${ability.name}-${index}`}>
                                 <AccordionTrigger
-                                    className="text-left hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 py-3"
+                                    className="text-left hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md py-3 px-2"
                                     aria-label={`${t("details")} ${ability.name}`}>
                                     <span className="text-sm sm:text-base font-medium">{ability.name}</span>
                                 </AccordionTrigger>
