@@ -76,7 +76,7 @@ describe('NpcService - create', () => {
     description: 'Test description',
     groups: [groupId1.toHexString(), groupId2.toHexString()],
     profile: {
-      alignment: 'Neutre',
+      alignment: 'True Neutral' as const,
       type: 'PNJ',
       subtype: 'Humain',
     },
@@ -193,7 +193,7 @@ describe('NpcService - create', () => {
       firstname: 'Test NPC',
       description: 'Test description',
       profile: {
-        alignment: 'Neutre',
+        alignment: 'True Neutral' as const,
         type: 'PNJ',
         subtype: 'Humain',
       },
