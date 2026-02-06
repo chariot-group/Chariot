@@ -284,6 +284,7 @@ export interface NPC extends Character {
     actions: Actions;
     challenge: Challenge;
     profile: NPCProfile;
+    hitPointsRoll?: string;
 }
 
 export interface PaginatedCharactersResponse {

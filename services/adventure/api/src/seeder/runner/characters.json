@@ -7,6 +7,7 @@
       "type": "humanoid",
       "subtype": "goblinoid"
     },
+    "hitPointsRoll": "2d6",
     "challenge": {
       "challengeRating": 0.25,
       "experiencePoints": 50
@@ -94,6 +95,7 @@
       "type": "monstrosity",
       "subtype": ""
     },
+    "hitPointsRoll": "7d10+21",
     "appearance": {
       "age": 8,
       "height": 8.0,
@@ -199,6 +201,7 @@
       "type": "humanoid",
       "subtype": "any race"
     },
+    "hitPointsRoll": "2d8",
     "appearance": {
       "age": 32,
       "eyes": "dark brown",
@@ -280,6 +283,7 @@
       "type": "monstrosity",
       "subtype": ""
     },
+    "hitPointsRoll": "13d10+52",
     "appearance": {
       "age": 142,
       "height": 6.5,
@@ -419,6 +423,7 @@
       "type": "beast",
       "subtype": ""
     },
+    "hitPointsRoll": "4d10+4",
     "background": {
       "backstory": "This giant eagle has nested in the high peaks for many years, watching over the valleys below. It has formed alliances with good-hearted travelers and druids, occasionally serving as a mount or messenger for those who prove themselves worthy."
     },
@@ -513,6 +518,7 @@
       "type": "undead",
       "subtype": ""
     },
+    "hitPointsRoll": "18d8+54",
     "appearance": {
       "age": 847,
       "height": 6.2,
@@ -726,6 +732,7 @@
       "type": "humanoid",
       "subtype": "orc"
     },
+    "hitPointsRoll": "2d8+6",
     "appearance": {
       "height": 6.8,
       "weight": 280,

@@ -9,6 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import Skill from "@/components/character/tabContents/general/Skill";
+import ActionSection from "@/components/character/tabContents/ActionSection";
 
 interface Props {
     player: Player;
@@ -24,8 +25,8 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
     return (
         <div className="w-full flex flex-col gap-4 items-start">
             <div className="flex flex-row gap-4">
-                <Card className='gap-2 max-w-1/4 rounded-xl'>
-                    <h2 className={`text-2xl sm:text-3xl font-semibold ${accentColor}`}>
+                <Card className='gap-2 md:gap-4 max-w-1/4 rounded-xl'>
+                    <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                         Statistiques Principales
                     </h2>
                     <div className="flex flex-row justify-start gap-2 text-xl font-extrabold">
@@ -45,7 +46,7 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                                 aria-hidden="true"
                                 className="size-6"
                             />
-                            <span aria-hidden="true">7</span>
+                            <span aria-hidden="true"></span>
                         </div>
                         <div className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center">
                             <Image
@@ -54,7 +55,7 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                                 aria-hidden="true"
                                 className="size-6"
                             />
-                            <span aria-hidden="true">7m</span>
+                            <span aria-hidden="true">{player.stats.speed.walk}</span>
                         </div>
                     </div>
                     <CharacterHealthBar currentHP={player.stats.currentHitPoints} maxHP={player.stats.maxHitPoints} tempHP={player.stats.tempHitPoints} />
@@ -76,7 +77,7 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                         aria-labelledby="saving-throws-heading">
                         <h2
                             id="saving-throws-heading"
-                            className={`text-xl sm:text-3xl font-semibold ${accentColor}`}>
+                            className={`ttext-xl sm:text-2xl font-semibold ${accentColor}`}>
                             Jets de sauvegarde
                         </h2>
                     </Card>
@@ -100,10 +101,10 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                     </div>
                 </div>
                 <Card className='gap-2 rounded-xl h-fit'>
-                    <h2 className={`text-2xl sm:text-3xl font-semibold ${accentColor}`}>
+                    <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                         Jets de Sauvegarde contre la Mort
                     </h2>
-                    <div className="flex flex-row gap-3 items-center">
+                    <div className="flex flex-row gap-2 items-center">
                         <span>Succès :</span>
                         <div className="grid grid-cols-3 gap-2">
                             {Array.from({ length: 3 }).map((_, index) => (
@@ -118,7 +119,7 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                                 />))}
                         </div>
                     </div>
-                    <div className="flex flex-row gap-3 items-center">
+                    <div className="flex flex-row gap-2 items-center">
                         <span>Échecs :</span>
                         <div className="grid grid-cols-3 gap-2">
                             {Array.from({ length: 3 }).map((_, index) => (
@@ -135,9 +136,9 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                     </div>
                 </Card >
             </div>
-            <div className="flex flex-row gap-4 w-full">
-                <Card className='gap-2 w-2/5 rounded-xl h-fit'>
-                    <h2 className={`text-2xl sm:text-3xl font-semibold ${accentColor}`}>
+            <div className="flex flex-row gap-2 md:gap-4 w-full">
+                <Card className='gap-2 md:gap-4 w-2/5 rounded-xl h-fit'>
+                    <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                         Capacités et traits
                     </h2>
                     <Accordion
@@ -163,40 +164,12 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                         ))}
                     </Accordion>
                 </Card >
-                <div className="w-3/5 flex flex-row gap-2">
-                    <Card className='gap-2 h-fit rounded-full'>
-                        <h2 className={`text-2xl sm:text-3xl font-semibold ${accentColor}`}>
-                            Actions
-                        </h2>
-                    </Card >
-                    <Card className='gap-2 h-fit grid grid-cols-7 rounded-full'>
-                        <span className={`text-xl sm:text-xl font-semibold col-start-1 col-end-3 ${accentColor}`}>
-                            Nom
-                        </span>
-                        <span className={`text-xl sm:text-xl font-semibold col-start-3 col-end-4 justify-self-center ${accentColor}`}>
-                            Attaque
-                        </span>
-                        <span className={`text-xl sm:text-xl font-semibold col-start-4 ${accentColor}`}>
-                            Dégats/Type
-                        </span>
-                    </Card >
-                    {player.actions.map((action, index) =>
-                    (<Card key={index} className='gap-2 h-fit grid grid-cols-7 items-center rounded-full'>
-                        <span className={`text-xl sm:text-xl col-start-1 col-end-3`}>
-                            {action.name}({action.type})
-                        </span>
-                        <span className={`text-xl sm:text-xl col-start-3 col-end-4 justify-self-center`}>
-                            +{action.attackBonus}
-                        </span>
-                        <span className={`text-xl sm:text-xl col-start-4 col-end-8 w-full`}>
-                            {action.damage && action.damage.length > 0
-                                ? action.damage.map((d, i) => (
-                                    <span key={i}>{d.dice} {d.type}{i < action.damage!.length - 1 ? ' + ' : ''}</span>
-                                ))
-                                : 'N/A'
-                            } ({action.range})
-                        </span>
-                    </Card >))}
+                <div className="w-3/5 flex flex-row gap-2 md:gap-4">
+                    <ActionSection
+                        title="Actions"
+                        actions={player.actions}
+                        accentColor={accentColor}
+                    />
                 </div>
 
             </div>

@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Action } from "@/types/character";
-import React from "react";
 
 interface ActionSectionProps {
     title: string;
@@ -12,47 +12,68 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
     if (actions.length === 0) return null;
 
     return (
-        <div className="flex flex-col gap-2">
-            <Card className='gap-2 h-fit rounded-full'>
-                <h2 className={`text-2xl sm:text-3xl font-semibold ${accentColor}`}>
+        <div className="flex flex-col gap-2 w-full">
+            <Card className='gap-2 h-fit'>
+                <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
                     {title}
                 </h2>
             </Card>
-            <Card className='gap-2 h-fit grid grid-cols-9 rounded-full'>
-                <span className={`text-xl sm:text-xl font-semibold col-start-1 col-end-3 ${accentColor}`}>
-                    Nom
-                </span>
-                <span className={`text-xl sm:text-xl font-semibold col-start-3 col-end-4 justify-self-center ${accentColor}`}>
-                    Attaque/DD
-                </span>
-                <span className={`text-xl sm:text-xl font-semibold col-start-4 ${accentColor}`}>
-                    Dégats/Type
-                </span>
-                <span className={`text-xl sm:text-xl font-semibold col-start-5 ${accentColor}`}>
-                    Description
-                </span>
-            </Card>
-            {actions.map((action, index) => (
-                <Card key={index} className='gap-2 h-fit grid grid-cols-9 items-center rounded-full'>
-                    <span className={`text-xl sm:text-xl col-start-1 col-end-3`}>
-                        {action.name}{action.type && ` (${action.type})`}
-                    </span>
-                    <span className={`text-xl sm:text-xl col-start-3 col-end-4 justify-self-center`}>
-                        {action.attackBonus ? `+${action.attackBonus}` : '-'}
-                    </span>
-                    <span className={`text-xl sm:text-xl col-start-4 col-end-5 w-full justify-self-center`}>
-                        {action.damage && action.damage.length > 0
-                            ? action.damage.map((d, i) => (
-                                <span key={i}>{d.dice} {d.type}{i < action.damage!.length - 1 ? ' + ' : ''}</span>
-                            ))
-                            : '-'
-                        } {action.range && `(${action.range})`}
-                    </span>
-                    <span className={`text-xl sm:text-xl col-start-5 col-end-10 w-full`}>
-                        {action.description && <div className="text-sm italic">{action.description}</div>}
-                    </span>
-                </Card>
-            ))}
+            <Accordion
+                type="single"
+                collapsible
+                className="w-full flex flex-col gap-2">
+                {actions.map((action, index) => (
+                    <AccordionItem
+                        key={index}
+                        value={action.name}
+                        className="flex flex-col gap-2">
+                        <Card className="gap-2 p-0 flex-col">
+                            <AccordionTrigger
+                                className="py-3 px-3 md:py-4 md:px-6"
+                                aria-label={`Détails de l'action ${action.name}`}>
+                                <span className="text-base md:text-lg font-medium text-left">
+                                    {action.name}{action.type && ` (${action.type})`}
+                                </span>
+                            </AccordionTrigger>
+                        </Card>
+                        <AccordionContent>
+                            <div className="flex flex-wrap gap-2 items-start">
+                                <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                                        Attaque/DD:
+                                    </span>
+                                    <span className="text-sm md:text-base">
+                                        {action.attackBonus ? `+${action.attackBonus}` : '-'}
+                                    </span>
+                                </Card>
+                                <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                                        Dégats/Type:
+                                    </span>
+                                    <span className="text-sm md:text-base">
+                                        {action.damage && action.damage.length > 0
+                                            ? action.damage.map((d, i) => (
+                                                <span key={i}>{d.dice} {d.type}{i < action.damage!.length - 1 ? ' + ' : ''}</span>
+                                            ))
+                                            : '-'
+                                        } {action.range && `(${action.range})`}
+                                    </span>
+                                </Card>
+                                {action.description && (
+                                    <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
+                                        <span className={`${accentColor} font-semibold text-sm md:text-base`}>
+                                            Description:
+                                        </span>
+                                        <span className="text-sm md:text-base italic">
+                                            {action.description}
+                                        </span>
+                                    </Card>
+                                )}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
+            </Accordion>
         </div>
     );
 };

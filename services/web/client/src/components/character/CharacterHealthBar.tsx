@@ -1,6 +1,5 @@
 import Image from 'next/image'
 import HeartIcon from "@public/assets/icons/heart-icon.svg";
-import React from 'react';
 import { Skull } from 'lucide-react';
 
 interface CharacterHealthBarProps {
@@ -25,7 +24,7 @@ const CharacterHealthBar = ({
             : 0
 
     return (
-        <div className="relative w-64 h-9 bg-white border border-black rounded-full overflow-hidden">
+        <div className="relative h-9 bg-white border border-black rounded-full overflow-hidden">
             {/* HP temporaires */}
             {yellowPercent > 0 && (
                 <>
@@ -60,7 +59,7 @@ const CharacterHealthBar = ({
                         className="size-6 sm:size-7"
                     />
                 ) : (
-                    <Skull size={32} className='text-black'/>
+                    <Skull size={32} className='text-black' />
                 )}
 
                 <div className="font-bold text-xl text-black">
