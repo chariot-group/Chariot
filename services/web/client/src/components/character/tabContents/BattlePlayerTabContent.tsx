@@ -8,7 +8,7 @@ import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import PerformedThrow from "@public/assets/death-saves/performed-throw.svg";
 import UnperformedThrow from "@public/assets/death-saves/unperformed-throw.svg";
-import Competence from "@/components/character/tabContents/general/Competence";
+import Skill from "@/components/character/tabContents/general/Skill";
 
 interface Props {
     player: Player;
@@ -17,8 +17,8 @@ interface Props {
 
 const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
 
-    function isMastered(competence: string): boolean {
-        return player.stats.masteriesAbility[competence as keyof typeof player.stats.masteriesAbility] === true;
+    function isMastered(skill: string): boolean {
+        return player.stats.masteriesAbility[skill as keyof typeof player.stats.masteriesAbility] === true;
     }
 
     return (
@@ -88,9 +88,9 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                                 const isMasteredKey = isMastered(key);
                                 const abilityName = `${key}`;
                                 return (
-                                    <Competence
+                                    <Skill
                                         key={key}
-                                        competence={abilityName}
+                                        skillName={abilityName}
                                         value={isMasteredKey ? 2 : 0}
                                         accentColor={accentColor}
                                         skills={value}
