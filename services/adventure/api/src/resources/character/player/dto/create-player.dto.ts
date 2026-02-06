@@ -13,9 +13,17 @@ import { ProgressionDto } from '@/resources/character/player/dto/progression/pro
 import { ClassDto } from '@/resources/character/player/dto/class/class.dto';
 import { PlayerProfileDto } from '@/resources/character/player/dto/profile/player-profile.dto';
 import { PlayerStatsDto } from '@/resources/character/player/dto/stats/player-stats.dto';
+import { ActionDto } from '@/resources/character/core/dto/actions/action.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePlayerDto extends CreateCharacterDto {
+
+  @ApiProperty({ type: [ActionDto] })
+  @ValidateNested({ each: true })
+  @IsArray()
+  @IsOptional()
+  @Type(() => ActionDto)
+  actions: ActionDto[];
 
   @ApiProperty({ example: false })
   @IsOptional()

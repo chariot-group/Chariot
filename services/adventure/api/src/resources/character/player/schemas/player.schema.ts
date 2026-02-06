@@ -6,11 +6,16 @@ import { Class } from '@/resources/character/player/schemas/class/class.schema';
 import { PlayerProfile } from '@/resources/character/player/schemas/profile/player-profile.schema';
 import { PlayerStats } from '@/resources/character/player/schemas/stats/player-stats.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { Action } from '@/resources/character/core/schemas/actions/action.schema';
 
 export type PlayerDocument = Player & Document;
 
 @Schema()
 export class Player extends Character {
+
+  @ApiProperty({ type: [Action] })
+  @Prop({ type: [Action], default: [] })
+  actions: Action[];
 
   @ApiProperty({ example: true })
   @Prop({ required: true })

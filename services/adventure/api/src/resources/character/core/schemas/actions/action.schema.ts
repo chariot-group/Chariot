@@ -1,5 +1,5 @@
 import { Prop } from '@nestjs/mongoose';
-import { Damage } from '@/resources/character/npc/schemas/actions/sub/damage.schema';
+import { Damage } from '@/resources/character/core/schemas/actions/damage.schema';
 import { Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 @Schema({ _id: false })

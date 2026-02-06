@@ -227,6 +227,7 @@ export interface Character {
 
 export interface Player extends Character {
     stats: PlayerStats;
+    actions: Action[];
     inspiration: boolean;
     progression: Progression;
     class: Class[];

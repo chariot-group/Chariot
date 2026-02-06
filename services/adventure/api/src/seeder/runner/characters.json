@@ -869,6 +869,19 @@
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Rapier",
+        "type": "melee",
+        "attackBonus": 4,
+        "damage": {
+          "dice": "1d8+2",
+          "type": "piercing"
+        },
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1008,7 +1021,20 @@
       "resistances": ["bludgeoning", "piercing", "slashing (while raging)"],
       "immunities": [],
       "vulnerabilities": []
-    }
+    },
+    "actions": [
+      {
+        "name": "Greataxe",
+        "type": "melee",
+        "attackBonus": 5,
+        "damage": {
+          "dice": "1d12+3",
+          "type": "slashing"
+        },
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0
   },
   {
     "firstname": "Vax'ildan",
@@ -1276,6 +1302,29 @@
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Longbow",
+        "type": "ranged",
+        "attackBonus": 4,
+        "damage": {
+          "dice": "1d8+2",
+          "type": "piercing"
+        },
+        "range": "150/600 feet"
+      },
+      {
+        "name": "Dagger",
+        "type": "melee",
+        "attackBonus": 4,
+        "damage": {
+          "dice": "1d4+2",
+          "type": "piercing"
+        },
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1461,6 +1510,19 @@
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Quarterstaff",
+        "type": "melee",
+        "attackBonus": 3,
+        "damage": {
+          "dice": "1d6+1",
+          "type": "bludgeoning"
+        },
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1667,6 +1729,19 @@
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Mace",
+        "type": "melee",
+        "attackBonus": 7,
+        "damage": {
+          "dice": "1d6+3",
+          "type": "bludgeoning"
+        },
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1830,7 +1905,30 @@
       "resistances": [],
       "immunities": [],
       "vulnerabilities": []
-    }
+    },
+    "actions": [
+      {
+        "name": "Bad News (Rifle)",
+        "type": "ranged",
+        "attackBonus": 12,
+        "damage": {
+          "dice": "2d12+5",
+          "type": "piercing"
+        },
+        "range": "200/800 feet"
+      },
+      {
+        "name": "Animus (Revolver)",
+        "type": "ranged",
+        "attackBonus": 12,
+        "damage": {
+          "dice": "1d10+5",
+          "type": "piercing"
+        },
+        "range": "40/120 feet"
+      }
+    ],
+    "exhaustionLevel": 0
   },
   {
     "firstname": "Varis",
@@ -2071,6 +2169,29 @@
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Eldritch Blast",
+        "type": "ranged",
+        "attackBonus": 5,
+        "damage": {
+          "dice": "2d10",
+          "type": "force"
+        },
+        "range": "120 feet"
+      },
+      {
+        "name": "Dagger",
+        "type": "melee",
+        "attackBonus": 3,
+        "damage": {
+          "dice": "1d4+1",
+          "type": "piercing"
+        },
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
     "affinities": {
       "resistances": [],
       "immunities": [],
