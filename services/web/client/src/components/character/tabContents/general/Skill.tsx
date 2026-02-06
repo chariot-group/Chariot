@@ -3,109 +3,109 @@ import Image from "next/image";
 
 import NoMastery from "@public/assets/mastery/no-mastery.svg";
 import HalfMastery from "@public/assets/mastery/half-mastery.svg";
-import Mastery from "@public/assets/mastery/mastery.svg";
+import BlueCircle from "@public/assets/icons/blue-circle.svg";
 import Expert from "@public/assets/mastery/expert.svg";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 
 interface SkillProps {
-  skillName: string;
-  value: number;
-  icon?: React.ReactElement | undefined;
-  accentColor: string;
-  proficiencyBonus?: number | undefined;
-  masteriesAbility?: number | undefined;
-  skills?: number | undefined;
-  tooltip?: string | undefined;
+    skillName: string;
+    value: number;
+    icon?: React.ReactElement | undefined;
+    accentColor: string;
+    proficiencyBonus?: number | undefined;
+    masteriesAbility?: number | undefined;
+    skills?: number | undefined;
+    tooltip?: string | undefined;
 }
 
 export default function Skill({
-  skillName,
-  value,
-  icon,
-  accentColor,
-  proficiencyBonus,
-  masteriesAbility,
-  skills,
-  tooltip,
+    skillName,
+    value,
+    icon,
+    accentColor,
+    proficiencyBonus,
+    masteriesAbility,
+    skills,
+    tooltip,
 }: SkillProps) {
-  const t = useTranslations("characterDetail.player.general");
+    const t = useTranslations("characterDetail.player.general");
 
-  function getIconForValue(value: number): string {
-    switch (value) {
-      case 1:
-        return HalfMastery;
-      case 2:
-        return Mastery;
-      case 3:
-        return Expert;
-      default:
-        return NoMastery;
+    function getIconForValue(value: number): string {
+        switch (value) {
+            case 1:
+                return HalfMastery;
+            case 2:
+                return BlueCircle;
+            case 3:
+                return Expert;
+            default:
+                return NoMastery;
+        }
     }
-  }
 
-  function calculateModifier(score: number): number {
-    return Math.floor((score - 10) / 2);
-  }
-
-  function calculateMasteryLevel(masteryLevel: number): string {
-    let result: number = 0;
-    if (skills!) {
-      result = skills;
-    } else {
-      if (!proficiencyBonus || !masteriesAbility) return "+0";
-      let value = calculateModifier(masteriesAbility) + proficiencyBonus * 2;
-      if (masteryLevel === 0) value = calculateModifier(masteriesAbility);
-      if (masteryLevel === 1) value = calculateModifier(masteriesAbility) + proficiencyBonus / 2;
-      if (masteryLevel === 2) value = calculateModifier(masteriesAbility) + proficiencyBonus;
-      result = value;
+    function calculateModifier(score: number): number {
+        return Math.floor((score - 10) / 2);
     }
-    let arroundedResult = Math.floor(result);
-    return arroundedResult > 0 ? `+${arroundedResult}` : `${arroundedResult}`;
-  }
 
-  if (tooltip !== undefined) {
+    function calculateMasteryLevel(masteryLevel: number): string {
+        let result: number = 0;
+        if (skills!) {
+            result = skills;
+        } else {
+            if (!proficiencyBonus || !masteriesAbility) return "+0";
+            let value = calculateModifier(masteriesAbility) + proficiencyBonus * 2;
+            if (masteryLevel === 0) value = calculateModifier(masteriesAbility);
+            if (masteryLevel === 1) value = calculateModifier(masteriesAbility) + proficiencyBonus / 2;
+            if (masteryLevel === 2) value = calculateModifier(masteriesAbility) + proficiencyBonus;
+            result = value;
+        }
+        let arroundedResult = Math.floor(result);
+        return arroundedResult > 0 ? `+${arroundedResult}` : `${arroundedResult}`;
+    }
+
+    if (tooltip !== undefined) {
+        return (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Card className="p-2">
+                        <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
+                            <span className="shrink-0">{icon}</span>
+                            <span className="truncate">{skillName}</span>{" "}
+                            <span className="font-bold shrink-0">{calculateMasteryLevel(value)}</span>
+                            <Image
+                                src={getIconForValue(value)}
+                                alt={t("masteryLevelIcon", { level: value })}
+                                width={20}
+                                height={20}
+                                className="shrink-0"
+                                aria-hidden="true"
+                            />
+                        </p>
+                    </Card>
+                </TooltipTrigger>
+                <TooltipContent role="tooltip">
+                    <p>{tooltip}</p>
+                </TooltipContent>
+            </Tooltip>
+        );
+    }
+
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Card className="p-2">
+        <Card className="p-2">
             <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
-              <span className="shrink-0">{icon}</span>
-              <span className="truncate">{skillName}</span>{" "}
-              <span className="font-bold shrink-0">{calculateMasteryLevel(value)}</span>
-              <Image
-                src={getIconForValue(value)}
-                alt={t("masteryLevelIcon", { level: value })}
-                width={20}
-                height={20}
-                className="shrink-0"
-                aria-hidden="true"
-              />
+                <span className="shrink-0">{icon}</span>
+                <span className="truncate">{skillName}</span>{" "}
+                <span className="font-bold shrink-0">{calculateMasteryLevel(value)}</span>
+                <Image
+                    src={getIconForValue(value)}
+                    alt={t("masteryLevelIcon", { level: value })}
+                    width={20}
+                    height={20}
+                    className="shrink-0"
+                    aria-hidden="true"
+                />
             </p>
-          </Card>
-        </TooltipTrigger>
-        <TooltipContent role="tooltip">
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
+        </Card>
     );
-  }
-
-  return (
-    <Card className="p-2">
-      <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
-        <span className="shrink-0">{icon}</span>
-        <span className="truncate">{skillName}</span>{" "}
-        <span className="font-bold shrink-0">{calculateMasteryLevel(value)}</span>
-        <Image
-          src={getIconForValue(value)}
-          alt={t("masteryLevelIcon", { level: value })}
-          width={20}
-          height={20}
-          className="shrink-0"
-          aria-hidden="true"
-        />
-      </p>
-    </Card>
-  );
 }

@@ -6,8 +6,8 @@ import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import PerformedThrow from "@public/assets/death-saves/performed-throw.svg";
-import UnperformedThrow from "@public/assets/death-saves/unperformed-throw.svg";
+import RedCircle from "@public/assets/icons/red-circle.svg";
+import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import Skill from "@/components/character/tabContents/general/Skill";
 
 interface Props {
@@ -109,7 +109,7 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                             {Array.from({ length: 3 }).map((_, index) => (
                                 <Image
                                     key={"death-save-success-" + index}
-                                    src={index < player.deathSaves.successes ? PerformedThrow : UnperformedThrow}
+                                    src={index < player.deathSaves.successes ? RedCircle : WhiteCircle}
                                     alt={index < player.deathSaves.successes ? "Performed Throw" : "Unperformed Throw"}
                                     width={20}
                                     height={20}
@@ -124,7 +124,7 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                             {Array.from({ length: 3 }).map((_, index) => (
                                 <Image
                                     key={"death-save-failure-" + index}
-                                    src={index < player.deathSaves.failures ? PerformedThrow : UnperformedThrow}
+                                    src={index < player.deathSaves.failures ? RedCircle : WhiteCircle}
                                     alt={index < player.deathSaves.failures ? "Performed Throw" : "Unperformed Throw"}
                                     width={20}
                                     height={20}

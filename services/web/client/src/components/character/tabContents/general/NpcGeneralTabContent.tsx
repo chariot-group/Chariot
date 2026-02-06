@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import Characteristics from "@/components/character/tabContents/general/Characteristics";
+import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
 import Skill from "@/components/character/tabContents/general/Skill";
 
 interface NpcGeneralTabContentProps {
@@ -68,7 +68,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </Card>
 
           {/* Caractéristiques */}
-          <Characteristics
+          <AbilityScores
             character={npc}
             accentColor={accentColor}
           />

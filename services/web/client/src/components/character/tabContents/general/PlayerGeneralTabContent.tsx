@@ -23,7 +23,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Skill from "@/components/character/tabContents/general/Skill";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import Characteristics from "@/components/character/tabContents/general/Characteristics";
+import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -96,7 +96,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
 
           {/* Caractéristiques */}
-          <Characteristics
+          <AbilityScores
             character={player}
             accentColor={accentColor}
           />
