@@ -243,7 +243,6 @@
       "noCantrips": "Sin trucos",
       "spellLevel": "Conjuros de nivel {level}",
       "spellSlots": "{used} / {total}",
-      "spellDescriptions": "Descripciones de conjuros de nivel {level}",
       "spellDetails": {
         "school": "Escuela",
         "castingTime": "Tiempo de lanzamiento",
@@ -255,9 +254,7 @@
       "mainRegion": "Sección de magia",
       "spellListRegion": "Lista de conjuros",
       "spellDetailRegion": "Detalles del conjuro",
-      "selectSpellcasting": "Seleccionar clase de lanzamiento {className}",
-      "selectSpellLevel": "Seleccionar nivel de conjuro {level}",
-      "toggleSpellDetails": "Mostrar/ocultar detalles del conjuro {spellName}"
+      "selectSpellcasting": "Seleccionar clase de lanzamiento {className}"
     }
   },
   "classes": {

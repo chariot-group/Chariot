@@ -243,7 +243,6 @@
       "noCantrips": "No cantrips",
       "spellLevel": "Level {level} spells",
       "spellSlots": "{used} / {total}",
-      "spellDescriptions": "Level {level} spell descriptions",
       "spellDetails": {
         "school": "School",
         "castingTime": "Casting time",
@@ -255,9 +254,7 @@
       "mainRegion": "Magic section",
       "spellListRegion": "Spell list",
       "spellDetailRegion": "Spell details",
-      "selectSpellcasting": "Select spellcasting class {className}",
-      "selectSpellLevel": "Select spell level {level}",
-      "toggleSpellDetails": "Toggle spell details for {spellName}"
+      "selectSpellcasting": "Select spellcasting class {className}"
     }
   },
   "classes": {

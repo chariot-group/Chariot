@@ -555,12 +555,21 @@
     "spellcasting": [
       {
         "ability": "intelligence",
-        "saveDC": 18,
-        "attackBonus": 10,
+        "saveDC": 20,
+        "attackBonus": 12,
+        "className": "Wizard",
         "spellSlotsByLevel": {
-          "3": { "total": 3, "used": 0 }
+          "1": { "total": 4, "used": 0 },
+          "2": { "total": 3, "used": 0 },
+          "3": { "total": 3, "used": 0 },
+          "4": { "total": 3, "used": 0 },
+          "5": { "total": 3, "used": 0 },
+          "6": { "total": 2, "used": 0 },
+          "7": { "total": 2, "used": 0 },
+          "8": { "total": 1, "used": 0 },
+          "9": { "total": 1, "used": 0 }
         },
-        "totalSlots": 3,
+        "totalSlots": 22,
         "spells": [
           {
             "name": "Mage Hand",
@@ -570,27 +579,247 @@
             "range": "30 feet",
             "components": ["V", "S"],
             "duration": "1 minute",
-            "description": "A spectral, floating hand appears at a point you choose within range. The hand lasts for the duration or until you dismiss it as an action. The hand vanishes if it is ever more than 30 feet away from you or if you cast this spell again. You can use your action to control the hand. You can use the hand to manipulate an object, open an unlocked door or container, stow or retrieve an item from an open container, or pour the contents out of a vial. You can move the hand up to 30 feet each time you use it. The hand can't attack, activate magic items, or carry more than 10 pounds."
+            "description": "A spectral, floating hand appears at a point you choose within range."
           },
           {
-            "name": "Disrupt Undead",
+            "name": "Prestidigitation",
             "level": 0,
+            "school": "transmutation",
+            "castingTime": "1 action",
+            "range": "10 feet",
+            "components": ["V", "S"],
+            "duration": "Up to 1 hour",
+            "description": "This spell is a minor magical trick that novice spellcasters use for practice."
+          },
+          {
+            "name": "Ray of Frost",
+            "level": 0,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "components": ["V", "S"],
+            "duration": "Instantaneous",
+            "description": "A frigid beam of blue-white light streaks toward a creature within range. Make a ranged spell attack. On a hit, it takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn."
+          },
+          {
+            "name": "Chill Touch",
+            "level": 0,
+            "school": "necromancy",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S"],
+            "duration": "1 round",
+            "description": "You create a ghostly, skeletal hand in the space of a creature within range. Make a ranged spell attack. On a hit, the target takes 1d8 necrotic damage, and it can't regain hit points until the start of your next turn."
+          },
+          {
+            "name": "Detect Magic",
+            "level": 1,
+            "school": "divination",
+            "castingTime": "1 action",
+            "range": "Self",
+            "components": ["V", "S"],
+            "duration": "Concentration, up to 10 minutes",
+            "description": "For the duration, you sense the presence of magic within 30 feet of you."
+          },
+          {
+            "name": "Magic Missile",
+            "level": 1,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S"],
+            "duration": "Instantaneous",
+            "description": "You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target."
+          },
+          {
+            "name": "Shield",
+            "level": 1,
+            "school": "abjuration",
+            "castingTime": "1 reaction",
+            "range": "Self",
+            "components": ["V", "S"],
+            "duration": "1 round",
+            "description": "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC."
+          },
+          {
+            "name": "Mirror Image",
+            "level": 2,
+            "school": "illusion",
+            "castingTime": "1 action",
+            "range": "Self",
+            "components": ["V", "S"],
+            "duration": "1 minute",
+            "description": "Three illusory duplicates of yourself appear in your space. Until the spell ends, the duplicates move with you and mimic your actions."
+          },
+          {
+            "name": "Misty Step",
+            "level": 2,
+            "school": "conjuration",
+            "castingTime": "1 bonus action",
+            "range": "Self",
+            "components": ["V"],
+            "duration": "Instantaneous",
+            "description": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see."
+          },
+          {
+            "name": "Scorching Ray",
+            "level": 2,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S"],
+            "duration": "Instantaneous",
+            "description": "You create three rays of fire and hurl them at targets within range. Make a ranged spell attack for each ray. On a hit, the target takes 2d6 fire damage."
+          },
+          {
+            "name": "Animate Dead",
+            "level": 3,
+            "school": "necromancy",
+            "castingTime": "1 minute",
+            "range": "10 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "This spell creates an undead servant. Choose a pile of bones or a corpse of a Medium or Small humanoid within range. Your spell imbues the target with a foul mimicry of life, raising it as an undead creature."
+          },
+          {
+            "name": "Counterspell",
+            "level": 3,
+            "school": "abjuration",
+            "castingTime": "1 reaction",
+            "range": "60 feet",
+            "components": ["S"],
+            "duration": "Instantaneous",
+            "description": "You attempt to interrupt a creature in the process of casting a spell. If the creature is casting a spell of 3rd level or lower, its spell fails and has no effect."
+          },
+          {
+            "name": "Fireball",
+            "level": 3,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "150 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Dimension Door",
+            "level": 4,
+            "school": "conjuration",
+            "castingTime": "1 action",
+            "range": "500 feet",
+            "components": ["V"],
+            "duration": "Instantaneous",
+            "description": "You teleport yourself from your current location to any other spot within range. You arrive at exactly the spot desired."
+          },
+          {
+            "name": "Blight",
+            "level": 4,
+            "school": "necromancy",
+            "castingTime": "1 action",
+            "range": "30 feet",
+            "components": ["V", "S"],
+            "duration": "Instantaneous",
+            "description": "Necromantic energy washes over a creature of your choice that you can see within range, draining moisture and vitality from it. The target must make a Constitution saving throw. The target takes 8d8 necrotic damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Ice Storm",
+            "level": 4,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "300 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "A hail of rock-hard ice pounds to the ground in a 20-foot-radius, 40-foot-high cylinder centered on a point within range. Each creature in the cylinder must make a Dexterity saving throw. A creature takes 2d8 bludgeoning damage and 4d6 cold damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Cloudkill",
+            "level": 5,
+            "school": "conjuration",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S"],
+            "duration": "Concentration, up to 10 minutes",
+            "description": "You create a 20-foot-radius sphere of poisonous, yellow-green fog centered on a point you choose within range. The fog spreads around corners. It lasts for the duration or until strong wind disperses the fog. Its area is heavily obscured. When a creature enters the spell's area for the first time on a turn or starts its turn there, that creature must make a Constitution saving throw. The creature takes 5d8 poison damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Cone of Cold",
+            "level": 5,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "Self (60-foot cone)",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "A blast of cold air erupts from your hands. Each creature in a 60-foot cone must make a Constitution saving throw. A creature takes 8d8 cold damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Wall of Force",
+            "level": 5,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Concentration, up to 10 minutes",
+            "description": "An invisible wall of force springs into existence at a point you choose within range. The wall appears in any orientation you choose, as a horizontal or vertical barrier or at an angle. Nothing can physically pass through the wall. It is immune to all damage and can't be dispelled."
+          },
+          {
+            "name": "Disintegrate",
+            "level": 6,
+            "school": "transmutation",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "A thin green ray springs from your pointing finger to a target that you can see within range. The target can be a creature, an object, or a creation of magical force. A creature targeted by this spell must make a Dexterity saving throw. On a failed save, the target takes 10d6 + 40 force damage. If this damage reduces the target to 0 hit points, it is disintegrated."
+          },
+          {
+            "name": "Globe of Invulnerability",
+            "level": 6,
+            "school": "abjuration",
+            "castingTime": "1 action",
+            "range": "Self (10-foot radius)",
+            "components": ["V", "S", "M"],
+            "duration": "Concentration, up to 1 minute",
+            "description": "An immobile, faintly shimmering barrier springs into existence in a 10-foot radius around you and remains for the duration. Any spell of 5th level or lower cast from outside the barrier can't affect creatures or objects within it."
+          },
+          {
+            "name": "Finger of Death",
+            "level": 7,
             "school": "necromancy",
             "castingTime": "1 action",
             "range": "60 feet",
             "components": ["V", "S"],
             "duration": "Instantaneous",
-            "description": "You hurl a bolt of negative energy at an undead creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d6 necrotic damage. This spell deals no damage to living creatures. The spell's damage increases by 1d6 when you reach 5th level (2d6), 11th level (3d6), and 17th level (4d6)."
+            "description": "You send negative energy coursing through a creature that you can see within range, causing it searing pain. The target must make a Constitution saving throw. It takes 7d8 + 30 necrotic damage on a failed save, or half as much damage on a successful one. A humanoid killed by this spell rises at the start of your next turn as a zombie."
           },
           {
-            "name": "Dispel Magic",
-            "level": 3,
-            "school": "abjuration",
+            "name": "Plane Shift",
+            "level": 7,
+            "school": "conjuration",
             "castingTime": "1 action",
-            "range": "120 feet",
-            "components": ["V", "S"],
+            "range": "Touch",
+            "components": ["V", "S", "M"],
             "duration": "Instantaneous",
-            "description": "Choose one creature, object, or magical effect within range. Any spell of 3rd level or lower on the target ends. For each spell of 4th level or higher on the target, make an ability check using your spellcasting ability. The DC equals 10 + the spell's level. On a successful check, the spell ends. At Higher Levels: When you cast this spell using a spell slot of 4th level or higher, you automatically end the effects of a spell on the target if the spell's level is equal to or less than the level of the spell slot you used."
+            "description": "You and up to eight willing creatures who link hands in a circle are transported to a different plane of existence."
+          },
+          {
+            "name": "Power Word Stun",
+            "level": 8,
+            "school": "enchantment",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "components": ["V"],
+            "duration": "Instantaneous",
+            "description": "You speak a word of power that can overwhelm the mind of one creature you can see within range, leaving it dumbfounded. If the target has 150 hit points or fewer, it is stunned. Otherwise, the spell has no effect."
+          },
+          {
+            "name": "Power Word Kill",
+            "level": 9,
+            "school": "enchantment",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "components": ["V"],
+            "duration": "Instantaneous",
+            "description": "You utter a word of power that can compel one creature you can see within range to die instantly. If the creature you choose has 100 hit points or fewer, it dies. Otherwise, the spell has no effect."
           }
         ]
       }

@@ -243,7 +243,6 @@
       "noCantrips": "Aucun tour de magie",
       "spellLevel": "Sorts de niveau {level}",
       "spellSlots": "{used} / {total}",
-      "spellDescriptions": "Descriptions des sorts niveau {level}",
       "spellDetails": {
         "school": "École",
         "castingTime": "Temps d'incantation",
@@ -255,9 +254,7 @@
       "mainRegion": "Section magie",
       "spellListRegion": "Liste des sorts",
       "spellDetailRegion": "Détails des sorts",
-      "selectSpellcasting": "Sélectionner la classe de sorts {className}",
-      "selectSpellLevel": "Sélectionner le niveau de sort {level}",
-      "toggleSpellDetails": "Afficher/masquer les détails du sort {spellName}"
+      "selectSpellcasting": "Sélectionner la classe de sorts {className}"
     }
   },
   "classes": {
