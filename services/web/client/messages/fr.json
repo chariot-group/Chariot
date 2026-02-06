@@ -231,7 +231,35 @@
       "coinsRegion": "Section des pièces de monnaie",
       "equipmentRegion": "Section de l'équipement",
       "treasureRegion": "Section du trésor"
-    }  },
+    },
+    "magic": {
+      "noMagicAbilities": "Ce personnage n'a pas de capacités magiques.",
+      "spellcastingClass": "Classe de sorts",
+      "level": "Niv",
+      "preparedSpells": "Sorts préparés",
+      "attackBonus": "Bonus d'attaque",
+      "saveDC": "Degré de difficulté (DD)",
+      "cantrips": "Tours de magie",
+      "noCantrips": "Aucun tour de magie",
+      "spellLevel": "Sorts de niveau {level}",
+      "spellSlots": "{used} / {total}",
+      "spellDescriptions": "Descriptions des sorts niveau {level}",
+      "spellDetails": {
+        "school": "École",
+        "castingTime": "Temps d'incantation",
+        "range": "Portée",
+        "components": "Composants",
+        "duration": "Durée",
+        "description": "Description"
+      },
+      "mainRegion": "Section magie",
+      "spellListRegion": "Liste des sorts",
+      "spellDetailRegion": "Détails des sorts",
+      "selectSpellcasting": "Sélectionner la classe de sorts {className}",
+      "selectSpellLevel": "Sélectionner le niveau de sort {level}",
+      "toggleSpellDetails": "Afficher/masquer les détails du sort {spellName}"
+    }
+  },
   "classes": {
     "Artificer": "Artificier",
     "Barbarian": "Barbare",

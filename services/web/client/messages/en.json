@@ -231,6 +231,33 @@
       "coinsRegion": "Coins section",
       "equipmentRegion": "Equipment section",
       "treasureRegion": "Treasure section"
+    },
+    "magic": {
+      "noMagicAbilities": "This character has no magical abilities.",
+      "spellcastingClass": "Spellcasting class",
+      "level": "Lvl",
+      "preparedSpells": "Prepared spells",
+      "attackBonus": "Attack bonus",
+      "saveDC": "Save DC",
+      "cantrips": "Cantrips",
+      "noCantrips": "No cantrips",
+      "spellLevel": "Level {level} spells",
+      "spellSlots": "{used} / {total}",
+      "spellDescriptions": "Level {level} spell descriptions",
+      "spellDetails": {
+        "school": "School",
+        "castingTime": "Casting time",
+        "range": "Range",
+        "components": "Components",
+        "duration": "Duration",
+        "description": "Description"
+      },
+      "mainRegion": "Magic section",
+      "spellListRegion": "Spell list",
+      "spellDetailRegion": "Spell details",
+      "selectSpellcasting": "Select spellcasting class {className}",
+      "selectSpellLevel": "Select spell level {level}",
+      "toggleSpellDetails": "Toggle spell details for {spellName}"
     }
   },
   "classes": {

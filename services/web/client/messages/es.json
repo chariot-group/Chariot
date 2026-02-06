@@ -231,7 +231,35 @@
       "coinsRegion": "Sección de monedas",
       "equipmentRegion": "Sección de equipamiento",
       "treasureRegion": "Sección de tesoro"
-    }  },
+    },
+    "magic": {
+      "noMagicAbilities": "Este personaje no tiene habilidades mágicas.",
+      "spellcastingClass": "Clase de lanzamiento de conjuros",
+      "level": "Niv",
+      "preparedSpells": "Conjuros preparados",
+      "attackBonus": "Bonificación de ataque",
+      "saveDC": "CD de salvación",
+      "cantrips": "Trucos",
+      "noCantrips": "Sin trucos",
+      "spellLevel": "Conjuros de nivel {level}",
+      "spellSlots": "{used} / {total}",
+      "spellDescriptions": "Descripciones de conjuros de nivel {level}",
+      "spellDetails": {
+        "school": "Escuela",
+        "castingTime": "Tiempo de lanzamiento",
+        "range": "Alcance",
+        "components": "Componentes",
+        "duration": "Duración",
+        "description": "Descripción"
+      },
+      "mainRegion": "Sección de magia",
+      "spellListRegion": "Lista de conjuros",
+      "spellDetailRegion": "Detalles del conjuro",
+      "selectSpellcasting": "Seleccionar clase de lanzamiento {className}",
+      "selectSpellLevel": "Seleccionar nivel de conjuro {level}",
+      "toggleSpellDetails": "Mostrar/ocultar detalles del conjuro {spellName}"
+    }
+  },
   "classes": {
     "Artificer": "Artífice",
     "Barbarian": "Bárbaro",
