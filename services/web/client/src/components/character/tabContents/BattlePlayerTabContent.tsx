@@ -21,6 +21,9 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
         return player.stats.masteriesAbility[competence as keyof typeof player.stats.masteriesAbility] === true;
     }
 
+    console.log(player.actions
+
+    )
     return (
         <div className="w-full flex flex-col gap-4 items-start">
             <div className="flex flex-row gap-4">
@@ -208,17 +211,18 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
                             Dégats/Type
                         </span>
                     </Card >
-                    <Card className='gap-2 h-fit grid grid-cols-7 items-center rounded-full'>
+                    {player.actions.map((action) =>
+                    (<Card className='gap-2 h-fit grid grid-cols-7 items-center rounded-full'>
                         <span className={`text-xl sm:text-xl col-start-1 col-end-3`}>
-                            Épée longue embrasée
+                            {action.name}({action.type})
                         </span>
                         <span className={`text-xl sm:text-xl col-start-3 col-end-4 justify-self-center`}>
-                            +6
+                            +{action.attackBonus}
                         </span>
                         <span className={`text-xl sm:text-xl col-start-4 col-end-8 w-full`}>
-                            1d8+4 tranchant (1M) / 1d10+4 tranchant (2M) +2d8 radiants (Châtiment)
+                            {action.damage.dice} {action.damage.type} ({action.range})
                         </span>
-                    </Card >
+                    </Card >))}
                 </div>
 
             </div>
