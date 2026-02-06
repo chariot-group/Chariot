@@ -19,9 +19,9 @@ const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
   const t = useTranslations("characterDetail.inventory");
 
   return (
-    <div className="w-full flex flex-col lg:flex-row gap-4 items-start">
-      <div className="flex flex-col gap-4 w-full lg:w-2/5">
-        <Card className="gap-2">
+    <div className="w-full flex flex-col lg:flex-row gap-2 md:gap-4 items-start">
+      <div className="flex flex-col gap-2 md:gap-4 w-full lg:w-2/5">
+        <Card className="gap-3 py-4 px-4 md:px-6">
           <section
             aria-labelledby="coins-heading"
             aria-label={t("coinsRegion")}>
@@ -154,7 +154,7 @@ const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
             </div>
           </section>
         </Card>
-        <Card className="gap-2">
+        <Card className="gap-3 py-4 px-4 md:px-6">
           <section
             aria-labelledby="equipment-heading"
             aria-label={t("equipmentRegion")}>
@@ -167,7 +167,7 @@ const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
           </section>
         </Card>
       </div>
-      <Card className="w-full lg:min-w-3/5 lg:max-w-3/5 gap-2">
+      <Card className="w-full lg:min-w-3/5 lg:max-w-3/5 gap-3 py-4 px-4 md:px-6">
         <section
           aria-labelledby="treasure-heading"
           aria-label={t("treasureRegion")}>

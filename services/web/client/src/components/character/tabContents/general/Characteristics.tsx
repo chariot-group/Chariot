@@ -13,7 +13,7 @@ export default function Characteristics({ character, accentColor }: Characterist
   const t = useTranslations("characterDetail.player.general");
 
   return (
-    <React.Fragment>
+    <div className="gap-2 flex flex-col">
       <Card
         className="gap-3 py-4 px-4 md:px-6"
         role="region"
@@ -48,6 +48,6 @@ export default function Characteristics({ character, accentColor }: Characterist
             );
           })}
       </div>
-    </React.Fragment>
+    </div>
   );
 }
