@@ -3,7 +3,7 @@
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 import { Character, Spell, Spellcasting } from "@/types/character";
-import { Book, Dice5, Target } from "lucide-react";
+import { Book, Dice5, Target, ArrowLeft, Eye } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
@@ -20,6 +20,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   const [selectedSpellcasting, setSelectedSpellcasting] = useState<Spellcasting | null>(
     character.spellcasting?.[0] || null,
   );
+
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
 
   const [selectedSpell, setSelectedSpell] = useState<Spell | null>(() => {
     if (!selectedSpellcasting || !selectedSpellcasting.spells || selectedSpellcasting.spells.length === 0) {
@@ -50,11 +52,12 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
 
   return (
     <div
-      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0 max-h-[calc(100vh-20rem)]"
+      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0 max-h-[calc(100vh-20rem)] relative"
       role="region"
       aria-label={tMagic("mainRegion")}>
-      <div className="grid grid-cols-2 gap-2 md:gap-4 h-full overflow-hidden">
-        <div className="flex flex-col gap-2 md:gap-4 h-full overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 h-full overflow-hidden">
+        {/* Left column: Spell list (hidden on mobile when showing details) */}
+        <div className={`flex flex-col gap-2 md:gap-4 h-full overflow-hidden ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
           {character?.spellcasting?.length > 1 && (
             <nav
               className="flex flex-col sm:flex-row gap-2 shrink-0"
@@ -205,10 +208,19 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               ))}
           </nav>
         </div>
+        {/* Right column: Spell details (visible on mobile when showMobileDetails is true, always visible on desktop) */}
         <div
-          className="flex flex-col gap-2 h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+          className={`flex flex-col gap-2 h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full ${showMobileDetails ? "flex" : "hidden lg:flex"}`}
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
+          {/* Back button for mobile */}
+          <button
+            onClick={() => setShowMobileDetails(false)}
+            className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
+            aria-label={tMagic("backToList")}>
+            <ArrowLeft className="w-4 h-4" />
+            <span>{tMagic("backToList")}</span>
+          </button>
           <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
             <h3 className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold`}>{selectedSpell?.name}</h3>
           </Card>
@@ -252,6 +264,16 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
           </div>
         </div>
       </div>
+      {/* Floating button for mobile when spell is selected */}
+      {selectedSpell && !showMobileDetails && (
+        <button
+          onClick={() => setShowMobileDetails(true)}
+          className="lg:hidden fixed bottom-6 right-6 bg-primary text-primary-foreground px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-medium z-50"
+          aria-label={tMagic("viewDetails")}>
+          <Eye className="w-5 h-5" />
+          <span>{tMagic("viewDetails")}</span>
+        </button>
+      )}
     </div>
   );
 }

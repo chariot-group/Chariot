@@ -254,7 +254,10 @@
       "mainRegion": "Sección de magia",
       "spellListRegion": "Lista de conjuros",
       "spellDetailRegion": "Detalles del conjuro",
-      "selectSpellcasting": "Seleccionar clase de lanzamiento {className}"
+      "selectSpellcasting": "Seleccionar clase de lanzamiento {className}",
+      "viewDetails": "Ver detalles",
+      "backToList": "Volver a la lista",
+      "spellSelected": "Conjuro seleccionado"
     }
   },
   "classes": {

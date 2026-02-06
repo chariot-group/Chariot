@@ -254,7 +254,10 @@
       "mainRegion": "Magic section",
       "spellListRegion": "Spell list",
       "spellDetailRegion": "Spell details",
-      "selectSpellcasting": "Select spellcasting class {className}"
+      "selectSpellcasting": "Select spellcasting class {className}",
+      "viewDetails": "View details",
+      "backToList": "Back to list",
+      "spellSelected": "Spell selected"
     }
   },
   "classes": {

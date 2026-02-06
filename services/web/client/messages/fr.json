@@ -254,7 +254,10 @@
       "mainRegion": "Section magie",
       "spellListRegion": "Liste des sorts",
       "spellDetailRegion": "Détails des sorts",
-      "selectSpellcasting": "Sélectionner la classe de sorts {className}"
+      "selectSpellcasting": "Sélectionner la classe de sorts {className}",
+      "viewDetails": "Voir les détails",
+      "backToList": "Retour à la liste",
+      "spellSelected": "Sort sélectionné"
     }
   },
   "classes": {
