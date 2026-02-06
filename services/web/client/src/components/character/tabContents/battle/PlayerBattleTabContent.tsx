@@ -10,18 +10,18 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import Skill from "@/components/character/tabContents/general/Skill";
-import ActionSection from "@/components/character/tabContents/ActionSection";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
+import ActionSection from "@/components/character/tabContents/battle/ActionSection";
 
 interface Props {
     player: Player;
     accentColor: string;
 }
 
-const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
+const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
     const t = useTranslations("characterDetail.combat");
     const tAbilities = useTranslations("characterDetail.player.general.abilities");
-    
+
     // Configuration des badges de statistiques
     const speedBadges = [
         { key: 'walk', value: player.stats.speed.walk, icon: <Image src={RunningIcon} alt="" aria-hidden="true" className="size-6" /> },
@@ -189,4 +189,4 @@ const BattlePlayerTabContent = ({ player, accentColor }: Props) => {
     )
 }
 
-export default BattlePlayerTabContent
+export default PlayerBattleTabContent

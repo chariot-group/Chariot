@@ -8,15 +8,15 @@ import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import Skill from "@/components/character/tabContents/general/Skill";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import ActionSection from "@/components/character/tabContents/ActionSection";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
+import ActionSection from "@/components/character/tabContents/battle/ActionSection";
 
 interface Props {
     npc: NPC;
     accentColor: string;
 }
 
-const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
+const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
     const t = useTranslations("characterDetail.combat");
     const tAbilities = useTranslations("characterDetail.player.general.abilities");
     
@@ -155,4 +155,4 @@ const BattleNPCTabContent = ({ npc, accentColor }: Props) => {
     )
 }
 
-export default BattleNPCTabContent
+export default NPCBattleTabContent

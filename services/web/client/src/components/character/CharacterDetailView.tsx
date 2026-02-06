@@ -8,7 +8,7 @@ import TabContentPlaceholder from "@/components/character/TabContentPlaceholder"
 import CharacterInventoryTabContent from "@/components/character/tabContents/CharacterInventoryTabContent";
 import React, { useState } from "react";
 import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
-import CharacterBattleTabContent from "@/components/character/tabContents/CharacterBattleTabContent";
+import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
 import Image from "next/image";
 

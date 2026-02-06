@@ -1,6 +1,6 @@
 import { Character, Player, NPC } from "@/types/character";
-import BattlePlayerTabContent from "./BattlePlayerTabContent";
-import BattleNPCTabContent from "./BattleNPCTabContent";
+import PlayerBattleTabContent from "@/components/character/tabContents/battle/PlayerBattleTabContent";
+import NPCBattleTabContent from "@/components/character/tabContents/battle/NPCBattleTabContent";
 
 interface Props {
     character: Character;
@@ -17,9 +17,9 @@ const isNPC = (character: Character): character is NPC => {
 
 const CharacterBattleTabContent = ({ character, accentColor }: Props) => {
     if (isPlayer(character)) {
-        return <BattlePlayerTabContent player={character} accentColor={accentColor} />;
+        return <PlayerBattleTabContent player={character} accentColor={accentColor} />;
     } else if (isNPC(character)) {
-        return <BattleNPCTabContent npc={character} accentColor={accentColor} />;
+        return <NPCBattleTabContent npc={character} accentColor={accentColor} />;
     }
 
 }
