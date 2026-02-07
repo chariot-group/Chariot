@@ -7,6 +7,10 @@ import { ApiProperty } from '@nestjs/swagger';
 @Schema({ _id: false })
 export class Spellcasting {
 
+  @ApiProperty({ example: 'Wizard' })
+  @Prop()
+  className?: string;
+
   @ApiProperty({ example: 'Intelligence' })
   @Prop()
   ability?: string;

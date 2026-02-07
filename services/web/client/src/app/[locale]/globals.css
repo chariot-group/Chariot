@@ -113,12 +113,18 @@
   .blue {
     color: var(--blue);
   }
+  .border-blue {
+    border-color: var(--blue);
+  }
 
   .bg-green {
     background-color: var(--green);
   }
   .green {
     color: var(--green);
+  }
+  .border-green {
+    border-color: var(--green);
   }
 
   .bg-red {
@@ -127,12 +133,18 @@
   .red {
     color: var(--red);
   }
+  .border-pink {
+    border-color: var(--pink);
+  }
 
   .bg-pink {
     background-color: var(--pink);
   }
   .pink {
     color: var(--pink);
+  }
+  .border-pink {
+    border-color: var(--pink);
   }
 
   .bg-yellow {
@@ -141,12 +153,18 @@
   .yellow {
     color: var(--yellow);
   }
+  .border-yellow {
+    border-color: var(--yellow);
+  }
 
   .bg-white {
     background-color: var(--white);
   }
   .white {
     color: var(--white);
+  }
+  .border-white {
+    border-color: var(--white);
   }
 
   .bg-gray {
@@ -155,12 +173,18 @@
   .gray {
     color: var(--gray);
   }
+  .border-gray {
+    border-color: var(--gray);
+  }
 
   .bg-gray-middle-light {
     background-color: var(--gray-middle-light);
   }
   .gray-middle-light {
     color: var(--gray-middle-light);
+  }
+  .border-middle-gray {
+    border-color: var(--gray-middle-light);
   }
 
   .bg-gray-light {
@@ -169,11 +193,17 @@
   .gray-light {
     color: var(--gray-light);
   }
+  .border-gray-light {
+    border-color: var(--gray-light);
+  }
 
   .bg-purple {
     background-color: var(--purple);
   }
   .purple {
     color: var(--purple);
+  }
+  .border-purple {
+    border-color: var(--purple);  
   }
 }

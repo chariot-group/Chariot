@@ -59,7 +59,7 @@ export default function SidebarContext() {
         <CollapsibleTrigger
           aria-expanded={openActive}
           aria-controls="active-groups-content"
-          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${openActive ? "bg-white" : ""}`}>
+          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2 ${openActive ? "bg-white" : ""}`}>
           <span
             className={`text-sm group-hover:font-bold group-hover:text-black ${openActive ? "text-black font-bold" : ""}`}>
             {t("yourGroups")}
@@ -76,7 +76,7 @@ export default function SidebarContext() {
           <button
             type="button"
             aria-label={t("createGroup")}
-            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2">
+            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
             {t("createGroup")}
             <PlusCircleIcon
               aria-hidden="true"
@@ -106,7 +106,7 @@ export default function SidebarContext() {
         <CollapsibleTrigger
           aria-expanded={openArchived}
           aria-controls="archived-groups-content"
-          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${openArchived ? "bg-white" : ""}`}>
+          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2 ${openArchived ? "bg-white" : ""}`}>
           <span
             className={`text-sm group-hover:font-bold group-hover:text-black ${openArchived ? "text-black font-bold" : ""}`}>
             {t("yourArchives")}

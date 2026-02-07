@@ -44,6 +44,7 @@ describe('NpcController - createNpc', () => {
       experiencePoints: 200,
     },
     profile: {
+      alignment: 'True Neutral' as const,
       type: 'humanoid',
       subtype: 'human',
     },

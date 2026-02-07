@@ -21,11 +21,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import Skill from "@/components/character/tabContents/general/Skill";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { isMastered } from "@/utils/global.utils";
+import Skill from "@/components/character/tabContents/general/Skill";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -35,25 +36,23 @@ interface PlayerGeneralTabContentProps {
 export default function PlayerGeneralTabContent({ player, accentColor }: PlayerGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
   const tPlayer = useTranslations("characterDetail.player");
+  const tAlignment = useTranslations("alignments");
+  const tClass = useTranslations("classes");
   const [checked, setChecked] = useState<boolean>(player.inspiration);
 
   function infoExhaustionLevel(level: number): string {
     return t(`exhaustionLevels.${level}`);
   }
 
-  function isMastered(skill: string): boolean {
-    return player.stats.masteriesAbility[skill as keyof typeof player.stats.masteriesAbility] === true;
-  }
-
   return (
     <div
-      className="w-full flex flex-col gap-2 px-2 sm:px-0"
+      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-0"
       role="main"
       aria-label={t("characterInfoLabel")}>
-      <div className="grid grid-cols-1 min-[325px]:grid-cols-2 xl:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 min-[325px]:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-4">
         {/* Colonne 1 : Personnage et Maitrises */}
         <section
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-2 md:gap-4"
           aria-labelledby="character-info-section">
           {/* Personnage */}
           <Card
@@ -79,7 +78,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               <div className="flex flex-col gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{t("classes")} :</dt>
                 <dd className="text-sm sm:text-base">
-                  {player?.class.map((c) => `${c.name} ${t("levelLabel")} ${c.level}`).join(" / ")}
+                  {player?.class.map((c) => `${tClass(c.name)} ${t("levelLabel")} ${c.level}`).join(" / ")}
                 </dd>
               </div>
               {player?.class.map((c) => (
@@ -87,7 +86,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                   key={c.name}
                   className="flex flex-col gap-2">
                   <dt className="text-sm sm:text-base font-semibold">
-                    {t("subclassOf")} {c.name} :
+                    {t("subclassOf")} {tClass(c.name)} :
                   </dt>
                   <dd className="text-sm sm:text-base">{c.subclass}</dd>
                 </div>
@@ -134,7 +133,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
         {/* Colonne 2 : Caractéristiques et Compétences */}
         <section
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-2 md:gap-4"
           aria-labelledby="characteristics-skills-section">
           {/* Bonus */}
           <Card
@@ -154,218 +153,222 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
 
           {/* Jet de sauvegarde */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6"
-            role="region"
-            aria-labelledby="saving-throws-heading">
-            <h2
-              id="saving-throws-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("savingThrows")}
-            </h2>
-          </Card>
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-2"
-            role="list">
-            {player?.stats &&
-              Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
-                const isMasteredKey = isMastered(key);
-                const abilityName = t(`abilities.${key}`);
-                return (
-                  <Skill
-                    key={key}
-                    skillName={abilityName}
-                    value={isMasteredKey ? 2 : 0}
-                    accentColor={accentColor}
-                    skills={value}
-                  />
-                );
-              })}
+          <div className="flex flex-col gap-2">
+            <Card
+              className="gap-3 py-4 px-4 md:px-6"
+              role="region"
+              aria-labelledby="saving-throws-heading">
+              <h2
+                id="saving-throws-heading"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("savingThrows")}
+              </h2>
+            </Card>
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 gap-2"
+              role="list">
+              {player?.stats &&
+                Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
+                  const isMasteredKey = isMastered(player, key);
+                  const abilityName = t(`abilities.${key}`);
+                  return (
+                    <Skill
+                      key={key}
+                      skillName={abilityName}
+                      value={isMasteredKey ? 2 : 0}
+                      accentColor={accentColor}
+                      skills={value}
+                    />
+                  );
+                })}
+            </div>
           </div>
 
           {/* Compétences */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6"
-            role="region"
-            aria-labelledby="skills-heading">
-            <h2
-              id="skills-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("skills")}
-            </h2>
-          </Card>
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-2"
-            role="list"
-            aria-label={t("skillsList")}>
-            <Skill
-              skillName={t("skillNames.acrobatics")}
-              value={player?.stats?.masteries.acrobatics}
-              icon={<User2Icon aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.dexterity}
-              tooltip={t("abilities.dexterity")}
-            />
-            <Skill
-              skillName={t("skillNames.arcana")}
-              value={player?.stats?.masteries.arcana}
-              icon={<Sparkles aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.intelligence}
-              tooltip={t("abilities.intelligence")}
-            />
-            <Skill
-              skillName={t("skillNames.athletics")}
-              value={player?.stats?.masteries.athletics}
-              icon={<Footprints aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.strength}
-              tooltip={t("abilities.strength")}
-            />
-            <Skill
-              skillName={t("skillNames.stealth")}
-              value={player?.stats?.masteries.stealth}
-              icon={<VenetianMask aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.dexterity}
-              tooltip={t("abilities.dexterity")}
-            />
-            <Skill
-              skillName={t("skillNames.animalHandling")}
-              value={player?.stats?.masteries.animalHandling}
-              icon={<PawPrint aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.wisdom}
-              tooltip={t("abilities.wisdom")}
-            />
-            <Skill
-              skillName={t("skillNames.sleightHand")}
-              value={player?.stats?.masteries.sleightHand}
-              icon={<LockKeyhole aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.dexterity}
-              tooltip={t("abilities.dexterity")}
-            />
-            <Skill
-              skillName={t("skillNames.history")}
-              value={player?.stats?.masteries.history}
-              icon={<Notebook aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.intelligence}
-              tooltip={t("abilities.intelligence")}
-            />
-            <Skill
-              skillName={t("skillNames.intimidation")}
-              value={player?.stats?.masteries.intimidation}
-              icon={<User2Icon aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.charisma}
-              tooltip={t("abilities.charisma")}
-            />
-            <Skill
-              skillName={t("skillNames.insight")}
-              value={player?.stats?.masteries.insight}
-              icon={<Brain aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.wisdom}
-              tooltip={t("abilities.wisdom")}
-            />
-            <Skill
-              skillName={t("skillNames.investigation")}
-              value={player?.stats?.masteries.investigation}
-              icon={<CircleQuestionMark aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.intelligence}
-              tooltip={t("abilities.intelligence")}
-            />
-            <Skill
-              skillName={t("skillNames.medicine")}
-              value={player?.stats?.masteries.medicine}
-              icon={<CrossIcon aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.wisdom}
-              tooltip={t("abilities.wisdom")}
-            />
-            <Skill
-              skillName={t("skillNames.nature")}
-              value={player?.stats?.masteries.nature}
-              icon={<Sprout aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.intelligence}
-              tooltip={t("abilities.intelligence")}
-            />
-            <Skill
-              skillName={t("skillNames.perception")}
-              value={player?.stats?.masteries.perception}
-              icon={<Eye aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.wisdom}
-              tooltip={t("abilities.wisdom")}
-            />
-            <Skill
-              skillName={t("skillNames.persuasion")}
-              value={player?.stats?.masteries.persuasion}
-              icon={<MessageSquare aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.charisma}
-              tooltip={t("abilities.charisma")}
-            />
-            <Skill
-              skillName={t("skillNames.religion")}
-              value={player?.stats?.masteries.religion}
-              icon={<Church aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.intelligence}
-              tooltip={t("abilities.intelligence")}
-            />
-            <Skill
-              skillName={t("skillNames.performance")}
-              value={player?.stats?.masteries.performance}
-              icon={<MicVocal aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.charisma}
-              tooltip={t("abilities.charisma")}
-            />
-            <Skill
-              skillName={t("skillNames.survival")}
-              value={player?.stats?.masteries.survival}
-              icon={<TreePine aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.wisdom}
-              tooltip={t("abilities.wisdom")}
-            />
-            <Skill
-              skillName={t("skillNames.deception")}
-              value={player?.stats?.masteries.deception}
-              icon={<Drama aria-hidden="true" />}
-              accentColor={accentColor}
-              proficiencyBonus={player?.stats?.proficiencyBonus}
-              masteriesAbility={player?.stats?.abilityScores.charisma}
-              tooltip={t("abilities.charisma")}
-            />
+          <div className="flex flex-col gap-2">
+            <Card
+              className="gap-3 py-4 px-4 md:px-6"
+              role="region"
+              aria-labelledby="skills-heading">
+              <h2
+                id="skills-heading"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("skills")}
+              </h2>
+            </Card>
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 gap-2"
+              role="list"
+              aria-label={t("skillsList")}>
+              <Skill
+                skillName={t("skillNames.acrobatics")}
+                value={player?.stats?.masteries.acrobatics}
+                icon={<User2Icon aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.dexterity}
+                tooltip={t("abilities.dexterity")}
+              />
+              <Skill
+                skillName={t("skillNames.arcana")}
+                value={player?.stats?.masteries.arcana}
+                icon={<Sparkles aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.intelligence}
+                tooltip={t("abilities.intelligence")}
+              />
+              <Skill
+                skillName={t("skillNames.athletics")}
+                value={player?.stats?.masteries.athletics}
+                icon={<Footprints aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.strength}
+                tooltip={t("abilities.strength")}
+              />
+              <Skill
+                skillName={t("skillNames.stealth")}
+                value={player?.stats?.masteries.stealth}
+                icon={<VenetianMask aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.dexterity}
+                tooltip={t("abilities.dexterity")}
+              />
+              <Skill
+                skillName={t("skillNames.animalHandling")}
+                value={player?.stats?.masteries.animalHandling}
+                icon={<PawPrint aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.wisdom}
+                tooltip={t("abilities.wisdom")}
+              />
+              <Skill
+                skillName={t("skillNames.sleightHand")}
+                value={player?.stats?.masteries.sleightHand}
+                icon={<LockKeyhole aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.dexterity}
+                tooltip={t("abilities.dexterity")}
+              />
+              <Skill
+                skillName={t("skillNames.history")}
+                value={player?.stats?.masteries.history}
+                icon={<Notebook aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.intelligence}
+                tooltip={t("abilities.intelligence")}
+              />
+              <Skill
+                skillName={t("skillNames.intimidation")}
+                value={player?.stats?.masteries.intimidation}
+                icon={<User2Icon aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.charisma}
+                tooltip={t("abilities.charisma")}
+              />
+              <Skill
+                skillName={t("skillNames.insight")}
+                value={player?.stats?.masteries.insight}
+                icon={<Brain aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.wisdom}
+                tooltip={t("abilities.wisdom")}
+              />
+              <Skill
+                skillName={t("skillNames.investigation")}
+                value={player?.stats?.masteries.investigation}
+                icon={<CircleQuestionMark aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.intelligence}
+                tooltip={t("abilities.intelligence")}
+              />
+              <Skill
+                skillName={t("skillNames.medicine")}
+                value={player?.stats?.masteries.medicine}
+                icon={<CrossIcon aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.wisdom}
+                tooltip={t("abilities.wisdom")}
+              />
+              <Skill
+                skillName={t("skillNames.nature")}
+                value={player?.stats?.masteries.nature}
+                icon={<Sprout aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.intelligence}
+                tooltip={t("abilities.intelligence")}
+              />
+              <Skill
+                skillName={t("skillNames.perception")}
+                value={player?.stats?.masteries.perception}
+                icon={<Eye aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.wisdom}
+                tooltip={t("abilities.wisdom")}
+              />
+              <Skill
+                skillName={t("skillNames.persuasion")}
+                value={player?.stats?.masteries.persuasion}
+                icon={<MessageSquare aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.charisma}
+                tooltip={t("abilities.charisma")}
+              />
+              <Skill
+                skillName={t("skillNames.religion")}
+                value={player?.stats?.masteries.religion}
+                icon={<Church aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.intelligence}
+                tooltip={t("abilities.intelligence")}
+              />
+              <Skill
+                skillName={t("skillNames.performance")}
+                value={player?.stats?.masteries.performance}
+                icon={<MicVocal aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.charisma}
+                tooltip={t("abilities.charisma")}
+              />
+              <Skill
+                skillName={t("skillNames.survival")}
+                value={player?.stats?.masteries.survival}
+                icon={<TreePine aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.wisdom}
+                tooltip={t("abilities.wisdom")}
+              />
+              <Skill
+                skillName={t("skillNames.deception")}
+                value={player?.stats?.masteries.deception}
+                icon={<Drama aria-hidden="true" />}
+                accentColor={accentColor}
+                proficiencyBonus={player?.stats?.proficiencyBonus}
+                masteriesAbility={player?.stats?.abilityScores.charisma}
+                tooltip={t("abilities.charisma")}
+              />
+            </div>
           </div>
         </section>
 
         {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
         <section
-          className="flex flex-col gap-2 min-[325px]:col-span-2 xl:col-span-1"
+          className="flex flex-col gap-2 md:gap-4 min-[325px]:col-span-2 xl:col-span-1"
           aria-labelledby="additional-info-section">
           {/* Epuisement */}
           <Card
@@ -380,7 +383,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <Tooltip>
               <TooltipTrigger asChild>
                 <span
-                  className="font-semibold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 rounded px-2"
+                  className="font-semibold text-lg focus:outline-none focus:ring-1 focus:ring-offset-2 rounded px-2"
                   aria-label={`${t("exhaustionLevel")} ${player.exhaustionLevel}`}
                   aria-describedby="exhaustion-description">
                   {player.exhaustionLevel}
@@ -404,8 +407,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </h2>
             <p
               className="font-semibold text-sm sm:text-base"
-              aria-label={`${tPlayer("alignment")} : ${player?.profile?.alignment}`}>
-              {player?.profile?.alignment}
+              aria-label={`${tPlayer("alignment")} : ${tAlignment(player?.profile?.alignment)}`}>
+              {tAlignment(player?.profile?.alignment)}
             </p>
           </Card>
 
@@ -489,7 +492,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                   key={ability.name}
                   value={ability.name}>
                   <AccordionTrigger
-                    className="text-left hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 rounded py-3"
+                    className="text-left hover:no-underline focus:outline-none focus:ring-1 focus:ring-offset-2 rounded py-3"
                     aria-label={`${t("abilityDetails")} ${ability.name}`}>
                     <span className="text-sm sm:text-base font-medium">{ability.name}</span>
                   </AccordionTrigger>

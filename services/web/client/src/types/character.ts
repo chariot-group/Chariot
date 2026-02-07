@@ -7,6 +7,38 @@ export interface AbilityScores {
     charisma: number;
 }
 
+// Enums from backend
+export type Alignment =
+    | 'Lawful Good'
+    | 'Neutral Good'
+    | 'Chaotic Good'
+    | 'Lawful Neutral'
+    | 'True Neutral'
+    | 'Chaotic Neutral'
+    | 'Lawful Evil'
+    | 'Neutral Evil'
+    | 'Chaotic Evil'
+    | 'Unaligned'
+    | 'Any Good Alignment'
+    | 'Any Evil Alignment'
+    | 'Any Lawful Alignment'
+    | 'Any Chaotic Alignment';
+
+export type ClassName =
+    | 'Artificer'
+    | 'Barbarian'
+    | 'Bard'
+    | 'Cleric'
+    | 'Druid'
+    | 'Fighter'
+    | 'Monk'
+    | 'Paladin'
+    | 'Ranger'
+    | 'Rogue'
+    | 'Sorcerer'
+    | 'Warlock'
+    | 'Wizard';
+
 export interface Speed {
     walk: number;
     climb: number;
@@ -132,6 +164,7 @@ export interface Spell {
 }
 
 export interface Spellcasting {
+    className: string;
     ability: string;
     saveDC: number;
     attackBonus: number;
@@ -187,7 +220,7 @@ export interface Conditions {
 }
 
 export interface Class {
-    name: string;
+    name: ClassName;
     subclass: string;
     level: number;
     hitDice: number;
@@ -199,7 +232,7 @@ export interface Progression {
 }
 
 export interface PlayerProfile {
-    alignment: string;
+    alignment: Alignment;
     race: string;
     subrace: string;
     history: string;
@@ -276,7 +309,7 @@ export interface Challenge {
 }
 
 export interface NPCProfile {
-    alignment: string;
+    alignment: Alignment;
     type: string;
     subtype: string;
 }

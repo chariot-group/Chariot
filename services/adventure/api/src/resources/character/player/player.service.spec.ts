@@ -90,7 +90,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
       };
 
@@ -117,7 +117,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
       };
 
@@ -142,7 +142,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
       };
 
@@ -173,7 +173,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
       };
 
@@ -309,7 +309,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
         conditions: {
           poisoned: true,
@@ -341,7 +341,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
         exhaustionLevel: 2,
       };
@@ -369,7 +369,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
         conditions: {
           blinded: true,
@@ -413,7 +413,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
         // conditions not provided - defaults should be applied by schema
       };

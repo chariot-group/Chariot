@@ -15,9 +15,12 @@ import { useTranslations } from "next-intl";
 
 import Token from "@public/assets/token.svg";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function ProfilePage() {
-  const { user } = useUser({ autoFetch: true });
+  const pathname = usePathname();
+  const locale = pathname.split("/")[1] || "fr";
+  const { user, loading } = useUser({ autoFetch: true });
   const [viewNewPassword, setViewNewPassword] = useState<boolean>(false);
   const [viewConfirmNewPassword, setViewConfirmNewPassword] = useState<boolean>(false);
   const t = useTranslations("ProfilePage");
@@ -48,12 +51,18 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
+    // Ne pas rediriger pendant la transition utilisateur ou le chargement
+    if (loading) return;
+
     if (!user) {
-      // redirect 404 or login
-      window.location.href = "/404";
-      return;
+      // Utiliser Next.js router au lieu de window.location pour éviter les boucles
+      const timer = setTimeout(() => {
+        window.location.href = `/${locale}/welcome`;
+      }, 500); // Délai de grâce pour attendre le chargement
+
+      return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, loading, locale]);
 
   return (
     <main
@@ -194,7 +203,7 @@ export default function ProfilePage() {
                             aria-pressed={viewNewPassword}
                             aria-controls="newPassword"
                             tabIndex={0}
-                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
                             {viewNewPassword ? (
                               <EyeOff
                                 className="h-5 w-5"
@@ -256,7 +265,7 @@ export default function ProfilePage() {
                             aria-pressed={viewConfirmNewPassword}
                             aria-controls="confirmNewPassword"
                             tabIndex={0}
-                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
                             {viewConfirmNewPassword ? (
                               <EyeOff
                                 className="h-5 w-5"
