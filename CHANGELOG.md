@@ -1,6 +1,34 @@
 # Changelog
 
-## [1.0.0] - 08-12-2024
+## [2.0.0] - 07-02-2026
+
+### Added
+- Setup Next.js 15 frontend service with Tailwind CSS v4, shadcn/ui and Keycloak SSO integration
+- Add Swagger API documentation with OpenAPI specification
+- Add internationalization (i18n) with SSO user preference synchronization (FR, EN, ES)
+- Add global error and loading pages with internationalization support
+- Add contextual sidebar navigation with Redux state management
+- Add welcome page with guided onboarding for new users
+- Add reusable character/NPC page layout with panel system
+- Add user profile page with Keycloak integration and token history
+- Add character history and background display section (Player and NPC)
+- Add treasure and currency display section (Player and NPC)
+- Add general information display section (Player and NPC)
+- Add combat information display section (Player and NPC)
+- Add spellcasting and magic display section (Player and NPC)
+
+### Changed
+- Standardize Winston logger usage throughout the application
+- Restructure microservices architecture: extract monitoring to separate repository and reorganize services (adventure, frontend, sso)
+- Align API response format with Codex-API standard (RFC 9457 for errors)
+- Add centralized API Gateway for routing, authentication, rate limiting and monitoring
+- Simplify Campaign and Group schemas: remove description fields, merge main/npc into active groups
+- Harmonize NPC and Player schemas: add conditions, background, treasure and inventory support
+- Improve UX/UI: collapsible elements management, visual hierarchy, and mobile optimization
+
+### Fixed
+
+## [1.0.0] - 08-12-2025
 
 ### Added
 
