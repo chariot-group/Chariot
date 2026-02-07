@@ -42,11 +42,11 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
         className="w-full">
         {/* Header avec onglets et infos du personnage */}
         <div>
-          <div className="mx-auto px-4 sm:px-6 md:px-8 py-4">
-            <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-4 xl:gap-8">
+          <div className="mx-auto sm:px-6 md:px-8 border">
+            <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-0 xl:gap-8">
               {/* Onglets */}
               <TabsList
-                className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
+                className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-nowrap justify-start self-start xl:self-end w-full max-w-full overflow-hidden mx-0 sm:-mx-6 md:-mx-8 sm:px-6 md:px-8"
                 role="tablist"
                 aria-label={t("tabs.general")}>
                 {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
@@ -57,8 +57,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     aria-selected={activeTab === tab}
                     aria-controls={`${tab}-content`}
                     className={`
-                                            flex-none py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
-                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
+                                            flex-1 min-w-0 p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all
+                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white truncate overflow-hidden
                                             ${
                                               activeTab === tab
                                                 ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
@@ -115,7 +115,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
 
                 {/* Photo de profil */}
                 {character.avatar ? (
-                  <div className="w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[18px] bg-gray flex items-center justify-center overflow-hidden shrink-0 relative">
+                  <div className="max-[426px]:hidden w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[18px] bg-gray flex items-center justify-center overflow-hidden shrink-0 relative">
                     <Image
                       src={character.avatar}
                       priority
@@ -126,7 +126,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                   </div>
                 ) : (
                   <div
-                    className="w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[15px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
+                    className="max-[426px]:hidden w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[15px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
                     role="img"
                     aria-label={t("placeholder.noImage")}>
                     <User
