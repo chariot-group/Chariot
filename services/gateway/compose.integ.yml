@@ -1,11 +1,9 @@
 services:
   chariot-gateway:
-    build:
-      context: ./api
-      dockerfile: Dockerfile.prod
+    image: ghcr.io/chariot-group/chariot-gateway-integration:latest
     container_name: chariot-gateway-integ
-    platform: linux/amd64
     restart: unless-stopped
+    working_dir: /app
     ports:
       - "8082:8082"
     environment:
