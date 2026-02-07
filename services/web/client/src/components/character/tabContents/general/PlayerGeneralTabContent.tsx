@@ -152,9 +152,11 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               {t("proficiencyBonus")}
             </h2>
             <p
-              className="text-sm sm:text-base"
+              className="text-sm sm:text-base font-bold"
               aria-label={`${t("proficiencyBonus")} ${player?.stats?.proficiencyBonus}`}>
-              {player?.stats?.proficiencyBonus}
+              {player?.stats?.proficiencyBonus >= 0
+                ? `+${player?.stats?.proficiencyBonus}`
+                : `${player?.stats?.proficiencyBonus}`}
             </p>
           </Card>
 

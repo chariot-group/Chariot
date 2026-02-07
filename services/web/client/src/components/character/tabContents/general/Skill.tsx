@@ -62,7 +62,7 @@ export default function Skill({
       <p className={`text-sm flex items-center gap-2`}>
         <span className="shrink-0">{icon}</span>
         <span className={`truncate ${value > 0 && "italic"}`}>{skillName}</span>{" "}
-        <span className="font-bold shrink-0">{masteryLevel > 0 ? `+${masteryLevel}` : `${masteryLevel}`}</span>
+        <span className="font-bold shrink-0">{masteryLevel >= 0 ? `+${masteryLevel}` : `${masteryLevel}`}</span>
         <Image
           src={getIconForValue(value, accentColor)}
           alt={t("masteryLevelIcon", { level: value })}
