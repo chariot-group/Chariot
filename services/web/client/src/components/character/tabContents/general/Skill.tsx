@@ -35,10 +35,10 @@ export default function Skill({
       <Tooltip>
         <TooltipTrigger asChild>
           <Card className="p-2">
-            <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
+            <p className={`text-sm flex items-center gap-2`}>
               <span className="shrink-0">{icon}</span>
-              <span className="truncate">{skillName}</span>{" "}
-              <span className="font-bold shrink-0">{masteryLevel > 0 ? `+${masteryLevel}` : `${masteryLevel}`}</span>
+              <span className={`truncate ${value > 0 && "italic"}`}>{skillName}</span>{" "}
+              <span className="font-bold shrink-0">{masteryLevel >= 0 ? `+${masteryLevel}` : `${masteryLevel}`}</span>
               <Image
                 src={getIconForValue(value, accentColor)}
                 alt={t("masteryLevelIcon", { level: value })}
@@ -59,10 +59,10 @@ export default function Skill({
 
   return (
     <Card className="p-2">
-      <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
+      <p className={`text-sm flex items-center gap-2`}>
         <span className="shrink-0">{icon}</span>
-        <span className="truncate">{skillName}</span>{" "}
-        <span className="font-bold shrink-0">{masteryLevel > 0 ? `+${masteryLevel}` : `${masteryLevel}`}</span>
+        <span className={`truncate ${value > 0 && "italic"}`}>{skillName}</span>{" "}
+        <span className="font-bold shrink-0">{masteryLevel >= 0 ? `+${masteryLevel}` : `${masteryLevel}`}</span>
         <Image
           src={getIconForValue(value, accentColor)}
           alt={t("masteryLevelIcon", { level: value })}

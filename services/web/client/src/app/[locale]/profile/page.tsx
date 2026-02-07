@@ -85,23 +85,12 @@ export default function ProfilePage() {
               className="relative w-full xl:w-1/2 aspect-video"
               role="img"
               aria-label={user?.username ? `${user.username} profile picture` : "Default profile picture"}>
-              {user?.avatar === null || user?.avatar === undefined ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-middle-light rounded-[15px]">
-                  <User
-                    className="h-16 w-16"
-                    aria-hidden="true"
-                  />
-                </div>
-              ) : (
-                <Image
-                  fill
-                  className="object-cover rounded-[15px] bg-gray-middle-light"
-                  src={user?.avatar || "/default-avatar.png"}
-                  alt=""
-                  priority
-                  sizes="(max-width: 640px) 100vw, 50vw"
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-middle-light rounded-[15px]">
+                <User
+                  className="h-16 w-16"
+                  aria-hidden="true"
                 />
-              )}
+              </div>
             </div>
             <div className="flex flex-col justify-between gap-2 sm:gap-3 w-full xl:w-1/2">
               <div>
@@ -203,7 +192,7 @@ export default function ProfilePage() {
                             aria-pressed={viewNewPassword}
                             aria-controls="newPassword"
                             tabIndex={0}
-                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground -visible:border rounded-sm">
                             {viewNewPassword ? (
                               <EyeOff
                                 className="h-5 w-5"
@@ -265,7 +254,7 @@ export default function ProfilePage() {
                             aria-pressed={viewConfirmNewPassword}
                             aria-controls="confirmNewPassword"
                             tabIndex={0}
-                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:border rounded-sm">
                             {viewConfirmNewPassword ? (
                               <EyeOff
                                 className="h-5 w-5"

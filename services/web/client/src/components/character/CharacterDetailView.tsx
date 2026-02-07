@@ -31,6 +31,7 @@ interface CharacterDetailViewProps {
 export default function CharacterDetailView({ character }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
+  const tPlaceholder = useTranslations("characterDetail.placeholder");
   const [activeTab, setActiveTab] = useState<CharacterTab>("general");
 
   return (
@@ -42,8 +43,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
         className="w-full">
         {/* Header avec onglets et infos du personnage */}
         <div>
-          <div className="mx-auto px-4 sm:px-6 md:px-8 py-4">
-            <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-4 xl:gap-8">
+          <div className="mx-auto sm:px-6 md:px-8 px-2">
+            <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-0 xl:gap-8">
               {/* Onglets */}
               <TabsList
                 className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
@@ -57,12 +58,14 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     aria-selected={activeTab === tab}
                     aria-controls={`${tab}-content`}
                     className={`
-                        flex-none py-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
-                        focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                        ${activeTab === tab
-                        ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
-                        : `text-white bg-gray hover:bg-gray-middle`
-                      }`}>
+                                            flex-none p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
+                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
+                                            ${
+                                              activeTab === tab
+                                                ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
+                                                : `text-white bg-gray hover:bg-gray-middle`
+                                            }
+                                        `}>
                     {t(`tabs.${tab}`)}
                   </TabsTrigger>
                 ))}
@@ -107,32 +110,22 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     </React.Fragment>
                   )}
                   {character.groups && character.groups.length > 0 && (
-                    <p className="text-xs sm:text-sm text-white">Groupe : {character.groups[0].label}</p>
+                    <p className="text-xs sm:text-sm text-white">
+                      {t("group")} : {character.groups[0].label}
+                    </p>
                   )}
                 </div>
 
                 {/* Photo de profil */}
-                {character.avatar ? (
-                  <div className="w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[18px] bg-gray flex items-center justify-center overflow-hidden shrink-0 relative">
-                    <Image
-                      src={character.avatar}
-                      priority
-                      fill
-                      alt={`${character.firstname} ${character.lastname}`}
-                      className="object-cover rounded-[15px] bg-gray-middle-light"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className="w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[15px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
-                    role="img"
-                    aria-label={t("placeholder.noImage")}>
-                    <User
-                      className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-middle-light"
-                      aria-hidden="true"
-                    />
-                  </div>
-                )}
+                <div
+                  className="max-[425px]:hidden w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[15px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
+                  role="img"
+                  aria-label={tPlaceholder("noImage")}>
+                  <User
+                    className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-middle-light"
+                    aria-hidden="true"
+                  />
+                </div>
               </div>
             </div>
           </div>

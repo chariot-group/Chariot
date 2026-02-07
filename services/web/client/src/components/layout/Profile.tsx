@@ -65,7 +65,7 @@ export default function Profile() {
         <Avatar className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer">
           <AvatarImage
             className="bg-gray-middle-light"
-            src={user?.avatar || undefined}
+            src={undefined}
             alt={user?.username ? `${user.username} avatar` : "User avatar"}
           />
           <AvatarFallback className="bg-gray-middle-light">{getInitials()}</AvatarFallback>
@@ -76,7 +76,7 @@ export default function Profile() {
         role="menu"
         aria-label={t("profile")}
         className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-12 sm:top-14 right-0 text-popover-foreground rounded-[15px] border shadow-lg z-50">
-        <div className="px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
+        <div className="px-2 py-1.5 text-sm focus-visible:border hover:font-bold whitespace-nowrap">
           <Link
             className="flex items-center gap-2 rounded-[15px]"
             href={"/profile"}
@@ -95,7 +95,7 @@ export default function Profile() {
             <span className="inline-block min-w-24 sm:min-w-32 text-sm sm:text-base">{t("profile")}</span>
           </Link>
         </div>
-        <div className="px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2 hover:font-bold whitespace-nowrap">
+        <div className="px-2 py-1.5 text-sm focus-visible:border hover:font-bold whitespace-nowrap">
           <button
             onClick={() => {
               setIsOpen(false);

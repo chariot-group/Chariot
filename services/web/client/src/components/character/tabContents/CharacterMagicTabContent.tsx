@@ -3,7 +3,7 @@
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 import { Character, Spell, Spellcasting } from "@/types/character";
-import { Book, Dice5, Target, ArrowLeft } from "lucide-react";
+import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { classWithSpellPrepared, getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
@@ -96,7 +96,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 const isSelected = selectedSpellcasting?.className === spellcasting.className;
                 return (
                   <Card
-                    className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md focus-within:ring-1 focus-within:ring-offset-2 ${isSelected && `bg-${accentColor}`}`}
+                    className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected && `bg-${accentColor}`}`}
                     onClick={() => setSelectedSpellcasting(spellcasting)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -172,29 +172,32 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               </span>
             </Card>
           </div>
-          <div className="flex flex-col gap-0 flex-1 overflow-hidden">
-            <div className="flex justify-end shrink-0">
-              <button
-                onClick={() => {
-                  const levels: number[] = [];
-                  if (hasLevel0Spells(selectedSpellcasting)) {
-                    levels.push(0);
-                  }
-                  if (selectedSpellcasting.spellSlotsByLevel) {
-                    levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
-                  }
+          <div className="flex flex-col gap-2 flex-1 overflow-hidden">
+            <Card className="gap-2 sm:gap-3 p-4 md:px-6 h-fit justify-between flex-row items-center">
+              <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h2>
+              <div className="flex justify-end shrink-0">
+                <button
+                  onClick={() => {
+                    const levels: number[] = [];
+                    if (hasLevel0Spells(selectedSpellcasting)) {
+                      levels.push(0);
+                    }
+                    if (selectedSpellcasting.spellSlotsByLevel) {
+                      levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                    }
 
-                  const allLevelValues = levels.map((level) => `level-${level}`);
-                  const isAllOpen = openAccordionValues.length > 0;
+                    const allLevelValues = levels.map((level) => `level-${level}`);
+                    const isAllOpen = openAccordionValues.length > 0;
 
-                  setOpenAccordionValues(isAllOpen ? [] : allLevelValues);
-                }}
-                className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
-                aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
-                aria-expanded={openAccordionValues.length > 0}>
-                {openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
-              </button>
-            </div>
+                    setOpenAccordionValues(isAllOpen ? [] : allLevelValues);
+                  }}
+                  className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+                  aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+                  aria-expanded={openAccordionValues.length > 0}>
+                  {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
+                </button>
+              </div>
+            </Card>
 
             <nav
               className="flex flex-col gap-2 sm:gap-3 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
@@ -202,11 +205,6 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               aria-label={tMagic("spellListRegion")}
               aria-live="polite"
               aria-atomic="false">
-              {selectedSpellcasting && !hasLevel0Spells(selectedSpellcasting) && (
-                <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
-                  <span className={`${accentColor} text-base md:text-lg font-medium`}>{tMagic("noCantrips")}</span>
-                </Card>
-              )}
               {selectedSpellcasting &&
                 (() => {
                   // Build array of all spell levels to display
@@ -247,7 +245,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                               </AccordionTrigger>
                             </Card>
 
-                            <AccordionContent className="px-4 pb-4">
+                            <AccordionContent className="pb-4">
                               <div
                                 className="flex flex-wrap gap-2"
                                 role="list">

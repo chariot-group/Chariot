@@ -8,6 +8,8 @@ import {
   Drama,
   Eye,
   Footprints,
+  ListChevronsDownUp,
+  ListChevronsUpDown,
   LockKeyhole,
   MessageSquare,
   MicVocal,
@@ -24,6 +26,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
 import { calculateAbilityBonus } from "@/utils/global.utils";
 import Skill from "@/components/character/tabContents/general/Skill";
+import { useState } from "react";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -35,13 +38,16 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
   const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
   const tAlignment = useTranslations("alignments");
+  const tMagic = useTranslations("characterDetail.magic");
+
+  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
 
   return (
     <div
       className="w-full flex flex-col gap-2 px-2 sm:px-0"
       role="main"
       aria-label={tNpc("general.npcInfoLabel")}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-3 gap-2">
         {/* Colonne 1 : Personnage et Maitrises */}
         <section
           className="flex flex-col gap-2 md:gap-4"
@@ -60,11 +66,9 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             <dl className="flex flex-col gap-2">
               <div className="flex flex-col sm:flex-row gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
-                <dd className="text-sm sm:text-base">{npc?.profile?.type}</dd>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <dt className="text-sm sm:text-base font-semibold">{tNpc("subtypeLabel")} :</dt>
-                <dd className="text-sm sm:text-base">{npc?.profile?.subtype}</dd>
+                <dd className="text-sm sm:text-base">
+                  {npc?.profile?.type} {npc?.profile?.subtype?.length > 0 && `(${npc?.profile?.subtype})`}
+                </dd>
               </div>
             </dl>
           </Card>
@@ -432,26 +436,44 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="abilities-heading">
-            <h2
-              id="abilities-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("characterAbilities")}
-            </h2>
+            <div className="flex flex-row justify-between">
+              <h2
+                id="abilities-heading"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("characterAbilities")}
+              </h2>
+              <div className="flex justify-end shrink-0">
+                <button
+                  onClick={() => {
+                    if (openAccordionValues.length > 0) {
+                      setOpenAccordionValues([]);
+                    } else {
+                      setOpenAccordionValues(npc?.abilities.map((ability, index) => `${ability.name}-${index}`));
+                    }
+                  }}
+                  className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+                  aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+                  aria-expanded={openAccordionValues.length > 0}>
+                  {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
+                </button>
+              </div>
+            </div>
             <Accordion
-              type="single"
-              collapsible
+              type="multiple"
+              value={openAccordionValues}
+              onValueChange={setOpenAccordionValues}
               className="w-full">
               {npc?.abilities.map((ability, index) => (
                 <AccordionItem
-                  key={ability.name}
-                  value={ability.name}>
+                  key={`${ability.name}-${index}`}
+                  value={`${ability.name}-${index}`}>
                   <AccordionTrigger
-                    className="text-left hover:no-underline focus:outline-none focus:ring-1 focus:ring-offset-2 rounded py-3"
+                    className="text-left py-3"
                     aria-label={`${t("abilityDetails")} ${ability.name}`}>
                     <span className="text-sm sm:text-base font-medium">{ability.name}</span>
                   </AccordionTrigger>
                   <AccordionContent
-                    className="text-sm sm:text-base pb-3 pt-1"
+                    className="text-sm sm:text-base pb-3"
                     role="region"
                     aria-label={`${t("abilityDescription")} ${ability.name}`}>
                     {ability.description}
