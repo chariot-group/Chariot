@@ -35,6 +35,7 @@ describe('PlayerController - createPlayer', () => {
       vulnerabilities: [],
     },
     abilities: [],
+    actions: [],
     spellcasting: [],
     inspiration: false, // ✅ ajouté
     progression: {
