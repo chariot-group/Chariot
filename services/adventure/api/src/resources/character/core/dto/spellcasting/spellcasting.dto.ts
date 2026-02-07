@@ -11,6 +11,11 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class SpellcastingDto {
 
+  @ApiProperty({ example: 'Wizard' })
+  @IsOptional()
+  @IsString()
+  className?: string;
+
   @ApiProperty({ example: 'Intelligence' })
   @IsOptional()
   @IsString()

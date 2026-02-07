@@ -35,6 +35,7 @@ describe('PlayerController - createPlayer', () => {
       vulnerabilities: [],
     },
     abilities: [],
+    actions: [],
     spellcasting: [],
     inspiration: false, // ✅ ajouté
     progression: {
@@ -62,7 +63,7 @@ describe('PlayerController - createPlayer', () => {
     profile: {
       race: '',
       subrace: '',
-      alignment: '',
+      alignment: 'True Neutral' as const,
     },
   };
 

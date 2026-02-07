@@ -52,7 +52,7 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                 <CollapsibleTrigger
                   aria-expanded={isOpen}
                   aria-controls={`group-${group._id}-content`}
-                  className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isOpen ? "font-bold" : ""}`}>
+                  className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2 ${isOpen ? "font-bold" : ""}`}>
                   <span className={`text-sm text-left group-hover:font-bold ${isOpen ? "font-bold" : ""}`}>
                     {group.label}
                   </span>
@@ -64,7 +64,7 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
               </ContextMenuTrigger>
               <ContextMenuContent className="w-full flex-col bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex group">
                 <ContextMenuItem
-                  className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
+                  className="cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2"
                   onClick={() => {
                     console.log("Archived");
                   }}>
@@ -84,7 +84,7 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                       key={character._id}
                       aria-current={isSelected ? "page" : undefined}
                       aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
-                      className={`text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${
+                      className={`text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2 ${
                         isSelected ? "bg-card/50 font-bold" : ""
                       }`}>
                       {character.firstname} {character.lastname}

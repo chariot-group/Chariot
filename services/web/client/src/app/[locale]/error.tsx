@@ -47,7 +47,7 @@ export default function Error({ error, reset }: ErrorProps) {
         <CardFooter className="flex gap-3">
           <button
             onClick={reset}
-            className="cursor-pointer flex-1 px-4 py-2 ring hover:ring-2 rounded-lg transition-colors font-medium">
+            className="cursor-pointer flex-1 px-4 py-2 ring hover:ring-1 rounded-lg transition-colors font-medium">
             {t("actions.retry")}
           </button>
           <button

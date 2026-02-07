@@ -1,12 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { CLASS } from '@/resources/character/player/constants/class.constant';
 
 @Schema({ _id: false })
 export class Class {
 
   @ApiProperty({ example: 'Warrior' })
-  @Prop()
-  name?: string;
+  @Prop({
+    type: String,
+    required: true,
+    enum: CLASS,
+  })
+  name: Class;
 
   @ApiProperty({ example: 'Berserker' })
   @Prop()

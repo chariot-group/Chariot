@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested, IsString } from 'class-validator';
 import { ActionsDto } from '@/resources/character/npc/dto/actions/actions.dto';
 import { ChallengeDto } from '@/resources/character/npc/dto/challenge/challenge.dto';
 import { CreateCharacterDto } from '@/resources/character/core/dto/create-character.dto';
@@ -25,4 +25,9 @@ export class CreateNpcDto extends CreateCharacterDto {
   @IsOptional()
   @Type(() => NPCProfileDto)
   profile: NPCProfileDto;
+
+  @ApiProperty({ example: '18d8+54', required: false })
+  @IsString()
+  @IsOptional()
+  hitPointsRoll?: string;
 }

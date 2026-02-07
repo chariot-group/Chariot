@@ -12,16 +12,16 @@ import userReducer from './slices/userSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
 import { UserState } from '@/types/user';
 
-// Transform to exclude transient states from persistence
-// Transient states (loading, error, etc.) should always start fresh
+function getCurrentUserId(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('chariot_user_id');
+}
+
 const campaignTransform = createTransform(
-    // Transform state on save (outbound)
     (inboundState: CampaignState) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { loading, loadingMore, error, ...rest } = inboundState;
         return rest;
     },
-    // Transform state on load (inbound) - restore defaults for excluded fields
     (outboundState: Partial<CampaignState>) => {
         return {
             ...outboundState,
@@ -35,7 +35,6 @@ const campaignTransform = createTransform(
 
 const groupTransform = createTransform(
     (inboundState: GroupState) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { loading, error, ...rest } = inboundState;
         return rest;
     },
@@ -51,7 +50,6 @@ const groupTransform = createTransform(
 
 const characterTransform = createTransform(
     (inboundState: Record<string, unknown>) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { loadingWithoutGroup, loadingMoreWithoutGroup, errorWithoutGroup, loadingAll, errorAll, ...rest } = inboundState;
         return rest;
     },
@@ -70,7 +68,6 @@ const characterTransform = createTransform(
 
 const userTransform = createTransform(
     (inboundState: UserState) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { loading, error, ...rest } = inboundState;
         return rest;
     },
@@ -84,14 +81,16 @@ const userTransform = createTransform(
     { whitelist: ['user'] }
 );
 
-// Configuration de redux-persist
-const persistConfig = {
-    key: 'chariot',
-    storage,
-    // Persister les données de navigation ET les données API pour éviter le saut visuel
-    whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character', 'user'],
-    transforms: [campaignTransform, groupTransform, characterTransform, userTransform],
-};
+function makePersistConfig(userId: string | null) {
+    const storageKey = userId ? `chariot_user_${userId}` : 'chariot_anonymous';
+
+    return {
+        key: storageKey,
+        storage,
+        whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character', 'user'],
+        transforms: [campaignTransform, groupTransform, characterTransform, userTransform],
+    };
+}
 
 // Combine all reducers
 const rootReducer = combineReducers({
@@ -105,18 +104,19 @@ const rootReducer = combineReducers({
     user: userReducer,
 });
 
-// Créer le reducer persisté
-// @ts-expect-error - Redux Persist type compatibility issue with transforms
-const persistedReducer = persistReducer(persistConfig, rootReducer);
-
-// Export RootState type
 export type RootState = ReturnType<typeof rootReducer>;
 
-// Global persistor reference (singleton pattern)
 let globalPersistor: Persistor | null = null;
+let currentStoreUserId: string | null = null;
 
-// Export makeStore function
-export const makeStore = () => {
+export const makeStore = (userId: string | null = null) => {
+    const effectiveUserId = userId ?? getCurrentUserId();
+
+    const persistConfig = makePersistConfig(effectiveUserId);
+
+    // @ts-expect-error - Redux Persist type compatibility issue with transforms
+    const persistedReducer = persistReducer(persistConfig, rootReducer);
+
     const store = configureStore({
         reducer: persistedReducer,
         middleware: (getDefaultMiddleware) =>
@@ -130,16 +130,16 @@ export const makeStore = () => {
 
     const persistor = persistStore(store);
 
-    // Stockage du persistor en global pour accès ultérieur
     globalPersistor = persistor;
+    currentStoreUserId = effectiveUserId;
 
     return { store, persistor };
 };
 
-/**
- * Purge all persisted state from localStorage
- * Should be called on user logout to prevent data leakage between different users
- */
+export const isStoreForCurrentUser = (userId: string | null): boolean => {
+    return currentStoreUserId === userId;
+};
+
 export const purgePersistedState = async (): Promise<void> => {
     if (!globalPersistor) {
         console.warn('Persistor not initialized, cannot purge state');
@@ -155,6 +155,5 @@ export const purgePersistedState = async (): Promise<void> => {
     }
 };
 
-// Infer types from store
 export type AppStore = ReturnType<typeof makeStore>['store'];
 export type AppDispatch = AppStore['dispatch'];

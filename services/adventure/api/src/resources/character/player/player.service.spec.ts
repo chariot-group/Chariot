@@ -79,6 +79,7 @@ describe('PlayerService', () => {
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
         abilities: [],
+        actions: [],
         spellcasting: [],
         inspiration: false,
         progression: { level: 1, experience: 0 },
@@ -89,7 +90,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
       };
 
@@ -105,6 +106,7 @@ describe('PlayerService', () => {
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
         abilities: [],
+        actions: [],
         spellcasting: [],
         inspiration: false,
         progression: { level: 1, experience: 0 },
@@ -115,7 +117,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
       };
 
@@ -129,6 +131,7 @@ describe('PlayerService', () => {
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
         abilities: [],
+        actions: [],
         spellcasting: [],
         inspiration: false,
         progression: { level: 1, experience: 0 },
@@ -139,7 +142,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
       };
 
@@ -159,6 +162,7 @@ describe('PlayerService', () => {
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
         abilities: [],
+        actions: [],
         spellcasting: [],
         inspiration: false,
         progression: { level: 1, experience: 0 },
@@ -169,7 +173,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
       };
 
@@ -294,6 +298,7 @@ describe('PlayerService', () => {
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
         abilities: [],
+        actions: [],
         spellcasting: [],
         inspiration: false,
         progression: { level: 1, experience: 0 },
@@ -304,7 +309,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
         conditions: {
           poisoned: true,
@@ -325,6 +330,7 @@ describe('PlayerService', () => {
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
         abilities: [],
+        actions: [],
         spellcasting: [],
         inspiration: false,
         progression: { level: 1, experience: 0 },
@@ -335,7 +341,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
         exhaustionLevel: 2,
       };
@@ -352,6 +358,7 @@ describe('PlayerService', () => {
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
         abilities: [],
+        actions: [],
         spellcasting: [],
         inspiration: false,
         progression: { level: 1, experience: 0 },
@@ -362,7 +369,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
         conditions: {
           blinded: true,
@@ -395,6 +402,7 @@ describe('PlayerService', () => {
         stats: { senses: [], size: 'M' },
         affinities: { resistances: [], immunities: [], vulnerabilities: [] },
         abilities: [],
+        actions: [],
         spellcasting: [],
         inspiration: false,
         progression: { level: 1, experience: 0 },
@@ -405,7 +413,7 @@ describe('PlayerService', () => {
         profile: {
           race: '',
           subrace: '',
-          alignment: '',
+          alignment: 'True Neutral',
         },
         // conditions not provided - defaults should be applied by schema
       };

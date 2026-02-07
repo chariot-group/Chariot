@@ -7,6 +7,7 @@
       "type": "humanoid",
       "subtype": "goblinoid"
     },
+    "hitPointsRoll": "2d6",
     "challenge": {
       "challengeRating": 0.25,
       "experiencePoints": 50
@@ -17,6 +18,7 @@
       "currentHitPoints": 7,
       "tempHitPoints": 0,
       "armorClass": 15,
+      "initiative": 2,
       "speed": {
         "walk": 30
       },
@@ -47,20 +49,24 @@
           "name": "Scimitar",
           "type": "melee",
           "attackBonus": 4,
-          "damage": {
-            "dice": "1d6",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "1d6",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Shortbow",
           "type": "ranged",
           "attackBonus": 4,
-          "damage": {
-            "dice": "1d6",
-            "type": "piercing"
-          },
+          "damage": [
+            {
+              "dice": "1d6",
+              "type": "piercing"
+            }
+          ],
           "range": "80/320 feet"
         }
       ],
@@ -86,10 +92,11 @@
     "firstname": "Owlbear",
     "kind": "npc",
     "profile": {
-      "alignment": "unaligned",
+      "alignment": "Unaligned",
       "type": "monstrosity",
       "subtype": ""
     },
+    "hitPointsRoll": "7d10+21",
     "appearance": {
       "age": 8,
       "height": 8.0,
@@ -117,6 +124,7 @@
       "currentHitPoints": 59,
       "tempHitPoints": 0,
       "armorClass": 13,
+      "initiative": 1,
       "speed": {
         "walk": 40
       },
@@ -148,20 +156,24 @@
           "name": "Beak",
           "type": "melee",
           "attackBonus": 7,
-          "damage": {
-            "dice": "1d10+5",
-            "type": "piercing"
-          },
+          "damage": [
+            {
+              "dice": "1d10+5",
+              "type": "piercing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Claws",
           "type": "melee",
           "attackBonus": 7,
-          "damage": {
-            "dice": "2d8+5",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "2d8+5",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         }
       ],
@@ -187,10 +199,11 @@
     "firstname": "Cultist",
     "kind": "npc",
     "profile": {
-      "alignment": "any non-good alignment",
+      "alignment": "Any Evil Alignment",
       "type": "humanoid",
       "subtype": "any race"
     },
+    "hitPointsRoll": "2d8",
     "appearance": {
       "age": 32,
       "eyes": "dark brown",
@@ -206,6 +219,7 @@
       "currentHitPoints": 9,
       "tempHitPoints": 0,
       "armorClass": 12,
+      "initiative": 1,
       "speed": {
         "walk": 30
       },
@@ -237,10 +251,12 @@
           "name": "Scimitar",
           "type": "melee",
           "attackBonus": 3,
-          "damage": {
-            "dice": "1d6+1",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "1d6+1",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         }
       ],
@@ -266,10 +282,11 @@
     "firstname": "Drider",
     "kind": "npc",
     "profile": {
-      "alignment": "chaotic evil",
+      "alignment": "Chaotic Evil",
       "type": "monstrosity",
       "subtype": ""
     },
+    "hitPointsRoll": "13d10+52",
     "appearance": {
       "age": 142,
       "height": 6.5,
@@ -297,6 +314,7 @@
       "currentHitPoints": 123,
       "tempHitPoints": 0,
       "armorClass": 19,
+      "initiative": 3,
       "speed": {
         "walk": 30,
         "climb": 30
@@ -349,30 +367,36 @@
           "name": "Bite",
           "type": "melee",
           "attackBonus": 6,
-          "damage": {
-            "dice": "1d4 + 2d8",
-            "type": "piercing + poison"
-          },
+          "damage": [
+            {
+              "dice": "1d4 + 2d8",
+              "type": "piercing + poison"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Longsword",
           "type": "melee",
           "attackBonus": 6,
-          "damage": {
-            "dice": "1d8+3 / 1d10+3",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "1d8+3 / 1d10+3",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Longbow",
           "type": "ranged",
           "attackBonus": 6,
-          "damage": {
-            "dice": "1d8+3 + 1d8",
-            "type": "piercing + poison"
-          },
+          "damage": [
+            {
+              "dice": "1d8+3 + 1d8",
+              "type": "piercing + poison"
+            }
+          ],
           "range": "150/600 feet"
         }
       ],
@@ -399,10 +423,11 @@
     "lastname": "Eagle",
     "kind": "npc",
     "profile": {
-      "alignment": "neutral good",
+      "alignment": "Neutral Good",
       "type": "beast",
       "subtype": ""
     },
+    "hitPointsRoll": "4d10+4",
     "background": {
       "backstory": "This giant eagle has nested in the high peaks for many years, watching over the valleys below. It has formed alliances with good-hearted travelers and druids, occasionally serving as a mount or messenger for those who prove themselves worthy."
     },
@@ -416,6 +441,7 @@
       "currentHitPoints": 26,
       "tempHitPoints": 0,
       "armorClass": 13,
+      "initiative": 3,
       "speed": {
         "walk": 10,
         "fly": 80
@@ -450,20 +476,24 @@
           "name": "Beak",
           "type": "melee",
           "attackBonus": 5,
-          "damage": {
-            "dice": "1d6+3",
-            "type": "piercing"
-          },
+          "damage": [
+            {
+              "dice": "1d6+3",
+              "type": "piercing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Talons",
           "type": "melee",
           "attackBonus": 5,
-          "damage": {
-            "dice": "2d6+3",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "2d6+3",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         }
       ],
@@ -489,10 +519,11 @@
     "firstname": "Lich",
     "kind": "npc",
     "profile": {
-      "alignment": "any evil alignment",
+      "alignment": "Any Evil Alignment",
       "type": "undead",
       "subtype": ""
     },
+    "hitPointsRoll": "18d8+54",
     "appearance": {
       "age": 847,
       "height": 6.2,
@@ -520,6 +551,7 @@
       "currentHitPoints": 135,
       "tempHitPoints": 0,
       "armorClass": 17,
+      "initiative": 3,
       "speed": {
         "walk": 30
       },
@@ -555,20 +587,21 @@
     "spellcasting": [
       {
         "ability": "intelligence",
-        "saveDC": 18,
-        "attackBonus": 10,
+        "saveDC": 20,
+        "attackBonus": 12,
+        "className": "Wizard",
         "spellSlotsByLevel": {
           "1": { "total": 4, "used": 0 },
           "2": { "total": 3, "used": 0 },
           "3": { "total": 3, "used": 0 },
           "4": { "total": 3, "used": 0 },
-          "5": { "total": 2, "used": 0 },
-          "6": { "total": 1, "used": 0 },
-          "7": { "total": 1, "used": 0 },
+          "5": { "total": 3, "used": 0 },
+          "6": { "total": 2, "used": 0 },
+          "7": { "total": 2, "used": 0 },
           "8": { "total": 1, "used": 0 },
           "9": { "total": 1, "used": 0 }
         },
-        "totalSlots": 19,
+        "totalSlots": 22,
         "spells": [
           {
             "name": "Mage Hand",
@@ -577,33 +610,331 @@
             "castingTime": "1 action",
             "range": "30 feet",
             "components": ["V", "S"],
-            "duration": "1 minute"
+            "duration": "1 minute",
+            "description": "A spectral, floating hand appears at a point you choose within range."
           },
           {
-            "name": "Disrupt Undead",
+            "name": "Prestidigitation",
             "level": 0,
+            "school": "transmutation",
+            "castingTime": "1 action",
+            "range": "10 feet",
+            "components": ["V", "S"],
+            "duration": "Up to 1 hour",
+            "description": "This spell is a minor magical trick that novice spellcasters use for practice."
+          },
+          {
+            "name": "Ray of Frost",
+            "level": 0,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "components": ["V", "S"],
+            "duration": "Instantaneous",
+            "description": "A frigid beam of blue-white light streaks toward a creature within range. Make a ranged spell attack. On a hit, it takes 1d8 cold damage, and its speed is reduced by 10 feet until the start of your next turn."
+          },
+          {
+            "name": "Chill Touch",
+            "level": 0,
+            "school": "necromancy",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S"],
+            "duration": "1 round",
+            "description": "You create a ghostly, skeletal hand in the space of a creature within range. Make a ranged spell attack. On a hit, the target takes 1d8 necrotic damage, and it can't regain hit points until the start of your next turn."
+          },
+          {
+            "name": "Detect Magic",
+            "level": 1,
+            "school": "divination",
+            "castingTime": "1 action",
+            "range": "Self",
+            "components": ["V", "S"],
+            "duration": "Concentration, up to 10 minutes",
+            "description": "For the duration, you sense the presence of magic within 30 feet of you."
+          },
+          {
+            "name": "Magic Missile",
+            "level": 1,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S"],
+            "duration": "Instantaneous",
+            "description": "You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target."
+          },
+          {
+            "name": "Shield",
+            "level": 1,
+            "school": "abjuration",
+            "castingTime": "1 reaction",
+            "range": "Self",
+            "components": ["V", "S"],
+            "duration": "1 round",
+            "description": "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC."
+          },
+          {
+            "name": "Mirror Image",
+            "level": 2,
+            "school": "illusion",
+            "castingTime": "1 action",
+            "range": "Self",
+            "components": ["V", "S"],
+            "duration": "1 minute",
+            "description": "Three illusory duplicates of yourself appear in your space. Until the spell ends, the duplicates move with you and mimic your actions."
+          },
+          {
+            "name": "Misty Step",
+            "level": 2,
+            "school": "conjuration",
+            "castingTime": "1 bonus action",
+            "range": "Self",
+            "components": ["V"],
+            "duration": "Instantaneous",
+            "description": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see."
+          },
+          {
+            "name": "Scorching Ray",
+            "level": 2,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S"],
+            "duration": "Instantaneous",
+            "description": "You create three rays of fire and hurl them at targets within range. Make a ranged spell attack for each ray. On a hit, the target takes 2d6 fire damage."
+          },
+          {
+            "name": "Animate Dead",
+            "level": 3,
+            "school": "necromancy",
+            "castingTime": "1 minute",
+            "range": "10 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "This spell creates an undead servant. Choose a pile of bones or a corpse of a Medium or Small humanoid within range. Your spell imbues the target with a foul mimicry of life, raising it as an undead creature."
+          },
+          {
+            "name": "Counterspell",
+            "level": 3,
+            "school": "abjuration",
+            "castingTime": "1 reaction",
+            "range": "60 feet",
+            "components": ["S"],
+            "duration": "Instantaneous",
+            "description": "You attempt to interrupt a creature in the process of casting a spell. If the creature is casting a spell of 3rd level or lower, its spell fails and has no effect."
+          },
+          {
+            "name": "Fireball",
+            "level": 3,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "150 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Dimension Door",
+            "level": 4,
+            "school": "conjuration",
+            "castingTime": "1 action",
+            "range": "500 feet",
+            "components": ["V"],
+            "duration": "Instantaneous",
+            "description": "You teleport yourself from your current location to any other spot within range. You arrive at exactly the spot desired."
+          },
+          {
+            "name": "Blight",
+            "level": 4,
+            "school": "necromancy",
+            "castingTime": "1 action",
+            "range": "30 feet",
+            "components": ["V", "S"],
+            "duration": "Instantaneous",
+            "description": "Necromantic energy washes over a creature of your choice that you can see within range, draining moisture and vitality from it. The target must make a Constitution saving throw. The target takes 8d8 necrotic damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Ice Storm",
+            "level": 4,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "300 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "A hail of rock-hard ice pounds to the ground in a 20-foot-radius, 40-foot-high cylinder centered on a point within range. Each creature in the cylinder must make a Dexterity saving throw. A creature takes 2d8 bludgeoning damage and 4d6 cold damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Cloudkill",
+            "level": 5,
+            "school": "conjuration",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S"],
+            "duration": "Concentration, up to 10 minutes",
+            "description": "You create a 20-foot-radius sphere of poisonous, yellow-green fog centered on a point you choose within range. The fog spreads around corners. It lasts for the duration or until strong wind disperses the fog. Its area is heavily obscured. When a creature enters the spell's area for the first time on a turn or starts its turn there, that creature must make a Constitution saving throw. The creature takes 5d8 poison damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Cone of Cold",
+            "level": 5,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "Self (60-foot cone)",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "A blast of cold air erupts from your hands. Each creature in a 60-foot cone must make a Constitution saving throw. A creature takes 8d8 cold damage on a failed save, or half as much damage on a successful one."
+          },
+          {
+            "name": "Wall of Force",
+            "level": 5,
+            "school": "evocation",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Concentration, up to 10 minutes",
+            "description": "An invisible wall of force springs into existence at a point you choose within range. The wall appears in any orientation you choose, as a horizontal or vertical barrier or at an angle. Nothing can physically pass through the wall. It is immune to all damage and can't be dispelled."
+          },
+          {
+            "name": "Disintegrate",
+            "level": 6,
+            "school": "transmutation",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "A thin green ray springs from your pointing finger to a target that you can see within range. The target can be a creature, an object, or a creation of magical force. A creature targeted by this spell must make a Dexterity saving throw. On a failed save, the target takes 10d6 + 40 force damage. If this damage reduces the target to 0 hit points, it is disintegrated."
+          },
+          {
+            "name": "Globe of Invulnerability",
+            "level": 6,
+            "school": "abjuration",
+            "castingTime": "1 action",
+            "range": "Self (10-foot radius)",
+            "components": ["V", "S", "M"],
+            "duration": "Concentration, up to 1 minute",
+            "description": "An immobile, faintly shimmering barrier springs into existence in a 10-foot radius around you and remains for the duration. Any spell of 5th level or lower cast from outside the barrier can't affect creatures or objects within it."
+          },
+          {
+            "name": "Finger of Death",
+            "level": 7,
             "school": "necromancy",
             "castingTime": "1 action",
             "range": "60 feet",
             "components": ["V", "S"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "You send negative energy coursing through a creature that you can see within range, causing it searing pain. The target must make a Constitution saving throw. It takes 7d8 + 30 necrotic damage on a failed save, or half as much damage on a successful one. A humanoid killed by this spell rises at the start of your next turn as a zombie."
           },
           {
-            "name": "Dispel Magic",
-            "level": 3,
-            "school": "abjuration",
+            "name": "Plane Shift",
+            "level": 7,
+            "school": "conjuration",
             "castingTime": "1 action",
-            "range": "120 feet",
-            "components": ["V", "S"],
-            "duration": "Instantaneous"
+            "range": "Touch",
+            "components": ["V", "S", "M"],
+            "duration": "Instantaneous",
+            "description": "You and up to eight willing creatures who link hands in a circle are transported to a different plane of existence."
+          },
+          {
+            "name": "Power Word Stun",
+            "level": 8,
+            "school": "enchantment",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "components": ["V"],
+            "duration": "Instantaneous",
+            "description": "You speak a word of power that can overwhelm the mind of one creature you can see within range, leaving it dumbfounded. If the target has 150 hit points or fewer, it is stunned. Otherwise, the spell has no effect."
+          },
+          {
+            "name": "Power Word Kill",
+            "level": 9,
+            "school": "enchantment",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "components": ["V"],
+            "duration": "Instantaneous",
+            "description": "You utter a word of power that can compel one creature you can see within range to die instantly. If the creature you choose has 100 hit points or fewer, it dies. Otherwise, the spell has no effect."
           }
         ]
       }
     ],
     "actions": {
-      "standard": [],
-      "legendary": [],
-      "lair": []
+      "standard": [
+        {
+          "name": "Paralyzing Touch",
+          "type": "melee",
+          "description": "Melee Spell Attack: +12 to hit, reach 5 ft., one creature. The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute. The target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.",
+          "attackBonus": 12,
+          "damage": [
+            {
+              "dice": "3d6",
+              "type": "cold"
+            }
+          ],
+          "range": "5 feet",
+          "dc": {
+            "dcType": "con",
+            "dcValue": 18,
+            "successType": "none"
+          }
+        }
+      ],
+      "legendary": [
+        {
+          "name": "Cantrip",
+          "description": "The lich casts a cantrip.",
+          "cost": 1
+        },
+        {
+          "name": "Paralyzing Touch",
+          "description": "The lich uses its Paralyzing Touch.",
+          "cost": 2
+        },
+        {
+          "name": "Frightening Gaze",
+          "description": "The lich fixes its gaze on one creature it can see within 10 feet of it. The target must succeed on a DC 18 Wisdom saving throw against this magic or become frightened for 1 minute. The frightened target can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a target's saving throw is successful or the effect ends for it, the target is immune to the lich's gaze for the next 24 hours.",
+          "cost": 2,
+          "dc": {
+            "dcType": "wis",
+            "dcValue": 18,
+            "successType": "none"
+          }
+        },
+        {
+          "name": "Disrupt Life",
+          "description": "Each living creature within 20 feet of the lich must make a DC 18 Constitution saving throw against this magic, taking 21 (6d6) necrotic damage on a failed save, or half as much damage on a successful one.",
+          "cost": 3,
+          "damage": [
+            {
+              "dice": "6d6",
+              "type": "necrotic"
+            }
+          ],
+          "dc": {
+            "dcType": "con",
+            "dcValue": 18,
+            "successType": "half"
+          }
+        }
+      ],
+      "lair": [
+        {
+          "name": "Tormenting Spirits",
+          "description": "The lich targets one creature it can see within 30 feet of it. A crackling cord of negative energy tethers the lich to the target. Whenever the lich takes damage, the target must make a DC 18 Constitution saving throw. On a failed save, the lich takes half the damage (rounded down), and the target takes the remaining damage. This tether lasts until initiative count 20 on the next round or until the lich or the target is no longer in the lich's lair.",
+          "dc": {
+            "dcType": "con",
+            "dcValue": 18,
+            "successType": "none"
+          }
+        },
+        {
+          "name": "Grasping Tomb",
+          "description": "The lich targets any number of creatures it can see within 30 feet of it. Each target must succeed on a DC 18 Constitution saving throw or be restrained by tendrils of necrotic energy until initiative count 20 on the next round.",
+          "dc": {
+            "dcType": "con",
+            "dcValue": 18,
+            "successType": "none"
+          }
+        }
+      ]
     },
     "treasure": {
       "cp": 100,
@@ -627,10 +958,11 @@
     "firstname": "Orc",
     "kind": "npc",
     "profile": {
-      "alignment": "chaotic evil",
+      "alignment": "Chaotic Evil",
       "type": "humanoid",
       "subtype": "orc"
     },
+    "hitPointsRoll": "2d8+6",
     "appearance": {
       "height": 6.8,
       "weight": 280,
@@ -650,6 +982,7 @@
       "currentHitPoints": 15,
       "tempHitPoints": 0,
       "armorClass": 13,
+      "initiative": 1,
       "speed": {
         "walk": 30
       },
@@ -681,20 +1014,24 @@
           "name": "Greataxe",
           "type": "melee",
           "attackBonus": 5,
-          "damage": {
-            "dice": "1d12+3",
-            "type": "slashing"
-          },
+          "damage": [
+            {
+              "dice": "1d12+3",
+              "type": "slashing"
+            }
+          ],
           "range": "5 feet"
         },
         {
           "name": "Javelin",
           "type": "melee or ranged",
           "attackBonus": 5,
-          "damage": {
-            "dice": "1d6+3",
-            "type": "piercing"
-          },
+          "damage": [
+            {
+              "dice": "1d6+3",
+              "type": "piercing"
+            }
+          ],
           "range": "5 feet or 30/120 feet"
         }
       ],
@@ -734,7 +1071,7 @@
       }
     ],
     "profile": {
-      "alignment": "chaotic good",
+      "alignment": "Chaotic Good",
       "race": "gnome",
       "subrace": "forest gnome",
       "background": "Entertainer",
@@ -769,6 +1106,7 @@
       "currentHitPoints": 20,
       "tempHitPoints": 0,
       "armorClass": 15,
+      "initiative": 2,
       "speed": {
         "walk": 25
       },
@@ -839,14 +1177,14 @@
     ],
     "spellcasting": [
       {
+        "className": "Bard",
         "ability": "charisma",
         "saveDC": 13,
         "attackBonus": 5,
         "spellSlotsByLevel": {
-          "1": { "total": 4, "used": 0 },
-          "2": { "total": 2, "used": 0 }
+          "1": { "total": 4, "used": 0 }
         },
-        "totalSlots": 6,
+        "totalSlots": 4,
         "spells": [
           {
             "name": "Vicious Mockery",
@@ -855,7 +1193,8 @@
             "castingTime": "1 action",
             "range": "60 feet",
             "components": ["V"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "You unleash a string of insults laced with subtle enchantments at a creature you can see within range. If the target can hear you (though it need not understand you), it must succeed on a Wisdom saving throw or take 1d4 psychic damage and have disadvantage on the next attack roll it makes before the end of its next turn. This spell's damage increases by 1d4 when you reach 5th level (2d4), 11th level (3d4), and 17th level (4d4)."
           },
           {
             "name": "Healing Word",
@@ -864,11 +1203,31 @@
             "castingTime": "1 bonus action",
             "range": "60 feet",
             "components": ["V"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "A creature of your choice that you can see within range regains hit points equal to 1d4 + your spellcasting ability modifier. This spell has no effect on undead or constructs. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d4 for each slot level above 1st."
           }
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Rapier",
+        "type": "melee",
+        "attackBonus": 4,
+        "damage": [
+          {
+            "dice": "1d8+2",
+            "type": "piercing"
+          }
+        ],
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 1,
+      "failures": 0
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -893,7 +1252,7 @@
       }
     ],
     "profile": {
-      "alignment": "chaotic neutral",
+      "alignment": "Chaotic Neutral",
       "race": "goliath",
       "subrace": null,
       "background": "Outlander",
@@ -931,6 +1290,7 @@
       "currentHitPoints": 45,
       "tempHitPoints": 0,
       "armorClass": 14,
+      "initiative": 2,
       "speed": {
         "walk": 30
       },
@@ -1008,6 +1368,25 @@
       "resistances": ["bludgeoning", "piercing", "slashing (while raging)"],
       "immunities": [],
       "vulnerabilities": []
+    },
+    "actions": [
+      {
+        "name": "Greataxe",
+        "type": "melee",
+        "attackBonus": 5,
+        "damage": [
+          {
+            "dice": "1d12+3",
+            "type": "slashing"
+          }
+        ],
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 2,
+      "failures": 2
     }
   },
   {
@@ -1027,7 +1406,7 @@
       }
     ],
     "profile": {
-      "alignment": "chaotic good",
+      "alignment": "Chaotic Good",
       "race": "half-elf",
       "subrace": null,
       "background": "Criminal",
@@ -1057,6 +1436,7 @@
       "currentHitPoints": 24,
       "tempHitPoints": 0,
       "armorClass": 15,
+      "initiative": 4,
       "speed": {
         "walk": 30
       },
@@ -1150,7 +1530,7 @@
       }
     ],
     "profile": {
-      "alignment": "neutral good",
+      "alignment": "Neutral Good",
       "race": "half-elf",
       "subrace": null,
       "background": "Outlander",
@@ -1185,6 +1565,7 @@
       "currentHitPoints": 28,
       "tempHitPoints": 0,
       "armorClass": 14,
+      "initiative": 3,
       "speed": {
         "walk": 30
       },
@@ -1256,6 +1637,7 @@
     ],
     "spellcasting": [
       {
+        "className": "Ranger",
         "ability": "wisdom",
         "saveDC": 12,
         "attackBonus": 4,
@@ -1271,11 +1653,43 @@
             "castingTime": "1 bonus action",
             "range": "90 feet",
             "components": ["V"],
-            "duration": "Concentration, up to 1 hour"
+            "duration": "Concentration, up to 1 hour",
+            "description": "You choose a creature you can see within range and mystically mark it as your quarry. Until the spell ends, you deal an extra 1d6 damage to the target whenever you hit it with a weapon attack, and you have advantage on any Wisdom (Perception) or Wisdom (Survival) check you make to find it. If the target drops to 0 hit points before this spell ends, you can use a bonus action on a subsequent turn of yours to mark a new creature. At Higher Levels: When you cast this spell using a spell slot of 3rd or 4th level, you can maintain your concentration on the spell for up to 8 hours. When you use a spell slot of 5th level or higher, you can maintain your concentration on the spell for up to 24 hours."
           }
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Longbow",
+        "type": "ranged",
+        "attackBonus": 4,
+        "damage": [
+          {
+            "dice": "1d8+2",
+            "type": "piercing"
+          }
+        ],
+        "range": "150/600 feet"
+      },
+      {
+        "name": "Dagger",
+        "type": "melee",
+        "attackBonus": 4,
+        "damage": [
+          {
+            "dice": "1d4+2",
+            "type": "piercing"
+          }
+        ],
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 0,
+      "failures": 0
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1299,7 +1713,7 @@
       }
     ],
     "profile": {
-      "alignment": "neutral good",
+      "alignment": "Neutral Good",
       "race": "half-elf",
       "subrace": null,
       "background": "Hermit",
@@ -1337,6 +1751,7 @@
       "currentHitPoints": 24,
       "tempHitPoints": 0,
       "armorClass": 13,
+      "initiative": 2,
       "speed": {
         "walk": 30
       },
@@ -1413,6 +1828,7 @@
     ],
     "spellcasting": [
       {
+        "className": "Druid",
         "ability": "wisdom",
         "saveDC": 13,
         "attackBonus": 5,
@@ -1429,7 +1845,8 @@
             "castingTime": "1 action",
             "range": "90 feet",
             "components": ["V", "S"],
-            "duration": "Concentration, up to 1 minute"
+            "duration": "Concentration, up to 1 minute",
+            "description": "Grasping weeds and vines sprout from the ground in a 20-foot square starting from a point within range. For the duration, these plants turn the ground in the area into difficult terrain. A creature in the area when you cast the spell must succeed on a Strength saving throw or be restrained by the entangling plants until the spell ends. A creature restrained by the plants can use its action to make a Strength check against your spell save DC. On a success, it frees itself."
           },
           {
             "name": "Cure Wounds",
@@ -1438,7 +1855,8 @@
             "castingTime": "1 action",
             "range": "Touch",
             "components": ["V", "S"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d8 for each slot level above 1st."
           },
           {
             "name": "Flaming Sphere",
@@ -1447,7 +1865,8 @@
             "castingTime": "1 action",
             "range": "60 feet",
             "components": ["V", "S", "M"],
-            "duration": "Concentration, up to 1 minute"
+            "duration": "Concentration, up to 1 minute",
+            "description": "A 5-foot-diameter sphere of fire appears in an unoccupied space of your choice within range and lasts for the duration. Any creature that ends its turn within 5 feet of the sphere must make a Dexterity saving throw. The creature takes 2d6 fire damage on a failed save, or half as much damage on a successful one. As a bonus action, you can move the sphere up to 30 feet. If you ram the sphere into a creature, that creature must make the saving throw against the sphere's damage, and the sphere stops moving this turn. At Higher Levels: When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d6 for each slot level above 2nd."
           },
           {
             "name": "Moonbeam",
@@ -1456,11 +1875,31 @@
             "castingTime": "1 action",
             "range": "120 feet",
             "components": ["V", "S", "M"],
-            "duration": "Concentration, up to 1 minute"
+            "duration": "Concentration, up to 1 minute",
+            "description": "A silvery beam of pale light shines down in a 5-foot-radius, 40-foot-high cylinder centered on a point within range. Until the spell ends, dim light fills the cylinder. When a creature enters the spell's area for the first time on a turn or starts its turn there, it is engulfed in ghostly flames that cause searing pain, and it must make a Constitution saving throw. It takes 2d10 radiant damage on a failed save, or half as much damage on a successful one. A shapeshifter makes its saving throw with disadvantage. On each of your turns after you cast this spell, you can use an action to move the beam up to 60 feet in any direction."
           }
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Quarterstaff",
+        "type": "melee",
+        "attackBonus": 3,
+        "damage": [
+          {
+            "dice": "1d6+1",
+            "type": "bludgeoning"
+          }
+        ],
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 3,
+      "failures": 1
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1485,7 +1924,7 @@
       }
     ],
     "profile": {
-      "alignment": "lawful good",
+      "alignment": "Lawful Good",
       "race": "gnome",
       "subrace": "rock gnome",
       "background": "Acolyte",
@@ -1523,6 +1962,7 @@
       "currentHitPoints": 85,
       "tempHitPoints": 0,
       "armorClass": 20,
+      "initiative": 0,
       "speed": {
         "walk": 25
       },
@@ -1607,6 +2047,7 @@
     ],
     "spellcasting": [
       {
+        "className": "Cleric",
         "ability": "wisdom",
         "saveDC": 17,
         "attackBonus": 9,
@@ -1626,7 +2067,8 @@
             "castingTime": "1 action",
             "range": "Touch",
             "components": ["V", "S"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs. At Higher Levels: When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d8 for each slot level above 1st."
           },
           {
             "name": "Spiritual Weapon",
@@ -1635,7 +2077,8 @@
             "castingTime": "1 bonus action",
             "range": "60 feet",
             "components": ["V", "S"],
-            "duration": "1 minute"
+            "duration": "1 minute",
+            "description": "You create a floating, spectral weapon within range that lasts for the duration or until you cast this spell again. When you cast the spell, you can make a melee spell attack against a creature within 5 feet of the weapon. On a hit, the target takes force damage equal to 1d8 + your spellcasting ability modifier. As a bonus action on your turn, you can move the weapon up to 20 feet and repeat the attack against a creature within 5 feet of it. The weapon can take whatever form you choose."
           },
           {
             "name": "Spirit Guardians",
@@ -1644,7 +2087,8 @@
             "castingTime": "1 action",
             "range": "Self (15-foot radius)",
             "components": ["V", "S", "M"],
-            "duration": "Concentration, up to 10 minutes"
+            "duration": "Concentration, up to 10 minutes",
+            "description": "You call forth spirits to protect you. They flit around you to a distance of 15 feet for the duration. If you are good or neutral, their spectral form appears angelic or fey (your choice). If you are evil, they appear fiendish. When you cast this spell, you can designate any number of creatures you can see to be unaffected by it. An affected creature's speed is halved in the area, and when the creature enters the area for the first time on a turn or starts its turn there, it must make a Wisdom saving throw. On a failed save, the creature takes 3d8 radiant damage (if you are good or neutral) or 3d8 necrotic damage (if you are evil). On a successful save, the creature takes half as much damage."
           },
           {
             "name": "Guardian of Faith",
@@ -1653,7 +2097,8 @@
             "castingTime": "1 action",
             "range": "30 feet",
             "components": ["V"],
-            "duration": "8 hours"
+            "duration": "8 hours",
+            "description": "A Large spectral guardian appears and hovers for the duration in an unoccupied space of your choice that you can see within range. The guardian occupies that space and is indistinct except for a gleaming sword and shield emblazoned with the symbol of your deity. Any creature hostile to you that moves to a space within 10 feet of the guardian for the first time on a turn must succeed on a Dexterity saving throw. The creature takes 20 radiant damage on a failed save, or half as much damage on a successful one. The guardian vanishes when it has dealt a total of 60 damage."
           },
           {
             "name": "Flame Strike",
@@ -1662,11 +2107,31 @@
             "castingTime": "1 action",
             "range": "60 feet",
             "components": ["V", "S", "M"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "A vertical column of divine fire roars down from the heavens in a location you specify. Each creature in a 10-foot-radius, 40-foot-high cylinder centered on a point within range must make a Dexterity saving throw. A creature takes 4d6 fire damage and 4d6 radiant damage on a failed save, or half as much damage on a successful one. At Higher Levels: When you cast this spell using a spell slot of 6th level or higher, the fire damage or the radiant damage (your choice) increases by 1d6 for each slot level above 5th."
           }
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Mace",
+        "type": "melee",
+        "attackBonus": 7,
+        "damage": [
+          {
+            "dice": "1d6+3",
+            "type": "bludgeoning"
+          }
+        ],
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 0,
+      "failures": 1
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],
@@ -1692,7 +2157,7 @@
       }
     ],
     "profile": {
-      "alignment": "chaotic good",
+      "alignment": "Chaotic Good",
       "race": "human",
       "subrace": "variant human",
       "background": "Noble",
@@ -1722,6 +2187,7 @@
       "currentHitPoints": 145,
       "tempHitPoints": 0,
       "armorClass": 18,
+      "initiative": 5,
       "speed": {
         "walk": 30
       },
@@ -1830,6 +2296,37 @@
       "resistances": [],
       "immunities": [],
       "vulnerabilities": []
+    },
+    "actions": [
+      {
+        "name": "Bad News (Rifle)",
+        "type": "ranged",
+        "attackBonus": 12,
+        "damage": [
+          {
+            "dice": "2d12+5",
+            "type": "piercing"
+          }
+        ],
+        "range": "200/800 feet"
+      },
+      {
+        "name": "Animus (Revolver)",
+        "type": "ranged",
+        "attackBonus": 12,
+        "damage": [
+          {
+            "dice": "1d10+5",
+            "type": "piercing"
+          }
+        ],
+        "range": "40/120 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 0,
+      "failures": 1
     }
   },
   {
@@ -1843,20 +2340,20 @@
     },
     "class": [
       {
-        "name": "Occultist",
+        "name": "Warlock",
         "subclass": "The Great Old One",
         "level": 5,
         "hitDice": 8
       },
       {
-        "name": "Mage",
+        "name": "Wizard",
         "subclass": "School of Divination",
         "level": 7,
         "hitDice": 6
       }
     ],
     "profile": {
-      "alignment": "neutral",
+      "alignment": "True Neutral",
       "race": "half-elf",
       "background": "Sage",
       "history": "Érudit"
@@ -1893,6 +2390,7 @@
       "currentHitPoints": 74,
       "tempHitPoints": 0,
       "armorClass": 15,
+      "initiative": 2,
       "speed": {
         "walk": 30
       },
@@ -1974,7 +2472,8 @@
     ],
     "spellcasting": [
       {
-        "source": "Mage",
+        "className": "Wizard",
+        "source": "Wizard",
         "ability": "intelligence",
         "saveDC": 14,
         "attackBonus": 6,
@@ -1993,7 +2492,8 @@
             "castingTime": "1 reaction",
             "range": "Self",
             "components": ["V", "S"],
-            "duration": "1 round"
+            "duration": "1 round",
+            "description": "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC, including against the triggering attack, and you take no damage from magic missile."
           },
           {
             "name": "Misty Step",
@@ -2002,7 +2502,8 @@
             "castingTime": "1 bonus action",
             "range": "Self",
             "components": ["V"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see."
           },
           {
             "name": "Counterspell",
@@ -2011,7 +2512,8 @@
             "castingTime": "1 reaction",
             "range": "60 feet",
             "components": ["S"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "You attempt to interrupt a creature in the process of casting a spell. If the creature is casting a spell of 3rd level or lower, its spell fails and has no effect. If it is casting a spell of 4th level or higher, make an ability check using your spellcasting ability. The DC equals 10 + the spell's level. On a success, the creature's spell fails and has no effect. At Higher Levels: When you cast this spell using a spell slot of 4th level or higher, the interrupted spell has no effect if its level is less than or equal to the level of the spell slot you used."
           },
           {
             "name": "Arcane Eye",
@@ -2020,12 +2522,14 @@
             "castingTime": "1 action",
             "range": "30 feet",
             "components": ["V", "S", "M"],
-            "duration": "Concentration, up to 1 hour"
+            "duration": "Concentration, up to 1 hour",
+            "description": "You create an invisible, magical eye within range that hovers in the air for the duration. You mentally receive visual information from the eye, which has normal vision and darkvision out to 30 feet. The eye can look in every direction. As an action, you can move the eye up to 30 feet in any direction. There is no limit to how far away from you the eye can move, but it can't enter another plane of existence. A solid barrier blocks the eye's movement, but the eye can pass through an opening as small as 1 inch in diameter."
           }
         ]
       },
       {
-        "source": "Occultist",
+        "className": "Warlock",
+        "source": "Warlock",
         "ability": "charisma",
         "saveDC": 13,
         "attackBonus": 5,
@@ -2039,7 +2543,8 @@
             "castingTime": "1 action",
             "range": "120 feet",
             "components": ["V", "S"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "A beam of crackling energy streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 force damage. The spell creates more than one beam when you reach higher levels: two beams at 5th level, three beams at 11th level, and four beams at 17th level. You can direct the beams at the same target or at different ones. Make a separate attack roll for each beam."
           },
           {
             "name": "Hex",
@@ -2048,7 +2553,8 @@
             "castingTime": "1 bonus action",
             "range": "90 feet",
             "components": ["V", "S", "M"],
-            "duration": "Concentration, up to 1 hour"
+            "duration": "Concentration, up to 1 hour",
+            "description": "You place a curse on a creature that you can see within range. Until the spell ends, you deal an extra 1d6 necrotic damage to the target whenever you hit it with an attack. Also, choose one ability when you cast the spell. The target has disadvantage on ability checks made with the chosen ability. If the target drops to 0 hit points before this spell ends, you can use a bonus action on a subsequent turn of yours to curse a new creature. At Higher Levels: When you cast this spell using a spell slot of 3rd or 4th level, you can maintain your concentration on the spell for up to 8 hours."
           },
           {
             "name": "Darkness",
@@ -2057,7 +2563,8 @@
             "castingTime": "1 action",
             "range": "60 feet",
             "components": ["V", "M"],
-            "duration": "Concentration, up to 10 minutes"
+            "duration": "Concentration, up to 10 minutes",
+            "description": "Magical darkness spreads from a point you choose within range to fill a 15-foot-radius sphere for the duration. The darkness spreads around corners. A creature with darkvision can't see through this darkness, and nonmagical light can't illuminate it. If the point you choose is on an object you are holding or one that isn't being worn or carried, the darkness emanates from the object and moves with it. Completely covering the source of the darkness with an opaque object, such as a bowl or a helm, blocks the darkness. If any of this spell's area overlaps with an area of light created by a spell of 2nd level or lower, the spell that created the light is dispelled."
           },
           {
             "name": "Dispel Magic",
@@ -2066,11 +2573,43 @@
             "castingTime": "1 action",
             "range": "120 feet",
             "components": ["V", "S"],
-            "duration": "Instantaneous"
+            "duration": "Instantaneous",
+            "description": "Choose one creature, object, or magical effect within range. Any spell of 3rd level or lower on the target ends. For each spell of 4th level or higher on the target, make an ability check using your spellcasting ability. The DC equals 10 + the spell's level. On a successful check, the spell ends. At Higher Levels: When you cast this spell using a spell slot of 4th level or higher, you automatically end the effects of a spell on the target if the spell's level is equal to or less than the level of the spell slot you used."
           }
         ]
       }
     ],
+    "actions": [
+      {
+        "name": "Eldritch Blast",
+        "type": "ranged",
+        "attackBonus": 5,
+        "damage": [
+          {
+            "dice": "2d10",
+            "type": "force"
+          }
+        ],
+        "range": "120 feet"
+      },
+      {
+        "name": "Dagger",
+        "type": "melee",
+        "attackBonus": 3,
+        "damage": [
+          {
+            "dice": "1d4+1",
+            "type": "piercing"
+          }
+        ],
+        "range": "5 feet"
+      }
+    ],
+    "exhaustionLevel": 0,
+    "deathSaves": {
+      "successes": 1,
+      "failures": 2
+    },
     "affinities": {
       "resistances": [],
       "immunities": [],

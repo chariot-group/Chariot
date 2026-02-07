@@ -16,7 +16,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
       {/* Apparence, Alliés et Liens */}
       <div className="flex flex-col gap-2 md:gap-4">
         <Card
-          className="gap-2 md:gap-4"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="appearance-title">
           <h2
@@ -90,7 +90,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
           </div>
         </Card>
         <Card
-          className="gap-2 md:gap-4"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="allies-title">
           <h2
@@ -100,8 +100,23 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
           </h2>
           <p className="text-sm md:text-base wrap-break-words">{character?.background?.alliesAndOrgs}</p>
         </Card>
+      </div>
+
+      {/* Description */}
+      <div className="flex flex-col gap-2 md:gap-4">
         <Card
-          className="gap-2 md:gap-4"
+          className="gap-3 py-4 px-4 md:px-6"
+          role="region"
+          aria-labelledby="flaws-title">
+          <h2
+            id="flaws-title"
+            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
+            {t("flaws")}
+          </h2>
+          <p className="text-sm md:text-base wrap-break-words">{character?.background?.flaws}</p>
+        </Card>
+        <Card
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="bonds-title">
           <h2
@@ -113,25 +128,10 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
         </Card>
       </div>
 
-      {/* Description */}
-      <div className="flex flex-col gap-2 md:gap-4">
-        <Card
-          className="gap-2 md:gap-4 h-full"
-          role="region"
-          aria-labelledby="description-title">
-          <h2
-            id="description-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("description")}
-          </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character?.appearance?.description}</p>
-        </Card>
-      </div>
-
       {/* Traits, Idéaux et Défauts */}
       <div className="flex flex-col gap-2 md:gap-4">
         <Card
-          className="gap-2 md:gap-4"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="traits-title">
           <h2
@@ -142,7 +142,7 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
           <p className="text-sm md:text-base wrap-break-words">{character?.background?.personalityTraits}</p>
         </Card>
         <Card
-          className="gap-2 md:gap-4"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="ideals-title">
           <h2
@@ -152,23 +152,12 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
           </h2>
           <p className="text-sm md:text-base wrap-break-words">{character?.background?.ideals}</p>
         </Card>
-        <Card
-          className="gap-2 md:gap-4"
-          role="region"
-          aria-labelledby="flaws-title">
-          <h2
-            id="flaws-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("flaws")}
-          </h2>
-          <p className="text-sm md:text-base wrap-break-words">{character?.background?.flaws}</p>
-        </Card>
       </div>
 
       {/* Histoire (full width) */}
       <div className="col-span-1 xl:col-span-3">
         <Card
-          className="gap-2 md:gap-4"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="backstory-title">
           <h2
@@ -177,6 +166,21 @@ export default function CharacterHistoryTabContent({ character, accentColor }: C
             {t("backstory")}
           </h2>
           <p className="text-sm md:text-base wrap-break-words">{character?.background?.backstory}</p>
+        </Card>
+      </div>
+
+      {/* Description (full width) */}
+      <div className="col-span-1 xl:col-span-3">
+        <Card
+          className="gap-3 py-4 px-4 md:px-6 h-full"
+          role="region"
+          aria-labelledby="description-title">
+          <h2
+            id="description-title"
+            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
+            {t("description")}
+          </h2>
+          <p className="text-sm md:text-base wrap-break-words">{character?.appearance?.description}</p>
         </Card>
       </div>
     </div>
