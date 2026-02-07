@@ -3,10 +3,10 @@
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 import { Character, Spell, Spellcasting } from "@/types/character";
-import { Book, Dice5, Target, ArrowLeft, Eye } from "lucide-react";
-import { useState } from "react";
+import { Book, Dice5, Target, ArrowLeft } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
+import { classWithSpellPrepared, getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
 
 interface CharacterMagicTabContentProps {
@@ -22,6 +22,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   );
 
   const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+  const selectedSpellRef = useRef<HTMLDivElement | null>(null);
 
   const [selectedSpell, setSelectedSpell] = useState<Spell | null>(() => {
     if (!selectedSpellcasting || !selectedSpellcasting.spells || selectedSpellcasting.spells.length === 0) {
@@ -38,6 +40,24 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
     const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
     return selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
   });
+
+  useEffect(() => {
+    if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
+      // Open the accordion containing the selected spell
+      const spellLevel = `level-${selectedSpell.level}`;
+      if (!openAccordionValues.includes(spellLevel)) {
+        setOpenAccordionValues([...openAccordionValues, spellLevel]);
+      }
+
+      // Wait for accordion animation to complete before scrolling
+      setTimeout(() => {
+        selectedSpellRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 350);
+    }
+  }, [showMobileDetails]);
 
   if (!character.spellcasting || character.spellcasting.length === 0 || selectedSpellcasting === null) {
     return (
@@ -57,10 +77,11 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       aria-label={tMagic("mainRegion")}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 h-full overflow-hidden">
         {/* Left column: Spell list (hidden on mobile when showing details) */}
-        <div className={`flex flex-col gap-2 md:gap-4 h-full overflow-hidden ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
+        <div
+          className={`flex flex-col gap-2 md:gap-4 h-full overflow-hidden ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
           {character?.spellcasting?.length > 1 && (
             <nav
-              className="flex flex-col sm:flex-row gap-2 shrink-0"
+              className="flex flex-wrap sm:flex-row gap-2 shrink-0"
               aria-label={tMagic("spellcastingClass")}>
               {character?.spellcasting?.map((spellcasting, index) => {
                 let className = "";
@@ -75,7 +96,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 const isSelected = selectedSpellcasting?.className === spellcasting.className;
                 return (
                   <Card
-                    className={`gap-3 py-4 px-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md focus-within:ring-1 focus-within:ring-offset-2 ${isSelected && `bg-${accentColor}`}`}
+                    className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md focus-within:ring-1 focus-within:ring-offset-2 ${isSelected && `bg-${accentColor}`}`}
                     onClick={() => setSelectedSpellcasting(spellcasting)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -88,7 +109,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                     aria-pressed={isSelected}
                     aria-label={tMagic("selectSpellcasting", { className })}
                     key={index}>
-                    <h2 className={`${isSelected ? `text-black` : `${accentColor}`} text-xl md:text-2xl font-semibold`}>
+                    <h2 className={`${isSelected ? `text-black` : `${accentColor}`} text-sm md:text-2xl font-semibold`}>
                       {className}
                     </h2>
                   </Card>
@@ -97,183 +118,217 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
             </nav>
           )}
           <div className="flex flex-wrap gap-2 shrink-0">
-            {isPlayer(character) && numberSpellsPrepare(selectedSpellcasting, character) > 0 && (
-              <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
+            {isPlayer(character) && classWithSpellPrepared(selectedSpellcasting) && (
+              <Card className="gap-3 p-2 md:px-6 flex-row items-center">
                 <Book
                   className="shrink-0"
                   aria-hidden="true"
                 />
-                <span className="text-sm md:text-base">
+                <span className="text-sm md:text-base hidden sm:inline">
                   {tMagic("preparedSpells")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
+                </span>
+                <span className="text-sm sm:hidden">
+                  Prep.: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
                 </span>
               </Card>
             )}
-            <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
+            <Card className="gap-3 p-2 md:px-6 flex-row items-center">
               <Target
                 className="shrink-0"
                 aria-hidden="true"
               />
-              <span className="text-sm md:text-base">
+              <span className="text-sm md:text-base hidden sm:inline">
                 {tMagic("attackBonus")}: <strong>{selectedSpellcasting?.attackBonus}</strong>
               </span>
+              <span className="text-sm sm:hidden">
+                Att.: <strong>{selectedSpellcasting?.attackBonus}</strong>
+              </span>
             </Card>
-            <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
+            <Card className="gap-3 p-2 md:px-6 flex-row items-center">
               <Dice5
                 className="shrink-0"
                 aria-hidden="true"
               />
-              <span className="text-sm md:text-base">
+              <span className="text-sm md:text-base hidden sm:inline">
                 {tMagic("saveDC")}: <strong>{selectedSpellcasting?.saveDC}</strong>
+              </span>
+              <span className="text-sm sm:hidden">
+                DD: <strong>{selectedSpellcasting?.saveDC}</strong>
               </span>
             </Card>
           </div>
-          <nav
-            className="flex flex-col gap-2 sm:gap-3 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
-            role="navigation"
-            aria-label={tMagic("spellListRegion")}>
-            {selectedSpellcasting && !hasLevel0Spells(selectedSpellcasting) && (
-              <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
-                <span className={`${accentColor} text-base md:text-lg font-medium`}>{tMagic("noCantrips")}</span>
-              </Card>
-            )}
-            {selectedSpellcasting && hasLevel0Spells(selectedSpellcasting) && (
-              <div className="flex-col flex gap-2">
-                <Card className={`gap-3 py-4 px-4 md:px-6 flex-row items-center`}>
-                  <h2 className={`text-xl md:text-2xl font-semibold ${accentColor} `}>{tMagic("cantrips")}</h2>
+          <div className="flex flex-col gap-0 flex-1 overflow-hidden">
+            <div className="flex justify-end shrink-0">
+              <button
+                onClick={() => {
+                  const levels: number[] = [];
+                  if (hasLevel0Spells(selectedSpellcasting)) {
+                    levels.push(0);
+                  }
+                  if (selectedSpellcasting.spellSlotsByLevel) {
+                    levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                  }
+
+                  const allLevelValues = levels.map((level) => `level-${level}`);
+                  const isAllOpen = openAccordionValues.length > 0;
+
+                  setOpenAccordionValues(isAllOpen ? [] : allLevelValues);
+                }}
+                className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+                aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+                aria-expanded={openAccordionValues.length > 0}>
+                {openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+              </button>
+            </div>
+
+            <nav
+              className="flex flex-col gap-2 sm:gap-3 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              role="navigation"
+              aria-label={tMagic("spellListRegion")}>
+              {selectedSpellcasting && !hasLevel0Spells(selectedSpellcasting) && (
+                <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
+                  <span className={`${accentColor} text-base md:text-lg font-medium`}>{tMagic("noCantrips")}</span>
                 </Card>
-                <div
-                  className="flex flex-wrap gap-2"
-                  role="list">
-                  {getSpellByLevel(selectedSpellcasting, 0).map((spell, index) => (
-                    <Card
-                      onClick={() => setSelectedSpell(spell)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setSelectedSpell(spell);
-                        }
-                      }}
-                      key={index}
-                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 py-4 px-4 md:px-6 flex-col cursor-pointer`}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={selectedSpell === spell}
-                      aria-label={spell.name}>
-                      <span className={`text-sm md:text-base lg:text-lg ${selectedSpell === spell && "font-bold"} `}>
-                        {spell.name}
-                      </span>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-            {selectedSpellcasting?.spellSlotsByLevel &&
-              Object.entries(selectedSpellcasting.spellSlotsByLevel).map(([level, slot]) => (
-                <div
-                  key={level}
-                  className="flex-col flex gap-2">
-                  <Card
-                    className={`gap-3 py-4 px-4 md:px-6 flex-row items-center ${accentColor}`}
-                    role="heading"
-                    aria-level={3}>
-                    <h2 className={`text-xl md:text-2xl font-semibold`}>
-                      {tMagic("spellLevel", { level })}: {tMagic("spellSlots", { used: slot.used, total: slot.total })}
-                    </h2>
-                  </Card>
-                  <div
-                    className="flex flex-wrap gap-2"
-                    role="list">
-                    {getSpellByLevel(selectedSpellcasting, parseInt(level)).map((spell, index) => (
-                      <Card
-                        onClick={() => setSelectedSpell(spell)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setSelectedSpell(spell);
-                          }
-                        }}
-                        key={index}
-                        className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 py-4 px-4 md:px-6 flex-col cursor-pointer`}
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={selectedSpell === spell}
-                        aria-label={spell.name}>
-                        <span className={`text-sm md:text-base lg:text-lg ${selectedSpell === spell && `font-bold`} `}>
-                          {spell.name}
-                        </span>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ))}
-          </nav>
+              )}
+              {selectedSpellcasting &&
+                (() => {
+                  // Build array of all spell levels to display
+                  const levels: number[] = [];
+
+                  // Add level 0 if cantrips exist
+                  if (hasLevel0Spells(selectedSpellcasting)) {
+                    levels.push(0);
+                  }
+
+                  // Add other levels from spellSlotsByLevel
+                  if (selectedSpellcasting.spellSlotsByLevel) {
+                    levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                  }
+
+                  return (
+                    <Accordion
+                      type="multiple"
+                      value={openAccordionValues}
+                      onValueChange={setOpenAccordionValues}
+                      className="w-full flex flex-col gap-2">
+                      {levels.map((level) => {
+                        const spells = getSpellByLevel(selectedSpellcasting, level);
+                        const slot = selectedSpellcasting.spellSlotsByLevel?.[level];
+
+                        return (
+                          <AccordionItem
+                            key={level}
+                            value={`level-${level}`}
+                            className={`flex flex-col gap-2`}>
+                            <Card className="gap-3 p-0">
+                              <AccordionTrigger className="py-4 px-4 md:px-6">
+                                <h2 className={`text-base md:text-lg font-medium ${accentColor}`}>
+                                  {level === 0
+                                    ? tMagic("cantrips")
+                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { used: slot?.used || 0, total: slot?.total || 0 })}`}
+                                </h2>
+                              </AccordionTrigger>
+                            </Card>
+
+                            <AccordionContent className="px-4 pb-4">
+                              <div
+                                className="flex flex-wrap gap-2"
+                                role="list">
+                                {spells.map((spell, index) => (
+                                  <Card
+                                    ref={selectedSpell === spell ? selectedSpellRef : null}
+                                    onClick={() => {
+                                      setSelectedSpell(spell);
+                                      setShowMobileDetails(true);
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        setSelectedSpell(spell);
+                                        setShowMobileDetails(true);
+                                      }
+                                    }}
+                                    key={index}
+                                    className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-pressed={selectedSpell === spell}
+                                    aria-label={spell.name}>
+                                    <span
+                                      className={`truncate text-sm md:text-base lg:text-lg ${selectedSpell === spell && "font-bold"} `}>
+                                      {spell.name}
+                                    </span>
+                                  </Card>
+                                ))}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        );
+                      })}
+                    </Accordion>
+                  );
+                })()}
+            </nav>
+          </div>
         </div>
         {/* Right column: Spell details (visible on mobile when showMobileDetails is true, always visible on desktop) */}
         <div
-          className={`flex flex-col gap-2 h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full ${showMobileDetails ? "flex" : "hidden lg:flex"}`}
+          className={`flex flex-col gap-2 h-full overflow-hidden ${showMobileDetails ? "flex" : "hidden lg:flex"}`}
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
           {/* Back button for mobile */}
           <button
             onClick={() => setShowMobileDetails(false)}
-            className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
+            className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
             aria-label={tMagic("backToList")}>
             <ArrowLeft className="w-4 h-4" />
             <span>{tMagic("backToList")}</span>
           </button>
-          <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
-            <h3 className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold`}>{selectedSpell?.name}</h3>
-          </Card>
-          <div className="flex flex-wrap gap-2 items-start">
-            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-              <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                {tMagic("spellDetails.school")}:
-              </span>
-              <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.school}</span>
+          <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
+              <h3 className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold`}>{selectedSpell?.name}</h3>
             </Card>
-            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-              <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                {tMagic("spellDetails.castingTime")}:
-              </span>
-              <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.castingTime}</span>
-            </Card>
-            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-              <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                {tMagic("spellDetails.range")}:
-              </span>
-              <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.range}</span>
-            </Card>
-            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-              <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                {tMagic("spellDetails.components")}:
-              </span>
-              <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.components?.join(", ")}</span>
-            </Card>
-            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-              <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                {tMagic("spellDetails.duration")}:
-              </span>
-              <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.duration}</span>
-            </Card>
-            <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-              <span className={`${accentColor} font-semibold text-sm md:text-base`}>
-                {tMagic("spellDetails.description")}:
-              </span>
-              <span className="text-sm md:text-base leading-relaxed">{selectedSpell?.description}</span>
-            </Card>
+            <div className="flex flex-wrap gap-2 items-start">
+              <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                  {tMagic("spellDetails.school")}:
+                </span>
+                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.school}</span>
+              </Card>
+              <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                  {tMagic("spellDetails.castingTime")}:
+                </span>
+                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.castingTime}</span>
+              </Card>
+              <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                  {tMagic("spellDetails.range")}:
+                </span>
+                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.range}</span>
+              </Card>
+              <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                  {tMagic("spellDetails.components")}:
+                </span>
+                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.components?.join(", ")}</span>
+              </Card>
+              <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                  {tMagic("spellDetails.duration")}:
+                </span>
+                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.duration}</span>
+              </Card>
+              <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
+                <span className={`${accentColor} font-semibold text-sm md:text-base`}>
+                  {tMagic("spellDetails.description")}:
+                </span>
+                <span className="text-sm md:text-base leading-relaxed">{selectedSpell?.description}</span>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-      {/* Floating button for mobile when spell is selected */}
-      {selectedSpell && !showMobileDetails && (
-        <button
-          onClick={() => setShowMobileDetails(true)}
-          className="lg:hidden fixed bottom-6 right-6 bg-primary text-primary-foreground px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-medium z-50"
-          aria-label={tMagic("viewDetails")}>
-          <Eye className="w-5 h-5" />
-          <span>{tMagic("viewDetails")}</span>
-        </button>
-      )}
     </div>
   );
 }

@@ -257,7 +257,9 @@
       "selectSpellcasting": "Sélectionner la classe de sorts {className}",
       "viewDetails": "Voir les détails",
       "backToList": "Retour à la liste",
-      "spellSelected": "Sort sélectionné"
+      "spellSelected": "Sort sélectionné",
+      "expandAll": "Tout ouvrir",
+      "collapseAll": "Tout fermer"
     }
   },
   "classes": {

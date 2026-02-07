@@ -257,7 +257,9 @@
       "selectSpellcasting": "Select spellcasting class {className}",
       "viewDetails": "View details",
       "backToList": "Back to list",
-      "spellSelected": "Spell selected"
+      "spellSelected": "Spell selected",
+      "expandAll": "Expand all",
+      "collapseAll": "Collapse all"
     }
   },
   "classes": {

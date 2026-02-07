@@ -41,10 +41,20 @@ export function numberSpellsPrepare(selectedSpellcasting: Spellcasting, characte
             total = Math.floor(classObj.level / 2) + calculateAbilityBonus(character?.stats?.abilityScores?.charisma);
         } else if (classObj?.name.toLocaleLowerCase() === "cleric") {
             total = classObj.level + calculateAbilityBonus(character?.stats?.abilityScores?.wisdom);
-        } else if (classObj?.name.toLocaleLowerCase() === "mage") {
+        } else if (classObj?.name.toLocaleLowerCase() === "wizard") {
             total = classObj.level + calculateAbilityBonus(character?.stats?.abilityScores?.intelligence);
         }
     }
 
     return total;
+}
+
+/**
+ * Vérifie si une classe utilise des sorts préparés
+ * @param spellCasting L'objet Spellcasting contenant les informations sur la classe de sorts
+ * @returns true si la classe utilise des sorts préparés, sinon false
+ */
+export function classWithSpellPrepared(spellCasting: Spellcasting): boolean {
+    console.log("classWithSpellPrepared", spellCasting.className.toLocaleLowerCase());
+    return ["druid", "paladin", "cleric", "wizard"].includes(spellCasting.className.toLocaleLowerCase());
 }

@@ -257,7 +257,9 @@
       "selectSpellcasting": "Seleccionar clase de lanzamiento {className}",
       "viewDetails": "Ver detalles",
       "backToList": "Volver a la lista",
-      "spellSelected": "Conjuro seleccionado"
+      "spellSelected": "Conjuro seleccionado",
+      "expandAll": "Expandir todo",
+      "collapseAll": "Colapsar todo"
     }
   },
   "classes": {
