@@ -31,6 +31,7 @@ interface CharacterDetailViewProps {
 export default function CharacterDetailView({ character }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
+  const tPlaceholder = useTranslations("characterDetail.placeholder");
   const [activeTab, setActiveTab] = useState<CharacterTab>("general");
 
   return (
@@ -109,15 +110,17 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     </React.Fragment>
                   )}
                   {character.groups && character.groups.length > 0 && (
-                    <p className="text-xs sm:text-sm text-white">Groupe : {character.groups[0].label}</p>
+                    <p className="text-xs sm:text-sm text-white">
+                      {t("group")} : {character.groups[0].label}
+                    </p>
                   )}
                 </div>
 
                 {/* Photo de profil */}
                 <div
-                  className="max-[426px]:hidden w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[15px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
+                  className="max-[425px]:hidden w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[15px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
                   role="img"
-                  aria-label={t("placeholder.noImage")}>
+                  aria-label={tPlaceholder("noImage")}>
                   <User
                     className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-middle-light"
                     aria-hidden="true"

@@ -130,7 +130,10 @@
       "statsRegion": "Combat statistics",
       "healthPoints": "Hit Points",
       "healthPointsTooltip": "Current HP / Maximum HP (Temporary HP)",
-      "noValue": "No value"
+      "noValue": "No value",
+      "hpAbbr": "HP",
+      "feet": "feet",
+      "feetAbbr": "ft"
     },
     "history": {
       "appearance": "Appearance",
@@ -245,6 +248,7 @@
     "placeholder": {
       "noImage": "No image"
     },
+    "group": "Group",
     "inventory": {
       "coins": "Coins",
       "equipment": "Equipment",
@@ -295,7 +299,8 @@
       "selectSpell": "Select spell",
       "backToList": "Back to list",
       "expandAll": "Expand all",
-      "collapseAll": "Collapse all"
+      "collapseAll": "Collapse all",
+      "spells": "Spells"
     }
   },
   "classes": {

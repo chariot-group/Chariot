@@ -55,7 +55,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
       className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-0"
       role="main"
       aria-label={t("characterInfoLabel")}>
-      <div className="grid grid-cols-1 min-[426px]:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+      <div className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
         {/* Colonne 1 : Personnage et Maitrises */}
         <section
           className="flex flex-col gap-2 md:gap-4"

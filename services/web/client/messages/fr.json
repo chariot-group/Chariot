@@ -130,7 +130,10 @@
       "statsRegion": "Statistiques de combat",
       "healthPoints": "Points de Vie",
       "healthPointsTooltip": "PV actuels / PV maximum (PV temporaires)",
-      "noValue": "Aucune valeur"
+      "noValue": "Aucune valeur",
+      "hpAbbr": "PV",
+      "feet": "pieds",
+      "feetAbbr": "pi"
     },
     "history": {
       "appearance": "Apparence",
@@ -245,6 +248,7 @@
     "placeholder": {
       "noImage": "Aucune image"
     },
+    "group": "Groupe",
     "inventory": {
       "coins": "Pièces",
       "equipment": "Équipement",
@@ -295,7 +299,8 @@
       "selectSpell": "Sélectionner le sort",
       "backToList": "Retour à la liste",
       "expandAll": "Tout ouvrir",
-      "collapseAll": "Tout fermer"
+      "collapseAll": "Tout fermer",
+      "spells": "Sorts"
     }
   },
   "classes": {

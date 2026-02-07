@@ -162,9 +162,12 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                         className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
                         tabIndex={0}
                         role="img"
-                        aria-label={`${t(badge.tooltipKey as any)} ${badge.value} feet`}>
+                        aria-label={`${t(badge.tooltipKey as any)} ${badge.value} ${t("feet")}`}>
                         {badge.icon}
-                        <span aria-hidden="true">{badge.value}ft</span>
+                        <span aria-hidden="true">
+                          {badge.value}
+                          {t("feetAbbr")}
+                        </span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>{t(badge.tooltipKey as any)}</TooltipContent>

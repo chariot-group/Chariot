@@ -47,7 +47,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
       className="w-full flex flex-col gap-2 px-2 sm:px-0"
       role="main"
       aria-label={tNpc("general.npcInfoLabel")}>
-      <div className="grid grid-cols-1 min-[426px]:grid-cols-2 lg:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-3 gap-2">
         {/* Colonne 1 : Personnage et Maitrises */}
         <section
           className="flex flex-col gap-2 md:gap-4"

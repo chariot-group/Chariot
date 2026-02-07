@@ -26,7 +26,7 @@ const CharacterHealthBar = ({ currentHP, maxHP, tempHP }: CharacterHealthBarProp
           className="relative h-9 bg-white border border-black rounded-full overflow-hidden cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
           tabIndex={0}
           role="img"
-          aria-label={`${t("healthPoints")}: ${currentHP} ${t("unperformedThrow")} ${maxHP}${tempHP > 0 ? ` (+${tempHP} ${t("healthPoints").toLowerCase()})` : ""}`}>
+          aria-label={`${t("healthPoints")}: ${currentHP} ${t("unperformedThrow")} ${maxHP}${tempHP > 0 ? ` (+${tempHP} ${t("hpAbbr")})` : ""}`}>
           {/* HP temporaires */}
           {yellowPercent > 0 && (
             <>
@@ -76,7 +76,7 @@ const CharacterHealthBar = ({ currentHP, maxHP, tempHP }: CharacterHealthBarProp
             <div
               className="text-xl font-medium text-black"
               aria-hidden="true">
-              {tempHP > 0 ? `+${tempHP}PV` : ""}
+              {tempHP > 0 ? `+${tempHP}${t("hpAbbr")}` : ""}
             </div>
           </div>
         </div>
