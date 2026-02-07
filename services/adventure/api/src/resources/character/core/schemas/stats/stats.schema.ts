@@ -44,6 +44,10 @@ export class Stats {
   @Prop({ default: 0 })
   armorClass: number;
 
+  @ApiProperty({ example: 3 })
+  @Prop({ default: 0 })
+  initiative: number;
+
   @ApiProperty({ type: Speed })
   @Prop({ type: Speed, default: {} })
   speed: Speed;

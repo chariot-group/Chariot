@@ -1,9 +1,9 @@
 import { NPC, Player } from "@/types/character";
-import GP from "@public/assets/golden-piece.svg";
-import SP from "@public/assets/silver-piece.svg";
-import EP from "@public/assets/electrum-piece.svg";
-import PP from "@public/assets/platinum-piece.svg";
-import CP from "@public/assets/copper-piece.svg";
+import GP from "@public/assets/pieces/golden-piece.svg";
+import SP from "@public/assets/pieces/silver-piece.svg";
+import EP from "@public/assets/pieces/electrum-piece.svg";
+import PP from "@public/assets/pieces/platinum-piece.svg";
+import CP from "@public/assets/pieces/copper-piece.svg";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";

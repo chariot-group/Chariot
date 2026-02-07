@@ -2,7 +2,8 @@ import { Character, Player } from "@/types/character";
 
 import NoMastery from "@public/assets/mastery/no-mastery.svg";
 import HalfMastery from "@public/assets/mastery/half-mastery.svg";
-import Mastery from "@public/assets/mastery/mastery.svg";
+import BlueCircle from "@public/assets/icons/blue-circle.svg";
+import RedCircle from "@public/assets/icons/red-circle.svg";
 import Expert from "@public/assets/mastery/expert.svg";
 
 /**
@@ -29,12 +30,15 @@ export function calculateAbilityBonus(number: number): number {
  * @param value La valeur de maîtrise
  * @returns Le chemin de l'icône correspondant
  */
-export function getIconForValue(value: number): string {
+export function getIconForValue(value: number, accentColor: string): string {
     switch (value) {
         case 1:
             return HalfMastery;
         case 2:
-            return Mastery;
+            if (accentColor === "red") {
+                return RedCircle;
+            }
+            return BlueCircle;
         case 3:
             return Expert;
         default:

@@ -21,9 +21,9 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import Characteristics from "@/components/character/tabContents/general/Characteristics";
-import Competence from "@/components/character/tabContents/general/Competence";
+import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
 import { calculateAbilityBonus } from "@/utils/global.utils";
+import Skill from "@/components/character/tabContents/general/Skill";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -70,7 +70,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </Card>
 
           {/* Caractéristiques */}
-          <Characteristics
+          <AbilityScores
             character={npc}
             accentColor={accentColor}
           />
@@ -122,9 +122,9 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                   const abilityName = t(`abilities.${key}`);
                   const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
                   return (
-                    <Competence
+                    <Skill
                       key={key}
-                      competence={abilityName}
+                      skillName={abilityName}
                       value={value > 0 ? 2 : 0}
                       accentColor={accentColor}
                       skills={value > 0 ? value : calculateAbilityBonus(abilityScore)}
@@ -150,8 +150,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               className="grid grid-cols-1 xl:grid-cols-2 gap-2"
               role="list"
               aria-label={t("skillsList")}>
-              <Competence
-                competence={t("skillNames.acrobatics")}
+              <Skill
+                skillName={t("skillNames.acrobatics")}
                 value={npc?.stats?.skills?.acrobatics > 0 ? 2 : 0}
                 icon={<User2Icon aria-hidden="true" />}
                 accentColor={accentColor}
@@ -163,8 +163,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.dexterity")}
               />
-              <Competence
-                competence={t("skillNames.arcana")}
+              <Skill
+                skillName={t("skillNames.arcana")}
                 value={npc?.stats?.skills?.arcana > 0 ? 2 : 0}
                 icon={<Sparkles aria-hidden="true" />}
                 accentColor={accentColor}
@@ -176,8 +176,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.athletics")}
+              <Skill
+                skillName={t("skillNames.athletics")}
                 value={npc?.stats?.skills?.athletics > 0 ? 2 : 0}
                 icon={<Footprints aria-hidden="true" />}
                 accentColor={accentColor}
@@ -189,8 +189,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.strength")}
               />
-              <Competence
-                competence={t("skillNames.stealth")}
+              <Skill
+                skillName={t("skillNames.stealth")}
                 value={npc?.stats?.skills?.stealth > 0 ? 2 : 0}
                 icon={<VenetianMask aria-hidden="true" />}
                 accentColor={accentColor}
@@ -202,8 +202,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.dexterity")}
               />
-              <Competence
-                competence={t("skillNames.animalHandling")}
+              <Skill
+                skillName={t("skillNames.animalHandling")}
                 value={npc?.stats?.skills?.animalHandling > 0 ? 2 : 0}
                 icon={<PawPrint aria-hidden="true" />}
                 accentColor={accentColor}
@@ -215,8 +215,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.sleightHand")}
+              <Skill
+                skillName={t("skillNames.sleightHand")}
                 value={npc?.stats?.skills?.sleightHand > 0 ? 2 : 0}
                 icon={<LockKeyhole aria-hidden="true" />}
                 accentColor={accentColor}
@@ -228,8 +228,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.dexterity")}
               />
-              <Competence
-                competence={t("skillNames.history")}
+              <Skill
+                skillName={t("skillNames.history")}
                 value={npc?.stats?.skills?.history > 0 ? 2 : 0}
                 icon={<Notebook aria-hidden="true" />}
                 accentColor={accentColor}
@@ -241,8 +241,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.intimidation")}
+              <Skill
+                skillName={t("skillNames.intimidation")}
                 value={npc?.stats?.skills?.intimidation > 0 ? 2 : 0}
                 icon={<User2Icon aria-hidden="true" />}
                 accentColor={accentColor}
@@ -254,8 +254,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.charisma")}
               />
-              <Competence
-                competence={t("skillNames.insight")}
+              <Skill
+                skillName={t("skillNames.insight")}
                 value={npc?.stats?.skills?.insight > 0 ? 2 : 0}
                 icon={<Brain aria-hidden="true" />}
                 accentColor={accentColor}
@@ -267,8 +267,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.investigation")}
+              <Skill
+                skillName={t("skillNames.investigation")}
                 value={npc?.stats?.skills?.investigation > 0 ? 2 : 0}
                 icon={<CircleQuestionMark aria-hidden="true" />}
                 accentColor={accentColor}
@@ -280,8 +280,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.medicine")}
+              <Skill
+                skillName={t("skillNames.medicine")}
                 value={npc?.stats?.skills?.medicine > 0 ? 2 : 0}
                 icon={<CrossIcon aria-hidden="true" />}
                 accentColor={accentColor}
@@ -293,8 +293,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.nature")}
+              <Skill
+                skillName={t("skillNames.nature")}
                 value={npc?.stats?.skills?.nature > 0 ? 2 : 0}
                 icon={<Sprout aria-hidden="true" />}
                 accentColor={accentColor}
@@ -306,8 +306,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.perception")}
+              <Skill
+                skillName={t("skillNames.perception")}
                 value={npc?.stats?.skills?.perception > 0 ? 2 : 0}
                 icon={<Eye aria-hidden="true" />}
                 accentColor={accentColor}
@@ -319,8 +319,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.persuasion")}
+              <Skill
+                skillName={t("skillNames.persuasion")}
                 value={npc?.stats?.skills?.persuasion > 0 ? 2 : 0}
                 icon={<MessageSquare aria-hidden="true" />}
                 accentColor={accentColor}
@@ -332,8 +332,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.charisma")}
               />
-              <Competence
-                competence={t("skillNames.religion")}
+              <Skill
+                skillName={t("skillNames.religion")}
                 value={npc?.stats?.skills?.religion > 0 ? 2 : 0}
                 icon={<Church aria-hidden="true" />}
                 accentColor={accentColor}
@@ -345,8 +345,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.performance")}
+              <Skill
+                skillName={t("skillNames.performance")}
                 value={npc?.stats?.skills?.performance > 0 ? 2 : 0}
                 icon={<MicVocal aria-hidden="true" />}
                 accentColor={accentColor}
@@ -358,8 +358,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.charisma")}
               />
-              <Competence
-                competence={t("skillNames.survival")}
+              <Skill
+                skillName={t("skillNames.survival")}
                 value={npc?.stats?.skills?.survival > 0 ? 2 : 0}
                 icon={<TreePine aria-hidden="true" />}
                 accentColor={accentColor}
@@ -371,8 +371,8 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 }
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.deception")}
+              <Skill
+                skillName={t("skillNames.deception")}
                 value={npc?.stats?.skills?.deception > 0 ? 2 : 0}
                 icon={<Drama aria-hidden="true" />}
                 accentColor={accentColor}

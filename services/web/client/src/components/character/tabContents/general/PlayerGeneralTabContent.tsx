@@ -21,12 +21,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import Competence from "@/components/character/tabContents/general/Competence";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import Characteristics from "@/components/character/tabContents/general/Characteristics";
+import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isMastered } from "@/utils/global.utils";
+import Skill from "@/components/character/tabContents/general/Skill";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -95,7 +95,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
 
           {/* Caractéristiques */}
-          <Characteristics
+          <AbilityScores
             character={player}
             accentColor={accentColor}
           />
@@ -172,9 +172,9 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                   const isMasteredKey = isMastered(player, key);
                   const abilityName = t(`abilities.${key}`);
                   return (
-                    <Competence
+                    <Skill
                       key={key}
-                      competence={abilityName}
+                      skillName={abilityName}
                       value={isMasteredKey ? 2 : 0}
                       accentColor={accentColor}
                       skills={value}
@@ -200,8 +200,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               className="grid grid-cols-1 md:grid-cols-2 gap-2"
               role="list"
               aria-label={t("skillsList")}>
-              <Competence
-                competence={t("skillNames.acrobatics")}
+              <Skill
+                skillName={t("skillNames.acrobatics")}
                 value={player?.stats?.masteries.acrobatics}
                 icon={<User2Icon aria-hidden="true" />}
                 accentColor={accentColor}
@@ -209,8 +209,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.dexterity}
                 tooltip={t("abilities.dexterity")}
               />
-              <Competence
-                competence={t("skillNames.arcana")}
+              <Skill
+                skillName={t("skillNames.arcana")}
                 value={player?.stats?.masteries.arcana}
                 icon={<Sparkles aria-hidden="true" />}
                 accentColor={accentColor}
@@ -218,8 +218,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.intelligence}
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.athletics")}
+              <Skill
+                skillName={t("skillNames.athletics")}
                 value={player?.stats?.masteries.athletics}
                 icon={<Footprints aria-hidden="true" />}
                 accentColor={accentColor}
@@ -227,8 +227,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.strength}
                 tooltip={t("abilities.strength")}
               />
-              <Competence
-                competence={t("skillNames.stealth")}
+              <Skill
+                skillName={t("skillNames.stealth")}
                 value={player?.stats?.masteries.stealth}
                 icon={<VenetianMask aria-hidden="true" />}
                 accentColor={accentColor}
@@ -236,8 +236,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.dexterity}
                 tooltip={t("abilities.dexterity")}
               />
-              <Competence
-                competence={t("skillNames.animalHandling")}
+              <Skill
+                skillName={t("skillNames.animalHandling")}
                 value={player?.stats?.masteries.animalHandling}
                 icon={<PawPrint aria-hidden="true" />}
                 accentColor={accentColor}
@@ -245,8 +245,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.wisdom}
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.sleightHand")}
+              <Skill
+                skillName={t("skillNames.sleightHand")}
                 value={player?.stats?.masteries.sleightHand}
                 icon={<LockKeyhole aria-hidden="true" />}
                 accentColor={accentColor}
@@ -254,8 +254,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.dexterity}
                 tooltip={t("abilities.dexterity")}
               />
-              <Competence
-                competence={t("skillNames.history")}
+              <Skill
+                skillName={t("skillNames.history")}
                 value={player?.stats?.masteries.history}
                 icon={<Notebook aria-hidden="true" />}
                 accentColor={accentColor}
@@ -263,8 +263,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.intelligence}
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.intimidation")}
+              <Skill
+                skillName={t("skillNames.intimidation")}
                 value={player?.stats?.masteries.intimidation}
                 icon={<User2Icon aria-hidden="true" />}
                 accentColor={accentColor}
@@ -272,8 +272,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.charisma}
                 tooltip={t("abilities.charisma")}
               />
-              <Competence
-                competence={t("skillNames.insight")}
+              <Skill
+                skillName={t("skillNames.insight")}
                 value={player?.stats?.masteries.insight}
                 icon={<Brain aria-hidden="true" />}
                 accentColor={accentColor}
@@ -281,8 +281,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.wisdom}
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.investigation")}
+              <Skill
+                skillName={t("skillNames.investigation")}
                 value={player?.stats?.masteries.investigation}
                 icon={<CircleQuestionMark aria-hidden="true" />}
                 accentColor={accentColor}
@@ -290,8 +290,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.intelligence}
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.medicine")}
+              <Skill
+                skillName={t("skillNames.medicine")}
                 value={player?.stats?.masteries.medicine}
                 icon={<CrossIcon aria-hidden="true" />}
                 accentColor={accentColor}
@@ -299,8 +299,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.wisdom}
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.nature")}
+              <Skill
+                skillName={t("skillNames.nature")}
                 value={player?.stats?.masteries.nature}
                 icon={<Sprout aria-hidden="true" />}
                 accentColor={accentColor}
@@ -308,8 +308,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.intelligence}
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.perception")}
+              <Skill
+                skillName={t("skillNames.perception")}
                 value={player?.stats?.masteries.perception}
                 icon={<Eye aria-hidden="true" />}
                 accentColor={accentColor}
@@ -317,8 +317,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.wisdom}
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.persuasion")}
+              <Skill
+                skillName={t("skillNames.persuasion")}
                 value={player?.stats?.masteries.persuasion}
                 icon={<MessageSquare aria-hidden="true" />}
                 accentColor={accentColor}
@@ -326,8 +326,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.charisma}
                 tooltip={t("abilities.charisma")}
               />
-              <Competence
-                competence={t("skillNames.religion")}
+              <Skill
+                skillName={t("skillNames.religion")}
                 value={player?.stats?.masteries.religion}
                 icon={<Church aria-hidden="true" />}
                 accentColor={accentColor}
@@ -335,8 +335,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.intelligence}
                 tooltip={t("abilities.intelligence")}
               />
-              <Competence
-                competence={t("skillNames.performance")}
+              <Skill
+                skillName={t("skillNames.performance")}
                 value={player?.stats?.masteries.performance}
                 icon={<MicVocal aria-hidden="true" />}
                 accentColor={accentColor}
@@ -344,8 +344,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.charisma}
                 tooltip={t("abilities.charisma")}
               />
-              <Competence
-                competence={t("skillNames.survival")}
+              <Skill
+                skillName={t("skillNames.survival")}
                 value={player?.stats?.masteries.survival}
                 icon={<TreePine aria-hidden="true" />}
                 accentColor={accentColor}
@@ -353,8 +353,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 masteriesAbility={player?.stats?.abilityScores.wisdom}
                 tooltip={t("abilities.wisdom")}
               />
-              <Competence
-                competence={t("skillNames.deception")}
+              <Skill
+                skillName={t("skillNames.deception")}
                 value={player?.stats?.masteries.deception}
                 icon={<Drama aria-hidden="true" />}
                 accentColor={accentColor}

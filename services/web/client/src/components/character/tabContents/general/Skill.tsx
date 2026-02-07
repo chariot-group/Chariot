@@ -5,8 +5,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useTranslations } from "next-intl";
 import { calculateMasteryLevel, getIconForValue } from "@/utils/global.utils";
 
-interface CompetenceProps {
-  competence: string;
+interface SkillProps {
+  skillName: string;
   value: number;
   icon?: React.ReactElement | undefined;
   accentColor: string;
@@ -16,8 +16,8 @@ interface CompetenceProps {
   tooltip?: string | undefined;
 }
 
-export default function Competence({
-  competence,
+export default function Skill({
+  skillName,
   value,
   icon,
   accentColor,
@@ -25,8 +25,12 @@ export default function Competence({
   masteriesAbility,
   skills,
   tooltip,
-}: CompetenceProps) {
+}: SkillProps) {
   const t = useTranslations("characterDetail.player.general");
+
+  function calculateModifier(score: number): number {
+    return Math.floor((score - 10) / 2);
+  }
 
   const masteryLevel = calculateMasteryLevel(value, skills!, proficiencyBonus!, masteriesAbility!);
 
@@ -37,10 +41,10 @@ export default function Competence({
           <Card className="p-2">
             <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
               <span className="shrink-0">{icon}</span>
-              <span className="truncate">{competence}</span>{" "}
+              <span className="truncate">{skillName}</span>{" "}
               <span className="font-bold shrink-0">{masteryLevel > 0 ? `+${masteryLevel}` : `${masteryLevel}`}</span>
               <Image
-                src={getIconForValue(value)}
+                src={getIconForValue(value, accentColor)}
                 alt={t("masteryLevelIcon", { level: value })}
                 width={20}
                 height={20}
@@ -61,10 +65,10 @@ export default function Competence({
     <Card className="p-2">
       <p className={`text-sm flex items-center gap-2 ${value > 0 ? accentColor : ""}`}>
         <span className="shrink-0">{icon}</span>
-        <span className="truncate">{competence}</span>{" "}
+        <span className="truncate">{skillName}</span>{" "}
         <span className="font-bold shrink-0">{masteryLevel > 0 ? `+${masteryLevel}` : `${masteryLevel}`}</span>
         <Image
-          src={getIconForValue(value)}
+          src={getIconForValue(value, accentColor)}
           alt={t("masteryLevelIcon", { level: value })}
           width={20}
           height={20}

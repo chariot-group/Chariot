@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Action } from '@/resources/character/npc/schemas/actions/sub/action.schema';
+import { Action } from '@/resources/character/core/schemas/actions/action.schema';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })

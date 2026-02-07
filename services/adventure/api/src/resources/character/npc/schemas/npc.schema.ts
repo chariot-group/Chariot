@@ -22,6 +22,10 @@ export class NPC extends Character {
   @ApiProperty({ type: NPCProfile })
   @Prop({ type: NPCProfile, default: {} })
   profile?: NPCProfile;
+
+  @ApiProperty({ example: '18d8+54', required: false })
+  @Prop({ required: false })
+  hitPointsRoll?: string;
 }
 
 export const NPCSchema = SchemaFactory.createForClass(NPC);
