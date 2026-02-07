@@ -33,8 +33,9 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
     return (
         <div className="w-full flex flex-col gap-2 md:gap-4 items-start">
             <div className="flex flex-row gap-2 md:gap-4 w-full">
+                {/* Statistiques */}
                 <Card
-                    className='gap-2 max-w-1/4 h-fit'
+                    className='gap-3 p-4 md:px-6 max-w-1/4 h-fit'
                     role="region"
                     aria-labelledby="stats-heading-npc">
                     <h2
@@ -116,7 +117,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                 {/* Jet de sauvegarde */}
                 <div className="flex flex-col w-1/4 gap-2">
                     <Card
-                        className="gap-2 py-4 px-4 md:px-6"
+                        className="gap-3 p-4 md:px-6"
                         role="region"
                         aria-labelledby="saving-throws-heading">
                         <h2
@@ -145,8 +146,9 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                             })}
                     </div>
                 </div>
+                {/* Capacités et traits */}
                 <Card
-                    className='gap-2 md:gap-4 w-1/2 h-fit'
+                    className='gap-3 p-4 md:px-6 w-1/2 h-fit'
                     role="region"
                     aria-labelledby="abilities-traits-heading-npc">
                     <h2
@@ -178,17 +180,21 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                     </Accordion>
                 </Card >
             </div>
+            {/* Actions */}
             <div className="grid grid-cols-3 gap-2 md:gap-4 w-full">
+                {/* Actions Standards */}
                 <ActionSection
                     title={t("actions")}
                     actions={npc.actions.standard}
                     accentColor={accentColor}
                 />
+                {/* Actions Légendaires */}
                 <ActionSection
                     title={t("legendaryActions")}
                     actions={npc.actions.legendary}
                     accentColor={accentColor}
                 />
+                {/* Actions de Repèrex */}
                 <ActionSection
                     title={t("lairActions")}
                     actions={npc.actions.lair}

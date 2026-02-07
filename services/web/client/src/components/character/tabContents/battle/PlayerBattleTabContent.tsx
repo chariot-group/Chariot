@@ -39,8 +39,9 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
     return (
         <div className="w-full flex flex-col gap-4 items-start">
             <div className="flex flex-row gap-2 md:gap-4 w-full">
+                {/* Statistiques */}
                 <Card
-                    className='gap-2 max-w-1/4 h-fit'
+                    className='gap-3 p-4 md:px-6 max-w-1/4 h-fit'
                     role="region"
                     aria-labelledby="stats-heading">
                     <h2
@@ -121,9 +122,9 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                 </Card >
 
                 {/* Jet de sauvegarde */}
-                <div className="flex flex-col w-1/4 gap-2">
+                <div className="flex flex-col w-1/4 gap-3">
                     <Card
-                        className="gap-2 py-4 px-4 md:px-6 h-fit"
+                        className="gap-3 p-4 md:px-6 h-fit"
                         role="region"
                         aria-labelledby="saving-throws-heading">
                         <h2
@@ -151,8 +152,10 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                             })}
                     </div>
                 </div>
+
+                {/* Jets de sauvegarde contre la mort */}
                 <Card
-                    className='gap-2 rounded-xl h-fit'
+                    className='gap-3 p-4 md:px-6 rounded-xl h-fit'
                     role="region"
                     aria-labelledby="death-saves-heading">
                     <h2
@@ -198,9 +201,10 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                     </div>
                 </Card >
             </div>
-            <div className="flex flex-row gap-2 md:gap-4 w-full">
+            <div className="flex flex-row gap-2 w-full">
+                {/* Capacités et traits */}
                 <Card
-                    className='gap-2 md:gap-4 w-2/5 rounded-xl h-fit'
+                    className='gap-3 p-4 md:px-6 w-2/5 rounded-xl h-fit'
                     role="region"
                     aria-labelledby="abilities-traits-heading">
                     <h2
@@ -231,7 +235,8 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                         ))}
                     </Accordion>
                 </Card >
-                <div className="w-3/5 flex flex-row gap-2 md:gap-4">
+                <div className="w-3/5 flex flex-row gap-2">
+                    {/* Actions */}
                     <ActionSection
                         title={t("actions")}
                         actions={player.actions}

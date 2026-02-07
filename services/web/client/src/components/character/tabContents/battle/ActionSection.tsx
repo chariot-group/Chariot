@@ -18,7 +18,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
         <section
             className="flex flex-col gap-2 w-full"
             aria-labelledby={`${title.toLowerCase().replace(/\s+/g, '-')}-heading`}>
-            <Card className='gap-2 h-fit'>
+            <Card className='gap-3 p-4 md:px-6 h-fit'>
                 <h2
                     id={`${title.toLowerCase().replace(/\s+/g, '-')}-heading`}
                     className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
