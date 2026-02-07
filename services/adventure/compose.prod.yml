@@ -55,15 +55,6 @@ services:
     networks:
       - chariot-network
       - chariot-group-network-prod
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.chariot-adventure-prod.rule=Host(`${ADVENTURE_HOST}`)"
-      - "traefik.http.routers.chariot-adventure-prod.entrypoints=websecure"
-      - "traefik.http.routers.chariot-adventure-prod.tls.certresolver=letsencrypt"
-      - "traefik.http.services.chariot-adventure-prod.loadbalancer.server.port=9000"
-      - "traefik.http.routers.chariot-adventure-prod.service=chariot-adventure-prod"
-      - "traefik.docker.network=traefik-public"
 
 volumes:
   chariot_mongodb_data:
@@ -74,6 +65,4 @@ networks:
   chariot-network:
     driver: bridge
   chariot-group-network-prod:
-    external: true
-  traefik-public:
     external: true
