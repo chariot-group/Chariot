@@ -65,7 +65,7 @@ export default function Profile() {
         <Avatar className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer">
           <AvatarImage
             className="bg-gray-middle-light"
-            src={user?.avatar || undefined}
+            src={undefined}
             alt={user?.username ? `${user.username} avatar` : "User avatar"}
           />
           <AvatarFallback className="bg-gray-middle-light">{getInitials()}</AvatarFallback>

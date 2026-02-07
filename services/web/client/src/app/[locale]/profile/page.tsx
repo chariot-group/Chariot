@@ -85,23 +85,12 @@ export default function ProfilePage() {
               className="relative w-full xl:w-1/2 aspect-video"
               role="img"
               aria-label={user?.username ? `${user.username} profile picture` : "Default profile picture"}>
-              {user?.avatar === null || user?.avatar === undefined ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-middle-light rounded-[15px]">
-                  <User
-                    className="h-16 w-16"
-                    aria-hidden="true"
-                  />
-                </div>
-              ) : (
-                <Image
-                  fill
-                  className="object-cover rounded-[15px] bg-gray-middle-light"
-                  src={user?.avatar || "/default-avatar.png"}
-                  alt=""
-                  priority
-                  sizes="(max-width: 640px) 100vw, 50vw"
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-middle-light rounded-[15px]">
+                <User
+                  className="h-16 w-16"
+                  aria-hidden="true"
                 />
-              )}
+              </div>
             </div>
             <div className="flex flex-col justify-between gap-2 sm:gap-3 w-full xl:w-1/2">
               <div>
