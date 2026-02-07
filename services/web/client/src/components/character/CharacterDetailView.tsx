@@ -10,7 +10,7 @@ import React, { useState } from "react";
 import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
 import Image from "next/image";
-import CharacterMagicTabContent from "./tabContents/CharacterMagicTabContent";
+import CharacterMagicTabContent from "@/components/character/tabContents/CharacterMagicTabContent";
 import { isPlayer } from "@/utils/global.utils";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
