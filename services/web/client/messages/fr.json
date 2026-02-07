@@ -235,10 +235,14 @@
     "magic": {
       "noMagicAbilities": "Ce personnage n'a pas de capacités magiques.",
       "spellcastingClass": "Classe de sorts",
+      "spellcastingStats": "Statistiques de sorts",
       "level": "Niv",
       "preparedSpells": "Sorts préparés",
+      "preparedShort": "Prép.",
       "attackBonus": "Bonus d'attaque",
+      "attackShort": "Att.",
       "saveDC": "Degré de difficulté (DD)",
+      "saveDCShort": "DD",
       "cantrips": "Tours de magie",
       "noCantrips": "Aucun tour de magie",
       "spellLevel": "Sorts de niveau {level}",
@@ -255,9 +259,8 @@
       "spellListRegion": "Liste des sorts",
       "spellDetailRegion": "Détails des sorts",
       "selectSpellcasting": "Sélectionner la classe de sorts {className}",
-      "viewDetails": "Voir les détails",
+      "selectSpell": "Sélectionner le sort",
       "backToList": "Retour à la liste",
-      "spellSelected": "Sort sélectionné",
       "expandAll": "Tout ouvrir",
       "collapseAll": "Tout fermer"
     }

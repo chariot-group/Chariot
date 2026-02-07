@@ -235,10 +235,14 @@
     "magic": {
       "noMagicAbilities": "This character has no magical abilities.",
       "spellcastingClass": "Spellcasting class",
+      "spellcastingStats": "Spellcasting statistics",
       "level": "Lvl",
       "preparedSpells": "Prepared spells",
+      "preparedShort": "Prep.",
       "attackBonus": "Attack bonus",
+      "attackShort": "Atk.",
       "saveDC": "Save DC",
+      "saveDCShort": "DC",
       "cantrips": "Cantrips",
       "noCantrips": "No cantrips",
       "spellLevel": "Level {level} spells",
@@ -255,9 +259,8 @@
       "spellListRegion": "Spell list",
       "spellDetailRegion": "Spell details",
       "selectSpellcasting": "Select spellcasting class {className}",
-      "viewDetails": "View details",
+      "selectSpell": "Select spell",
       "backToList": "Back to list",
-      "spellSelected": "Spell selected",
       "expandAll": "Expand all",
       "collapseAll": "Collapse all"
     }

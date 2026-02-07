@@ -235,10 +235,14 @@
     "magic": {
       "noMagicAbilities": "Este personaje no tiene habilidades mágicas.",
       "spellcastingClass": "Clase de lanzamiento de conjuros",
+      "spellcastingStats": "Estadísticas de conjuros",
       "level": "Niv",
       "preparedSpells": "Conjuros preparados",
+      "preparedShort": "Prep.",
       "attackBonus": "Bonificación de ataque",
+      "attackShort": "Atq.",
       "saveDC": "CD de salvación",
+      "saveDCShort": "CD",
       "cantrips": "Trucos",
       "noCantrips": "Sin trucos",
       "spellLevel": "Conjuros de nivel {level}",
@@ -255,9 +259,8 @@
       "spellListRegion": "Lista de conjuros",
       "spellDetailRegion": "Detalles del conjuro",
       "selectSpellcasting": "Seleccionar clase de lanzamiento {className}",
-      "viewDetails": "Ver detalles",
+      "selectSpell": "Seleccionar conjuro",
       "backToList": "Volver a la lista",
-      "spellSelected": "Conjuro seleccionado",
       "expandAll": "Expandir todo",
       "collapseAll": "Colapsar todo"
     }

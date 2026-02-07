@@ -117,18 +117,25 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               })}
             </nav>
           )}
-          <div className="flex flex-wrap gap-2 shrink-0">
+          <div
+            className="flex flex-wrap gap-2 shrink-0"
+            role="group"
+            aria-label={tMagic("spellcastingStats")}>
             {isPlayer(character) && classWithSpellPrepared(selectedSpellcasting) && (
               <Card className="gap-3 p-2 md:px-6 flex-row items-center">
                 <Book
                   className="shrink-0"
                   aria-hidden="true"
                 />
-                <span className="text-sm md:text-base hidden sm:inline">
+                <span
+                  className="text-sm md:text-base hidden sm:inline"
+                  aria-label={`${tMagic("preparedSpells")}: ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
                   {tMagic("preparedSpells")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
                 </span>
-                <span className="text-sm sm:hidden">
-                  Prep.: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
+                <span
+                  className="text-sm sm:hidden"
+                  aria-label={`${tMagic("preparedSpells")}: ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
+                  {tMagic("preparedShort")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
                 </span>
               </Card>
             )}
@@ -137,11 +144,15 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 className="shrink-0"
                 aria-hidden="true"
               />
-              <span className="text-sm md:text-base hidden sm:inline">
+              <span
+                className="text-sm md:text-base hidden sm:inline"
+                aria-label={`${tMagic("attackBonus")}: ${selectedSpellcasting?.attackBonus}`}>
                 {tMagic("attackBonus")}: <strong>{selectedSpellcasting?.attackBonus}</strong>
               </span>
-              <span className="text-sm sm:hidden">
-                Att.: <strong>{selectedSpellcasting?.attackBonus}</strong>
+              <span
+                className="text-sm sm:hidden"
+                aria-label={`${tMagic("attackBonus")}: ${selectedSpellcasting?.attackBonus}`}>
+                {tMagic("attackShort")}: <strong>{selectedSpellcasting?.attackBonus}</strong>
               </span>
             </Card>
             <Card className="gap-3 p-2 md:px-6 flex-row items-center">
@@ -149,11 +160,15 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 className="shrink-0"
                 aria-hidden="true"
               />
-              <span className="text-sm md:text-base hidden sm:inline">
+              <span
+                className="text-sm md:text-base hidden sm:inline"
+                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
                 {tMagic("saveDC")}: <strong>{selectedSpellcasting?.saveDC}</strong>
               </span>
-              <span className="text-sm sm:hidden">
-                DD: <strong>{selectedSpellcasting?.saveDC}</strong>
+              <span
+                className="text-sm sm:hidden"
+                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
+                {tMagic("saveDCShort")}: <strong>{selectedSpellcasting?.saveDC}</strong>
               </span>
             </Card>
           </div>
@@ -184,7 +199,9 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
             <nav
               className="flex flex-col gap-2 sm:gap-3 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               role="navigation"
-              aria-label={tMagic("spellListRegion")}>
+              aria-label={tMagic("spellListRegion")}
+              aria-live="polite"
+              aria-atomic="false">
               {selectedSpellcasting && !hasLevel0Spells(selectedSpellcasting) && (
                 <Card className="gap-3 py-4 px-4 md:px-6 flex-row items-center">
                   <span className={`${accentColor} text-base md:text-lg font-medium`}>{tMagic("noCantrips")}</span>
@@ -253,7 +270,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                     role="button"
                                     tabIndex={0}
                                     aria-pressed={selectedSpell === spell}
-                                    aria-label={spell.name}>
+                                    aria-label={`${tMagic("selectSpell")}: ${spell.name}`}>
                                     <span
                                       className={`truncate text-sm md:text-base lg:text-lg ${selectedSpell === spell && "font-bold"} `}>
                                       {spell.name}
@@ -286,7 +303,11 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
           </button>
           <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
             <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
-              <h3 className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold`}>{selectedSpell?.name}</h3>
+              <h3
+                className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold`}
+                id="spell-name">
+                {selectedSpell?.name}
+              </h3>
             </Card>
             <div className="flex flex-wrap gap-2 items-start">
               <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
