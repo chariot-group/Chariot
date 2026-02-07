@@ -44,7 +44,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
         {/* Colonne 1 : Personnage et Maitrises */}
         <section
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-2 md:gap-4"
           aria-labelledby="character-info-section"
           aria-label={tNpc("general.characterInfo")}>
           {/* Personnage */}
@@ -99,294 +99,298 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
 
         {/* Colonne 2 : Caractéristiques et Compétences */}
         <section
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-2 md:gap-4"
           aria-labelledby="characteristics-skills-section"
           aria-label={tNpc("general.characteristicsSkills")}>
           {/* Jet de sauvegarde */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6"
-            role="region"
-            aria-labelledby="saving-throws-heading">
-            <h2
-              id="saving-throws-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("savingThrows")}
-            </h2>
-          </Card>
-          <div
-            className="grid grid-cols-1 xl:grid-cols-2 gap-2"
-            role="list">
-            {npc?.stats &&
-              Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
-                const abilityName = t(`abilities.${key}`);
-                const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
-                return (
-                  <Competence
-                    key={key}
-                    competence={abilityName}
-                    value={value > 0 ? 2 : 0}
-                    accentColor={accentColor}
-                    skills={value > 0 ? value : calculateAbilityBonus(abilityScore)}
-                  />
-                );
-              })}
+          <div className="flex flex-col gap-2">
+            <Card
+              className="gap-3 py-4 px-4 md:px-6"
+              role="region"
+              aria-labelledby="saving-throws-heading">
+              <h2
+                id="saving-throws-heading"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("savingThrows")}
+              </h2>
+            </Card>
+            <div
+              className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+              role="list">
+              {npc?.stats &&
+                Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
+                  const abilityName = t(`abilities.${key}`);
+                  const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
+                  return (
+                    <Competence
+                      key={key}
+                      competence={abilityName}
+                      value={value > 0 ? 2 : 0}
+                      accentColor={accentColor}
+                      skills={value > 0 ? value : calculateAbilityBonus(abilityScore)}
+                    />
+                  );
+                })}
+            </div>
           </div>
 
           {/* Compétences */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6"
-            role="region"
-            aria-labelledby="skills-heading">
-            <h2
-              id="skills-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("skills")}
-            </h2>
-          </Card>
-          <div
-            className="grid grid-cols-1 xl:grid-cols-2 gap-2"
-            role="list"
-            aria-label={t("skillsList")}>
-            <Competence
-              competence={t("skillNames.acrobatics")}
-              value={npc?.stats?.skills?.acrobatics > 0 ? 2 : 0}
-              icon={<User2Icon aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.dexterity}
-              skills={
-                npc?.stats?.skills?.acrobatics > 0
-                  ? npc?.stats?.skills?.acrobatics
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
-              }
-              tooltip={t("abilities.dexterity")}
-            />
-            <Competence
-              competence={t("skillNames.arcana")}
-              value={npc?.stats?.skills?.arcana > 0 ? 2 : 0}
-              icon={<Sparkles aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.intelligence}
-              skills={
-                npc?.stats?.skills?.arcana > 0
-                  ? npc?.stats?.skills?.arcana
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
-              }
-              tooltip={t("abilities.intelligence")}
-            />
-            <Competence
-              competence={t("skillNames.athletics")}
-              value={npc?.stats?.skills?.athletics > 0 ? 2 : 0}
-              icon={<Footprints aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.strength}
-              skills={
-                npc?.stats?.skills?.athletics > 0
-                  ? npc?.stats?.skills?.athletics
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.strength)
-              }
-              tooltip={t("abilities.strength")}
-            />
-            <Competence
-              competence={t("skillNames.stealth")}
-              value={npc?.stats?.skills?.stealth > 0 ? 2 : 0}
-              icon={<VenetianMask aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.dexterity}
-              skills={
-                npc?.stats?.skills?.stealth > 0
-                  ? npc?.stats?.skills?.stealth
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
-              }
-              tooltip={t("abilities.dexterity")}
-            />
-            <Competence
-              competence={t("skillNames.animalHandling")}
-              value={npc?.stats?.skills?.animalHandling > 0 ? 2 : 0}
-              icon={<PawPrint aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.wisdom}
-              skills={
-                npc?.stats?.skills?.animalHandling > 0
-                  ? npc?.stats?.skills?.animalHandling
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
-              }
-              tooltip={t("abilities.wisdom")}
-            />
-            <Competence
-              competence={t("skillNames.sleightHand")}
-              value={npc?.stats?.skills?.sleightHand > 0 ? 2 : 0}
-              icon={<LockKeyhole aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.dexterity}
-              skills={
-                npc?.stats?.skills?.sleightHand > 0
-                  ? npc?.stats?.skills?.sleightHand
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
-              }
-              tooltip={t("abilities.dexterity")}
-            />
-            <Competence
-              competence={t("skillNames.history")}
-              value={npc?.stats?.skills?.history > 0 ? 2 : 0}
-              icon={<Notebook aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.intelligence}
-              skills={
-                npc?.stats?.skills?.history > 0
-                  ? npc?.stats?.skills?.history
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
-              }
-              tooltip={t("abilities.intelligence")}
-            />
-            <Competence
-              competence={t("skillNames.intimidation")}
-              value={npc?.stats?.skills?.intimidation > 0 ? 2 : 0}
-              icon={<User2Icon aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.charisma}
-              skills={
-                npc?.stats?.skills?.intimidation > 0
-                  ? npc?.stats?.skills?.intimidation
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
-              }
-              tooltip={t("abilities.charisma")}
-            />
-            <Competence
-              competence={t("skillNames.insight")}
-              value={npc?.stats?.skills?.insight > 0 ? 2 : 0}
-              icon={<Brain aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.wisdom}
-              skills={
-                npc?.stats?.skills?.insight > 0
-                  ? npc?.stats?.skills?.insight
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
-              }
-              tooltip={t("abilities.wisdom")}
-            />
-            <Competence
-              competence={t("skillNames.investigation")}
-              value={npc?.stats?.skills?.investigation > 0 ? 2 : 0}
-              icon={<CircleQuestionMark aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.intelligence}
-              skills={
-                npc?.stats?.skills?.investigation > 0
-                  ? npc?.stats?.skills?.investigation
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
-              }
-              tooltip={t("abilities.intelligence")}
-            />
-            <Competence
-              competence={t("skillNames.medicine")}
-              value={npc?.stats?.skills?.medicine > 0 ? 2 : 0}
-              icon={<CrossIcon aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.wisdom}
-              skills={
-                npc?.stats?.skills?.medicine > 0
-                  ? npc?.stats?.skills?.medicine
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
-              }
-              tooltip={t("abilities.wisdom")}
-            />
-            <Competence
-              competence={t("skillNames.nature")}
-              value={npc?.stats?.skills?.nature > 0 ? 2 : 0}
-              icon={<Sprout aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.intelligence}
-              skills={
-                npc?.stats?.skills?.nature > 0
-                  ? npc?.stats?.skills?.nature
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
-              }
-              tooltip={t("abilities.intelligence")}
-            />
-            <Competence
-              competence={t("skillNames.perception")}
-              value={npc?.stats?.skills?.perception > 0 ? 2 : 0}
-              icon={<Eye aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.wisdom}
-              skills={
-                npc?.stats?.skills?.perception > 0
-                  ? npc?.stats?.skills?.perception
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
-              }
-              tooltip={t("abilities.wisdom")}
-            />
-            <Competence
-              competence={t("skillNames.persuasion")}
-              value={npc?.stats?.skills?.persuasion > 0 ? 2 : 0}
-              icon={<MessageSquare aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.charisma}
-              skills={
-                npc?.stats?.skills?.persuasion > 0
-                  ? npc?.stats?.skills?.persuasion
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
-              }
-              tooltip={t("abilities.charisma")}
-            />
-            <Competence
-              competence={t("skillNames.religion")}
-              value={npc?.stats?.skills?.religion > 0 ? 2 : 0}
-              icon={<Church aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.intelligence}
-              skills={
-                npc?.stats?.skills?.religion > 0
-                  ? npc?.stats?.skills?.religion
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
-              }
-              tooltip={t("abilities.intelligence")}
-            />
-            <Competence
-              competence={t("skillNames.performance")}
-              value={npc?.stats?.skills?.performance > 0 ? 2 : 0}
-              icon={<MicVocal aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.charisma}
-              skills={
-                npc?.stats?.skills?.performance > 0
-                  ? npc?.stats?.skills?.performance
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
-              }
-              tooltip={t("abilities.charisma")}
-            />
-            <Competence
-              competence={t("skillNames.survival")}
-              value={npc?.stats?.skills?.survival > 0 ? 2 : 0}
-              icon={<TreePine aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.wisdom}
-              skills={
-                npc?.stats?.skills?.survival > 0
-                  ? npc?.stats?.skills?.survival
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
-              }
-              tooltip={t("abilities.wisdom")}
-            />
-            <Competence
-              competence={t("skillNames.deception")}
-              value={npc?.stats?.skills?.deception > 0 ? 2 : 0}
-              icon={<Drama aria-hidden="true" />}
-              accentColor={accentColor}
-              masteriesAbility={npc?.stats?.abilityScores.charisma}
-              skills={
-                npc?.stats?.skills?.deception > 0
-                  ? npc?.stats?.skills?.deception
-                  : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
-              }
-              tooltip={t("abilities.charisma")}
-            />
+          <div className="flex flex-col gap-2">
+            <Card
+              className="gap-3 py-4 px-4 md:px-6"
+              role="region"
+              aria-labelledby="skills-heading">
+              <h2
+                id="skills-heading"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("skills")}
+              </h2>
+            </Card>
+            <div
+              className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+              role="list"
+              aria-label={t("skillsList")}>
+              <Competence
+                competence={t("skillNames.acrobatics")}
+                value={npc?.stats?.skills?.acrobatics > 0 ? 2 : 0}
+                icon={<User2Icon aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.dexterity}
+                skills={
+                  npc?.stats?.skills?.acrobatics > 0
+                    ? npc?.stats?.skills?.acrobatics
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
+                }
+                tooltip={t("abilities.dexterity")}
+              />
+              <Competence
+                competence={t("skillNames.arcana")}
+                value={npc?.stats?.skills?.arcana > 0 ? 2 : 0}
+                icon={<Sparkles aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.intelligence}
+                skills={
+                  npc?.stats?.skills?.arcana > 0
+                    ? npc?.stats?.skills?.arcana
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
+                }
+                tooltip={t("abilities.intelligence")}
+              />
+              <Competence
+                competence={t("skillNames.athletics")}
+                value={npc?.stats?.skills?.athletics > 0 ? 2 : 0}
+                icon={<Footprints aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.strength}
+                skills={
+                  npc?.stats?.skills?.athletics > 0
+                    ? npc?.stats?.skills?.athletics
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.strength)
+                }
+                tooltip={t("abilities.strength")}
+              />
+              <Competence
+                competence={t("skillNames.stealth")}
+                value={npc?.stats?.skills?.stealth > 0 ? 2 : 0}
+                icon={<VenetianMask aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.dexterity}
+                skills={
+                  npc?.stats?.skills?.stealth > 0
+                    ? npc?.stats?.skills?.stealth
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
+                }
+                tooltip={t("abilities.dexterity")}
+              />
+              <Competence
+                competence={t("skillNames.animalHandling")}
+                value={npc?.stats?.skills?.animalHandling > 0 ? 2 : 0}
+                icon={<PawPrint aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.wisdom}
+                skills={
+                  npc?.stats?.skills?.animalHandling > 0
+                    ? npc?.stats?.skills?.animalHandling
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
+                }
+                tooltip={t("abilities.wisdom")}
+              />
+              <Competence
+                competence={t("skillNames.sleightHand")}
+                value={npc?.stats?.skills?.sleightHand > 0 ? 2 : 0}
+                icon={<LockKeyhole aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.dexterity}
+                skills={
+                  npc?.stats?.skills?.sleightHand > 0
+                    ? npc?.stats?.skills?.sleightHand
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.dexterity)
+                }
+                tooltip={t("abilities.dexterity")}
+              />
+              <Competence
+                competence={t("skillNames.history")}
+                value={npc?.stats?.skills?.history > 0 ? 2 : 0}
+                icon={<Notebook aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.intelligence}
+                skills={
+                  npc?.stats?.skills?.history > 0
+                    ? npc?.stats?.skills?.history
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
+                }
+                tooltip={t("abilities.intelligence")}
+              />
+              <Competence
+                competence={t("skillNames.intimidation")}
+                value={npc?.stats?.skills?.intimidation > 0 ? 2 : 0}
+                icon={<User2Icon aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.charisma}
+                skills={
+                  npc?.stats?.skills?.intimidation > 0
+                    ? npc?.stats?.skills?.intimidation
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
+                }
+                tooltip={t("abilities.charisma")}
+              />
+              <Competence
+                competence={t("skillNames.insight")}
+                value={npc?.stats?.skills?.insight > 0 ? 2 : 0}
+                icon={<Brain aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.wisdom}
+                skills={
+                  npc?.stats?.skills?.insight > 0
+                    ? npc?.stats?.skills?.insight
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
+                }
+                tooltip={t("abilities.wisdom")}
+              />
+              <Competence
+                competence={t("skillNames.investigation")}
+                value={npc?.stats?.skills?.investigation > 0 ? 2 : 0}
+                icon={<CircleQuestionMark aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.intelligence}
+                skills={
+                  npc?.stats?.skills?.investigation > 0
+                    ? npc?.stats?.skills?.investigation
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
+                }
+                tooltip={t("abilities.intelligence")}
+              />
+              <Competence
+                competence={t("skillNames.medicine")}
+                value={npc?.stats?.skills?.medicine > 0 ? 2 : 0}
+                icon={<CrossIcon aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.wisdom}
+                skills={
+                  npc?.stats?.skills?.medicine > 0
+                    ? npc?.stats?.skills?.medicine
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
+                }
+                tooltip={t("abilities.wisdom")}
+              />
+              <Competence
+                competence={t("skillNames.nature")}
+                value={npc?.stats?.skills?.nature > 0 ? 2 : 0}
+                icon={<Sprout aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.intelligence}
+                skills={
+                  npc?.stats?.skills?.nature > 0
+                    ? npc?.stats?.skills?.nature
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
+                }
+                tooltip={t("abilities.intelligence")}
+              />
+              <Competence
+                competence={t("skillNames.perception")}
+                value={npc?.stats?.skills?.perception > 0 ? 2 : 0}
+                icon={<Eye aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.wisdom}
+                skills={
+                  npc?.stats?.skills?.perception > 0
+                    ? npc?.stats?.skills?.perception
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
+                }
+                tooltip={t("abilities.wisdom")}
+              />
+              <Competence
+                competence={t("skillNames.persuasion")}
+                value={npc?.stats?.skills?.persuasion > 0 ? 2 : 0}
+                icon={<MessageSquare aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.charisma}
+                skills={
+                  npc?.stats?.skills?.persuasion > 0
+                    ? npc?.stats?.skills?.persuasion
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
+                }
+                tooltip={t("abilities.charisma")}
+              />
+              <Competence
+                competence={t("skillNames.religion")}
+                value={npc?.stats?.skills?.religion > 0 ? 2 : 0}
+                icon={<Church aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.intelligence}
+                skills={
+                  npc?.stats?.skills?.religion > 0
+                    ? npc?.stats?.skills?.religion
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.intelligence)
+                }
+                tooltip={t("abilities.intelligence")}
+              />
+              <Competence
+                competence={t("skillNames.performance")}
+                value={npc?.stats?.skills?.performance > 0 ? 2 : 0}
+                icon={<MicVocal aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.charisma}
+                skills={
+                  npc?.stats?.skills?.performance > 0
+                    ? npc?.stats?.skills?.performance
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
+                }
+                tooltip={t("abilities.charisma")}
+              />
+              <Competence
+                competence={t("skillNames.survival")}
+                value={npc?.stats?.skills?.survival > 0 ? 2 : 0}
+                icon={<TreePine aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.wisdom}
+                skills={
+                  npc?.stats?.skills?.survival > 0
+                    ? npc?.stats?.skills?.survival
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.wisdom)
+                }
+                tooltip={t("abilities.wisdom")}
+              />
+              <Competence
+                competence={t("skillNames.deception")}
+                value={npc?.stats?.skills?.deception > 0 ? 2 : 0}
+                icon={<Drama aria-hidden="true" />}
+                accentColor={accentColor}
+                masteriesAbility={npc?.stats?.abilityScores.charisma}
+                skills={
+                  npc?.stats?.skills?.deception > 0
+                    ? npc?.stats?.skills?.deception
+                    : calculateAbilityBonus(npc?.stats?.abilityScores.charisma)
+                }
+                tooltip={t("abilities.charisma")}
+              />
+            </div>
           </div>
         </section>
 
         {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
         <section
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-2 md:gap-4"
           aria-labelledby="additional-info-section"
           aria-label={tNpc("general.additionalInfo")}>
           {/* Alignement */}
