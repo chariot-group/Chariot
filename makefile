@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ
 
 # Configuration
 SERVICES_DIR := services
@@ -27,6 +27,8 @@ help: ## Affiche cette aide
 	@echo "$(BLUE)Exemples:$(NC)"
 	@echo "  make up ENV=dev"
 	@echo "  make down ENV=prod"
+	@echo "  make pull ENV=integ"
+	@echo "  make deploy ENV=prod"
 	@echo "  make logs SERVICE=adventure"
 	@echo "  make logs SERVICE=gateway"
 	@echo "  make restart SERVICE=web ENV=integ"
@@ -92,6 +94,27 @@ endif
 	@echo "$(GREEN)✓ Services arrêtés et volumes supprimés$(NC)"
 
 restart: down up ## Redémarre les services
+
+pull: ## Pull les images depuis le registry (pour prod/integ)
+ifdef SERVICE
+	@echo "$(YELLOW)Pull des images pour $(SERVICE) ($(ENV))...$(NC)"
+	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml pull
+	@echo "$(GREEN)✓ Images pullées$(NC)"
+else
+	@echo "$(YELLOW)Pull des images pour tous les services ($(ENV))...$(NC)"
+	@for dir in $(SERVICES_DIR)/*/; do \
+		service=$$(basename $$dir); \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
+		if [ -f "$$compose_file" ]; then \
+			echo "$(BLUE)→ Pull de $$service...$(NC)"; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml pull && cd ../..; \
+		fi; \
+	done
+	@echo "$(GREEN)✓ Toutes les images sont pullées$(NC)"
+endif
+
+deploy: network down pull up ## Déploiement complet (down + pull + up)
+	@echo "$(GREEN)✓✓✓ Déploiement terminé avec succès! ✓✓✓$(NC)"
 
 logs: ## Affiche les logs (SERVICE requis ou ALL pour tous)
 ifdef SERVICE
@@ -160,6 +183,12 @@ prod-up: ## Lance tous les services en prod
 
 integ-up: ## Lance tous les services en integ
 	@$(MAKE) up ENV=integ
+
+deploy-prod: ## Déploiement complet en production
+	@$(MAKE) deploy ENV=prod
+
+deploy-integ: ## Déploiement complet en intégration
+	@$(MAKE) deploy ENV=integ
 
 # Tests
 test: ## Lance les tests d'un service (SERVICE requis)

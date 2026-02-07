@@ -21,7 +21,16 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
     networks:
-      - chariot-group-network
+      - chariot-group-network-integ
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-gateway-integ.rule=Host(`${GATEWAY_HOST}`)"
+      - "traefik.http.routers.chariot-gateway-integ.entrypoints=websecure"
+      - "traefik.http.routers.chariot-gateway-integ.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-gateway-integ.loadbalancer.server.port=8082"
+      - "traefik.http.routers.chariot-gateway-integ.service=chariot-gateway-integ"
+      - "traefik.docker.network=traefik-public"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/health"]
       interval: 30s
@@ -38,5 +47,7 @@ services:
           memory: 256M
 
 networks:
-  chariot-group-network:
+  chariot-group-network-integ:
+    external: true
+  traefik-public:
     external: true
