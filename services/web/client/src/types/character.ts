@@ -50,12 +50,18 @@ export interface SavingThrows {
     charisma: number;
 }
 
+export interface DeathSaves {
+    successes: number;
+    failures: number;
+}
+
 export interface Stats {
     size: string;
     maxHitPoints: number;
     currentHitPoints: number;
     tempHitPoints: number;
     armorClass: number;
+    initiative: number;
     speed: Speed;
     abilityScores: AbilityScores;
     languages: string[];
@@ -227,11 +233,13 @@ export interface Character {
 
 export interface Player extends Character {
     stats: PlayerStats;
+    actions: Action[];
     inspiration: boolean;
     progression: Progression;
     class: Class[];
     profile: PlayerProfile;
     exhaustionLevel: number;
+    deathSaves: DeathSaves;
 }
 
 export interface Damage {
@@ -239,12 +247,21 @@ export interface Damage {
     type: string;
 }
 
+export interface DifficultyClass {
+    dcType?: string;
+    dcValue?: number;
+    successType?: string;
+}
+
 export interface Action {
     name: string;
     type: string;
+    description?: string;
     attackBonus: number;
-    damage: Damage;
+    damage?: Damage[];
     range: string;
+    dc?: DifficultyClass;
+    cost?: number;
 }
 
 export interface Actions {
@@ -268,6 +285,7 @@ export interface NPC extends Character {
     actions: Actions;
     challenge: Challenge;
     profile: NPCProfile;
+    hitPointsRoll?: string;
 }
 
 export interface PaginatedCharactersResponse {
