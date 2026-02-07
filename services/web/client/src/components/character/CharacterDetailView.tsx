@@ -42,11 +42,11 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
         className="w-full">
         {/* Header avec onglets et infos du personnage */}
         <div>
-          <div className="mx-auto sm:px-6 md:px-8 border">
+          <div className="mx-auto sm:px-6 md:px-8 px-2">
             <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-0 xl:gap-8">
               {/* Onglets */}
               <TabsList
-                className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-nowrap justify-start self-start xl:self-end w-full max-w-full overflow-hidden mx-0 sm:-mx-6 md:-mx-8 sm:px-6 md:px-8"
+                className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
                 role="tablist"
                 aria-label={t("tabs.general")}>
                 {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
@@ -57,8 +57,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     aria-selected={activeTab === tab}
                     aria-controls={`${tab}-content`}
                     className={`
-                                            flex-1 min-w-0 p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all
-                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white truncate overflow-hidden
+                                            flex-none p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
+                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
                                             ${
                                               activeTab === tab
                                                 ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
