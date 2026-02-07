@@ -66,11 +66,9 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             <dl className="flex flex-col gap-2">
               <div className="flex flex-col sm:flex-row gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
-                <dd className="text-sm sm:text-base">{npc?.profile?.type}</dd>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <dt className="text-sm sm:text-base font-semibold">{tNpc("subtypeLabel")} :</dt>
-                <dd className="text-sm sm:text-base">{npc?.profile?.subtype}</dd>
+                <dd className="text-sm sm:text-base">
+                  {npc?.profile?.type} {npc?.profile?.subtype?.length > 0 && `(${npc?.profile?.subtype})`}
+                </dd>
               </div>
             </dl>
           </Card>

@@ -73,7 +73,9 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             <dl className="flex flex-col gap-2 justify-between">
               <div className="flex flex-row gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{t("raceLabel")} :</dt>
-                <dd className="text-sm sm:text-base">{player?.profile?.race}</dd>
+                <dd className="text-sm sm:text-base">
+                  {player?.profile?.race} {player?.profile?.subrace?.length > 0 && `(${player?.profile?.subrace})`}
+                </dd>
               </div>
               <div className="flex flex-row gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{t("globalLevel")} :</dt>
