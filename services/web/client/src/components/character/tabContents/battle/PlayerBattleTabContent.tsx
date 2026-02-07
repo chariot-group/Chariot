@@ -62,6 +62,8 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                                         alt=""
                                         aria-hidden="true"
                                         className="size-5"
+                                        width={20}
+                                        height={20}
                                     />
                                     <span aria-hidden="true">{player.stats.armorClass}</span>
                                 </div>
@@ -82,6 +84,8 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                                         alt=""
                                         aria-hidden="true"
                                         className="size-5"
+                                        width={20}
+                                        height={20}
                                     />
                                     <span aria-hidden="true">{player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}</span>
                                 </div>
