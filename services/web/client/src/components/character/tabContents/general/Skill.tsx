@@ -28,10 +28,6 @@ export default function Skill({
 }: SkillProps) {
   const t = useTranslations("characterDetail.player.general");
 
-  function calculateModifier(score: number): number {
-    return Math.floor((score - 10) / 2);
-  }
-
   const masteryLevel = calculateMasteryLevel(value, skills!, proficiencyBonus!, masteriesAbility!);
 
   if (tooltip !== undefined) {
