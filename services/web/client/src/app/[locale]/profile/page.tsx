@@ -203,7 +203,7 @@ export default function ProfilePage() {
                             aria-pressed={viewNewPassword}
                             aria-controls="newPassword"
                             tabIndex={0}
-                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground -visible:border rounded-sm">
                             {viewNewPassword ? (
                               <EyeOff
                                 className="h-5 w-5"
@@ -265,7 +265,7 @@ export default function ProfilePage() {
                             aria-pressed={viewConfirmNewPassword}
                             aria-controls="confirmNewPassword"
                             tabIndex={0}
-                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+                            className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 hover:text-foreground transition-colors focus-visible:border rounded-sm">
                             {viewConfirmNewPassword ? (
                               <EyeOff
                                 className="h-5 w-5"

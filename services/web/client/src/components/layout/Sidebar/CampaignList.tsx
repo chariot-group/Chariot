@@ -88,7 +88,7 @@ export default function CampaignList() {
             onClick={() => handleCampaignClick(campaign._id)}
             aria-pressed={isSelected}
             aria-label={`${isSelected ? t("selectedCampaign") : t("selectCampaign")} ${campaign.label}`}
-            className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white text-left transition-all duration-100 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2 truncate ${
+            className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white text-left transition-all duration-100 w-full focus-visible:border truncate ${
               isSelected ? "bg-card font-bold" : "hover:bg-card hover:font-bold"
             }`}>
             {campaign.label}

@@ -96,7 +96,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 const isSelected = selectedSpellcasting?.className === spellcasting.className;
                 return (
                   <Card
-                    className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md focus-within:ring-1 focus-within:ring-offset-2 ${isSelected && `bg-${accentColor}`}`}
+                    className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected && `bg-${accentColor}`}`}
                     onClick={() => setSelectedSpellcasting(spellcasting)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -247,7 +247,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                               </AccordionTrigger>
                             </Card>
 
-                            <AccordionContent className="px-4 pb-4">
+                            <AccordionContent className="pb-4">
                               <div
                                 className="flex flex-wrap gap-2"
                                 role="list">

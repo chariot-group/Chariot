@@ -42,7 +42,7 @@ export default function SidebarEnvironment() {
       <CollapsibleTrigger
         aria-expanded={open}
         aria-controls="spaces-content"
-        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-2 ${open ? "bg-white" : ""}`}>
+        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:border ${open ? "bg-white" : ""}`}>
         <span className={`text-sm group-hover:font-bold group-hover:text-black ${open ? "text-black font-bold" : ""}`}>
           {t("yourSpaces")}
         </span>
@@ -58,7 +58,7 @@ export default function SidebarEnvironment() {
           type="button"
           onClick={() => changeEnvironment("player")}
           aria-label={t("yourCharacters")}
-          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-xl py-1.5 px-3 w-full text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
+          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-xl py-1.5 px-3 w-full text-left focus-visible:border">
           {t("yourCharacters")}
         </button>
 
