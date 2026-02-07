@@ -129,7 +129,8 @@
       "burrowSpeedTooltip": "Vitesse de fouissage",
       "statsRegion": "Statistiques de combat",
       "healthPoints": "Points de Vie",
-      "healthPointsTooltip": "PV actuels / PV maximum (PV temporaires)"
+      "healthPointsTooltip": "PV actuels / PV maximum (PV temporaires)",
+      "noValue": "Aucune valeur"
     },
     "history": {
       "appearance": "Apparence",

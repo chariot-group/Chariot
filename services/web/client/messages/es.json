@@ -129,7 +129,8 @@
       "burrowSpeedTooltip": "Velocidad de excavación",
       "statsRegion": "Estadísticas de combate",
       "healthPoints": "Puntos de Golpe",
-      "healthPointsTooltip": "PG actuales / PG máximos (PG temporales)"
+      "healthPointsTooltip": "PG actuales / PG máximos (PG temporales)",
+      "noValue": "Sin valor"
     },
     "history": {
       "appearance": "Apariencia",

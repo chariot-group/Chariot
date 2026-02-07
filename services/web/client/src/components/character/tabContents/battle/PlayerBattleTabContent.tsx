@@ -38,10 +38,10 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
 
     return (
         <div className="w-full flex flex-col gap-4 items-start">
-            <div className="flex flex-row gap-2 md:gap-4 w-full">
+            <div className="grid grid-cols-4 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
                 {/* Statistiques */}
                 <Card
-                    className='gap-3 p-4 md:px-6 max-w-1/4 h-fit'
+                    className='gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit'
                     role="region"
                     aria-labelledby="stats-heading">
                     <h2
@@ -53,7 +53,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div
-                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     tabIndex={0}
                                     role="img"
                                     aria-label={`${t("armorClass")} ${player.stats.armorClass}`}>
@@ -73,7 +73,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div
-                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     tabIndex={0}
                                     role="img"
                                     aria-label={`${t("initiativeTooltip")} ${player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}`}>
@@ -95,7 +95,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                                 <Tooltip key={badge.key}>
                                     <TooltipTrigger asChild>
                                         <div
-                                            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                             tabIndex={0}
                                             role="img"
                                             aria-label={`${t(badge.tooltipKey as any)} ${badge.value} feet`}>
@@ -122,7 +122,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                 </Card >
 
                 {/* Jet de sauvegarde */}
-                <div className="flex flex-col w-1/4 gap-3">
+                <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
                     <Card
                         className="gap-3 p-4 md:px-6 h-fit"
                         role="region"
@@ -134,7 +134,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                         </h2>
                     </Card>
                     <div
-                        className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+                        className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
                         role="list">
                         {player?.stats &&
                             Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
@@ -155,18 +155,18 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
 
                 {/* Jets de sauvegarde contre la mort */}
                 <Card
-                    className='gap-3 p-4 md:px-6 rounded-xl h-fit'
+                    className='gap-3 p-4 md:px-6 rounded-xl h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end'
                     role="region"
                     aria-labelledby="death-saves-heading">
                     <h2
                         id="death-saves-heading"
-                        className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                        className={`text-xl sm:text-2xl font-semibold self-start ${accentColor}`}>
                         {t("deathSaves")}
                     </h2>
-                    <div className="flex flex-row gap-2 items-center">
+                    <div className=" grid grid-cols-2 gap-2 items-center w-full">
                         <span>{t("successes")}</span>
                         <div
-                            className="grid grid-cols-3 gap-2"
+                            className="grid grid-cols-3 w-2/3 lg:w-4/5"
                             role="status"
                             aria-label={`${t("successes")} ${player.deathSaves.successes} ${t("unperformedThrow")}`}>
                             {Array.from({ length: 3 }).map((_, index) => (
@@ -180,11 +180,9 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                                     aria-hidden="true"
                                 />))}
                         </div>
-                    </div>
-                    <div className="flex flex-row gap-2 items-center">
                         <span>{t("failures")}</span>
                         <div
-                            className="grid grid-cols-3 gap-2"
+                            className="grid grid-cols-3 w-2/3 lg:w-4/5"
                             role="status"
                             aria-label={`${t("failures")} ${player.deathSaves.failures} ${t("unperformedThrow")}`}>
                             {Array.from({ length: 3 }).map((_, index) => (
@@ -201,10 +199,10 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                     </div>
                 </Card >
             </div>
-            <div className="flex flex-row gap-2 w-full">
+            <div className="grid lg:grid-cols-2 gap-2 w-full">
                 {/* Capacités et traits */}
                 <Card
-                    className='gap-3 p-4 md:px-6 w-2/5 rounded-xl h-fit'
+                    className='gap-3 p-4 md:px-6 rounded-xl h-fit'
                     role="region"
                     aria-labelledby="abilities-traits-heading">
                     <h2
@@ -235,7 +233,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                         ))}
                     </Accordion>
                 </Card >
-                <div className="w-3/5 flex flex-row gap-2">
+                <div className="flex flex-row gap-2">
                     {/* Actions */}
                     <ActionSection
                         title={t("actions")}

@@ -31,11 +31,11 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
     ];
 
     return (
-        <div className="w-full flex flex-col gap-2 md:gap-4 items-start">
-            <div className="flex flex-row gap-2 md:gap-4 w-full">
+        <div className="w-full flex flex-col gap-4 items-start">
+            <div className="grid grid-cols-4 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
                 {/* Statistiques */}
                 <Card
-                    className='gap-3 p-4 md:px-6 max-w-1/4 h-fit'
+                    className='gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit'
                     role="region"
                     aria-labelledby="stats-heading-npc">
                     <h2
@@ -47,7 +47,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div
-                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     tabIndex={0}
                                     role="img"
                                     aria-label={`${t("armorClass")} ${npc.stats.armorClass}`}>
@@ -55,6 +55,8 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                                         src={ShieldIcon}
                                         alt=""
                                         aria-hidden="true"
+                                        width={20}
+                                        height={20}
                                         className="size-5"
                                     />
                                     <span aria-hidden="true">{npc.stats.armorClass}</span>
@@ -67,7 +69,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div
-                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     tabIndex={0}
                                     role="img"
                                     aria-label={`${t("initiativeTooltip")} ${npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}`}>
@@ -75,6 +77,8 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                                         src={FeatherIcon}
                                         alt=""
                                         aria-hidden="true"
+                                        width={20}
+                                        height={20}
                                         className="size-5"
                                     />
                                     <span aria-hidden="true">{npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}</span>
@@ -89,7 +93,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                                 <Tooltip key={badge.key}>
                                     <TooltipTrigger asChild>
                                         <div
-                                            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full px-5 py-1 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                             tabIndex={0}
                                             role="img"
                                             aria-label={`${t(badge.tooltipKey as any)} ${badge.value} feet`}>
@@ -115,9 +119,9 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                     </div>
                 </Card >
                 {/* Jet de sauvegarde */}
-                <div className="flex flex-col w-1/4 gap-2">
+                <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1 ">
                     <Card
-                        className="gap-3 p-4 md:px-6"
+                        className="gap-3 p-4 md:px-6  h-fit"
                         role="region"
                         aria-labelledby="saving-throws-heading">
                         <h2
@@ -127,7 +131,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                         </h2>
                     </Card>
                     <div
-                        className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+                        className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
                         role="list">
                         {npc?.stats &&
                             Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
@@ -148,7 +152,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                 </div>
                 {/* Capacités et traits */}
                 <Card
-                    className='gap-3 p-4 md:px-6 w-1/2 h-fit'
+                    className='gap-3 p-4 md:px-6 col-span-full lg:col-span-2 h-fit'
                     role="region"
                     aria-labelledby="abilities-traits-heading-npc">
                     <h2
@@ -181,7 +185,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                 </Card >
             </div>
             {/* Actions */}
-            <div className="grid grid-cols-3 gap-2 md:gap-4 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
                 {/* Actions Standards */}
                 <ActionSection
                     title={t("actions")}

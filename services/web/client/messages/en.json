@@ -129,7 +129,8 @@
       "burrowSpeedTooltip": "Burrowing speed",
       "statsRegion": "Combat statistics",
       "healthPoints": "Hit Points",
-      "healthPointsTooltip": "Current HP / Maximum HP (Temporary HP)"
+      "healthPointsTooltip": "Current HP / Maximum HP (Temporary HP)",
+      "noValue": "No value"
     },
     "history": {
       "appearance": "Appearance",
