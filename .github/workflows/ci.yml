@@ -134,6 +134,14 @@ jobs:
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Debug - Display environment variables
+        run: |
+          echo "Environment: ${{ steps.env.outputs.env_name }}"
+          echo "API_URL: $(echo '${{ steps.env.outputs.api_url }}' | sed 's/./& /g')"
+          echo "KEYCLOAK_URL: $(echo '${{ steps.env.outputs.keycloak_url }}' | sed 's/./& /g')"
+          echo "KEYCLOAK_REALM: chariot"
+          echo "KEYCLOAK_CLIENT_ID: chariot-app"
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
