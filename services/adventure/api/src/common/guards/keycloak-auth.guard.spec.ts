@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, Logger, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { KeycloakAuthGuard } from './keycloak-auth.guard';
 import * as jwt from 'jsonwebtoken';
 
@@ -20,11 +21,6 @@ describe('KeycloakAuthGuard', () => {
   };
 
   beforeEach(async () => {
-    // Configuration des variables d'environnement AVANT la création du module
-    process.env.KEYCLOAK_URL = 'http://localhost:8080';
-    process.env.KEYCLOAK_REALM = 'test-realm';
-    process.env.KEYCLOAK_CLIENT_ID = 'test-client';
-
     // Mock du Logger
     mockLogger = {
       error: jest.fn(),
@@ -42,11 +38,28 @@ describe('KeycloakAuthGuard', () => {
             getAllAndOverride: jest.fn(),
           },
         },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string, defaultValue?: string) => {
+              const config: Record<string, string> = {
+                KEYCLOAK_INTERNAL_URL: 'http://localhost:8080',
+                KEYCLOAK_URL: 'http://localhost:8080',
+                KEYCLOAK_REALM: 'test-realm',
+                KEYCLOAK_CLIENT_ID: 'test-client',
+              };
+              return config[key] ?? defaultValue;
+            }),
+          },
+        },
       ],
     }).compile();
 
     guard = module.get<KeycloakAuthGuard>(KeycloakAuthGuard);
     reflector = module.get<Reflector>(Reflector);
+
+    // Déclencher onModuleInit pour initialiser la config
+    await guard.onModuleInit();
 
     // Injecter le mock du logger dans l'instance du guard
     (guard as any).logger = mockLogger;

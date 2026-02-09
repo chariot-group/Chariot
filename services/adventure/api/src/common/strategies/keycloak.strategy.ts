@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
 import * as KeycloakBearerStrategy from 'passport-keycloak-bearer';
 
 @Injectable()
@@ -7,10 +8,10 @@ export class KeycloakStrategy extends PassportStrategy(
     KeycloakBearerStrategy,
     'keycloak',
 ) {
-    constructor() {
+    constructor(private configService: ConfigService) {
         super({
-            realm: process.env.KEYCLOAK_REALM || 'chariot',
-            url: process.env.KEYCLOAK_INTERNAL_URL,
+            realm: configService.get<string>('KEYCLOAK_REALM', 'chariot'),
+            url: configService.get<string>('KEYCLOAK_INTERNAL_URL'),
         });
     } async validate(payload: any) {
 

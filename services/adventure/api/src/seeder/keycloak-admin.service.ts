@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import KcAdminClient from '@keycloak/keycloak-admin-client';
 
 @Injectable()
@@ -6,8 +7,8 @@ export class KeycloakAdminService {
     private readonly logger = new Logger(KeycloakAdminService.name);
     private adminClient: KcAdminClient;
 
-    constructor() {
-        const keycloakUrl = process.env.KEYCLOAK_INTERNAL_URL || 'http://localhost:8080';
+    constructor(private configService: ConfigService) {
+        const keycloakUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL', 'http://localhost:8080');
 
         this.adminClient = new KcAdminClient({
             baseUrl: keycloakUrl,
@@ -20,8 +21,8 @@ export class KeycloakAdminService {
     private async authenticate() {
         try {
             await this.adminClient.auth({
-                username: process.env.KEYCLOAK_ADMIN_USER || 'admin',
-                password: process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin',
+                username: this.configService.get<string>('KEYCLOAK_ADMIN_USER', 'admin'),
+                password: this.configService.get<string>('KEYCLOAK_ADMIN_PASSWORD', 'admin'),
                 grantType: 'password',
                 clientId: 'admin-cli',
             });
@@ -42,7 +43,7 @@ export class KeycloakAdminService {
     ): Promise<string> {
         await this.authenticate();
 
-        const realm = process.env.KEYCLOAK_REALM || 'chariot';
+        const realm = this.configService.get<string>('KEYCLOAK_REALM', 'chariot');
 
         try {
             const userResponse = await this.adminClient.users.create({
@@ -77,7 +78,7 @@ export class KeycloakAdminService {
     async deleteAllUsers(): Promise<void> {
         await this.authenticate();
 
-        const realm = process.env.KEYCLOAK_REALM || 'chariot';
+        const realm = this.configService.get<string>('KEYCLOAK_REALM', 'chariot');
 
         try {
             const users = await this.adminClient.users.find({ realm });
