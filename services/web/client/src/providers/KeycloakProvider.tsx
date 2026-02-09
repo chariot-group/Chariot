@@ -57,9 +57,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
       try {
         const initOptions: KeycloakInitOptions = {
-          onLoad: "check-sso",
-          checkLoginIframe: true,
-          silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
+          onLoad: "login-required",
+          checkLoginIframe: false,
           pkceMethod: "S256",
         };
 
