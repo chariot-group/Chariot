@@ -1,9 +1,8 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { instance } from '@/logger/winston.logger';
 import { ValidationPipe } from '@nestjs/common';
-import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
 import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
@@ -49,9 +48,6 @@ async function bootstrap() {
   app.useGlobalFilters(new ErrorDetailsFilter());
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-
-  const reflector = app.get(Reflector);
-  app.useGlobalGuards(new KeycloakAuthGuard(reflector));
 
   const metricsInterceptor = app.get(MetricsInterceptor);
   app.useGlobalInterceptors(metricsInterceptor);

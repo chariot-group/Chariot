@@ -1,4 +1,5 @@
 import { Logger, Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -13,11 +14,13 @@ import { MetricsModule } from '@/metrics/metrics.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { SeederModule } from '@/seeder/seeder.module';
 import { UserModule } from '@/resources/user/user.module';
+import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Permet d'accéder aux variables du env dans tous les modules
+      isGlobal: true,
+      cache: true,
     }),
     MongooseModule.forRoot(process.env.CHARIOT_MONGO_URL),
     CharacterModule,
@@ -31,6 +34,14 @@ import { UserModule } from '@/resources/user/user.module';
     UserModule
   ],
   controllers: [AppController],
-  providers: [AppService, Logger, MaillingService],
+  providers: [
+    AppService,
+    Logger,
+    MaillingService,
+    {
+      provide: APP_GUARD,
+      useClass: KeycloakAuthGuard,
+    },
+  ],
 })
 export class AppModule { }
