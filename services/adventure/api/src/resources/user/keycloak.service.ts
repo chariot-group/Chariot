@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import KcAdminClient from '@keycloak/keycloak-admin-client';
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
 
@@ -7,8 +8,8 @@ export class KeycloakService {
     private readonly logger = new Logger(KeycloakService.name);
     private adminClient: KcAdminClient;
 
-    constructor() {
-        const keycloakUrl = process.env.KEYCLOAK_INTERNAL_URL || 'http://localhost:8080';
+    constructor(private configService: ConfigService) {
+        const keycloakUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL', 'http://localhost:8080');
 
         this.adminClient = new KcAdminClient({
             baseUrl: keycloakUrl,
@@ -21,8 +22,8 @@ export class KeycloakService {
     private async authenticate() {
         try {
             await this.adminClient.auth({
-                username: process.env.KEYCLOAK_ADMIN_USER || 'admin',
-                password: process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin',
+                username: this.configService.get<string>('KEYCLOAK_ADMIN_USER', 'admin'),
+                password: this.configService.get<string>('KEYCLOAK_ADMIN_PASSWORD', 'admin'),
                 grantType: 'password',
                 clientId: 'admin-cli',
             });
@@ -36,7 +37,7 @@ export class KeycloakService {
     async getUserById(keycloakId: string): Promise<UserRepresentation> {
         await this.authenticate();
 
-        const realm = process.env.KEYCLOAK_REALM || 'chariot';
+        const realm = this.configService.get<string>('KEYCLOAK_REALM', 'chariot');
 
         try {
             this.logger.debug(`Fetching user from Keycloak: ${keycloakId}`);

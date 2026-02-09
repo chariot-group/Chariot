@@ -4,14 +4,16 @@ import {
     Injectable,
     UnauthorizedException,
     Logger,
+    OnModuleInit,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
 import * as jwt from 'jsonwebtoken';
 import * as jwksClient from 'jwks-rsa';
 
 @Injectable()
-export class KeycloakAuthGuard implements CanActivate {
+export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
     private readonly logger = new Logger(KeycloakAuthGuard.name);
     private jwksClient: jwksClient.JwksClient;
     private keycloakInternalUrl: string;
@@ -19,17 +21,24 @@ export class KeycloakAuthGuard implements CanActivate {
     private realm: string;
     private clientId: string;
 
-    constructor(private reflector: Reflector) {
+    constructor(
+        private reflector: Reflector,
+        private configService: ConfigService,
+    ) {}
+
+    onModuleInit() {
         // URL interne pour récupérer les clés JWKS
-        this.keycloakInternalUrl = process.env.KEYCLOAK_INTERNAL_URL;
+        this.keycloakInternalUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL');
         // URL externe pour accepter les tokens émis par le frontend
-        this.keycloakExternalUrl = process.env.KEYCLOAK_URL;
-        this.realm = process.env.KEYCLOAK_REALM;
-        this.clientId = process.env.KEYCLOAK_CLIENT_ID;
+        this.keycloakExternalUrl = this.configService.get<string>('KEYCLOAK_URL');
+        this.realm = this.configService.get<string>('KEYCLOAK_REALM');
+        this.clientId = this.configService.get<string>('KEYCLOAK_CLIENT_ID');
 
         if (!this.keycloakInternalUrl || !this.realm) {
             throw new Error('KEYCLOAK_INTERNAL_URL and KEYCLOAK_REALM must be defined');
         }
+
+        this.logger.log(`Keycloak Auth Guard initialized with internal URL: ${this.keycloakInternalUrl}`);
 
         const jwksUri = `${this.keycloakInternalUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
 
