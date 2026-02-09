@@ -21,14 +21,14 @@ export class KeycloakAuthGuard implements CanActivate {
 
     constructor(private reflector: Reflector) {
         // URL interne pour récupérer les clés JWKS
-        this.keycloakInternalUrl = process.env.KEYCLOAK_INTERNAL_URL || process.env.KEYCLOAK_URL;
+        this.keycloakInternalUrl = process.env.KEYCLOAK_INTERNAL_URL;
         // URL externe pour accepter les tokens émis par le frontend
         this.keycloakExternalUrl = process.env.KEYCLOAK_URL;
         this.realm = process.env.KEYCLOAK_REALM;
         this.clientId = process.env.KEYCLOAK_CLIENT_ID;
 
         if (!this.keycloakInternalUrl || !this.realm) {
-            throw new Error('KEYCLOAK_INTERNAL_URL (or KEYCLOAK_URL) and KEYCLOAK_REALM must be defined');
+            throw new Error('KEYCLOAK_INTERNAL_URL and KEYCLOAK_REALM must be defined');
         }
 
         const jwksUri = `${this.keycloakInternalUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
