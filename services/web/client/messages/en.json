@@ -69,6 +69,22 @@
       "min": "Password must contain at least 8 characters",
       "mismatch": "Passwords do not match",
       "required": "This field is required"
+    },
+    "editProfile": {
+      "successMessage": "Profile updated successfully",
+      "errorMessage": "Failed to update profile",
+      "networkError": "Network error. Please try again.",
+      "validationError": "Please check the form fields",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email address",
+      "save": "Save changes",
+      "cancel": "Cancel",
+      "validation": {
+        "firstNameMin": "First name must be at least 2 characters long",
+        "lastNameMin": "Last name must be at least 2 characters long",
+        "emailInvalid": "Email must be a valid email address"
+      }
     }
   },
   "welcome": {

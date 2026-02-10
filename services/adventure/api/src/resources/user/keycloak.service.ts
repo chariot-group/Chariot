@@ -60,4 +60,27 @@ export class KeycloakService {
             throw error;
         }
     }
+
+    async updateUser(keycloakId: string, userData: { firstName?: string; lastName?: string; email?: string }): Promise<void> {
+        await this.authenticate();
+
+        const realm = this.configService.get<string>('KEYCLOAK_REALM', 'chariot');
+
+        try {
+            this.logger.debug(`Updating user in Keycloak: ${keycloakId}`, KeycloakService.name);
+
+            await this.adminClient.users.update(
+                {
+                    realm,
+                    id: keycloakId,
+                },
+                userData,
+            );
+
+            this.logger.log(`User ${keycloakId} updated successfully in Keycloak`, KeycloakService.name);
+        } catch (error) {
+            this.logger.error(`Failed to update user ${keycloakId} in Keycloak`, error.stack, KeycloakService.name);
+            throw error;
+        }
+    }
 }
