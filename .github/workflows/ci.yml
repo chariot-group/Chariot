@@ -111,11 +111,11 @@ jobs:
         working-directory: ./services/gateway/api
         run: npm run build
 
-  # Job CD pour déployer le frontend (sur PR vers integ/main ou push direct)
+  # Job CD pour déployer le frontend (sur PR vers integ/main, push direct, ou déclenchement manuel)
   deploy-web:
     runs-on: ubuntu-latest
     needs: [ci-web]
-    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main'))
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main')) || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -169,11 +169,11 @@ jobs:
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:latest"
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
 
-  # Job CD pour déployer le service adventure (sur PR vers integ/main ou push direct)
+  # Job CD pour déployer le service adventure (sur PR vers integ/main, push direct, ou déclenchement manuel)
   deploy-adventure:
     runs-on: ubuntu-latest
     needs: [ci-adventure]
-    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main'))
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main')) || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -219,11 +219,11 @@ jobs:
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-adventure-${{ steps.env.outputs.env_name }}:latest"
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-adventure-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
 
-  # Job CD pour déployer la gateway (sur PR vers integ/main ou push direct)
+  # Job CD pour déployer la gateway (sur PR vers integ/main, push direct, ou déclenchement manuel)
   deploy-gateway:
     runs-on: ubuntu-latest
     needs: [ci-gateway]
-    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main'))
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main')) || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
