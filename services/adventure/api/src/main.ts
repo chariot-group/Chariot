@@ -19,22 +19,10 @@ async function bootstrap() {
     }),
   });
 
-  // CORS Configuration améliorée
-  const allowedOrigins = process.env.FRONTEND_URL
-    ? process.env.FRONTEND_URL.split(',')
-    : ['http://localhost:3000'];
-
+  // CORS Configuration - Service interne, accepte toutes les requêtes
+  // La validation CORS est gérée par la Gateway qui est le seul point d'entrée public
   app.enableCors({
-    origin: (origin, callback) => {
-      // Autoriser les requêtes sans origin (mobile apps, curl, etc.)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.some(allowedOrigin => origin.startsWith(allowedOrigin))) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: true, // Accepte toutes les origines
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
