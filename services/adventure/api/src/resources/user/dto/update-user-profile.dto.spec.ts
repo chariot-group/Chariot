@@ -1,5 +1,5 @@
 import { validate } from 'class-validator';
-import { UpdateUserProfileDto } from './update-user-profile.dto';
+import { UpdateUserProfileDto } from '@/resources/user/dto/update-user-profile.dto';
 
 describe('UpdateUserProfileDto', () => {
     it('should accept valid firstName', async () => {
