@@ -24,7 +24,7 @@
     "next": "^16.1.6",
     "next-intl": "^4.7.0",
     "radix-ui": "^1.4.3",
-    "react": "19.2.3",
+    "react": "19.2.4",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
     "react-redux": "^9.2.0",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
