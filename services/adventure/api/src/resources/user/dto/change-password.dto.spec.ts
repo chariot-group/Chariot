@@ -1,7 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { ChangePasswordDto } from './change-password.dto';
+import { ChangePasswordDto } from '@/resources/user/dto/change-password.dto';
 
 describe('ChangePasswordDto', () => {
     let dto: ChangePasswordDto;
