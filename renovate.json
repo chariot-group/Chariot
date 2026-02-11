@@ -1,6 +1,11 @@
 {
   "schedule": ["* 0-5 * * 0,6"],
   "abandonmentThreshold": "1 years",
-  "timezone": "Europe/Paris"
-
+  "timezone": "Europe/Paris",
+  "rangeStrategy": "bump",
+  "npm": {
+    "lockFileMaintenance": {
+      "enabled": true
+    }
+  }
 }
