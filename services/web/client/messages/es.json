@@ -55,7 +55,7 @@
   },
   "ProfilePage": {
     "pageTitle": "Perfil de usuario",
-    "changePassword": "Cambiar contraseña",
+    "changePasswordTitle": "Cambiar contraseña",
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
     "confirmNewPassword": "Confirmar nueva contraseña",
@@ -69,6 +69,35 @@
       "min": "La contraseña debe contener al menos 8 caracteres",
       "mismatch": "Las contraseñas no coinciden",
       "required": "Este campo es obligatorio"
+    },
+    "changePassword": {
+      "successMessage": "Contraseña cambiada correctamente",
+      "errorMessage": "Error al cambiar la contraseña",
+      "incorrectPassword": "La contraseña actual es incorrecta",
+      "complexityError": "La nueva contraseña no cumple con los requisitos de complejidad",
+      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
+      "validation": {
+        "currentPasswordRequired": "La contraseña actual es obligatoria",
+        "newPasswordMin": "La contraseña debe tener al menos 8 caracteres",
+        "confirmPasswordRequired": "Por favor, confirma tu contraseña",
+        "passwordMismatch": "Las contraseñas no coinciden"
+      }
+    },
+    "editProfile": {
+      "successMessage": "Perfil actualizado correctamente",
+      "errorMessage": "Error al actualizar el perfil",
+      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
+      "validationError": "Por favor, verifica los campos del formulario",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo electrónico",
+      "save": "Guardar cambios",
+      "cancel": "Cancelar",
+      "validation": {
+        "firstNameMin": "El nombre debe tener al menos 2 caracteres",
+        "lastNameMin": "El apellido debe tener al menos 2 caracteres",
+        "emailInvalid": "El correo electrónico debe ser válido"
+      }
     }
   },
   "welcome": {

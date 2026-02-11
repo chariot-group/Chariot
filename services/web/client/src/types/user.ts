@@ -21,3 +21,8 @@ export interface UserState {
     error: string | null;
     lastFetch: number | null;
 }
+
+export interface PasswordChangeDto {
+    currentPassword: string;
+    newPassword: string;
+}

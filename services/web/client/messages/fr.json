@@ -55,7 +55,7 @@
   },
   "ProfilePage": {
     "pageTitle": "Profil utilisateur",
-    "changePassword": "Changer de mot de passe",
+    "changePasswordTitle": "Changer de mot de passe",
     "currentPassword": "Mot de passe actuel",
     "newPassword": "Nouveau mot de passe",
     "confirmNewPassword": "Confirmer le nouveau mot de passe",
@@ -69,6 +69,35 @@
       "min": "Le mot de passe doit contenir au moins 8 caractères",
       "mismatch": "Les mots de passe ne correspondent pas",
       "required": "Ce champ est requis"
+    },
+    "changePassword": {
+      "successMessage": "Mot de passe modifié avec succès",
+      "errorMessage": "Échec de la modification du mot de passe",
+      "incorrectPassword": "Le mot de passe actuel est incorrect",
+      "complexityError": "Le nouveau mot de passe ne respecte pas les exigences de complexité",
+      "networkError": "Erreur réseau. Veuillez réessayer.",
+      "validation": {
+        "currentPasswordRequired": "Le mot de passe actuel est requis",
+        "newPasswordMin": "Le mot de passe doit contenir au moins 8 caractères",
+        "confirmPasswordRequired": "Veuillez confirmer votre mot de passe",
+        "passwordMismatch": "Les mots de passe ne correspondent pas"
+      }
+    },
+    "editProfile": {
+      "successMessage": "Profil mis à jour avec succès",
+      "errorMessage": "Échec de la mise à jour du profil",
+      "networkError": "Erreur réseau. Veuillez réessayer.",
+      "validationError": "Veuillez vérifier les champs du formulaire",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Adresse e-mail",
+      "save": "Enregistrer les modifications",
+      "cancel": "Annuler",
+      "validation": {
+        "firstNameMin": "Le prénom doit contenir au moins 2 caractères",
+        "lastNameMin": "Le nom doit contenir au moins 2 caractères",
+        "emailInvalid": "L'adresse e-mail doit être valide"
+      }
     }
   },
   "welcome": {

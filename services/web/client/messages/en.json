@@ -55,7 +55,7 @@
   },
   "ProfilePage": {
     "pageTitle": "User Profile",
-    "changePassword": "Change Password",
+    "changePasswordTitle": "Change Password",
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmNewPassword": "Confirm new password",
@@ -69,6 +69,35 @@
       "min": "Password must contain at least 8 characters",
       "mismatch": "Passwords do not match",
       "required": "This field is required"
+    },
+    "changePassword": {
+      "successMessage": "Password changed successfully",
+      "errorMessage": "Failed to change password",
+      "incorrectPassword": "Current password is incorrect",
+      "complexityError": "New password does not meet complexity requirements",
+      "networkError": "Network error. Please try again.",
+      "validation": {
+        "currentPasswordRequired": "Current password is required",
+        "newPasswordMin": "Password must be at least 8 characters",
+        "confirmPasswordRequired": "Please confirm your password",
+        "passwordMismatch": "Passwords do not match"
+      }
+    },
+    "editProfile": {
+      "successMessage": "Profile updated successfully",
+      "errorMessage": "Failed to update profile",
+      "networkError": "Network error. Please try again.",
+      "validationError": "Please check the form fields",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email address",
+      "save": "Save changes",
+      "cancel": "Cancel",
+      "validation": {
+        "firstNameMin": "First name must be at least 2 characters long",
+        "lastNameMin": "Last name must be at least 2 characters long",
+        "emailInvalid": "Email must be a valid email address"
+      }
     }
   },
   "welcome": {

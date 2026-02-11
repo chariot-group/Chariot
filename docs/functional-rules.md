@@ -562,3 +562,121 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/app/[locale]/profile/page.tsx` - Protected redirect example
 - `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx` - Grace period implementation
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx` - Grace period implementation
+---
+
+## FR-009: User Password Change
+
+**Rule**: Authenticated users must be able to change their password through Keycloak SSO integration with validation, error handling, and internationalization.
+
+**Context**: Password changes require secure interaction with Keycloak Admin API. The frontend must provide a user-friendly form with validation, and the backend must handle Keycloak API errors gracefully.
+
+**Requirements**:
+
+**Backend API**:
+- Route: `PUT /users/me/password`
+- Request body: `{ currentPassword: string, newPassword: string }`
+- Authentication: JWT token with Keycloak user ID
+- Validation:
+  - Current password is required
+  - New password must be at least 8 characters
+  - New password must meet Keycloak realm password policy (complexity)
+- Error handling with specific error codes:
+  - 400: Invalid input (validation failed)
+  - 401: Current password incorrect
+  - 403: New password does not meet complexity requirements
+  - 500: Keycloak API error
+- Winston logging (FR-001):
+  - `info`: Successful password change with user ID (no password logged)
+  - `error`: Failed password change with error type and user ID
+  - Never log passwords or tokens
+
+**Frontend Hook**:
+- Hook: `usePasswordForm()` in `src/hooks/usePasswordForm.ts`
+- Form state management with react-hook-form and Zod validation
+- States:
+  - `isLoading`: boolean (true while submitting)
+  - `error`: string | null (error message from API)
+  - `success`: boolean (true after successful change)
+  - `form`: react-hook-form instance
+- Functions:
+  - `onSubmit(data)`: Submits password change to API
+  - `onReset()`: Resets form to initial state
+- Zod validation schema:
+  - `currentPassword`: required, non-empty string
+  - `newPassword`: required, min 8 characters
+  - `confirmPassword`: required, must match newPassword
+- Toast notifications:
+  - Success: Display translated success message
+  - Error: Display translated error message based on error type
+- Translated validation messages (i18n):
+  - `validation.currentPasswordRequired`: "Current password is required"
+  - `validation.newPasswordMin`: "Password must be at least 8 characters"
+  - `validation.confirmPasswordRequired`: "Please confirm your password"
+  - `validation.passwordMismatch`: "Passwords do not match"
+
+**Keycloak Integration**:
+- Backend service: `KeycloakService.changeUserPassword(keycloakId, currentPassword, newPassword)`
+- API endpoint: `adminClient.users.resetPassword()` (requires valid current password verification first)
+- Verify current password by attempting authentication before changing
+- Handle Keycloak-specific errors:
+  - Invalid current password
+  - Password policy violations (complexity, history, etc.)
+  - Account locked or disabled
+
+**User Experience**:
+- User remains authenticated after successful password change
+- Form resets after successful submission
+- Toast notification displays for 3 seconds
+- Error messages are specific and actionable (not generic "failed to change password")
+- Password visibility toggle for all password fields
+
+**Security Requirements**:
+- Passwords never logged in plain text
+- Passwords never stored in Redux or localStorage
+- No password sent in GET requests or URL parameters
+- HTTPS required for all password-related requests (enforced by API)
+
+**Benefits**:
+- ✅ Secure password change through Keycloak
+- ✅ User-friendly validation with clear error messages
+- ✅ Internationalized error messages
+- ✅ Centralized password change logic in custom hook
+- ✅ No passwords leaked in logs or client-side storage
+
+**Prohibitions**:
+- Storing passwords in Redux, localStorage, or any client-side cache
+- Logging passwords in Winston logs (even on error)
+- Allowing password change without current password verification
+- Using weak validation (less than 8 characters)
+- Displaying generic error messages that don't help users
+- Changing password without checking Keycloak realm policy
+
+**Tests**:
+
+**Backend Tests**:
+- DTO validation accepts valid password change data
+- DTO validation rejects invalid data (empty, too short, etc.)
+- Controller returns 401 when current password is incorrect
+- Controller returns 403 when new password doesn't meet policy
+- Controller returns 200 and success message when password changed
+- Service logs error when Keycloak API fails
+- Service logs success when password changed (without password in log)
+
+**Frontend Tests**:
+- Hook validates form data with Zod schema
+- Hook rejects passwords shorter than 8 characters
+- Hook rejects mismatched password confirmation
+- Hook calls API with correct payload
+- Hook displays toast on success
+- Hook displays specific error message on failure
+- Hook returns react-hook-form instance
+
+**References**:
+- `services/adventure/api/src/resources/user/dto/change-password.dto.ts` - Backend DTO
+- `services/adventure/api/src/resources/user/user.controller.ts` - PUT /users/me/password route
+- `services/adventure/api/src/resources/user/user.service.ts` - Password change business logic
+- `services/adventure/api/src/resources/user/keycloak.service.ts` - Keycloak password change
+- `services/web/client/src/hooks/usePasswordForm.ts` - Frontend password change hook
+- `services/web/client/src/types/user.ts` - PasswordChangeDto type
+- `services/web/client/src/services/UserService.ts` - API client method
+- `services/web/client/messages/{en|fr|es}.json` - Internationalization
