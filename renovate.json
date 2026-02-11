@@ -3,9 +3,17 @@
   "abandonmentThreshold": "1 years",
   "timezone": "Europe/Paris",
   "rangeStrategy": "bump",
+  "postUpdateOptions": ["npmDedupe"],
   "npm": {
     "lockFileMaintenance": {
       "enabled": true
     }
-  }
+  },
+  "packageRules": [
+    {
+      "description": "Group React packages together to avoid peer dependency conflicts",
+      "matchPackageNames": ["react", "react-dom"],
+      "groupName": "react monorepo"
+    }
+  ]
 }
