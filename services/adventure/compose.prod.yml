@@ -1,3 +1,5 @@
+name: chariot-adventure-prod
+
 services:
   chariot-mongo:
     image: mongo:latest

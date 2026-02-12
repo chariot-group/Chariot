@@ -1,3 +1,5 @@
+name: chariot-web-integ
+
 services:
 
   chariot-frontend:

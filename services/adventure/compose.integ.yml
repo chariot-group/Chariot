@@ -1,3 +1,5 @@
+name: chariot-adventure-integ
+
 services:
   chariot-mongo:
     image: mongo:latest

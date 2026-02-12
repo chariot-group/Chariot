@@ -1,3 +1,5 @@
+name: chariot-sso-integ
+
 services:
   keycloak-db:
     image: postgres:16-alpine
