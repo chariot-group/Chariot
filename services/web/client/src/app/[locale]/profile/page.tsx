@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ProfileFormData, useProfileForm } from "@/hooks/useProfileForm";
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -24,6 +25,19 @@ export default function ProfilePage() {
   const [viewNewPassword, setViewNewPassword] = useState<boolean>(false);
   const [viewConfirmNewPassword, setViewConfirmNewPassword] = useState<boolean>(false);
   const t = useTranslations("ProfilePage");
+
+  const { form, isLoading, isSaving, onUpdate, onCancel } = useProfileForm();
+
+  useEffect(() => {
+    console.log("TEST HOOK");
+    const data: ProfileFormData = {
+      firstName: "Test",
+      lastName: "Test",
+      email: "h.piedanna@gmail.com",
+    };
+
+    onUpdate(data);
+  }, []);
 
   const passwordSchema = z
     .object({
@@ -36,7 +50,7 @@ export default function ProfilePage() {
       path: ["confirmNewPassword"],
     });
 
-  const form = useForm<z.infer<typeof passwordSchema>>({
+  const formPassword = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
       currentPassword: "",
@@ -122,12 +136,12 @@ export default function ProfilePage() {
             <div className="px-0 sm:px-2">
               <form
                 id="form-reset-password"
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={formPassword.handleSubmit(onSubmit)}
                 aria-label={t("changePassword")}>
                 <FieldGroup>
                   <Controller
                     name="currentPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
@@ -158,7 +172,7 @@ export default function ProfilePage() {
                   />
                   <Controller
                     name="newPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
@@ -218,7 +232,7 @@ export default function ProfilePage() {
                   />
                   <Controller
                     name="confirmNewPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}

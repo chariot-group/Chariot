@@ -562,3 +562,124 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/app/[locale]/profile/page.tsx` - Protected redirect example
 - `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx` - Grace period implementation
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx` - Grace period implementation
+
+---
+
+## FR-009: User Profile Update via Keycloak
+
+**Rule**: Users must be able to update their personal information (firstName, lastName, email) through a dedicated API endpoint that synchronizes changes with Keycloak. Profile updates apply to the authenticated user only and must be traceable.
+
+**Requirements**:
+
+**Backend (Adventure API)**:
+- Endpoint `PUT /users/me` accepts partial updates to user profile
+- DTO `UpdateUserProfileDto` with optional fields: `firstName`, `lastName`, `email`
+- Validation rules:
+  - `firstName`: Optional string, minimum 2 characters when provided
+  - `lastName`: Optional string, minimum 2 characters when provided
+  - `email`: Optional valid email format when provided
+- Updates are applied to Keycloak via `KeycloakService.updateUser(keycloakId, userData)`
+- Winston logging for all update operations (success and errors) - respects FR-001
+- Returns updated `UserInfoDto` with all current user information
+- Authentication required via Keycloak JWT Guard
+
+**Frontend (Web Client)**:
+- Hook `useProfileForm()` centralizes profile update logic
+- React Hook Form with Zod resolver for client-side validation
+- Zod schema validation:
+  - `firstName`: Required, min 2 characters
+  - `lastName`: Required, min 2 characters
+  - `email`: Required, valid email format
+- Form states: `isLoading`, `isSaving`, `error`, `success`
+- Returns form instance for component integration
+- Automatically loads initial data via `useUser` hook
+- Function `onUpdate(data)` calls `PUT /users/me` and updates Redux cache
+- Function `onCancel()` resets form to initial values
+- Toast notifications (success/error) with i18n messages
+- Network error handling with translated messages
+
+**Validation Rules**:
+- All field updates are optional (partial update)
+- Empty strings are rejected (must be min 2 characters or omitted)
+- Email format must be standard RFC 5322
+- Username is **NOT** editable (immutable field)
+- Avatar is **NOT** managed by this endpoint (separate feature)
+- Updates are applied atomically in Keycloak
+
+**Prohibitions**:
+- Updating username via this endpoint
+- Updating other users' profiles (only `user.keycloakId` from JWT)
+- Bypassing Keycloak for user data persistence
+- Accepting updates without authentication
+- Logging sensitive data (email content is acceptable, passwords are not)
+- Allowing empty or whitespace-only values for required fields in frontend form
+- Missing toast feedback after save attempt
+
+**Error Handling**:
+- 400 Bad Request: Invalid data format or validation failure
+- 401 Unauthorized: Missing or invalid JWT token
+- 404 Not Found: User not found in Keycloak
+- 500 Internal Server Error: Keycloak communication failure or unexpected error
+- Frontend displays translated error messages via toast system
+- Logs include full error stack trace (backend) for debugging
+
+**Frontend Hook Behavior** (`useProfileForm`):
+- Loads user data on mount via `useUser({ autoFetch: true })`
+- Resets form when user data changes
+- `onUpdate`: Validates → API call → Redux update → Toast → Form reset to new values
+- `onCancel`: Resets form to last loaded values without API call
+- `isSaving`: True during API request
+- `isLoading`: True while initial user data is loading
+- `error`: Contains validation or API error message
+- `success`: True after successful update (resets after 3s or new action)
+
+**TypeScript Types**:
+- Backend: `UpdateUserProfileDto` (PartialType with firstName, lastName, email)
+- Frontend: `UpdateUserDto` mirrors backend DTO structure
+- Both use strict TypeScript without `any` types
+
+**Internationalization (i18n)**:
+- Translation namespace: `ProfilePage.editProfile`
+- Required keys in `messages/{en|fr|es}.json`:
+  - `editProfile.successMessage`: "Profile updated successfully"
+  - `editProfile.errorMessage`: "Failed to update profile"
+  - `editProfile.networkError`: "Network error. Please try again."
+  - `editProfile.validationError`: "Please check the form fields"
+  - `editProfile.firstName`: "First name"
+  - `editProfile.lastName`: "Last name"
+  - `editProfile.email`: "Email address"
+  - `editProfile.save`: "Save changes"
+  - `editProfile.cancel`: "Cancel"
+
+**Tests**:
+- **Backend**:
+  - Unit: UserService calls KeycloakService with correct parameters
+  - Unit: Validation rejects firstName/lastName < 2 characters
+  - Unit: Validation rejects invalid email format
+  - Unit: Winston logger called on success and error
+  - E2E: PUT /users/me returns 401 without authentication
+  - E2E: PUT /users/me returns 200 with valid data and updates Keycloak
+  - E2E: PUT /users/me returns 400 with invalid data
+  - E2E: Partial update (only firstName) works correctly
+  - Mock: KeycloakService.updateUser is called with merged data
+  
+- **Frontend**:
+  - Unit: useProfileForm validates form data with Zod
+  - Unit: useProfileForm calls UserService.updateCurrentUser
+  - Unit: useProfileForm updates Redux user state on success
+  - Unit: useProfileForm shows success toast with i18n message
+  - Unit: useProfileForm shows error toast on API failure
+  - Unit: onCancel resets form to initial values
+  - Integration: Form submission with valid data updates user in Redux
+  - Integration: Form submission with invalid email shows validation error
+  - Integration: Network error displays translated error message
+
+**References**:
+- `services/adventure/api/src/resources/user/user.controller.ts` - PUT /users/me endpoint
+- `services/adventure/api/src/resources/user/user.service.ts` - updateUser method
+- `services/adventure/api/src/resources/user/keycloak.service.ts` - updateUser method
+- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts` - DTO definition
+- `services/web/client/src/hooks/useProfileForm.ts` - Profile form hook
+- `services/web/client/src/services/UserService.ts` - updateCurrentUser method
+- `services/web/client/src/types/user.ts` - UpdateUserDto type
+- `services/web/client/messages/{en|fr|es}.json` - i18n translations

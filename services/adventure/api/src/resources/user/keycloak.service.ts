@@ -6,6 +6,7 @@ import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/us
 @Injectable()
 export class KeycloakService {
     private readonly logger = new Logger(KeycloakService.name);
+    private readonly realm: string = 'chariot';
     private adminClient: KcAdminClient;
 
     constructor(private configService: ConfigService) {
@@ -37,7 +38,7 @@ export class KeycloakService {
     async getUserById(keycloakId: string): Promise<UserRepresentation> {
         await this.authenticate();
 
-        const realm = this.configService.get<string>('KEYCLOAK_REALM', 'chariot');
+        const realm = this.configService.get<string>('KEYCLOAK_REALM', this.realm);
 
         try {
             this.logger.debug(`Fetching user from Keycloak: ${keycloakId}`);
@@ -57,6 +58,29 @@ export class KeycloakService {
             return user;
         } catch (error) {
             this.logger.error(`Failed to fetch user ${keycloakId} from Keycloak`, error.stack);
+            throw error;
+        }
+    }
+
+    async updateUser(keycloakId: string, userData: { firstName?: string; lastName?: string; email?: string }): Promise<void> {
+        await this.authenticate();
+
+        const realm = this.configService.get<string>('KEYCLOAK_REALM', this.realm);
+
+        try {
+            this.logger.debug(`Updating user in Keycloak: ${keycloakId}`, KeycloakService.name);
+
+            await this.adminClient.users.update(
+                {
+                    realm,
+                    id: keycloakId,
+                },
+                userData,
+            );
+
+            this.logger.log(`User ${keycloakId} updated successfully in Keycloak`, KeycloakService.name);
+        } catch (error) {
+            this.logger.error(`Failed to update user ${keycloakId} in Keycloak`, error.stack, KeycloakService.name);
             throw error;
         }
     }
