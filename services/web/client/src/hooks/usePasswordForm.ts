@@ -6,6 +6,7 @@ import UserService from '@/services/UserService';
 import { useToast } from '@/hooks/useToast';
 import { useTranslations } from 'next-intl';
 import { PasswordChangeDto } from '@/types/user';
+import { makeZodMessages } from '@/lib/zodErrorMap';
 
 // Type definition for password form data
 type PasswordFormData = {
@@ -26,16 +27,20 @@ export function usePasswordForm() {
     const [success, setSuccess] = useState(false);
     const toast = useToast();
     const t = useTranslations('ProfilePage.changePassword');
+    const tZod = useTranslations('zodErrors');
 
-    // Zod schema with translated validation messages
+    // Créer les messages Zod traduits
+    const zm = makeZodMessages(tZod);
+
+    // Zod schema with translated validation messages via zodErrorMap
     const passwordSchema = useMemo(() => z.object({
-        currentPassword: z.string().min(1, { message: t('validation.currentPasswordRequired') }),
-        newPassword: z.string().min(8, { message: t('validation.newPasswordMin') }),
-        confirmNewPassword: z.string().min(1, { message: t('validation.confirmPasswordRequired') }),
+        currentPassword: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }),
+        newPassword: z.string({ message: zm.required() }).min(8, { message: zm.minString(8) }),
+        confirmNewPassword: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }),
     }).refine((data) => data.newPassword === data.confirmNewPassword, {
         message: t('validation.passwordMismatch'),
         path: ['confirmNewPassword'],
-    }), [t]);
+    }), [zm, t]);
 
     const form = useForm<PasswordFormData>({
         resolver: zodResolver(passwordSchema),

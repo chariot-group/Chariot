@@ -65,11 +65,6 @@
     "noHistory": "Aucun historique disponible",
     "reloadTokens": "Recharger vos tokens",
     "togglePasswordVisibility": "Afficher/masquer le mot de passe",
-    "passwordError": {
-      "min": "Le mot de passe doit contenir au moins 8 caractères",
-      "mismatch": "Les mots de passe ne correspondent pas",
-      "required": "Ce champ est requis"
-    },
     "changePassword": {
       "successMessage": "Mot de passe modifié avec succès",
       "errorMessage": "Échec de la modification du mot de passe",
@@ -81,22 +76,6 @@
         "newPasswordMin": "Le mot de passe doit contenir au moins 8 caractères",
         "confirmPasswordRequired": "Veuillez confirmer votre mot de passe",
         "passwordMismatch": "Les mots de passe ne correspondent pas"
-      }
-    },
-    "editProfile": {
-      "successMessage": "Profil mis à jour avec succès",
-      "errorMessage": "Échec de la mise à jour du profil",
-      "networkError": "Erreur réseau. Veuillez réessayer.",
-      "validationError": "Veuillez vérifier les champs du formulaire",
-      "firstName": "Prénom",
-      "lastName": "Nom",
-      "email": "Adresse e-mail",
-      "save": "Enregistrer les modifications",
-      "cancel": "Annuler",
-      "validation": {
-        "firstNameMin": "Le prénom doit contenir au moins 2 caractères",
-        "lastNameMin": "Le nom doit contenir au moins 2 caractères",
-        "emailInvalid": "L'adresse e-mail doit être valide"
       }
     }
   },
@@ -119,8 +98,46 @@
       "button": "Créer un personnage",
       "button-aria": "Naviguer vers la création de personnage"
     }
+  },  "characterForm": {
+    "createSuccess": "Personnage créé avec succès",
+    "createError": "Échec de la création du personnage",
+    "updateSuccess": "Personnage mis à jour avec succès",
+    "updateError": "Échec de la mise à jour du personnage",
+    "missingId": "Impossible de mettre à jour : l'identifiant du personnage est manquant",
+    "changesCancelled": "Modifications annulées"
   },
-  "characterDetail": {
+  "zodErrors": {
+    "invalidTypeReceived": "Entrée invalide",
+    "required": "Requis",
+    "tooSmall": {
+      "string": {
+        "inclusive": "La chaîne doit contenir au moins {minimum} caractère(s)"
+      },
+      "number": {
+        "inclusive": "Le nombre doit être supérieur ou égal à {minimum}"
+      },
+      "array": {
+        "inclusive": "Le tableau doit contenir au moins {minimum} élément(s)"
+      }
+    },
+    "tooBig": {
+      "string": {
+        "inclusive": "La chaîne doit contenir au maximum {maximum} caractère(s)"
+      },
+      "number": {
+        "inclusive": "Le nombre doit être inférieur ou égal à {maximum}"
+      },
+      "array": {
+        "inclusive": "Le tableau doit contenir au maximum {maximum} élément(s)"
+      }
+    },
+    "invalidString": {
+      "email": "Email invalide",
+      "url": "URL invalide",
+      "uuid": "UUID invalide"
+    },
+    "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}"
+  },  "characterDetail": {
     "tabs": {
       "general": "Général",
       "combat": "Combat",

@@ -65,11 +65,6 @@
     "noHistory": "No hay historial disponible",
     "reloadTokens": "Recargar tus tokens",
     "togglePasswordVisibility": "Mostrar/ocultar contraseña",
-    "passwordError": {
-      "min": "La contraseña debe contener al menos 8 caracteres",
-      "mismatch": "Las contraseñas no coinciden",
-      "required": "Este campo es obligatorio"
-    },
     "changePassword": {
       "successMessage": "Contraseña cambiada correctamente",
       "errorMessage": "Error al cambiar la contraseña",
@@ -81,22 +76,6 @@
         "newPasswordMin": "La contraseña debe tener al menos 8 caracteres",
         "confirmPasswordRequired": "Por favor, confirma tu contraseña",
         "passwordMismatch": "Las contraseñas no coinciden"
-      }
-    },
-    "editProfile": {
-      "successMessage": "Perfil actualizado correctamente",
-      "errorMessage": "Error al actualizar el perfil",
-      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
-      "validationError": "Por favor, verifica los campos del formulario",
-      "firstName": "Nombre",
-      "lastName": "Apellido",
-      "email": "Correo electrónico",
-      "save": "Guardar cambios",
-      "cancel": "Cancelar",
-      "validation": {
-        "firstNameMin": "El nombre debe tener al menos 2 caracteres",
-        "lastNameMin": "El apellido debe tener al menos 2 caracteres",
-        "emailInvalid": "El correo electrónico debe ser válido"
       }
     }
   },
@@ -119,8 +98,46 @@
       "button": "Crear un personaje",
       "button-aria": "Navegar hacia la creación de personaje"
     }
+  },  "characterForm": {
+    "createSuccess": "Personaje creado con éxito",
+    "createError": "Error al crear el personaje",
+    "updateSuccess": "Personaje actualizado con éxito",
+    "updateError": "Error al actualizar el personaje",
+    "missingId": "No se puede actualizar: falta el identificador del personaje",
+    "changesCancelled": "Cambios cancelados"
   },
-  "characterDetail": {
+  "zodErrors": {
+    "invalidTypeReceived": "Entrada inválida",
+    "required": "Requerido",
+    "tooSmall": {
+      "string": {
+        "inclusive": "La cadena debe contener al menos {minimum} carácter(es)"
+      },
+      "number": {
+        "inclusive": "El número debe ser mayor o igual a {minimum}"
+      },
+      "array": {
+        "inclusive": "El array debe contener al menos {minimum} elemento(s)"
+      }
+    },
+    "tooBig": {
+      "string": {
+        "inclusive": "La cadena debe contener como máximo {maximum} carácter(es)"
+      },
+      "number": {
+        "inclusive": "El número debe ser menor o igual a {maximum}"
+      },
+      "array": {
+        "inclusive": "El array debe contener como máximo {maximum} elemento(s)"
+      }
+    },
+    "invalidString": {
+      "email": "Email inválido",
+      "url": "URL inválida",
+      "uuid": "UUID inválido"
+    },
+    "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}"
+  },  "characterDetail": {
     "tabs": {
       "general": "General",
       "combat": "Combate",
