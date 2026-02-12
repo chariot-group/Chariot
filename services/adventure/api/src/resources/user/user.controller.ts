@@ -2,13 +2,15 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Put, Req } from '@nestjs/c
 import { ApiExtraModels, ApiOperation, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { UserService } from '@/resources/user/user.service';
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
+import { UpdateUserProfileDto } from '@/resources/user/dto/update-user-profile.dto';
 import { IResponse } from '@/common/dtos/reponse.dto';
 import { ChangePasswordDto } from '@/resources/user/dto/change-password.dto';
 
 @ApiExtraModels(
   IResponse,
   UserInfoDto,
-  ChangePasswordDto
+  ChangePasswordDto,
+  UpdateUserProfileDto
 )
 @ApiTags('User')
 @Controller('user')
@@ -89,6 +91,44 @@ export class UserController {
     return {
       message: 'Password changed successfully',
     };
+  }
+
+  @Put('me')
+  @ApiOperation({ summary: 'Update current authenticated user profile' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile updated successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: {
+              $ref: getSchemaPath(UserInfoDto),
+            },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'User not authenticated',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found in Keycloak',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error or Keycloak communication failure',
+  })
+  async updateProfile(@Req() request, @Body() updateUserProfileDto: UpdateUserProfileDto) {
+    return this.userService.updateUser(request.user.keycloakId, updateUserProfileDto);
   }
 
 }

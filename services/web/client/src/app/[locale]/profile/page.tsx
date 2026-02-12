@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ProfileFormData, useProfileForm } from "@/hooks/useProfileForm";
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -24,8 +25,21 @@ export default function ProfilePage() {
   const [viewConfirmNewPassword, setViewConfirmNewPassword] = useState<boolean>(false);
   const t = useTranslations("ProfilePage");
 
+  const { form, isLoading, isSaving, onUpdate, onCancel } = useProfileForm();
+
+  useEffect(() => {
+    console.log("TEST HOOK");
+    const data: ProfileFormData = {
+      firstName: "Test",
+      lastName: "Test",
+      email: "h.piedanna@gmail.com",
+    };
+
+    onUpdate(data);
+  }, []);
+
   // Use custom password form hook
-  const { form, onSubmit, isLoading } = usePasswordForm();
+  const { form: formPassword, onSubmit, isLoading: isLoadingPassword } = usePasswordForm();
 
   useEffect(() => {
     // Ne pas rediriger pendant la transition utilisateur ou le chargement
@@ -99,12 +113,12 @@ export default function ProfilePage() {
             <div className="px-0 sm:px-2">
               <form
                 id="form-reset-password"
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={formPassword.handleSubmit(onSubmit)}
                 aria-label={t("changePasswordTitle")}>
                 <FieldGroup>
                   <Controller
                     name="currentPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
@@ -135,7 +149,7 @@ export default function ProfilePage() {
                   />
                   <Controller
                     name="newPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
@@ -195,7 +209,7 @@ export default function ProfilePage() {
                   />
                   <Controller
                     name="confirmNewPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
@@ -263,7 +277,7 @@ export default function ProfilePage() {
                 <Button
                   type="submit"
                   form="form-reset-password"
-                  disabled={isLoading}
+                  disabled={isLoadingPassword}
                   className="w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
                   aria-label={t("updatePassword")}>
                   <SquarePen

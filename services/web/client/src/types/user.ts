@@ -15,6 +15,12 @@ export interface History {
     value: number;
 }
 
+export interface UpdateUserDto {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+}
+
 export interface UserState {
     user: User | null;
     loading: boolean;

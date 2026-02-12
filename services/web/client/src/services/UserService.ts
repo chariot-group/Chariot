@@ -1,5 +1,5 @@
 import apiClient from '@/services/ApiService';
-import { User, PasswordChangeDto } from '@/types/user';
+import { User, PasswordChangeDto, UpdateUserDto } from '@/types/user';
 
 interface IResponse<T> {
     message: string;
@@ -44,6 +44,19 @@ class UserService {
             }
             console.error('Error changing password:', error);
             throw new Error('Failed to change password');
+        }
+    }
+
+    /**
+     * Met à jour les informations de l'utilisateur connecté
+     */
+    async updateCurrentUser(userData: UpdateUserDto): Promise<User> {
+        try {
+            const response = await apiClient().put<IResponse<User>>(`${this.BASE_PATH}/me`, userData);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error updating current user:', error);
+            throw error;
         }
     }
 }
