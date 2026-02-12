@@ -19,20 +19,22 @@ async function bootstrap() {
   // Security headers
   app.use(helmet());
 
-  // CORS Configuration
+  // CORS Configuration - Gateway handles all CORS like Keycloak does
   const allowedOrigins = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',')
     : ['http://localhost:3000'];
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, curl, etc.)
+      // Allow requests with no origin (like curl, postman, server-to-server)
       if (!origin) return callback(null, true);
 
+      // Check if origin matches any allowed origin
       if (allowedOrigins.some(allowedOrigin => origin.startsWith(allowedOrigin))) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        logger.warn(`CORS blocked origin: ${origin}`);
+        callback(null, false);
       }
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -58,7 +60,7 @@ async function bootstrap() {
 
   logger.log(`Chariot API Gateway running on port ${port}`);
   logger.log(`Environment: ${process.env.NODE_ENV}`);
-  logger.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
+  logger.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
 }
 
 bootstrap();

@@ -19,6 +19,12 @@ export class ProxyController {
   @All('*')
   async proxyRequest(@Req() req: Request, @Res() res: Response) {
     try {
+      // Handle OPTIONS preflight requests locally (CORS)
+      // Do not forward to backend services
+      if (req.method === 'OPTIONS') {
+        return res.status(204).end();
+      }
+
       // Extract service name and path from URL
       // Expected format: /api/{service}/{path}
       const urlWithoutPrefix = req.originalUrl.replace(/^\/api/, '');
@@ -69,9 +75,23 @@ export class ProxyController {
         req.headers as Record<string, string>,
       );
 
-      // Forward response headers
+      // Forward response headers but filter out CORS headers
+      // CORS is managed at gateway level only
+      const corsHeaders = [
+        'access-control-allow-origin',
+        'access-control-allow-credentials',
+        'access-control-allow-methods',
+        'access-control-allow-headers',
+        'access-control-expose-headers',
+        'access-control-max-age',
+      ];
+
       Object.entries(response.headers).forEach(([key, value]) => {
-        if (key.toLowerCase() !== 'transfer-encoding') {
+        const lowerKey = key.toLowerCase();
+        if (
+          lowerKey !== 'transfer-encoding' &&
+          !corsHeaders.includes(lowerKey)
+        ) {
           res.setHeader(key, value as string);
         }
       });

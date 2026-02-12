@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException, HttpException } from '@nestjs/common';
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { IResponse } from '@/common/dtos/reponse.dto';
@@ -53,8 +53,14 @@ export class UserService {
         data,
       };
     } catch (error) {
+      // Re-throw HTTP exceptions as-is (they already have the correct status code)
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Only transform unexpected errors into 500
       const message = `Error while fetching user #${id}: ${error.message}`;
-      this.logger.error(message, null, this.SERVICE_NAME);
+      this.logger.error(message, error.stack, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
   }

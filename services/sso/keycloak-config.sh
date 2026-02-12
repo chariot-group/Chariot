@@ -183,6 +183,58 @@ echo "Updating user profile with avatar attribute..."
 
 echo "User profile configuration completed!"
 
+echo "Configuring OpenID Connect client scope..."
+# Vérifier si le client scope openid existe
+if /opt/keycloak/bin/kcadm.sh get client-scopes -r chariot | grep -q '"name" : "openid"'; then
+  echo "OpenID client scope already exists"
+  OPENID_SCOPE_ID=$(/opt/keycloak/bin/kcadm.sh get client-scopes -r chariot | grep -B2 '"name" : "openid"' | grep '"id"' | cut -d'"' -f4)
+else
+  echo "Creating OpenID client scope..."
+  /opt/keycloak/bin/kcadm.sh create client-scopes -r chariot \
+    -s name=openid \
+    -s protocol=openid-connect \
+    -s 'attributes={"include.in.token.scope":"true","display.on.consent.screen":"true"}' \
+    -s 'description=OpenID Connect built-in scope: openid'
+  
+  OPENID_SCOPE_ID=$(/opt/keycloak/bin/kcadm.sh get client-scopes -r chariot | grep -B2 '"name" : "openid"' | grep '"id"' | cut -d'"' -f4)
+  echo "OpenID client scope created with ID: $OPENID_SCOPE_ID"
+fi
+
+echo "Configuring 'sub' mapper for OpenID scope..."
+# Vérifier si le mapper sub existe déjà
+if /opt/keycloak/bin/kcadm.sh get client-scopes/${OPENID_SCOPE_ID}/protocol-mappers/models -r chariot | grep -q '"name" : "sub"'; then
+  echo "Sub mapper already exists in OpenID scope"
+else
+  echo "Creating sub mapper..."
+  /opt/keycloak/bin/kcadm.sh create client-scopes/${OPENID_SCOPE_ID}/protocol-mappers/models -r chariot \
+    -s name=sub \
+    -s protocol=openid-connect \
+    -s protocolMapper=oidc-sub-mapper \
+    -s 'config={"claim.name":"sub","jsonType.label":"String","id.token.claim":"true","access.token.claim":"true","userinfo.token.claim":"true"}'
+  echo "Sub mapper created successfully"
+fi
+
+echo "Assigning OpenID scope to chariot-app client..."
+# Récupérer l'ID du client chariot-app
+CLIENT_ID=$(/opt/keycloak/bin/kcadm.sh get clients -r chariot -q clientId=chariot-app | grep '"id"' | head -1 | cut -d'"' -f4)
+
+if [ -z "$CLIENT_ID" ]; then
+  echo "Warning: chariot-app client not found"
+else
+  echo "Found chariot-app client with ID: $CLIENT_ID"
+  
+  # Vérifier si openid est déjà dans les default scopes
+  if /opt/keycloak/bin/kcadm.sh get clients/${CLIENT_ID}/default-client-scopes -r chariot | grep -q '"name" : "openid"'; then
+    echo "OpenID scope already assigned to chariot-app as default"
+  else
+    echo "Assigning OpenID scope as default..."
+    /opt/keycloak/bin/kcadm.sh update clients/${CLIENT_ID}/default-client-scopes/${OPENID_SCOPE_ID} -r chariot
+    echo "OpenID scope assigned successfully"
+  fi
+fi
+
+echo "OpenID Connect configuration completed!"
+
 echo "Creating default admin user if needed..."
 if /opt/keycloak/bin/kcadm.sh get users -r chariot -q email="${KEYCLOAK_ADMIN_EMAIL}" | grep -q '"id"'; then
   echo "Admin user already exists"
