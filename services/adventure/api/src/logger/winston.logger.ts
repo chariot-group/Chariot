@@ -49,6 +49,7 @@ const prodLogger = {
     format.json(),
   ),
   transports: [
+    new transports.Console(options.console), // Add console logging for Docker
     new transports.File(options.errorFile),
     new transports.File(options.combineFile),
   ],
