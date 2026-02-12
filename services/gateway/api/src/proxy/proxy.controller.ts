@@ -69,9 +69,23 @@ export class ProxyController {
         req.headers as Record<string, string>,
       );
 
-      // Forward response headers
+      // Forward response headers but filter out CORS headers
+      // CORS is managed at gateway level only
+      const corsHeaders = [
+        'access-control-allow-origin',
+        'access-control-allow-credentials',
+        'access-control-allow-methods',
+        'access-control-allow-headers',
+        'access-control-expose-headers',
+        'access-control-max-age',
+      ];
+
       Object.entries(response.headers).forEach(([key, value]) => {
-        if (key.toLowerCase() !== 'transfer-encoding') {
+        const lowerKey = key.toLowerCase();
+        if (
+          lowerKey !== 'transfer-encoding' &&
+          !corsHeaders.includes(lowerKey)
+        ) {
           res.setHeader(key, value as string);
         }
       });
