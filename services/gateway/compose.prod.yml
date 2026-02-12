@@ -1,3 +1,5 @@
+name: chariot-gateway-prod
+
 services:
   chariot-gateway:
     image: ghcr.io/chariot-group/chariot-gateway-production:latest

@@ -1,3 +1,5 @@
+name: chariot-gateway-integ
+
 services:
   chariot-gateway:
     image: ghcr.io/chariot-group/chariot-gateway-integration:latest

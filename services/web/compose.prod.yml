@@ -1,3 +1,5 @@
+name: chariot-web-prod
+
 services:
 
   chariot-frontend:
