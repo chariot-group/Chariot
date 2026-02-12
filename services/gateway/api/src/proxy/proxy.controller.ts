@@ -19,6 +19,12 @@ export class ProxyController {
   @All('*')
   async proxyRequest(@Req() req: Request, @Res() res: Response) {
     try {
+      // Handle OPTIONS preflight requests locally (CORS)
+      // Do not forward to backend services
+      if (req.method === 'OPTIONS') {
+        return res.status(204).end();
+      }
+
       // Extract service name and path from URL
       // Expected format: /api/{service}/{path}
       const urlWithoutPrefix = req.originalUrl.replace(/^\/api/, '');
