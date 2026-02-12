@@ -1,3 +1,5 @@
+name: chariot-adventure-prod
+
 services:
   chariot-mongo:
     image: mongo:latest
@@ -7,8 +9,8 @@ services:
     ports:
       - "27017"
     volumes:
-      - chariot_mongodb_data:/data/db
-      - chariot_mongodb_logs:/var/log/mongodb
+      - chariot_mongodb_data_prod:/data/db
+      - chariot_mongodb_logs_prod:/var/log/mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${CHARIOT_MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${CHARIOT_MONGO_INITDB_ROOT_PASSWORD}
@@ -57,9 +59,9 @@ services:
       - chariot-group-network-prod
 
 volumes:
-  chariot_mongodb_data:
-  chariot_mongodb_logs:
-  chariot_adventure_logs:
+  chariot_mongodb_data_prod:
+  chariot_mongodb_logs_prod:
+  chariot_adventure_logs_prod:
 
 networks:
   chariot-network:
