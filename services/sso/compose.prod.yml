@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${KEYCLOAK_DB_USER}
       POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
     volumes:
-      - keycloak_db_data:/var/lib/postgresql/data
+      - keycloak_db_data_prod:/var/lib/postgresql/data
     networks:
       - sso-network-prod
     healthcheck:
@@ -106,7 +106,7 @@ services:
     command: ["/keycloak-config.sh", "prod"]
 
 volumes:
-  keycloak_db_data:
+  keycloak_db_data_prod:
 
 networks:
   sso-network-prod:
