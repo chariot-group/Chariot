@@ -27,6 +27,7 @@ export class CreatePlayerDto extends CreateCharacterDto {
   actions: ActionDto[];
 
   @ApiProperty({ example: false })
+  @IsOptional()
   @IsBoolean()
   inspiration: boolean;
 

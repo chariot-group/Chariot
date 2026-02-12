@@ -89,7 +89,7 @@ export function createPlayerSchema(zm: ZodMessages) {
     return createCharacterSchema(zm).extend({
         actions: z.array(ActionSchema).optional(),
 
-        inspiration: z.boolean({ message: zm.required() }),
+        inspiration: z.boolean({ message: zm.required() }).optional(),
 
         progression: ProgressionSchema.optional(),
         class: z.array(ClassSchema).optional(),
