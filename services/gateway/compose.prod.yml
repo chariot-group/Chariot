@@ -29,6 +29,16 @@ services:
       - "traefik.http.services.chariot-gateway-prod.loadbalancer.server.port=8082"
       - "traefik.http.routers.chariot-gateway-prod.service=chariot-gateway-prod"
       - "traefik.docker.network=traefik-public"
+      # CORS middleware configuration
+      - "traefik.http.middlewares.cors-gateway-prod.headers.accessControlAllowOriginList=${FRONTEND_URL}"
+      - "traefik.http.middlewares.cors-gateway-prod.headers.accessControlAllowMethods=GET,POST,PUT,PATCH,DELETE,OPTIONS"
+      - "traefik.http.middlewares.cors-gateway-prod.headers.accessControlAllowHeaders=Content-Type,Authorization,Accept"
+      - "traefik.http.middlewares.cors-gateway-prod.headers.accessControlAllowCredentials=true"
+      - "traefik.http.middlewares.cors-gateway-prod.headers.accessControlMaxAge=3600"
+      - "traefik.http.middlewares.cors-gateway-prod.headers.accessControlExposeHeaders=Authorization"
+      - "traefik.http.middlewares.cors-gateway-prod.headers.addVaryHeader=true"
+      # Apply CORS middleware to router
+      - "traefik.http.routers.chariot-gateway-prod.middlewares=cors-gateway-prod"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
       interval: 30s
