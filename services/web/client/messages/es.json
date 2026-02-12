@@ -64,7 +64,6 @@
     "yourTokens": "Tus tokens:",
     "noHistory": "No hay historial disponible",
     "reloadTokens": "Recargar tus tokens",
-    "togglePasswordVisibility": "Mostrar/ocultar contraseña",
     "changePassword": {
       "successMessage": "Contraseña cambiada correctamente",
       "errorMessage": "Error al cambiar la contraseña",
@@ -81,18 +80,7 @@
     "editProfile": {
       "successMessage": "Perfil actualizado correctamente",
       "errorMessage": "Error al actualizar el perfil",
-      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
-      "validationError": "Por favor, verifica los campos del formulario",
-      "firstName": "Nombre",
-      "lastName": "Apellido",
-      "email": "Correo electrónico",
-      "save": "Guardar cambios",
-      "cancel": "Cancelar",
-      "validation": {
-        "firstNameMin": "El nombre debe tener al menos 2 caracteres",
-        "lastNameMin": "El apellido debe tener al menos 2 caracteres",
-        "emailInvalid": "El correo electrónico debe ser válido"
-      }
+      "networkError": "Error de red. Por favor, inténtalo de nuevo."
     }
   },
   "welcome": {

@@ -9,6 +9,7 @@ import { updateUser } from '@/store/slices/userSlice';
 import { useToast } from '@/hooks/useToast';
 import { useTranslations } from 'next-intl';
 import { UpdateUserDto } from '@/types/user';
+import { makeZodMessages } from '@/lib/zodErrorMap';
 
 // Type definition for profile form data
 export type ProfileFormData = {
@@ -25,13 +26,17 @@ export function useProfileForm() {
     const dispatch = useAppDispatch();
     const toast = useToast();
     const t = useTranslations('ProfilePage.editProfile');
+    const tZod = useTranslations('zodErrors');
 
-    // Zod schema with translated validation messages
+    // Créer les messages Zod traduits
+    const zm = makeZodMessages(tZod);
+
+    // Zod schema with translated validation messages via zodErrorMap
     const profileSchema = useMemo(() => z.object({
-        firstName: z.string().min(2, { message: t('validation.firstNameMin') }),
-        lastName: z.string().min(2, { message: t('validation.lastNameMin') }),
-        email: z.string().email({ message: t('validation.emailInvalid') }),
-    }), [t]);
+        firstName: z.string({ message: zm.required() }).min(2, { message: zm.minString(2) }),
+        lastName: z.string({ message: zm.required() }).min(2, { message: zm.minString(2) }),
+        email: z.string({ message: zm.required() }).email({ message: zm.email() }),
+    }), [zm]);
 
     const form = useForm<ProfileFormData>({
         resolver: zodResolver(profileSchema),
