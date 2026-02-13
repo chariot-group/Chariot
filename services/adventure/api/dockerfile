@@ -2,8 +2,13 @@ FROM node:20-alpine AS base
 
 WORKDIR /app
 
-COPY . .
+# Copy package files first for better caching
+COPY package*.json ./
 
+# Install dependencies (this layer will be cached unless package.json changes)
 RUN npm install
+
+# Copy source code
+COPY . .
 
 CMD ["npm", "run", "start:dev"]
