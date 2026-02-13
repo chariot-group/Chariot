@@ -80,7 +80,13 @@
     "editProfile": {
       "successMessage": "Profil mis à jour avec succès",
       "errorMessage": "Échec de la mise à jour du profil",
-      "networkError": "Erreur réseau. Veuillez réessayer."
+      "networkError": "Erreur réseau. Veuillez réessayer.",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "updateProfile": "Mettre à jour le profil",
+      "cancelUpdate": "Annuler",
+      "formLabel": "Formulaire de modification du profil"
     }
   },
   "welcome": {

@@ -80,7 +80,13 @@
     "editProfile": {
       "successMessage": "Profile updated successfully",
       "errorMessage": "Failed to update profile",
-      "networkError": "Network error. Please try again."
+      "networkError": "Network error. Please try again.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "updateProfile": "Update profile",
+      "cancelUpdate": "Cancel",
+      "formLabel": "Profile update form"
     }
   },
   "welcome": {
