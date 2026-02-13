@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, UnauthorizedException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import KcAdminClient from '@keycloak/keycloak-admin-client';
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
@@ -156,6 +156,18 @@ export class KeycloakService {
 
             this.logger.log(`User ${keycloakId} updated successfully in Keycloak`, KeycloakService.name);
         } catch (error) {
+            // Check for email already exists error (Keycloak returns 409 Conflict)
+            if (error.response?.status === 409 ||
+                (error.message && (
+                    error.message.toLowerCase().includes('email') &&
+                    (error.message.toLowerCase().includes('exists') ||
+                        error.message.toLowerCase().includes('already') ||
+                        error.message.toLowerCase().includes('duplicate'))
+                ))) {
+                this.logger.warn(`Email already exists for user ${keycloakId}`, KeycloakService.name);
+                throw new BadRequestException('This email address is already in use by another account');
+            }
+
             this.logger.error(`Failed to update user ${keycloakId} in Keycloak`, error.stack, KeycloakService.name);
             throw error;
         }

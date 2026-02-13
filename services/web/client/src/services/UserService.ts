@@ -32,9 +32,9 @@ class UserService {
         try {
             await apiClient().put(`${this.BASE_PATH}/me/password`, passwordData);
         } catch (error: any) {
-            // Extract error message from API response
-            if (error.response?.data?.message) {
-                throw new Error(error.response.data.message);
+            // Extract error message from API response (RFC 9457 format)
+            if (error.response?.data?.detail) {
+                throw new Error(error.response.data.detail);
             }
             if (error.response?.status === 401) {
                 throw new Error('Current password is incorrect');
@@ -54,9 +54,13 @@ class UserService {
         try {
             const response = await apiClient().put<IResponse<User>>(`${this.BASE_PATH}/me`, userData);
             return response.data.data;
-        } catch (error) {
+        } catch (error: any) {
+            // Extract error message from API response (RFC 9457 format)
+            if (error.response?.data?.detail) {
+                throw new Error(error.response.data.detail);
+            }
             console.error('Error updating current user:', error);
-            throw error;
+            throw new Error('Failed to update profile');
         }
     }
 }

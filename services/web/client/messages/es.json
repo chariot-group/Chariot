@@ -80,7 +80,14 @@
     "editProfile": {
       "successMessage": "Perfil actualizado correctamente",
       "errorMessage": "Error al actualizar el perfil",
-      "networkError": "Error de red. Por favor, inténtalo de nuevo."
+      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
+      "emailAlreadyInUse": "Esta dirección de correo electrónico ya está en uso por otra cuenta",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo electrónico",
+      "updateProfile": "Actualizar perfil",
+      "cancelUpdate": "Cancelar",
+      "formLabel": "Formulario de actualización de perfil"
     }
   },
   "welcome": {

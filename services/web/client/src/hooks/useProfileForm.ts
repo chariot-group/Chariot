@@ -20,9 +20,7 @@ export type ProfileFormData = {
 
 export function useProfileForm() {
     const { user, loading: isLoading } = useUser({ autoFetch: true });
-    const [isSaving, setIsSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [isUpdating, setIsUpdating] = useState<boolean>(false);
     const dispatch = useAppDispatch();
     const toast = useToast();
     const t = useTranslations('ProfilePage.editProfile');
@@ -63,10 +61,6 @@ export function useProfileForm() {
      */
     const onUpdate = useCallback(async (data: ProfileFormData) => {
         try {
-            setIsSaving(true);
-            setError(null);
-            setSuccess(false);
-
             const updateData: UpdateUserDto = {
                 firstName: data.firstName,
                 lastName: data.lastName,
@@ -85,25 +79,32 @@ export function useProfileForm() {
                 email: updatedUser.email || '',
             });
 
-            setSuccess(true);
+            setIsUpdating(false);
             toast.success(t('successMessage'));
-
-            // Reset success state after 3 seconds
-            setTimeout(() => {
-                setSuccess(false);
-            }, 3000);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : t('errorMessage');
-            setError(errorMessage);
+            console.log('response', err);
 
-            // Check if it's a network error
-            if (err instanceof Error && (err.message.includes('Network') || err.message.includes('fetch'))) {
-                toast.error(t('networkError'));
+            // Check for specific error messages
+            if (err instanceof Error) {
+                // Email already in use
+                if (err.message.includes('email') && (err.message.includes('already') || err.message.includes('use'))) {
+                    // Set error on email field
+                    form.setError('email', {
+                        type: 'manual',
+                        message: t('emailAlreadyInUse'),
+                    });
+                }
+                // Network error
+                else if (err.message.includes('Network') || err.message.includes('fetch')) {
+                    toast.error(t('networkError'));
+                }
+                // Generic error
+                else {
+                    toast.error(t('errorMessage'));
+                }
             } else {
                 toast.error(t('errorMessage'));
             }
-        } finally {
-            setIsSaving(false);
         }
     }, [dispatch, form, toast, t]);
 
@@ -117,17 +118,15 @@ export function useProfileForm() {
                 lastName: user.lastName || '',
                 email: user.email || '',
             });
-            setError(null);
-            setSuccess(false);
+            setIsUpdating(false);
         }
     }, [user, form]);
 
     return {
         form,
         isLoading,
-        isSaving,
-        error,
-        success,
+        isUpdating,
+        setIsUpdating,
         onUpdate,
         onCancel,
     };
