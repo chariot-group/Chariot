@@ -82,14 +82,29 @@ export function useProfileForm() {
             setIsUpdating(false);
             toast.success(t('successMessage'));
         } catch (err) {
-            // Check if it's a network error
-            if (err instanceof Error && (err.message.includes('Network') || err.message.includes('fetch'))) {
-                toast.error(t('networkError'));
+            console.log('response', err);
+
+            // Check for specific error messages
+            if (err instanceof Error) {
+                // Email already in use
+                if (err.message.includes('email') && (err.message.includes('already') || err.message.includes('use'))) {
+                    // Set error on email field
+                    form.setError('email', {
+                        type: 'manual',
+                        message: t('emailAlreadyInUse'),
+                    });
+                }
+                // Network error
+                else if (err.message.includes('Network') || err.message.includes('fetch')) {
+                    toast.error(t('networkError'));
+                }
+                // Generic error
+                else {
+                    toast.error(t('errorMessage'));
+                }
             } else {
                 toast.error(t('errorMessage'));
             }
-        } finally {
-            setIsUpdating(false);
         }
     }, [dispatch, form, toast, t]);
 

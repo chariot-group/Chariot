@@ -398,7 +398,7 @@ export default function ProfilePage() {
               type="button"
               form="form-update-profile"
               onClick={() => formProfile.handleSubmit(onUpdate)()}
-              disabled={isLoadingProfile || formProfile.formState.isDirty}
+              disabled={isLoadingProfile || !formProfile.formState.isValid}
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {

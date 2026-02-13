@@ -81,6 +81,7 @@
       "successMessage": "Profile updated successfully",
       "errorMessage": "Failed to update profile",
       "networkError": "Network error. Please try again.",
+      "emailAlreadyInUse": "This email address is already in use by another account",
       "firstName": "First name",
       "lastName": "Last name",
       "email": "Email",

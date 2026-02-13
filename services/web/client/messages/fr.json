@@ -81,6 +81,7 @@
       "successMessage": "Profil mis à jour avec succès",
       "errorMessage": "Échec de la mise à jour du profil",
       "networkError": "Erreur réseau. Veuillez réessayer.",
+      "emailAlreadyInUse": "Cette adresse email est déjà utilisée par un autre compte",
       "firstName": "Prénom",
       "lastName": "Nom",
       "email": "Email",

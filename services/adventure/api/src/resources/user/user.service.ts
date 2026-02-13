@@ -151,6 +151,12 @@ export class UserService {
         data,
       };
     } catch (error) {
+      // Re-throw HTTP exceptions as-is (they already have the correct status code)
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Only transform unexpected errors into 500
       const message = `Error while updating user #${keycloakId}: ${error.message}`;
       this.logger.error(message, error.stack, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
