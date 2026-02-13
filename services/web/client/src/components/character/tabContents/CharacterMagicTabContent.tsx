@@ -22,7 +22,6 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   );
 
   const [showMobileDetails, setShowMobileDetails] = useState(false);
-  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const selectedSpellRef = useRef<HTMLDivElement | null>(null);
 
   const [selectedSpell, setSelectedSpell] = useState<Spell | null>(() => {
@@ -40,6 +39,26 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
     const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
     return selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
   });
+
+  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>(() => {
+    if (!selectedSpellcasting || !selectedSpellcasting.spells || selectedSpellcasting.spells.length === 0) {
+      return [];
+    }
+
+    // Find the lowest level and open its accordion
+    const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
+    return [`level-${minLevel}`];
+  });
+
+  useEffect(() => {
+    // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
+    if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
+      const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
+      const firstSpell = selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
+      setSelectedSpell(firstSpell);
+      setOpenAccordionValues([`level-${minLevel}`]);
+    }
+  }, [selectedSpellcasting]);
 
   useEffect(() => {
     if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
