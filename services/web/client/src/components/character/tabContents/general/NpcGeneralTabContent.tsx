@@ -115,7 +115,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               </h2>
             </Card>
             <div
-              className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+              className="grid grid-cols-2 gap-2"
               role="list">
               {npc?.stats &&
                 Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
@@ -147,7 +147,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               </h2>
             </Card>
             <div
-              className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+              className="grid grid-cols-2 gap-2"
               role="list"
               aria-label={t("skillsList")}>
               <Skill
