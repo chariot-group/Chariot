@@ -5,12 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { Eye, EyeOff, ShoppingCart, SquarePen, User } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import * as z from "zod";
+import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import Token from "@public/assets/token.svg";
@@ -39,30 +38,8 @@ export default function ProfilePage() {
     onUpdate(data);
   }, []);
 
-  const passwordSchema = z
-    .object({
-      currentPassword: z.string().min(1, t("passwordError.required")),
-      newPassword: z.string().min(8, t("passwordError.min")),
-      confirmNewPassword: z.string().min(8, t("passwordError.min")),
-    })
-    .refine((data) => data.newPassword === data.confirmNewPassword, {
-      message: t("passwordError.mismatch"),
-      path: ["confirmNewPassword"],
-    });
-
-  const formPassword = useForm<z.infer<typeof passwordSchema>>({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmNewPassword: "",
-    },
-  });
-
-  function onSubmit(data: z.infer<typeof passwordSchema>) {
-    // TODO: implement password change
-    console.log("Change password data:", data);
-  }
+  // Use custom password form hook
+  const { form: formPassword, onSubmit, isLoading: isLoadingPassword } = usePasswordForm();
 
   useEffect(() => {
     // Ne pas rediriger pendant la transition utilisateur ou le chargement
@@ -131,13 +108,13 @@ export default function ProfilePage() {
             <h2
               id="change-password-heading"
               className="text-lg sm:text-xl font-bold">
-              {t("changePassword")}
+              {t("changePasswordTitle")}
             </h2>
             <div className="px-0 sm:px-2">
               <form
                 id="form-reset-password"
                 onSubmit={formPassword.handleSubmit(onSubmit)}
-                aria-label={t("changePassword")}>
+                aria-label={t("changePasswordTitle")}>
                 <FieldGroup>
                   <Controller
                     name="currentPassword"
@@ -300,6 +277,7 @@ export default function ProfilePage() {
                 <Button
                   type="submit"
                   form="form-reset-password"
+                  disabled={isLoadingPassword}
                   className="w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
                   aria-label={t("updatePassword")}>
                   <SquarePen

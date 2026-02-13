@@ -1,5 +1,5 @@
 import apiClient from '@/services/ApiService';
-import { User, UpdateUserDto } from '@/types/user';
+import { User, PasswordChangeDto, UpdateUserDto } from '@/types/user';
 
 interface IResponse<T> {
     message: string;
@@ -19,6 +19,31 @@ class UserService {
         } catch (error) {
             console.error('Error fetching current user:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Change password for current authenticated user
+     * @param passwordData Current and new passwords
+     * @throws Error with message if password change fails
+     * @see FR-009: User Password Change
+     */
+    async changePassword(passwordData: PasswordChangeDto): Promise<void> {
+        try {
+            await apiClient().put(`${this.BASE_PATH}/me/password`, passwordData);
+        } catch (error: any) {
+            // Extract error message from API response
+            if (error.response?.data?.message) {
+                throw new Error(error.response.data.message);
+            }
+            if (error.response?.status === 401) {
+                throw new Error('Current password is incorrect');
+            }
+            if (error.response?.status === 403) {
+                throw new Error('New password does not meet complexity requirements');
+            }
+            console.error('Error changing password:', error);
+            throw new Error('Failed to change password');
         }
     }
 

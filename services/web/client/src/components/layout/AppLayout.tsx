@@ -3,7 +3,6 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Profile from "@/components/layout/Profile";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
 
 import Logo from "@public/logo.svg";
 
@@ -12,8 +11,6 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const t = useTranslations("AppLayout");
-
   return (
     <div className="min-h-screen flex">
       <Sidebar />

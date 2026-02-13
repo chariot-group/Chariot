@@ -65,6 +65,49 @@ export class UserService {
     }
   }
 
+  /**
+   * Change password for authenticated user
+   * @param keycloakId Keycloak user ID
+   * @param currentPassword Current password to verify
+   * @param newPassword New password to set
+   * @throws UnauthorizedException if current password is incorrect
+   * @throws ForbiddenException if new password doesn't meet policy
+   * @see FR-009: User Password Change
+   */
+  async changePassword(
+    keycloakId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    try {
+      const start: number = Date.now();
+
+      // Retrieve user to get username
+      const keycloakUser: UserRepresentation = await this.keycloakService.getUserById(keycloakId);
+      if (!keycloakUser) {
+        const message: string = `User #${keycloakId} not found in Keycloak`;
+        this.logger.error(message, null, this.SERVICE_NAME);
+        throw new NotFoundException(message);
+      }
+
+      // Change password via Keycloak
+      await this.keycloakService.changeUserPassword(
+        keycloakId,
+        keycloakUser.username,
+        currentPassword,
+        newPassword,
+      );
+
+      const end: number = Date.now();
+      const message: string = `Password changed successfully for user #${keycloakId} in ${end - start}ms`;
+      this.logger.log(message, this.SERVICE_NAME);
+    } catch (error) {
+      const message = `Error while changing password for user #${keycloakId}: ${error.message}`;
+      this.logger.error(message, null, this.SERVICE_NAME);
+      throw error;
+    }
+  }
+
   async updateUser(keycloakId: string, updateData: { firstName?: string; lastName?: string; email?: string }): Promise<IResponse<UserInfoDto>> {
     try {
       const start: number = Date.now();

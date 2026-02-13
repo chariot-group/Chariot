@@ -1,5 +1,7 @@
-import apiClient from './ApiService';
-import { Character, PaginatedCharactersResponse } from '@/types/character';
+import apiClient from '@/services/ApiService';
+import { Character, PaginatedCharactersResponse, Player, NPC } from '@/types/character';
+
+type CharacterType = 'players' | 'npcs';
 
 interface CharacterResponse {
     message: string;
@@ -23,14 +25,44 @@ class CharacterService {
     }
 
     /**
-     * Met à jour un personnage
+     * Crée un nouveau personnage (Player ou NPC)
+     * @param type - Type de personnage ('players' ou 'npcs')
+     * @param data - Données du personnage à créer
      */
-    async updateCharacter(characterId: string, data: Partial<Character>): Promise<Character> {
+    async createCharacter(type: CharacterType, data: Partial<Player> | Partial<NPC>): Promise<Player | NPC> {
         try {
-            const response = await apiClient().patch<CharacterResponse>(`${this.BASE_PATH}/${characterId}`, data);
-            return response.data.data;
+            console.log('🌐 [CharacterService] Envoi à l\'API:', type, JSON.stringify(data, null, 2));
+            const response = await apiClient().post<CharacterResponse>(
+                `${this.BASE_PATH}/${type}`,
+                data
+            );
+            console.log('✅ [CharacterService] Réponse de l\'API:', response.data);
+            return response.data.data as Player | NPC;
         } catch (error) {
-            console.error(`Error updating character ${characterId}:`, error);
+            console.error(`Error creating ${type}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Met à jour un personnage (Player ou NPC)
+     * @param type - Type de personnage ('players' ou 'npcs')
+     * @param characterId - ID du personnage
+     * @param data - Données partielles à mettre à jour
+     */
+    async updateCharacter(
+        type: CharacterType,
+        characterId: string,
+        data: Partial<Player> | Partial<NPC>
+    ): Promise<Player | NPC> {
+        try {
+            const response = await apiClient().patch<CharacterResponse>(
+                `${this.BASE_PATH}/${type}/${characterId}`,
+                data
+            );
+            return response.data.data as Player | NPC;
+        } catch (error) {
+            console.error(`Error updating ${type} ${characterId}:`, error);
             throw error;
         }
     }
