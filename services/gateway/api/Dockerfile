@@ -22,5 +22,5 @@ EXPOSE 8082
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Install dependencies and start dev server
-CMD ["sh", "-c", "npm install && npm run start:dev"]
+# Start dev server (dependencies already installed in build step)
+CMD ["npm", "run", "start:dev"]

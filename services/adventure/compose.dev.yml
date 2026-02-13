@@ -13,13 +13,16 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${CHARIOT_MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${CHARIOT_MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${CHARIOT_MONGO_INITDB_DATABASE}
-    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend"]
+    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend", "--wiredTigerCacheSizeGB", "0.5"]
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
-      retries: 5
-      start_period: 40s
+      retries: 3
+      start_period: 10s
+    tmpfs:
+      - /tmp:size=100M,mode=1777
+    shm_size: 256mb
     networks:
       - adventure-network
 

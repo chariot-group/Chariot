@@ -44,7 +44,7 @@ network: ## Crée le réseau Docker si nécessaire
 up: network ## Lance tous les services (ENV=dev par défaut)
 ifdef SERVICE
 	@echo "$(YELLOW)Démarrage du service $(SERVICE) ($(ENV))...$(NC)"
-	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml up --build -d
+	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml up -d
 	@echo "$(GREEN)✓ Service $(SERVICE) démarré$(NC)"
 else
 	@echo "$(YELLOW)Démarrage de tous les services ($(ENV))...$(NC)"
@@ -53,7 +53,7 @@ else
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Démarrage de $$service...$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up --build -d && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up -d && cd ../..; \
 		else \
 			echo "$(RED)✗ Fichier $$compose_file introuvable$(NC)"; \
 		fi; \
@@ -94,6 +94,24 @@ endif
 	@echo "$(GREEN)✓ Services arrêtés et volumes supprimés$(NC)"
 
 restart: down up ## Redémarre les services
+
+rebuild: ## Rebuild et lance les services (avec reconstruction des images)
+ifdef SERVICE
+	@echo "$(YELLOW)Rebuild et démarrage du service $(SERVICE) ($(ENV))...$(NC)"
+	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml up --build -d
+	@echo "$(GREEN)✓ Service $(SERVICE) rebuilded et démarré$(NC)"
+else
+	@echo "$(YELLOW)Rebuild et démarrage de tous les services ($(ENV))...$(NC)"
+	@for dir in $(SERVICES_DIR)/*/; do \
+		service=$$(basename $$dir); \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
+		if [ -f "$$compose_file" ]; then \
+			echo "$(BLUE)→ Rebuild de $$service...$(NC)"; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up --build -d && cd ../..; \
+		fi; \
+	done
+	@echo "$(GREEN)✓ Tous les services sont rebuilded et démarrés$(NC)"
+endif
 
 pull: ## Pull les images depuis le registry (pour prod/integ)
 ifdef SERVICE
