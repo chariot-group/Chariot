@@ -56,7 +56,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           aria-labelledby="character-info-section">
           {/* Personnage */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 order-1"
             role="region"
             aria-labelledby="character-heading">
             <h2
@@ -97,14 +97,16 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
 
           {/* Caractéristiques */}
-          <AbilityScores
-            character={player}
-            accentColor={accentColor}
-          />
+          <div className="order-3 min-[450px]:order-2">
+            <AbilityScores
+              character={player}
+              accentColor={accentColor}
+            />
+          </div>
 
           {/* Maitrise */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
             role="region"
             aria-labelledby="proficiencies-heading">
             <h2
@@ -133,17 +135,17 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
         </section>
 
-        {/* Colonne 2 : Caractéristiques et Compétences */}
+        {/* Colonne 2 : Bonus, Jets de sauvegarde et Compétences */}
         <section
-          className="flex flex-col gap-2 md:gap-4"
+          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
           aria-labelledby="characteristics-skills-section">
           {/* Bonus */}
           <Card
             className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
             role="region"
-            aria-labelledby="exhaustion-heading">
+            aria-labelledby="proficiency-bonus-heading">
             <h2
-              id="exhaustion-heading"
+              id="proficiency-bonus-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("proficiencyBonus")}
             </h2>
@@ -189,7 +191,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </div>
 
           {/* Compétences */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 order-4 min-[450px]:order-3">
             <Card
               className="gap-3 py-4 px-4 md:px-6"
               role="region"
@@ -372,7 +374,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
         {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
         <section
-          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1"
+          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1 order-5 min-[450px]:order-0"
           aria-labelledby="additional-info-section">
           {/* Epuisement */}
           <Card

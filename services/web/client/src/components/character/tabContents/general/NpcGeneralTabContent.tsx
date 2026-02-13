@@ -49,7 +49,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           aria-label={tNpc("general.characterInfo")}>
           {/* Personnage */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 order-1"
             role="region"
             aria-labelledby="character-heading">
             <h2
@@ -68,14 +68,16 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </Card>
 
           {/* Caractéristiques */}
-          <AbilityScores
-            character={npc}
-            accentColor={accentColor}
-          />
+          <div className="order-3 min-[450px]:order-2">
+            <AbilityScores
+              character={npc}
+              accentColor={accentColor}
+            />
+          </div>
 
           {/* Maitrise */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
             role="region"
             aria-labelledby="languages-heading">
             <h2
@@ -95,12 +97,12 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </Card>
         </section>
 
-        {/* Colonne 2 : Caractéristiques et Compétences */}
+        {/* Colonne 2 : Jets de sauvegarde et Compétences */}
         <section
-          className="flex flex-col gap-2 md:gap-4"
+          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
           aria-labelledby="characteristics-skills-section"
           aria-label={tNpc("general.characteristicsSkills")}>
-          {/* Jet de sauvegarde */}
+          {/* Jets de sauvegarde */}
           <div className="flex flex-col gap-2">
             <Card
               className="gap-3 py-4 px-4 md:px-6"
@@ -386,9 +388,9 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </div>
         </section>
 
-        {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
+        {/* Colonne 3 : Alignement, Perception passive et Aptitudes */}
         <section
-          className="flex flex-col gap-2 md:gap-4"
+          className="flex flex-col gap-2 md:gap-4 order-5 min-[450px]:order-0"
           aria-labelledby="additional-info-section"
           aria-label={tNpc("general.additionalInfo")}>
           {/* Alignement */}
