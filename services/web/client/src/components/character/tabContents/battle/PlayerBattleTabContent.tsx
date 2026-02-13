@@ -272,13 +272,15 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
       </div>
       <div className="grid lg:grid-cols-2 gap-2 w-full">
         {/* Capacités et traits */}
-        <AbilitiesSection
-          abilities={player.abilities}
-          accentColor={accentColor}
-          title={t("abilitiesAndTraits")}
-          headingId="abilities-traits-heading"
-        />
-        <div className="flex flex-row gap-2">
+        <div className="order-2 lg:order-1">
+          <AbilitiesSection
+            abilities={player.abilities}
+            accentColor={accentColor}
+            title={t("abilitiesAndTraits")}
+            headingId="abilities-traits-heading"
+          />
+        </div>
+        <div className="flex flex-row gap-2 order-1 lg:order-2">
           {/* Actions */}
           <ActionSection
             title={t("actions")}
