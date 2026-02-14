@@ -422,8 +422,9 @@ export default function ProfilePage() {
                 setIsUpdating(true);
               }
             }}
-            aria-label="Modifier mes informations">
-            <SquarePen aria-hidden="true" /> Modifier mes informations
+            aria-label={tEdit("updateProfileLabel")}>
+            <SquarePen aria-hidden="true" />               {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
+
           </Button>
         )}
       </div>
