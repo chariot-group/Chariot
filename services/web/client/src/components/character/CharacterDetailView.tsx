@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "lucide-react";
+import { User, SquarePen } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +13,7 @@ import CharacterGeneralTabContent from "@/components/character/tabContents/gener
 import Image from "next/image";
 import CharacterMagicTabContent from "@/components/character/tabContents/CharacterMagicTabContent";
 import { isPlayer } from "@/utils/global.utils";
+import { Button } from "@/components/ui/button";
 
 export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
 
@@ -35,14 +36,14 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
   const [activeTab, setActiveTab] = useState<CharacterTab>("general");
 
   return (
-    <main>
+    <main className="flex flex-col h-full overflow-hidden">
       <Tabs
         defaultValue="general"
         value={activeTab}
         onValueChange={(value: string) => setActiveTab(value as CharacterTab)}
-        className="w-full">
+        className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* Header avec onglets et infos du personnage */}
-        <div>
+        <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
             <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-0 xl:gap-8">
               {/* Onglets */}
@@ -60,11 +61,10 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                     className={`
                                             flex-none p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
                                             focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                                            ${
-                                              activeTab === tab
-                                                ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
-                                                : `text-white bg-gray hover:bg-gray-middle`
-                                            }
+                                            ${activeTab === tab
+                        ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
+                        : `text-white bg-gray hover:bg-gray-middle`
+                      }
                                         `}>
                     {t(`tabs.${tab}`)}
                   </TabsTrigger>
@@ -131,8 +131,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
           </div>
         </div>
 
-        {/* Contenu des onglets */}
-        <div className="w-full mx-auto px-4 sm:px-6 min-[325px]:py-10 md:px-8 py-16 lg:py-4">
+        {/* Contenu des onglets - scrollable */}
+        <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
           {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
             <TabsContent
               key={tab}
@@ -187,6 +187,36 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
           ))}
         </div>
       </Tabs>
+
+      {/* Footer avec bouton - fixe en bas */}
+      <div className="shrink-0 w-full px-4 sm:px-6 md:px-10 py-5 border-t border-transparent">
+        <div className="w-full mx-auto flex flex-row-reverse">
+          <Button
+            type="button"
+            onClick={() => {
+              // Pour le moment, ne fait rien
+            }}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                // Pour le moment, ne fait rien
+              }
+            }}
+            className={`
+              text-lg font-semibold py-5.5
+              ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
+              ${activeTab === "combat" ? "bg-red hover:bg-red/90 text-white" : ""}
+              ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
+              ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
+              ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+            `}
+            aria-label={t("editCharacter")}>
+            <SquarePen className="size-5" aria-hidden="true" />
+            {t("editCharacter")}
+          </Button>
+        </div>
+      </div>
     </main>
   );
 }

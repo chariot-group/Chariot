@@ -149,6 +149,7 @@
     },
     "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}"
   },  "characterDetail": {
+    "editCharacter": "Modifier le personnage",
     "tabs": {
       "general": "Général",
       "combat": "Combat",

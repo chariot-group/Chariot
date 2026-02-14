@@ -151,6 +151,7 @@
     "notMultipleOf": "Number must be a multiple of {multipleOf}"
   },
   "characterDetail": {
+    "editCharacter": "Edit character",
     "tabs": {
       "general": "General",
       "combat": "Combat",

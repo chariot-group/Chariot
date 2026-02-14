@@ -32,12 +32,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="h-screen flex overflow-hidden">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 xl:pl-6 pt-0 min-h-screen">
-          <header className="w-full flex justify-center items-center px-2 sm:px-4 relative">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 xl:pl-6 pt-0 flex flex-col overflow-hidden">
+          <header className="w-full flex justify-center items-center px-2 sm:px-4 relative shrink-0">
             <button onClick={handleLogoClick} className="cursor-pointer bg-transparent border-none p-0">
               <Image
                 src={Logo}
@@ -53,7 +53,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
           </header>
 
-          {children}
+          <div className="flex-1 overflow-hidden">
+            {children}
+          </div>
         </main>
       </div>
     </div>
