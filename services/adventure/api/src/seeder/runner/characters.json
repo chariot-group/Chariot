@@ -2615,5 +2615,1439 @@
       "immunities": [],
       "vulnerabilities": []
     }
+  },
+  {
+  "firstname": "Meïl",
+  "lastname": "Archibald",
+  "kind": "player",
+  "inspiration": false,
+  "profile": {
+    "alignment": "True Neutral",
+    "race": "Elf",
+    "subrace": "High Elf",
+    "history": "Sage (Bibliothécaire)"
+  },
+  "progression": {
+    "level": 5,
+    "experience": 9425
+  },
+  "class": [
+    {
+      "name": "Wizard",
+      "subclass": "School of Evocation",
+      "level": 5,
+      "hitDice": 6
+    }
+  ],
+  "stats": {
+    "size": "Medium",
+    "maxHitPoints": 31,
+    "currentHitPoints": 31,
+    "tempHitPoints": 0,
+    "armorClass": 13,
+    "initiative": 3,
+    "speed": {
+      "walk": 30
+    },
+    "abilityScores": {
+      "strength": 10,
+      "dexterity": 16,
+      "constitution": 13,
+      "intelligence": 18,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "savingThrows": {
+      "strength": 0,
+      "dexterity": 3,
+      "constitution": 1,
+      "intelligence": 7,
+      "wisdom": 3,
+      "charisma": 0
+    },
+    "skills": {
+      "athletics": 0,
+      "acrobatics": 3,
+      "sleightHand": 3,
+      "stealth": 3,
+      "arcana": 7,
+      "history": 7,
+      "investigation": 7,
+      "nature": 4,
+      "religion": 4,
+      "animalHandling": 0,
+      "insight": 3,
+      "medicine": 0,
+      "perception": 3,
+      "survival": 0,
+      "deception": 0,
+      "intimidation": 0,
+      "performance": 0,
+      "persuasion": 0
+    },
+    "masteries": {
+      "athletics": 0,
+      "acrobatics": 0,
+      "sleightHand": 0,
+      "stealth": 0,
+      "arcana": 2,
+      "history": 2,
+      "investigation": 2,
+      "nature": 0,
+      "religion": 0,
+      "animalHandling": 0,
+      "insight": 2,
+      "medicine": 0,
+      "perception": 2,
+      "survival": 0,
+      "deception": 0,
+      "intimidation": 0,
+      "performance": 0,
+      "persuasion": 0
+    },
+    "masteriesAbility": {
+      "strength": false,
+      "dexterity": false,
+      "constitution": false,
+      "intelligence": true,
+      "wisdom": true,
+      "charisma": false
+    },
+    "languages": [
+      "Commun",
+      "Elfique",
+      "Gobelin",
+      "Draconique",
+      "Sylvestre"
+    ],
+    "weapons": [
+      "dague",
+      "fléchette",
+      "fronde",
+      "bâton",
+      "arbalète légère",
+      "épée courte",
+      "épée longue",
+      "arc court",
+      "arc long"
+    ],
+    "passivePerception": 13,
+    "senses": [
+      {
+        "name": "Vision dans le noir",
+        "value": 60
+      }
+    ],
+    "proficiencyBonus": 3
+  },
+  "appearance": {
+    "age": 307,
+    "height": 1.85,
+    "weight": 77,
+    "eyes": "Dorés",
+    "skin": "Bronze",
+    "hair": "Dorés",
+    "description": "Un homme prestant, à la silhouette élancée et d'une grâce inégalée. Meïl mesure 1m80, pour 55kg à l'âge de 307 ans. Il a les yeux dorés, la peau bronzée et une chevelure noire."
+  },
+  "background": {
+    "personalityTraits": "Je me tiens toujours à un niveau d’excellence absolue, et j’attends la même chose des autres.",
+    "ideals": "La connaissance est la clé de la maîtrise du monde.",
+    "bonds": "Mon prestigieux pendentif est le symbole de mon lignage, et je ferai tout pour le protéger.",
+    "flaws": "Je méprise quiconque qui use de la magie inférieur, ce qui m'isole parfois involontairement.",
+    "alliesAndOrgs": "",
+    "backstory": "Sage (Bibliothécaire) Né dans une prestigieuse lignée parmi les Elfes du Soleil, Meïl incarne parfaitement les qualités et les défauts de son peuple : érudition, élégance et les artifices de sa très haute naissance. Dès son plus jeune âge, sa brillante intelligence et ses talents naturels pour la magie le distinguèrent de ses pairs. Mais ces dons exceptionnels furent également la source d'un orgueil démesuré et d'un certain mépris de son respect – y compris parmi les siens. Ses parents, bien que souvent dépassés par son caractère, lui inculquèrent certaines valeurs et prétentions, car il les surpassait toujours en tout ce qu'il entreprenait. \"On peut se permettre d'être arrogant, tant que l'on est à 'hauteur', telle est la philosophie qu'il suit avec une ferveur inébranlable. Grâce à sa rigueur intellectuelle et sa maturité, il requit un pendentif familial, symbole de son haut rang et du caractère sacré de son clan même parmi les Elfes du Soleil. Malgré son caractère hautain, Meïl garde un profond respect rarement, de forger des liens avec des individus qu'il estime véritablement dignes. Il devint l'un des rares personnages qu'il respecte profondément, un mentor qui tempéra un temps son arrogance. Néanmoins, même cette rencontre ne suffit jamais véritablement à apaiser totalement ses pulsions d'une modeste bibliothécaire, une femme d'apparence insignifiante mais à l'esprit remarquable. D'abord interloqué pour son humilité et son manque d'ambition, il fut fasciné par sa dévotion aux livres. À sa propre surprise, il développa une amitié sincère et inattendue pour un elfe de sa personnalité. Elle devint l'une des rares personnes qu'il rencontre et respecte profondément, un mentor qui tempéra un temps son arrogance. Néanmoins, même avec ses apparences et les statuts. Aujourd'hui, Meïl s'efforce, lentement mais sûrement, de tempérer son mépris naturel et d'ouvrir son esprit à d'autres cultures et perspectives. Il sait que sa quête de savoir ne peut pas le limiter à d'autres cultures."
+  },
+  "treasure": {
+    "cp": 63,
+    "sp": 25,
+    "ep": 0,
+    "gp": 156,
+    "pp": 100,
+    "treasure": "Un pendentif exclusif à la lignée sacrée de son clan : Retiré lors de l'affrontement avec la démone. Confié à Noc., il me le rendra quand il aura retrouvé son apparence. Parchemin : Forme éthéré, Ténèbres, Mur de sable, Arme elémentaire Copie de mon grimoire (Juste). Jusqu'à Identification (Lvl 1), Immobilisation de personne (Lvl 2). Anneau de protection (+1 CA / +1 jets de sauvegarde) Tablette d'obsidienne Grimoire sans fin : Amitié avec les animaux Carte de Cardioline (Bateau), Livre - « Études des créatures magiques » : Faible chance de m'en apprendre sur les créatures que l'on croise (1/10); 1 p'tite poignée de baies",
+    "equipment": "Bâton, sacoche à composantes, grimoire, sac à dos, livre, encre/bouteille, plume d'écriture, parchemin (10), petit sac de sable, petit couteau, lettre d'un collègue mort"
+  },
+  "abilities": [
+    {
+      "name": "Restauration arcanique",
+      "description": "Restauration arcanique (1x/jour, récupère [niveau/2] emplacements = niveau 5 max)"
+    },
+    {
+      "name": "Façonneur de sorts",
+      "description": "Façonneur de sorts ([1+niveau du sort] créatures réussissent automatiquement leur jet de sauvegarde)"
+    },
+    {
+      "name": "Évocateur érudit",
+      "description": "Or et temps pour copier /2"
+    },
+    {
+      "name": "Ascendance féerique",
+      "description": "Ascendance féerique (Avantage aux jets de sauvegarde vs charme et la magie ne peut pas vous endormir)"
+    },
+    {
+      "name": "Transe",
+      "description": "Transe (4h de méditation remplaçant 8h de sommeil)"
+    },
+    {
+      "name": "Sens aiguisés",
+      "description": "Sens aiguisés (Maîtrise de la compétence Perception)"
+    },
+    {
+      "name": "Entraînement aux armes elfiques",
+      "description": "Entraînement aux armes elfiques"
+    },
+    {
+      "name": "Sort mineur",
+      "description": "Sort mineur racial (Protection contre les armes à volonté)"
+    },
+    {
+      "name": "Chercheur",
+      "description": "Chercheur (connaissance approfondie sur où et comment trouver des informations)"
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bâton",
+      "type": "mêlée",
+      "attackBonus": 3,
+      "damage": [
+        {
+          "dice": "1d6",
+          "type": "contondant"
+        }
+      ],
+      "range": "1,5 m",
+      "description": "Attaque de mêlée avec un bâton"
+    }
+  ],
+  "spellcasting": [
+    {
+      "className": "Wizard",
+      "ability": "Intelligence",
+      "saveDC": 15,
+      "attackBonus": 7,
+      "spellSlotsByLevel": {
+        "1": {
+          "total": 4,
+          "used": 0
+        },
+        "2": {
+          "total": 3,
+          "used": 0
+        },
+        "3": {
+          "total": 2,
+          "used": 0
+        }
+      },
+      "totalSlots": 9,
+      "spells": [
+        {
+          "name": "Réparation",
+          "level": 0,
+          "school": "Transmutation",
+          "description": "Ce sort répare une simple fissure, déchirure ou fêlure sur un objet que vous touchez, comme un maillon de chaîne cassé, une clé brisée en deux morceaux, un accroc sur un manteau ou une fuite sur une outre. Tant que la fissure ou l'accroc n'excède pas 30 cm dans toutes les dimensions, vous le réparez, ne laissant aucune trace de la détérioration passée. Ce sort peut réparer physiquement un objet magique ou un artificiel, mais ne peut pas rendre sa magie à un objet.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 minute",
+          "duration": "Instantané",
+          "range": "Contact",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Trait de feu",
+          "level": 0,
+          "school": "Évocation",
+          "description": "Vous lancez un trait de feu sur une créature ou un objet à portée. Faites une attaque à distance avec un sort contre la cible. En cas de réussite, la cible prend 1d10 dégâts de feu. Un objet inflammable touché par ce sort prend feu s'il n'est pas porté.\nLes dégâts du sort augmentent de 1d10 aux niveaux 5 (2d10), 11 (3d10) et 17 (4d10).",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "Instantané",
+          "range": "36 m",
+          "effectType": "attaque",
+          "damage": "1d10"
+        },
+        {
+          "name": "Main de mage",
+          "level": 0,
+          "school": "Invocation",
+          "description": "Une main spectrale apparaît à un point précis choisi à portée. La main expire à la fin de la durée du sort ou si elle est révoquée au prix d'une action. La main disparaît si elle se retrouve à plus de 9 mètres du lanceur de sorts ou si ce sort est jeté une nouvelle fois.\nLe lanceur de sorts peut utiliser son action pour contrôler la main. La main peut manipuler un objet, ouvrir une porte ou un contenant non verrouillé, ranger ou récupérer un objet d'un contenant ouvert, ou bien verser le contenu d'une fiole. La main peut être déplacée jusqu'à 9 mètres à chaque fois que vous l'utilisez.\nLa main ne peut attaquer, activer des objets magiques ou transporter plus de 5 kg.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "1 minute",
+          "range": "9 m",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Message",
+          "level": 0,
+          "school": "Transmutation",
+          "description": "Vous pointez votre doigt en direction d'une créature à portée et murmurez un message. La cible (et seulement la cible) entend le message et peut répondre en un murmure que vous seul pouvez entendre. Vous pouvez lancer ce sort à travers des objets solides si vous connaissez bien la cible et que vous savez qu'elle est derrière l'obstacle. Ce sort est arrêté par un silence magique, 30 cm de pierre, 2,50 cm de métal, une fine feuille de plomb ou 90 cm de bois. Ce sort ne doit pas forcément suivre une ligne droite et peut contourner les angles ou passer par de petites ouvertures.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "1 round",
+          "range": "36 m",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Alarme",
+          "level": 1,
+          "school": "Abjuration",
+          "description": "Vous mettez en place une alarme contre les intrusions indésirables. Choisissez une porte, une fenêtre, ou une zone à portée qui ne dépasse pas un cube de 6 mètres d'arête. Jusqu'à la fin du sort, une alarme vous alerte lorsqu'une créature de taille TP ou supérieure touche ou pénètre la zone surveillée. Lorsque vous lancez ce sort, vous pouvez désigner des créatures qui ne déclencheront pas l'alarme. Vous pouvez également choisir si l'alarme est audible ou juste mentale.\nUne alarme mentale vous alerte avec une sonnerie dans votre esprit à condition que vous soyez à 1,5 kilomètre maximum de la zone surveillée. Cette sonnerie vous réveille si vous êtes endormi. Une alarme audible produit le son d'une clochette à main, pendant 10 secondes, pouvant être entendue à 18 mètres.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 minute",
+          "duration": "8 heures",
+          "range": "9 m",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Projectile magique",
+          "level": 1,
+          "school": "Évocation",
+          "description": "Vous créez trois fléchettes de force magique d'un bleu lumineux. Chaque fléchette atteint une créature de votre choix que vous pouvez voir et dans la limite de portée du sort. Chaque projectile inflige 1d4 + 1 dégâts de force à sa cible. Les fléchettes frappent simultanément, et peuvent frapper une ou plusieurs créatures.\nAux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, il crée une fléchette additionnelle pour chaque niveau d'emplacement au-delà du niveau 1.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "Instantané",
+          "range": "36 m",
+          "effectType": "attaque",
+          "damage": "1d4+1"
+        },
+        {
+          "name": "Compréhension des langues",
+          "level": 1,
+          "school": "Divination",
+          "description": "Pendant la durée du sort, vous comprenez la signification littérale de toute langue parlée que vous pouvez entendre. Vous comprenez également tout langage écrit que vous pouvez voir, mais vous devez toucher la surface sur laquelle les mots sont inscrits. Il faut une minute pour lire une page de texte.\nCe sort ne décode pas les messages secrets dans un texte ou un glyphe, tel qu'un symbole magique, qui ne fait pas partie du langage écrit.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "1 heure",
+          "range": "Soi-même",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Trait ensorcelé",
+          "level": 1,
+          "school": "Évocation",
+          "description": "Un rayon d'énergie bleu crépitante est projeté sur une créature à portée, formant un arc électrique continu entre la cible et vous. Effectuez une attaque à distance avec un sort contre la créature. Si vous touchez, la cible subit 1d12 dégâts de foudre, et à chacun de vos tours, pour la durée du sort, vous pouvez utiliser votre action pour infliger automatiquement 1d12 dégâts de foudre à la cible. Le sort se termine si vous utilisez votre action pour faire autre chose qu'infliger ces dégâts de foudre, si la cible se retrouve hors de la portée du sort, ou si elle obtient un abri total contre vous.\nAux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts initiaux sont augmentés de 1d12 pour chaque niveau d'emplacement au-delà du niveau 1.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "Instantané",
+          "range": "36 m",
+          "effectType": "attaque",
+          "damage": "1d12"
+        },
+        {
+          "name": "Détection de la magie",
+          "level": 1,
+          "school": "Divination",
+          "description": "Pour la durée du sort, vous percevez la présence de magie à 9 mètres ou moins de vous. Si vous percevez de la magie de cette manière, vous pouvez utiliser votre action pour discerner une faible aura enveloppant une créature ou un objet visible dans la zone qui présente de la magie. Vous déterminez aussi l'école de magie, le cas échéant.\nLe sort peut outrepasser la plupart des obstacles mais il est bloqué par 30 cm de pierre, 2,50 cm de métal ordinaire, une mince feuille de plomb ou 90 cm de bois ou de terre.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "Concentration, jusqu'à 10 minutes",
+          "range": "Soi-même",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Armure de mage",
+          "level": 1,
+          "school": "Abjuration",
+          "description": "Vous touchez une créature consentante qui ne porte pas d'armure, et une force magique de protection l'englobe jusqu'à ce que le sort prenne fin. La CA de la cible passe à 13 + son modificateur de Dextérité. Le sort prend fin si la cible enfile une armure ou si vous prenez une action pour interrompre le sort.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "8 heures",
+          "range": "Contact",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Orbe chromatique",
+          "level": 1,
+          "school": "Évocation",
+          "description": "Vous projetez une sphère d'énergie de 10 cm de diamètre vers une créature que vous pouvez voir dans la portée du sort. Vous choisissez acide, foudre, feu, froid, poison ou tonnerre comme type d'orbe que vous créez. Vous faites ensuite une attaque à distance avec un sort contre la cible. Si l'attaque touche, la créature subit 3d8 dégâts du type préalablement déterminé.\nAux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 1.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Instantané",
+          "range": "27 m",
+          "effectType": "attaque",
+          "damage": "3d8"
+        },
+        {
+          "name": "Bouclier",
+          "level": 1,
+          "school": "Abjuration",
+          "description": "Une barrière invisible de force magique apparaît et vous protège. Jusqu'au début de votre prochain tour, vous obtenez un bonus de +5 à votre CA, y compris contre l'attaque qui a déclenché le sort, et vous ne prenez aucun dégât par le sort projectile magique.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 réaction",
+          "duration": "1 round",
+          "range": "Soi-même",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Identification",
+          "level": 1,
+          "school": "Divination",
+          "description": "Vous choisissez un objet que vous devez toucher durant toute la durée du sort. Si l'objet est magique ou imprégné de magie, vous apprenez ses propriétés et comment les utiliser, s'il requiert un lien pour être utilisé et le nombre de charges qu'il contient, le cas échéant. Vous apprenez si des sorts affectent l'objet et quels sont ces sorts. Si l'objet a été créé par un ou plusieurs sorts, vous apprenez quels sorts ont permis de le créer.\nSi vous touchez une créature durant toute la durée du sort, au lieu d'un objet, vous apprenez quels sorts l'affectent actuellement, le cas échéant.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 minute",
+          "duration": "Instantané",
+          "range": "Contact",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Bourrasque",
+          "level": 2,
+          "school": "Évocation",
+          "description": "Un corridor de vent fort long de 18 mètres et large de 3 mètres souffle de votre position vers une direction de votre choix, pour la durée du sort. Chaque créature qui débute son tour dans le corridor doit réussir un jet de sauvegarde de Force, sans quoi elle est poussée de 4,50 mètres dans l'axe du corridor.\nToute créature dans le corridor doit consommer 2 mètres de mouvement pour chaque mètre parcouru lorsqu'elle se rapproche de vous.\nLa bourrasque disperse les gaz et la vapeur, et elle éteint les bougies, les torches et les autres flammes exposées dans la zone. Elle fait vaciller les flammes protégées, comme celle d'une lanterne, qui ont alors 50 % de chance de s'éteindre.\nLors d'une action bonus à chacun de vos tours avant que le sort prenne fin, vous pouvez changer la direction du corridor de vent.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Concentration, jusqu'à 1 minute",
+          "range": "Soi-même",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Fracassement",
+          "level": 2,
+          "school": "Évocation",
+          "description": "Un fort bruit résonnant, douloureusement intense, retentit d'un point de votre choix dans la portée du sort. Chaque créature présente dans une sphère d'un rayon de 3 mètres centrée sur ce point doit effectuer un jet de sauvegarde de Constitution, subissant 3d8 dégâts de tonnerre en cas d'échec, ou la moitié de ces dégâts en cas de réussite. Une créature constituée de matériau inorganique, comme la pierre, le cristal ou le métal, fait son jet de sauvegarde avec un désavantage.\nUn objet non magique qui n'est pas porté ou transporté subit aussi les dégâts s'il est dans la zone du sort.\nAux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les dégâts du sort augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 2.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Instantané",
+          "range": "18 m",
+          "effectType": "attaque",
+          "damage": "3d8"
+        },
+        {
+          "name": "Image miroir",
+          "level": 2,
+          "school": "Illusion",
+          "description": "Trois duplicatas illusoires de votre personne apparaissent dans votre espace. Jusqu'à la fin du sort, les duplicatas se déplacent avec vous et ils imitent vos actions, permutant leur position de sorte qu'il soit impossible de déterminer laquelle des images est réelle. Vous pouvez utiliser votre action pour dissiper les duplicatas illusoires.\nÀ chaque fois qu'une créature vous prend pour cible avec une attaque pendant la durée du sort, lancez 1d20 pour déterminer si l'attaque ne cible pas plutôt un de vos duplicatas.\nSi vous avez trois duplicatas, vous devez obtenir 6 ou plus sur votre lancer pour diriger la cible de l'attaque vers un duplicata. Avec deux duplicatas, vous devez obtenir 8 ou plus. Avec un seul duplicata, vous devez obtenir 11 ou plus.\nLa CA d'un duplicata est égale à 10 + votre modificateur de Dextérité. Si une attaque touche un duplicata, il est détruit. Un duplicata peut être détruit seulement par une attaque qui le touche. Il ignore les autres dégâts et effets. Le sort prend fin si les trois duplicatas sont détruits.\nUne créature n'est pas affectée par ce sort si elle ne peut pas voir, si elle se fie sur un autre sens que la vision, comme la vision aveugle, ou si elle peut percevoir les illusions comme étant fausses, comme avec vision suprême.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "1 minute",
+          "range": "Soi-même",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Immobilisation de personne",
+          "level": 2,
+          "school": "Enchantement",
+          "description": "Choisissez un humanoïde visible dans la portée du sort. La cible doit réussir un jet de sauvegarde de Sagesse ou être paralysée pour la durée du sort. À la fin de chacun de ses tours, la cible peut faire un autre jet de sauvegarde de Sagesse. Si elle réussit, le sort prend fin.\nAux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, vous pouvez cibler un humanoïde supplémentaire pour chaque niveau d'emplacement au-delà du niveau 2. Les humanoïdes doivent être situés à 9 mètres ou moins les uns des autres.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Concentration, jusqu'à 1 minute",
+          "range": "18 m",
+          "effectType": "attaque"
+        },
+        {
+          "name": "Ténèbres",
+          "level": 2,
+          "school": "Évocation",
+          "description": "Des ténèbres magiques s'étendent d'un point de votre choix dans la portée du sort pour remplir une sphère de 4,50 mètres de rayon pour la durée du sort. Ces ténèbres contournent les coins. Une créature avec la vision dans le noir ne peut percer ces ténèbres et une lumière non magique ne peut y éclairer.\nSi le point choisi est un objet que vous portez ou qui n'est pas porté ou transporté, les ténèbres émanent de l'objet et elles se déplacent avec lui. Recouvrir complètement la source des ténèbres avec un objet opaque, comme un bol ou un casque, bloque les ténèbres.\nSi n'importe quelle portion de ce sort chevauche une portion de lumière créée par un sort de niveau 2 ou moins, le sort de lumière est alors dissipé.",
+          "components": [
+            "V",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Concentration, jusqu'à 10 minutes",
+          "range": "18 m",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Boule de feu",
+          "level": 3,
+          "school": "Évocation",
+          "description": "Une éclatante traînée lumineuse est émise de la pointe de votre doigt vers un point de votre choix dans la portée du sort, puis s'amplifie dans un rugissement grave jusqu'à éclater en flammes. Chaque créature située dans une sphère de 6 mètres de rayon centrée sur le point doit effectuer un jet de sauvegarde de Dextérité, subissant 8d6 dégâts de feu en cas d'échec, ou la moitié de ces dégâts en cas de réussite.\nLe feu contourne les coins. Il enflamme les objets inflammables qui ne sont pas portés ou transportés.\nAux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les dégâts sont augmentés de 1d6 pour chaque niveau d'emplacement au-delà du niveau 3.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Instantané",
+          "range": "45 m",
+          "effectType": "attaque",
+          "damage": "8d6"
+        },
+        {
+          "name": "Contresort",
+          "level": 3,
+          "school": "Abjuration",
+          "description": "Vous tentez d'interrompre une créature au moment où elle incante un sort. Si la créature incante un sort de niveau 3 ou inférieur, son sort échoue et il n'a aucun effet. Si elle incante un sort de niveau 4 ou supérieur, effectuez un jet de caractéristique selon celle qui sert à lancer vos sorts. Le DD est de 10 + le niveau du sort. En cas de réussite, le sort de la créature échoue et il n'a aucun effet.\nAux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, le sort interrompu n'a aucun effet si son niveau est inférieur ou égal à celui du niveau de l'emplacement de sort utilisé.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 réaction",
+          "duration": "Instantané",
+          "range": "36 m",
+          "effectType": "utilitaire"
+        }
+      ]
+    }
+  ],
+  "affinities": {
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": []
+  },
+  "conditions": {
+    "blinded": false,
+    "charmed": false,
+    "deafened": false,
+    "frightened": false,
+    "grappled": false,
+    "incapacitated": false,
+    "invisible": false,
+    "paralyzed": false,
+    "petrified": false,
+    "poisoned": false,
+    "prone": false,
+    "restrained": false,
+    "stunned": false,
+    "unconscious": false
+  },
+  "exhaustionLevel": 0,
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
   }
+},
+{
+  "firstname": "Calico",
+  "lastname": "Zelyoni",
+  "kind": "player",
+  "inspiration": true,
+  "profile": {
+    "alignment": "True Neutral",
+    "race": "Dragonborn",
+    "subrace": "Rouge",
+    "history": "Pirate"
+  },
+  "progression": {
+    "level": 5,
+    "experience": 7200
+  },
+  "class": [
+    {
+      "name": "Barbarian",
+      "subclass": "Voie de la bête",
+      "level": 5,
+      "hitDice": 12
+    }
+  ],
+  "stats": {
+    "size": "Medium",
+    "proficiencyBonus": 3,
+    "maxHitPoints": 43,
+    "currentHitPoints": 43,
+    "tempHitPoints": 0,
+    "armorClass": 14,
+    "initiative": 5,
+    "speed": {
+      "walk": 30
+    },
+    "abilityScores": {
+      "strength": 18,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 8,
+      "wisdom": 13,
+      "charisma": 14
+    },
+    "savingThrows": {
+      "strength": 7,
+      "dexterity": 0,
+      "constitution": 5,
+      "intelligence": -1,
+      "wisdom": 1,
+      "charisma": 2
+    },
+    "skills": {
+      "athletics": 7,
+      "acrobatics": 0,
+      "sleightHand": 0,
+      "stealth": 0,
+      "arcana": 1,
+      "history": -1,
+      "investigation": -1,
+      "nature": -1,
+      "religion": 2,
+      "animalHandling": 1,
+      "insight": 1,
+      "medicine": 1,
+      "perception": 3,
+      "survival": 4,
+      "deception": 2,
+      "intimidation": 5,
+      "performance": 1,
+      "persuasion": 2
+    },
+    "masteries": {
+      "athletics": 2,
+      "acrobatics": 0,
+      "sleightHand": 0,
+      "stealth": 0,
+      "arcana": 0,
+      "history": 0,
+      "investigation": 0,
+      "nature": 0,
+      "religion": 0,
+      "animalHandling": 0,
+      "insight": 0,
+      "medicine": 0,
+      "perception": 2,
+      "survival": 2,
+      "deception": 0,
+      "intimidation": 2,
+      "performance": 0,
+      "persuasion": 0
+    },
+    "masteriesAbility": {
+      "strength": true,
+      "dexterity": false,
+      "constitution": true,
+      "intelligence": false,
+      "wisdom": false,
+      "charisma": false
+    },
+    "languages": ["Commun", "Draconique"],
+    "tools": ["Navigateur (bateau)"],
+    "weapons": ["Maillet", "rapière", "épée courte", "épée longue", "javeline", "armes simples"],
+    "armors": ["Light armor", "Medium armor", "Shields"],
+    "passivePerception": 13,
+    "senses": []
+  },
+  "appearance": {
+    "age": 25,
+    "height": 1.95,
+    "weight": 110,
+    "eyes": "Dorés",
+    "skin": "Écailles rouges",
+    "hair": "Aucun",
+    "description": "Un drakéide mâle imposant aux écailles rouges, avec une présence charismatique indéniable. Son regard déterminé et son allure de commandant en font un leader naturel."
+  },
+  "background": {
+    "personalityTraits": "Autoritaire avec son équipe - Première à Greg - Bon vivant",
+    "ideals": "Ni dieu ni maître, souhait d'être un noble. Retrouver sa mère adoptive",
+    "bonds": "Ami avec Juste, Courge, Méi, amoureux de Silvio, déteste Lazarre",
+    "flaws": "Imprévisible, aime la bagarre",
+    "alliesAndOrgs": "",
+    "backstory": "Pirate de naissance et commandant dans l'âme, Calico Zelyoni a forgé sa réputation sur les mers. Autoritaire mais juste avec son équipage, il mène ses compagnons avec une main de fer dans un gant de velours. Sa nature impulsive l'a souvent menée dans des situations périlleuses, mais son charisme et sa détermination lui ont toujours permis de s'en sortir."
+  },
+  "treasure": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 480,
+    "pp": 100,
+    "treasure": "Butin de pirate, souvenirs de voyages",
+    "equipment": "Maillet, Coutille, Javeline, Pistolet, Épée, armure, équipement de navigation"
+  },
+  "abilities": [
+    {
+      "name": "Arme de souffle (Souffle)",
+      "description": "Souffle de dragon (2d6 dégâts, jet de sauvegarde DC 18). Utilisable après un repos court ou long."
+    },
+    {
+      "name": "Résistance au feu",
+      "description": "Résistance aux dégâts de feu grâce à votre héritage draconique."
+    },
+    {
+      "name": "Inspiration bardique",
+      "description": "En tant qu'action bonus, vous pouvez donner à une créature dans les 18m un dé d'inspiration (1d8) utilisable pour ajouter au résultat d'un jet."
+    },
+    {
+      "name": "Chant de repos",
+      "description": "Pendant un repos court, vous et vos alliés récupérez des points de vie supplémentaires."
+    },
+    {
+      "name": "Maîtrise bonus",
+      "description": "Maîtrise de compétences supplémentaires du barde."
+    },
+    {
+      "name": "Fonte dans la foule",
+      "description": "Compétence de pirate permettant de se fondre dans une foule ou un port."
+    },
+    {
+      "name": "Mauvaise réputation",
+      "description": "Votre réputation de pirate vous précède, ce qui peut être un avantage ou un inconvénient selon les situations."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Maillet",
+      "type": "mêlée",
+      "attackBonus": 9,
+      "damage": [
+        {
+          "dice": "2d6+4",
+          "type": "contondant"
+        }
+      ],
+      "range": "1,5 m",
+      "description": "Attaque de mêlée avec une masse d'armes"
+    },
+    {
+      "name": "Coutille",
+      "type": "mêlée",
+      "attackBonus": 7,
+      "damage": [
+        {
+          "dice": "1d10+4",
+          "type": "tranchant"
+        }
+      ],
+      "range": "1,5 m",
+      "description": "Attaque avec Castillo"
+    },
+    {
+      "name": "Javeline",
+      "type": "mêlée ou à distance",
+      "attackBonus": 7,
+      "damage": [
+        {
+          "dice": "1d6+4",
+          "type": "perforant"
+        }
+      ],
+      "range": "1,5 m ou 9/36 m",
+      "description": "Attaque avec javeline (mêlée ou lancer)"
+    },
+    {
+      "name": "Perchant",
+      "type": "attaque",
+      "attackBonus": 0,
+      "damage": [
+        {
+          "dice": "2d6",
+          "type": "perforant"
+        }
+      ],
+      "range": "variable",
+      "description": "Attaque perforante"
+    },
+    {
+      "name": "Épée (Fardeau du naufragé)",
+      "type": "mêlée",
+      "attackBonus": 9,
+      "damage": [
+        {
+          "dice": "2d6+9",
+          "type": "tranchant"
+        }
+      ],
+      "range": "1,5 m",
+      "description": "Attaque de mêlée avec épée"
+    },
+    {
+      "name": "Souffle de dragon",
+      "type": "arme de souffle",
+      "attackBonus": 0,
+      "damage": [
+        {
+          "dice": "2d6",
+          "type": "feu"
+        }
+      ],
+      "range": "cône de 4,5 m",
+      "description": "Souffle de dragon infligeant 2d6 dégâts de feu (jet de sauvegarde Constitution DC 18 pour demi-dégâts). Au cœur téméraire - que la 1ère attaque/r - avantage - avec le Svs ma raison au reteau"
+    }
+  ],
+  "spellcasting": [],
+  "affinities": {
+    "resistances": ["fire"],
+    "immunities": [],
+    "vulnerabilities": []
+  },
+  "conditions": {
+    "blinded": false,
+    "charmed": false,
+    "deafened": false,
+    "frightened": false,
+    "grappled": false,
+    "incapacitated": false,
+    "invisible": false,
+    "paralyzed": false,
+    "petrified": false,
+    "poisoned": false,
+    "prone": false,
+    "restrained": false,
+    "stunned": false,
+    "unconscious": false
+  },
+  "exhaustionLevel": 0,
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  }
+},
+{
+  "firstname": "Juste",
+  "lastname": "Bonnémine",
+  "kind": "player",
+  "inspiration": true,
+  "profile": {
+    "alignment": "True Neutral",
+    "race": "Human",
+    "subrace": "",
+    "history": "Charlatan"
+  },
+  "progression": {
+    "level": 5,
+    "experience": 8575
+  },
+  "class": [
+    {
+      "name": "Rogue",
+      "subclass": "Thief",
+      "level": 5,
+      "hitDice": 8
+    }
+  ],
+  "stats": {
+    "size": "Medium",
+    "proficiencyBonus": 3,
+    "maxHitPoints": 21,
+    "currentHitPoints": 21,
+    "tempHitPoints": 0,
+    "armorClass": 13,
+    "initiative": 2,
+    "speed": {
+      "walk": 30
+    },
+    "abilityScores": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 11,
+      "intelligence": 15,
+      "wisdom": 13,
+      "charisma": 16
+    },
+    "savingThrows": {
+      "strength": 0,
+      "dexterity": 5,
+      "constitution": 0,
+      "intelligence": 5,
+      "wisdom": 1,
+      "charisma": 3
+    },
+    "skills": {
+      "athletics": 0,
+      "acrobatics": 5,
+      "sleightHand": 6,
+      "stealth": 5,
+      "arcana": 2,
+      "history": 2,
+      "investigation": 2,
+      "nature": 2,
+      "religion": 2,
+      "animalHandling": 1,
+      "insight": 4,
+      "medicine": 1,
+      "perception": 4,
+      "survival": 1,
+      "deception": 9,
+      "intimidation": 3,
+      "performance": 3,
+      "persuasion": 9
+    },
+    "masteries": {
+      "athletics": 0,
+      "acrobatics": 2,
+      "sleightHand": 2,
+      "stealth": 2,
+      "arcana": 0,
+      "history": 0,
+      "investigation": 0,
+      "nature": 0,
+      "religion": 0,
+      "animalHandling": 0,
+      "insight": 2,
+      "medicine": 0,
+      "perception": 0,
+      "survival": 0,
+      "deception": 3,
+      "intimidation": 0,
+      "performance": 0,
+      "persuasion": 3
+    },
+    "masteriesAbility": {
+      "strength": false,
+      "dexterity": true,
+      "constitution": false,
+      "intelligence": true,
+      "wisdom": false,
+      "charisma": false
+    },
+    "languages": ["Commun", "Gobelin", "Elfique", "Jargon des voleurs"],
+    "tools": ["Outils de voleur", "Kit de déguisement"],
+    "weapons": ["armes simples", "arbalète légère", "épée courte", "rapière", "arc court"],
+    "armors": ["Light armor"],
+    "passivePerception": 13,
+    "senses": []
+  },
+  "appearance": {
+    "age": 30,
+    "height": 1.75,
+    "weight": 70,
+    "eyes": "Noisette",
+    "skin": "Claire",
+    "hair": "Châtain",
+    "description": "Un homme de taille moyenne à l'allure discrète mais élégante. Ses yeux noisette observent tout avec attention, et son sourire charmant cache une nature rusée."
+  },
+  "background": {
+    "personalityTraits": "Balon elflique - Discret et observateur",
+    "ideals": "Fournai, idéale - La liberté est le plus grand des biens",
+    "bonds": "Badolette avec Boleau - Escrimeur de sietts, boome, ça Tervard - Estral Tory journeux",
+    "flaws": "Peut être trop confiant dans ses compétences de discrétion et d'infiltration",
+    "alliesAndOrgs": "Liens avec des réseaux de roublards et d'anciens clercs",
+    "backstory": "Ancien clerc devenu roublard, Juste Bonnémine a troqué sa vie religieuse pour une existence plus... flexible. Son passé dans le clergé lui a donné une éducation et des contacts précieux, tandis que ses nouvelles compétences lui permettent de naviguer dans les ombres de la société. Il utilise son charisme naturel et ses talents de voleur pour survivre et prospérer, tout en gardant une étrange moralité héritée de son ancienne vie."
+  },
+  "treasure": {
+    "cp": 72,
+    "sp": 39,
+    "ep": 0,
+    "gp": 325,
+    "pp": 211,
+    "treasure": "Scarle d'ivoire dorsal (35 po), Sifflet de chevalier pirate (1100 pp), Potion, Bogunbe",
+    "equipment": "Rapière, arc court, dague, fronde, dague ranger, outils de voleur, kit de déguisement, armure légère"
+  },
+  "abilities": [
+    {
+      "name": "Attaque sournoise",
+      "description": "Une fois par tour, vous pouvez infliger 3d6 dégâts supplémentaires à une créature touchée par une attaque d'arme si vous avez l'avantage au jet d'attaque ou si un allié est à 1,5m de la cible."
+    },
+    {
+      "name": "Expertise",
+      "description": "Vous doublez votre bonus de maîtrise pour certaines compétences choisies (Acrobaties, Discrétion, Escamotage, Investigation, Perception, Persuasion, Tromperie)."
+    },
+    {
+      "name": "Ruse",
+      "description": "Pendant votre tour en combat, vous pouvez effectuer l'action Se désengager ou Se cacher en action bonus."
+    },
+    {
+      "name": "Esquive instinctive",
+      "description": "Lorsqu'un attaquant que vous pouvez voir vous touche avec une attaque, vous pouvez utiliser votre réaction pour réduire de moitié les dégâts de l'attaque."
+    },
+    {
+      "name": "Mains lestes (Thief)",
+      "description": "Vous pouvez utiliser l'action bonus accordée par Ruse pour faire un jet de Dextérité (Escamotage), utiliser vos outils de voleur pour désarmer un piège ou ouvrir une serrure, ou prendre l'action Utiliser un objet."
+    },
+    {
+      "name": "Monte-en-l'air",
+      "description": "Vous gagnez la capacité de grimper plus rapidement que la normale; grimper ne vous coûte plus de mouvement supplémentaire. De plus, lorsque vous effectuez un saut en longueur, la distance que vous pouvez couvrir augmente d'une distance égale à votre modificateur de Dextérité x 30 cm."
+    },
+    {
+      "name": "Furtivité suprême (Hero)",
+      "description": "Expert en discrétion et infiltration, vous pouvez vous cacher et vous déplacer sans être détecté même dans des situations difficiles."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Rapière",
+      "type": "mêlée",
+      "attackBonus": 5,
+      "damage": [
+        {
+          "dice": "1d8+2",
+          "type": "perforant"
+        }
+      ],
+      "range": "1,5 m",
+      "description": "Attaque de mêlée avec rapière (finesse). Peut bénéficier de l'attaque sournoise."
+    },
+    {
+      "name": "Arc court",
+      "type": "à distance",
+      "attackBonus": 5,
+      "damage": [
+        {
+          "dice": "1d6+2",
+          "type": "perforant"
+        }
+      ],
+      "range": "24/96 m",
+      "description": "Attaque à distance avec arc court. Peut bénéficier de l'attaque sournoise."
+    },
+    {
+      "name": "Dague",
+      "type": "mêlée ou à distance",
+      "attackBonus": 5,
+      "damage": [
+        {
+          "dice": "1d4+2",
+          "type": "perforant"
+        }
+      ],
+      "range": "1,5 m ou 6/18 m",
+      "description": "Attaque avec dague (finesse, lancer). Peut bénéficier de l'attaque sournoise."
+    },
+    {
+      "name": "Fronde",
+      "type": "à distance",
+      "attackBonus": 5,
+      "damage": [
+        {
+          "dice": "1d4+2",
+          "type": "contondant"
+        }
+      ],
+      "range": "9/36 m",
+      "description": "Attaque à distance avec fronde."
+    },
+    {
+      "name": "Dague ranger",
+      "type": "mêlée",
+      "attackBonus": 6,
+      "damage": [
+        {
+          "dice": "1d4+2",
+          "type": "perforant"
+        }
+      ],
+      "range": "1,5 m",
+      "description": "Attaque avec dague ranger (possiblement une arme spéciale ou enchantée)."
+    }
+  ],
+  "spellcasting": [],
+  "affinities": {
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": []
+  },
+  "conditions": {
+    "blinded": false,
+    "charmed": false,
+    "deafened": false,
+    "frightened": false,
+    "grappled": false,
+    "incapacitated": false,
+    "invisible": false,
+    "paralyzed": false,
+    "petrified": false,
+    "poisoned": false,
+    "prone": false,
+    "restrained": false,
+    "stunned": false,
+    "unconscious": false
+  },
+  "exhaustionLevel": 0,
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  }
+},
+{
+  "firstname": "Milo",
+  "lastname": "",
+  "kind": "player",
+  "inspiration": true,
+  "profile": {
+    "alignment": "True Neutral",
+    "race": "Halfelin",
+    "subrace": "Pied-léger",
+    "history": "Charlatan"
+  },
+  "progression": {
+    "level": 3,
+    "experience": 1000
+  },
+  "class": [
+    {
+      "name": "Sorcerer",
+      "subclass": "Wild Magic",
+      "level": 3,
+      "hitDice": 6
+    }
+  ],
+  "stats": {
+    "size": "Small",
+    "maxHitPoints": 17,
+    "currentHitPoints": 17,
+    "tempHitPoints": 0,
+    "armorClass": 14,
+    "initiative": 3,
+    "speed": {
+      "walk": 25
+    },
+    "abilityScores": {
+      "strength": 8,
+      "dexterity": 16,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 16
+    },
+    "savingThrows": {
+      "strength": -1,
+      "dexterity": 3,
+      "constitution": 4,
+      "intelligence": 0,
+      "wisdom": 0,
+      "charisma": 5
+    },
+    "skills": {
+      "athletics": -1,
+      "acrobatics": 3,
+      "sleightHand": 5,
+      "stealth": 3,
+      "arcana": 2,
+      "history": 0,
+      "investigation": 0,
+      "nature": 0,
+      "religion": 0,
+      "animalHandling": 0,
+      "insight": 0,
+      "medicine": 0,
+      "perception": 0,
+      "survival": 0,
+      "deception": 5,
+      "intimidation": 0,
+      "performance": 0,
+      "persuasion": 5
+    },
+    "masteries": {
+      "athletics": 0,
+      "acrobatics": 0,
+      "sleightHand": 2,
+      "stealth": 0,
+      "arcana": 2,
+      "history": 0,
+      "investigation": 0,
+      "nature": 0,
+      "religion": 0,
+      "animalHandling": 0,
+      "insight": 0,
+      "medicine": 0,
+      "perception": 0,
+      "survival": 0,
+      "deception": 2,
+      "intimidation": 0,
+      "performance": 0,
+      "persuasion": 2
+    },
+    "masteriesAbility": {
+      "strength": false,
+      "dexterity": false,
+      "constitution": true,
+      "intelligence": false,
+      "wisdom": false,
+      "charisma": true
+    },
+    "languages": [
+      "Commun",
+      "Halfelin"
+    ],
+    "weapons": [
+      "dague",
+      "fléchette",
+      "fronde",
+      "bâton",
+      "arbalète légère"
+    ],
+    "passivePerception": 10,
+    "senses": [],
+    "proficiencyBonus": 2
+  },
+  "appearance": {
+    "age": 20,
+    "height": 0.9,
+    "weight": 17,
+    "eyes": "Vert émeraude",
+    "skin": "Claire",
+    "hair": "Bouclés sablés",
+    "description": "Petit, porte des habits légers et pratiques, souvent sombres pour se fondre dans l'ombre, avec une cape courte qui flotte derrière lui. À travers des poches pleines de bric-à-brac, volé ou récupéré lors de ses escapades."
+  },
+  "background": {
+    "personalityTraits": "Espiègle et moqueur car il adore se jouer des autres avec sa magie et son agilité.",
+    "ideals": "La vie est une grande farce, autant en être le metteur en scène.",
+    "bonds": "Un mentor illusionniste",
+    "flaws": "Peu fiable. N'a pas de loyauté absolue, et peut trahir ou mentir si cela l'amuse.",
+    "alliesAndOrgs": "Un réseau de voleurs et d'escrocs.",
+    "backstory": "Charlatan (Je m'introduis dans la vie des gens sous divers déguisements pour jouer de leurs faiblesses et récupérer leur fortune). Milo a toujours été un gamin débrouillard et rieur, un vrai petit génie de la tromperie né dans les ruelles animées d'une grande ville. Il n'a jamais connu l'identité de ses parents : la générosité instable et un don inné pour le mensonge et les tours de passe-passe. Sa vie a pris un tournant le jour où il a croisé 'Joki', un illusionniste mystérieux qui refusait de révéler son vrai nom. Maître dans l'art de la supercherie, ce dernier a repéré en Milo un talent brut : une agilité naturelle, une langue pendue, et surtout une magie sauvage incontrôlable. De quelque toujours, quand Milo s'excitait ou se concentrait trop, des choses étranges se produisaient : une bourse disparaissant d'elle-même, un gars trébuchant sans raison, un chat devenant géant pendant quelques secondes. Sans ordre ni discipline, semant la confusion avec des illusions et des forces toujours plus audacieuses. Sous la tutelle de Loki, il a afflitté son art de la manipulation et appris à embrasser l'imprévisibilité de sa magie plutôt que de la maîtriser des apparences et du chaos, semant la confusion entre les illusions et les forces de l'illusion toujours plus audacieuses. Aujourd'hui, Milo n'a cherche ni gloire ni argent – juste du plaisir et un bon défi. Il veut compter sur la magie sauvage... ou, à défaut, apprendre à mieux danser avec elle."
+  },
+  "treasure": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 15,
+    "pp": 0,
+    "treasure": "Liqueur des souvenirs oubliés (1 dose / jour) : 3 doses",
+    "equipment": "Dague, Corps à corps : +5 (1d4+3 perforant) ; finesse, légère, lancer (portée 6/18 m), kit de voleur, kit de déguisement, focaliseur arcanique/baguette, sac à dos, sac de couchage, gamelle, boîte d'amadou, torches (10), rations/j pour (10), gourde, corde de chanvre de 15 m, vêtements fins, outils d'escroquerie, bourse. Poids de l'équipement 41.5 kg - Coût 116 po. Poids des pièces 0.18 kg"
+  },
+  "abilities": [
+    {
+      "name": "Sursaut de magie sauvage",
+      "description": "Sursaut de magie sauvage"
+    },
+    {
+      "name": "Maîtrise du chaos",
+      "description": "Maîtrise du chaos"
+    },
+    {
+      "name": "Source de magie",
+      "description": "Source de magie (3 pts)"
+    },
+    {
+      "name": "Métamagie",
+      "description": "Métamagie (Sort prévenant, Sort prévenant)"
+    },
+    {
+      "name": "Chanceux",
+      "description": "Chanceux (relancer un 1)"
+    },
+    {
+      "name": "Brave",
+      "description": "Brave (AV aux JdS vs effrayé)"
+    },
+    {
+      "name": "Agilité halfeline",
+      "description": "Agilité halfeline (peut passer dans l'espace d'une créature de taille supérieure)"
+    },
+    {
+      "name": "Discrétion naturelle",
+      "description": "Discrétion naturelle (peut tenter de se cacher derrière une créature de taille supérieure)"
+    },
+    {
+      "name": "Fausse identité",
+      "description": "Fausse identité"
+    }
+  ],
+  "actions": [
+    {
+      "name": "Dague",
+      "type": "mêlée ou à distance",
+      "attackBonus": 5,
+      "damage": [
+        {
+          "dice": "1d4+3",
+          "type": "perforant"
+        }
+      ],
+      "range": "1,5 m ou 6/18 m",
+      "description": "Attaque avec dague (finesse, légère, lancer)."
+    }
+  ],
+  "spellcasting": [
+    {
+      "className": "Sorcerer",
+      "ability": "Charisma",
+      "saveDC": 13,
+      "attackBonus": 5,
+      "spellSlotsByLevel": {
+        "1": {
+          "total": 4,
+          "used": 0
+        },
+        "2": {
+          "total": 2,
+          "used": 0
+        }
+      },
+      "totalSlots": 6,
+      "spells": [
+        {
+          "name": "Prestidigitation",
+          "level": 0,
+          "school": "Transmutation",
+          "description": "Ce sort est un tour de magie mineur que les lanceurs de sorts novices utilisent pour s'entraîner. Vous créez l'un des effets magiques suivants dans la portée du sort : Vous créez un effet sensoriel inoffensif et instantané, comme une pluie d'étincelles, un coup de vent, de faibles notes de musique ou une odeur étrange. Vous allumez ou éteignez instantanément une chandelle, une torche ou un petit feu de camp. Vous nettoyez ou salissez instantanément un objet ne dépassant pas 30 cm3. Vous refroidissez, réchauffez ou aromatisez jusqu'à 30 cm3 de matière non vivante pendant 1 heure. Vous faites apparaître une couleur, une petite marque ou un symbole sur un objet ou une surface pendant 1 heure. Vous créez une babiole ou une image illusoire qui tient dans votre main et qui dure jusqu'à la fin de votre prochain tour. Si vous lancez ce sort à plusieurs reprises, vous pouvez avoir jusqu'à trois de ces effets non instantanés actifs à la fois, et vous pouvez révoquer un de ces effets lors d'une action.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "Jusqu'à 1 heure",
+          "range": "3 m",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Main de mage",
+          "level": 0,
+          "school": "Invocation",
+          "description": "Une main spectrale apparaît à un point précis choisi à portée. La main expire à la fin de la durée du sort ou si elle est révoquée au prix d'une action. La main disparaît si elle se retrouve à plus de 9 mètres du lanceur de sorts ou si ce sort est jeté une nouvelle fois. Le lanceur de sorts peut utiliser son action pour contrôler la main. La main peut manipuler un objet, ouvrir une porte ou un contenant non verrouillé, ranger ou récupérer un objet d'un contenant ouvert, ou bien verser le contenu d'une fiole. La main peut être déplacée jusqu'à 9 mètres à chaque fois que vous l'utilisez. La main ne peut attaquer, activer des objets magiques ou transporter plus de 5 kg.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "1 minute",
+          "range": "9 m",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Trait de feu",
+          "level": 0,
+          "school": "Évocation",
+          "description": "Vous lancez un trait de feu sur une créature ou un objet à portée. Faites une attaque à distance avec un sort contre la cible. En cas de réussite, la cible prend 1d10 dégâts de feu. Un objet inflammable touché par ce sort prend feu s'il n'est pas porté. Les dégâts du sort augmentent de 1d10 aux niveaux 5 (2d10), 11 (3d10) et 17 (4d10).",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "Instantané",
+          "range": "36 m",
+          "effectType": "attaque",
+          "damage": "1d10"
+        },
+        {
+          "name": "Illusion mineure",
+          "level": 0,
+          "school": "Illusion",
+          "description": "Vous créez un son ou une image d'un objet dans la portée du sort qui persiste pour la durée du sort. L'illusion prend aussi fin si vous la révoquez par une action ou si vous lancez ce sort de nouveau. Si vous créez un son, son volume peut varier d'un murmure à un cri. Ce peut être votre voix, la voix de quelqu'un d'autre, le rugissement d'un lion, un battement de tambours ou tout autre son de votre choix. Le son persiste sans faiblir pendant toute la durée, ou vous pouvez créer des sons distincts à différents moments avant que le sort ne prenne fin. Si vous créez une image d'un objet (comme une chaise, des traces de pas boueuses ou un petit coffre), il ne peut dépasser un cube de 1,50 mètre. L'image ne peut créer de son, de lumière, d'odeur ou d'autres effets sensoriels. Une interaction physique avec l'image révèle qu'il s'agit d'une illusion, car les choses peuvent passer au travers. Si une créature utilise son action pour examiner le son ou l'image, elle peut déterminer qu'il s'agit d'une illusion avec un jet d'Intelligence (Investigation) réussi contre le DD de sauvegarde de votre sort. Si une créature discerne l'illusion pour ce qu'elle est, l'illusion perd de sa force pour la créature.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "1 minute",
+          "range": "9 m",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Détection de la magie",
+          "level": 1,
+          "school": "Divination",
+          "description": "Pour la durée du sort, vous percevez la présence de magie à 9 mètres ou moins de vous. Si vous percevez de la magie de cette manière, vous pouvez utiliser votre action pour discerner une faible aura enveloppant une créature ou un objet visible dans la zone qui présente de la magie. Vous déterminez aussi l'école de magie, le cas échéant. Le sort peut outrepasser la plupart des obstacles mais il est bloqué par 30 cm de pierre, 2,50 cm de métal ordinaire, une mince feuille de plomb ou 90 cm de bois ou de terre.",
+          "components": [
+            "V",
+            "S"
+          ],
+          "castingTime": "1 action",
+          "duration": "Concentration, jusqu'à 10 minutes",
+          "range": "Soi-même",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Orbe chromatique",
+          "level": 1,
+          "school": "Évocation",
+          "description": "Vous projetez une sphère d'énergie de 10 cm de diamètre vers une créature que vous pouvez voir dans la portée du sort. Vous choisissez acide, foudre, feu, froid, poison ou tonnerre comme type d'orbe que vous créez. Vous faites ensuite une attaque à distance avec un sort contre la cible. Si l'attaque touche, la créature subit 3d8 dégâts du type préalablement déterminé. Aux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 1.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Instantané",
+          "range": "27 m",
+          "effectType": "attaque",
+          "damage": "3d8"
+        },
+        {
+          "name": "Image silencieuse",
+          "level": 1,
+          "school": "Illusion",
+          "description": "Vous créez l'image d'un objet, d'une créature ou d'un autre phénomène visible qui ne dépasse pas un cube de 4,50 mètres. L'image apparaît en un point que vous pouvez voir dans la portée du sort et persiste pour la durée du sort. L'image est purement visuelle ; elle n'est pas accompagnée de sons, d'odeurs ou d'autres effets sensoriels. Vous pouvez utiliser votre action pour déplacer l'image vers n'importe quel point dans la portée du sort. Tandis que l'image change d'emplacement, vous pouvez modifier son apparence pour que les mouvements de l'image semblent naturels. Par exemple, si vous créez une image de créature et que vous la déplacez, vous pouvez modifier l'image de sorte que la créature semble marcher. Une interaction physique avec l'image révèle qu'il s'agit d'une illusion, car les choses peuvent passer au travers. Une créature qui utilise son action pour examiner l'image peut déterminer qu'il s'agit d'une illusion avec un jet d'Intelligence (Investigation) réussi contre le DD de sauvegarde de votre sort. Si une créature discerne l'illusion pour ce qu'elle est, elle peut voir à travers l'image.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Concentration, jusqu'à 10 minutes",
+          "range": "18 m",
+          "effectType": "utilitaire"
+        },
+        {
+          "name": "Invisibilité",
+          "level": 2,
+          "school": "Illusion",
+          "description": "Une créature que vous touchez devient invisible jusqu'à la fin du sort. Tout ce que la cible porte ou transporte est invisible tant qu'il est sur sa personne. Le sort prend fin pour une cible qui attaque ou qui lance un sort. Aux niveaux supérieurs. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, vous pouvez cibler une créature additionnelle pour chaque niveau d'emplacement au-delà du niveau 2.",
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "castingTime": "1 action",
+          "duration": "Concentration, jusqu'à 1 heure",
+          "range": "Contact",
+          "effectType": "utilitaire"
+        }
+      ]
+    }
+  ],
+  "affinities": {
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": []
+  },
+  "conditions": {
+    "blinded": false,
+    "charmed": false,
+    "deafened": false,
+    "frightened": false,
+    "grappled": false,
+    "incapacitated": false,
+    "invisible": false,
+    "paralyzed": false,
+    "petrified": false,
+    "poisoned": false,
+    "prone": false,
+    "restrained": false,
+    "stunned": false,
+    "unconscious": false
+  },
+  "exhaustionLevel": 0,
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  }
+}
 ]
