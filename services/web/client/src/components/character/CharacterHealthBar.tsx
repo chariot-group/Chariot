@@ -11,7 +11,7 @@ interface CharacterHealthBarProps {
 }
 
 const CharacterHealthBar = ({ currentHP, maxHP, tempHP }: CharacterHealthBarProps) => {
-  const t = useTranslations("characterDetail.combat");
+  const t = useTranslations("characterDetail.battle");
   const isFullWithTemp = currentHP === maxHP && tempHP > 0;
   const visualMax = isFullWithTemp ? maxHP + tempHP : maxHP;
 

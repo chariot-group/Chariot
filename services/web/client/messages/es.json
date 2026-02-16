@@ -150,14 +150,48 @@
     "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}"
   },  "characterDetail": {
     "editCharacter": "Modificar personaje",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "edit": {
+      "basicInfo": "Información Básica",
+      "firstname": "Nombre",
+      "lastname": "Apellido",
+      "surname": "Apodo",
+      "optional": "opcional",
+      "profile": "Perfil",
+      "race": "Raza",
+      "alignment": "Alineamiento",
+      "challenge": "Desafío",
+      "challengeRating": "Índice de Desafío",
+      "experiencePoints": "Puntos de Experiencia",
+      "type": "Tipo",
+      "combatStats": "Estadísticas de Combate",
+      "editInProgress": "Edición en progreso",
+      "currentHP": "PV Actuales",
+      "maxHP": "PV Máximo",
+      "tempHP": "PV Temporales",
+      "defense": "Defensa",
+      "initiative": "Iniciativa",
+      "spellcastingStats": "Estadísticas de Hechicería",
+      "spellcastingAbility": "Habilidad de Lanzamiento",
+      "spellSaveDC": "CD de Salvación de Conjuros",
+      "spellAttackBonus": "Bonificación de Ataque de Conjuros",
+      "copperPieces": "Piezas de Cobre",
+      "silverPieces": "Piezas de Plata",
+      "electrumPieces": "Piezas de Electro",
+      "goldPieces": "Piezas de Oro",
+      "platinumPieces": "Piezas de Platino",
+      "todoForDevelopers": "Pendiente para desarrolladores"
+    },
     "tabs": {
       "general": "General",
-      "combat": "Combate",
+      "battle": "Combate",
       "magic": "Magia",
       "inventory": "Inventario",
       "history": "Historia"
     },
-    "combat": {
+    "battle": {
       "stats": "Estadísticas",
       "hitDice": "Dados de Golpe:",
       "hitPointsRoll": "Tirada de Puntos de Golpe:",
@@ -215,6 +249,7 @@
       "class": "Clase",
       "alignment": "Alineamiento",
       "general": {
+        "title": "Pestaña General",
         "characterInfoLabel": "Información general del personaje",
         "character": "Personaje",
         "raceLabel": "Raza",
@@ -297,6 +332,7 @@
       "challengeRatingAbbr": "ID",
       "alignment": "Alineamiento",
       "general": {
+        "title": "Pestaña General",
         "npcInfoLabel": "Información general del PNJ",
         "characterInfo": "Información del personaje",
         "characteristicsSkills": "Características y habilidades",

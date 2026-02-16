@@ -17,6 +17,7 @@ interface CharacterMagicTabContentProps {
 export default function CharacterMagicTabContent({ character, accentColor }: CharacterMagicTabContentProps) {
   const tClass = useTranslations("classes");
   const tMagic = useTranslations("characterDetail.magic");
+
   const [selectedSpellcasting, setSelectedSpellcasting] = useState<Spellcasting | null>(
     character.spellcasting?.[0] || null,
   );

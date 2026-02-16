@@ -1,25 +1,24 @@
 "use client";
 
-import { User, SquarePen } from "lucide-react";
+import { User, SquarePen, X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TabContentPlaceholder from "@/components/character/TabContentPlaceholder";
-import CharacterInventoryTabContent from "@/components/character/tabContents/CharacterInventoryTabContent";
-import React, { useState } from "react";
-import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
+import CharacterInventoryTabContent from "@/components/character/tabContents/inventory/CharacterInventoryTabContent";
+import React, { useState, useMemo } from "react";
+import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
 import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
-import Image from "next/image";
-import CharacterMagicTabContent from "@/components/character/tabContents/CharacterMagicTabContent";
+import CharacterMagicTabContent from "@/components/character/tabContents/magic/CharacterMagicTabContent";
 import { isPlayer } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
+import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 
-export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
+export type CharacterTab = "general" | "battle" | "magic" | "inventory" | "history";
 
 const TAB_COLORS: Record<CharacterTab, string> = {
   general: "blue",
-  combat: "red",
+  battle: "red",
   magic: "pink",
   inventory: "yellow",
   history: "green",
@@ -27,13 +26,30 @@ const TAB_COLORS: Record<CharacterTab, string> = {
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
+  onCharacterUpdate?: () => void; // Callback pour rafraîchir les données du parent
 }
 
-export default function CharacterDetailView({ character }: CharacterDetailViewProps) {
+export default function CharacterDetailView({ character, onCharacterUpdate }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
   const tPlaceholder = useTranslations("characterDetail.placeholder");
   const [activeTab, setActiveTab] = useState<CharacterTab>("general");
+
+  // Déterminer le type de personnage
+  const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
+
+  // Initialiser le formulaire avec useCharacterForm
+  const { form, onUpdate, onCancel, isEditing, setIsEditing, isSaving } = useCharacterForm({
+    characterId: character._id,
+    type: characterType,
+    onSuccess: () => {
+      // Rafraîchir les données du parent après la mise à jour
+      if (onCharacterUpdate) {
+        onCharacterUpdate();
+      }
+    },
+  });
+
 
   return (
     <main className="flex flex-col h-full overflow-hidden">
@@ -51,7 +67,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                 className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
                 role="tablist"
                 aria-label={t("tabs.general")}>
-                {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
+                {(["general", "battle", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
                   <TabsTrigger
                     key={tab}
                     value={tab}
@@ -62,7 +78,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                                             flex-none p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
                                             focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
                                             ${activeTab === tab
-                        ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
+                        ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
                         : `text-white bg-gray hover:bg-gray-middle`
                       }
                                         `}>
@@ -133,7 +149,7 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
 
         {/* Contenu des onglets - scrollable */}
         <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
-          {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
+          {(["general", "battle", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
             <TabsContent
               key={tab}
               value={tab}
@@ -149,13 +165,17 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                       <CharacterGeneralTabContent
                         character={character}
                         accentColor={TAB_COLORS[tab]}
+                        form={form}
+                        isEditing={isEditing}
                       />
                     );
-                  case "combat":
+                  case "battle":
                     return (
                       <CharacterBattleTabContent
                         character={character}
                         accentColor={TAB_COLORS[tab]}
+                        form={form}
+                        isEditing={isEditing}
                       />
                     );
                   case "magic":
@@ -163,6 +183,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                       <CharacterMagicTabContent
                         character={character}
                         accentColor={TAB_COLORS[tab]}
+                        form={form}
+                        isEditing={isEditing}
                       />
                     );
                   case "inventory":
@@ -170,6 +192,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                       <CharacterInventoryTabContent
                         character={character}
                         accentColor={TAB_COLORS[tab]}
+                        form={form}
+                        isEditing={isEditing}
                       />
                     );
                   case "history":
@@ -177,6 +201,8 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                       <CharacterHistoryTabContent
                         character={character}
                         accentColor={TAB_COLORS[tab]}
+                        form={form}
+                        isEditing={isEditing}
                       />
                     );
                   default:
@@ -188,33 +214,83 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
         </div>
       </Tabs>
 
-      {/* Footer avec bouton - fixe en bas */}
+      {/* Footer avec boutons - fixe en bas */}
       <div className="shrink-0 w-full px-4 sm:px-6 md:px-10 py-5 border-t border-transparent">
-        <div className="w-full mx-auto flex flex-row-reverse">
-          <Button
-            type="button"
-            onClick={() => {
-              // Pour le moment, ne fait rien
-            }}
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                // Pour le moment, ne fait rien
-              }
-            }}
-            className={`
-              text-lg font-semibold py-5.5
-              ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
-              ${activeTab === "combat" ? "bg-red hover:bg-red/90 text-white" : ""}
-              ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
-              ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
-              ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
-            `}
-            aria-label={t("editCharacter")}>
-            <SquarePen className="size-5" aria-hidden="true" />
-            {t("editCharacter")}
-          </Button>
+        <div className="w-full mx-auto flex flex-row-reverse gap-4">
+          {isEditing ? (
+            <>
+              {/* Mode édition : boutons Annuler et Sauvegarder */}
+              <Button
+                type="button"
+                onClick={() => onUpdate(form.getValues())}
+                disabled={isSaving || !form.formState.isDirty}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onUpdate(form.getValues());
+                  }
+                }}
+                className={`
+                  text-lg font-semibold py-5.5
+                  ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
+                  ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
+                  ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
+                  ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
+                  ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+                `}
+                aria-label={t("saveChanges")}
+                aria-busy={isSaving}>
+                <Save className="size-5" aria-hidden="true" />
+                {isSaving ? t("saving") : t("saveChanges")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  onCancel();
+                  setIsEditing(false);
+                }}
+                disabled={isSaving}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onCancel();
+                    setIsEditing(false);
+                  }
+                }}
+                className="text-lg font-semibold py-5.5"
+                aria-label={t("cancel")}>
+                <X className="size-5" aria-hidden="true" />
+                {t("cancel")}
+              </Button>
+            </>
+          ) : (
+            /* Mode lecture : bouton Modifier */
+            <Button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setIsEditing(true);
+                }
+              }}
+              className={`
+                text-lg font-semibold py-5.5
+                ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
+                ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
+                ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
+                ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
+                ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+              `}
+              aria-label={t("editCharacter")}>
+              <SquarePen className="size-5" aria-hidden="true" />
+              {t("editCharacter")}
+            </Button>
+          )}
         </div>
       </div>
     </main>

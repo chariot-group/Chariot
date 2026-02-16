@@ -150,14 +150,48 @@
     "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}"
   },  "characterDetail": {
     "editCharacter": "Modifier le personnage",
+    "saveChanges": "Sauvegarder",
+    "saving": "Sauvegarde...",
+    "cancel": "Annuler",
+    "edit": {
+      "basicInfo": "Informations de base",
+      "firstname": "Prénom",
+      "lastname": "Nom",
+      "surname": "Surnom",
+      "optional": "optionnel",
+      "profile": "Profil",
+      "race": "Race",
+      "alignment": "Alignement",
+      "challenge": "Difficulté",
+      "challengeRating": "Indice de Dangerosité",
+      "experiencePoints": "Points d'Expérience",
+      "type": "Type",
+      "combatStats": "Statistiques de Combat",
+      "editInProgress": "Édition en cours de développement",
+      "currentHP": "PV Actuels",
+      "maxHP": "PV Maximum",
+      "tempHP": "PV Temporaires",
+      "defense": "Défense",
+      "initiative": "Initiative",
+      "spellcastingStats": "Statistiques de Magie",
+      "spellcastingAbility": "Caractéristique d'Incantation",
+      "spellSaveDC": "DD des Sorts",
+      "spellAttackBonus": "Bonus d'Attaque de Sort",
+      "copperPieces": "Pièces de Cuivre",
+      "silverPieces": "Pièces d'Argent",
+      "electrumPieces": "Pièces d'Électrum",
+      "goldPieces": "Pièces d'Or",
+      "platinumPieces": "Pièces de Platine",
+      "todoForDevelopers": "À faire pour les développeurs"
+    },
     "tabs": {
       "general": "Général",
-      "combat": "Combat",
+      "battle": "Combat",
       "magic": "Magie",
       "inventory": "Inventaire",
       "history": "Histoire"
     },
-    "combat": {
+    "battle": {
       "stats": "Statistiques",
       "hitDice": "Dés de Vie :",
       "hitPointsRoll": "Dés de points de Vie :",
@@ -215,6 +249,7 @@
       "class": "Classe",
       "alignment": "Alignement",
       "general": {
+        "title": "Onglet Général",
         "characterInfoLabel": "Informations générales du personnage",
         "character": "Personnage",
         "raceLabel": "Race",
@@ -297,6 +332,7 @@
       "challengeRatingAbbr": "ID",
       "alignment": "Alignement",
       "general": {
+        "title": "Onglet Général",
         "npcInfoLabel": "Informations générales du PNJ",
         "characterInfo": "Informations du personnage",
         "characteristicsSkills": "Caractéristiques et compétences",
