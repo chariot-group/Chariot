@@ -3409,7 +3409,6 @@
       "description": "Souffle de dragon infligeant 2d6 dégâts de feu (jet de sauvegarde Constitution DC 18 pour demi-dégâts). Au cœur téméraire - que la 1ère attaque/r - avantage - avec le Svs ma raison au reteau"
     }
   ],
-  "spellcasting": [],
   "affinities": {
     "resistances": ["fire"],
     "immunities": [],
@@ -3896,7 +3895,7 @@
           "used": 0
         },
         "2": {
-          "total": 2,
+          "total": 3,
           "used": 0
         }
       },
@@ -4048,6 +4047,1288 @@
   "deathSaves": {
     "successes": 0,
     "failures": 0
+  }
+},
+{
+  "firstname": "T3UB",
+  "lastname": "(Technologie Unifiée d'Ubiquité pour l'Urgence des Bagarres)",
+  "kind": "player",
+  "inspiration": true,
+  "progression": {
+    "level": 4,
+    "experience": 2700
+  },
+  "class": [
+    {
+      "name": "Bard",
+      "subclass": "Collège du savoir",
+      "level": 4,
+      "hitDice": 8
+    }
+  ],
+  "profile": {
+    "alignment": "Chaotic Good",
+    "race": "Forgelier",
+    "subrace": "",
+    "history": "Criminel"
+  },
+  "appearance": {
+    "age": 20,
+    "height": 1.9,
+    "weight": 80,
+    "eyes": "Violets / Bleus",
+    "hair": "Aucun",
+    "skin": "Métallique / Bois",
+    "description": "T3UB est un forgelieur athlétique, conçu pour le combat. Il a été créé pour protéger Helmut Van Hacken, un grand inventeur. Vêtu d'une cape lorsqu'il est en mode combat afin que ses potentiels spectateurs ne le reconnaissent pas ses yeux virent du violet au rouge quand il se bat car il change de programme."
+  },
+  "background": {
+    "personalityTraits": "Énorme blagueur, je suis persuadé d'être humain, j'adore les groupes et les troupes, j'aime les représentations",
+    "ideals": "Devenir le plus grand stand-upper du monde et faire connaître ce spectacle à un plus grand nombre.",
+    "bonds": "Animosité avec la troupe du Jamil Mechani'Club",
+    "flaws": "Je ne comprends pas les codes sociaux et j'agis sans réfléchir",
+    "alliesAndOrgs": "",
+    "backstory": "T3UB est un forgelieur athlétique, il a été conçu pour le combat, la traque et la protection. Il est vêtu d'une cape lorsqu'il est en mode combat afin que ses potentiels spectateurs ne le reconnaissent pas ses yeux virent du violet au rouge quand il se bat car il change de programme. Il n'est pas habillé, seulement une ceinture de quelques sacoches lui permettant de ranger son équipement d'enregistreur et de lancer des sons préenregistrés comme des rires de sitcom quand bon lui semble. T3UB est un forgelieur athlétique. Il a été conçu pour le combat, la traque et la protection. Il est vêtu d'une cape lorsqu'il est en mode combat afin que ses potentiels spectateurs ne le reconnaissent pas car il change de programme. Il n'est pas habillé, seulement une ceinture de quelques sacoches lui permettant de ranger son mini sono dans son dos qu'il contrôle et qui lui permet d'enregistrer et de lancer des sons préenregistrés comme des rires de sitcom quand bon lui semble. T3UB est un forgelieur athlétique, il a été conçu pour le combat, la traque et la protection. Il a été créé pour protéger Helmut Van Hacken, l'un des plus grand inventeur de sa ville, une sorte de savant fou. Van Hacken était persuadé que ses inventions allaient devenir de véritables êtres vivants capables d'oeuvres d'art. Van Hacken avait aussi la particularité d'adorer travailler en faisant des blagues. Un jour la troupe du Jamil Mechani'Club, des saltimbanques utilisant les machines pour leurs spectacles ont attaqué la maison de Van Hacken pour lui dérober un matériel, après un combat acharné, et mû uniquement par l'instinct de protection de son maître, T3UB a fini par se faire démolir les os et par voir son maître mourir sous ses yeux. Volé et traumatisé arraché par les membres du Jamil Mechani'Club, T3UB a perdu la mémoire de cet événement et a hérité d'une forme de magie. C'est avec ces pouvoirs qu'à l'insu du Jamil Mechani'Club, il a réussi quelques sortilèges à l'instar d'un maître en la matière. Depuis sa reconstruction du stand up. Mais cet art étant mercenaire, assassin et vend ses services de protection personnelle en ville."
+  },
+  "treasure": {
+    "cp": 7,
+    "sp": 17,
+    "ep": 0,
+    "gp": 201,
+    "pp": 0,
+    "treasure": "Barnum me doit 110 PO sonnantes et trébuchantes - Mon bras ainsi que mon révolver sont dans un atelier de lumières - Magistrature du bâton nildrog - T3UB peut enregistrer des sons ainsi que les rejouer quand il le veut",
+    "equipment": "Épée longue, épée courte, révolver, armure légère, kit d'empoisonneur, dés, instrument de musique, enregistreur de sons mini sono dans son dos, sacoche"
+  },
+  "stats": {
+    "size": "Medium",
+    "proficiencyBonus": 2,
+    "maxHitPoints": 32,
+    "currentHitPoints": 32,
+    "tempHitPoints": 0,
+    "armorClass": 14,
+    "initiative": 3,
+    "speed": {
+      "walk": 30
+    },
+    "abilityScores": {
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 15,
+      "intelligence": 12,
+      "wisdom": 8,
+      "charisma": 18
+    },
+    "savingThrows": {
+      "strength": 0,
+      "dexterity": 4,
+      "constitution": 2,
+      "intelligence": 1,
+      "wisdom": -1,
+      "charisma": 6
+    },
+    "skills": {
+      "athletics": 2,
+      "acrobatics": 4,
+      "sleightHand": 4,
+      "stealth": 4,
+      "arcana": 2,
+      "history": 3,
+      "investigation": 2,
+      "nature": 2,
+      "religion": 2,
+      "animalHandling": 0,
+      "insight": 0,
+      "medicine": 0,
+      "perception": 0,
+      "survival": 0,
+      "deception": 6,
+      "intimidation": 8,
+      "performance": 6,
+      "persuasion": 8
+    },
+    "tools": ["Lute", "Kit d'empoisonneur", "Dés"],
+    "armors": ["Light armor"],
+    "weapons": ["Simple weapons", "Hand crossbow", "Longsword", "Rapier", "Shortsword", "Pistol"],
+    "masteries": {
+      "athletics": 2,
+      "acrobatics": 2,
+      "sleightHand": 2,
+      "stealth": 2,
+      "arcana": 1,
+      "history": 2,
+      "investigation": 1,
+      "nature": 1,
+      "religion": 1,
+      "animalHandling": 1,
+      "insight": 1,
+      "medicine": 1,
+      "perception": 1,
+      "survival": 1,
+      "deception": 2,
+      "intimidation": 3,
+      "performance": 2,
+      "persuasion": 3
+    },
+    "masteriesAbility": {
+      "strength": false,
+      "dexterity": true,
+      "constitution": false,
+      "intelligence": false,
+      "wisdom": false,
+      "charisma": true
+    },
+    "senses": [],
+    "languages": ["Commun", "Halfelin"],
+    "passivePerception": 11
+  },
+  "abilities": [
+    {
+      "name": "Inspiration bardique (1d6 - 4/long rest)",
+      "description": "En tant qu'action bonus, vous pouvez donner à une créature dans les 18m un dé d'inspiration (1d6) utilisable pour ajouter au résultat d'un jet. Touche-à-tout (+1)*"
+    },
+    {
+      "name": "Chant reposant",
+      "description": "Pendant un repos court, vous et vos alliés à portée d'audition récupérez 1d6 points de vie supplémentaires si vous dépensez des dés de vie."
+    },
+    {
+      "name": "Maîtrises supplémentaires",
+      "description": "Au niveau 3, le barde du Collège du Savoir gagne la maîtrise de trois compétences de son choix."
+    },
+    {
+      "name": "Mots cinglants",
+      "description": "Lorsqu'une créature que vous pouvez voir dans un rayon de 18 m fait un jet d'attaque, de caractéristique ou de sauvegarde, vous pouvez utiliser votre réaction pour dépenser une utilisation de votre Inspiration bardique et soustraire le résultat du dé au jet de la créature."
+    },
+    {
+      "name": "Résistance des forgelieurs",
+      "description": "Vous avez un avantage aux jets de sauvegarde contre les poisons et une résistance aux dégâts de poison."
+    },
+    {
+      "name": "Protection intégrée",
+      "description": "Votre corps possède des défenses intégrées. Votre CA de base est de 11 + votre modificateur de Dextérité si vous ne portez pas d'armure. Vous pouvez utiliser votre protection intégrée pour déterminer votre CA."
+    },
+    {
+      "name": "Conception spécialisée",
+      "description": "Vous gagnez une compétence de votre choix et la maîtrise d'un outil de votre choix."
+    },
+    {
+      "name": "Accointances avec le pègre",
+      "description": "Vous avez un contact fiable qui agit comme votre agent de liaison avec un réseau d'autres criminels. Vous savez comment faire passer des messages via votre contact, même sur de grandes distances."
+    },
+    {
+      "name": "Enregistreur de son intégré",
+      "description": "T3UB peut enregistrer des sons ainsi que les rejouer quand il le veut."
+    }
+  ],
+  "spellcasting": [
+    {
+      "className": "Bard",
+      "ability": "charisma",
+      "saveDC": 14,
+      "attackBonus": 6,
+      "spellSlotsByLevel": {
+        "1": { "total": 4, "used": 0 },
+        "2": { "total": 3, "used": 0 }
+      },
+      "totalSlots": 7,
+      "spells": [
+        {
+          "name": "Illusion mineure",
+          "level": 0,
+          "school": "illusion",
+          "castingTime": "1 action",
+          "range": "30 feet",
+          "components": ["S", "M"],
+          "duration": "1 minute",
+          "description": "Vous créez un son ou une image d'un objet dans un rayon de 9 mètres qui dure 1 minute."
+        },
+        {
+          "name": "Moquerie cruelle",
+          "level": 0,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "60 feet",
+          "components": ["V"],
+          "duration": "Instantaneous",
+          "description": "Vous décochez une insulte magique à une créature que vous pouvez voir. Si la cible peut vous entendre, elle doit réussir un jet de sauvegarde de Sagesse ou subir 1d4 dégâts psychiques et avoir un désavantage à son prochain jet d'attaque."
+        },
+        {
+          "name": "Message",
+          "level": 0,
+          "school": "transmutation",
+          "castingTime": "1 action",
+          "range": "120 feet",
+          "components": ["V", "S", "M"],
+          "duration": "1 round",
+          "description": "Vous pointez du doigt une créature située à portée et chuchotez un message. La cible (et elle seule) entend le message et peut répondre dans un murmure que vous seul entendez."
+        },
+        {
+          "name": "Fou rire de Tasha",
+          "level": 1,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "30 feet",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, up to 1 minute",
+          "description": "Une créature de votre choix que vous pouvez voir à portée perçoit tout comme hilarant et est prise d'un fou rire si ce sort l'affecte. La cible doit réussir un jet de sauvegarde de Sagesse ou tomber à terre, devenant incapable d'agir et incapable de se relever pour la durée."
+        },
+        {
+          "name": "Soins",
+          "level": 1,
+          "school": "evocation",
+          "castingTime": "1 action",
+          "range": "Touch",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Une créature que vous touchez récupère un nombre de points de vie égal à 1d8 + votre modificateur de caractéristique d'incantation."
+        },
+        {
+          "name": "Sommeil",
+          "level": 1,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "90 feet",
+          "components": ["V", "S", "M"],
+          "duration": "1 minute",
+          "description": "Ce sort endort les créatures, en commençant par celles ayant le moins de points de vie actuels. Lancez 5d8; le total correspond aux points de vie des créatures que ce sort peut affecter."
+        },
+        {
+          "name": "Murmures dissonants",
+          "level": 1,
+          "school": "evocation",
+          "castingTime": "1 action",
+          "range": "60 feet",
+          "components": ["V"],
+          "duration": "Instantaneous",
+          "description": "Vous murmurez une mélodie discordante qu'une seule créature de votre choix peut entendre. La cible doit réussir un jet de sauvegarde de Sagesse ou subir 3d6 dégâts psychiques."
+        },
+        {
+          "name": "Charme-personne",
+          "level": 1,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "30 feet",
+          "components": ["V", "S"],
+          "duration": "1 hour",
+          "description": "Vous tentez de charmer une humanoïde que vous pouvez voir à portée. Elle doit faire un jet de sauvegarde de Sagesse, avec un avantage si vous ou vos compagnons la combattez. Si elle échoue, elle est charmée par vous jusqu'à la fin du sort."
+        },
+        {
+          "name": "Invisibilité",
+          "level": 2,
+          "school": "illusion",
+          "castingTime": "1 action",
+          "range": "Touch",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, up to 1 hour",
+          "description": "Une créature que vous touchez devient invisible jusqu'à ce que le sort prenne fin. Tout ce que la cible porte ou transporte est invisible tant que c'est sur sa personne."
+        },
+        {
+          "name": "Couronne du dément",
+          "level": 2,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "120 feet",
+          "components": ["V", "S"],
+          "duration": "Concentration, up to 1 minute",
+          "description": "Une créature humanoïde de votre choix que vous pouvez voir à portée doit réussir un jet de sauvegarde de Sagesse ou être charmée par vous pour la durée. Tant que la cible est charmée ainsi, une couronne torsadée de fer dentelé apparaît sur sa tête."
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "Épée longue",
+      "type": "melee",
+      "attackBonus": 2,
+      "damage": [
+        {
+          "dice": "1d8",
+          "type": "slashing"
+        }
+      ],
+      "range": "5 feet",
+      "description": "Corps à corps : +2 (1d8 tranchant ; polyvalente (1d10))"
+    },
+    {
+      "name": "Révolver",
+      "type": "ranged",
+      "attackBonus": 4,
+      "damage": [
+        {
+          "dice": "1d6+2",
+          "type": "piercing"
+        }
+      ],
+      "range": "80/320 feet",
+      "description": "Distance : +4 (1d6+2 perforant ; munitions (portée 12m/48m))"
+    }
+  ],
+  "exhaustionLevel": 0,
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  },
+  "affinities": {
+    "resistances": ["poison"],
+    "immunities": [],
+    "vulnerabilities": []
+  },
+  "conditions": {
+    "blinded": false,
+    "charmed": false,
+    "deafened": false,
+    "frightened": false,
+    "grappled": false,
+    "incapacitated": false,
+    "invisible": false,
+    "paralyzed": false,
+    "petrified": false,
+    "poisoned": false,
+    "prone": false,
+    "restrained": false,
+    "stunned": false,
+    "unconscious": false
+  }
+},
+{
+  "firstname": "Ermanigildo",
+  "lastname": "Di Miracolo",
+  "kind": "player",
+  "inspiration": false,
+  "progression": {
+    "level": 4,
+    "experience": 2700
+  },
+  "class": [
+    {
+      "name": "Cleric",
+      "subclass": "Domaine du Savoir",
+      "level": 4,
+      "hitDice": 8
+    }
+  ],
+  "profile": {
+    "alignment": "Lawful Neutral",
+    "race": "Gnome",
+    "subrace": "Gnome des forêts",
+    "history": "Idiot du village"
+  },
+  "appearance": {
+    "age": 160,
+    "height": 1.05,
+    "weight": 18,
+    "eyes": "",
+    "hair": "",
+    "skin": "",
+    "description": "Petit, mais droit comme un chêne, il dégage une fierté tranquille et un courage inattendu. Ses bottes hautes claquent encore sur le pavé, vestige de sa vie dans les plaines. Il porte une chemise râpée, haussée d'un vieux cuir patiné complété ce curieux mélange d'élégance rustique et de folie mystique."
+  },
+  "background": {
+    "personalityTraits": "",
+    "ideals": "",
+    "bonds": "",
+    "flaws": "",
+    "alliesAndOrgs": "",
+    "backstory": "Idiot du village - Errant de village en village, il suit les bergers et bergères en suivant les traditions de son peuple, des bergers de bisons et marchands des plaines. Un jour où il a eu une révélation spirituelle : la princesse de la lune, d'après lui sa et leurs supra-divin, lui aurait conféré une étrange sagesse. Bien des gens considéraient comme amusant le spectacle, mais cela ne l'a pas découragé. Aujourd'hui, il semble qu'il parcourt le monde, persuadé que la lune le guide vers un destin grandiose."
+  },
+  "treasure": {
+    "cp": 7,
+    "sp": 9,
+    "ep": 0,
+    "gp": 1,
+    "pp": 0,
+    "treasure": "",
+    "equipment": "Marteau de guerre, fouet, révolver, armure de cuir, bouclier, dés, symbole sacré/emblème, sac d'exploration, kit de jeu simple, bougie, rations, gourde, corde, vêtements communs, bâton, bourse"
+  },
+  "stats": {
+    "size": "Small",
+    "proficiencyBonus": 2,
+    "maxHitPoints": 23,
+    "currentHitPoints": 23,
+    "tempHitPoints": 0,
+    "armorClass": 13,
+    "initiative": 0,
+    "speed": {
+      "walk": 25
+    },
+    "abilityScores": {
+      "strength": 14,
+      "dexterity": 11,
+      "constitution": 12,
+      "intelligence": 15,
+      "wisdom": 17,
+      "charisma": 8
+    },
+    "savingThrows": {
+      "strength": 2,
+      "dexterity": 0,
+      "constitution": 1,
+      "intelligence": 2,
+      "wisdom": 5,
+      "charisma": 1
+    },
+    "skills": {
+      "athletics": 2,
+      "acrobatics": 0,
+      "sleightHand": 0,
+      "stealth": 2,
+      "arcana": 4,
+      "history": 4,
+      "investigation": 2,
+      "nature": 2,
+      "religion": 4,
+      "animalHandling": 3,
+      "insight": 5,
+      "medicine": 3,
+      "perception": 3,
+      "survival": 3,
+      "deception": -1,
+      "intimidation": -1,
+      "performance": 1,
+      "persuasion": -1
+    },
+    "tools": ["Un type de jeu simple"],
+    "armors": ["Light armor", "Medium armor", "Shields"],
+    "weapons": ["Simple weapons", "Hand crossbow"],
+    "masteries": {
+      "athletics": 0,
+      "acrobatics": 0,
+      "sleightHand": 0,
+      "stealth": 2,
+      "arcana": 2,
+      "history": 2,
+      "investigation": 0,
+      "nature": 0,
+      "religion": 2,
+      "animalHandling": 0,
+      "insight": 2,
+      "medicine": 0,
+      "perception": 0,
+      "survival": 0,
+      "deception": 0,
+      "intimidation": 0,
+      "performance": 2,
+      "persuasion": 0
+    },
+    "masteriesAbility": {
+      "strength": false,
+      "dexterity": false,
+      "constitution": false,
+      "intelligence": false,
+      "wisdom": true,
+      "charisma": true
+    },
+    "senses": [        
+      {
+        "name": "darkvision",
+        "value": 60
+      }],
+    "languages": ["Commun", "Géant", "Gnome", "Nain"],
+    "passivePerception": 13
+  },
+  "abilities": [
+    {
+      "name": "Renvoi des morts-vivants",
+      "description": "En tant qu'action, vous présentez votre symbole sacré en prononçant une prière. Chaque mort-vivant qui peut vous voir ou vous entendre dans un rayon de 9 m doit faire un jet de sauvegarde de Sagesse (DD 13). En cas d'échec, la créature est repoussée pendant 1 minute ou jusqu'à ce qu'elle subisse des dégâts."
+    },
+    {
+      "name": "Bénédictions du savant",
+      "description": "Vous apprenez deux langues de votre choix et vous doublez votre bonus de maîtrise pour tous les jets de caractéristique liés à deux compétences ou outils de votre choix dans lesquels vous avez la maîtrise."
+    },
+    {
+      "name": "Conduit divin (1/repos)",
+      "description": "Vous pouvez utiliser votre action pour exploiter l'énergie divine du domaine. Vous avez deux effets: Renvoi des morts-vivants et votre capacité de domaine."
+    },
+    {
+      "name": "Savoir ancestral",
+      "description": "Vous gagnez la maîtrise de deux compétences ou outils de votre choix."
+    },
+    {
+      "name": "Vision dans le noir",
+      "description": "Vous pouvez voir à 18 m dans une lumière faible comme vous verriez avec une lumière vive, et dans le noir comme vous verriez avec une lumière faible. Dans le noir, vous ne discernez pas les couleurs, uniquement des nuances de gris."
+    },
+    {
+      "name": "Ruse gnome",
+      "description": "Vous avez un avantage aux jets de sauvegarde d'Intelligence, de Sagesse et de Charisme contre la magie."
+    },
+    {
+      "name": "Communication avec les petits animaux",
+      "description": "Grâce à des sons et des gestes, vous pouvez communiquer des idées simples aux bêtes de taille Petite ou inférieure."
+    },
+    {
+      "name": "Illusionniste-né",
+      "description": "Vous connaissez le cantrip illusion mineure. L'Intelligence est votre caractéristique d'incantation pour ce sort."
+    },
+    {
+      "name": "Pitoyable",
+      "description": "Vous pouvez tenter de cacher votre condition derrière une façade de compassion feinte. En tant qu'action, vous pouvez tenter un jet de Charisme (Tromperie) contre le jet de Sagesse (Perspicacité) d'une créature humanoïde."
+    }
+  ],
+  "spellcasting": [
+    {
+      "className": "Cleric",
+      "ability": "wisdom",
+      "saveDC": 13,
+      "attackBonus": 5,
+      "spellSlotsByLevel": {
+        "1": { "total": 4, "used": 0 },
+        "2": { "total": 3, "used": 0 }
+      },
+      "totalSlots": 7,
+      "spells": [
+        {
+          "name": "Assistance",
+          "level": 0,
+          "school": "divination",
+          "castingTime": "1 action",
+          "range": "Touch",
+          "components": ["V", "S"],
+          "duration": "Concentration, up to 1 minute",
+          "description": "Vous touchez une créature consentante. Une fois avant la fin du sort, la cible peut lancer un d4 et ajouter le résultat à un jet de caractéristique de son choix."
+        },
+        {
+          "name": "Réparation",
+          "level": 0,
+          "school": "transmutation",
+          "castingTime": "1 minute",
+          "range": "Touch",
+          "components": ["V", "S", "M"],
+          "duration": "Instantaneous",
+          "description": "Ce sort répare une seule cassure ou déchirure dans un objet que vous touchez, comme un maillon de chaîne cassé, deux moitiés d'une clé brisée, un accroc dans un manteau, ou une fuite dans une outre."
+        },
+        {
+          "name": "Thaumaturgie",
+          "level": 0,
+          "school": "transmutation",
+          "castingTime": "1 action",
+          "range": "30 feet",
+          "components": ["V"],
+          "duration": "Up to 1 minute",
+          "description": "Vous créez un effet surnaturel mineur à portée. Vous créez un effet instantané inoffensif, comme une gerbe d'étincelles, un coup de vent, des notes de musique faibles, ou une odeur étrange."
+        },
+        {
+          "name": "Glas",
+          "level": 0,
+          "school": "necromancy",
+          "castingTime": "1 action",
+          "range": "60 feet",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Vous pointez du doigt une créature que vous pouvez voir à portée et le son d'une cloche funèbre emplit l'air autour d'elle pendant un instant. La cible doit réussir un jet de sauvegarde de Sagesse ou subir 1d8 dégâts nécrotiques."
+        },
+        {
+          "name": "Identification",
+          "level": 1,
+          "school": "divination",
+          "castingTime": "1 minute",
+          "range": "Touch",
+          "components": ["V", "S", "M"],
+          "duration": "Instantaneous",
+          "description": "Vous choisissez un objet que vous devez toucher pendant toute l'incantation du sort. Si c'est un objet magique ou un autre objet imprégné de magie, vous apprenez ses propriétés et comment les utiliser."
+        },
+        {
+          "name": "Injonction",
+          "level": 1,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "60 feet",
+          "components": ["V"],
+          "duration": "1 round",
+          "description": "Vous lancez un ordre d'un mot à une créature que vous pouvez voir à portée. La cible doit réussir un jet de sauvegarde de Sagesse ou suivre l'ordre à son prochain tour."
+        },
+        {
+          "name": "Bouclier de la foi",
+          "level": 1,
+          "school": "abjuration",
+          "castingTime": "1 bonus action",
+          "range": "60 feet",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, up to 10 minutes",
+          "description": "Un champ scintillant apparaît et entoure une créature de votre choix à portée, lui accordant un bonus de +2 à la CA pour la durée."
+        },
+        {
+          "name": "Blessure",
+          "level": 1,
+          "school": "necromancy",
+          "castingTime": "1 action",
+          "range": "Touch",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Faites une attaque de sort au corps à corps contre une créature que vous pouvez atteindre. En cas de réussite, la cible subit 3d10 dégâts nécrotiques."
+        },
+        {
+          "name": "Sanctuaire",
+          "level": 1,
+          "school": "abjuration",
+          "castingTime": "1 bonus action",
+          "range": "30 feet",
+          "components": ["V", "S", "M"],
+          "duration": "1 minute",
+          "description": "Vous protégez une créature à portée contre les attaques. Jusqu'à la fin du sort, toute créature qui cible la créature protégée avec une attaque ou un sort nuisible doit d'abord faire un jet de sauvegarde de Sagesse."
+        },
+        {
+          "name": "Protection contre le mal et le bien",
+          "level": 1,
+          "school": "abjuration",
+          "castingTime": "1 action",
+          "range": "Touch",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, up to 10 minutes",
+          "description": "Jusqu'à la fin du sort, une créature consentante que vous touchez est protégée contre certains types de créatures : aberrations, célestes, élémentaires, fées, fiélons et morts-vivants."
+        },
+        {
+          "name": "Purification de nourriture et d'eau",
+          "level": 1,
+          "school": "transmutation",
+          "castingTime": "1 action",
+          "range": "10 feet",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Toute nourriture et boisson non magiques dans une sphère de 1,50 m de rayon centrée sur un point de votre choix à portée sont purifiées et débarrassées de tout poison et maladie."
+        },
+        {
+          "name": "Soins",
+          "level": 1,
+          "school": "evocation",
+          "castingTime": "1 action",
+          "range": "Touch",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Une créature que vous touchez récupère un nombre de points de vie égal à 1d8 + votre modificateur de caractéristique d'incantation."
+        },
+        {
+          "name": "Augure",
+          "level": 2,
+          "school": "divination",
+          "castingTime": "1 minute",
+          "range": "Self",
+          "components": ["V", "S", "M"],
+          "duration": "Instantaneous",
+          "description": "En lançant des bâtonnets sertis de gemmes, en jetant des osselets de dragon, en tirant des cartes ornées ou en utilisant un autre outil de divination, vous recevez un présage d'une entité surnaturelle à propos des résultats d'une action spécifique que vous prévoyez de faire dans les 30 prochaines minutes."
+        },
+        {
+          "name": "Suggestion",
+          "level": 2,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "30 feet",
+          "components": ["V", "M"],
+          "duration": "Concentration, up to 8 hours",
+          "description": "Vous suggérez une ligne de conduite (limitée à une phrase ou deux) et influencez magiquement une créature que vous pouvez voir à portée et qui peut vous entendre et vous comprendre."
+        },
+        {
+          "name": "Aide",
+          "level": 2,
+          "school": "abjuration",
+          "castingTime": "1 action",
+          "range": "30 feet",
+          "components": ["V", "S", "M"],
+          "duration": "8 hours",
+          "description": "Votre sort renforce vos alliés avec robustesse et résolution. Choisissez jusqu'à trois créatures à portée. Le maximum de points de vie de chaque cible et ses points de vie actuels augmentent de 5 pour la durée."
+        },
+        {
+          "name": "Arme spirituelle",
+          "level": 2,
+          "school": "evocation",
+          "castingTime": "1 bonus action",
+          "range": "60 feet",
+          "components": ["V", "S"],
+          "duration": "1 minute",
+          "description": "Vous créez une arme spectrale flottante à portée qui dure pour la durée ou jusqu'à ce que vous lanciez à nouveau ce sort. Lorsque vous lancez le sort, vous pouvez faire une attaque de sort au corps à corps contre une créature dans un rayon de 1,50 m de l'arme."
+        },
+        {
+          "name": "Immobilisation de personne",
+          "level": 2,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "60 feet",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, up to 1 minute",
+          "description": "Choisissez une créature humanoïde que vous pouvez voir à portée. La cible doit réussir un jet de sauvegarde de Sagesse ou être paralysée pour la durée."
+        },
+        {
+          "name": "Localisation d'objet",
+          "level": 2,
+          "school": "divination",
+          "castingTime": "1 action",
+          "range": "Self",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, up to 10 minutes",
+          "description": "Décrivez ou nommez un objet qui vous est familier. Vous percevez la direction vers l'emplacement de l'objet, tant qu'il se trouve à moins de 300 m de vous."
+        },
+        {
+          "name": "Prière de guérison",
+          "level": 2,
+          "school": "evocation",
+          "castingTime": "10 minutes",
+          "range": "30 feet",
+          "components": ["V"],
+          "duration": "Instantaneous",
+          "description": "Jusqu'à six créatures de votre choix que vous pouvez voir à portée récupèrent chacune un nombre de points de vie égal à 2d8 + votre modificateur de caractéristique d'incantation."
+        },
+        {
+          "name": "Restauration partielle",
+          "level": 2,
+          "school": "abjuration",
+          "castingTime": "1 action",
+          "range": "Touch",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Vous touchez une créature et pouvez mettre fin soit à une maladie soit à une condition l'affligeant. La condition peut être aveuglé, assourdi, paralysé ou empoisonné."
+        },
+        {
+          "name": "Sens des pièges",
+          "level": 2,
+          "school": "divination",
+          "castingTime": "1 action",
+          "range": "120 feet",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Vous percevez la présence de tout piège à portée qui est visible. Un piège, aux fins de ce sort, inclut tout ce qui infligerait un effet soudain ou inattendu que vous considérez comme nuisible ou indésirable."
+        },
+        {
+          "name": "Silence",
+          "level": 2,
+          "school": "illusion",
+          "castingTime": "1 action",
+          "range": "120 feet",
+          "components": ["V", "S"],
+          "duration": "Concentration, up to 10 minutes",
+          "description": "Pour la durée, aucun son ne peut être créé dans ou traverser une sphère de 6 m de rayon centrée sur un point que vous choisissez à portée."
+        },
+        {
+          "name": "Zone de vérité",
+          "level": 2,
+          "school": "enchantment",
+          "castingTime": "1 action",
+          "range": "60 feet",
+          "components": ["V", "S"],
+          "duration": "10 minutes",
+          "description": "Vous créez une zone magique qui protège contre la tromperie dans une sphère de 4,50 m de rayon centrée sur un point de votre choix à portée. Jusqu'à la fin du sort, une créature qui entre dans la zone du sort pour la première fois à un tour ou qui y commence son tour doit faire un jet de sauvegarde de Charisme."
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "Marteau de guerre",
+      "type": "melee",
+      "attackBonus": 2,
+      "damage": [
+        {
+          "dice": "1d8+2",
+          "type": "bludgeoning"
+        }
+      ],
+      "range": "5 feet",
+      "description": "Corps à corps : +2 (1d8+2 contondant ; polyvalente (1d10))"
+    },
+    {
+      "name": "Fouet",
+      "type": "melee",
+      "attackBonus": 2,
+      "damage": [
+        {
+          "dice": "1d4+2",
+          "type": "slashing"
+        }
+      ],
+      "range": "10 feet",
+      "description": "Corps à corps : +2 (1d4+2 tranchant ; finesse, allonge)"
+    },
+    {
+      "name": "Révolver",
+      "type": "ranged",
+      "attackBonus": 0,
+      "damage": [
+        {
+          "dice": "1d6",
+          "type": "piercing"
+        }
+      ],
+      "range": "30/120 feet",
+      "description": "Distance : +0 (1d6 perforant ; munitions (portée 9m/36m), chargement)"
+    }
+  ],
+  "exhaustionLevel": 0,
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  },
+  "affinities": {
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": []
+  },
+  "conditions": {
+    "blinded": false,
+    "charmed": false,
+    "deafened": false,
+    "frightened": false,
+    "grappled": false,
+    "incapacitated": false,
+    "invisible": false,
+    "paralyzed": false,
+    "petrified": false,
+    "poisoned": false,
+    "prone": false,
+    "restrained": false,
+    "stunned": false,
+    "unconscious": false
+  }
+},
+{
+  "firstname": "Barnum",
+  "lastname": "Petit-Pied",
+  "kind": "player",
+  "inspiration": true,
+  "progression": {
+    "level": 4,
+    "experience": 2700
+  },
+  "class": [
+    {
+      "name": "Artificer",
+      "subclass": "Alchimiste",
+      "level": 4,
+      "hitDice": 8
+    }
+  ],
+  "profile": {
+    "alignment": "Neutral Good",
+    "race": "Gnome",
+    "subrace": "Gnome des roches",
+    "history": "Artiste"
+  },
+  "appearance": {
+    "age": 35,
+    "height": 1.05,
+    "weight": 50,
+    "eyes": "Bleu translucide",
+    "hair": "brun - reflet bleu",
+    "skin": "blanchâtre",
+    "description": "Barnum : Petit et rondelé, en tenue de Circassien, chaussure de sécurité marron et ceinture d’outil en verre Nuée : chapeau melon ornée de vitraux scintillant, on voit son âme a travers les vitraux colorés, des petits yeux semblable au chapeau de Mario dans Mario Odyssée"
+  },
+  "background": {
+    "personalityTraits": "Timide - Ronchon - Grand rêveur - Curieux - Passionné",
+    "ideals": "Nuée : ami de toujours, compagnon de route\nThom et Rhom : Jumeaux, comme des frères\nSonges Errants : Troupe de cœur, ou tout a commencé\nVasselheim : Ville de naissance\nMilo : ami rigolo, imprévisible (un peu bête)\nT3UB : entente qui varie, il me fait un peu peur parfois et parfois très marrant\nGhildo : discret, honnête, charmeur (possède une très belle boucle de ceinture)\nP'tit Ghildo : touchant, naïf, attendrissant, parfois trop collant (il pose trop de question)\nTraître : Sil'reine - Ariana Grand'aile",
+    "bonds": "Timidité parfois abusive - Nuée - Peureux - Trop rêveur ?",
+    "flaws": "Jusqu'où ma technique peut aller ? - Suiveur",
+    "alliesAndOrgs": "Tout est dans les liens",
+    "backstory": "Je n'avais jamais eu de foyer. Dès mon plus jeune âge, j'errais dans les rues de Vasselheim, récupérant des morceaux de métal rouillé et des engrenages brisés pour en faire de petites merveilles mécaniques. Je survivais en vendant mes créations : des oiseaux sifflotants, des araignées dansantes, des lucioles artificielles projetant de douces lumières dans l'obscurité. Mais les gens ne voyaient en moi qu'un vagabond, un petit gnome sans avenir. Un jour, alors que je tentais de vendre un automate musicien sur la place du marché, un marchand furieux m'accusa de vol et me chassa à coups de bâton. Blessé et affamé, j'errai jusqu'à la sortie de la ville, où un grand chapiteau bariolé s'élevait sous le ciel étoilé. La troupe du cirque des Songes Errants venait d'arriver. C'est là que je rencontrai Thom et Rom, deux jumeaux au regard étrange, capables de sonder les âmes d'un simple coup d'œil. Intrigués par moi et mes créations mécaniques, ils m'accueillirent sans hésiter. « Tu es un rêveur, Barnum, » dit Rom avec un sourire énigmatique. « Et ici, les rêveurs deviennent des étoiles. » Mais ce n'est pas tout ce qui changea cette nuit-là. Lorsque je m'endormis sous le chapiteau, entouré des murmures du cirque, quelque chose d'étrange se produisit. Mon vieux chapeau cabossé, rafistolé avec des engrenages et des tuyaux, s'anima soudainement. De petites hélices se mirent à tourner, des valves sifflèrent doucement, et le chapeau s'éleva légèrement avant de se poser à nouveau sur ma tête. J'ouvris de grands yeux émerveillés. Je réalisai alors que le chapeau n'était plus le simple objet que j'avais porté pendant tant d'années. Il était orné de vitraux délicatement sculptés, capturant la lumière et émettant des éclats colorés à chaque mouvement. C'était comme si le chapiteau lui-même, ce lieu magique, avait insufflé une vie nouvelle à ce vieux chapeau. « Toi aussi, t'es un rêveur, hein ? » murmurai-je avec un sourire naissant. « Je vais t'appeler… Nuée. » Je ne savais pas encore que ce n'était pas simplement mon chapeau qui s'était animé, mais bien le chapiteau magique du cirque des Songes Errants qui lui avait insufflé cette vie. Ce lieu où les rêves prenaient forme avait éveillé Nuée, et avec lui, une toute nouvelle capacité : la manipulation du verre. Chaque fois que Nuée reposait sur ma tête, je ressentais une étrange connexion avec le verre. C'était comme si je devenais un souffleur capable de façonner et de modeler ce matériau fragile avec une facilité déconcertante. Le verre répondait à mes gestes comme si la magie de Nuée guidait chacun de mes mouvements. Dès lors, je me mis à créer des œuvres fascinantes : sculptures fragiles, vitraux animés, formes élégantes dansant sous la lumière. Je transformais les morceaux de verre en automates, en décorations et en instruments uniques, tous empreints de la magie du cirque. Un jour, en repensant à ma boîte à musique d'enfance, un objet que j'avais presque oublié, je l'imaginai différemment. Je soufflai doucement sur Nuée et la magie se manifesta : les vitraux de mon chapeau s'illuminèrent, et je sentis le verre se modeler sous mes doigts. La boîte à musique d'autrefois, maintenant en verre finement travaillé, se mit à jouer une mélodie douce et familière, réveillant en moi des émotions profondes. Mais au fond de moi, je savais que je n'étais pas destiné à rester sous le chapiteau pour toujours. Une idée germait dans mon esprit : et si mes créations pouvaient faire plus que divertir ? Et si elles pouvaient changer le monde ? Alors, un soir, après un dernier spectacle, je pris mon sac, mes outils, Nuée bien vissé sur ma tête, et quittai la troupe avec la bénédiction des jumeaux. Loin des rues où j'avais grandi, loin du cirque qui m'avait accueilli, je m'élançai dans l'inconnu, prêt à forger mon propre destin. Mais cette fois, je n'étais plus seul. La route fut longue. J'avançais de ville en ville, échangeant mes créations contre un repas, un abri, parfois simplement un sourire. Nuée frémissait souvent lorsque nous approchions d'endroits chargés d'histoires, comme si le monde lui murmurait des secrets que je n'entendais pas encore. Puis, un matin, dans une petite gare abandonnée rongée par la rouille et le silence, je trouvai quelque chose d'étrange coincé sous un banc : un ticket de papier épais, jauni par le temps. Une écriture élégante y était inscrite — Caravane Hurlante. Je ne savais pas pourquoi, mais mon cœur se mit à battre plus vite. Nuée vibra légèrement sur ma tête, ses vitraux diffusant une faible lueur colorée. J'attendis. Je ne savais pas quoi attendre… jusqu'à ce que le vent se mette à souffler sans prévenir. Un grondement déchira le silence. Les rails tremblèrent. Et un train arriva. Il ne ressemblait à aucun autre : trop ancien pour rouler encore, trop vivant pour être une simple machine. La vapeur chantait presque, et chaque wagon semblait porter sa propre histoire. Les portes s'ouvrirent dans un long soupir, comme si on m'invitait. Alors je montai. À l'intérieur, des silhouettes, des regards, des présences. Étranges, différentes… mais familières d'une certaine manière. Pour la première fois depuis longtemps, personne ne me regardait comme un vagabond. Je compris alors. Je n'avais pas seulement quitté un cirque. J'avais trouvé une troupe. Je serrai mon sac contre moi, ajustai Nuée sur ma tête et souris. Je n'étais plus seul."
+  },
+  "treasure": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 225,
+    "pp": 0,
+    "treasure": "Dague, marteau léger, sarbacane, armure de cuir, sac à dos, sac d'allumé-feu, torche (10), rations/j jour (10), gourde, corde de chanvre de 15 m, sifflet, vêtements communs, bâton, boîte à musique enchantée, bourse",
+    "equipment": "Outils de bricoleur, outils de voleur, outils de brasseur, matériel d'alchimiste, matériel d'alchimiste, kit de déguisement, flûte. Poids de l'équipement 42.75 kg - Coût 332 po. Poids des pièces 2.25 kg"
+  },
+  "stats": {
+    "size": "Small",
+    "proficiencyBonus": 2,
+    "maxHitPoints": 27,
+    "currentHitPoints": 27,
+    "tempHitPoints": 0,
+    "armorClass": 14,
+    "initiative": 2,
+    "speed": {
+      "walk": 25
+    },
+    "abilityScores": {
+      "strength": 12,
+      "dexterity": 15,
+      "constitution": 13,
+      "intelligence": 15,
+      "wisdom": 14,
+      "charisma": 8
+    },
+    "savingThrows": {
+      "strength": 1,
+      "dexterity": 2,
+      "constitution": 3,
+      "intelligence": 4,
+      "wisdom": 2,
+      "charisma": -1
+    },
+    "skills": {
+      "athletics": 1,
+      "acrobatics": 4,
+      "sleightHand": 2,
+      "stealth": 2,
+      "arcana": 2,
+      "history": 4,
+      "investigation": 4,
+      "nature": 2,
+      "religion": 2,
+      "animalHandling": 2,
+      "insight": 2,
+      "medicine": 2,
+      "perception": 2,
+      "survival": 2,
+      "deception": -1,
+      "intimidation": -1,
+      "performance": 1,
+      "persuasion": -1
+    },
+    "tools": ["Outils de bricoleur", "Outils de voleur", "Outils de souffleur de verre", "Matériel d'alchimiste", "Kit de déguisement","Flûte"],
+    "armors": ["Light armor", "Medium armor", "Shields"],
+    "weapons": ["Simple weapons"],
+    "masteries": {
+      "athletics": 0,
+      "acrobatics": 2,
+      "sleightHand": 0,
+      "stealth": 0,
+      "arcana": 0,
+      "history": 2,
+      "investigation": 0,
+      "nature": 0,
+      "religion": 0,
+      "animalHandling": 0,
+      "insight": 0,
+      "medicine": 0,
+      "perception": 0,
+      "survival": 0,
+      "deception": 0,
+      "intimidation": 0,
+      "performance": 2,
+      "persuasion": 0
+    },
+    "masteriesAbility": {
+      "strength": false,
+      "dexterity": false,
+      "constitution": true,
+      "intelligence": true,
+      "wisdom": false,
+      "charisma": false
+    },
+    "senses": [{
+        "name": "darkvision",
+        "value": 60
+    }],
+    "languages": ["Commun", "Gnome"],
+    "passivePerception": 12
+  },
+  "abilities": [
+    {
+      "name": "Bricolage magique",
+      "description": "Vous avez appris à investir une étincelle de magie dans les objets banals. Pour utiliser cette capacité, vous devez avoir des outils de voleur ou des outils d'artisan en main. Vous touchez ensuite un objet minuscule non magique et lui conférez l'une des propriétés magiques suivantes de votre choix : une lumière vive dans un rayon de 1,5 m et une lumière faible dans un rayon de 1,5 m supplémentaire, ou répète un message enregistré de 6 secondes maximum, ou émet une odeur ou un son non verbal."
+    },
+    {
+      "name": "Imprégnation d'objet",
+      "description": "Au niveau 2, vous apprenez à imprégner des objets ordinaires de certaines infusions magiques. Vous connaissez 4 infusions d'artificier de votre choix. Vous pouvez avoir 2 objets imprégnés à la fois. Si vous tentez de dépasser votre maximum, l'infusion la plus ancienne prend fin immédiatement."
+    },
+    {
+      "name": "Maîtrise des outils",
+      "description": "Au niveau 3, vous doublez votre bonus de maîtrise pour tous les jets de caractéristique que vous faites avec des outils avec lesquels vous avez la maîtrise."
+    },
+    {
+      "name": "Sorts d'alchimiste",
+      "description": "À partir du niveau 3, vous apprenez toujours certains sorts d'artificier aux niveaux indiqués dans la table. Ces sorts comptent comme des sorts d'artificier pour vous mais ne comptent pas dans le nombre de sorts d'artificier que vous connaissez. Niveau 3 : mot de guérison, rayon empoisonné."
+    },
+    {
+      "name": "Élixir expérimental",
+      "description": "À partir du niveau 3, chaque fois que vous terminez un repos long, vous pouvez créer magiquement un élixir expérimental dans une fiole vide que vous touchez. Vous pouvez créer des élixirs supplémentaires en dépensant un emplacement de sort de niveau 1 ou supérieur pour chaque élixir. Vous pouvez créer un nombre d'élixirs égal à votre bonus de maîtrise (3 élixirs par repos long). Les effets possibles incluent : Guérison, Rapidité, Résilience, Audace, Transformation, Vol."
+    },
+    {
+      "name": "Outil de circonstance",
+      "description": "Au niveau 4, vous gagnez la capacité de produire exactement l'outil dont vous avez besoin. Par une action bonus, vous créez magiquement un ensemble d'outils d'artisan dans un espace libre que vous pouvez voir dans un rayon de 1,5 m. Cette création dure jusqu'à ce que vous utilisiez à nouveau cette capacité."
+    },
+    {
+      "name": "Vision dans le noir",
+      "description": "Habitué à la vie souterraine, vous avez une vision supérieure dans l'obscurité et les conditions de faible luminosité. Vous pouvez voir à 18 m dans une lumière faible comme si c'était une lumière vive, et dans le noir comme si c'était une lumière faible. Vous ne pouvez pas discerner les couleurs dans l'obscurité, seulement des nuances de gris."
+    },
+    {
+      "name": "Ruse gnome",
+      "description": "Vous avez un avantage aux jets de sauvegarde d'Intelligence, de Sagesse et de Charisme contre la magie."
+    },
+    {
+      "name": "Connaissance en ingénierie",
+      "description": "Chaque fois que vous effectuez un jet d'Intelligence (Histoire) lié à des objets magiques, alchimiques ou technologiques, vous pouvez ajouter le double de votre bonus de maîtrise au lieu de votre bonus de maîtrise normal."
+    },
+    {
+      "name": "Bricoleur",
+      "description": "Vous avez la maîtrise des outils d'artisan (outils de bricoleur). En utilisant ces outils, vous pouvez passer 1 heure et dépenser 10 po de matériaux pour construire un dispositif mécanique minuscule (CA 5, 1 pv). Le dispositif cesse de fonctionner après 24 heures."
+    },
+    {
+      "name": "À la demande du public",
+      "description": "Vous pouvez toujours trouver un endroit où vous produire, généralement dans une auberge ou une taverne, mais peut-être dans un cirque, un théâtre ou même une cour noble. Dans de tels endroits, vous recevez le gîte et le couvert gratuits de qualité modeste ou confortable tant que vous vous produisez chaque nuit."
+    },
+    {
+      "name": "Présence de Nuée sur ma tête - Outils en Verre",
+      "description": "Capacité du verre : Produit par Nuée et seulement grâce à Nuée, permet d'avoir beaucoup plus de Dextérité, manie les outils de souffleur de verre grâce à ça."
+    }
+  ],
+  "spellcasting": [
+    {
+      "className": "Artificer",
+      "ability": "intelligence",
+      "saveDC": 12,
+      "attackBonus": 4,
+      "spellSlotsByLevel": {
+        "1": { "total": 3, "used": 0 }
+      },
+      "totalSlots": 3,
+      "spells": [
+        {
+          "name": "Poigne électrique",
+          "level": 0,
+          "school": "evocation",
+          "castingTime": "1 action",
+          "range": "Touch",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "La foudre jaillit de votre main pour frapper une créature que vous essayez de toucher. Faites une attaque de sort au corps à corps contre la cible. En cas de réussite, la cible subit 1d8 dégâts de foudre et ne peut pas effectuer de réactions jusqu'au début de son prochain tour."
+        },
+        {
+          "name": "Rayon de givre",
+          "level": 0,
+          "school": "evocation",
+          "castingTime": "1 action",
+          "range": "60 feet",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Un faisceau glacial de lumière bleu-blanc se dirige vers une créature à portée. Faites une attaque de sort à distance contre la cible. En cas de réussite, elle subit 1d8 dégâts de froid et sa vitesse est réduite de 3 m jusqu'au début de votre prochain tour."
+        },
+        {
+          "name": "Mot de guérison",
+          "level": 1,
+          "school": "evocation",
+          "castingTime": "1 bonus action",
+          "range": "60 feet",
+          "components": ["V"],
+          "duration": "Instantaneous",
+          "description": "Une créature de votre choix que vous pouvez voir à portée récupère un nombre de points de vie égal à 1d4 + votre modificateur de caractéristique d'incantation. Ce sort n'a aucun effet sur les morts-vivants ou les créatures artificielles."
+        },
+        {
+          "name": "Rayon empoisonné",
+          "level": 1,
+          "school": "necromancy",
+          "castingTime": "1 action",
+          "range": "60 feet",
+          "components": ["V", "S"],
+          "duration": "Instantaneous",
+          "description": "Un rayon d'énergie verdâtre et toxique se dirige vers une créature à portée. Faites une attaque de sort à distance contre la cible. En cas de réussite, la cible subit 2d8 dégâts de poison et doit réussir un jet de sauvegarde de Constitution ou être empoisonnée jusqu'à la fin de votre prochain tour."
+        },
+        {
+          "name": "Identification",
+          "level": 1,
+          "school": "divination",
+          "castingTime": "1 minute",
+          "range": "Touch",
+          "components": ["V", "S", "M"],
+          "duration": "Instantaneous",
+          "description": "Vous choisissez un objet que vous devez toucher pendant toute l'incantation. Si c'est un objet magique ou un autre objet imprégné de magie, vous apprenez ses propriétés et comment les utiliser, s'il nécessite un lien pour être utilisé, et combien de charges il possède le cas échéant."
+        },
+        {
+          "name": "Détection de la magie",
+          "level": 1,
+          "school": "divination",
+          "castingTime": "1 action",
+          "range": "Self",
+          "components": ["V", "S"],
+          "duration": "Concentration, up to 10 minutes",
+          "description": "Pour la durée, vous percevez la présence de magie dans un rayon de 9 m autour de vous. Si vous percevez de la magie de cette manière, vous pouvez utiliser votre action pour voir une aura faible autour de toute créature ou objet visible dans la zone qui porte la magie."
+        },
+        {
+          "name": "Simulacre de vie",
+          "level": 1,
+          "school": "necromancy",
+          "castingTime": "1 action",
+          "range": "Self",
+          "components": ["V", "S", "M"],
+          "duration": "1 hour",
+          "description": "Vous gagnez 1d4 + 4 points de vie temporaires pour la durée."
+        },
+        {
+          "name": "Collet",
+          "level": 1,
+          "school": "abjuration",
+          "castingTime": "1 minute",
+          "range": "Touch",
+          "components": ["S", "M"],
+          "duration": "8 hours",
+          "description": "Lorsque vous lancez ce sort, vous utilisez le cordon pour créer un cercle d'un rayon de 1,50 m au sol ou sur une surface. Lorsque vous terminez le lancement de ce sort, le cordon se fond dans le cercle pour devenir un piège magique. Ce piège est presque invisible et nécessite un test d'Intelligence (Investigation) réussi contre votre DD de sauvegarde de sort pour être trouvé."
+        },
+        {
+          "name": "Absorption des éléments",
+          "level": 1,
+          "school": "abjuration",
+          "castingTime": "1 reaction",
+          "range": "Self",
+          "components": ["S"],
+          "duration": "1 round",
+          "description": "Le sort capture une partie de l'énergie entrante, réduisant son effet sur vous et la stockant pour votre prochaine attaque de mêlée. Vous avez la résistance au type de dégâts déclencheur jusqu'au début de votre prochain tour. De plus, la première fois que vous touchez avec une attaque de mêlée à votre prochain tour, la cible subit 1d6 dégâts supplémentaires du type déclencheur."
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "Dague",
+      "type": "melee",
+      "attackBonus": 4,
+      "damage": [
+        {
+          "dice": "1d4+2",
+          "type": "piercing"
+        }
+      ],
+      "range": "5 feet",
+      "description": "Corps à corps : +4 (1d4+2 perforant ; finesse, légère, lancer (portée 6 m/18 m))"
+    },
+    {
+      "name": "Marteau léger",
+      "type": "melee",
+      "attackBonus": 3,
+      "damage": [
+        {
+          "dice": "1d4+1",
+          "type": "bludgeoning"
+        }
+      ],
+      "range": "5 feet",
+      "description": "Corps à corps : +3 (1d4+1 contondant ; légère, lancer (portée 6 m/18 m))"
+    },
+    {
+      "name": "Sarbacane",
+      "type": "ranged",
+      "attackBonus": 2,
+      "damage": [
+        {
+          "dice": "1+2",
+          "type": "piercing"
+        }
+      ],
+      "range": "25/100 feet",
+      "description": "Distance : +2 (1+2 perforant ; munitions (portée 7,50 m/30 m), chargement)"
+    }
+  ],
+  "exhaustionLevel": 0,
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  },
+  "affinities": {
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": []
+  },
+  "conditions": {
+    "blinded": false,
+    "charmed": false,
+    "deafened": false,
+    "frightened": false,
+    "grappled": false,
+    "incapacitated": false,
+    "invisible": false,
+    "paralyzed": false,
+    "petrified": false,
+    "poisoned": false,
+    "prone": false,
+    "restrained": false,
+    "stunned": false,
+    "unconscious": false
+  }
+},
+{
+  "firstname": "Nuée",
+  "kind": "npc",
+  "profile": {
+    "alignment": "Unaligned",
+    "type": "construct",
+    "subtype": "chapeau magique"
+  },
+  "hitPointsRoll": "1d4+2",
+  "appearance": {
+    "age": 0,
+    "height": 0.3,
+    "weight": 0.5,
+    "eyes": "Vitraux scintillants",
+    "hair": "Aucun",
+    "skin": "Métal et verre",
+    "description": "Chapeau melon orné de vitraux scintillants. On voit l'âme de son porteur à travers les vitraux colorés. Des petits yeux semblables au chapeau de Mario dans Mario Odyssée."
+  },
+  "background": {
+    "personalityTraits": "Loyal, protecteur, curieux",
+    "bonds": "Lié à Barnum Petit-Pied",
+    "flaws": "Ne peut pas communiquer verbalement",
+    "ideals": "Aider son porteur à réaliser ses rêves",
+    "alliesAndOrgs": "Compagnon de Barnum",
+    "backstory": "Nuée est un chapeau magique qui s'est éveillé grâce à la magie du chapiteau des Songes Errants. Autrefois un simple chapeau cabossé de Barnum, il s'est transformé en une créature vivante ornée de vitraux délicats. Nuée octroie à son porteur des capacités uniques, notamment la manipulation du verre, et communique par télépathie avec Barnum."
+  },
+  "challenge": {
+    "challengeRating": 0,
+    "experiencePoints": 10
+  },
+  "stats": {
+    "size": "Tiny",
+    "maxHitPoints": 5,
+    "currentHitPoints": 5,
+    "tempHitPoints": 0,
+    "armorClass": 10,
+    "initiative": -1,
+    "speed": {
+      "fly": 30
+    },
+    "abilityScores": {
+      "strength": 4,
+      "dexterity": 9,
+      "constitution": 10,
+      "intelligence": 14,
+      "wisdom": 11,
+      "charisma": 15
+    },
+    "skills": {
+      "stealth": 4,
+      "performance": 2
+    },
+    "senses": [{
+        "name": "darkvision",
+        "value": 60
+    }],
+    "languages": ["Comprend le commun", "Comprend l'argot des nomades", "Ne peut pas parler"],
+    "passivePerception": 10
+  },
+  "abilities": [
+    {
+      "name": "Illusion de performeur (1/jour)",
+      "description": "Pendant une minute, Nuée octroie un avantage sur les jets de Performance à son porteur tant qu'ils se trouvent dans un endroit possédant de la lumière."
+    },
+    {
+      "name": "Méditations du couvre-chef",
+      "description": "Nuée peut communiquer par télépathie avec son porteur dans un rayon de 18 m. Cette communication est unidirectionnelle et permet à Nuée de transmettre des sensations, des émotions et des images simples."
+    },
+    {
+      "name": "Artisan des rêves",
+      "description": "Nuée octroie à son porteur le savoir-faire d'un souffleur de verre. Tant que Nuée est porté, le porteur gagne la maîtrise des outils de souffleur de verre et peut manipuler le verre avec une facilité magique."
+    },
+    {
+      "name": "Objet animé",
+      "description": "Nuée est un objet animé et ne nécessite ni nourriture, ni eau, ni sommeil. Il est immunisé aux conditions empoisonné, charmé, et paralysé."
+    },
+    {
+      "name": "Lien symbiotique",
+      "description": "Nuée doit être porté par une créature consentante pour utiliser pleinement ses capacités. Lorsqu'il n'est pas porté, ses pouvoirs magiques sont dormants."
+    }
+  ],
+  "actions": {
+    "standard": [],
+    "legendary": [],
+    "lair": []
+  },
+  "treasure": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0,
+    "treasure": "Le chapeau lui-même est un objet magique rare",
+    "equipment": "Vitraux intégrés, mécanismes d'engrenages décoratifs"
+  },
+  "affinities": {
+    "resistances": [],
+    "immunities": ["poison", "psychic"],
+    "vulnerabilities": ["bludgeoning"]
   }
 }
 ]
