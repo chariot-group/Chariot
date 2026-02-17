@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Character } from "@/types/character";
 import { useTranslations } from "next-intl";
-import React from "react";
 
 interface AbilityScoresProps {
   character: Character;

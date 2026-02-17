@@ -19,7 +19,7 @@ interface AbilitiesSectionProps {
 
 const AbilitiesSection = ({ abilities, accentColor, title, headingId, className = "" }: AbilitiesSectionProps) => {
   const tMagic = useTranslations("characterDetail.magic");
-  const t = useTranslations("characterDetail.combat");
+  const t = useTranslations("characterDetail.battle");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
 

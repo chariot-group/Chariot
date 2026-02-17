@@ -12,7 +12,7 @@ interface ActionSectionProps {
 }
 
 const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
-  const t = useTranslations("characterDetail.combat");
+  const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
@@ -85,11 +85,11 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                   <span className="text-sm md:text-base">
                     {action.damage && action.damage.length > 0
                       ? action.damage.map((d, i) => (
-                          <span key={i}>
-                            {d.dice} {d.type}
-                            {i < action.damage!.length - 1 ? " + " : ""}
-                          </span>
-                        ))
+                        <span key={i}>
+                          {d.dice} {d.type}
+                          {i < action.damage!.length - 1 ? " + " : ""}
+                        </span>
+                      ))
                       : "-"}{" "}
                     {action.range && `(${action.range})`}
                   </span>

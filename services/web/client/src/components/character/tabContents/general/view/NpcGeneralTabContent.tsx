@@ -20,10 +20,10 @@ import {
   VenetianMask,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
+import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import { calculateAbilityBonus } from "@/utils/global.utils";
-import Skill from "@/components/character/tabContents/general/Skill";
-import AbilitiesSection from "@/components/character/tabContents/AbilitiesSection";
+import Skill from "@/components/character/tabContents/general/shared/Skill";
+import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;

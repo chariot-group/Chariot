@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm, UseFormReturn, FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { set, z } from 'zod';
 import { useTranslations } from 'next-intl';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useToast } from '@/hooks/useToast';
@@ -32,7 +32,7 @@ interface UseCharacterFormProps<TFormValues extends FieldValues = any> {
 /**
  * Retour du hook useCharacterForm
  */
-interface UseCharacterFormReturn<TFormValues extends FieldValues = any> {
+export interface UseCharacterFormReturn<TFormValues extends FieldValues = any> {
     /** Instance react-hook-form */
     form: UseFormReturn<TFormValues>;
     /** État de chargement initial */
@@ -51,6 +51,10 @@ interface UseCharacterFormReturn<TFormValues extends FieldValues = any> {
     onCancel: () => void;
     /** Fonction de soumission (détecte automatiquement create/update) */
     onSubmit: (data: TFormValues) => Promise<void>;
+    /** Indicateur de mode édition */
+    isEditing: boolean;
+    /** Setter du mode édition */
+    setIsEditing: (value: boolean) => void;
 }
 
 /**
@@ -111,6 +115,8 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
     // États
     const [isSaving, setIsSaving] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+
 
     // Hooks
     const { character, loading: isLoading, error, refetch } = useCharacter(characterId);
@@ -152,6 +158,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
 
             toast.success(t('createSuccess'));
             setSuccess(true);
+            setIsEditing(false);
 
             if (onSuccess) {
                 onSuccess(createdCharacter);
@@ -182,14 +189,23 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             setIsSaving(true);
             setSuccess(false);
 
+            // Transformer les groups en tableau d'IDs si nécessaire
+            const sanitizedData = { ...data } as any;
+            if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {
+                sanitizedData.groups = sanitizedData.groups.map((group: any) =>
+                    typeof group === 'object' ? group._id : group
+                );
+            }
+
             const updatedCharacter = await CharacterService.updateCharacter(
                 type,
                 characterId,
-                data as any
+                sanitizedData as any
             );
 
             toast.success(t('updateSuccess'));
             setSuccess(true);
+            setIsEditing(false);
 
             if (onSuccess) {
                 onSuccess(updatedCharacter);
@@ -241,5 +257,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
         onCreate,
         onCancel,
         onSubmit,
+        isEditing,
+        setIsEditing,
     };
 }

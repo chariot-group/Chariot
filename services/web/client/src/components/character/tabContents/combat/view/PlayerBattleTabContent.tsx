@@ -8,10 +8,10 @@ import RunningIcon from "@public/assets/icons/running-icon.svg";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
-import Skill from "@/components/character/tabContents/general/Skill";
+import Skill from "@/components/character/tabContents/general/shared/Skill";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
-import ActionSection from "@/components/character/tabContents/battle/ActionSection";
-import AbilitiesSection from "@/components/character/tabContents/AbilitiesSection";
+import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
+import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Props {
@@ -20,7 +20,7 @@ interface Props {
 }
 
 const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
-  const t = useTranslations("characterDetail.combat");
+  const t = useTranslations("characterDetail.battle");
 
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 

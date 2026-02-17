@@ -151,14 +151,49 @@
     "notMultipleOf": "Number must be a multiple of {multipleOf}"
   },
   "characterDetail": {
+    "editCharacter": "Edit character",
+    "saveChanges": "Save changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "edit": {
+      "basicInfo": "Basic Information",
+      "firstname": "First Name",
+      "lastname": "Last Name",
+      "surname": "Nickname",
+      "optional": "optional",
+      "profile": "Profile",
+      "race": "Race",
+      "alignment": "Alignment",
+      "challenge": "Challenge",
+      "challengeRating": "Challenge Rating",
+      "experiencePoints": "Experience Points",
+      "type": "Type",
+      "combatStats": "Combat Stats",
+      "editInProgress": "Edit in progress",
+      "currentHP": "Current HP",
+      "maxHP": "Max HP",
+      "tempHP": "Temp HP",
+      "defense": "Defense",
+      "initiative": "Initiative",
+      "spellcastingStats": "Spellcasting Stats",
+      "spellcastingAbility": "Spellcasting Ability",
+      "spellSaveDC": "Spell Save DC",
+      "spellAttackBonus": "Spell Attack Bonus",
+      "copperPieces": "Copper Pieces",
+      "silverPieces": "Silver Pieces",
+      "electrumPieces": "Electrum Pieces",
+      "goldPieces": "Gold Pieces",
+      "platinumPieces": "Platinum Pieces",
+      "todoForDevelopers": "TODO for developers"
+    },
     "tabs": {
       "general": "General",
-      "combat": "Combat",
+      "battle": "Battle",
       "magic": "Magic",
       "inventory": "Inventory",
       "history": "History"
     },
-    "combat": {
+    "battle": {
       "stats": "Stats",
       "hitDice": "Hit Dice:",
       "hitPointsRoll": "Hit Points Roll:",
@@ -216,6 +251,7 @@
       "class": "Class",
       "alignment": "Alignment",
       "general": {
+        "title": "General Tab",
         "characterInfoLabel": "Character general information",
         "character": "Character",
         "raceLabel": "Race",
@@ -298,6 +334,7 @@
       "challengeRatingAbbr": "CR",
       "alignment": "Alignment",
       "general": {
+        "title": "General Tab",
         "npcInfoLabel": "NPC general information",
         "characterInfo": "Character information",
         "characteristicsSkills": "Characteristics and skills",
