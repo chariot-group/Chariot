@@ -5,7 +5,7 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CharacterInventoryTabContent from "@/components/character/tabContents/inventory/CharacterInventoryTabContent";
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
 import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
@@ -13,6 +13,7 @@ import CharacterMagicTabContent from "@/components/character/tabContents/magic/C
 import { isPlayer } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export type CharacterTab = "general" | "battle" | "magic" | "inventory" | "history";
 
@@ -33,7 +34,28 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
   const tPlaceholder = useTranslations("characterDetail.placeholder");
-  const [activeTab, setActiveTab] = useState<CharacterTab>("general");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
+  const tabFromUrl = (searchParams.get("tab") as CharacterTab) || "general";
+  const [activeTab, setActiveTab] = useState<CharacterTab>(tabFromUrl);
+
+  // Synchroniser l'état local avec l'URL au chargement
+  useEffect(() => {
+    const currentTab = (searchParams.get("tab") as CharacterTab) || "general";
+    setActiveTab(currentTab);
+  }, [searchParams]);
+
+  // Fonction pour changer d'onglet et mettre à jour l'URL
+  const handleTabChange = (newTab: string) => {
+    const tab = newTab as CharacterTab;
+    setActiveTab(tab);
+    // Mettre à jour l'URL sans recharger la page
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   // Déterminer le type de personnage
   const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
@@ -56,7 +78,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       <Tabs
         defaultValue="general"
         value={activeTab}
-        onValueChange={(value: string) => setActiveTab(value as CharacterTab)}
+        onValueChange={handleTabChange}
         className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* Header avec onglets et infos du personnage */}
         <div className="shrink-0">
