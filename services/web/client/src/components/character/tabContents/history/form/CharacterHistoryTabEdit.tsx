@@ -4,6 +4,7 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
+import { Cake, Eye, PersonStanding, Ruler, Scale, Scissors } from "lucide-react";
 
 interface CharacterHistoryTabEditProps {
   character: Character;
@@ -25,83 +26,21 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
       </h2>
 
       {/* Section Apparence */}
-      <Card className="gap-4">
+      <Card className="gap-4 w-1/3">
         <h3 className={`text-${accentColor} text-xl font-bold`}>{t("appearance")}</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Âge */}
-          <Controller
-            name="appearance.age"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="appearance-age" className="text-sm font-medium">
-                  {t("age")}
-                </label>
-                <Input
-                  {...field}
-                  id="appearance-age"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "appearance-age-error" : undefined}
-                  placeholder={t("age")}
-                  type="text"
-                />
-                {fieldState.error && <FieldError id="appearance-age-error" errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Taille */}
-          <Controller
-            name="appearance.height"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="appearance-height" className="text-sm font-medium">
-                  {t("height")}
-                </label>
-                <Input
-                  {...field}
-                  id="appearance-height"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "appearance-height-error" : undefined}
-                  placeholder={t("height")}
-                  type="text"
-                />
-                {fieldState.error && <FieldError id="appearance-height-error" errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Poids */}
-          <Controller
-            name="appearance.weight"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="appearance-weight" className="text-sm font-medium">
-                  {t("weight")}
-                </label>
-                <Input
-                  {...field}
-                  id="appearance-weight"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "appearance-weight-error" : undefined}
-                  placeholder={t("weight")}
-                  type="text"
-                />
-                {fieldState.error && <FieldError id="appearance-weight-error" errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
           {/* Yeux */}
           <Controller
             name="appearance.eyes"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="appearance-eyes" className="text-sm font-medium">
+                <label htmlFor="appearance-eyes" className="text-sm font-medium flex flex-row items-center gap-1">
+                  <Eye
+                    className="shrink-0 w-4 h-4"
+                    aria-hidden="true"
+                  />
                   {t("eyes")}
                 </label>
                 <Input
@@ -117,13 +56,48 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             )}
           />
 
+          {/* Âge */}
+          <Controller
+            name="appearance.age"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} orientation="vertical">
+                <label htmlFor="appearance-age" className="text-sm font-medium flex flex-row items-center gap-1">
+                  <Cake
+                    className="shrink-0 w-4 h-4"
+                    aria-hidden="true"
+                  />
+                  {t("age")}
+                </label>
+                <Input
+                  {...field}
+                  onChange={(e) => {
+                    const value = e.target.valueAsNumber;
+                    field.onChange(isNaN(value) ? undefined : value);
+                  }}
+                  value={field.value ?? ""}
+                  id="appearance-age"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? "appearance-age-error" : undefined}
+                  placeholder={t("age")}
+                  type="number"
+                />
+                {fieldState.error && <FieldError id="appearance-age-error" errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
           {/* Peau */}
           <Controller
             name="appearance.skin"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="appearance-skin" className="text-sm font-medium">
+                <label htmlFor="appearance-skin" className="text-sm font-medium flex flex-row items-center gap-1">
+                  <PersonStanding
+                    className="shrink-0 w-4 h-4"
+                    aria-hidden="true"
+                  />
                   {t("skin")}
                 </label>
                 <Input
@@ -139,13 +113,79 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             )}
           />
 
+          {/* Taille */}
+          <Controller
+            name="appearance.height"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} orientation="vertical">
+                <label htmlFor="appearance-height" className="text-sm font-medium flex flex-row items-center gap-1">
+                  <Ruler
+                    className="shrink-0 w-4 h-4"
+                    aria-hidden="true"
+                  />
+                  {t("height")}
+                </label>
+                <Input
+                  {...field}
+                  onChange={(e) => {
+                    const value = e.target.valueAsNumber;
+                    field.onChange(isNaN(value) ? undefined : value);
+                  }}
+                  value={field.value ?? ""}
+                  id="appearance-height"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? "appearance-height-error" : undefined}
+                  placeholder={t("height")}
+                  type="number"
+                />
+                {fieldState.error && <FieldError id="appearance-height-error" errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
+          {/* Poids */}
+          <Controller
+            name="appearance.weight"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} orientation="vertical">
+                <label htmlFor="appearance-weight" className="text-sm font-medium flex flex-row items-center gap-1">
+                  <Scale
+                    className="shrink-0 w-4 h-4"
+                    aria-hidden="true"
+                  />
+                  {t("weight")}
+                </label>
+                <Input
+                  {...field}
+                  onChange={(e) => {
+                    const value = e.target.valueAsNumber;
+                    field.onChange(isNaN(value) ? undefined : value);
+                  }}
+                  value={field.value ?? ""}
+                  id="appearance-weight"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? "appearance-weight-error" : undefined}
+                  placeholder={t("weight")}
+                  type="number"
+                />
+                {fieldState.error && <FieldError id="appearance-weight-error" errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
           {/* Cheveux */}
           <Controller
             name="appearance.hair"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="appearance-hair" className="text-sm font-medium">
+                <label htmlFor="appearance-hair" className="text-sm font-medium flex flex-row items-center gap-1">
+                  <Scissors
+                    className="shrink-0 w-4 h-4"
+                    aria-hidden="true"
+                  />
                   {t("hair")}
                 </label>
                 <Input

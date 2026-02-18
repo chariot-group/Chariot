@@ -175,8 +175,8 @@ export interface Spellcasting {
 
 export interface Appearance {
     age?: number | null;
-    height?: string | null;
-    weight?: string | null;
+    height?: number | null;
+    weight?: number | null;
     eyes?: string | null;
     skin?: string | null;
     hair?: string | null;

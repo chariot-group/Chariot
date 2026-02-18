@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useForm, UseFormReturn, FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { set, z } from 'zod';
 import { useTranslations } from 'next-intl';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useToast } from '@/hooks/useToast';
