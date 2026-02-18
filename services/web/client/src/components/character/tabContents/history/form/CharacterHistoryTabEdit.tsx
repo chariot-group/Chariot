@@ -52,6 +52,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   <Input
                     {...field}
                     id="appearance-eyes"
+                    tabIndex={1}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-eyes-error" : undefined}
                     placeholder={t("eyes")}
@@ -83,6 +84,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     }}
                     value={field.value ?? ""}
                     id="appearance-age"
+                    tabIndex={2}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-age-error" : undefined}
                     placeholder={t("age")}
@@ -109,6 +111,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   <Input
                     {...field}
                     id="appearance-skin"
+                    tabIndex={3}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-skin-error" : undefined}
                     placeholder={t("skin")}
@@ -140,6 +143,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     }}
                     value={field.value ?? ""}
                     id="appearance-height"
+                    tabIndex={4}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-height-error" : undefined}
                     placeholder={t("height")}
@@ -171,6 +175,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     }}
                     value={field.value ?? ""}
                     id="appearance-weight"
+                    tabIndex={5}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-weight-error" : undefined}
                     placeholder={t("weight")}
@@ -197,6 +202,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   <Input
                     {...field}
                     id="appearance-hair"
+                    tabIndex={6}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-hair-error" : undefined}
                     placeholder={t("hair")}
@@ -225,6 +231,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                 <Textarea
                   {...field}
                   id="background-alliesAndOrgs"
+                  tabIndex={9}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-alliesAndOrgs-error" : undefined}
                   placeholder={t("alliesAndOrgs")}
@@ -252,6 +259,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                 <Textarea
                   {...field}
                   id="background-flaws"
+                  tabIndex={7}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-flaws-error" : undefined}
                   placeholder={t("flaws")}
@@ -277,6 +285,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                 <Textarea
                   {...field}
                   id="background-bonds"
+                  tabIndex={10}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-bonds-error" : undefined}
                   placeholder={t("bonds")}
@@ -305,6 +314,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                 <Textarea
                   {...field}
                   id="background-personalityTraits"
+                  tabIndex={8}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-personalityTraits-error" : undefined}
                   placeholder={t("personalityTraits")}
@@ -330,6 +340,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                 <Textarea
                   {...field}
                   id="background-ideals"
+                  tabIndex={11}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-ideals-error" : undefined}
                   placeholder={t("ideals")}
@@ -357,6 +368,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                 <Textarea
                   {...field}
                   id="background-backstory"
+                  tabIndex={12}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-backstory-error" : undefined}
                   placeholder={t("backstory")}
@@ -386,6 +398,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                 <Textarea
                   {...field}
                   id="appearance-description"
+                  tabIndex={13}
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "appearance-description-error" : undefined}
                   placeholder={t("description")}
