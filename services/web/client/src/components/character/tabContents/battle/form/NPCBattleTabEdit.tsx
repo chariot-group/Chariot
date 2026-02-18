@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { EyeIcon, Plus, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import ActionUpdateSection from "../shared/ActionUpdateSection";
+import AbilitiesUpdateSection from "../../shared/AbilitiesUpdateSection";
+import SkillUpdate from "../../general/shared/SkillUpdate";
 
 interface NPCBattleTabEditProps {
   npc: NPC;
@@ -61,10 +64,10 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
 
   return (
     <div className="w-full flex flex-col gap-4 items-start">
-      <div className="grid grid-cols-4 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
+      <div className="grid grid-cols-5 max-[426px]:grid-cols-1 gap-3 md:gap-4 w-full">
         {/* Statistiques */}
         <Card
-          className="gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit"
+          className="gap-3 p-4 md:px-6 col-span-3 2xl:col-span-2 h-fit"
           role="region"
           aria-labelledby="stats-heading-edit">
           <h2
@@ -73,74 +76,78 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
             {t("stats")}
           </h2>
 
-          {/* Classe d'Armure */}
-          <Controller
-            name="stats.armorClass"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="armor-class"
-                  className="text-sm font-medium">
-                  {t("armorClass")}
-                </label>
-                <Input
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                  id="armor-class"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "armor-class-error" : undefined}
-                  placeholder={t("armorClass")}
-                  type="number"
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="armor-class-error"
-                    errors={[fieldState.error]}
+          <div className="flex flex-row gap-2">
+            {/* Classe d'Armure */}
+            <Controller
+              name="stats.armorClass"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="armor-class"
+                    className="text-sm font-medium">
+                    {t("armorClass")}
+                  </label>
+                  <Input
+                    {...field}
+                    onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                    id="armor-class"
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "armor-class-error" : undefined}
+                    placeholder={t("armorClass")}
+                    min={0}
+                    type="number"
                   />
-                )}
-              </Field>
-            )}
-          />
+                  {fieldState.error && (
+                    <FieldError
+                      id="armor-class-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
 
-          {/* Initiative */}
-          <Controller
-            name="stats.initiative"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="initiative"
-                  className="text-sm font-medium">
-                  {tEdit("initiative")}
-                </label>
-                <Input
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                  id="initiative"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "initiative-error" : undefined}
-                  placeholder={tEdit("initiative")}
-                  type="number"
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="initiative-error"
-                    errors={[fieldState.error]}
+            {/* Initiative */}
+            <Controller
+              name="stats.initiative"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="initiative"
+                    className="text-sm font-medium">
+                    {tEdit("initiative")}
+                  </label>
+                  <Input
+                    {...field}
+                    onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                    id="initiative"
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "initiative-error" : undefined}
+                    placeholder={tEdit("initiative")}
+                    type="number"
+                    min={0}
                   />
-                )}
-              </Field>
-            )}
-          />
+                  {fieldState.error && (
+                    <FieldError
+                      id="initiative-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+          </div>
 
           {/* Vitesses */}
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium">Vitesses</h3>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               <Controller
                 name="stats.speed.walk"
                 control={form.control}
@@ -158,6 +165,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                       id="speed-walk"
                       type="number"
+                      min={0}
                       className="text-sm"
                     />
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
@@ -182,6 +190,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       id="speed-climb"
                       type="number"
                       className="text-sm"
+                      min={0}
                     />
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -204,6 +213,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                       id="speed-swim"
                       type="number"
+                      min={0}
                       className="text-sm"
                     />
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
@@ -228,6 +238,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       id="speed-fly"
                       type="number"
                       className="text-sm"
+                      min={0}
                     />
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -251,6 +262,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       id="speed-burrow"
                       type="number"
                       className="text-sm"
+                      min={0}
                     />
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -262,75 +274,80 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
           {/* Points de Vie */}
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium">{t("healthPoints")}</h3>
-            <Controller
-              name="stats.currentHitPoints"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="health-current"
-                    className="text-xs">
-                    {tEdit("currentHP")}
-                  </label>
-                  <Input
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                    id="health-current"
-                    type="number"
-                    className="text-sm"
-                  />
-                  {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="stats.maxHitPoints"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="health-max"
-                    className="text-xs">
-                    {tEdit("maxHP")}
-                  </label>
-                  <Input
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                    id="health-max"
-                    type="number"
-                    className="text-sm"
-                  />
-                  {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="stats.tempHitPoints"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="health-temp"
-                    className="text-xs">
-                    {tEdit("tempHP")}
-                  </label>
-                  <Input
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                    id="health-temp"
-                    type="number"
-                    className="text-sm"
-                  />
-                  {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <Controller
+                name="stats.currentHitPoints"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="health-current"
+                      className="text-xs">
+                      {tEdit("currentHP")}
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="health-current"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="stats.maxHitPoints"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="health-max"
+                      className="text-xs">
+                      {tEdit("maxHP")}
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="health-max"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="stats.tempHitPoints"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="health-temp"
+                      className="text-xs">
+                      {tEdit("tempHP")}
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="health-temp"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </div>
           </div>
 
           {/* Hit Points Roll */}
@@ -352,6 +369,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                   id="hit-points-roll"
                   placeholder="ex: 8d10+16"
                   className="text-sm"
+                  min={0}
                 />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -402,562 +420,53 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
         </div>
 
         {/* Capacités et traits */}
-        <Card
-          className="gap-3 p-4 md:px-6 h-fit col-span-full lg:col-span-2"
-          role="region"
-          aria-labelledby="abilities-heading-edit">
-          <div className="flex flex-row justify-between items-center">
-            <h2
-              id="abilities-heading-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("abilitiesAndTraits")}
-            </h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => appendAbility({ name: "", description: "" })}
-              className="flex items-center gap-2">
-              <Plus className="size-4" />
-              Ajouter
-            </Button>
-          </div>
-          <div className="flex flex-col gap-3">
-            {abilitiesFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex flex-col gap-2 p-3 border rounded-[15px]">
-                <div className="flex justify-between items-start gap-2">
-                  <Controller
-                    name={`abilities.${index}.name`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical"
-                        className="flex-1">
-                        <label
-                          htmlFor={`ability-name-${index}`}
-                          className="text-sm font-medium">
-                          Nom
-                        </label>
-                        <Input
-                          {...field}
-                          id={`ability-name-${index}`}
-                          placeholder="Nom de la capacité"
-                          className="text-sm"
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeAbility(index)}
-                    className="text-red-500 mt-6">
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-                <Controller
-                  name={`abilities.${index}.description`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`ability-description-${index}`}
-                        className="text-sm font-medium">
-                        Description
-                      </label>
-                      <Textarea
-                        {...field}
-                        id={`ability-description-${index}`}
-                        placeholder="Description de la capacité"
-                        rows={3}
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              </div>
-            ))}
-          </div>
-        </Card>
+        <div className="col-span-3 2xl:col-span-2">
+          <AbilitiesUpdateSection
+            title={t("abilitiesAndTraits")}
+            form={form}
+            fieldArrayName="abilities"
+            fields={abilitiesFields}
+            append={appendAbility}
+            remove={removeAbility}
+            accentColor={accentColor}
+          />
+        </div>
       </div>
 
       {/* Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
         {/* Actions Standards */}
-        <Card className="gap-3 p-4 md:px-6 h-fit">
-          <div className="flex flex-row justify-between items-center">
-            <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{t("actions")}</h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                appendStandardAction({
-                  name: "",
-                  type: "",
-                  description: "",
-                  attackBonus: 0,
-                  damage: [],
-                  range: "",
-                })
-              }
-              className="flex items-center gap-2">
-              <Plus className="size-4" />
-            </Button>
-          </div>
-          <div className="flex flex-col gap-3">
-            {standardActionsFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex flex-col gap-2 p-3 border rounded-[15px]">
-                <div className="flex justify-between items-start gap-2">
-                  <Controller
-                    name={`actions.standard.${index}.name`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical"
-                        className="flex-1">
-                        <label
-                          htmlFor={`action-standard-name-${index}`}
-                          className="text-xs">
-                          Nom
-                        </label>
-                        <Input
-                          {...field}
-                          id={`action-standard-name-${index}`}
-                          placeholder="Nom de l'action"
-                          className="text-sm"
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeStandardAction(index)}
-                    className="text-red-500 mt-4">
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-                <Controller
-                  name={`actions.standard.${index}.type`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-standard-type-${index}`}
-                        className="text-xs">
-                        Type
-                      </label>
-                      <Input
-                        {...field}
-                        id={`action-standard-type-${index}`}
-                        placeholder="ex: Corps à corps, Distance"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.standard.${index}.attackBonus`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-standard-attack-${index}`}
-                        className="text-xs">
-                        Bonus d'attaque
-                      </label>
-                      <Input
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                        id={`action-standard-attack-${index}`}
-                        type="number"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.standard.${index}.range`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-standard-range-${index}`}
-                        className="text-xs">
-                        Portée
-                      </label>
-                      <Input
-                        {...field}
-                        id={`action-standard-range-${index}`}
-                        placeholder="ex: 5 pi, 30/120 pi"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.standard.${index}.description`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-standard-desc-${index}`}
-                        className="text-xs">
-                        Description
-                      </label>
-                      <Textarea
-                        {...field}
-                        value={field.value || ""}
-                        id={`action-standard-desc-${index}`}
-                        placeholder="Description de l'action"
-                        rows={2}
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              </div>
-            ))}
-          </div>
-        </Card>
+        <ActionUpdateSection
+          title={t("actions")}
+          form={form}
+          fieldArrayName="actions.standard"
+          fields={standardActionsFields}
+          append={appendStandardAction}
+          remove={removeStandardAction}
+          accentColor={accentColor}
+        />
 
         {/* Actions Légendaires */}
-        <Card className="gap-3 p-4 md:px-6 h-fit">
-          <div className="flex flex-row justify-between items-center">
-            <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{t("legendaryActions")}</h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                appendLegendaryAction({
-                  name: "",
-                  type: "",
-                  description: "",
-                  attackBonus: 0,
-                  damage: [],
-                  range: "",
-                })
-              }
-              className="flex items-center gap-2">
-              <Plus className="size-4" />
-            </Button>
-          </div>
-          <div className="flex flex-col gap-3">
-            {legendaryActionsFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex flex-col gap-2 p-3 border rounded-[15px]">
-                <div className="flex justify-between items-start gap-2">
-                  <Controller
-                    name={`actions.legendary.${index}.name`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical"
-                        className="flex-1">
-                        <label
-                          htmlFor={`action-legendary-name-${index}`}
-                          className="text-xs">
-                          Nom
-                        </label>
-                        <Input
-                          {...field}
-                          id={`action-legendary-name-${index}`}
-                          placeholder="Nom de l'action"
-                          className="text-sm"
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeLegendaryAction(index)}
-                    className="text-red-500 mt-4">
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-                <Controller
-                  name={`actions.legendary.${index}.type`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-legendary-type-${index}`}
-                        className="text-xs">
-                        Type
-                      </label>
-                      <Input
-                        {...field}
-                        id={`action-legendary-type-${index}`}
-                        placeholder="ex: Corps à corps, Distance"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.legendary.${index}.attackBonus`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-legendary-attack-${index}`}
-                        className="text-xs">
-                        Bonus d'attaque
-                      </label>
-                      <Input
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                        id={`action-legendary-attack-${index}`}
-                        type="number"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.legendary.${index}.range`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-legendary-range-${index}`}
-                        className="text-xs">
-                        Portée
-                      </label>
-                      <Input
-                        {...field}
-                        id={`action-legendary-range-${index}`}
-                        placeholder="ex: 5 pi, 30/120 pi"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.legendary.${index}.description`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-legendary-desc-${index}`}
-                        className="text-xs">
-                        Description
-                      </label>
-                      <Textarea
-                        {...field}
-                        value={field.value || ""}
-                        id={`action-legendary-desc-${index}`}
-                        placeholder="Description de l'action"
-                        rows={2}
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              </div>
-            ))}
-          </div>
-        </Card>
+        <ActionUpdateSection
+          title={t("legendaryActions")}
+          form={form}
+          fieldArrayName="actions.legendary"
+          fields={legendaryActionsFields}
+          append={appendLegendaryAction}
+          remove={removeLegendaryAction}
+          accentColor={accentColor}
+        />
 
         {/* Actions de Repaire */}
-        <Card className="gap-3 p-4 md:px-6 h-fit">
-          <div className="flex flex-row justify-between items-center">
-            <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{t("lairActions")}</h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                appendLairAction({
-                  name: "",
-                  type: "",
-                  description: "",
-                  attackBonus: 0,
-                  damage: [],
-                  range: "",
-                })
-              }
-              className="flex items-center gap-2">
-              <Plus className="size-4" />
-            </Button>
-          </div>
-          <div className="flex flex-col gap-3">
-            {lairActionsFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex flex-col gap-2 p-3 border rounded-[15px]">
-                <div className="flex justify-between items-start gap-2">
-                  <Controller
-                    name={`actions.lair.${index}.name`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical"
-                        className="flex-1">
-                        <label
-                          htmlFor={`action-lair-name-${index}`}
-                          className="text-xs">
-                          Nom
-                        </label>
-                        <Input
-                          {...field}
-                          id={`action-lair-name-${index}`}
-                          placeholder="Nom de l'action"
-                          className="text-sm"
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeLairAction(index)}
-                    className="text-red-500 mt-4">
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-                <Controller
-                  name={`actions.lair.${index}.type`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-lair-type-${index}`}
-                        className="text-xs">
-                        Type
-                      </label>
-                      <Input
-                        {...field}
-                        id={`action-lair-type-${index}`}
-                        placeholder="ex: Corps à corps, Distance"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.lair.${index}.attackBonus`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-lair-attack-${index}`}
-                        className="text-xs">
-                        Bonus d'attaque
-                      </label>
-                      <Input
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                        id={`action-lair-attack-${index}`}
-                        type="number"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.lair.${index}.range`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-lair-range-${index}`}
-                        className="text-xs">
-                        Portée
-                      </label>
-                      <Input
-                        {...field}
-                        id={`action-lair-range-${index}`}
-                        placeholder="ex: 5 pi, 30/120 pi"
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name={`actions.lair.${index}.description`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`action-lair-desc-${index}`}
-                        className="text-xs">
-                        Description
-                      </label>
-                      <Textarea
-                        {...field}
-                        value={field.value || ""}
-                        id={`action-lair-desc-${index}`}
-                        placeholder="Description de l'action"
-                        rows={2}
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              </div>
-            ))}
-          </div>
-        </Card>
+        <ActionUpdateSection
+          title={t("lairActions")}
+          form={form}
+          fieldArrayName="actions.lair"
+          fields={lairActionsFields}
+          append={appendLairAction}
+          remove={removeLairAction}
+          accentColor={accentColor}
+        />
       </div>
     </div>
   );

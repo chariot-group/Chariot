@@ -66,7 +66,7 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
               <span className="text-sm sm:text-lg font-semibold">{ability.name}</span>
             </AccordionTrigger>
             <AccordionContent
-              className="text-sm sm:text-base pb-3"
+              className="text-sm sm:text-base pb-3 break-all"
               role="region"
               aria-label={`${t("descriptionPrefix")} ${ability.name}`}>
               {ability.description}
