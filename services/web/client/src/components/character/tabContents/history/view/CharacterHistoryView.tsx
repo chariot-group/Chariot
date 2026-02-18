@@ -90,7 +90,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                     </div>
                 </Card>
                 <Card
-                    className="gap-3 py-4 px-4 md:px-6"
+                    className="gap-3 py-4 px-4 md:px-6 break-all"
                     role="region"
                     aria-labelledby="allies-title">
                     <h2
@@ -105,7 +105,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
             {/* Description */}
             <div className="flex flex-col gap-2 md:gap-4">
                 <Card
-                    className="gap-3 py-4 px-4 md:px-6"
+                    className="gap-3 py-4 px-4 md:px-6 break-all"
                     role="region"
                     aria-labelledby="flaws-title">
                     <h2
@@ -116,7 +116,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                     <p className="text-sm md:text-base wrap-break-words">{character?.background?.flaws}</p>
                 </Card>
                 <Card
-                    className="gap-3 py-4 px-4 md:px-6"
+                    className="gap-3 py-4 px-4 md:px-6 break-all"
                     role="region"
                     aria-labelledby="bonds-title">
                     <h2
@@ -131,7 +131,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
             {/* Traits, Idéaux et Défauts */}
             <div className="flex flex-col gap-2 md:gap-4">
                 <Card
-                    className="gap-3 py-4 px-4 md:px-6"
+                    className="gap-3 py-4 px-4 md:px-6 break-all"
                     role="region"
                     aria-labelledby="traits-title">
                     <h2
@@ -142,7 +142,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                     <p className="text-sm md:text-base wrap-break-words">{character?.background?.personalityTraits}</p>
                 </Card>
                 <Card
-                    className="gap-3 py-4 px-4 md:px-6"
+                    className="gap-3 py-4 px-4 md:px-6 break-all"
                     role="region"
                     aria-labelledby="ideals-title">
                     <h2
@@ -157,7 +157,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
             {/* Histoire (full width) */}
             <div className="col-span-1 xl:col-span-3">
                 <Card
-                    className="gap-3 py-4 px-4 md:px-6"
+                    className="gap-3 py-4 px-4 md:px-6 break-all"
                     role="region"
                     aria-labelledby="backstory-title">
                     <h2
@@ -172,7 +172,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
             {/* Description (full width) */}
             <div className="col-span-1 xl:col-span-3">
                 <Card
-                    className="gap-3 py-4 px-4 md:px-6 h-full"
+                    className="gap-3 py-4 px-4 md:px-6 break-all h-full"
                     role="region"
                     aria-labelledby="description-title">
                     <h2
