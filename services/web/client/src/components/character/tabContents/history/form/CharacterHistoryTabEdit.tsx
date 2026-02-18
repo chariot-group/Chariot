@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { Cake, Eye, PersonStanding, Ruler, Scale, Scissors } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CharacterHistoryTabEditProps {
   character: Character;
@@ -221,14 +222,13 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <textarea
+                <Textarea
                   {...field}
                   id="background-alliesAndOrgs"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-alliesAndOrgs-error" : undefined}
                   placeholder={t("alliesAndOrgs")}
                   rows={6}
-                  className="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 {fieldState.error && <FieldError id="background-alliesAndOrgs-error" errors={[fieldState.error]} />}
               </Field>
@@ -249,14 +249,13 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <textarea
+                <Textarea
                   {...field}
                   id="background-flaws"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-flaws-error" : undefined}
                   placeholder={t("flaws")}
                   rows={6}
-                  className="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 {fieldState.error && <FieldError id="background-flaws-error" errors={[fieldState.error]} />}
               </Field>
@@ -275,14 +274,13 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <textarea
+                <Textarea
                   {...field}
                   id="background-bonds"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-bonds-error" : undefined}
                   placeholder={t("bonds")}
                   rows={6}
-                  className="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 {fieldState.error && <FieldError id="background-bonds-error" errors={[fieldState.error]} />}
               </Field>
@@ -304,14 +302,13 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <textarea
+                <Textarea
                   {...field}
                   id="background-personalityTraits"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-personalityTraits-error" : undefined}
                   placeholder={t("personalityTraits")}
                   rows={6}
-                  className="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 {fieldState.error && <FieldError id="background-personalityTraits-error" errors={[fieldState.error]} />}
               </Field>
@@ -330,14 +327,13 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <textarea
+                <Textarea
                   {...field}
                   id="background-ideals"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-ideals-error" : undefined}
                   placeholder={t("ideals")}
                   rows={6}
-                  className="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 {fieldState.error && <FieldError id="background-ideals-error" errors={[fieldState.error]} />}
               </Field>
@@ -358,14 +354,13 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <textarea
+                <Textarea
                   {...field}
                   id="background-backstory"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "background-backstory-error" : undefined}
                   placeholder={t("backstory")}
                   rows={6}
-                  className="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 {fieldState.error && <FieldError id="background-backstory-error" errors={[fieldState.error]} />}
               </Field>
@@ -388,14 +383,13 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <textarea
+                <Textarea
                   {...field}
                   id="appearance-description"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "appearance-description-error" : undefined}
                   placeholder={t("description")}
                   rows={6}
-                  className="flex min-h-15 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 {fieldState.error && <FieldError id="appearance-description-error" errors={[fieldState.error]} />}
               </Field>
