@@ -78,8 +78,8 @@ const AbilitiesUpdateSection = ({
               <AccordionItem
                 key={field.id}
                 value={`ability-${index}`}
-                className="border-b border-gray py-1.5">
-                <div className="relative py-1.5">
+                className="border-b border-gray">
+                <div className="relative">
                   <AccordionTrigger
                     className="text-left w-full hover:no-underline pr-10"
                     aria-label={`Détails de la capacité ${index + 1}`}>

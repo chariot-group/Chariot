@@ -224,7 +224,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
 
         {/* Jets de sauvegarde contre la mort */}
         <Card
-          className="gap-3 p-4 md:px-6 rounded-xl h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
+          className="gap-3 p-4 md:px-6 h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
           role="region"
           aria-labelledby="death-saves-heading">
           <h2

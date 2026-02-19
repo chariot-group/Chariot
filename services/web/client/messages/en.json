@@ -184,6 +184,7 @@
       "electrumPieces": "Electrum Pieces",
       "goldPieces": "Gold Pieces",
       "platinumPieces": "Platinum Pieces",
+      "reset": "Reset",
       "todoForDevelopers": "TODO for developers"
     },
     "tabs": {

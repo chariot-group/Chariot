@@ -25,7 +25,7 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
 
   return (
     <Card
-      className={`gap-0.5 p-4 md:px-6 rounded-xl h-fit ${className}`}
+      className={`gap-0.5 p-4 md:px-6 h-fit ${className}`}
       role="region"
       aria-labelledby={headingId}>
       <div className="flex flex-row justify-between">
