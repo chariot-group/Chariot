@@ -23,6 +23,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
+  const tClass = useTranslations("classes");
 
   const abilityScoreKeys = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
@@ -357,7 +358,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                           <label
                             htmlFor={`class-${index}-level`}
                             className="text-xs">
-                            {t("hitLevel")} ({className})
+                            {t("hitLevel")} ({tClass(className)})
                           </label>
                           <Input
                             {...field}

@@ -21,7 +21,7 @@ interface Props {
 
 const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
   const t = useTranslations("characterDetail.battle");
-
+  const tClass = useTranslations("classes");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   // Configuration des badges de statistiques
@@ -184,7 +184,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                 <span className="font-bold">
                   {c.level}d{c.hitDice}
                 </span>
-                {` (${c.name})`}
+                {` (${tClass(c.name)})`}
               </span>
             ))}
           </div>
