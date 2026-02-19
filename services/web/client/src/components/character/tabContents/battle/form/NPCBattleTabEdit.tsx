@@ -143,7 +143,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
 
           {/* Vitesses */}
           <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-medium">Vitesses</h3>
+            <h3 className="text-sm font-medium">{tEdit("speeds")}</h3>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               <Controller
                 name="stats.speed.walk"
@@ -155,7 +155,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     <label
                       htmlFor="speed-walk"
                       className="text-xs">
-                      Marche
+                      {tEdit("walk")}
                     </label>
                     <Input
                       {...field}
@@ -179,7 +179,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     <label
                       htmlFor="speed-climb"
                       className="text-xs">
-                      Escalade
+                      {tEdit("climb")}
                     </label>
                     <Input
                       {...field}
@@ -203,7 +203,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     <label
                       htmlFor="speed-swim"
                       className="text-xs">
-                      Nage
+                      {tEdit("swim")}
                     </label>
                     <Input
                       {...field}
@@ -227,7 +227,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     <label
                       htmlFor="speed-fly"
                       className="text-xs">
-                      Vol
+                      {tEdit("fly")}
                     </label>
                     <Input
                       {...field}
@@ -251,7 +251,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     <label
                       htmlFor="speed-burrow"
                       className="text-xs">
-                      Fouissage
+                      {tEdit("burrow")}
                     </label>
                     <Input
                       {...field}

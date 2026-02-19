@@ -181,7 +181,14 @@
       "silverPieces": "Pièces d'Argent",
       "electrumPieces": "Pièces d'Électrum",
       "goldPieces": "Pièces d'Or",
-      "platinumPieces": "Pièces de Platine",      "reset": "Réinitialiser",      "todoForDevelopers": "À faire pour les développeurs"
+      "platinumPieces": "Pièces de Platine",      
+      "reset": "Réinitialiser",      
+      "speeds": "Vitesses",
+      "walk": "Marche",
+      "climb": "Escalade",
+      "swim": "Nage",
+      "fly": "Vol",
+      "burrow": "Fouissage"
     },
     "tabs": {
       "general": "Général",

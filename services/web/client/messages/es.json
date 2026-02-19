@@ -183,7 +183,12 @@
       "goldPieces": "Piezas de Oro",
       "platinumPieces": "Piezas de Platino",
       "reset": "Reiniciar",
-      "todoForDevelopers": "Pendiente para desarrolladores"
+      "speeds": "Velocidades",
+      "walk": "Caminar",
+      "climb": "Escalar",
+      "swim": "Nadar",
+      "fly": "Volar",
+      "burrow": "Excavar"
     },
     "tabs": {
       "general": "General",

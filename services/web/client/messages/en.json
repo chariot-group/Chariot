@@ -185,7 +185,12 @@
       "goldPieces": "Gold Pieces",
       "platinumPieces": "Platinum Pieces",
       "reset": "Reset",
-      "todoForDevelopers": "TODO for developers"
+      "speeds": "Speeds",
+      "walk": "Walk",
+      "climb": "Climb",
+      "swim": "Swim",
+      "fly": "Fly",
+      "burrow": "Burrow"
     },
     "tabs": {
       "general": "General",
