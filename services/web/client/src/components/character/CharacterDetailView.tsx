@@ -57,6 +57,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     router.replace(`?${params.toString()}`, { scroll: false });
   };
 
+
   // Déterminer le type de personnage
   const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
 
