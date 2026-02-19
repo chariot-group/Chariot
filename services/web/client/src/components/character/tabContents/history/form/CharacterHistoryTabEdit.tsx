@@ -82,6 +82,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                       const value = e.target.valueAsNumber;
                       field.onChange(isNaN(value) ? undefined : value);
                     }}
+                    min={0}
                     value={field.value ?? ""}
                     id="appearance-age"
                     tabIndex={2}
@@ -137,6 +138,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   </label>
                   <Input
                     {...field}
+                    min={0}
                     onChange={(e) => {
                       const value = e.target.valueAsNumber;
                       field.onChange(isNaN(value) ? undefined : value);
@@ -169,6 +171,7 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   </label>
                   <Input
                     {...field}
+                    min={0}
                     onChange={(e) => {
                       const value = e.target.valueAsNumber;
                       field.onChange(isNaN(value) ? undefined : value);
