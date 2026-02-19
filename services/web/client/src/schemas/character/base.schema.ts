@@ -149,9 +149,9 @@ export const SpellcastingSchema = z.object({
 
 // ===== Appearance =====
 export const AppearanceSchema = z.object({
-    age: z.number().optional(),
-    height: z.number().optional(),
-    weight: z.number().optional(),
+    age: z.number().min(0).optional(),
+    height: z.number().min(0).optional(),
+    weight: z.number().min(0).optional(),
     eyes: z.string().optional(),
     skin: z.string().optional(),
     hair: z.string().optional(),
