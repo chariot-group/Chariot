@@ -1,24 +1,19 @@
 import { Character } from "@/types/character";
 import { Controller, UseFormReturn } from "react-hook-form";
-import { Field, FieldError } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-/**
- * Composant d'édition pour l'onglet Inventaire
- * 
- * 🚧 TEMPLATE À COMPLÉTER PAR LES DÉVELOPPEURS
- * 
- * Ce composant fournit la structure de base pour l'édition de l'inventaire.
- * Commun pour Players et NPCs.
- * 
- * Champs suggérés à implémenter :
- * - Pièces (coins.cp, coins.sp, coins.ep, coins.gp, coins.pp)
- * - Objets (items[])
- * - Équipement (equipment)
- * - Capacité de transport (carryCapacity)
- */
+import GP from "@public/assets/pieces/golden-piece.svg";
+import SP from "@public/assets/pieces/silver-piece.svg";
+import EP from "@public/assets/pieces/electrum-piece.svg";
+import PP from "@public/assets/pieces/platinum-piece.svg";
+import CP from "@public/assets/pieces/copper-piece.svg";
+import { Textarea } from "@/components/ui/textarea";
+
 interface CharacterInventoryTabEditProps {
   character: Character;
   accentColor: string;
@@ -27,154 +22,336 @@ interface CharacterInventoryTabEditProps {
 
 export default function CharacterInventoryTabEdit({ character, accentColor, form }: CharacterInventoryTabEditProps) {
   const t = useTranslations("characterDetail.inventory");
-  const tEdit = useTranslations("characterDetail.edit");
+
+  const treasureErrors = form.formState.errors.treasure as any;
 
   return (
-    <div
-      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-0"
-      role="main"
-      aria-labelledby="inventory-tab-edit">
-      <h2 id="inventory-tab-edit" className="sr-only">
-        {t("coins")}
-      </h2>
-
-      {/* Section Monnaie */}
-      <Card className="gap-4">
-        <h3 className={`text-${accentColor} text-xl font-bold`}>{t("coins")}</h3>
-
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {/* Pièces de Cuivre */}
+    <div className="w-full flex flex-col lg:flex-row gap-2 md:gap-4 items-start">
+      <div className="flex flex-col gap-2 md:gap-4 w-full lg:w-2/5">
+        <Card
+          className="gap-3 py-4 px-4 md:px-6"
+          role="region"
+          aria-labelledby="coins-heading">
+          <h2
+            id="coins-heading"
+            className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
+            {t("coins")}
+          </h2>
+          <div
+            className="flex flex-wrap gap-2 "
+            role="group"
+            aria-label={t("coins")}>
+            <Controller
+              name="treasure.pp"
+              control={form.control}
+              render={({ field, fieldState }) => {
+                const { value, onChange, ...restField } = field;
+                return (
+                  <Field
+                    className="shrink-0 w-auto"
+                    data-invalid={fieldState.invalid}
+                    orientation="horizontal">
+                    <div className="relative">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Input
+                            className="w-24 pr-8"
+                            {...restField}
+                            value={value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? undefined : Number(e.target.value);
+                              onChange(val);
+                            }}
+                            id="inventory-pp"
+                            aria-label={t("platinumPieces")}
+                            aria-invalid={fieldState.invalid}
+                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
+                            placeholder={t("platinumPieces")}
+                            min={0}
+                            type="number"
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("platinumPieces")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Image
+                        src={PP}
+                        alt=""
+                        aria-hidden="true"
+                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
+                      />
+                    </div>
+                  </Field>
+                );
+              }}
+            />
+            <Controller
+              name="treasure.gp"
+              control={form.control}
+              render={({ field, fieldState }) => {
+                const { value, onChange, ...restField } = field;
+                return (
+                  <Field
+                    className="shrink-0 w-auto"
+                    data-invalid={fieldState.invalid}
+                    orientation="horizontal">
+                    <div className="relative">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Input
+                            className="w-24 pr-8"
+                            {...restField}
+                            value={value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? undefined : Number(e.target.value);
+                              onChange(val);
+                            }}
+                            id="inventory-gp"
+                            aria-label={t("goldPieces")}
+                            aria-invalid={fieldState.invalid}
+                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
+                            placeholder={t("goldPieces")}
+                            min={0}
+                            type="number"
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("goldPieces")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Image
+                        src={GP}
+                        alt=""
+                        aria-hidden="true"
+                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
+                      />
+                    </div>
+                  </Field>
+                );
+              }}
+            />
+            <Controller
+              name="treasure.ep"
+              control={form.control}
+              render={({ field, fieldState }) => {
+                const { value, onChange, ...restField } = field;
+                return (
+                  <Field
+                    className="shrink-0 w-auto"
+                    data-invalid={fieldState.invalid}
+                    orientation="horizontal">
+                    <div className="relative">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Input
+                            className="w-24 pr-8"
+                            {...restField}
+                            value={value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? undefined : Number(e.target.value);
+                              onChange(val);
+                            }}
+                            id="inventory-ep"
+                            aria-label={t("electrumPieces")}
+                            aria-invalid={fieldState.invalid}
+                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
+                            placeholder={t("electrumPieces")}
+                            type="number"
+                            min={0}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("electrumPieces")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Image
+                        src={EP}
+                        alt=""
+                        aria-hidden="true"
+                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
+                      />
+                    </div>
+                  </Field>
+                );
+              }}
+            />
+            <Controller
+              name="treasure.sp"
+              control={form.control}
+              render={({ field, fieldState }) => {
+                const { value, onChange, ...restField } = field;
+                return (
+                  <Field
+                    className="shrink-0 w-auto"
+                    data-invalid={fieldState.invalid}
+                    orientation="horizontal">
+                    <div className="relative">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Input
+                            className="w-24 pr-8"
+                            {...restField}
+                            value={value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? undefined : Number(e.target.value);
+                              onChange(val);
+                            }}
+                            id="inventory-sp"
+                            aria-label={t("silverPieces")}
+                            aria-invalid={fieldState.invalid}
+                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
+                            placeholder={t("silverPieces")}
+                            type="number"
+                            min={0}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("silverPieces")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Image
+                        src={SP}
+                        alt=""
+                        aria-hidden="true"
+                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
+                      />
+                    </div>
+                  </Field>
+                );
+              }}
+            />
+            <Controller
+              name="treasure.cp"
+              control={form.control}
+              render={({ field, fieldState }) => {
+                const { value, onChange, ...restField } = field;
+                return (
+                  <Field
+                    className="shrink-0 w-auto"
+                    data-invalid={fieldState.invalid}
+                    orientation="horizontal">
+                    <div className="relative">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Input
+                            className="w-24 pr-8"
+                            {...restField}
+                            value={value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? undefined : Number(e.target.value);
+                              onChange(val);
+                            }}
+                            id="inventory-cp"
+                            aria-label={t("copperPieces")}
+                            aria-invalid={fieldState.invalid}
+                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
+                            placeholder={t("copperPieces")}
+                            type="number"
+                            min={0}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("copperPieces")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Image
+                        src={CP}
+                        alt=""
+                        aria-hidden="true"
+                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
+                      />
+                    </div>
+                  </Field>
+                );
+              }}
+            />
+          </div>
+          {(treasureErrors?.pp ||
+            treasureErrors?.gp ||
+            treasureErrors?.ep ||
+            treasureErrors?.sp ||
+            treasureErrors?.cp) && (
+            <FieldError
+              id="inventory-coins-error"
+              errors={[
+                treasureErrors?.pp,
+                treasureErrors?.gp,
+                treasureErrors?.ep,
+                treasureErrors?.sp,
+                treasureErrors?.cp,
+              ].filter(Boolean)}
+            />
+          )}
+        </Card>
+        <Card
+          className="gap-3 py-4 px-4 md:px-6"
+          role="region"
+          aria-labelledby="equipment-heading">
+          <h2
+            id="equipment-heading"
+            className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
+            {t("equipment")}
+          </h2>
           <Controller
-            name="treasure.cp"
+            name="treasure.equipment"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="coins-cp" className="text-sm font-medium">
-                  {tEdit("copperPieces")}
-                </label>
-                <Input
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <FieldLabel htmlFor="inventory-equipment">{t("equipment")}</FieldLabel>
+                <Textarea
                   {...field}
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                  id="coins-cp"
+                  id="inventory-equipment"
                   aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "coins-cp-error" : undefined}
-                  placeholder="PC"
-                  type="number"
+                  aria-describedby={fieldState.error ? "inventory-equipment-error" : undefined}
+                  placeholder={t("equipment")}
                 />
-                {fieldState.error && <FieldError id="coins-cp-error" errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="inventory-equipment-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
-
-          {/* Pièces d'Argent */}
-          <Controller
-            name="treasure.sp"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="coins-sp" className="text-sm font-medium">
-                  {tEdit("silverPieces")}
-                </label>
-                <Input
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                  id="coins-sp"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "coins-sp-error" : undefined}
-                  placeholder="PA"
-                  type="number"
+        </Card>
+      </div>
+      <Card
+        className="w-full lg:min-w-3/5 lg:max-w-3/5 gap-3 py-4 px-4 md:px-6"
+        role="region"
+        aria-labelledby="treasure-heading">
+        <h2
+          id="treasure-heading"
+          className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
+          {t("treasure")}
+        </h2>
+        <Controller
+          name="treasure.treasure"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field
+              data-invalid={fieldState.invalid}
+              orientation="vertical">
+              <FieldLabel htmlFor="inventory-treasure">{t("treasure")}</FieldLabel>
+              <Textarea
+                {...field}
+                id="inventory-treasure"
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.error ? "inventory-treasure-error" : undefined}
+                placeholder={t("treasure")}
+              />
+              {fieldState.error && (
+                <FieldError
+                  id="inventory-treasure-error"
+                  errors={[fieldState.error]}
                 />
-                {fieldState.error && <FieldError id="coins-sp-error" errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Pièces d'Électrum */}
-          <Controller
-            name="treasure.ep"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="coins-ep" className="text-sm font-medium">
-                  {tEdit("electrumPieces")}
-                </label>
-                <Input
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                  id="coins-ep"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "coins-ep-error" : undefined}
-                  placeholder="PE"
-                  type="number"
-                />
-                {fieldState.error && <FieldError id="coins-ep-error" errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Pièces d'Or */}
-          <Controller
-            name="treasure.gp"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="coins-gp" className="text-sm font-medium">
-                  {tEdit("goldPieces")}
-                </label>
-                <Input
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                  id="coins-gp"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "coins-gp-error" : undefined}
-                  placeholder="PO"
-                  type="number"
-                />
-                {fieldState.error && <FieldError id="coins-gp-error" errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-
-          {/* Pièces de Platine */}
-          <Controller
-            name="treasure.pp"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
-                <label htmlFor="coins-pp" className="text-sm font-medium">
-                  {tEdit("platinumPieces")}
-                </label>
-                <Input
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                  id="coins-pp"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "coins-pp-error" : undefined}
-                  placeholder="PP"
-                  type="number"
-                />
-                {fieldState.error && <FieldError id="coins-pp-error" errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-        </div>
-      </Card>
-
-      {/* 
-        🚧 TODO : Ajouter les autres sections ici :
-        - Liste des objets (items[])
-        - Équipement équipé (equipment)
-        - Armes et armures
-        - Objets magiques
-        - Capacité de transport
-        
-        Les développeurs peuvent s'inspirer du pattern ci-dessus pour ajouter d'autres champs.
-      */}
-      <Card className="gap-4 bg-yellow/10 border-yellow">
-        <p className="text-sm text-gray-middle-light italic">
-          🚧 <strong>{tEdit("todoForDevelopers")}</strong> - Ajouter les champs manquants pour l'onglet Inventaire :
-          liste des objets, équipement, armes, armures, objets magiques, etc.
-        </p>
+              )}
+            </Field>
+          )}
+        />
       </Card>
     </div>
   );

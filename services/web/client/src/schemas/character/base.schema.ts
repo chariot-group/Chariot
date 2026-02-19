@@ -170,11 +170,11 @@ export const BackgroundSchema = z.object({
 
 // ===== Treasure =====
 export const TreasureSchema = z.object({
-    cp: z.number().optional(),
-    sp: z.number().optional(),
-    ep: z.number().optional(),
-    gp: z.number().optional(),
-    pp: z.number().optional(),
+    cp: z.number().min(0).optional(),
+    sp: z.number().min(0).optional(),
+    ep: z.number().min(0).optional(),
+    gp: z.number().min(0).optional(),
+    pp: z.number().min(0).optional(),
     treasure: z.string().optional(),
     equipment: z.string().optional(),
 });
