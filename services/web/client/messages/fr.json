@@ -192,6 +192,7 @@
     },
     "battle": {
       "stats": "Statistiques",
+      "hitLevel": "Niveau",
       "hitDice": "Dés de Vie :",
       "hitPointsRoll": "Dés de points de Vie :",
       "savingThrows": "Jets de sauvegarde",

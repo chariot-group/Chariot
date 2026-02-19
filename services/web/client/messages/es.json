@@ -194,6 +194,7 @@
     },
     "battle": {
       "stats": "Estadísticas",
+      "hitLevel": "Nivel",
       "hitDice": "Dados de Golpe:",
       "hitPointsRoll": "Tirada de Puntos de Golpe:",
       "savingThrows": "Tiradas de salvación",

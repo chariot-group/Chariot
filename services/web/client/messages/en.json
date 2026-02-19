@@ -196,6 +196,7 @@
     },
     "battle": {
       "stats": "Stats",
+      "hitLevel": "Level",
       "hitDice": "Hit Dice:",
       "hitPointsRoll": "Hit Points Roll:",
       "savingThrows": "Saving Throws",

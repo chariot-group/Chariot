@@ -44,39 +44,52 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
     name: "actions",
   });
 
+  const { fields: classFields } = useFieldArray({
+    control: form.control,
+    name: "class",
+  });
+
   return (
     <div className="w-full flex flex-col gap-4 items-start">
       <div className="grid grid-cols-4 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
         {/* Section Points de Vie */}
-        <Card className="gap-4">
-          <h3 className={`text-${accentColor} text-xl font-bold`}>{t("healthPoints")}</h3>
+        <Card
+          className="gap-3 p-4 md:px-6 col-span-3 2xl:col-span-2 h-fit"
+          role="region"
+          aria-labelledby="stats-heading-edit">
+          <h2
+            id="stats-heading-edit"
+            className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+            {t("stats")}
+          </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* PV Actuels */}
+          <div className="flex flex-row gap-2">
+            {/* Classe d'Armure */}
             <Controller
-              name="stats.currentHitPoints"
+              name="stats.armorClass"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field
                   data-invalid={fieldState.invalid}
                   orientation="vertical">
                   <label
-                    htmlFor="health-current"
+                    htmlFor="armor-class"
                     className="text-sm font-medium">
-                    {tEdit("currentHP")}
+                    {t("armorClass")}
                   </label>
                   <Input
                     {...field}
                     onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                    id="health-current"
+                    id="armor-class"
                     aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "health-current-error" : undefined}
-                    placeholder={tEdit("currentHP")}
+                    aria-describedby={fieldState.error ? "armor-class-error" : undefined}
+                    placeholder={t("armorClass")}
+                    min={0}
                     type="number"
                   />
                   {fieldState.error && (
                     <FieldError
-                      id="health-current-error"
+                      id="armor-class-error"
                       errors={[fieldState.error]}
                     />
                   )}
@@ -84,69 +97,310 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
               )}
             />
 
-            {/* PV Maximum */}
+            {/* Initiative */}
             <Controller
-              name="stats.maxHitPoints"
+              name="stats.initiative"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field
                   data-invalid={fieldState.invalid}
                   orientation="vertical">
                   <label
-                    htmlFor="health-max"
+                    htmlFor="initiative"
                     className="text-sm font-medium">
-                    {tEdit("maxHP")}
+                    {tEdit("initiative")}
                   </label>
                   <Input
                     {...field}
                     onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                    id="health-max"
+                    id="initiative"
                     aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "health-max-error" : undefined}
-                    placeholder={tEdit("maxHP")}
+                    aria-describedby={fieldState.error ? "initiative-error" : undefined}
+                    placeholder={tEdit("initiative")}
                     type="number"
+                    min={0}
                   />
                   {fieldState.error && (
                     <FieldError
-                      id="health-max-error"
+                      id="initiative-error"
                       errors={[fieldState.error]}
                     />
                   )}
                 </Field>
               )}
             />
+          </div>
 
-            {/* PV Temporaires */}
-            <Controller
-              name="stats.tempHitPoints"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="health-temp"
-                    className="text-sm font-medium">
-                    {tEdit("tempHP")}
-                  </label>
-                  <Input
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                    id="health-temp"
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "health-temp-error" : undefined}
-                    placeholder={tEdit("tempHP")}
-                    type="number"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="health-temp-error"
-                      errors={[fieldState.error]}
+          {/* Vitesses */}
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium">Vitesses</h3>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              <Controller
+                name="stats.speed.walk"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="speed-walk"
+                      className="text-xs">
+                      Marche
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="speed-walk"
+                      type="number"
+                      min={0}
+                      className="text-sm"
                     />
-                  )}
-                </Field>
-              )}
-            />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="stats.speed.climb"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="speed-climb"
+                      className="text-xs">
+                      Escalade
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="speed-climb"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="stats.speed.swim"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="speed-swim"
+                      className="text-xs">
+                      Nage
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="speed-swim"
+                      type="number"
+                      min={0}
+                      className="text-sm"
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="stats.speed.fly"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="speed-fly"
+                      className="text-xs">
+                      Vol
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="speed-fly"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="stats.speed.burrow"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="speed-burrow"
+                      className="text-xs">
+                      Fouissage
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="speed-burrow"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Points de Vie */}
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium">{t("healthPoints")}</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <Controller
+                name="stats.currentHitPoints"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="health-current"
+                      className="text-xs">
+                      {tEdit("currentHP")}
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="health-current"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="stats.maxHitPoints"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="health-max"
+                      className="text-xs">
+                      {tEdit("maxHP")}
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="health-max"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="stats.tempHitPoints"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="health-temp"
+                      className="text-xs">
+                      {tEdit("tempHP")}
+                    </label>
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                      id="health-temp"
+                      type="number"
+                      className="text-sm"
+                      min={0}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Hit Points Roll */}
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium">{t("hitPointsRoll")}</h3>
+            <div className="flex flex-col gap-3">
+              {classFields.map((classField, index) => {
+                const className = form.watch(`class.${index}.name`);
+                return (
+                  <div
+                    key={classField.id}
+                    className="grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
+                    <Controller
+                      name={`class.${index}.level`}
+                      control={form.control}
+                      render={({ field, fieldState }) => (
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          orientation="vertical">
+                          <label
+                            htmlFor={`class-${index}-level`}
+                            className="text-xs">
+                            {t("hitLevel")} ({className})
+                          </label>
+                          <Input
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                            id={`class-${index}-level`}
+                            type="number"
+                            className="text-sm"
+                            min={1}
+                            max={20}
+                          />
+                          {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                        </Field>
+                      )}
+                    />
+                    <span className="text-sm pb-2">d</span>
+                    <Controller
+                      name={`class.${index}.hitDice`}
+                      control={form.control}
+                      render={({ field, fieldState }) => (
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          orientation="vertical">
+                          <label
+                            htmlFor={`class-${index}-hitdice`}
+                            className="text-xs">
+                            {t("hitDice")}
+                          </label>
+                          <Input
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                            id={`class-${index}-hitdice`}
+                            type="number"
+                            className="text-sm"
+                            min={1}
+                          />
+                          {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                        </Field>
+                      )}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </Card>
 
@@ -254,7 +508,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
               form.setValue("deathSaves.successes", 0, { shouldDirty: true });
               form.setValue("deathSaves.failures", 0, { shouldDirty: true });
             }}
-            className="flex items-center gap-2">
+            className="flex gap-2 self-start">
             {tEdit("reset")}
           </Button>
         </Card>
