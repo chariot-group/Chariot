@@ -71,72 +71,84 @@ const AbilitiesUpdateSection = ({
           value={openAccordionValues}
           onValueChange={setOpenAccordionValues}
           className="w-full flex flex-col gap-3">
-          {fields.map((field, index) => (
-            <AccordionItem
-              key={field.id}
-              value={`ability-${index}`}
-              className="border-b border-gray py-1.5">
-              <AccordionTrigger
-                className="text-left py-1.5 hover:no-underline"
-                aria-label={`Détails de la capacité ${index + 1}`}>
-                <Controller
-                  name={`${fieldArrayName}.${index}.name`}
-                  control={form.control}
-                  render={({ field: nameField, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical"
-                      className="flex-1">
-                      <Input
-                        {...nameField}
-                        placeholder="Nom de la capacité"
-                        className="text-sm"
-                        onClick={(e) => e.stopPropagation()}
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    remove(index);
-                  }}
-                  className="text-red-500 shrink-0">
-                  <Trash2 className="size-4" />
-                </Button>
-              </AccordionTrigger>
-              <AccordionContent className="text-sm sm:text-base pb-3">
-                <Controller
-                  name={`${fieldArrayName}.${index}.description`}
-                  control={form.control}
-                  render={({ field: descField, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`${fieldArrayName}-description-${index}`}
-                        className="text-sm font-medium">
-                        Description
-                      </label>
-                      <Textarea
-                        {...descField}
-                        id={`${fieldArrayName}-description-${index}`}
-                        placeholder="Description de la capacité"
-                        rows={3}
-                        className="text-sm"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          ))}
+          {fields.map((field, index) => {
+            const abilityName = form.watch(`${fieldArrayName}.${index}.name`);
+
+            return (
+              <AccordionItem
+                key={field.id}
+                value={`ability-${index}`}
+                className="border-b border-gray py-1.5">
+                <div className="relative py-1.5">
+                  <AccordionTrigger
+                    className="text-left w-full hover:no-underline pr-10"
+                    aria-label={`Détails de la capacité ${index + 1}`}>
+                    <span className="font-medium">{abilityName || "Nouvelle capacité"}</span>
+                  </AccordionTrigger>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      remove(index);
+                    }}
+                    className="text-red-500 shrink-0 absolute right-0 top-1/2 -translate-y-1/2">
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+                <AccordionContent className="text-sm sm:text-base pb-3">
+                  <Controller
+                    name={`${fieldArrayName}.${index}.name`}
+                    control={form.control}
+                    render={({ field: nameField, fieldState }) => (
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="mb-3">
+                        <label
+                          htmlFor={`${fieldArrayName}-name-${index}`}
+                          className="text-sm font-medium">
+                          Nom
+                        </label>
+                        <Input
+                          {...nameField}
+                          id={`${fieldArrayName}-name-${index}`}
+                          placeholder="Nom de la capacité"
+                          className="text-sm"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
+                  <Controller
+                    name={`${fieldArrayName}.${index}.description`}
+                    control={form.control}
+                    render={({ field: descField, fieldState }) => (
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical">
+                        <label
+                          htmlFor={`${fieldArrayName}-description-${index}`}
+                          className="text-sm font-medium">
+                          Description
+                        </label>
+                        <Textarea
+                          {...descField}
+                          id={`${fieldArrayName}-description-${index}`}
+                          placeholder="Description de la capacité"
+                          rows={3}
+                          className="text-sm"
+                        />
+                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
         </Accordion>
       )}
     </Card>

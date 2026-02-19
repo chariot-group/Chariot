@@ -77,99 +77,106 @@ const ActionUpdateSection = ({
           value={openAccordionValues}
           onValueChange={setOpenAccordionValues}
           className="w-full flex flex-col gap-2">
-          {fields.map((field, index) => (
-            <AccordionItem
-              key={field.id}
-              value={`action-${index}`}
-              className="flex flex-col gap-2">
-              <Card className="gap-2 p-0 flex-col">
-                <AccordionTrigger
-                  className="flex-1 py-3 px-3 md:py-4 md:px-6 rounded-md items-center justify-between"
-                  aria-label={`Détails de l'action ${index + 1}`}>
-                  <Controller
-                    name={`${fieldArrayName}.${index}.name`}
-                    control={form.control}
-                    render={({ field: nameField }) => (
-                      <Input
-                        {...nameField}
-                        placeholder="Nom de l'action"
-                        onClick={(e) => e.stopPropagation()}
+          {fields.map((field, index) => {
+            const actionName = form.watch(`${fieldArrayName}.${index}.name`);
+            const actionType = form.watch(`${fieldArrayName}.${index}.type`);
+
+            return (
+              <AccordionItem
+                key={field.id}
+                value={`action-${index}`}
+                className="flex flex-col gap-2">
+                <Card className="gap-2 p-0 flex-col">
+                  <div className="relative py-3 px-3 md:py-2 md:px-6">
+                    <AccordionTrigger
+                      className="w-full items-center gap-2 pr-10"
+                      aria-label={`Détails de l'action ${index + 1}`}>
+                      <span className="font-medium">
+                        {actionName || "Nouvelle action"}
+                        {actionType && <span className="text-sm ml-2">({actionType})</span>}
+                      </span>
+                    </AccordionTrigger>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        remove(index);
+                      }}
+                      className="text-red-500 shrink-0 absolute right-3 md:right-6 top-1/2 -translate-y-1/2">
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </Card>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-2 items-start">
+                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>Nom</span>
+                      <Controller
+                        name={`${fieldArrayName}.${index}.name`}
+                        control={form.control}
+                        render={({ field: nameField }) => (
+                          <Input
+                            {...nameField}
+                            placeholder="Nom de l'action"
+                            className="flex-1"
+                          />
+                        )}
                       />
-                    )}
-                  />
-                  <Controller
-                    name={`${fieldArrayName}.${index}.type`}
-                    control={form.control}
-                    render={({ field: typeField }) =>
-                      typeField.value && <span className="text-base md:text-lg font-medium">({typeField.value})</span>
-                    }
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      remove(index);
-                    }}
-                    className="text-red-500 shrink-0">
-                    <Trash2 className="size-4" />
-                  </Button>
-                </AccordionTrigger>
-              </Card>
-              <AccordionContent>
-                <div className="flex flex-wrap gap-2 items-start">
-                  <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>Type</span>
-                    <Controller
-                      name={`${fieldArrayName}.${index}.type`}
-                      control={form.control}
-                      render={({ field: typeField }) => <Input {...typeField} />}
-                    />
-                  </Card>
-                  <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                      {t("attackDC")}
-                    </span>
-                    <Controller
-                      name={`${fieldArrayName}.${index}.attackBonus`}
-                      control={form.control}
-                      render={({ field: attackField }) => (
-                        <Input
-                          {...attackField}
-                          onChange={(e) => attackField.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                          type="number"
-                          min={0}
-                        />
-                      )}
-                    />
-                  </Card>
-                  <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>Portée</span>
-                    <Controller
-                      name={`${fieldArrayName}.${index}.range`}
-                      control={form.control}
-                      render={({ field: rangeField }) => <Input {...rangeField} />}
-                    />
-                  </Card>
-                  <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                    <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
-                    <Controller
-                      name={`${fieldArrayName}.${index}.description`}
-                      control={form.control}
-                      render={({ field: descField }) => (
-                        <Textarea
-                          {...descField}
-                          value={descField.value || ""}
-                          placeholder="Description de l'action"
-                        />
-                      )}
-                    />
-                  </Card>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
+                    </Card>
+                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>Type</span>
+                      <Controller
+                        name={`${fieldArrayName}.${index}.type`}
+                        control={form.control}
+                        render={({ field: typeField }) => <Input {...typeField} />}
+                      />
+                    </Card>
+                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                        {t("attackDC")}
+                      </span>
+                      <Controller
+                        name={`${fieldArrayName}.${index}.attackBonus`}
+                        control={form.control}
+                        render={({ field: attackField }) => (
+                          <Input
+                            {...attackField}
+                            onChange={(e) => attackField.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                            type="number"
+                            min={0}
+                          />
+                        )}
+                      />
+                    </Card>
+                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>Portée</span>
+                      <Controller
+                        name={`${fieldArrayName}.${index}.range`}
+                        control={form.control}
+                        render={({ field: rangeField }) => <Input {...rangeField} />}
+                      />
+                    </Card>
+                    <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
+                      <Controller
+                        name={`${fieldArrayName}.${index}.description`}
+                        control={form.control}
+                        render={({ field: descField }) => (
+                          <Textarea
+                            {...descField}
+                            value={descField.value || ""}
+                            placeholder="Description de l'action"
+                          />
+                        )}
+                      />
+                    </Card>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
         </Accordion>
       )}
     </section>

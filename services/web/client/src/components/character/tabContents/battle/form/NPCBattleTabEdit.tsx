@@ -4,12 +4,9 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { EyeIcon, Plus, Trash2 } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
 import ActionUpdateSection from "../shared/ActionUpdateSection";
 import AbilitiesUpdateSection from "../../shared/AbilitiesUpdateSection";
-import SkillUpdate from "../../general/shared/SkillUpdate";
+import Skill from "../../general/shared/Skill";
 
 interface NPCBattleTabEditProps {
   npc: NPC;
@@ -390,32 +387,22 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
             </h2>
           </Card>
           <div className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2">
-            {abilityScoreKeys.map((key) => (
-              <Controller
-                key={key}
-                name={`stats.savingThrows.${key}`}
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    orientation="vertical">
-                    <label
-                      htmlFor={`saving-throw-${key}`}
-                      className="text-sm font-medium">
-                      {tAbilities(key)}
-                    </label>
-                    <Input
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                      id={`saving-throw-${key}`}
-                      type="number"
-                      className="text-sm"
-                    />
-                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-            ))}
+            {abilityScoreKeys.map((key) => {
+              const abilityName = tAbilities(key as any);
+              const abilityScore = form.watch(`stats.abilityScores.${key}`) || 0;
+              const savingThrowValue = form.watch(`stats.savingThrows.${key}`) || 0;
+              const valeurCalculer = Math.floor((abilityScore - 10) / 2);
+
+              return (
+                <Skill
+                  key={key}
+                  skillName={abilityName}
+                  value={savingThrowValue > 0 ? 2 : 0}
+                  accentColor={accentColor}
+                  skills={savingThrowValue > 0 ? savingThrowValue : valeurCalculer}
+                />
+              );
+            })}
           </div>
         </div>
 
