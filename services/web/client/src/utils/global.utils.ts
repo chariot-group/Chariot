@@ -1,4 +1,5 @@
 import { Character, Player } from "@/types/character";
+import { EXPERIENCE_TABLE, MAX_LEVEL, MIN_LEVEL } from "@/constants/experienceTable";
 
 import NoMastery from "@public/assets/mastery/no-mastery.svg";
 import HalfMastery from "@public/assets/mastery/half-mastery.svg";
@@ -78,4 +79,44 @@ export function calculateMasteryLevel(masteryLevel: number, skills: number, prof
  */
 export function isPlayer(character: Character): character is Player {
     return "progression" in character;
+}
+
+/**
+ * Calcule le niveau à partir de l'expérience selon le tableau D&D 5e
+ * @param experience Points d'expérience
+ * @returns Niveau correspondant (1 à 20)
+ */
+export function getLevelFromExperience(experience: number): number {
+    if (!experience || experience < 0) return MIN_LEVEL;
+
+    // Parcourir le tableau pour trouver le niveau correspondant
+    for (let level = MAX_LEVEL; level >= MIN_LEVEL; level--) {
+        if (experience >= EXPERIENCE_TABLE[level]) {
+            return level;
+        }
+    }
+
+    return MIN_LEVEL;
+}
+
+/**
+ * Retourne l'expérience minimale requise pour un niveau donné
+ * @param level Niveau du personnage (1 à 20)
+ * @returns Points d'expérience requis
+ */
+export function getExperienceForLevel(level: number): number {
+    if (!level || level < MIN_LEVEL) return EXPERIENCE_TABLE[MIN_LEVEL];
+    if (level > MAX_LEVEL) return EXPERIENCE_TABLE[MAX_LEVEL];
+
+    return EXPERIENCE_TABLE[level];
+}
+
+/**
+ * Vérifie si l'XP et le niveau sont synchronisés
+ * @param experience Points d'expérience
+ * @param level Niveau du personnage
+ * @returns true si le niveau correspond à l'XP, false sinon
+ */
+export function isLevelXpSynced(experience: number, level: number): boolean {
+    return getLevelFromExperience(experience) === level;
 }

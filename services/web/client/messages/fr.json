@@ -332,7 +332,24 @@
           "performance": "Représentation",
           "survival": "Survie",
           "deception": "Tromperie"
-        }
+        },
+        "race": "Race",
+        "class": "Classe",
+        "subrace": "Sous-race",
+        "level": "Niveau",
+        "experience": "Expérience",
+        "className": "Nom de la classe",
+        "classLevel": "Niveau de classe",
+        "subclass": "Sous-classe",
+        "selectClass": "Sélectionner une classe",
+        "xpLevelSynced": "Niveau et XP synchronisés",
+        "xpLevelMismatch": "Avec {xp} XP, le niveau devrait être {level}",
+        "syncLevelButton": "Niveau → {level}",
+        "syncXpButton": "XP → {xp}",
+        "classLevelExceeds": "Total supérieur au niveau global",
+        "classLevelExceedsGlobal": "Total des niveaux de classe ({total}) dépasse le niveau global ({global})",
+        "classLevelInfo": "Niveau de cette classe : {classLevel} | Total : {totalLevel}/{globalLevel}",
+        "addSecondClass": "Ajouter une seconde classe"
       }
     },
     "npc": {
