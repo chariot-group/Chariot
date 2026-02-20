@@ -4,9 +4,9 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import ActionUpdateSection from "../shared/ActionUpdateSection";
-import AbilitiesUpdateSection from "../../shared/AbilitiesUpdateSection";
-import Skill from "../../general/shared/Skill";
+import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
+import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
+import Skill from "@/components/character/tabContents/general/shared/Skill";
 
 interface NPCBattleTabEditProps {
   npc: NPC;

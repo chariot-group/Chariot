@@ -4,9 +4,9 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import AbilitiesUpdateSection from "../../shared/AbilitiesUpdateSection";
-import ActionUpdateSection from "../shared/ActionUpdateSection";
-import Skill from "../../general/shared/Skill";
+import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
+import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
+import Skill from "@/components/character/tabContents/general/shared/Skill";
 import Image from "next/image";
 
 import RedCircle from "@public/assets/icons/red-circle.svg";
