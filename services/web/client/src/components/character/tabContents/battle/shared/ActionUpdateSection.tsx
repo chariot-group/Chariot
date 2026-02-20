@@ -29,6 +29,7 @@ const ActionUpdateSection = ({
 }: ActionUpdateSectionProps) => {
   const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
+  const tEdit = useTranslations("characterDetail.edit");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
 
@@ -39,7 +40,7 @@ const ActionUpdateSection = ({
         <div className="flex items-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() =>
               append({
@@ -53,7 +54,7 @@ const ActionUpdateSection = ({
             }
             className="flex items-center gap-2">
             <Plus className="size-4" />
-            <span className="hidden sm:block">Ajouter</span>
+            <span className="hidden sm:block">{tEdit("add")}</span>
           </Button>
           <button
             type="button"
@@ -112,7 +113,7 @@ const ActionUpdateSection = ({
                 <AccordionContent>
                   <div className="flex flex-wrap gap-2 items-start">
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>Nom</span>
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("name")}</span>
                       <Controller
                         name={`${fieldArrayName}.${index}.name`}
                         control={form.control}
@@ -126,7 +127,7 @@ const ActionUpdateSection = ({
                       />
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>Type</span>
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("type")}</span>
                       <Controller
                         name={`${fieldArrayName}.${index}.type`}
                         control={form.control}
@@ -151,7 +152,9 @@ const ActionUpdateSection = ({
                       />
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>Portée</span>
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                        {t("damageType")}
+                      </span>
                       <Controller
                         name={`${fieldArrayName}.${index}.range`}
                         control={form.control}

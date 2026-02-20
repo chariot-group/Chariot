@@ -29,6 +29,8 @@ const AbilitiesUpdateSection = ({
   accentColor,
 }: AbilitiesUpdateSectionProps) => {
   const tMagic = useTranslations("characterDetail.magic");
+  const tEdit = useTranslations("characterDetail.edit");
+  const tBattle = useTranslations("characterDetail.battle");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
 
@@ -42,12 +44,12 @@ const AbilitiesUpdateSection = ({
         <div className="flex items-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => append({ name: "", description: "" })}
             className="flex items-center gap-2">
             <Plus className="size-4" />
-            <span className="hidden sm:block">Ajouter</span>
+            <span className="hidden sm:block">{tEdit("add")}</span>
           </Button>
           <button
             type="button"
@@ -83,7 +85,7 @@ const AbilitiesUpdateSection = ({
                   <AccordionTrigger
                     className="text-left w-full hover:no-underline pr-10"
                     aria-label={`Détails de la capacité ${index + 1}`}>
-                    <span className="font-medium">{abilityName || "Nouvelle capacité"}</span>
+                    <span className="font-medium">{abilityName}</span>
                   </AccordionTrigger>
                   <Button
                     type="button"
@@ -109,7 +111,7 @@ const AbilitiesUpdateSection = ({
                         <label
                           htmlFor={`${fieldArrayName}-name-${index}`}
                           className="text-sm font-medium">
-                          Nom
+                          {tBattle("name")}
                         </label>
                         <Input
                           {...nameField}
@@ -132,7 +134,7 @@ const AbilitiesUpdateSection = ({
                         <label
                           htmlFor={`${fieldArrayName}-description-${index}`}
                           className="text-sm font-medium">
-                          Description
+                          {tBattle("description")}
                         </label>
                         <Textarea
                           {...descField}

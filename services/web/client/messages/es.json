@@ -109,7 +109,8 @@
       "button": "Crear un personaje",
       "button-aria": "Navegar hacia la creación de personaje"
     }
-  },  "characterForm": {
+  },  
+  "characterForm": {
     "createSuccess": "Personaje creado con éxito",
     "createError": "Error al crear el personaje",
     "updateSuccess": "Personaje actualizado con éxito",
@@ -148,7 +149,8 @@
       "uuid": "UUID inválido"
     },
     "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}"
-  },  "characterDetail": {
+  },  
+  "characterDetail": {
     "editCharacter": "Modificar personaje",
     "saveChanges": "Guardar cambios",
     "saving": "Guardando...",
@@ -188,7 +190,8 @@
       "climb": "Escalar",
       "swim": "Nadar",
       "fly": "Volar",
-      "burrow": "Excavar"
+      "burrow": "Excavar",
+      "add": "Añadir"
     },
     "tabs": {
       "general": "General",
@@ -217,6 +220,8 @@
       "damageType": "Daño/Tipo:",
       "description": "Descripción:",
       "details": "detalles",
+      "type": "Tipo",
+      "name": "Nombre",
       "descriptionPrefix": "descripción",
       "armorClass": "Clase de Armadura",
       "armorClassTooltip": "Clase de armadura (CA) del personaje",
@@ -433,5 +438,6 @@
     "Any Good Alignment": "Cualquier alineación buena",
     "Any Evil Alignment": "Cualquier alineación malvada",
     "Any Lawful Alignment": "Cualquier alineación legal",
-    "Any Chaotic Alignment": "Cualquier alineación caótica"  }
+    "Any Chaotic Alignment": "Cualquier alineación caótica"  
+  }
 }

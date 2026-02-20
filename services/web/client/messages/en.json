@@ -190,7 +190,8 @@
       "climb": "Climb",
       "swim": "Swim",
       "fly": "Fly",
-      "burrow": "Burrow"
+      "burrow": "Burrow",
+      "add": "Add"
     },
     "tabs": {
       "general": "General",
@@ -218,6 +219,8 @@
       "attackDC": "Attack/DC:",
       "damageType": "Damage/Type:",
       "description": "Description:",
+      "type": "Type",
+      "name": "Name",
       "details": "details",
       "descriptionPrefix": "description",
       "armorClass": "Armor Class",

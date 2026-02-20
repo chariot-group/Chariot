@@ -12,6 +12,7 @@ import Image from "next/image";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import { Button } from "@/components/ui/button";
+import { ArrowBigLeftDash, CircleArrowLeft, CircleArrowOutUpRightIcon, RefreshCcw } from "lucide-react";
 
 interface PlayerBattleTabEditProps {
   player: Player;
@@ -503,13 +504,14 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => {
               form.setValue("deathSaves.successes", 0, { shouldDirty: true });
               form.setValue("deathSaves.failures", 0, { shouldDirty: true });
             }}
             className="flex gap-2 self-start">
+            <RefreshCcw />
             {tEdit("reset")}
           </Button>
         </Card>
