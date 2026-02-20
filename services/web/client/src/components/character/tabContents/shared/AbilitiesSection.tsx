@@ -61,9 +61,9 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
             value={`${ability.name}-${index}`}
             className="border-b border-gray py-1.5">
             <AccordionTrigger
-              className="text-left py-1.5 hover:no-underline"
+              className="text-left py-1.5 hover:no-underline truncate"
               aria-label={`${t("details")} ${ability.name}`}>
-              <span className="text-sm sm:text-lg font-semibold">{ability.name}</span>
+              <span className="text-sm sm:text-lg font-semibold truncate">{ability.name}</span>
             </AccordionTrigger>
             <AccordionContent
               className="text-sm sm:text-base pb-3 break-all"

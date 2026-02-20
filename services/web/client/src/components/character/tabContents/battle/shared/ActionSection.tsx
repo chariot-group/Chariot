@@ -57,12 +57,14 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
             className="flex flex-col gap-2">
             <Card className="gap-2 p-0 flex-col">
               <AccordionTrigger
-                className="py-3 px-3 md:py-4 md:px-6 rounded-md"
+                className="py-3 px-3 md:py-4 md:px-6 rounded-md truncate"
                 aria-label={`${t("actionDetails")} ${action.name}`}>
-                <span className="text-base md:text-lg font-medium text-left">
-                  {action.name}
-                  {action.type && ` (${action.type})`}
-                </span>
+                <div className="truncate flex items-center gap-1">
+                  <span className="text-base md:text-lg font-medium text-left truncate">{action.name}</span>
+                  <span className="text-base md:text-lg font-medium text-left">
+                    {action.type && ` (${action.type})`}
+                  </span>
+                </div>
               </AccordionTrigger>
             </Card>
             <AccordionContent>

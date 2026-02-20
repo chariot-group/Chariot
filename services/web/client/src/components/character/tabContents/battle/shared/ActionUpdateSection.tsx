@@ -92,10 +92,12 @@ const ActionUpdateSection = ({
                     <AccordionTrigger
                       className="w-full items-center gap-2 pr-10"
                       aria-label={`Détails de l'action ${index + 1}`}>
-                      <span className="font-medium">
-                        {actionName || "Nouvelle action"}
-                        {actionType && <span className="text-sm ml-2">({actionType})</span>}
-                      </span>
+                      <div className="truncate flex items-center gap-1">
+                        <span className={`text-base md:text-lg font-medium text-left truncate`}>{actionName}</span>
+                        <span className="text-base md:text-lg font-medium text-left">
+                          {actionType && ` (${actionType})`}
+                        </span>
+                      </div>
                     </AccordionTrigger>
                     <Button
                       type="button"

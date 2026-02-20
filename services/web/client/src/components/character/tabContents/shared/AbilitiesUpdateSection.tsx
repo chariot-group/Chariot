@@ -83,9 +83,9 @@ const AbilitiesUpdateSection = ({
                 className="border-b border-gray">
                 <div className="relative">
                   <AccordionTrigger
-                    className="text-left w-full hover:no-underline pr-10"
+                    className="text-left w-full hover:no-underline pr-10 truncate"
                     aria-label={`Détails de la capacité ${index + 1}`}>
-                    <span className="font-medium">{abilityName}</span>
+                    <span className="font-medium truncate">{abilityName}</span>
                   </AccordionTrigger>
                   <Button
                     type="button"
