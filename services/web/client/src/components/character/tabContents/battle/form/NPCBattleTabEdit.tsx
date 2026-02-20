@@ -7,6 +7,12 @@ import { useTranslations } from "next-intl";
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import Skill from "@/components/character/tabContents/general/shared/Skill";
+import Image from "next/image";
+
+import ShieldIcon from "@public/assets/icons/shield-icon.svg";
+import RunningIcon from "@public/assets/icons/running-icon.svg";
+import FeatherIcon from "@public/assets/icons/feather-icon.svg";
+import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 
 interface NPCBattleTabEditProps {
   npc: NPC;
@@ -87,16 +93,27 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     className="text-sm font-medium">
                     {t("armorClass")}
                   </label>
-                  <Input
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                    id="armor-class"
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "armor-class-error" : undefined}
-                    placeholder={t("armorClass")}
-                    min={0}
-                    type="number"
-                  />
+                  <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                      id="armor-class"
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "armor-class-error" : undefined}
+                      placeholder={t("armorClass")}
+                      min={0}
+                      type="number"
+                    />
+                    <Image
+                      src={ShieldIcon}
+                      alt=""
+                      aria-hidden="true"
+                      width={20}
+                      height={20}
+                      className="size-5"
+                    />
+                  </div>
+
                   {fieldState.error && (
                     <FieldError
                       id="armor-class-error"
@@ -120,16 +137,26 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     className="text-sm font-medium">
                     {tEdit("initiative")}
                   </label>
-                  <Input
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                    id="initiative"
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "initiative-error" : undefined}
-                    placeholder={tEdit("initiative")}
-                    type="number"
-                    min={0}
-                  />
+                  <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                    <Input
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                      id="initiative"
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "initiative-error" : undefined}
+                      placeholder={tEdit("initiative")}
+                      type="number"
+                      min={0}
+                    />
+                    <Image
+                      src={FeatherIcon}
+                      alt=""
+                      aria-hidden="true"
+                      width={20}
+                      height={20}
+                      className="size-5"
+                    />
+                  </div>
                   {fieldState.error && (
                     <FieldError
                       id="initiative-error"
@@ -157,14 +184,22 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       className="text-xs">
                       {tEdit("walk")}
                     </label>
-                    <Input
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                      id="speed-walk"
-                      type="number"
-                      min={0}
-                      className="text-sm"
-                    />
+                    <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                      <Input
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                        id="speed-walk"
+                        type="number"
+                        min={0}
+                        className="text-sm"
+                      />
+                      <Image
+                        src={RunningIcon}
+                        alt=""
+                        aria-hidden="true"
+                        className="size-6"
+                      />
+                    </div>
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -181,14 +216,21 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       className="text-xs">
                       {tEdit("climb")}
                     </label>
-                    <Input
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                      id="speed-climb"
-                      type="number"
-                      className="text-sm"
-                      min={0}
-                    />
+                    <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                      <Input
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                        id="speed-climb"
+                        type="number"
+                        className="text-sm"
+                        min={0}
+                      />
+                      <Mountain
+                        size={24}
+                        className="text-black"
+                        aria-hidden="true"
+                      />
+                    </div>
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -205,14 +247,21 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       className="text-xs">
                       {tEdit("swim")}
                     </label>
-                    <Input
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                      id="speed-swim"
-                      type="number"
-                      min={0}
-                      className="text-sm"
-                    />
+                    <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                      <Input
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                        id="speed-swim"
+                        type="number"
+                        min={0}
+                        className="text-sm"
+                      />
+                      <Waves
+                        size={24}
+                        className="text-black"
+                        aria-hidden="true"
+                      />
+                    </div>
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -229,14 +278,21 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       className="text-xs">
                       {tEdit("fly")}
                     </label>
-                    <Input
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                      id="speed-fly"
-                      type="number"
-                      className="text-sm"
-                      min={0}
-                    />
+                    <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                      <Input
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                        id="speed-fly"
+                        type="number"
+                        className="text-sm"
+                        min={0}
+                      />
+                      <Bird
+                        size={24}
+                        className="text-black"
+                        aria-hidden="true"
+                      />
+                    </div>
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -253,14 +309,21 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                       className="text-xs">
                       {tEdit("burrow")}
                     </label>
-                    <Input
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                      id="speed-burrow"
-                      type="number"
-                      className="text-sm"
-                      min={0}
-                    />
+                    <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                      <Input
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                        id="speed-burrow"
+                        type="number"
+                        className="text-sm"
+                        min={0}
+                      />
+                      <Shovel
+                        size={24}
+                        className="text-black"
+                        aria-hidden="true"
+                      />
+                    </div>
                     {fieldState.error && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
