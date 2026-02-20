@@ -16,6 +16,7 @@ import { RefreshCcw, Bird, Mountain, Shovel, Waves } from "lucide-react";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PlayerBattleTabEditProps {
   player: Player;
@@ -407,7 +408,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                 return (
                   <div
                     key={classField.id}
-                    className="grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
+                    className="flex gap-2 justify-between">
                     <Controller
                       name={`class.${index}.level`}
                       control={form.control}
@@ -433,7 +434,6 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                         </Field>
                       )}
                     />
-                    <span className="text-sm pb-2">d</span>
                     <Controller
                       name={`class.${index}.hitDice`}
                       control={form.control}
@@ -446,14 +446,22 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                             className="text-xs">
                             {t("hitDice")}
                           </label>
-                          <Input
-                            {...field}
-                            onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                            id={`class-${index}-hitdice`}
-                            type="number"
-                            className="text-sm"
-                            min={1}
-                          />
+                          <Select
+                            defaultValue={String(field.value)}
+                            onValueChange={(value) => field.onChange(Number(value))}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent position="item-aligned">
+                              <SelectGroup>
+                                <SelectItem value="6">d6</SelectItem>
+                                <SelectItem value="8">d8</SelectItem>
+                                <SelectItem value="10">d10</SelectItem>
+                                <SelectItem value="12">d12</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+
                           {fieldState.error && <FieldError errors={[fieldState.error]} />}
                         </Field>
                       )}
