@@ -21,7 +21,7 @@ interface Props {
 
 const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
   const t = useTranslations("characterDetail.battle");
-
+  const tClass = useTranslations("classes");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   // Configuration des badges de statistiques
@@ -184,7 +184,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                 <span className="font-bold">
                   {c.level}d{c.hitDice}
                 </span>
-                {` (${c.name})`}
+                {` (${tClass(c.name)})`}
               </span>
             ))}
           </div>
@@ -224,7 +224,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
 
         {/* Jets de sauvegarde contre la mort */}
         <Card
-          className="gap-3 p-4 md:px-6 rounded-xl h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
+          className="gap-3 p-4 md:px-6 h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
           role="region"
           aria-labelledby="death-saves-heading">
           <h2

@@ -184,7 +184,14 @@
       "electrumPieces": "Electrum Pieces",
       "goldPieces": "Gold Pieces",
       "platinumPieces": "Platinum Pieces",
-      "todoForDevelopers": "TODO for developers"
+      "reset": "Reset",
+      "speeds": "Speeds",
+      "walk": "Walk",
+      "climb": "Climb",
+      "swim": "Swim",
+      "fly": "Fly",
+      "burrow": "Burrow",
+      "add": "Add"
     },
     "tabs": {
       "general": "General",
@@ -195,6 +202,7 @@
     },
     "battle": {
       "stats": "Stats",
+      "hitLevel": "Level",
       "hitDice": "Hit Dice:",
       "hitPointsRoll": "Hit Points Roll:",
       "savingThrows": "Saving Throws",
@@ -211,6 +219,8 @@
       "attackDC": "Attack/DC:",
       "damageType": "Damage/Type:",
       "description": "Description:",
+      "type": "Type",
+      "name": "Name",
       "details": "details",
       "descriptionPrefix": "description",
       "armorClass": "Armor Class",

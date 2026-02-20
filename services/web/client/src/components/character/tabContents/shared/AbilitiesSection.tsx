@@ -25,7 +25,7 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
 
   return (
     <Card
-      className={`gap-0.5 p-4 md:px-6 rounded-xl h-fit ${className}`}
+      className={`gap-0.5 p-4 md:px-6 h-fit ${className}`}
       role="region"
       aria-labelledby={headingId}>
       <div className="flex flex-row justify-between">
@@ -61,12 +61,12 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
             value={`${ability.name}-${index}`}
             className="border-b border-gray py-1.5">
             <AccordionTrigger
-              className="text-left py-1.5 hover:no-underline"
+              className="text-left py-1.5 hover:no-underline truncate"
               aria-label={`${t("details")} ${ability.name}`}>
-              <span className="text-sm sm:text-lg font-semibold">{ability.name}</span>
+              <span className="text-sm sm:text-lg font-semibold truncate">{ability.name}</span>
             </AccordionTrigger>
             <AccordionContent
-              className="text-sm sm:text-base pb-3"
+              className="text-sm sm:text-base pb-3 break-all"
               role="region"
               aria-label={`${t("descriptionPrefix")} ${ability.name}`}>
               {ability.description}

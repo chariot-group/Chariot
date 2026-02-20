@@ -57,12 +57,14 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
             className="flex flex-col gap-2">
             <Card className="gap-2 p-0 flex-col">
               <AccordionTrigger
-                className="py-3 px-3 md:py-4 md:px-6 rounded-md"
+                className="py-3 px-3 md:py-4 md:px-6 rounded-md truncate"
                 aria-label={`${t("actionDetails")} ${action.name}`}>
-                <span className="text-base md:text-lg font-medium text-left">
-                  {action.name}
-                  {action.type && ` (${action.type})`}
-                </span>
+                <div className="truncate flex items-center gap-1">
+                  <span className="text-base md:text-lg font-medium text-left truncate">{action.name}</span>
+                  <span className="text-base md:text-lg font-medium text-left">
+                    {action.type && ` (${action.type})`}
+                  </span>
+                </div>
               </AccordionTrigger>
             </Card>
             <AccordionContent>
@@ -85,11 +87,11 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                   <span className="text-sm md:text-base">
                     {action.damage && action.damage.length > 0
                       ? action.damage.map((d, i) => (
-                        <span key={i}>
-                          {d.dice} {d.type}
-                          {i < action.damage!.length - 1 ? " + " : ""}
-                        </span>
-                      ))
+                          <span key={i}>
+                            {d.dice} {d.type}
+                            {i < action.damage!.length - 1 ? " + " : ""}
+                          </span>
+                        ))
                       : "-"}{" "}
                     {action.range && `(${action.range})`}
                   </span>
@@ -97,7 +99,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                 {action.description && (
                   <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
                     <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
-                    <span className="text-sm md:text-base italic">{action.description}</span>
+                    <span className="text-sm md:text-base italic break-all">{action.description}</span>
                   </Card>
                 )}
               </div>

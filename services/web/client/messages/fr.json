@@ -109,7 +109,8 @@
       "button": "Créer un personnage",
       "button-aria": "Naviguer vers la création de personnage"
     }
-  },  "characterForm": {
+  },  
+  "characterForm": {
     "createSuccess": "Personnage créé avec succès",
     "createError": "Échec de la création du personnage",
     "updateSuccess": "Personnage mis à jour avec succès",
@@ -148,7 +149,8 @@
       "uuid": "UUID invalide"
     },
     "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}"
-  },  "characterDetail": {
+  },  
+  "characterDetail": {
     "editCharacter": "Modifier le personnage",
     "saveChanges": "Sauvegarder",
     "saving": "Sauvegarde...",
@@ -181,8 +183,15 @@
       "silverPieces": "Pièces d'Argent",
       "electrumPieces": "Pièces d'Électrum",
       "goldPieces": "Pièces d'Or",
-      "platinumPieces": "Pièces de Platine",
-      "todoForDevelopers": "À faire pour les développeurs"
+      "platinumPieces": "Pièces de Platine",      
+      "reset": "Réinitialiser",      
+      "speeds": "Vitesses",
+      "walk": "Marche",
+      "climb": "Escalade",
+      "swim": "Nage",
+      "fly": "Vol",
+      "burrow": "Fouissage",
+      "add": "Ajouter"
     },
     "tabs": {
       "general": "Général",
@@ -193,6 +202,7 @@
     },
     "battle": {
       "stats": "Statistiques",
+      "hitLevel": "Niveau",
       "hitDice": "Dés de Vie :",
       "hitPointsRoll": "Dés de points de Vie :",
       "savingThrows": "Jets de sauvegarde",
@@ -209,6 +219,8 @@
       "attackDC": "Attaque/DD :",
       "damageType": "Dégâts/Type :",
       "description": "Description :",
+      "type": "Type",
+      "name": "Nom",
       "details": "détails",
       "descriptionPrefix": "description",
       "armorClass": "Classe d'Armure",
@@ -426,5 +438,6 @@
     "Any Good Alignment": "N'importe quel alignement bon",
     "Any Evil Alignment": "N'importe quel alignement mauvais",
     "Any Lawful Alignment": "N'importe quel alignement loyal",
-    "Any Chaotic Alignment": "N'importe quel alignement chaotique"  }
+    "Any Chaotic Alignment": "N'importe quel alignement chaotique"  
+  }
 }
