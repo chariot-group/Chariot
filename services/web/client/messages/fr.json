@@ -190,7 +190,7 @@
       "climb": "Escalade",
       "swim": "Nage",
       "fly": "Vol",
-      "burrow": "Fouissage",
+      "burrow": "Fouissement",
       "add": "Ajouter"
     },
     "tabs": {
@@ -230,7 +230,7 @@
       "climbSpeedTooltip": "Vitesse d'escalade",
       "swimSpeedTooltip": "Vitesse de nage",
       "flySpeedTooltip": "Vitesse de vol",
-      "burrowSpeedTooltip": "Vitesse de fouissage",
+      "burrowSpeedTooltip": "Vitesse de fouissement",
       "statsRegion": "Statistiques de combat",
       "healthPoints": "Points de Vie",
       "healthPointsTooltip": "PV actuels / PV maximum (PV temporaires)",
