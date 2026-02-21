@@ -120,3 +120,27 @@ export function getExperienceForLevel(level: number): number {
 export function isLevelXpSynced(experience: number, level: number): boolean {
     return getLevelFromExperience(experience) === level;
 }
+
+/**
+ * Calcule le bonus de maîtrise à partir du niveau selon D&D 5e
+ * @param level Niveau du personnage (1 à 20)
+ * @returns Bonus de maîtrise (+2 à +6)
+ */
+export function getProficiencyBonusFromLevel(level: number): number {
+    if (!level || level < MIN_LEVEL) return 2;
+    if (level >= 17) return 6;
+    if (level >= 13) return 5;
+    if (level >= 9) return 4;
+    if (level >= 5) return 3;
+    return 2;
+}
+
+/**
+ * Vérifie si le bonus de maîtrise et le niveau sont synchronisés
+ * @param level Niveau du personnage
+ * @param proficiencyBonus Bonus de maîtrise actuel
+ * @returns true si le bonus correspond au niveau, false sinon
+ */
+export function isLevelProficiencyBonusSynced(level: number, proficiencyBonus: number): boolean {
+    return getProficiencyBonusFromLevel(level) === proficiencyBonus;
+}

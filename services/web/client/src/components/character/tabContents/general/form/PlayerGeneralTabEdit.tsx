@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
 import { ClassNameEnum } from "@/schemas/character";
-import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced } from "@/utils/global.utils";
+import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced, getProficiencyBonusFromLevel, isLevelProficiencyBonusSynced } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
@@ -392,7 +392,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("characteristics")}
             </h2>
-            
+
             <AbilityScoresEdit form={form} />
           </Card>
           <Card
@@ -497,6 +497,84 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   </Field>
                 )}
               />
+            </div>
+          </Card>
+        </section>
+        {/* Colonne 2 : Bonus, Jets de sauvegarde et Compétences */}
+        <section
+          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
+          aria-labelledby="characteristics-skills-section">
+          {/* Bonus */}
+          <Card
+            className="gap-3 py-4 px-4 md:px-6 order-1"
+            role="region"
+            aria-labelledby="character-proficiencybonus">
+            <h2
+              id="character-proficiencybonus-edit"
+              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              {t("proficiencyBonus")}
+            </h2>
+            {/* Bonus de maîtrise avec synchronisation */}
+            <div className="flex flex-col gap-2">
+              <Controller
+                name="stats.proficiencyBonus"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid} orientation="vertical">
+                    <label htmlFor="proficiency-bonus" className="text-sm font-medium">
+                      {t("proficiencyBonusLabel")}
+                    </label>
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 2)}
+                      id="proficiency-bonus"
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "proficiency-bonus-error" : undefined}
+                      placeholder="+2"
+                      type="number"
+                      min="2"
+                      max="6"
+                    />
+                    {fieldState.error && <FieldError id="proficiency-bonus-error" errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              {/* Suggestions de synchronisation bonus/niveau */}
+              {(() => {
+                const currentLevel = form.watch("progression.level") || 1;
+                const currentProficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
+                const calculatedBonus = getProficiencyBonusFromLevel(currentLevel);
+                const isSynced = isLevelProficiencyBonusSynced(currentLevel, currentProficiencyBonus);
+
+                if (isSynced) {
+                  return (
+                    <div className="flex items-center gap-2 p-2 bg-green/20 rounded text-sm text-green-600 dark:text-green-400">
+                      <span>✓ {t("proficiencyBonusSynced")}</span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="flex flex-col gap-2">
+                    <div className="text-xs text-gray-middle-light">
+                      <span>⚠️ {t("proficiencyBonusMismatch", { level: currentLevel, bonus: calculatedBonus })}</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        form.setValue("stats.proficiencyBonus", calculatedBonus, { shouldDirty: true });
+                      }}
+                      className="text-xs">
+                      <ArrowRightLeft className="size-3 mr-1" />
+                      {t("syncProficiencyBonusButton", { bonus: calculatedBonus })}
+                    </Button>
+                  </div>
+                );
+              })()}
             </div>
           </Card>
         </section>
