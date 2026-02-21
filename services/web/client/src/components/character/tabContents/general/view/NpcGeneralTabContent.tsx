@@ -121,13 +121,15 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                 Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
                   const abilityName = t(`abilities.${key}`);
                   const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
+                  const abilityModifier = calculateAbilityBonus(abilityScore);
+                  const displayBonus = value !== 0 ? (abilityModifier + value) : abilityModifier;
                   return (
                     <Skill
                       key={key}
                       skillName={abilityName}
-                      value={value > 0 ? 2 : 0}
+                      value={value !== 0 ? 2 : 0}
                       accentColor={accentColor}
-                      skills={value > 0 ? value : calculateAbilityBonus(abilityScore)}
+                      skills={displayBonus}
                     />
                   );
                 })}

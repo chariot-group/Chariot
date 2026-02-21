@@ -483,7 +483,9 @@
         "npcInfoLabel": "Información general del PNJ",
         "characterInfo": "Información del personaje",
         "characteristicsSkills": "Características y habilidades",
-        "additionalInfo": "Información adicional"
+        "additionalInfo": "Información adicional",
+        "skillsInfo": "Las habilidades de los PNJ se definen manualmente. Cada habilidad puede tener un valor de bonificación personalizado.",
+        "skillsHint": "Nota: Las habilidades se muestran actualmente en modo de solo lectura. La edición completa de habilidades estará disponible en una futura actualización."
       }
     },
     "placeholder": {

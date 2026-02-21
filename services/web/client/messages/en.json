@@ -483,7 +483,9 @@
         "npcInfoLabel": "NPC general information",
         "characterInfo": "Character information",
         "characteristicsSkills": "Characteristics and skills",
-        "additionalInfo": "Additional information"
+        "additionalInfo": "Additional information",
+        "skillsInfo": "NPC skills are defined manually. Each skill can have a custom bonus value.",
+        "skillsHint": "Note: Skills are currently displayed in read-only mode. Full skill editing will be available in a future update."
       }
     },
     "placeholder": {

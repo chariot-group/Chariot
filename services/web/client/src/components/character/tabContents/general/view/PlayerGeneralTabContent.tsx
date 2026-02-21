@@ -177,13 +177,16 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
                   const isMasteredKey = isMastered(player, key);
                   const abilityName = t(`abilities.${key}`);
+                  const abilityScore = player.stats.abilityScores[key as keyof typeof player.stats.abilityScores] || 10;
+                  const abilityModifier = Math.floor((abilityScore - 10) / 2);
+                  const displayBonus = value !== 0 ? (abilityModifier + value) : abilityModifier;
                   return (
                     <Skill
                       key={key}
                       skillName={abilityName}
                       value={isMasteredKey ? 2 : 0}
                       accentColor={accentColor}
-                      skills={value}
+                      skills={displayBonus}
                     />
                   );
                 })}
