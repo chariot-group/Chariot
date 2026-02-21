@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import AbilityScoresEdit from "./AbilityScoresEdit";
+import SavingThrowsEdit from "./SavingThrowsEdit";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -576,6 +577,19 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 );
               })()}
             </div>
+          </Card>
+          {/* Jets de sauvegarde */}
+          <Card
+            className="gap-3 py-4 px-4 md:px-6 order-1"
+            role="region"
+            aria-labelledby="character-savingthrows">
+            <h2
+              id="character-savingthrows-edit"
+              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              {t("savingThrows")}
+            </h2>
+
+            <SavingThrowsEdit form={form} accentColor={accentColor} />
           </Card>
         </section>
       </section>
