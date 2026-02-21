@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
-import { ClassNameEnum } from "@/schemas/character";
+import { ClassNameEnum, AlignmentEnum } from "@/schemas/character";
 import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced, getProficiencyBonusFromLevel, isLevelProficiencyBonusSynced } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
@@ -13,6 +13,8 @@ import { TagInput } from "@/components/ui/tag-input";
 import AbilityScoresEdit from "./AbilityScoresEdit";
 import SavingThrowsEdit from "./SavingThrowsEdit";
 import SkillsEdit from "./SkillsEdit";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -24,6 +26,37 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   const t = useTranslations("characterDetail.player.general");
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
+  const tAlignment = useTranslations("alignments");
+
+  // Alignements de base pour les players (excluant "Unaligned" et les "Any" alignments)
+  // La liste complète AlignmentEnum.options sera utilisée pour les NPCs
+  const playerAlignments = AlignmentEnum.options.filter(
+    (alignment) => !alignment.startsWith("Any") && alignment !== "Unaligned"
+  );
+
+  // Calculer la perception passive automatiquement
+  const calculatePassivePerception = (): number => {
+    const wisdomScore = form.watch("stats.abilityScores.wisdom") || 10;
+    const wisdomModifier = Math.floor((wisdomScore - 10) / 2);
+    const perceptionMastery = form.watch("stats.masteries.perception") || 0;
+    const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
+
+    // Base : 10 + modificateur de Sagesse
+    let passivePerception = 10 + wisdomModifier;
+
+    // Si maîtrisé en Perception (niveau 2 ou 3), ajouter le bonus
+    if (perceptionMastery === 2) {
+      passivePerception += proficiencyBonus;
+    } else if (perceptionMastery === 3) {
+      // Expertise : double bonus
+      passivePerception += proficiencyBonus * 2;
+    } else if (perceptionMastery === 1) {
+      // Demi-maîtrise
+      passivePerception += Math.floor(proficiencyBonus / 2);
+    }
+
+    return passivePerception;
+  };
 
   // Gestion dynamique des classes
   const {
@@ -604,6 +637,220 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
             </h2>
 
             <SkillsEdit form={form} accentColor={accentColor} />
+          </Card>
+        </section>
+        <section
+          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1 order-5 min-[450px]:order-0"
+          aria-labelledby="additional-info-section">
+          {/* Épuisement */}
+          <Card
+            className="gap-3 py-4 px-4 md:px-6"
+            role="region"
+            aria-labelledby="exhaustion-heading-edit">
+            <h2
+              id="exhaustion-heading-edit"
+              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+              {t("exhaustion")}
+            </h2>
+            <Controller
+              name="exhaustionLevel"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} orientation="vertical">
+                  <label htmlFor="exhaustion-level" className="text-sm font-medium">
+                    {t("exhaustionLevel")}
+                  </label>
+                  <Select
+                    value={field.value?.toString() || "0"}
+                    onValueChange={(value) => field.onChange(parseInt(value))}>
+                    <SelectTrigger id="exhaustion-level">
+                      <SelectValue placeholder={t("exhaustionLevel")}>
+                        {field.value !== undefined && field.value !== null
+                          ? `${t("level")} ${field.value}`
+                          : t("exhaustionLevel")}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent position="item-aligned">
+                      <SelectGroup>
+                        {[0, 1, 2, 3, 4, 5, 6].map((level) => (
+                          <SelectItem key={level} value={level.toString()}>
+                            <div className="flex flex-col gap-1">
+                              <span className="font-semibold">{t("level")} {level}</span>
+                              <span className="text-xs text-gray-middle-light">
+                                {t(`exhaustionLevels.${level}`)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+          </Card>
+
+          {/* Alignement */}
+          <Card
+            className="gap-3 py-4 px-4 md:px-6"
+            role="region"
+            aria-labelledby="alignment-heading-edit">
+            <h2
+              id="alignment-heading-edit"
+              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+              {t("alignment")}
+            </h2>
+            <Controller
+              name="profile.alignment"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} orientation="vertical">
+                  <label htmlFor="alignment" className="text-sm font-medium">
+                    {t("alignment")}
+                  </label>
+                  <Select
+                    value={field.value || ""}
+                    onValueChange={field.onChange}>
+                    <SelectTrigger id="alignment">
+                      <SelectValue placeholder={t("alignment")} />
+                    </SelectTrigger>
+                    <SelectContent position="item-aligned">
+                      <SelectGroup>
+                        {playerAlignments.map((alignment) => (
+                          <SelectItem key={alignment} value={alignment}>
+                            {tAlignment(alignment as any)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+          </Card>
+
+          {/* Perception passive */}
+          <Card
+            className="gap-3 py-4 px-4 md:px-6"
+            role="region"
+            aria-labelledby="passive-perception-heading-edit">
+            <h2
+              id="passive-perception-heading-edit"
+              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+              {t("passivePerception")}
+            </h2>
+            <div className="flex flex-col gap-2">
+              <Controller
+                name="stats.passivePerception"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid} orientation="vertical">
+                    <label htmlFor="passive-perception" className="text-sm font-medium">
+                      {t("passivePerceptionOverride")}
+                    </label>
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
+                      id="passive-perception"
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "passive-perception-error" : undefined}
+                      placeholder={calculatePassivePerception().toString()}
+                      type="number"
+                      min="1"
+                      max="40"
+                    />
+                    {fieldState.error && <FieldError id="passive-perception-error" errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              {/* Warning si différent du calcul automatique */}
+              {(() => {
+                const currentValue = form.watch("stats.passivePerception") || 0;
+                const calculatedValue = calculatePassivePerception();
+
+                if (currentValue !== calculatedValue && currentValue !== 0) {
+                  return (
+                    <div className="text-xs text-orange-600 dark:text-orange-400 p-2 bg-orange-600/10 rounded">
+                      {t("passivePerceptionMismatch", { calculated: calculatedValue })}
+                    </div>
+                  );
+                }
+
+                return null;
+              })()}
+            </div>
+          </Card>
+
+          {/* Inspiration */}
+          <Card
+            className="gap-3 py-4 px-4 md:px-6"
+            role="region"
+            aria-labelledby="inspiration-heading-edit">
+            <h2
+              id="inspiration-heading-edit"
+              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+              {t("inspiration")}
+            </h2>
+            <Controller
+              name="inspiration"
+              control={form.control}
+              render={({ field }) => (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="inspiration-checkbox"
+                    checked={field.value || false}
+                    onCheckedChange={field.onChange}
+                  />
+                  <Label htmlFor="inspiration-checkbox" className="cursor-pointer text-sm">
+                    {field.value ? t("inspirationActive") : t("inspirationInactive")}
+                  </Label>
+                </div>
+              )}
+            />
+          </Card>
+
+          {/* Historique */}
+          <Card
+            className="gap-3 py-4 px-4 md:px-6"
+            role="region"
+            aria-labelledby="background-heading-edit">
+            <h2
+              id="background-heading-edit"
+              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+              {t("background")}
+            </h2>
+            <Controller
+              name="profile.history"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} orientation="vertical">
+                  <label htmlFor="background" className="text-sm font-medium">
+                    {t("background")}
+                  </label>
+                  <Select
+                    value={field.value || ""}
+                    onValueChange={field.onChange}>
+                    <SelectTrigger id="background">
+                      <SelectValue placeholder={t("background")} />
+                    </SelectTrigger>
+                    <SelectContent position="item-aligned">
+                      <SelectGroup>
+                        {(t.raw("proficiencyOptions.backgrounds") as string[]).map((bg) => (
+                          <SelectItem key={bg} value={bg}>
+                            {bg}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
           </Card>
         </section>
       </section>
