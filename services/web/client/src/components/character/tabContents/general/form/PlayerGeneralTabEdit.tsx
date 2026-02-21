@@ -99,6 +99,75 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               {t("character")}
             </h2>
             <div className="flex flex-col gap-4">
+              {/* Noms du personnage */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Prénom */}
+                <Controller
+                  name="firstname"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid} orientation="vertical">
+                      <label htmlFor="character-firstname" className="text-sm font-medium">
+                        {tEdit("firstname")}
+                      </label>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        id="character-firstname"
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={fieldState.error ? "character-firstname-error" : undefined}
+                        placeholder={tEdit("firstname")}
+                        type="text"
+                      />
+                      {fieldState.error && <FieldError id="character-firstname-error" errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+                {/* Nom */}
+                <Controller
+                  name="lastname"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid} orientation="vertical">
+                      <label htmlFor="character-lastname" className="text-sm font-medium">
+                        {tEdit("lastname")}
+                      </label>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        id="character-lastname"
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={fieldState.error ? "character-lastname-error" : undefined}
+                        placeholder={tEdit("lastname")}
+                        type="text"
+                      />
+                      {fieldState.error && <FieldError id="character-lastname-error" errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+                {/* Surnom */}
+                <Controller
+                  name="surname"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid} orientation="vertical" className="col-span-2">
+                      <label htmlFor="character-surname" className="text-sm font-medium">
+                        {tEdit("surname")}
+                      </label>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        id="character-surname"
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={fieldState.error ? "character-surname-error" : undefined}
+                        placeholder={tEdit("surname")}
+                        type="text"
+                      />
+                      {fieldState.error && <FieldError id="character-surname-error" errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+              </div>
               {/* Niveau global (XP) et race */}
               <div className="flex flex-col gap-3">
                 <div className="flex flex-row gap-2">
