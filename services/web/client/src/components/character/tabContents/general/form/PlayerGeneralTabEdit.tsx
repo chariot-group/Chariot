@@ -10,12 +10,12 @@ import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced, getProf
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
-import AbilityScoresEdit from "./AbilityScoresEdit";
-import SavingThrowsEdit from "./SavingThrowsEdit";
+import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
+import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import SkillsEdit from "./SkillsEdit";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import AbilitiesUpdateSection from "../../shared/AbilitiesUpdateSection";
+import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
