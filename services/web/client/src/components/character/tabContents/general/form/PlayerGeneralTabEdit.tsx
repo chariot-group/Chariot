@@ -12,6 +12,7 @@ import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import AbilityScoresEdit from "./AbilityScoresEdit";
 import SavingThrowsEdit from "./SavingThrowsEdit";
+import SkillsEdit from "./SkillsEdit";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -590,6 +591,19 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
             </h2>
 
             <SavingThrowsEdit form={form} accentColor={accentColor} />
+          </Card>
+          {/* Compétences */}
+          <Card
+            className="gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
+            role="region"
+            aria-labelledby="skills-heading-edit">
+            <h2
+              id="skills-heading-edit"
+              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              {t("skills")}
+            </h2>
+
+            <SkillsEdit form={form} accentColor={accentColor} />
           </Card>
         </section>
       </section>

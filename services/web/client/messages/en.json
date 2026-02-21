@@ -313,6 +313,8 @@
         "abilityDescription": "Description of",
         "characteristics": "Characteristics",
         "masteryLevelIcon": "Mastery level {level}",
+        "enableHalfProficiency": "Half proficiency",
+        "enableExpertise": "Expertise",
         "noLanguages": "None",
         "skillNames": {
           "acrobatics": "Acrobatics",

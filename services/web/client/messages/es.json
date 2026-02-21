@@ -313,6 +313,8 @@
         "abilityDescription": "Descripción de",
         "characteristics": "Características",
         "masteryLevelIcon": "Nivel de competencia {level}",
+        "enableHalfProficiency": "Media competencia",
+        "enableExpertise": "Pericia",
         "noLanguages": "Ninguno",
         "skillNames": {
           "acrobatics": "Acrobacias",
