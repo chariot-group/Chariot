@@ -304,6 +304,7 @@
         },
         "skills": "Skills",
         "proficiencyBonus": "Proficiency bonus",
+        "abilityBonus": "Bonus",
         "skillsList": "Character skills list",
         "passivePerception": "Passive perception",
         "background": "Background",

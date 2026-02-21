@@ -10,6 +10,7 @@ import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced } from "
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
+import AbilityScoresEdit from "./AbilityScoresEdit";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -385,13 +386,25 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
           <Card
             className="gap-3 py-4 px-4 md:px-6 order-1"
             role="region"
+            aria-labelledby="character-characteristics">
+            <h2
+              id="character-characteristics-edit"
+              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              {t("characteristics")}
+            </h2>
+            
+            <AbilityScoresEdit form={form} />
+          </Card>
+          <Card
+            className="gap-3 py-4 px-4 md:px-6 order-1"
+            role="region"
             aria-labelledby="character-proficiencies">
             <h2
               id="character-proficiencies-edit"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("proficiencies")}
             </h2>
-            
+
             <div className="flex flex-col gap-4">
               {/* Languages */}
               <Controller

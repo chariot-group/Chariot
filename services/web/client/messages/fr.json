@@ -304,6 +304,7 @@
         },
         "skills": "Compétences",
         "proficiencyBonus": "Bonus de maîtrise",
+        "abilityBonus": "Bonus",
         "skillsList": "Liste des compétences du personnage",
         "passivePerception": "Perception passive",
         "background": "Historique",

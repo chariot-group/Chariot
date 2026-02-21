@@ -304,6 +304,7 @@
         },
         "skills": "Habilidades",
         "proficiencyBonus": "Bonificador de competencia",
+        "abilityBonus": "Bonificador",
         "skillsList": "Lista de habilidades del personaje",
         "passivePerception": "Percepción pasiva",
         "background": "Trasfondo",
