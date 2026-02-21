@@ -7,10 +7,10 @@ import { useTranslations } from "next-intl";
 import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
 import { AlignmentEnum } from "@/schemas/character";
 import { TagInput } from "@/components/ui/tag-input";
-import AbilityScoresEdit from "./AbilityScoresEdit";
-import SavingThrowsEdit from "./SavingThrowsEdit";
-import NpcSkillsEdit from "./NpcSkillsEdit";
-import AbilitiesUpdateSection from "../../shared/AbilitiesUpdateSection";
+import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
+import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
+import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSkillsEdit";
+import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 
 interface NpcGeneralTabEditProps {
   npc: NPC;

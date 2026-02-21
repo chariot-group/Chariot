@@ -1,7 +1,6 @@
 import { Controller, UseFormReturn } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/field";
 import { useTranslations } from "next-intl";
 import {
     Brain,
