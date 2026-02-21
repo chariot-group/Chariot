@@ -15,6 +15,7 @@ import SavingThrowsEdit from "./SavingThrowsEdit";
 import SkillsEdit from "./SkillsEdit";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import AbilitiesUpdateSection from "../../shared/AbilitiesUpdateSection";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -27,6 +28,15 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
+
+  const {
+    fields: abilitiesFields,
+    append: appendAbility,
+    remove: removeAbility,
+  } = useFieldArray({
+    control: form.control,
+    name: "abilities",
+  });
 
   // Alignements de base pour les players (excluant "Unaligned" et les "Any" alignments)
   // La liste complète AlignmentEnum.options sera utilisée pour les NPCs
@@ -852,6 +862,18 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               )}
             />
           </Card>
+          {/* Capacités et traits */}
+          <div className="order-2 lg:order-1">
+            <AbilitiesUpdateSection
+              title={t("abilitiesAndTraits")}
+              form={form}
+              fieldArrayName="abilities"
+              fields={abilitiesFields}
+              append={appendAbility}
+              remove={removeAbility}
+              accentColor={accentColor}
+            />
+          </div>
         </section>
       </section>
     </div>

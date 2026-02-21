@@ -310,6 +310,7 @@
         "passivePerceptionOverride": "Valor personalizado",
         "passivePerceptionMismatch": "⚠️ Valor esperado: {calculated} según Sabiduría y competencia en Percepción",
         "background": "Trasfondo",
+        "abilitiesAndTraits": "Habilidades y rasgos",
         "characterAbilities": "Aptitudes",
         "abilityDetails": "Detalles de la aptitud",
         "abilityDescription": "Descripción de",
