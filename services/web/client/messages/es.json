@@ -55,7 +55,7 @@
   },
   "ProfilePage": {
     "pageTitle": "Perfil de usuario",
-    "changePassword": "Cambiar contraseña",
+    "changePasswordTitle": "Cambiar contraseña",
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
     "confirmNewPassword": "Confirmar nueva contraseña",
@@ -64,11 +64,30 @@
     "yourTokens": "Tus tokens:",
     "noHistory": "No hay historial disponible",
     "reloadTokens": "Recargar tus tokens",
-    "togglePasswordVisibility": "Mostrar/ocultar contraseña",
-    "passwordError": {
-      "min": "La contraseña debe contener al menos 8 caracteres",
-      "mismatch": "Las contraseñas no coinciden",
-      "required": "Este campo es obligatorio"
+    "changePassword": {
+      "successMessage": "Contraseña cambiada correctamente",
+      "errorMessage": "Error al cambiar la contraseña",
+      "incorrectPassword": "La contraseña actual es incorrecta",
+      "complexityError": "La nueva contraseña no cumple con los requisitos de complejidad",
+      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
+      "validation": {
+        "currentPasswordRequired": "La contraseña actual es obligatoria",
+        "newPasswordMin": "La contraseña debe tener al menos 8 caracteres",
+        "confirmPasswordRequired": "Por favor, confirma tu contraseña",
+        "passwordMismatch": "Las contraseñas no coinciden"
+      }
+    },
+    "editProfile": {
+      "successMessage": "Perfil actualizado correctamente",
+      "errorMessage": "Error al actualizar el perfil",
+      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
+      "emailAlreadyInUse": "Esta dirección de correo electrónico ya está en uso por otra cuenta",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo electrónico",
+      "updateProfile": "Actualizar perfil",
+      "cancelUpdate": "Cancelar",
+      "formLabel": "Formulario de actualización de perfil"
     }
   },
   "welcome": {
@@ -90,17 +109,100 @@
       "button": "Crear un personaje",
       "button-aria": "Navegar hacia la creación de personaje"
     }
+  },  
+  "characterForm": {
+    "createSuccess": "Personaje creado con éxito",
+    "createError": "Error al crear el personaje",
+    "updateSuccess": "Personaje actualizado con éxito",
+    "updateError": "Error al actualizar el personaje",
+    "missingId": "No se puede actualizar: falta el identificador del personaje",
+    "changesCancelled": "Cambios cancelados"
   },
+  "zodErrors": {
+    "invalidTypeReceived": "Entrada inválida",
+    "required": "Requerido",
+    "tooSmall": {
+      "string": {
+        "inclusive": "La cadena debe contener al menos {minimum} carácter(es)"
+      },
+      "number": {
+        "inclusive": "El número debe ser mayor o igual a {minimum}"
+      },
+      "array": {
+        "inclusive": "El array debe contener al menos {minimum} elemento(s)"
+      }
+    },
+    "tooBig": {
+      "string": {
+        "inclusive": "La cadena debe contener como máximo {maximum} carácter(es)"
+      },
+      "number": {
+        "inclusive": "El número debe ser menor o igual a {maximum}"
+      },
+      "array": {
+        "inclusive": "El array debe contener como máximo {maximum} elemento(s)"
+      }
+    },
+    "invalidString": {
+      "email": "Email inválido",
+      "url": "URL inválida",
+      "uuid": "UUID inválido"
+    },
+    "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}"
+  },  
   "characterDetail": {
+    "editCharacter": "Modificar personaje",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "edit": {
+      "basicInfo": "Información Básica",
+      "firstname": "Nombre",
+      "lastname": "Apellido",
+      "surname": "Apodo",
+      "optional": "opcional",
+      "profile": "Perfil",
+      "race": "Raza",
+      "alignment": "Alineamiento",
+      "challenge": "Desafío",
+      "challengeRating": "Índice de Desafío",
+      "experiencePoints": "Puntos de Experiencia",
+      "type": "Tipo",
+      "combatStats": "Estadísticas de Combate",
+      "editInProgress": "Edición en progreso",
+      "currentHP": "PV Actuales",
+      "maxHP": "PV Máximo",
+      "tempHP": "PV Temporales",
+      "defense": "Defensa",
+      "initiative": "Iniciativa",
+      "spellcastingStats": "Estadísticas de Hechicería",
+      "spellcastingAbility": "Habilidad de Lanzamiento",
+      "spellSaveDC": "CD de Salvación de Conjuros",
+      "spellAttackBonus": "Bonificación de Ataque de Conjuros",
+      "copperPieces": "Piezas de Cobre",
+      "silverPieces": "Piezas de Plata",
+      "electrumPieces": "Piezas de Electro",
+      "goldPieces": "Piezas de Oro",
+      "platinumPieces": "Piezas de Platino",
+      "reset": "Reiniciar",
+      "speeds": "Velocidades",
+      "walk": "Caminar",
+      "climb": "Escalar",
+      "swim": "Nadar",
+      "fly": "Volar",
+      "burrow": "Excavar",
+      "add": "Añadir"
+    },
     "tabs": {
       "general": "General",
-      "combat": "Combate",
+      "battle": "Combate",
       "magic": "Magia",
       "inventory": "Inventario",
       "history": "Historia"
     },
-    "combat": {
+    "battle": {
       "stats": "Estadísticas",
+      "hitLevel": "Nivel",
       "hitDice": "Dados de Golpe:",
       "hitPointsRoll": "Tirada de Puntos de Golpe:",
       "savingThrows": "Tiradas de salvación",
@@ -118,6 +220,8 @@
       "damageType": "Daño/Tipo:",
       "description": "Descripción:",
       "details": "detalles",
+      "type": "Tipo",
+      "name": "Nombre",
       "descriptionPrefix": "descripción",
       "armorClass": "Clase de Armadura",
       "armorClassTooltip": "Clase de armadura (CA) del personaje",
@@ -157,6 +261,7 @@
       "class": "Clase",
       "alignment": "Alineamiento",
       "general": {
+        "title": "Pestaña General",
         "characterInfoLabel": "Información general del personaje",
         "character": "Personaje",
         "raceLabel": "Raza",
@@ -239,6 +344,7 @@
       "challengeRatingAbbr": "ID",
       "alignment": "Alineamiento",
       "general": {
+        "title": "Pestaña General",
         "npcInfoLabel": "Información general del PNJ",
         "characterInfo": "Información del personaje",
         "characteristicsSkills": "Características y habilidades",
@@ -332,5 +438,6 @@
     "Any Good Alignment": "Cualquier alineación buena",
     "Any Evil Alignment": "Cualquier alineación malvada",
     "Any Lawful Alignment": "Cualquier alineación legal",
-    "Any Chaotic Alignment": "Cualquier alineación caótica"  }
+    "Any Chaotic Alignment": "Cualquier alineación caótica"  
+  }
 }

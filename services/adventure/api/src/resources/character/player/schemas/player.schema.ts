@@ -19,7 +19,7 @@ export class Player extends Character {
   actions: Action[];
 
   @ApiProperty({ example: true })
-  @Prop({ required: true })
+  @Prop({ required: false, default: false })
   inspiration: boolean;
 
   @ApiProperty({ type: Progression })

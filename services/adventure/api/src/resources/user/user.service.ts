@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException, HttpException } from '@nestjs/common';
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { IResponse } from '@/common/dtos/reponse.dto';
@@ -53,8 +53,112 @@ export class UserService {
         data,
       };
     } catch (error) {
+      // Re-throw HTTP exceptions as-is (they already have the correct status code)
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Only transform unexpected errors into 500
       const message = `Error while fetching user #${id}: ${error.message}`;
+      this.logger.error(message, error.stack, this.SERVICE_NAME);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
+  /**
+   * Change password for authenticated user
+   * @param keycloakId Keycloak user ID
+   * @param currentPassword Current password to verify
+   * @param newPassword New password to set
+   * @throws UnauthorizedException if current password is incorrect
+   * @throws ForbiddenException if new password doesn't meet policy
+   * @see FR-009: User Password Change
+   */
+  async changePassword(
+    keycloakId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    try {
+      const start: number = Date.now();
+
+      // Retrieve user to get username
+      const keycloakUser: UserRepresentation = await this.keycloakService.getUserById(keycloakId);
+      if (!keycloakUser) {
+        const message: string = `User #${keycloakId} not found in Keycloak`;
+        this.logger.error(message, null, this.SERVICE_NAME);
+        throw new NotFoundException(message);
+      }
+
+      // Change password via Keycloak
+      await this.keycloakService.changeUserPassword(
+        keycloakId,
+        keycloakUser.username,
+        currentPassword,
+        newPassword,
+      );
+
+      const end: number = Date.now();
+      const message: string = `Password changed successfully for user #${keycloakId} in ${end - start}ms`;
+      this.logger.log(message, this.SERVICE_NAME);
+    } catch (error) {
+      const message = `Error while changing password for user #${keycloakId}: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
+      throw error;
+    }
+  }
+
+  async updateUser(keycloakId: string, updateData: { firstName?: string; lastName?: string; email?: string }): Promise<IResponse<UserInfoDto>> {
+    try {
+      const start: number = Date.now();
+
+      // Update user in Keycloak
+      await this.keycloakService.updateUser(keycloakId, updateData);
+
+      // Fetch updated user data from Keycloak
+      const keycloakUser: UserRepresentation = await this.keycloakService.getUserById(keycloakId);
+      if (!keycloakUser) {
+        const message: string = `User #${keycloakId} not found in Keycloak after update`;
+        this.logger.error(message, null, this.SERVICE_NAME);
+        throw new NotFoundException(message);
+      }
+
+      // Get user from database (for balance and history)
+      let user = await this.userModel.findOne({ keycloakId }).exec();
+      if (!user) {
+        this.logger.debug(`User #${keycloakId} not found in database, creating new user`, this.SERVICE_NAME);
+        user = await this.userModel.create({ keycloakId, balance: 1, history: [] });
+      }
+
+      const end: number = Date.now();
+
+      const data: UserInfoDto = {
+        keycloakId: keycloakUser.id,
+        email: keycloakUser.email,
+        username: keycloakUser.username,
+        firstName: keycloakUser.firstName,
+        lastName: keycloakUser.lastName,
+        avatar: keycloakUser.attributes?.avatar?.[0] || null,
+        balance: user.balance,
+        history: user.history,
+      };
+
+      const message: string = `User #${keycloakId} updated successfully in ${end - start}ms`;
+      this.logger.log(message, this.SERVICE_NAME);
+
+      return {
+        message,
+        data,
+      };
+    } catch (error) {
+      // Re-throw HTTP exceptions as-is (they already have the correct status code)
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Only transform unexpected errors into 500
+      const message = `Error while updating user #${keycloakId}: ${error.message}`;
+      this.logger.error(message, error.stack, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
   }

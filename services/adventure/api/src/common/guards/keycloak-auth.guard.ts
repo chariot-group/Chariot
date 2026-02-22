@@ -24,7 +24,7 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
     constructor(
         private reflector: Reflector,
         private configService: ConfigService,
-    ) {}
+    ) { }
 
     onModuleInit() {
         // URL interne pour récupérer les clés JWKS
@@ -90,16 +90,14 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
             this.logger.debug(`Decoded token: ${JSON.stringify(decoded)}`);
 
             // Attacher les informations de l'utilisateur à la requête
-            // Note: Utiliser preferred_username comme fallback si sub n'est pas disponible
-            const userId = decoded.sub || decoded.preferred_username || decoded.email;
-            
-            if (!userId) {
-                this.logger.error('No user identifier found in token (sub, preferred_username, or email)');
-                throw new UnauthorizedException('Invalid token: no user identifier');
+            // Note: `sub` doit toujours être présent dans un token JWT Keycloak valide (UUID de l'utilisateur)
+            if (!decoded.sub) {
+                this.logger.error(`Invalid token: missing 'sub' claim. Token contains: ${JSON.stringify({ preferred_username: decoded.preferred_username, email: decoded.email })}`);
+                throw new UnauthorizedException('Invalid token: missing user ID (sub claim)');
             }
 
             request.user = {
-                keycloakId: userId,
+                keycloakId: decoded.sub,
                 email: decoded.email,
                 username: decoded.preferred_username,
                 realm_access: decoded.realm_access,

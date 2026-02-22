@@ -6,14 +6,13 @@ import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
-import Skill from "@/components/character/tabContents/general/Skill";
-import { Bird, ListChevronsDownUp, ListChevronsUpDown, Mountain, Shovel, Waves } from "lucide-react";
-import ActionSection from "@/components/character/tabContents/battle/ActionSection";
+import Skill from "@/components/character/tabContents/general/shared/Skill";
+import { Bird, Mountain, Shovel, Waves } from "lucide-react";
+import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
+import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useState } from "react";
 
 interface Props {
   player: Player;
@@ -21,12 +20,9 @@ interface Props {
 }
 
 const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
-  const t = useTranslations("characterDetail.combat");
-  const tMagic = useTranslations("characterDetail.magic");
-
+  const t = useTranslations("characterDetail.battle");
+  const tClass = useTranslations("classes");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
-
-  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
 
   // Configuration des badges de statistiques
   const speedBadges = [
@@ -155,7 +151,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
             </Tooltip>
             {speedBadges.map(
               (badge) =>
-                badge.value && (
+                badge.value > 0 && (
                   <Tooltip key={badge.key}>
                     <TooltipTrigger asChild>
                       <div
@@ -188,7 +184,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                 <span className="font-bold">
                   {c.level}d{c.hitDice}
                 </span>
-                {` (${c.name})`}
+                {` (${tClass(c.name)})`}
               </span>
             ))}
           </div>
@@ -228,7 +224,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
 
         {/* Jets de sauvegarde contre la mort */}
         <Card
-          className="gap-3 p-4 md:px-6 rounded-xl h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
+          className="gap-3 p-4 md:px-6 h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
           role="region"
           aria-labelledby="death-saves-heading">
           <h2
@@ -276,57 +272,15 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
       </div>
       <div className="grid lg:grid-cols-2 gap-2 w-full">
         {/* Capacités et traits */}
-        <Card
-          className="gap-3 p-4 md:px-6 rounded-xl h-fit"
-          role="region"
-          aria-labelledby="abilities-traits-heading">
-          <div className="flex flex-row justify-between">
-            <h2
-              id="abilities-traits-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("abilitiesAndTraits")}
-            </h2>
-            <div className="flex justify-end shrink-0">
-              <button
-                onClick={() => {
-                  if (openAccordionValues.length > 0) {
-                    setOpenAccordionValues([]);
-                  } else {
-                    setOpenAccordionValues(player?.abilities.map((ability, index) => `${ability.name}-${index}`));
-                  }
-                }}
-                className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
-                aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
-                aria-expanded={openAccordionValues.length > 0}>
-                {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-              </button>
-            </div>
-          </div>
-          <Accordion
-            type="multiple"
-            value={openAccordionValues}
-            onValueChange={setOpenAccordionValues}
-            className="w-full">
-            {player?.abilities.map((ability, index) => (
-              <AccordionItem
-                key={`${ability.name}-${index}`}
-                value={`${ability.name}-${index}`}>
-                <AccordionTrigger
-                  className="text-left py-3"
-                  aria-label={`${t("details")} ${ability.name}`}>
-                  <span className="text-sm sm:text-base font-medium">{ability.name}</span>
-                </AccordionTrigger>
-                <AccordionContent
-                  className="text-sm sm:text-base pb-3"
-                  role="region"
-                  aria-label={`${t("descriptionPrefix")} ${ability.name}`}>
-                  {ability.description}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </Card>
-        <div className="flex flex-row gap-2">
+        <div className="order-2 lg:order-1">
+          <AbilitiesSection
+            abilities={player.abilities}
+            accentColor={accentColor}
+            title={t("abilitiesAndTraits")}
+            headingId="abilities-traits-heading"
+          />
+        </div>
+        <div className="flex flex-row gap-2 order-1 lg:order-2">
           {/* Actions */}
           <ActionSection
             title={t("actions")}

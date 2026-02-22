@@ -11,13 +11,13 @@ interface CharacterHealthBarProps {
 }
 
 const CharacterHealthBar = ({ currentHP, maxHP, tempHP }: CharacterHealthBarProps) => {
-  const t = useTranslations("characterDetail.combat");
+  const t = useTranslations("characterDetail.battle");
   const isFullWithTemp = currentHP === maxHP && tempHP > 0;
   const visualMax = isFullWithTemp ? maxHP + tempHP : maxHP;
 
   const redPercent = (currentHP / visualMax) * 100;
 
-  const yellowPercent = tempHP > 0 ? Math.min(100 - redPercent, (tempHP / visualMax) * 100) : 0;
+  const bluePercent = tempHP > 0 ? Math.min(100 - redPercent, (tempHP / visualMax) * 100) : 0;
 
   return (
     <Tooltip>
@@ -28,17 +28,17 @@ const CharacterHealthBar = ({ currentHP, maxHP, tempHP }: CharacterHealthBarProp
           role="img"
           aria-label={`${t("healthPoints")}: ${currentHP} ${t("unperformedThrow")} ${maxHP}${tempHP > 0 ? ` (+${tempHP} ${t("hpAbbr")})` : ""}`}>
           {/* HP temporaires */}
-          {yellowPercent > 0 && (
+          {bluePercent > 0 && (
             <>
               <div
-                className="absolute inset-y-0 left-0 bg-yellow transition-all duration-300 rounded-full"
+                className="absolute inset-y-0 left-0 bg-blue transition-all duration-300 rounded-full"
                 style={{ width: `${redPercent + 10}%` }}
               />
               <div
-                className="absolute inset-y-0 bg-yellow transition-all duration-300 rounded-r-full"
+                className="absolute inset-y-0 bg-blue transition-all duration-300 rounded-r-full"
                 style={{
                   left: `${redPercent}%`,
-                  width: `${yellowPercent}%`,
+                  width: `${bluePercent}%`,
                 }}
               />
             </>

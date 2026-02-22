@@ -12,7 +12,7 @@ interface ActionSectionProps {
 }
 
 const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
-  const t = useTranslations("characterDetail.combat");
+  const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
@@ -57,12 +57,14 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
             className="flex flex-col gap-2">
             <Card className="gap-2 p-0 flex-col">
               <AccordionTrigger
-                className="py-3 px-3 md:py-4 md:px-6 rounded-md"
+                className="py-3 px-3 md:py-4 md:px-6 rounded-md truncate"
                 aria-label={`${t("actionDetails")} ${action.name}`}>
-                <span className="text-base md:text-lg font-medium text-left">
-                  {action.name}
-                  {action.type && ` (${action.type})`}
-                </span>
+                <div className="truncate flex items-center gap-1">
+                  <span className="text-base md:text-lg font-medium text-left truncate">{action.name}</span>
+                  <span className="text-base md:text-lg font-medium text-left">
+                    {action.type && ` (${action.type})`}
+                  </span>
+                </div>
               </AccordionTrigger>
             </Card>
             <AccordionContent>
@@ -97,7 +99,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                 {action.description && (
                   <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
                     <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
-                    <span className="text-sm md:text-base italic">{action.description}</span>
+                    <span className="text-sm md:text-base italic break-all">{action.description}</span>
                   </Card>
                 )}
               </div>

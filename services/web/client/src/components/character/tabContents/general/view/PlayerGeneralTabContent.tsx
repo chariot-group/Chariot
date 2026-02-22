@@ -8,8 +8,6 @@ import {
   Drama,
   Eye,
   Footprints,
-  ListChevronsDownUp,
-  ListChevronsUpDown,
   LockKeyhole,
   MessageSquare,
   MicVocal,
@@ -23,12 +21,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
+import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isMastered } from "@/utils/global.utils";
-import Skill from "@/components/character/tabContents/general/Skill";
+import Skill from "@/components/character/tabContents/general/shared/Skill";
+import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -41,10 +39,6 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
   const tAlignment = useTranslations("alignments");
   const tClass = useTranslations("classes");
   const [checked, setChecked] = useState<boolean>(player.inspiration);
-
-  const tMagic = useTranslations("characterDetail.magic");
-
-  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
 
   function infoExhaustionLevel(level: number): string {
     return t(`exhaustionLevels.${level}`);
@@ -62,7 +56,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           aria-labelledby="character-info-section">
           {/* Personnage */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 order-1"
             role="region"
             aria-labelledby="character-heading">
             <h2
@@ -103,14 +97,16 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
 
           {/* Caractéristiques */}
-          <AbilityScores
-            character={player}
-            accentColor={accentColor}
-          />
+          <div className="order-3 min-[450px]:order-2">
+            <AbilityScores
+              character={player}
+              accentColor={accentColor}
+            />
+          </div>
 
           {/* Maitrise */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
             role="region"
             aria-labelledby="proficiencies-heading">
             <h2
@@ -139,17 +135,17 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
         </section>
 
-        {/* Colonne 2 : Caractéristiques et Compétences */}
+        {/* Colonne 2 : Bonus, Jets de sauvegarde et Compétences */}
         <section
-          className="flex flex-col gap-2 md:gap-4"
+          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
           aria-labelledby="characteristics-skills-section">
           {/* Bonus */}
           <Card
             className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
             role="region"
-            aria-labelledby="exhaustion-heading">
+            aria-labelledby="proficiency-bonus-heading">
             <h2
-              id="exhaustion-heading"
+              id="proficiency-bonus-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("proficiencyBonus")}
             </h2>
@@ -195,7 +191,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </div>
 
           {/* Compétences */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 order-4 min-[450px]:order-3">
             <Card
               className="gap-3 py-4 px-4 md:px-6"
               role="region"
@@ -378,7 +374,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
         {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
         <section
-          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1"
+          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1 order-5 min-[450px]:order-0"
           aria-labelledby="additional-info-section">
           {/* Epuisement */}
           <Card
@@ -484,56 +480,13 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           </Card>
 
           {/* Aptitudes */}
-          <Card
+          <AbilitiesSection
+            abilities={player.abilities}
+            accentColor={accentColor}
+            title={t("characterAbilities")}
+            headingId="abilities-heading"
             className="gap-3 py-4 px-4 md:px-6"
-            role="region"
-            aria-labelledby="abilities-heading">
-            <div className="flex flex-row justify-between">
-              <h2
-                id="abilities-heading"
-                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                {t("characterAbilities")}
-              </h2>
-              <div className="flex justify-end shrink-0">
-                <button
-                  onClick={() => {
-                    if (openAccordionValues.length > 0) {
-                      setOpenAccordionValues([]);
-                    } else {
-                      setOpenAccordionValues(player?.abilities.map((action, index) => `${action.name}-${index}`));
-                    }
-                  }}
-                  className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
-                  aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
-                  aria-expanded={openAccordionValues.length > 0}>
-                  {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-                </button>
-              </div>
-            </div>
-            <Accordion
-              type="multiple"
-              value={openAccordionValues}
-              onValueChange={setOpenAccordionValues}
-              className="w-full">
-              {player?.abilities.map((ability, index) => (
-                <AccordionItem
-                  key={`${ability.name}-${index}`}
-                  value={`${ability.name}-${index}`}>
-                  <AccordionTrigger
-                    className="text-left rounded py-3"
-                    aria-label={`${t("abilityDetails")} ${ability.name}`}>
-                    <span className="text-sm sm:text-base font-medium">{ability.name}</span>
-                  </AccordionTrigger>
-                  <AccordionContent
-                    className="text-sm sm:text-base pb-3"
-                    role="region"
-                    aria-label={`${t("abilityDescription")} ${ability.name}`}>
-                    {ability.description}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </Card>
+          />
         </section>
       </div>
     </div>

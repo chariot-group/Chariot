@@ -562,3 +562,241 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/app/[locale]/profile/page.tsx` - Protected redirect example
 - `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx` - Grace period implementation
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx` - Grace period implementation
+---
+
+## FR-009: User Password Change
+
+**Rule**: Authenticated users must be able to change their password through Keycloak SSO integration with validation, error handling, and internationalization.
+
+**Context**: Password changes require secure interaction with Keycloak Admin API. The frontend must provide a user-friendly form with validation, and the backend must handle Keycloak API errors gracefully.
+
+**Requirements**:
+
+**Backend API**:
+- Route: `PUT /users/me/password`
+- Request body: `{ currentPassword: string, newPassword: string }`
+- Authentication: JWT token with Keycloak user ID
+- Validation:
+  - Current password is required
+  - New password must be at least 8 characters
+  - New password must meet Keycloak realm password policy (complexity)
+- Error handling with specific error codes:
+  - 400: Invalid input (validation failed)
+  - 401: Current password incorrect
+  - 403: New password does not meet complexity requirements
+  - 500: Keycloak API error
+- Winston logging (FR-001):
+  - `info`: Successful password change with user ID (no password logged)
+  - `error`: Failed password change with error type and user ID
+  - Never log passwords or tokens
+
+**Frontend Hook**:
+- Hook: `usePasswordForm()` in `src/hooks/usePasswordForm.ts`
+- Form state management with react-hook-form and Zod validation
+- States:
+  - `isLoading`: boolean (true while submitting)
+  - `error`: string | null (error message from API)
+  - `success`: boolean (true after successful change)
+  - `form`: react-hook-form instance
+- Functions:
+  - `onSubmit(data)`: Submits password change to API
+  - `onReset()`: Resets form to initial state
+- Zod validation schema:
+  - `currentPassword`: required, non-empty string
+  - `newPassword`: required, min 8 characters
+  - `confirmPassword`: required, must match newPassword
+- Toast notifications:
+  - Success: Display translated success message
+  - Error: Display translated error message based on error type
+- Translated validation messages (i18n):
+  - `validation.currentPasswordRequired`: "Current password is required"
+  - `validation.newPasswordMin`: "Password must be at least 8 characters"
+  - `validation.confirmPasswordRequired`: "Please confirm your password"
+  - `validation.passwordMismatch`: "Passwords do not match"
+
+**Keycloak Integration**:
+- Backend service: `KeycloakService.changeUserPassword(keycloakId, currentPassword, newPassword)`
+- API endpoint: `adminClient.users.resetPassword()` (requires valid current password verification first)
+- Verify current password by attempting authentication before changing
+- Handle Keycloak-specific errors:
+  - Invalid current password
+  - Password policy violations (complexity, history, etc.)
+  - Account locked or disabled
+
+**User Experience**:
+- User remains authenticated after successful password change
+- Form resets after successful submission
+- Toast notification displays for 3 seconds
+- Error messages are specific and actionable (not generic "failed to change password")
+- Password visibility toggle for all password fields
+
+**Security Requirements**:
+- Passwords never logged in plain text
+- Passwords never stored in Redux or localStorage
+- No password sent in GET requests or URL parameters
+- HTTPS required for all password-related requests (enforced by API)
+
+**Benefits**:
+- ✅ Secure password change through Keycloak
+- ✅ User-friendly validation with clear error messages
+- ✅ Internationalized error messages
+- ✅ Centralized password change logic in custom hook
+- ✅ No passwords leaked in logs or client-side storage
+
+**Prohibitions**:
+- Storing passwords in Redux, localStorage, or any client-side cache
+- Logging passwords in Winston logs (even on error)
+- Allowing password change without current password verification
+- Using weak validation (less than 8 characters)
+- Displaying generic error messages that don't help users
+- Changing password without checking Keycloak realm policy
+
+**Tests**:
+
+**Backend Tests**:
+- DTO validation accepts valid password change data
+- DTO validation rejects invalid data (empty, too short, etc.)
+- Controller returns 401 when current password is incorrect
+- Controller returns 403 when new password doesn't meet policy
+- Controller returns 200 and success message when password changed
+- Service logs error when Keycloak API fails
+- Service logs success when password changed (without password in log)
+
+**Frontend Tests**:
+- Hook validates form data with Zod schema
+- Hook rejects passwords shorter than 8 characters
+- Hook rejects mismatched password confirmation
+- Hook calls API with correct payload
+- Hook displays toast on success
+- Hook displays specific error message on failure
+- Hook returns react-hook-form instance
+
+**References**:
+- `services/adventure/api/src/resources/user/dto/change-password.dto.ts` - Backend DTO
+- `services/adventure/api/src/resources/user/user.controller.ts` - PUT /users/me/password route
+- `services/adventure/api/src/resources/user/user.service.ts` - Password change business logic
+- `services/adventure/api/src/resources/user/keycloak.service.ts` - Keycloak password change
+- `services/web/client/src/hooks/usePasswordForm.ts` - Frontend password change hook
+- `services/web/client/src/types/user.ts` - PasswordChangeDto type
+- `services/web/client/src/services/UserService.ts` - API client method
+- `services/web/client/messages/{en|fr|es}.json` - Internationalization
+---
+
+## FR-010: User Profile Update via Keycloak
+
+**Rule**: Users must be able to update their personal information (firstName, lastName, email) through a dedicated API endpoint that synchronizes changes with Keycloak. Profile updates apply to the authenticated user only and must be traceable.
+
+**Requirements**:
+
+**Backend (Adventure API)**:
+- Endpoint `PUT /users/me` accepts partial updates to user profile
+- DTO `UpdateUserProfileDto` with optional fields: `firstName`, `lastName`, `email`
+- Validation rules:
+  - `firstName`: Optional string, minimum 2 characters when provided
+  - `lastName`: Optional string, minimum 2 characters when provided
+  - `email`: Optional valid email format when provided
+- Updates are applied to Keycloak via `KeycloakService.updateUser(keycloakId, userData)`
+- Winston logging for all update operations (success and errors) - respects FR-001
+- Returns updated `UserInfoDto` with all current user information
+- Authentication required via Keycloak JWT Guard
+
+**Frontend (Web Client)**:
+- Hook `useProfileForm()` centralizes profile update logic
+- React Hook Form with Zod resolver for client-side validation
+- Zod schema validation:
+  - `firstName`: Required, min 2 characters
+  - `lastName`: Required, min 2 characters
+  - `email`: Required, valid email format
+- Form states: `isLoading`, `isSaving`, `error`, `success`
+- Returns form instance for component integration
+- Automatically loads initial data via `useUser` hook
+- Function `onUpdate(data)` calls `PUT /users/me` and updates Redux cache
+- Function `onCancel()` resets form to initial values
+- Toast notifications (success/error) with i18n messages
+- Network error handling with translated messages
+
+**Validation Rules**:
+- All field updates are optional (partial update)
+- Empty strings are rejected (must be min 2 characters or omitted)
+- Email format must be standard RFC 5322
+- Username is **NOT** editable (immutable field)
+- Avatar is **NOT** managed by this endpoint (separate feature)
+- Updates are applied atomically in Keycloak
+
+**Prohibitions**:
+- Updating username via this endpoint
+- Updating other users' profiles (only `user.keycloakId` from JWT)
+- Bypassing Keycloak for user data persistence
+- Accepting updates without authentication
+- Logging sensitive data (email content is acceptable, passwords are not)
+- Allowing empty or whitespace-only values for required fields in frontend form
+- Missing toast feedback after save attempt
+
+**Error Handling**:
+- 400 Bad Request: Invalid data format or validation failure
+- 401 Unauthorized: Missing or invalid JWT token
+- 404 Not Found: User not found in Keycloak
+- 500 Internal Server Error: Keycloak communication failure or unexpected error
+- Frontend displays translated error messages via toast system
+- Logs include full error stack trace (backend) for debugging
+
+**Frontend Hook Behavior** (`useProfileForm`):
+- Loads user data on mount via `useUser({ autoFetch: true })`
+- Resets form when user data changes
+- `onUpdate`: Validates → API call → Redux update → Toast → Form reset to new values
+- `onCancel`: Resets form to last loaded values without API call
+- `isSaving`: True during API request
+- `isLoading`: True while initial user data is loading
+- `error`: Contains validation or API error message
+- `success`: True after successful update (resets after 3s or new action)
+
+**TypeScript Types**:
+- Backend: `UpdateUserProfileDto` (PartialType with firstName, lastName, email)
+- Frontend: `UpdateUserDto` mirrors backend DTO structure
+- Both use strict TypeScript without `any` types
+
+**Internationalization (i18n)**:
+- Translation namespace: `ProfilePage.editProfile`
+- Required keys in `messages/{en|fr|es}.json`:
+  - `editProfile.successMessage`: "Profile updated successfully"
+  - `editProfile.errorMessage`: "Failed to update profile"
+  - `editProfile.networkError`: "Network error. Please try again."
+  - `editProfile.validationError`: "Please check the form fields"
+  - `editProfile.firstName`: "First name"
+  - `editProfile.lastName`: "Last name"
+  - `editProfile.email`: "Email address"
+  - `editProfile.save`: "Save changes"
+  - `editProfile.cancel`: "Cancel"
+
+**Tests**:
+- **Backend**:
+  - Unit: UserService calls KeycloakService with correct parameters
+  - Unit: Validation rejects firstName/lastName < 2 characters
+  - Unit: Validation rejects invalid email format
+  - Unit: Winston logger called on success and error
+  - E2E: PUT /users/me returns 401 without authentication
+  - E2E: PUT /users/me returns 200 with valid data and updates Keycloak
+  - E2E: PUT /users/me returns 400 with invalid data
+  - E2E: Partial update (only firstName) works correctly
+  - Mock: KeycloakService.updateUser is called with merged data
+  
+- **Frontend**:
+  - Unit: useProfileForm validates form data with Zod
+  - Unit: useProfileForm calls UserService.updateCurrentUser
+  - Unit: useProfileForm updates Redux user state on success
+  - Unit: useProfileForm shows success toast with i18n message
+  - Unit: useProfileForm shows error toast on API failure
+  - Unit: onCancel resets form to initial values
+  - Integration: Form submission with valid data updates user in Redux
+  - Integration: Form submission with invalid email shows validation error
+  - Integration: Network error displays translated error message
+
+**References**:
+- `services/adventure/api/src/resources/user/user.controller.ts` - PUT /users/me endpoint
+- `services/adventure/api/src/resources/user/user.service.ts` - updateUser method
+- `services/adventure/api/src/resources/user/keycloak.service.ts` - updateUser method
+- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts` - DTO definition
+- `services/web/client/src/hooks/useProfileForm.ts` - Profile form hook
+- `services/web/client/src/services/UserService.ts` - updateCurrentUser method
+- `services/web/client/src/types/user.ts` - UpdateUserDto type
+- `services/web/client/messages/{en|fr|es}.json` - i18n translations

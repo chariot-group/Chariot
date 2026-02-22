@@ -55,7 +55,7 @@
   },
   "ProfilePage": {
     "pageTitle": "User Profile",
-    "changePassword": "Change Password",
+    "changePasswordTitle": "Change Password",
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmNewPassword": "Confirm new password",
@@ -64,11 +64,30 @@
     "yourTokens": "Your tokens:",
     "noHistory": "No history available",
     "reloadTokens": "Reload your tokens",
-    "togglePasswordVisibility": "Toggle password visibility",
-    "passwordError": {
-      "min": "Password must contain at least 8 characters",
-      "mismatch": "Passwords do not match",
-      "required": "This field is required"
+    "changePassword": {
+      "successMessage": "Password changed successfully",
+      "errorMessage": "Failed to change password",
+      "incorrectPassword": "Current password is incorrect",
+      "complexityError": "New password does not meet complexity requirements",
+      "networkError": "Network error. Please try again.",
+      "validation": {
+        "currentPasswordRequired": "Current password is required",
+        "newPasswordMin": "Password must be at least 8 characters",
+        "confirmPasswordRequired": "Please confirm your password",
+        "passwordMismatch": "Passwords do not match"
+      }
+    },
+    "editProfile": {
+      "successMessage": "Profile updated successfully",
+      "errorMessage": "Failed to update profile",
+      "networkError": "Network error. Please try again.",
+      "emailAlreadyInUse": "This email address is already in use by another account",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "updateProfile": "Update profile",
+      "cancelUpdate": "Cancel",
+      "formLabel": "Profile update form"
     }
   },
   "welcome": {
@@ -91,16 +110,99 @@
       "button-aria": "Navigate to character creation"
     }
   },
+  "characterForm": {
+    "createSuccess": "Character created successfully",
+    "createError": "Failed to create character",
+    "updateSuccess": "Character updated successfully",
+    "updateError": "Failed to update character",
+    "missingId": "Cannot update: character ID is missing",
+    "changesCancelled": "Changes cancelled"
+  },
+  "zodErrors": {
+    "invalidTypeReceived": "Invalid input",
+    "required": "Required",
+    "tooSmall": {
+      "string": {
+        "inclusive": "String must contain at least {minimum} character(s)"
+      },
+      "number": {
+        "inclusive": "Number must be greater than or equal to {minimum}"
+      },
+      "array": {
+        "inclusive": "Array must contain at least {minimum} element(s)"
+      }
+    },
+    "tooBig": {
+      "string": {
+        "inclusive": "String must contain at most {maximum} character(s)"
+      },
+      "number": {
+        "inclusive": "Number must be less than or equal to {maximum}"
+      },
+      "array": {
+        "inclusive": "Array must contain at most {maximum} element(s)"
+      }
+    },
+    "invalidString": {
+      "email": "Invalid email",
+      "url": "Invalid url",
+      "uuid": "Invalid uuid"
+    },
+    "notMultipleOf": "Number must be a multiple of {multipleOf}"
+  },
   "characterDetail": {
+    "editCharacter": "Edit character",
+    "saveChanges": "Save changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "edit": {
+      "basicInfo": "Basic Information",
+      "firstname": "First Name",
+      "lastname": "Last Name",
+      "surname": "Nickname",
+      "optional": "optional",
+      "profile": "Profile",
+      "race": "Race",
+      "alignment": "Alignment",
+      "challenge": "Challenge",
+      "challengeRating": "Challenge Rating",
+      "experiencePoints": "Experience Points",
+      "type": "Type",
+      "combatStats": "Combat Stats",
+      "editInProgress": "Edit in progress",
+      "currentHP": "Current HP",
+      "maxHP": "Max HP",
+      "tempHP": "Temp HP",
+      "defense": "Defense",
+      "initiative": "Initiative",
+      "spellcastingStats": "Spellcasting Stats",
+      "spellcastingAbility": "Spellcasting Ability",
+      "spellSaveDC": "Spell Save DC",
+      "spellAttackBonus": "Spell Attack Bonus",
+      "copperPieces": "Copper Pieces",
+      "silverPieces": "Silver Pieces",
+      "electrumPieces": "Electrum Pieces",
+      "goldPieces": "Gold Pieces",
+      "platinumPieces": "Platinum Pieces",
+      "reset": "Reset",
+      "speeds": "Speeds",
+      "walk": "Walk",
+      "climb": "Climb",
+      "swim": "Swim",
+      "fly": "Fly",
+      "burrow": "Burrow",
+      "add": "Add"
+    },
     "tabs": {
       "general": "General",
-      "combat": "Combat",
+      "battle": "Battle",
       "magic": "Magic",
       "inventory": "Inventory",
       "history": "History"
     },
-    "combat": {
+    "battle": {
       "stats": "Stats",
+      "hitLevel": "Level",
       "hitDice": "Hit Dice:",
       "hitPointsRoll": "Hit Points Roll:",
       "savingThrows": "Saving Throws",
@@ -117,6 +219,8 @@
       "attackDC": "Attack/DC:",
       "damageType": "Damage/Type:",
       "description": "Description:",
+      "type": "Type",
+      "name": "Name",
       "details": "details",
       "descriptionPrefix": "description",
       "armorClass": "Armor Class",
@@ -157,6 +261,7 @@
       "class": "Class",
       "alignment": "Alignment",
       "general": {
+        "title": "General Tab",
         "characterInfoLabel": "Character general information",
         "character": "Character",
         "raceLabel": "Race",
@@ -239,6 +344,7 @@
       "challengeRatingAbbr": "CR",
       "alignment": "Alignment",
       "general": {
+        "title": "General Tab",
         "npcInfoLabel": "NPC general information",
         "characterInfo": "Character information",
         "characteristicsSkills": "Characteristics and skills",

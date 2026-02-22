@@ -8,8 +8,6 @@ import {
   Drama,
   Eye,
   Footprints,
-  ListChevronsDownUp,
-  ListChevronsUpDown,
   LockKeyhole,
   MessageSquare,
   MicVocal,
@@ -22,11 +20,10 @@ import {
   VenetianMask,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import AbilityScores from "@/components/character/tabContents/general/AbilityScores";
+import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import { calculateAbilityBonus } from "@/utils/global.utils";
-import Skill from "@/components/character/tabContents/general/Skill";
-import { useState } from "react";
+import Skill from "@/components/character/tabContents/general/shared/Skill";
+import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -38,9 +35,6 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
   const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
   const tAlignment = useTranslations("alignments");
-  const tMagic = useTranslations("characterDetail.magic");
-
-  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
 
   return (
     <div
@@ -55,7 +49,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           aria-label={tNpc("general.characterInfo")}>
           {/* Personnage */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 order-1"
             role="region"
             aria-labelledby="character-heading">
             <h2
@@ -74,14 +68,16 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </Card>
 
           {/* Caractéristiques */}
-          <AbilityScores
-            character={npc}
-            accentColor={accentColor}
-          />
+          <div className="order-3 min-[450px]:order-2">
+            <AbilityScores
+              character={npc}
+              accentColor={accentColor}
+            />
+          </div>
 
           {/* Maitrise */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
             role="region"
             aria-labelledby="languages-heading">
             <h2
@@ -101,12 +97,12 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </Card>
         </section>
 
-        {/* Colonne 2 : Caractéristiques et Compétences */}
+        {/* Colonne 2 : Jets de sauvegarde et Compétences */}
         <section
-          className="flex flex-col gap-2 md:gap-4"
+          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
           aria-labelledby="characteristics-skills-section"
           aria-label={tNpc("general.characteristicsSkills")}>
-          {/* Jet de sauvegarde */}
+          {/* Jets de sauvegarde */}
           <div className="flex flex-col gap-2">
             <Card
               className="gap-3 py-4 px-4 md:px-6"
@@ -119,7 +115,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               </h2>
             </Card>
             <div
-              className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+              className="grid grid-cols-2 gap-2"
               role="list">
               {npc?.stats &&
                 Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
@@ -151,7 +147,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               </h2>
             </Card>
             <div
-              className="grid grid-cols-1 xl:grid-cols-2 gap-2"
+              className="grid grid-cols-2 gap-2"
               role="list"
               aria-label={t("skillsList")}>
               <Skill
@@ -392,9 +388,9 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </div>
         </section>
 
-        {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
+        {/* Colonne 3 : Alignement, Perception passive et Aptitudes */}
         <section
-          className="flex flex-col gap-2 md:gap-4"
+          className="flex flex-col gap-2 md:gap-4 order-5 min-[450px]:order-0"
           aria-labelledby="additional-info-section"
           aria-label={tNpc("general.additionalInfo")}>
           {/* Alignement */}
@@ -432,56 +428,13 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           </Card>
 
           {/* Aptitudes */}
-          <Card
+          <AbilitiesSection
+            abilities={npc.abilities}
+            accentColor={accentColor}
+            title={t("characterAbilities")}
+            headingId="abilities-heading"
             className="gap-3 py-4 px-4 md:px-6"
-            role="region"
-            aria-labelledby="abilities-heading">
-            <div className="flex flex-row justify-between">
-              <h2
-                id="abilities-heading"
-                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                {t("characterAbilities")}
-              </h2>
-              <div className="flex justify-end shrink-0">
-                <button
-                  onClick={() => {
-                    if (openAccordionValues.length > 0) {
-                      setOpenAccordionValues([]);
-                    } else {
-                      setOpenAccordionValues(npc?.abilities.map((ability, index) => `${ability.name}-${index}`));
-                    }
-                  }}
-                  className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
-                  aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
-                  aria-expanded={openAccordionValues.length > 0}>
-                  {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-                </button>
-              </div>
-            </div>
-            <Accordion
-              type="multiple"
-              value={openAccordionValues}
-              onValueChange={setOpenAccordionValues}
-              className="w-full">
-              {npc?.abilities.map((ability, index) => (
-                <AccordionItem
-                  key={`${ability.name}-${index}`}
-                  value={`${ability.name}-${index}`}>
-                  <AccordionTrigger
-                    className="text-left py-3"
-                    aria-label={`${t("abilityDetails")} ${ability.name}`}>
-                    <span className="text-sm sm:text-base font-medium">{ability.name}</span>
-                  </AccordionTrigger>
-                  <AccordionContent
-                    className="text-sm sm:text-base pb-3"
-                    role="region"
-                    aria-label={`${t("abilityDescription")} ${ability.name}`}>
-                    {ability.description}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </Card>
+          />
         </section>
       </div>
     </div>

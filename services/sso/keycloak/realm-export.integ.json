@@ -104,6 +104,17 @@
       },
       "protocolMappers": [
         {
+          "name": "sub-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
           "name": "audience-mapper",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
@@ -129,6 +140,7 @@
         }
       ],
       "defaultClientScopes": [
+        "openid",
         "web-origins",
         "acr",
         "profile",

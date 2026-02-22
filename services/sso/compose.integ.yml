@@ -1,3 +1,5 @@
+name: chariot-sso-integ
+
 services:
   keycloak-db:
     image: postgres:16-alpine
@@ -8,7 +10,7 @@ services:
       POSTGRES_USER: ${KEYCLOAK_DB_USER}
       POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
     volumes:
-      - keycloak_db_data:/var/lib/postgresql/data
+      - keycloak_db_data_integ:/var/lib/postgresql/data
     networks:
       - sso-network-integ
     healthcheck:
@@ -106,7 +108,7 @@ services:
     command: ["/keycloak-config.sh", "integ"]
 
 volumes:
-  keycloak_db_data:
+  keycloak_db_data_integ:
 
 networks:
   sso-network-integ:
