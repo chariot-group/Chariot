@@ -43,6 +43,8 @@ export function numberSpellsPrepare(selectedSpellcasting: Spellcasting, characte
             total = classObj.level + calculateAbilityBonus(character?.stats?.abilityScores?.wisdom);
         } else if (classObj?.name.toLocaleLowerCase() === "wizard") {
             total = classObj.level + calculateAbilityBonus(character?.stats?.abilityScores?.intelligence);
+        } else if (classObj?.name.toLocaleLowerCase() === "artificer") {
+            total = Math.floor(classObj.level / 2) + calculateAbilityBonus(character?.stats?.abilityScores?.intelligence);
         }
     }
 
@@ -55,6 +57,5 @@ export function numberSpellsPrepare(selectedSpellcasting: Spellcasting, characte
  * @returns true si la classe utilise des sorts préparés, sinon false
  */
 export function classWithSpellPrepared(spellCasting: Spellcasting): boolean {
-    console.log("classWithSpellPrepared", spellCasting.className.toLocaleLowerCase());
-    return ["druid", "paladin", "cleric", "wizard"].includes(spellCasting.className.toLocaleLowerCase());
+    return ["druid", "paladin", "cleric", "wizard", "artificer"].includes(spellCasting.className.toLocaleLowerCase());
 }

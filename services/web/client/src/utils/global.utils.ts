@@ -59,7 +59,6 @@ export function calculateMasteryLevel(masteryLevel: number, skills: number, prof
     let result: number = 0;
     if (skills!) {
         result = skills;
-        console.log(skills!, result);
     } else {
         if (!proficiencyBonus || !masteriesAbility) return 0;
         let value = calculateAbilityBonus(masteriesAbility) + proficiencyBonus * 2;

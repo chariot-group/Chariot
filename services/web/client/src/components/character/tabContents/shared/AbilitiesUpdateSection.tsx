@@ -76,6 +76,10 @@ const AbilitiesUpdateSection = ({
           {fields.map((field, index) => {
             const abilityName = form.watch(`${fieldArrayName}.${index}.name`);
 
+            const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
+            const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
+            const hasError = nameError || descriptionError;
+
             return (
               <AccordionItem
                 key={field.id}
@@ -83,7 +87,7 @@ const AbilitiesUpdateSection = ({
                 className="border-b border-gray">
                 <div className="relative">
                   <AccordionTrigger
-                    className="text-left w-full hover:no-underline pr-10 truncate"
+                    className={`text-left w-full hover:no-underline pr-10 truncate ${hasError ? "ring-destructive ring" : ""}`}
                     aria-label={`Détails de la capacité ${index + 1}`}>
                     <span className="font-medium truncate">{abilityName}</span>
                   </AccordionTrigger>
@@ -116,7 +120,6 @@ const AbilitiesUpdateSection = ({
                         <Input
                           {...nameField}
                           id={`${fieldArrayName}-name-${index}`}
-                          placeholder="Nom de la capacité"
                           className="text-sm"
                           aria-invalid={fieldState.invalid}
                         />

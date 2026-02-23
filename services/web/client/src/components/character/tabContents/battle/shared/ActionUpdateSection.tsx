@@ -7,6 +7,7 @@ import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFi
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { Field, FieldError } from "@/components/ui/field";
 
 interface ActionUpdateSectionProps {
   title: string;
@@ -82,12 +83,20 @@ const ActionUpdateSection = ({
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
             const actionType = form.watch(`${fieldArrayName}.${index}.type`);
 
+            // Vérifie si au moins un champ de l'action courante est invalide
+            const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
+            const typeError = form.getFieldState(`${fieldArrayName}.${index}.type`).invalid;
+            const attackBonusError = form.getFieldState(`${fieldArrayName}.${index}.attackBonus`).invalid;
+            const rangeError = form.getFieldState(`${fieldArrayName}.${index}.range`).invalid;
+            const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
+            const hasError = nameError || typeError || attackBonusError || rangeError || descriptionError;
+
             return (
               <AccordionItem
                 key={field.id}
                 value={`action-${index}`}
                 className="flex flex-col gap-2">
-                <Card className="gap-2 p-0 flex-col">
+                <Card className={`gap-2 p-0 flex-col ${hasError ? "ring-destructive ring" : ""}`}>
                   <div className="relative py-3 px-3 md:py-2 md:px-6">
                     <AccordionTrigger
                       className="w-full items-center gap-2 pr-10"
@@ -119,12 +128,18 @@ const ActionUpdateSection = ({
                       <Controller
                         name={`${fieldArrayName}.${index}.name`}
                         control={form.control}
-                        render={({ field: nameField }) => (
-                          <Input
-                            {...nameField}
-                            placeholder="Nom de l'action"
-                            className="flex-1"
-                          />
+                        render={({ field: nameField, fieldState }) => (
+                          <Field
+                            data-invalid={fieldState.invalid}
+                            orientation="vertical">
+                            <Input
+                              {...nameField}
+                              className="text-sm"
+                              required
+                              aria-invalid={fieldState.invalid}
+                            />
+                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                          </Field>
                         )}
                       />
                     </Card>
@@ -172,7 +187,6 @@ const ActionUpdateSection = ({
                           <Textarea
                             {...descField}
                             value={descField.value || ""}
-                            placeholder="Description de l'action"
                           />
                         )}
                       />

@@ -3174,7 +3174,7 @@
   "kind": "player",
   "inspiration": true,
   "profile": {
-    "alignment": "Neutral",
+    "alignment": "True Neutral",
     "race": "Drakéide",
     "subrace": "Rouge",
     "history": "Pirate"
@@ -3730,7 +3730,7 @@
   "kind": "player",
   "inspiration": false,
   "profile": {
-    "alignment": "Neutral",
+    "alignment": "True Neutral",
     "race": "Halfelin",
     "subrace": "Robuste",
     "history": "Ermite"

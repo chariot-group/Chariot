@@ -86,7 +86,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               {player?.class.map((c) => (
                 <div
                   key={c.name}
-                  className="flex flex-row gap-2">
+                  className="flex flex-wrap gap-1">
                   <dt className="text-sm sm:text-base font-semibold">
                     {t("subclassOf")} {tClass(c.name)} :
                   </dt>
@@ -179,7 +179,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                   const abilityName = t(`abilities.${key}`);
                   const abilityScore = player.stats.abilityScores[key as keyof typeof player.stats.abilityScores] || 10;
                   const abilityModifier = Math.floor((abilityScore - 10) / 2);
-                  const displayBonus = value !== 0 ? (abilityModifier + value) : abilityModifier;
+                  const displayBonus = value !== 0 ? abilityModifier + value : abilityModifier;
                   return (
                     <Skill
                       key={key}

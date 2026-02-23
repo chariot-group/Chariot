@@ -86,7 +86,7 @@ export default function CharactersWithoutGroupList() {
             onClick={() => dispatch(clearSelectedCampaign())}
             className={`w-full border-2 cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:border ${isSelected ? "bg-white" : ""}`}>
             <span
-              className={`text-sm group-hover:font-bold group-hover:text-black ${isSelected ? "font-bold text-black" : ""}`}>
+              className={`text-sm group-hover:font-bold truncate group-hover:text-black ${isSelected ? "font-bold text-black" : ""}`}>
               {character.firstname} {character.lastname}
             </span>
           </Link>

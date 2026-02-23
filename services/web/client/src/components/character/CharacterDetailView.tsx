@@ -57,7 +57,6 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     router.replace(`?${params.toString()}`, { scroll: false });
   };
 
-
   // Déterminer le type de personnage
   const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
 
@@ -73,7 +72,6 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     },
   });
 
-
   return (
     <main className="flex flex-col h-full overflow-hidden">
       <Tabs
@@ -84,7 +82,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
         {/* Header avec onglets et infos du personnage */}
         <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
-            <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-0 xl:gap-8">
+            <div className="grid grid-cols-2">
               {/* Onglets */}
               <TabsList
                 className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
@@ -100,10 +98,11 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                     className={`
                                             flex-none p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
                                             focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                                            ${activeTab === tab
-                        ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
-                        : `text-white bg-gray hover:bg-gray-middle`
-                      }
+                                            ${
+                                              activeTab === tab
+                                                ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
+                                                : `text-white bg-gray hover:bg-gray-middle`
+                                            }
                                         `}>
                     {t(`tabs.${tab}`)}
                   </TabsTrigger>
@@ -111,11 +110,12 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
               </TabsList>
 
               {/* Infos du personnage */}
-              <div className="flex flex-row items-end gap-3 px-1.5 sm:px-0 sm:gap-4 md:gap-5 shrink-0 w-full xl:w-auto">
-                <div className="text-left xl:text-right mb-2 flex-1">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <div className="flex flex-row items-end gap-3 px-1.5 sm:px-0 sm:gap-4 md:gap-5 shrink-0 w-full truncate">
+                <div className="text-left xl:text-right mb-2 flex-1 truncate">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
                     {character.firstname} {character.lastname}
                   </h1>
+                  <h2 className="text-sm sm:text-base text-gray-light italic truncate">{character.surname}</h2>
                   {isPlayer(character) ? (
                     <React.Fragment>
                       <p className="text-sm sm:text-base text-white font-semibold">
@@ -264,7 +264,10 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 `}
                 aria-label={t("saveChanges")}
                 aria-busy={isSaving}>
-                <Save className="size-5" aria-hidden="true" />
+                <Save
+                  className="size-5"
+                  aria-hidden="true"
+                />
                 {isSaving ? t("saving") : t("saveChanges")}
               </Button>
               <Button
@@ -285,7 +288,10 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 }}
                 className="text-lg font-semibold py-5.5"
                 aria-label={t("cancel")}>
-                <X className="size-5" aria-hidden="true" />
+                <X
+                  className="size-5"
+                  aria-hidden="true"
+                />
                 {t("cancel")}
               </Button>
             </>
@@ -310,7 +316,10 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
               `}
               aria-label={t("editCharacter")}>
-              <SquarePen className="size-5" aria-hidden="true" />
+              <SquarePen
+                className="size-5"
+                aria-hidden="true"
+              />
               {t("editCharacter")}
             </Button>
           )}
