@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
+import { useRef } from "react";
 
 interface AbilitiesUpdateSectionProps {
   title: string;
@@ -46,7 +47,17 @@ const AbilitiesUpdateSection = ({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => append({ name: "", description: "" })}
+            ref={undefined}
+            onClick={() => {
+              append({ name: "", description: "" });
+              // Attendre le prochain rendu pour que le nouvel élément soit présent
+              setTimeout(() => {
+                const lastAbility = fields.length > 0 ? document.getElementById(`ability-${fields.length - 1}`) : null;
+                if (lastAbility) {
+                  lastAbility.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }, 100);
+            }}
             className="flex items-center gap-2">
             <Plus className="size-4" />
             <span className="hidden sm:block">{tEdit("add")}</span>
@@ -83,6 +94,7 @@ const AbilitiesUpdateSection = ({
             return (
               <AccordionItem
                 key={field.id}
+                id={`ability-${index}`}
                 value={`ability-${index}`}
                 className="border-b border-gray">
                 <div className="relative">

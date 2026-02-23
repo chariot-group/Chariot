@@ -43,7 +43,7 @@ const ActionUpdateSection = ({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() =>
+            onClick={() => {
               append({
                 name: "",
                 type: "",
@@ -51,8 +51,15 @@ const ActionUpdateSection = ({
                 attackBonus: 0,
                 damage: [],
                 range: "",
-              })
-            }
+              });
+              // Attendre le prochain rendu pour que le nouvel élément soit présent
+              setTimeout(() => {
+                const lastAction = fields.length > 0 ? document.getElementById(`action-${fields.length - 1}`) : null;
+                if (lastAction) {
+                  lastAction.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }, 100);
+            }}
             className="flex items-center gap-2">
             <Plus className="size-4" />
             <span className="hidden sm:block">{tEdit("add")}</span>
@@ -93,6 +100,7 @@ const ActionUpdateSection = ({
 
             return (
               <AccordionItem
+                id={`action-${index}`}
                 key={field.id}
                 value={`action-${index}`}
                 className="flex flex-col gap-2">
