@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { X } from "lucide-react";
 import { Input } from "./input";
 
@@ -36,9 +36,20 @@ export function TagInput({
             !value.some((v) => v.toLowerCase() === suggestion.toLowerCase())
     );
 
+    // Check if current input is a custom entry (not in suggestions and not already added)
+    const trimmedInput = inputValue.trim();
+    const isCustomEntry = trimmedInput.length > 0 &&
+        !suggestions.some((s) => s.toLowerCase() === trimmedInput.toLowerCase()) &&
+        !value.some((v) => v.toLowerCase() === trimmedInput.toLowerCase());
+
+    // Build the complete options list: custom entry first (if exists), then filtered suggestions
+    const allOptions = isCustomEntry
+        ? [trimmedInput, ...filteredSuggestions]
+        : filteredSuggestions;
+
     useEffect(() => {
-        setShowSuggestions(inputValue.length > 0 && filteredSuggestions.length > 0);
-    }, [inputValue, filteredSuggestions.length]);
+        setShowSuggestions(inputValue.length > 0 && allOptions.length > 0);
+    }, [inputValue, allOptions.length]);
 
     const addTag = (tag: string) => {
         const trimmedTag = tag.trim();
@@ -58,15 +69,15 @@ export function TagInput({
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             e.preventDefault();
-            if (highlightedIndex >= 0 && highlightedIndex < filteredSuggestions.length) {
-                addTag(filteredSuggestions[highlightedIndex]);
+            if (highlightedIndex >= 0 && highlightedIndex < allOptions.length) {
+                addTag(allOptions[highlightedIndex]);
             } else if (inputValue.trim()) {
                 addTag(inputValue);
             }
         } else if (e.key === "ArrowDown") {
             e.preventDefault();
             setHighlightedIndex((prev) =>
-                prev < filteredSuggestions.length - 1 ? prev + 1 : prev
+                prev < allOptions.length - 1 ? prev + 1 : prev
             );
         } else if (e.key === "ArrowUp") {
             e.preventDefault();
@@ -106,7 +117,7 @@ export function TagInput({
                             <button
                                 type="button"
                                 onClick={() => removeTag(index)}
-                                className="hover:bg-blue/30 rounded-sm p-0.5 transition-colors"
+                                className="hover:bg-blue/30 rounded-sm p-0.5 transition-colors cursor-pointer"
                                 aria-label={`Remove ${tag}`}
                             >
                                 <X size={14} />
@@ -125,7 +136,7 @@ export function TagInput({
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    onFocus={() => setShowSuggestions(inputValue.length > 0 && filteredSuggestions.length > 0)}
+                    onFocus={() => setShowSuggestions(inputValue.length > 0 && allOptions.length > 0)}
                     placeholder={placeholder}
                     aria-invalid={ariaInvalid}
                     aria-describedby={ariaDescribedby}
@@ -140,22 +151,28 @@ export function TagInput({
                         ref={suggestionsRef}
                         id={`${id}-suggestions`}
                         role="listbox"
-                        className="absolute z-10 w-full mt-1 bg-card border border-gray-middle-light rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                        className="absolute z-50 w-full mt-1 bg-gray-middle-light rounded-[15px] border shadow-md max-h-60 overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2"
                     >
-                        {filteredSuggestions.map((suggestion, index) => (
-                            <button
-                                key={index}
-                                type="button"
-                                role="option"
-                                aria-selected={index === highlightedIndex}
-                                onClick={() => addTag(suggestion)}
-                                onMouseEnter={() => setHighlightedIndex(index)}
-                                className={`w-full text-left px-4 py-2 hover:bg-gray-middle-light/50 transition-colors ${index === highlightedIndex ? "bg-gray-middle-light/50" : ""
-                                    }`}
-                            >
-                                {suggestion}
-                            </button>
-                        ))}
+                        <div className="p-1">
+                            {allOptions.map((option, index) => {
+                                const isCustom = index === 0 && isCustomEntry;
+                                return (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        role="option"
+                                        aria-selected={index === highlightedIndex}
+                                        onClick={() => addTag(option)}
+                                        onMouseEnter={() => setHighlightedIndex(index)}
+                                        className={`w-full text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] ${index === highlightedIndex ? "font-bold" : ""
+                                            } ${isCustom ? "italic" : ""}`}
+                                    >
+                                        {option}
+                                        {isCustom && <span className="mx-1">(custom)</span>}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
             </div>
