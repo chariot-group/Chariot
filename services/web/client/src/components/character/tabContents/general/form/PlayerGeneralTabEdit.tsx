@@ -11,6 +11,7 @@ import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced, getProf
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
+import { ComboboxInput } from "@/components/ui/combobox-input";
 import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import SkillsEdit from "./SkillsEdit";
@@ -944,23 +945,16 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   <label htmlFor="background" className="text-sm font-medium">
                     {t("background")}
                   </label>
-                  <Select
+                  <ComboboxInput
+                    id="background"
                     value={field.value || ""}
-                    onValueChange={field.onChange}>
-                    <SelectTrigger id="background">
-                      <SelectValue placeholder={t("background")} />
-                    </SelectTrigger>
-                    <SelectContent position="item-aligned">
-                      <SelectGroup>
-                        {(t.raw("proficiencyOptions.backgrounds") as string[]).map((bg) => (
-                          <SelectItem key={bg} value={bg}>
-                            {bg}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                    onChange={field.onChange}
+                    suggestions={t.raw("proficiencyOptions.backgrounds")}
+                    placeholder={t("background")}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "background-error" : undefined}
+                  />
+                  {fieldState.error && <FieldError id="background-error" errors={[fieldState.error]} />}
                 </Field>
               )}
             />
