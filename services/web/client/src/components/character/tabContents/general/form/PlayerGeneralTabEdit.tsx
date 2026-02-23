@@ -1,5 +1,6 @@
 import { Player } from "@/types/character";
 import { Controller, UseFormReturn, useFieldArray } from "react-hook-form";
+import { useState } from "react";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -28,6 +29,9 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
+
+  const [enableHalfProficiency, setEnableHalfProficiency] = useState(false);
+  const [enableExpertise, setEnableExpertise] = useState(false);
 
   const {
     fields: abilitiesFields,
@@ -289,13 +293,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     }
 
                     return (
-                      <div className="flex flex-col gap-2">
-                        <div className="text-xs text-gray-middle-light">
+                      <div className="flex flex-col gap-4">
+                        <div className="text-xs text-gray-middle-light mx-1 mt-2">
                           {calculatedLevel !== currentLevel && (
                             <span>⚠️ {t("xpLevelMismatch", { xp: currentXp, level: calculatedLevel })}</span>
                           )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 mb-2">
                           <Button
                             type="button"
                             variant="outline"
@@ -701,12 +705,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("savingThrows")}
             </h2>
-
-            <SavingThrowsEdit form={form} accentColor={accentColor} />
           </Card>
+          <div className="order-1">
+            <SavingThrowsEdit form={form} accentColor={accentColor} />
+          </div>
           {/* Compétences */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
+            className="flex flex-row justify-between gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
             role="region"
             aria-labelledby="skills-heading-edit">
             <h2
@@ -714,9 +719,38 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("skills")}
             </h2>
-
-            <SkillsEdit form={form} accentColor={accentColor} />
+            {/* Toggles pour demi-maîtrise et expertise */}
+            <div className="flex flex-col sm:flex-row gap-4 px-3 rounded-lg text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="enable-half-proficiency"
+                  checked={enableHalfProficiency}
+                  onCheckedChange={(checked) => setEnableHalfProficiency(checked === true)}
+                />
+                <Label htmlFor="enable-half-proficiency" className="cursor-pointer text-sm">
+                  {t("enableHalfProficiency")}
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="enable-expertise"
+                  checked={enableExpertise}
+                  onCheckedChange={(checked) => setEnableExpertise(checked === true)}
+                />
+                <Label htmlFor="enable-expertise" className="cursor-pointer text-sm">
+                  {t("enableExpertise")}
+                </Label>
+              </div>
+            </div>
           </Card>
+          <div className="order-3">
+            <SkillsEdit
+              form={form}
+              accentColor={accentColor}
+              enableHalfProficiency={enableHalfProficiency}
+              enableExpertise={enableExpertise}
+            />
+          </div>
         </section>
         <section
           className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1 order-5 min-[450px]:order-0"

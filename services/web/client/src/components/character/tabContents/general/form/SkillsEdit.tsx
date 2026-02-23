@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
@@ -23,12 +22,12 @@ import {
     TreePine,
     Drama,
 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 
 interface SkillsEditProps {
     form: UseFormReturn<any>;
     accentColor: string;
+    enableHalfProficiency: boolean;
+    enableExpertise: boolean;
 }
 
 type AbilityKey = "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
@@ -61,10 +60,8 @@ const skillsConfig: SkillConfig[] = [
     { key: "deception", translationKey: "deception", abilityKey: "charisma", icon: <Drama aria-hidden="true" /> },
 ];
 
-export default function SkillsEdit({ form, accentColor }: SkillsEditProps) {
+export default function SkillsEdit({ form, accentColor, enableHalfProficiency, enableExpertise }: SkillsEditProps) {
     const t = useTranslations("characterDetail.player.general");
-    const [enableHalfProficiency, setEnableHalfProficiency] = useState(false);
-    const [enableExpertise, setEnableExpertise] = useState(false);
 
     /**
      * Calcule le bonus total d'une compétence selon son niveau de maîtrise
@@ -139,76 +136,49 @@ export default function SkillsEdit({ form, accentColor }: SkillsEditProps) {
     };
 
     return (
-        <div className="flex flex-col gap-4">
-            {/* Toggles pour demi-maîtrise et expertise */}
-            <div className="flex flex-col sm:flex-row gap-4 px-3 rounded-lg text-muted-foreground">
-                <div className="flex items-center gap-2">
-                    <Checkbox
-                        id="enable-half-proficiency"
-                        checked={enableHalfProficiency}
-                        onCheckedChange={(checked) => setEnableHalfProficiency(checked === true)}
-                    />
-                    <Label htmlFor="enable-half-proficiency" className="cursor-pointer text-sm">
-                        {t("enableHalfProficiency")}
-                    </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Checkbox
-                        id="enable-expertise"
-                        checked={enableExpertise}
-                        onCheckedChange={(checked) => setEnableExpertise(checked === true)}
-                    />
-                    <Label htmlFor="enable-expertise" className="cursor-pointer text-sm">
-                        {t("enableExpertise")}
-                    </Label>
-                </div>
-            </div>
+        <div className="grid grid-cols-2 gap-2">
+            {skillsConfig.map(({ key, translationKey, abilityKey, icon }) => {
+                const masteryLevel = form.watch(`stats.masteries.${key}`) || 0;
+                const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
+                const abilityScore = form.watch(`stats.abilityScores.${abilityKey}`) || 10;
+                const skillBonus = calculateSkillBonus(masteryLevel, abilityScore, proficiencyBonus);
+                const isActive = masteryLevel > 0;
 
-            {/* Grille des compétences */}
-            <div className="grid grid-cols-2 gap-2">
-                {skillsConfig.map(({ key, translationKey, abilityKey, icon }) => {
-                    const masteryLevel = form.watch(`stats.masteries.${key}`) || 0;
-                    const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
-                    const abilityScore = form.watch(`stats.abilityScores.${abilityKey}`) || 10;
-                    const skillBonus = calculateSkillBonus(masteryLevel, abilityScore, proficiencyBonus);
-                    const isActive = masteryLevel > 0;
-
-                    return (
-                        <Controller
-                            key={key}
-                            name={`stats.masteries.${key}`}
-                            control={form.control}
-                            render={() => (
-                                <button
-                                    type="button"
-                                    onClick={() => toggleSkillProficiency(key, abilityKey)}
-                                    className="text-left"
-                                >
-                                    <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
-                                        <p className="text-sm flex items-center gap-2">
-                                            <span className="shrink-0">{icon}</span>
-                                            <span className={`truncate ${isActive && "italic"}`}>
-                                                {t(`skillNames.${translationKey}`)}
-                                            </span>
-                                            <span className="font-bold shrink-0">
-                                                {skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}
-                                            </span>
-                                            <Image
-                                                src={getIconForValue(masteryLevel, accentColor)}
-                                                alt={t("masteryLevelIcon", { level: masteryLevel })}
-                                                width={20}
-                                                height={20}
-                                                className="shrink-0"
-                                                aria-hidden="true"
-                                            />
-                                        </p>
-                                    </Card>
-                                </button>
-                            )}
-                        />
-                    );
-                })}
-            </div>
+                return (
+                    <Controller
+                        key={key}
+                        name={`stats.masteries.${key}`}
+                        control={form.control}
+                        render={() => (
+                            <button
+                                type="button"
+                                onClick={() => toggleSkillProficiency(key, abilityKey)}
+                                className="text-left"
+                            >
+                                <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
+                                    <p className="text-sm flex items-center gap-2">
+                                        <span className="shrink-0">{icon}</span>
+                                        <span className={`truncate ${isActive && "italic"}`}>
+                                            {t(`skillNames.${translationKey}`)}
+                                        </span>
+                                        <span className="font-bold shrink-0">
+                                            {skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}
+                                        </span>
+                                        <Image
+                                            src={getIconForValue(masteryLevel, accentColor)}
+                                            alt={t("masteryLevelIcon", { level: masteryLevel })}
+                                            width={20}
+                                            height={20}
+                                            className="shrink-0"
+                                            aria-hidden="true"
+                                        />
+                                    </p>
+                                </Card>
+                            </button>
+                        )}
+                    />
+                );
+            })}
         </div>
     );
 }
