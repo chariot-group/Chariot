@@ -195,13 +195,14 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                 const abilityName = tAbilities(key as any);
                 const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
                 const valeurCalculer = Math.floor((abilityScore - 10) / 2);
+                const displayBonus = value !== 0 ? (valeurCalculer + value) : valeurCalculer;
                 return (
                   <Skill
                     key={key}
                     skillName={abilityName}
-                    value={value > 0 ? 2 : 0}
+                    value={value !== 0 ? 2 : 0}
                     accentColor={accentColor}
-                    skills={value > 0 ? value : valeurCalculer}
+                    skills={displayBonus}
                   />
                 );
               })}

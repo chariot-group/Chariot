@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
 import Skill from "@/components/character/tabContents/general/shared/Skill";
+import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import Image from "next/image";
 
 import RedCircle from "@public/assets/icons/red-circle.svg";
@@ -485,24 +486,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
               {t("savingThrows")}
             </h2>
           </Card>
-          <div className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2">
-            {abilityScoreKeys.map((key) => {
-              const abilityName = tAbilities(key as any);
-              const abilityScore = form.watch(`stats.abilityScores.${key}`) || 0;
-              const savingThrowValue = form.watch(`stats.savingThrows.${key}`) || 0;
-              const valeurCalculer = Math.floor((abilityScore - 10) / 2);
-
-              return (
-                <Skill
-                  key={key}
-                  skillName={abilityName}
-                  value={savingThrowValue > 0 ? 2 : 0}
-                  accentColor={accentColor}
-                  skills={savingThrowValue > 0 ? savingThrowValue : valeurCalculer}
-                />
-              );
-            })}
-          </div>
+          <SavingThrowsEdit form={form} accentColor={accentColor} />
         </div>
 
         {/* Jets de sauvegarde contre la mort */}

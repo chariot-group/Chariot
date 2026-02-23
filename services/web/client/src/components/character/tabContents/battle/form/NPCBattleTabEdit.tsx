@@ -455,14 +455,16 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
               const abilityScore = form.watch(`stats.abilityScores.${key}`) || 0;
               const savingThrowValue = form.watch(`stats.savingThrows.${key}`) || 0;
               const valeurCalculer = Math.floor((abilityScore - 10) / 2);
+              const isProficient = savingThrowValue !== 0;
+              const displayBonus = isProficient ? (valeurCalculer + savingThrowValue) : valeurCalculer;
 
               return (
                 <Skill
                   key={key}
                   skillName={abilityName}
-                  value={savingThrowValue > 0 ? 2 : 0}
+                  value={isProficient ? 2 : 0}
                   accentColor={accentColor}
-                  skills={savingThrowValue > 0 ? savingThrowValue : valeurCalculer}
+                  skills={displayBonus}
                 />
               );
             })}

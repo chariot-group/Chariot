@@ -3170,18 +3170,18 @@
 },
 {
   "firstname": "Calico",
-  "lastname": "Zelyoni",
+  "lastname": "Zelyony",
   "kind": "player",
   "inspiration": true,
   "profile": {
-    "alignment": "True Neutral",
-    "race": "Dragonborn",
+    "alignment": "Neutral",
+    "race": "Drakéide",
     "subrace": "Rouge",
     "history": "Pirate"
   },
   "progression": {
     "level": 5,
-    "experience": 7200
+    "experience": 0
   },
   "class": [
     {
@@ -3198,7 +3198,7 @@
     "currentHitPoints": 43,
     "tempHitPoints": 0,
     "armorClass": 14,
-    "initiative": 5,
+    "initiative": 0,
     "speed": {
       "walk": 30
     },
@@ -3207,7 +3207,7 @@
       "dexterity": 10,
       "constitution": 15,
       "intelligence": 8,
-      "wisdom": 13,
+      "wisdom": 12,
       "charisma": 14
     },
     "savingThrows": {
@@ -3223,15 +3223,15 @@
       "acrobatics": 0,
       "sleightHand": 0,
       "stealth": 0,
-      "arcana": 1,
+      "arcana": 0,
       "history": -1,
       "investigation": -1,
       "nature": -1,
-      "religion": 2,
+      "religion": -1,
       "animalHandling": 1,
-      "insight": 1,
+      "insight": 5,
       "medicine": 1,
-      "perception": 3,
+      "perception": 4,
       "survival": 4,
       "deception": 2,
       "intimidation": 5,
@@ -3274,66 +3274,86 @@
     "senses": []
   },
   "appearance": {
-    "age": 25,
+    "age": 30,
     "height": 1.95,
-    "weight": 110,
-    "eyes": "Dorés",
-    "skin": "Écailles rouges",
-    "hair": "Aucun",
-    "description": "Un drakéide mâle imposant aux écailles rouges, avec une présence charismatique indéniable. Son regard déterminé et son allure de commandant en font un leader naturel."
+    "weight": 150,
+    "eyes": "Rouge et Vert",
+    "skin": "Vert",
+    "hair": "Brun",
+    "description": "Un drakéide barbare et pirate. Je possède des écailles de couleur verte, évoquant la teinte d'un dragon vert, - néanmoins je suis un dragon de feu - et ces yeux perçants semblable à ceux de reptile. Une armure d'écaille est souvent sur moi et possède de grande bottes. Je possède après la bataille des marines le chapeau de capitaine."
   },
   "background": {
-    "personalityTraits": "Autoritaire avec son équipe - Première à Greg - Bon vivant",
-    "ideals": "Ni dieu ni maître, souhait d'être un noble. Retrouver sa mère adoptive",
-    "bonds": "Ami avec Juste, Courge, Méi, amoureux de Silvio, déteste Lazarre",
-    "flaws": "Imprévisible, aime la bagarre",
-    "alliesAndOrgs": "",
-    "backstory": "Pirate de naissance et commandant dans l'âme, Calico Zelyoni a forgé sa réputation sur les mers. Autoritaire mais juste avec son équipage, il mène ses compagnons avec une main de fer dans un gant de velours. Sa nature impulsive l'a souvent menée dans des situations périlleuses, mais son charisme et sa détermination lui ont toujours permis de s'en sortir."
+    "personalityTraits": "Débrouillard, Charismatique, Courageux, Stratégique, Passionné",
+    "ideals": "Loyauté, Liberté, Résilience, Vengeance / Justice personnelle",
+    "bonds": "Silvio Courtepause Doogry le griffon=gnome barde, musicien et prostitué de luxe à Hubéa ; mon amour, ma présence rare et précieuse, même si nous ne sommes pas vraiment ensemble. Juste, Me-il, Courge, Ail des Ours (compagnons d'aventure)",
+    "flaws": "Méfiant, Têtu, Colérique, Attachement excessif",
+    "alliesAndOrgs": "Survie en milieu hostile, Navigation et piraterie, Connaissance de la stratégie, Subterfuge et discrétion, Connaissance des cartes, trésors et rumeurs",
+    "backstory": "Pirate. Je suis né dans une ville médiévale prospère et luxuriante, au sein d'une famille riche qui attendait de moi la perfection. Mes parents rêvaient d'un héritier digne de leur nom… mais leur monde s'est effondré lorsque ma peau a commencé à prendre les teintes des drakéides, une espèce que cette société considère comme une malédiction vivante. Ma mère m'a renié sans hésiter. Mon père, plus froid que cruel, a fait le strict minimum pour sauver les apparences avant de m'abandonner à mon sort. Très tôt, j'ai compris que je n'étais pas leur fils — seulement leur honte. La seule douceur que j'ai connue venait d'une servante de la maison. Sa peau pâle tirait vers le rose et de fines branchies ornaient son cou. Je n'ai jamais su son vrai nom, mais sa voix était la seule chose qui calmait mes nuits. Quand j'avais six ans, j'ai surpris la conversation qui a brisé le peu d'illusions qu'il me restait : mes parents prévoyaient de se débarrasser de moi. Pas m'abandonner. Me faire disparaître. Terrifié, je me suis confié à elle. Elle a compris immédiatement le danger. Une nuit de pleine lune, elle m'a emporté loin de cette maison qui n'avait jamais été un foyer. Son plan était de me confier à son frère, Jefarha, un pirate notoire. Mais les mers sont vastes et les pirates difficiles à trouver. Pendant cinq longues années, elle m'a caché, me protégeant des recherches de ma famille. Nous avons connu la faim, le froid et la peur. Ces années m'ont forgé — elles ont fait de moi quelqu'un de difficile à briser. Finalement, elle a réussi à contacter Jefarha. Par une nuit sans lune, elle m'a confié à lui sur le pont de son navire. Avant de partir, elle m'a donné un morceau de tissu portant le nom de ma ville d'origine — Veselovka — signé d'un simple nom : Abby. Je garde encore ce tissu sur moi. À douze ans, j'ai rejoint l'équipage. Au début, je n'étais rien de plus qu'un domestique maltraité. Ils m'appelaient Zelyony — \"le vert\". Puis un soir, en fouillant le sac d'un pirate, je suis tombé sur un livre racontant l'histoire de Calico Jack Rackham. J'ai dévoré ses exploits nuit après nuit. C'est ce soir-là que je suis devenu Calico Zelyony. Les années ont passé. J'ai appris. J'ai survécu. J'ai gagné leur respect. Mais au milieu des tempêtes et du sang, il y a eu… une parenthèse inattendue. Dans la ville d'Hubea, je l'ai rencontré — Silvio Courtepause, un gnome barde aussi talentueux que dangereux. Musicien raffiné, prostitué de luxe fréquentant les puissants, il séduisait avec ses mélodies autant qu'avec ses sourires. Notre rencontre s'est faite dans une maison close, par pur hasard… ou peut-être par destin. Notre relation n'a jamais été simple. Nous ne sommes pas vraiment ensemble. Nous ne l'avons jamais été. Et pourtant… Silvio est l'une des rares personnes à me voir autrement que comme un monstre ou un capitaine. Avec lui, les silences ont du poids, et les regards en disent plus que les mots. Il appartient aux salons dorés d'Hubea, moi aux mers agitées — mais nos routes continuent de se croiser, encore et encore. Il m'est… terriblement cher. Je repris la mer après cette escale, mais la mer, elle, ne pardonne jamais. Lors d'une bataille décisive, Jefarha et une grande partie de l'équipage sont tombés. J'ai tenu la ligne. J'ai poussé les survivants à se battre jusqu'au bout. Nous avons gagné la Bataille de Raath — mais à quel prix. Quand la fumée est retombée, nous n'étions plus qu'une poignée. Alors je suis devenu capitaine. Et pour que le navire respire encore un peu de vie… je l'ai rebaptisé Crocs de Rive. Je pensais avoir vu le pire. Je me trompais. Un jour, j'ai appris que Silvio avait disparu. Les rumeurs menaient toutes au même nom — Lazare aux Neuf Doigts, originaire de la bataille de Raath, est par ailleurs, l'un des rares hommes capables de me glacer le sang. Lors du soirée classique a Hubéa, Silvio avait perdu gros lors d'une partie semblable au poker. Trop confiant… ou trop imprudent. Il avait parié son griffon, Dooggy — et Lazare l'avait pris. Puis Silvio s'était volatilisé à son tour. Pour espérer obtenir une rencontre avec Lazare, il ne suffisait pas de le traquer. Il fallait réunir une somme colossale, rien que pour avoir le droit de lui parler. C'est ce qui m'a mené à ce maudit jeu de coquilles de rappel. Pour espérer survivre et protéger ceux que j'aimais, il fallait faire équipe. C'est là que j'ai rencontré Juste, Me-il, et en même temps Eryndra et Noctael. Nous avons uni nos forces, chacun avec ses talents : Me-il le mage, Juste le roublard, Courge le druide, et Ail des Ours, l'hermine agile et rusée puis, Eryndra et Noctael ont fini par nous quitter plus tard, simplement partis vers d'autres routes. Avec eux, j'ai compris que je n'étais plus seul sur ces chemins dangereux. Ensemble, nous avons affronté le pire pour sauver Silvio et récupérer ce qui nous appartenait. Depuis… je ne navigue plus vraiment seul."
   },
   "treasure": {
     "cp": 0,
-    "sp": 0,
+    "sp": 74,
     "ep": 0,
     "gp": 480,
-    "pp": 100,
-    "treasure": "Butin de pirate, souvenirs de voyages",
-    "equipment": "Maillet, Coutille, Javeline, Pistolet, Épée, armure, équipement de navigation"
+    "pp": 24,
+    "treasure": "Morceau de tissu signé Abby (Veselovka) - souvenir de mon enfance, Bague au sceau de la famille pirate de Fragor, Livre (les exploits de Calico Jack), Mon navire Crocs de Rive, Cape de Raiementa, Fardeau du Naufragé (épée à deux mains), Pistolet du dernier souffle, Bague du capitaine Ô Shack",
+    "equipment": "Maillet, coutille, javeline (4), armure d'écailles, véhicules (aquatiques), outils de navigateur, sac à dos, sac de couchage, gamelle, boîte d'amadou, torches (10), rations/1 jour (10), gourde, corde en chanvre de 15 m, vêtements communs. Poids de l'équipement 69 kg - Coût 607,5 po. Poids des pièces 6,78 kg"
   },
   "abilities": [
     {
-      "name": "Arme de souffle (Souffle)",
-      "description": "Souffle de dragon (2d6 dégâts, jet de sauvegarde DC 18). Utilisable après un repos court ou long."
+      "name": "Rage (Barbare)",
+      "description": "3 fois par repos long. En rage : bonus de +2 aux dégâts de mêlée, avantage aux jets de Force et jets de sauvegarde de Force, résistance aux dégâts contondants, perforants et tranchants. Dure 1 minute."
     },
     {
-      "name": "Résistance au feu",
-      "description": "Résistance aux dégâts de feu grâce à votre héritage draconique."
+      "name": "Défense sans armure",
+      "description": "Lorsque vous ne portez pas d'armure, votre CA est égale à 10 + votre modificateur de Dextérité + votre modificateur de Constitution."
     },
     {
-      "name": "Inspiration bardique",
-      "description": "En tant qu'action bonus, vous pouvez donner à une créature dans les 18m un dé d'inspiration (1d8) utilisable pour ajouter au résultat d'un jet."
+      "name": "Attaque téméraire",
+      "description": "Vous pouvez lancer de côté toute préoccupation pour la défense pour attaquer avec une férocité désespérée. Lorsque vous faites votre première attaque à votre tour, vous pouvez décider d'attaquer avec témérité. Cela vous donne l'avantage sur les jets d'attaque de mêlée utilisant la Force pendant ce tour, mais les jets d'attaque contre vous ont l'avantage jusqu'à votre prochain tour."
     },
     {
-      "name": "Chant de repos",
-      "description": "Pendant un repos court, vous et vos alliés récupérez des points de vie supplémentaires."
+      "name": "Sens du danger",
+      "description": "Vous avez l'avantage aux jets de sauvegarde de Dextérité contre les effets que vous pouvez voir, tels que les pièges et les sorts. Pour bénéficier de cet avantage, vous ne devez pas être aveuglé, assourdi ou incapable."
     },
     {
-      "name": "Maîtrise bonus",
-      "description": "Maîtrise de compétences supplémentaires du barde."
+      "name": "Forme de bête (Voie de la Bête)",
+      "description": "Lorsque vous entrez en rage, vous pouvez transformer une partie de votre corps en une arme naturelle. À chaque fois que vous entrez en rage, choisissez l'une des options suivantes, qui dure jusqu'à ce que votre rage se termine : Morsure (+dégâts et soins), Griffes (attaques supplémentaires), ou Queue (portée et réaction)."
     },
     {
-      "name": "Fonte dans la foule",
-      "description": "Compétence de pirate permettant de se fondre dans une foule ou un port."
+      "name": "Attaque supplémentaire",
+      "description": "Vous pouvez attaquer deux fois, au lieu d'une seule, chaque fois que vous effectuez l'action Attaquer à votre tour. Le nombre d'attaques augmente à trois lorsque vous atteignez le niveau 11 dans cette classe, puis à quatre au niveau 20."
     },
     {
-      "name": "Mauvaise réputation",
-      "description": "Votre réputation de pirate vous précède, ce qui peut être un avantage ou un inconvénient selon les situations."
+      "name": "Déplacement rapide",
+      "description": "Votre vitesse augmente de 3 mètres lorsque vous ne portez pas d'armure lourde."
+    },
+    {
+      "name": "Ascendance draconique (Dragon rouge)",
+      "description": "Vous possédez l'ascendance d'un dragon rouge, ce qui vous confère une affinité avec le feu."
+    },
+    {
+      "name": "Résistance aux dégâts (Feu)",
+      "description": "Vous avez une résistance aux dégâts de feu grâce à votre héritage draconique."
+    },
+    {
+      "name": "Souffle (Arme de souffle)",
+      "description": "Vous pouvez utiliser votre action pour exhaler de l'énergie destructrice. Votre ascendance draconique détermine la taille, la forme et le type de dégâts de l'exhalaison. Lorsque vous utilisez votre souffle, chaque créature dans la zone de l'exhalaison doit faire un jet de sauvegarde de Dextérité DD 13. Une créature subit 2d6 dégâts de feu en cas d'échec, et la moitié de ces dégâts en cas de réussite. Après avoir utilisé votre souffle, vous ne pouvez pas l'utiliser à nouveau jusqu'à ce que vous terminiez un repos court ou long."
+    },
+    {
+      "name": "Mauvaise réputation (Pirate)",
+      "description": "Peu importe où vous allez, les gens ont peur de vous en raison de votre réputation. Lorsque vous êtes dans un établissement civilisé, vous pouvez vous en tirer avec des crimes mineurs, comme refuser de payer de la nourriture dans une taverne ou enfoncer des portes dans une boutique locale, car la plupart des gens ne signaleront pas votre activité aux autorités."
+    },
+    {
+      "name": "Bague du capitaine Ô Shack",
+      "description": "Ce capitaine utilisait la magie pour surprendre ses adversaires. Une fois par jour, un lanceur de sort (qui peut être vous) peut effectuer un rituel pour stocker un sort connu (niveau 2 max) maîtrisé dans la bague. Ce sort peut être lancé par le porteur de la bague. La bague ne demande pas de maîtrise de la magie. Caractéristique d'incantation : Sagesse, DD de sauvegarde : 13, Bonus pour toucher : +3. Sort actuel : Éclair traçant."
     }
   ],
   "actions": [
     {
       "name": "Maillet",
       "type": "mêlée",
-      "attackBonus": 9,
+      "attackBonus": 7,
       "damage": [
         {
           "dice": "2d6+4",
@@ -3341,7 +3361,7 @@
         }
       ],
       "range": "1,5 m",
-      "description": "Attaque de mêlée avec une masse d'armes"
+      "description": "Attaque de mêlée avec maillet. En rage : +2 aux dégâts (2d6+6 total)."
     },
     {
       "name": "Coutille",
@@ -3354,7 +3374,7 @@
         }
       ],
       "range": "1,5 m",
-      "description": "Attaque avec Castillo"
+      "description": "Attaque de mêlée avec coutille. En rage : +2 aux dégâts (1d10+6 total)."
     },
     {
       "name": "Javeline",
@@ -3367,36 +3387,10 @@
         }
       ],
       "range": "1,5 m ou 9/36 m",
-      "description": "Attaque avec javeline (mêlée ou lancer)"
+      "description": "Attaque avec javeline (mêlée ou lancer). En rage et en mêlée : +2 aux dégâts (1d6+6 total)."
     },
     {
-      "name": "Perchant",
-      "type": "attaque",
-      "attackBonus": 0,
-      "damage": [
-        {
-          "dice": "2d6",
-          "type": "perforant"
-        }
-      ],
-      "range": "variable",
-      "description": "Attaque perforante"
-    },
-    {
-      "name": "Épée (Fardeau du naufragé)",
-      "type": "mêlée",
-      "attackBonus": 9,
-      "damage": [
-        {
-          "dice": "2d6+9",
-          "type": "tranchant"
-        }
-      ],
-      "range": "1,5 m",
-      "description": "Attaque de mêlée avec épée"
-    },
-    {
-      "name": "Souffle de dragon",
+      "name": "Souffle de feu",
       "type": "arme de souffle",
       "attackBonus": 0,
       "damage": [
@@ -3406,7 +3400,41 @@
         }
       ],
       "range": "cône de 4,5 m",
-      "description": "Souffle de dragon infligeant 2d6 dégâts de feu (jet de sauvegarde Constitution DC 18 pour demi-dégâts). Au cœur téméraire - que la 1ère attaque/r - avantage - avec le Svs ma raison au reteau"
+      "description": "Souffle de dragon (rouge) infligeant 2d6 dégâts de feu en cône (jet de sauvegarde Dextérité DD 13 pour demi-dégâts). Utilisable après un repos court ou long."
+    },
+    {
+      "name": "Cape de Raiementa",
+      "type": "objet magique",
+      "attackBonus": 0,
+      "damage": [],
+      "range": "Personnel",
+      "description": "Cape magique (Rare). Nécessite harmonisation. Accordant 18 m de vitesse de nage supplémentaire et la capacité de respirer sous l'eau."
+    },
+    {
+      "name": "Fardeau du Naufragé (Burden of the Castaway)",
+      "type": "mêlée",
+      "attackBonus": 9,
+      "damage": [
+        {
+          "dice": "2d6+6",
+          "type": "tranchant"
+        }
+      ],
+      "range": "1,5 m",
+      "description": "Épée à deux mains (Rare, Lourde, À deux mains). Nécessite harmonisation. Dégâts : 2d6+2 tranchant. Forgée dans le Sel : Vous gagnez un bonus de +2 aux jets d'attaque avec cette arme. Frappe d'Ancrage : Lorsque vous réussissez une attaque d'opportunité avec cette arme contre un ennemi qui fuit ou passe à côté, la cible doit également faire un jet de sauvegarde de Force (DD 15). En cas d'échec, sa vitesse de déplacement est réduite à 0 jusqu'au début de son prochain tour. En rage : +2 aux dégâts (2d6+8 total)."
+    },
+    {
+      "name": "Pistolet du dernier souffle",
+      "type": "à distance",
+      "attackBonus": 3,
+      "damage": [
+        {
+          "dice": "1d10+0",
+          "type": "perforant"
+        }
+      ],
+      "range": "9/27 m",
+      "description": "Pistolet magique. 13 charges. Tir normal : 1d10 dégâts perforants. Tir spécial (1/jour) : Vous pouvez tirer une balle magique. La cible doit faire un jet de sauvegarde de Sagesse DD 13. En cas d'échec, elle subit 3d6 dégâts nécrotiques, ou la moitié en cas de réussite."
     }
   ],
   "affinities": {
@@ -3438,7 +3466,7 @@
 },
 {
   "firstname": "Juste",
-  "lastname": "Bonnémine",
+  "lastname": "Bonnemine",
   "kind": "player",
   "inspiration": true,
   "profile": {
@@ -3473,7 +3501,7 @@
     "abilityScores": {
       "strength": 10,
       "dexterity": 14,
-      "constitution": 11,
+      "constitution": 14,
       "intelligence": 15,
       "wisdom": 13,
       "charisma": 16
@@ -3481,15 +3509,15 @@
     "savingThrows": {
       "strength": 0,
       "dexterity": 5,
-      "constitution": 0,
+      "constitution": 2,
       "intelligence": 5,
       "wisdom": 1,
       "charisma": 3
     },
     "skills": {
       "athletics": 0,
-      "acrobatics": 5,
-      "sleightHand": 6,
+      "acrobatics": 8,
+      "sleightHand": 8,
       "stealth": 5,
       "arcana": 2,
       "history": 2,
@@ -3498,13 +3526,13 @@
       "religion": 2,
       "animalHandling": 1,
       "insight": 4,
-      "medicine": 1,
+      "medicine": 2,
       "perception": 4,
       "survival": 1,
       "deception": 9,
       "intimidation": 3,
-      "performance": 3,
-      "persuasion": 9
+      "performance": 6,
+      "persuasion": 6
     },
     "masteries": {
       "athletics": 0,
@@ -3523,8 +3551,8 @@
       "survival": 0,
       "deception": 3,
       "intimidation": 0,
-      "performance": 0,
-      "persuasion": 3
+      "performance": 2,
+      "persuasion": 2
     },
     "masteriesAbility": {
       "strength": false,
@@ -3534,29 +3562,29 @@
       "wisdom": false,
       "charisma": false
     },
-    "languages": ["Commun", "Gobelin", "Elfique", "Jargon des voleurs"],
-    "tools": ["Outils de voleur", "Kit de déguisement"],
+    "languages": ["Commun", "Gobelin", "Jargon des voleurs"],
+    "tools": ["Outils de voleur", "Kit de déguisement", "Kit de contrefaçon"],
     "weapons": ["armes simples", "arbalète légère", "épée courte", "rapière", "arc court"],
     "armors": ["Light armor"],
     "passivePerception": 13,
     "senses": []
   },
   "appearance": {
-    "age": 30,
+    "age": 37,
     "height": 1.75,
     "weight": 70,
     "eyes": "Noisette",
-    "skin": "Claire",
-    "hair": "Châtain",
-    "description": "Un homme de taille moyenne à l'allure discrète mais élégante. Ses yeux noisette observent tout avec attention, et son sourire charmant cache une nature rusée."
+    "skin": "Mate",
+    "hair": "Noire",
+    "description": "Un homme à la peau mate évoquant les terres chaudes de la Méditerranée, avec des cheveux bruns en bataille qui semblent n'avoir jamais vu un peigne. Il s'habille avec une élégance décontractée - chemise en lin légèrement déboutonnée, veste en cuir souple ou manteau ajusté, foulard noué nonchalamment, et bottes en cuir patiné. Chaque détail - boucle de ceinture gravée, couleurs raffinées - semble soigneusement choisi pour un charme naturel maîtrisé."
   },
   "background": {
-    "personalityTraits": "Balon elflique - Discret et observateur",
-    "ideals": "Fournai, idéale - La liberté est le plus grand des biens",
-    "bonds": "Badolette avec Boleau - Escrimeur de sietts, boome, ça Tervard - Estral Tory journeux",
-    "flaws": "Peut être trop confiant dans ses compétences de discrétion et d'infiltration",
-    "alliesAndOrgs": "Liens avec des réseaux de roublards et d'anciens clercs",
-    "backstory": "Ancien clerc devenu roublard, Juste Bonnémine a troqué sa vie religieuse pour une existence plus... flexible. Son passé dans le clergé lui a donné une éducation et des contacts précieux, tandis que ses nouvelles compétences lui permettent de naviguer dans les ombres de la société. Il utilise son charisme naturel et ses talents de voleur pour survivre et prospérer, tout en gardant une étrange moralité héritée de son ancienne vie."
+    "personalityTraits": "Charmeur, Rusé, Insouciant, Réfléchi, Confiant, Manipulateur, Cynique",
+    "ideals": "À la recherche d'un nouveau but",
+    "bonds": "Sa mère, la troupe, un client mystérieux",
+    "flaws": "Manipulateur, indécision morale, fuite des responsabilités",
+    "alliesAndOrgs": "Les roublards de la ville, des nobles influents",
+    "backstory": "Charlatan (Je convaincs les gens qu'une camelote sans valeur vaut largement l'argent qu'ils ont obtenu en travaillant durement). Né dans une famille pauvre, il grandit dans les rues où il apprend l'art de l'escroquerie guidé par sa mère, sa meilleure alliée et complice. Ensemble, ils formaient une troupe spectaculaire qui sillonnait les routes, charmant et dupant leur public. Chaque spectacle, destiné à la bourgeoisie et à la noblesse, sert de couverture pour des larcins audacieux où le gros lot est toujours la priorité. Lors de son retour coup à l'Académie de Mage, il doit voler un livre de magie noire pour un client. Mais il est pris sur le fait par une jeune Halfeline qui, au lieu de le dénoncer, l'aide à accomplir sa mission. Après avoir volé le livre, emportant avec lui le livre, il se retrouve acculé dans un cul-de-sac, où les gardes commencent à tirer. Dans un geste imprévu, l'Halfeline s'oppose aux gardes pour protéger Juste qui s'échappait. Alors qu'il se voit presque libre avec le livre, emportant avec lui non seulement l'objet précieux, mais un sentiment qu'il n'a jamais connu auparavant. Il se demande désormais si la voie qu'il suit est bien celle qu'il veut vraiment suivre ou si cette jeune Halfeline lui a ouvert les yeux sur d'autres possibilités, et si le gros lot est toujours la priorité."
   },
   "treasure": {
     "cp": 72,
@@ -3564,8 +3592,8 @@
     "ep": 0,
     "gp": 325,
     "pp": 211,
-    "treasure": "Scarle d'ivoire dorsal (35 po), Sifflet de chevalier pirate (1100 pp), Potion, Bogunbe",
-    "equipment": "Rapière, arc court, dague, fronde, dague ranger, outils de voleur, kit de déguisement, armure légère"
+    "treasure": "Sac sans fond, Simulacre de combat, Bouteille du Crocs-de-Brume, Trésor (Q) : 1100 pp et une chevalière pirate, Dague de l'Azur (nécessite accord)",
+    "equipment": "Rapière, arc court, dague (2), Dague de l'Azur, fronde, armure de cuir, outils de voleur, kit de déguisement, 20 pierres, carquois, bd de déguisement, bougie, chaîne de 3m, cloche, pied-de-biche, marteau, 10 pitons, lanterne à capuchon, 2 fioles d'huile, 5 jours de rations, briquet, sacoche, 50 pieds de corde en chanvre de 15m, vêtements raffinés, corde, vêtements courants, bourse"
   },
   "abilities": [
     {
@@ -3574,7 +3602,7 @@
     },
     {
       "name": "Expertise",
-      "description": "Vous doublez votre bonus de maîtrise pour certaines compétences choisies (Acrobaties, Discrétion, Escamotage, Investigation, Perception, Persuasion, Tromperie)."
+      "description": "Vous doublez votre bonus de maîtrise pour certaines compétences choisies (Acrobaties, Escamotage, Tromperie, Persuasion, Représentation)."
     },
     {
       "name": "Ruse",
@@ -3595,6 +3623,10 @@
     {
       "name": "Furtivité suprême (Hero)",
       "description": "Expert en discrétion et infiltration, vous pouvez vous cacher et vous déplacer sans être détecté même dans des situations difficiles."
+    },
+    {
+      "name": "Fausse identité (Charlatan)",
+      "description": "Vous avez créé une fausse identité avec documents, connaissances et déguisements permettant de vous faire passer pour quelqu'un d'autre. Vous pouvez adopter une nouvelle identité en passant 7 jours et 25 po pour établir l'historique, la profession et les affiliés de votre nouvelle identité."
     }
   ],
   "actions": [
@@ -3651,22 +3683,588 @@
       "description": "Attaque à distance avec fronde."
     },
     {
-      "name": "Dague ranger",
-      "type": "mêlée",
+      "name": "Dague de l'Azur",
+      "type": "mêlée ou à distance",
       "attackBonus": 6,
+      "damage": [
+        {
+          "dice": "1d4+3",
+          "type": "perforant"
+        }
+      ],
+      "range": "1,5 m ou 6/18 m",
+      "description": "Dague magique +1 (finesse, légère, lancer). Nécessite armonisation. Lorsque accordé : Si vous touchez une cible, vous pouvez activer un poison marin (Save CON DD13 : 1d6+1 dégâts de poison) dans un délai de 1 minute après avoir touché, le poison fait effet pendant 3 tours. Si la dague touche une source d'eau, vous pouvez la rappeler à vous, elle se déplace dans l'eau comme si elle en était elle-même constituée."
+    }
+  ],
+  "spellcasting": [],
+  "affinities": {
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": []
+  },
+  "conditions": {
+    "blinded": false,
+    "charmed": false,
+    "deafened": false,
+    "frightened": false,
+    "grappled": false,
+    "incapacitated": false,
+    "invisible": false,
+    "paralyzed": false,
+    "petrified": false,
+    "poisoned": false,
+    "prone": false,
+    "restrained": false,
+    "stunned": false,
+    "unconscious": false
+  },
+  "exhaustionLevel": 0,
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  }
+},
+{
+  "firstname": "Courge",
+  "lastname": "Roulecolline",
+  "kind": "player",
+  "inspiration": false,
+  "profile": {
+    "alignment": "Neutral",
+    "race": "Halfelin",
+    "subrace": "Robuste",
+    "history": "Ermite"
+  },
+  "progression": {
+    "level": 5,
+    "experience": 0
+  },
+  "class": [
+    {
+      "name": "Druid",
+      "subclass": "Cercle de la Lune",
+      "level": 5,
+      "hitDice": 8
+    }
+  ],
+  "stats": {
+    "size": "Small",
+    "proficiencyBonus": 3,
+    "maxHitPoints": 37,
+    "currentHitPoints": 37,
+    "tempHitPoints": 0,
+    "armorClass": 14,
+    "initiative": 2,
+    "speed": {
+      "walk": 25
+    },
+    "abilityScores": {
+      "strength": 8,
+      "dexterity": 14,
+      "constitution": 15,
+      "intelligence": 13,
+      "wisdom": 16,
+      "charisma": 12
+    },
+    "savingThrows": {
+      "strength": -1,
+      "dexterity": 2,
+      "constitution": 2,
+      "intelligence": 5,
+      "wisdom": 6,
+      "charisma": 1
+    },
+    "skills": {
+      "athletics": -1,
+      "acrobatics": 2,
+      "sleightHand": 2,
+      "stealth": 2,
+      "arcana": 1,
+      "history": 1,
+      "investigation": 1,
+      "nature": 4,
+      "religion": 4,
+      "animalHandling": 6,
+      "insight": 3,
+      "medicine": 6,
+      "perception": 6,
+      "survival": 3,
+      "deception": 1,
+      "intimidation": 1,
+      "performance": 1,
+      "persuasion": 1
+    },
+    "masteries": {
+      "athletics": 0,
+      "acrobatics": 0,
+      "sleightHand": 0,
+      "stealth": 0,
+      "arcana": 0,
+      "history": 0,
+      "investigation": 0,
+      "nature": 2,
+      "religion": 2,
+      "animalHandling": 2,
+      "insight": 0,
+      "medicine": 2,
+      "perception": 2,
+      "survival": 0,
+      "deception": 0,
+      "intimidation": 0,
+      "performance": 0,
+      "persuasion": 0
+    },
+    "masteriesAbility": {
+      "strength": false,
+      "dexterity": false,
+      "constitution": false,
+      "intelligence": true,
+      "wisdom": true,
+      "charisma": false
+    },
+    "languages": ["Commun", "Halfelin", "Nain", "Druidique"],
+    "tools": ["Kit d'herboriste", "Cornemuse"],
+    "weapons": ["Gourdin", "Dague", "Fléchette", "Javeline", "Masse d'armes", "Bâton", "Cimeterre", "Fronde", "Serpe", "Lance"],
+    "armors": ["Armures légères", "Armures intermédiaires", "Boucliers"],
+    "passivePerception": 16,
+    "senses": []
+  },
+  "appearance": {
+    "age": 40,
+    "height": 0.9,
+    "weight": 19,
+    "eyes": "Verts",
+    "skin": "Basanée",
+    "hair": "Roux",
+    "description": "Une halfeline robuste au teint basané et aux cheveux roux. Son regard vert trahit une sagesse profonde acquise dans la solitude de la nature."
+  },
+  "background": {
+    "personalityTraits": "",
+    "ideals": "",
+    "bonds": "",
+    "flaws": "",
+    "alliesAndOrgs": "",
+    "backstory": "Ermite ayant passé de nombreuses années dans la nature, Courge a développé une connexion profonde avec le monde sauvage et les esprits de la nature."
+  },
+  "treasure": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 5,
+    "pp": 0,
+    "treasure": "",
+    "equipment": "Bâton, dague, armure de peaux, kit d'herboriste, symbole sacré, sac de couchage, hache de guerre, sac à dos, gamelle, boîte d'allume-feu, torche (10), rations/1 jour (10), gourde, vêtements communs, étui à cartes ou parchemins, couverture"
+  },
+  "abilities": [
+    {
+      "name": "Forme sauvage",
+      "description": "Vous pouvez utiliser votre action pour prendre magiquement la forme d'une bête que vous avez déjà vue. Vous pouvez utiliser cette capacité 2 fois par repos. Limite FP 1, pas de vitesse de vol ou de nage. Durée: 2 heures."
+    },
+    {
+      "name": "Forme sauvage de combat (Cercle de la Lune)",
+      "description": "Vous pouvez vous métamorphoser en utilisant une action bonus. Sous forme de bête, vous pouvez dépenser un emplacement de sort pour récupérer 1d8 points de vie par niveau d'emplacement dépensé."
+    },
+    {
+      "name": "Formes du cercle",
+      "description": "Les bêtes en lesquelles vous pouvez vous transformer ont un FP maximum de 1 (vous ignorez la colonne FP max de la table Forme sauvage, mais devez respecter les autres limites)."
+    },
+    {
+      "name": "Chanceaux (Halfelin)",
+      "description": "Lorsque vous obtenez un 1 sur le d20 d'un jet d'attaque, de caractéristique ou de sauvegarde, vous pouvez relancer le dé et devez utiliser le nouveau résultat."
+    },
+    {
+      "name": "Brave (Halfelin)",
+      "description": "Vous avez un avantage aux jets de sauvegarde contre la peur."
+    },
+    {
+      "name": "Agilité halfeline",
+      "description": "Vous pouvez passer dans l'espace d'une créature de taille supérieure à la vôtre."
+    },
+    {
+      "name": "Résistance des robustes (Halfelin robuste)",
+      "description": "Vous avez l'avantage aux jets de sauvegarde contre le poison et la résistance contre les dégâts de poison."
+    },
+    {
+      "name": "Découverte (Ermite)",
+      "description": "La tranquille solitude de votre ermitage prolongé vous a donné accès à une découverte unique et puissante. La nature exacte de cette révélation dépend de la nature de votre réclusion."
+    }
+  ],
+  "actions": [
+    {
+      "name": "Bâton",
+      "type": "mêlée",
+      "attackBonus": 2,
+      "damage": [
+        {
+          "dice": "1d6-1",
+          "type": "contondant"
+        }
+      ],
+      "range": "1,5 m",
+      "description": "Attaque de mêlée avec bâton (polyvalente 1d8)."
+    },
+    {
+      "name": "Dague",
+      "type": "mêlée ou à distance",
+      "attackBonus": 5,
       "damage": [
         {
           "dice": "1d4+2",
           "type": "perforant"
         }
       ],
-      "range": "1,5 m",
-      "description": "Attaque avec dague ranger (possiblement une arme spéciale ou enchantée)."
+      "range": "1,5 m ou 6/18 m",
+      "description": "Attaque avec dague (finesse, légère, lancer)."
     }
   ],
-  "spellcasting": [],
+  "spellcasting": [
+    {
+      "className": "Druid",
+      "ability": "wisdom",
+      "saveDC": 14,
+      "attackBonus": 6,
+      "spellSlotsByLevel": {
+        "1": { "total": 4, "used": 0 },
+        "2": { "total": 3, "used": 0 },
+        "3": { "total": 2, "used": 0 }
+      },
+      "totalSlots": 9,
+      "spells": [
+        {
+          "name": "Gelure",
+          "level": 0,
+          "school": "Évocation",
+          "castingTime": "1 action",
+          "range": "18 m",
+          "components": ["V", "S"],
+          "duration": "Instantanée",
+          "description": "Vous créez un globe d'air glacé qui file vers une créature à portée. Effectuez une attaque de sort à distance contre la cible. Si l'attaque touche, la créature subit 1d8 dégâts de froid et sa vitesse est réduite de 3 mètres jusqu'au début de votre prochain tour."
+        },
+        {
+          "name": "Druidisme",
+          "level": 0,
+          "school": "Transmutation",
+          "castingTime": "1 action",
+          "range": "9 m",
+          "components": ["V", "S"],
+          "duration": "Instantanée",
+          "description": "Vous chuchotez aux esprits de la nature pour créer l'un des effets suivants à portée : créer un effet sensoriel inoffensif, faire fleurir ou éclore des fleurs, allumer ou éteindre une flamme, nettoyer ou salir un objet."
+        },
+        {
+          "name": "Assistance",
+          "level": 0,
+          "school": "Divination",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S"],
+          "duration": "Concentration, jusqu'à 1 minute",
+          "description": "Vous touchez une créature consentante. Une fois avant la fin du sort, la cible peut lancer un d4 et ajouter le résultat à un jet de caractéristique de son choix."
+        },
+        {
+          "name": "Communication avec les animaux",
+          "level": 1,
+          "school": "Divination",
+          "castingTime": "1 action",
+          "range": "Personnelle",
+          "components": ["V", "S"],
+          "duration": "10 minutes",
+          "description": "Vous obtenez la capacité de comprendre et de communiquer verbalement avec les bêtes pour la durée. La connaissance et la conscience de nombreuses bêtes sont limitées par leur intelligence, mais elles peuvent au minimum vous donner des informations sur des lieux ou des monstres à proximité."
+        },
+        {
+          "name": "Détection du poison et des maladies",
+          "level": 1,
+          "school": "Divination",
+          "castingTime": "1 action",
+          "range": "Personnelle",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 10 minutes",
+          "description": "Pour la durée, vous pouvez sentir la présence et localiser les poisons, les créatures venimeuses et les maladies dans un rayon de 9 mètres. Vous identifiez également le type de poison, de créature venimeuse ou de maladie dans chaque cas."
+        },
+        {
+          "name": "Enchevêtrement",
+          "level": 1,
+          "school": "Invocation",
+          "castingTime": "1 action",
+          "range": "27 m",
+          "components": ["V", "S"],
+          "duration": "Concentration, jusqu'à 1 minute",
+          "description": "Des herbes et des vignes poussent à partir du sol dans un carré de 6 mètres de côté centré sur un point à portée. Pour la durée, ces plantes transforment le sol dans la zone en terrain difficile. Une créature dans la zone quand vous lancez le sort doit réussir un jet de sauvegarde de Force ou être entravée par les plantes jusqu'à la fin du sort. Une créature entravée peut utiliser son action pour faire un jet de Force contre le DD de sauvegarde de votre sort. En cas de réussite, elle se libère."
+        },
+        {
+          "name": "Mot de guérison",
+          "level": 1,
+          "school": "Évocation",
+          "castingTime": "1 action bonus",
+          "range": "18 m",
+          "components": ["V"],
+          "duration": "Instantanée",
+          "description": "Une créature de votre choix que vous pouvez voir à portée récupère un nombre de points de vie égal à 1d4 + votre modificateur de caractéristique d'incantation. Ce sort n'a aucun effet sur les morts-vivants ou les créatures artificielles."
+        },
+        {
+          "name": "Nappe de brouillard",
+          "level": 1,
+          "school": "Invocation",
+          "castingTime": "1 action",
+          "range": "36 m",
+          "components": ["V", "S"],
+          "duration": "Concentration, jusqu'à 1 heure",
+          "description": "Vous créez une sphère de brouillard de 6 mètres de rayon centrée sur un point à portée. Le brouillard se répand en contournant les coins et la zone est fortement obscurcie. Il dure pour la durée ou jusqu'à ce qu'un vent de vitesse modérée ou plus grande (au moins 15 km/h) le disperse."
+        },
+        {
+          "name": "Protection contre le mal et le bien",
+          "level": 1,
+          "school": "Abjuration",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 10 minutes",
+          "description": "Jusqu'à la fin du sort, une créature consentante que vous touchez est protégée contre certains types de créatures : aberrations, célestes, élémentaires, fées, fiélons et morts-vivants. La protection accorde plusieurs avantages. Les créatures de ces types ont un désavantage aux jets d'attaque contre la cible. La cible ne peut pas être charmée, effrayée ou possédée par elles."
+        },
+        {
+          "name": "Purification de nourriture et d'eau",
+          "level": 1,
+          "school": "Transmutation",
+          "castingTime": "1 action",
+          "range": "3 m",
+          "components": ["V", "S"],
+          "duration": "Instantanée",
+          "description": "Toute nourriture ou boisson non magique contenue dans une sphère de 1,5 mètre de rayon centrée sur un point de votre choix à portée est purifiée et débarrassée des poisons et des maladies."
+        },
+        {
+          "name": "Soins",
+          "level": 1,
+          "school": "Évocation",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S"],
+          "duration": "Instantanée",
+          "description": "Une créature que vous touchez récupère un nombre de points de vie égal à 1d8 + votre modificateur de caractéristique d'incantation. Ce sort n'a aucun effet sur les morts-vivants ou les créatures artificielles."
+        },
+        {
+          "name": "Couteau de glace",
+          "level": 1,
+          "school": "Invocation",
+          "castingTime": "1 action",
+          "range": "18 m",
+          "components": ["S", "M"],
+          "duration": "Instantanée",
+          "description": "Vous créez un éclat de glace et le lancez sur une créature à portée. Faites une attaque de sort à distance contre la cible. Si l'attaque touche, la cible subit 1d10 dégâts perforants. Que l'attaque touche ou rate, l'éclat explose. La cible et chaque créature dans un rayon de 1,5 mètre autour d'elle doivent réussir un jet de sauvegarde de Dextérité ou subir 2d6 dégâts de froid."
+        },
+        {
+          "name": "Amélioration de caractéristique",
+          "level": 2,
+          "school": "Transmutation",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 1 heure",
+          "description": "Vous touchez une créature et lui accordez une amélioration magique. Choisissez l'un des effets suivants ; la cible gagne cet effet jusqu'à la fin du sort. Endurance de l'ours (avantage aux jets de Constitution), Force du taureau (avantage aux jets de Force), Grâce du chat (avantage aux jets de Dextérité), Splendeur de l'aigle (avantage aux jets de Charisme), Ruse du renard (avantage aux jets d'Intelligence), ou Sagesse du hibou (avantage aux jets de Sagesse)."
+        },
+        {
+          "name": "Croissance d'épines",
+          "level": 2,
+          "school": "Transmutation",
+          "castingTime": "1 action",
+          "range": "45 m",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 10 minutes",
+          "description": "Le sol dans un rayon de 6 mètres centré sur un point à portée se tord et fait pousser des épines et des pointes dures. La zone devient un terrain difficile pour la durée. Quand une créature se déplace dans ou à l'intérieur de la zone, elle subit 2d4 dégâts perforants pour chaque tranche de 1,5 mètre qu'elle parcourt."
+        },
+        {
+          "name": "Immobilisation de personne",
+          "level": 2,
+          "school": "Enchantement",
+          "castingTime": "1 action",
+          "range": "18 m",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 1 minute",
+          "description": "Choisissez un humanoïde que vous pouvez voir à portée. La cible doit réussir un jet de sauvegarde de Sagesse ou être paralysée pour la durée. À la fin de chacun de ses tours, la cible peut refaire le jet de sauvegarde. En cas de réussite, le sort prend fin sur la cible."
+        },
+        {
+          "name": "Localisation d'animaux ou de plantes",
+          "level": 2,
+          "school": "Divination",
+          "castingTime": "1 action",
+          "range": "Personnelle",
+          "components": ["V", "S", "M"],
+          "duration": "Instantanée",
+          "description": "Décrivez ou nommez un type spécifique de bête ou de plante. Vous sentez la direction vers l'emplacement de la créature ou de la plante la plus proche de ce type dans un rayon de 8 kilomètres, si elle est présente."
+        },
+        {
+          "name": "Peau d'écorce",
+          "level": 2,
+          "school": "Transmutation",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 1 heure",
+          "description": "Vous touchez une créature consentante. Jusqu'à la fin du sort, la peau de la cible prend une apparence rugueuse et ressemblant à de l'écorce, et sa CA ne peut pas être inférieure à 16, peu importe le type d'armure qu'elle porte."
+        },
+        {
+          "name": "Rayon de lune",
+          "level": 2,
+          "school": "Évocation",
+          "castingTime": "1 action",
+          "range": "36 m",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 1 minute",
+          "description": "Un rayon argenté de lumière lunaire pâle brille dans un cylindre de 1,5 mètre de rayon et 12 mètres de haut centré sur un point à portée. Jusqu'à la fin du sort, une faible lumière remplit le cylindre. Quand une créature entre dans la zone du sort pour la première fois lors d'un tour ou y commence son tour, elle est enveloppée de flammes fantomatiques qui causent une douleur cuisante, et elle doit faire un jet de sauvegarde de Constitution. Elle subit 2d10 dégâts radiants en cas d'échec, ou la moitié en cas de réussite."
+        },
+        {
+          "name": "Restauration partielle",
+          "level": 2,
+          "school": "Abjuration",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S"],
+          "duration": "Instantanée",
+          "description": "Vous touchez une créature et pouvez mettre fin soit à une maladie, soit à un état l'affectant. L'état peut être assourdi, aveuglé, ou paralysé."
+        },
+        {
+          "name": "Sens animal",
+          "level": 2,
+          "school": "Divination",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["S"],
+          "duration": "Concentration, jusqu'à 1 heure",
+          "description": "Vous touchez une bête consentante. Pour la durée du sort, vous pouvez utiliser votre action pour voir à travers les yeux de la bête et entendre ce qu'elle entend, et continuer à le faire jusqu'à ce que vous utilisiez votre action pour revenir à vos sens normaux."
+        },
+        {
+          "name": "Esprit guérisseur",
+          "level": 2,
+          "school": "Invocation",
+          "castingTime": "1 action bonus",
+          "range": "18 m",
+          "components": ["V", "S"],
+          "duration": "Concentration, jusqu'à 1 minute",
+          "description": "Vous invoquez un esprit intangible pour guérir dans un espace inoccupé de 1,5 mètre de côté que vous pouvez voir à portée. L'esprit ressemble à un animal transparent de votre choix. Jusqu'à la fin du sort, chaque fois que vous ou une créature que vous pouvez voir vous déplacez dans l'espace de l'esprit pour la première fois lors d'un tour ou y commencez son tour, vous pouvez faire que l'esprit restaure 1d6 points de vie à cette créature. L'esprit ne peut pas soigner les créatures artificielles ou les morts-vivants."
+        },
+        {
+          "name": "Tourbillon de poussière",
+          "level": 2,
+          "school": "Invocation",
+          "castingTime": "1 action",
+          "range": "18 m",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 1 minute",
+          "description": "Choisissez un espace inoccupé de taille M ou P que vous pouvez voir à portée. Un tourbillon de poussière et de sable remplit un cube de 1,5 mètre de côté centré sur ce point. Il dure pour la durée. Le nuage se déplace avec vous et reste centré sur vous. Le nuage obscurcit légèrement sa zone. Chaque créature autre que vous qui entre dans le nuage pour la première fois lors d'un tour ou y commence son tour doit faire un jet de sauvegarde de Constitution. Les créatures subissent 1d8 dégâts nécrotiques en cas d'échec, ou la moitié en cas de réussite."
+        },
+        {
+          "name": "Convocation de bête",
+          "level": 2,
+          "school": "Invocation",
+          "castingTime": "1 action",
+          "range": "27 m",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 1 heure",
+          "description": "Vous invoquez un esprit bestial. Il se manifeste dans un espace inoccupé que vous pouvez voir à portée. Cet esprit corporel utilise le profil de l'Esprit Bestial. Quand vous lancez le sort, choisissez un environnement : Air, Terre ou Eau. La créature ressemble à un animal de votre choix qui est originaire de l'environnement choisi. L'esprit disparaît quand il tombe à 0 point de vie ou quand le sort prend fin."
+        },
+        {
+          "name": "Invocation d'animaux",
+          "level": 3,
+          "school": "Invocation",
+          "castingTime": "1 action",
+          "range": "18 m",
+          "components": ["V", "S"],
+          "duration": "Concentration, jusqu'à 1 heure",
+          "description": "Vous invoquez des esprits féeriques qui prennent la forme d'animaux et apparaissent dans des espaces inoccupés que vous pouvez voir à portée. Choisissez l'une des options suivantes : un animal de FP 2 ou inférieur, deux animaux de FP 1 ou inférieur, quatre animaux de FP 1/2 ou inférieur, ou huit animaux de FP 1/4 ou inférieur. Les animaux invoqués sont amicaux envers vous et vos compagnons. Le MD possède les statistiques des créatures et détermine leurs actions."
+        },
+        {
+          "name": "Retour à la vie",
+          "level": 3,
+          "school": "Nécromancie",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S", "M"],
+          "duration": "Instantanée",
+          "description": "Vous touchez une créature morte depuis 1 minute maximum. Cette créature revient à la vie avec 1 point de vie. Ce sort ne peut pas ramener à la vie une créature morte de vieillesse, et il ne peut pas restaurer les parties manquantes du corps."
+        },
+        {
+          "name": "Convocation de fée",
+          "level": 3,
+          "school": "Invocation",
+          "castingTime": "1 action",
+          "range": "27 m",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 1 heure",
+          "description": "Vous invoquez un esprit féérique. Il se manifeste dans un espace inoccupé que vous pouvez voir à portée sous la forme d'une fée de votre choix. L'esprit disparaît quand il tombe à 0 point de vie ou quand le sort prend fin. L'esprit féérique est amical envers vous et vos compagnons pendant la durée du sort. Il obéit à vos ordres verbaux."
+        },
+        {
+          "name": "Aura de vitalité",
+          "level": 3,
+          "school": "Évocation",
+          "castingTime": "1 action",
+          "range": "Personnelle (9 m de rayon)",
+          "components": ["V"],
+          "duration": "Concentration, jusqu'à 1 minute",
+          "description": "Une énergie curative émane de vous dans un rayon de 9 mètres. Jusqu'à la fin du sort, l'aura se déplace avec vous, centrée sur vous. Vous pouvez utiliser une action bonus pour faire qu'une créature dans l'aura (vous y compris) récupère 2d6 points de vie."
+        },
+        {
+          "name": "Dissipation de la magie",
+          "level": 3,
+          "school": "Abjuration",
+          "castingTime": "1 action",
+          "range": "36 m",
+          "components": ["V", "S"],
+          "duration": "Instantanée",
+          "description": "Choisissez une créature, un objet ou un effet magique à portée. Tout sort de niveau 3 ou inférieur sur la cible prend fin. Pour chaque sort de niveau 4 ou supérieur sur la cible, faites un jet de caractéristique en utilisant votre caractéristique d'incantation. Le DD est de 10 + le niveau du sort. En cas de réussite, le sort prend fin."
+        },
+        {
+          "name": "Fusion dans la pierre",
+          "level": 3,
+          "school": "Transmutation",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S"],
+          "duration": "8 heures",
+          "description": "Vous entrez dans un objet ou une surface de pierre assez grande pour contenir entièrement votre corps, vous fusionnant avec la pierre avec tout votre équipement. Vous restez conscient du passage du temps et pouvez percevoir ce qui se passe à l'extérieur en utilisant vos sens normaux. Vous pouvez sortir de la pierre en dépensant 1,5 mètre de mouvement."
+        },
+        {
+          "name": "Mort simulée",
+          "level": 3,
+          "school": "Nécromancie",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S", "M"],
+          "duration": "1 heure",
+          "description": "Vous touchez une créature consentante et la placez dans un état cataleptique qui ne peut être distingué de la mort. Pour la durée du sort, ou jusqu'à ce que vous touchiez à nouveau la cible et utilisiez une action pour la réveiller, la cible semble morte à tous les examens extérieurs. La cible est aveuglée et incapable, et sa vitesse tombe à 0. Elle a une résistance à tous les dégâts sauf les dégâts psychiques."
+        },
+        {
+          "name": "Protection contre une énergie",
+          "level": 3,
+          "school": "Abjuration",
+          "castingTime": "1 action",
+          "range": "Contact",
+          "components": ["V", "S"],
+          "duration": "Concentration, jusqu'à 1 heure",
+          "description": "Pour la durée du sort, la créature consentante que vous touchez a une résistance à un type de dégâts de votre choix : acide, froid, feu, foudre ou tonnerre."
+        },
+        {
+          "name": "Tempête de neige",
+          "level": 3,
+          "school": "Invocation",
+          "castingTime": "1 action",
+          "range": "45 m",
+          "components": ["V", "S", "M"],
+          "duration": "Concentration, jusqu'à 1 minute",
+          "description": "Jusqu'à la fin du sort, de la neige et de la grêle tombent dans un cylindre de 6 mètres de rayon et 12 mètres de haut centré sur un point que vous choisissez à portée. La zone est fortement obscurcie, et les flammes exposées dans la zone sont éteintes. Le sol dans la zone est couvert de neige glissante et compte comme terrain difficile. Quand une créature entre dans la zone pour la première fois durant un tour ou y commence son tour, elle doit faire un jet de sauvegarde de Dextérité. En cas d'échec, elle tombe à terre."
+        },
+        {
+          "name": "Éruption de terre",
+          "level": 3,
+          "school": "Transmutation",
+          "castingTime": "1 action",
+          "range": "36 m",
+          "components": ["V", "S", "M"],
+          "duration": "Instantanée",
+          "description": "Choisissez un point sur le sol que vous pouvez voir à portée. Une fontaine de roche brisée et de terre jaillit dans un cube de 6 mètres d'arête centré sur ce point. Chaque créature dans la zone doit faire un jet de sauvegarde de Dextérité. Une créature subit 3d12 dégâts contondants en cas d'échec, ou la moitié de ces dégâts en cas de réussite. De plus, le sol dans la zone devient un terrain difficile jusqu'à ce qu'il soit dégagé."
+        }
+      ]
+    }
+  ],
   "affinities": {
-    "resistances": [],
+    "resistances": ["poison"],
     "immunities": [],
     "vulnerabilities": []
   },
