@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { Check } from "lucide-react";
-import { Input } from "./input";
+import { Input } from "@/components/ui/input";
 
 interface ComboboxInputProps {
     value: string;
