@@ -192,6 +192,8 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             form.clearErrors();
             const isValid = await form.trigger(undefined, { shouldFocus: true });
             if (!isValid) {
+                console.log(data);
+                console.log(form.formState.errors);
                 toast.error(t('updateError'));
                 setIsSaving(false);
                 return;

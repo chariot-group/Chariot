@@ -7,7 +7,13 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
 import { ClassNameEnum, AlignmentEnum } from "@/schemas/character";
-import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced, getProficiencyBonusFromLevel, isLevelProficiencyBonusSynced } from "@/utils/global.utils";
+import {
+  getLevelFromExperience,
+  getExperienceForLevel,
+  isLevelXpSynced,
+  getProficiencyBonusFromLevel,
+  isLevelProficiencyBonusSynced,
+} from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
@@ -46,7 +52,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   // Alignements de base pour les players (excluant "Unaligned" et les "Any" alignments)
   // La liste complète AlignmentEnum.options sera utilisée pour les NPCs
   const playerAlignments = AlignmentEnum.options.filter(
-    (alignment) => !alignment.startsWith("Any") && alignment !== "Unaligned"
+    (alignment) => !alignment.startsWith("Any") && alignment !== "Unaligned",
   );
 
   // Calculer la perception passive automatiquement
@@ -111,8 +117,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   name="firstname"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} orientation="vertical">
-                      <label htmlFor="character-firstname" className="text-sm font-medium">
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <label
+                        htmlFor="character-firstname"
+                        className="text-sm font-medium">
                         {tEdit("firstname")}
                       </label>
                       <Input
@@ -124,7 +134,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                         placeholder={tEdit("firstname")}
                         type="text"
                       />
-                      {fieldState.error && <FieldError id="character-firstname-error" errors={[fieldState.error]} />}
+                      {fieldState.error && (
+                        <FieldError
+                          id="character-firstname-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
                     </Field>
                   )}
                 />
@@ -133,8 +148,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   name="lastname"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} orientation="vertical">
-                      <label htmlFor="character-lastname" className="text-sm font-medium">
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <label
+                        htmlFor="character-lastname"
+                        className="text-sm font-medium">
                         {tEdit("lastname")}
                       </label>
                       <Input
@@ -146,7 +165,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                         placeholder={tEdit("lastname")}
                         type="text"
                       />
-                      {fieldState.error && <FieldError id="character-lastname-error" errors={[fieldState.error]} />}
+                      {fieldState.error && (
+                        <FieldError
+                          id="character-lastname-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
                     </Field>
                   )}
                 />
@@ -155,8 +179,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   name="surname"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} orientation="vertical" className="col-span-2">
-                      <label htmlFor="character-surname" className="text-sm font-medium">
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical"
+                      className="col-span-2">
+                      <label
+                        htmlFor="character-surname"
+                        className="text-sm font-medium">
                         {tEdit("surname")}
                       </label>
                       <Input
@@ -168,7 +197,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                         placeholder={tEdit("surname")}
                         type="text"
                       />
-                      {fieldState.error && <FieldError id="character-surname-error" errors={[fieldState.error]} />}
+                      {fieldState.error && (
+                        <FieldError
+                          id="character-surname-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
                     </Field>
                   )}
                 />
@@ -181,8 +215,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     name="profile.race"
                     control={form.control}
                     render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid} orientation="vertical" className="flex-1">
-                        <label htmlFor="character-race" className="text-sm font-medium">
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="flex-1">
+                        <label
+                          htmlFor="character-race"
+                          className="text-sm font-medium">
                           {t("race")}
                         </label>
                         <Input
@@ -194,7 +233,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           placeholder={t("race")}
                           type="text"
                         />
-                        {fieldState.error && <FieldError id="character-race-error" errors={[fieldState.error]} />}
+                        {fieldState.error && (
+                          <FieldError
+                            id="character-race-error"
+                            errors={[fieldState.error]}
+                          />
+                        )}
                       </Field>
                     )}
                   />
@@ -203,8 +247,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     name="profile.subrace"
                     control={form.control}
                     render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid} orientation="vertical" className="flex-1">
-                        <label htmlFor="character-subrace" className="text-sm font-medium">
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="flex-1">
+                        <label
+                          htmlFor="character-subrace"
+                          className="text-sm font-medium">
                           {t("subrace")}
                         </label>
                         <Input
@@ -216,7 +265,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           placeholder={t("subrace")}
                           type="text"
                         />
-                        {fieldState.error && <FieldError id="character-subrace-error" errors={[fieldState.error]} />}
+                        {fieldState.error && (
+                          <FieldError
+                            id="character-subrace-error"
+                            errors={[fieldState.error]}
+                          />
+                        )}
                       </Field>
                     )}
                   />
@@ -225,14 +279,18 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 {/* Niveau et XP avec synchronisation */}
                 <div className="flex flex-col border-b border-gray">
                   <div className="flex flex-row gap-2">
-
                     {/* Level Input */}
                     <Controller
                       name="progression.level"
                       control={form.control}
                       render={({ field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid} orientation="vertical" className="flex-1">
-                          <label htmlFor="character-level" className="text-sm font-medium">
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          orientation="vertical"
+                          className="flex-1">
+                          <label
+                            htmlFor="character-level"
+                            className="text-sm font-medium">
                             {t("level")}
                           </label>
                           <Input
@@ -247,7 +305,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             min="1"
                             max="20"
                           />
-                          {fieldState.error && <FieldError id="character-level-error" errors={[fieldState.error]} />}
+                          {fieldState.error && (
+                            <FieldError
+                              id="character-level-error"
+                              errors={[fieldState.error]}
+                            />
+                          )}
                         </Field>
                       )}
                     />
@@ -257,8 +320,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       name="progression.experience"
                       control={form.control}
                       render={({ field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid} orientation="vertical" className="flex-1">
-                          <label htmlFor="character-xp" className="text-sm font-medium">
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          orientation="vertical"
+                          className="flex-1">
+                          <label
+                            htmlFor="character-xp"
+                            className="text-sm font-medium">
                             {t("experience")}
                           </label>
                           <Input
@@ -272,7 +340,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             type="number"
                             min="0"
                           />
-                          {fieldState.error && <FieldError id="character-xp-error" errors={[fieldState.error]} />}
+                          {fieldState.error && (
+                            <FieldError
+                              id="character-xp-error"
+                              errors={[fieldState.error]}
+                            />
+                          )}
                         </Field>
                       )}
                     />
@@ -335,20 +408,27 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   {classFields.map((field, index) => {
                     const globalLevel = form.watch("progression.level") || 1;
                     const classLevels = form.watch("class") || [];
-                    const totalClassLevels = classLevels.reduce((sum: number, c: any) => sum + (parseInt(c?.level) || 0), 0);
+                    const totalClassLevels = classLevels.reduce(
+                      (sum: number, c: any) => sum + (parseInt(c?.level) || 0),
+                      0,
+                    );
                     const currentClassLevel = parseInt(form.watch(`class.${index}.level`)) || 1;
                     const otherClassLevelsSum = totalClassLevels - currentClassLevel;
                     const maxLevelForThisClass = globalLevel - otherClassLevelsSum;
 
                     // Récupérer les classes déjà sélectionnées dans les autres champs
                     const selectedClasses = classLevels
-                      .map((c: any, i: number) => i !== index ? c?.name : null)
+                      .map((c: any, i: number) => (i !== index ? c?.name : null))
                       .filter(Boolean);
 
                     return (
-                      <div key={field.id} className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-gray"}`}>
+                      <div
+                        key={field.id}
+                        className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-gray"}`}>
                         <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold">{t("class")} {index + 1}</h4>
+                          <h4 className="text-sm font-semibold">
+                            {t("class")} {index + 1}
+                          </h4>
                           <div className="flex items-center gap-2">
                             {totalClassLevels > globalLevel && (
                               <span className="text-xs text-red px-2 py-1 bg-red/10 rounded">
@@ -394,7 +474,9 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                       {Object.values(ClassNameEnum.enum)
                                         .filter((className) => !selectedClasses.includes(className))
                                         .map((className) => (
-                                          <SelectItem key={className} value={className}>
+                                          <SelectItem
+                                            key={className}
+                                            value={className}>
                                             {tClass(className)}
                                           </SelectItem>
                                         ))}
@@ -439,7 +521,14 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                 )}
                                 {totalClassLevels > globalLevel && (
                                   <FieldError
-                                    errors={[{ message: t("classLevelExceedsGlobal", { total: totalClassLevels, global: globalLevel }) }]}
+                                    errors={[
+                                      {
+                                        message: t("classLevelExceedsGlobal", {
+                                          total: totalClassLevels,
+                                          global: globalLevel,
+                                        }),
+                                      },
+                                    ]}
                                   />
                                 )}
                               </Field>
@@ -481,7 +570,11 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
                         {/* Class level indicator */}
                         <div className="text-xs text-gray-middle-light">
-                          {t("classLevelInfo", { classLevel: currentClassLevel, totalLevel: totalClassLevels, globalLevel })}
+                          {t("classLevelInfo", {
+                            classLevel: currentClassLevel,
+                            totalLevel: totalClassLevels,
+                            globalLevel,
+                          })}
                         </div>
                       </div>
                     );
@@ -530,8 +623,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 name="stats.languages"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid} orientation="vertical">
-                    <label htmlFor="proficiency-languages" className="text-sm font-medium">
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="proficiency-languages"
+                      className="text-sm font-medium">
                       {t("languages")}
                     </label>
                     <TagInput
@@ -543,7 +640,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "proficiency-languages-error" : undefined}
                     />
-                    {fieldState.error && <FieldError id="proficiency-languages-error" errors={[fieldState.error]} />}
+                    {fieldState.error && (
+                      <FieldError
+                        id="proficiency-languages-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
                   </Field>
                 )}
               />
@@ -553,8 +655,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 name="stats.tools"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid} orientation="vertical">
-                    <label htmlFor="proficiency-tools" className="text-sm font-medium">
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="proficiency-tools"
+                      className="text-sm font-medium">
                       {t("tools")}
                     </label>
                     <TagInput
@@ -566,7 +672,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "proficiency-tools-error" : undefined}
                     />
-                    {fieldState.error && <FieldError id="proficiency-tools-error" errors={[fieldState.error]} />}
+                    {fieldState.error && (
+                      <FieldError
+                        id="proficiency-tools-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
                   </Field>
                 )}
               />
@@ -576,8 +687,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 name="stats.weapons"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid} orientation="vertical">
-                    <label htmlFor="proficiency-weapons" className="text-sm font-medium">
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="proficiency-weapons"
+                      className="text-sm font-medium">
                       {t("weapons")}
                     </label>
                     <TagInput
@@ -589,7 +704,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "proficiency-weapons-error" : undefined}
                     />
-                    {fieldState.error && <FieldError id="proficiency-weapons-error" errors={[fieldState.error]} />}
+                    {fieldState.error && (
+                      <FieldError
+                        id="proficiency-weapons-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
                   </Field>
                 )}
               />
@@ -599,8 +719,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 name="stats.armors"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid} orientation="vertical">
-                    <label htmlFor="proficiency-armors" className="text-sm font-medium">
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="proficiency-armors"
+                      className="text-sm font-medium">
                       {t("armors")}
                     </label>
                     <TagInput
@@ -612,7 +736,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "proficiency-armors-error" : undefined}
                     />
-                    {fieldState.error && <FieldError id="proficiency-armors-error" errors={[fieldState.error]} />}
+                    {fieldState.error && (
+                      <FieldError
+                        id="proficiency-armors-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
                   </Field>
                 )}
               />
@@ -639,8 +768,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 name="stats.proficiencyBonus"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid} orientation="vertical">
-                    <label htmlFor="proficiency-bonus" className="text-sm font-medium">
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="proficiency-bonus"
+                      className="text-sm font-medium">
                       {t("proficiencyBonusLabel")}
                     </label>
                     <Input
@@ -655,7 +788,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       min="2"
                       max="6"
                     />
-                    {fieldState.error && <FieldError id="proficiency-bonus-error" errors={[fieldState.error]} />}
+                    {fieldState.error && (
+                      <FieldError
+                        id="proficiency-bonus-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
                   </Field>
                 )}
               />
@@ -708,11 +846,14 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
             </h2>
           </Card>
           <div className="order-1">
-            <SavingThrowsEdit form={form} accentColor={accentColor} />
+            <SavingThrowsEdit
+              form={form}
+              accentColor={accentColor}
+            />
           </div>
           {/* Compétences */}
           <Card
-            className="flex flex-row justify-between gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
+            className="flex flex-wrap justify-between gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
             role="region"
             aria-labelledby="skills-heading-edit">
             <h2
@@ -721,14 +862,16 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               {t("skills")}
             </h2>
             {/* Toggles pour demi-maîtrise et expertise */}
-            <div className="flex flex-col sm:flex-row gap-4 px-3 rounded-lg text-muted-foreground">
+            <div className="flex flex-wrap gap-4 px-3 rounded-lg text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="enable-half-proficiency"
                   checked={enableHalfProficiency}
                   onCheckedChange={(checked) => setEnableHalfProficiency(checked === true)}
                 />
-                <Label htmlFor="enable-half-proficiency" className="cursor-pointer text-sm">
+                <Label
+                  htmlFor="enable-half-proficiency"
+                  className="cursor-pointer text-sm">
                   {t("enableHalfProficiency")}
                 </Label>
               </div>
@@ -738,7 +881,9 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   checked={enableExpertise}
                   onCheckedChange={(checked) => setEnableExpertise(checked === true)}
                 />
-                <Label htmlFor="enable-expertise" className="cursor-pointer text-sm">
+                <Label
+                  htmlFor="enable-expertise"
+                  className="cursor-pointer text-sm">
                   {t("enableExpertise")}
                 </Label>
               </div>
@@ -770,8 +915,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               name="exhaustionLevel"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="exhaustion-level" className="text-sm font-medium">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="exhaustion-level"
+                    className="text-sm font-medium">
                     {t("exhaustionLevel")}
                   </label>
                   <Select
@@ -787,12 +936,14 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     <SelectContent position="item-aligned">
                       <SelectGroup>
                         {[0, 1, 2, 3, 4, 5, 6].map((level) => (
-                          <SelectItem key={level} value={level.toString()}>
+                          <SelectItem
+                            key={level}
+                            value={level.toString()}>
                             <div className="flex flex-col gap-1">
-                              <span className="font-semibold">{t("level")} {level}</span>
-                              <span className="text-xs text-gray-middle-light">
-                                {t(`exhaustionLevels.${level}`)}
+                              <span className="font-semibold">
+                                {t("level")} {level}
                               </span>
+                              <span className="text-xs text-gray-middle-light">{t(`exhaustionLevels.${level}`)}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -819,8 +970,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               name="profile.alignment"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="alignment" className="text-sm font-medium">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="alignment"
+                    className="text-sm font-medium">
                     {t("alignment")}
                   </label>
                   <Select
@@ -832,7 +987,9 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     <SelectContent position="item-aligned">
                       <SelectGroup>
                         {playerAlignments.map((alignment) => (
-                          <SelectItem key={alignment} value={alignment}>
+                          <SelectItem
+                            key={alignment}
+                            value={alignment}>
                             {tAlignment(alignment as any)}
                           </SelectItem>
                         ))}
@@ -860,8 +1017,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 name="stats.passivePerception"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid} orientation="vertical">
-                    <label htmlFor="passive-perception" className="text-sm font-medium">
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="passive-perception"
+                      className="text-sm font-medium">
                       {t("passivePerceptionOverride")}
                     </label>
                     <Input
@@ -876,7 +1037,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       min="1"
                       max="40"
                     />
-                    {fieldState.error && <FieldError id="passive-perception-error" errors={[fieldState.error]} />}
+                    {fieldState.error && (
+                      <FieldError
+                        id="passive-perception-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
                   </Field>
                 )}
               />
@@ -919,7 +1085,9 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     checked={field.value || false}
                     onCheckedChange={field.onChange}
                   />
-                  <Label htmlFor="inspiration-checkbox" className="cursor-pointer text-sm">
+                  <Label
+                    htmlFor="inspiration-checkbox"
+                    className="cursor-pointer text-sm">
                     {field.value ? t("inspirationActive") : t("inspirationInactive")}
                   </Label>
                 </div>
@@ -941,8 +1109,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               name="profile.history"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="background" className="text-sm font-medium">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="background"
+                    className="text-sm font-medium">
                     {t("background")}
                   </label>
                   <ComboboxInput
@@ -954,7 +1126,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "background-error" : undefined}
                   />
-                  {fieldState.error && <FieldError id="background-error" errors={[fieldState.error]} />}
+                  {fieldState.error && (
+                    <FieldError
+                      id="background-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
                 </Field>
               )}
             />

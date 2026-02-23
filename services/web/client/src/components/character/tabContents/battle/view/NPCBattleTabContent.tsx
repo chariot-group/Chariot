@@ -6,7 +6,7 @@ import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
-import Skill from "@/components/character/tabContents/general/shared/Skill";
+import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
@@ -195,7 +195,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
                 const abilityName = tAbilities(key as any);
                 const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
                 const valeurCalculer = Math.floor((abilityScore - 10) / 2);
-                const displayBonus = value !== 0 ? (valeurCalculer + value) : valeurCalculer;
+                const displayBonus = value !== 0 ? valeurCalculer + value : valeurCalculer;
                 return (
                   <Skill
                     key={key}

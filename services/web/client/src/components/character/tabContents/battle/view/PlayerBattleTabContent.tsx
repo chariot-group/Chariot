@@ -8,7 +8,7 @@ import RunningIcon from "@public/assets/icons/running-icon.svg";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
-import Skill from "@/components/character/tabContents/general/shared/Skill";
+import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
@@ -207,18 +207,14 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
             role="list">
             {player?.stats &&
               Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
-                const isMasteredKey = isMastered(key);
-                const abilityName = tAbilities(key as any);
-                const abilityScore = player.stats.abilityScores[key as keyof typeof player.stats.abilityScores] || 10;
-                const abilityModifier = Math.floor((abilityScore - 10) / 2);
-                const displayBonus = value !== 0 ? (abilityModifier + value) : abilityModifier;
+                const abilityName = tAbilities(key);
                 return (
                   <Skill
                     key={key}
-                    skillName={abilityName}
-                    value={isMasteredKey ? 2 : 0}
+                    label={abilityName}
+                    skillName={key as keyof typeof player.stats.abilityScores}
                     accentColor={accentColor}
-                    skills={displayBonus}
+                    stats={player?.stats}
                   />
                 );
               })}

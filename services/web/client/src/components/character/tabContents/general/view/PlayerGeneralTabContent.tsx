@@ -24,9 +24,10 @@ import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { isMastered } from "@/utils/global.utils";
-import Skill from "@/components/character/tabContents/general/shared/Skill";
+import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
+import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
+import Skills from "../shared/Skills";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -193,18 +194,14 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               role="list">
               {player?.stats &&
                 Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
-                  const isMasteredKey = isMastered(player, key);
                   const abilityName = t(`abilities.${key}`);
-                  const abilityScore = player.stats.abilityScores[key as keyof typeof player.stats.abilityScores] || 10;
-                  const abilityModifier = Math.floor((abilityScore - 10) / 2);
-                  const displayBonus = value !== 0 ? abilityModifier + value : abilityModifier;
                   return (
-                    <Skill
+                    <SavingThrow
                       key={key}
-                      skillName={abilityName}
-                      value={isMasteredKey ? 2 : 0}
+                      label={abilityName}
+                      skillName={key as keyof typeof player.stats.abilityScores}
                       accentColor={accentColor}
-                      skills={displayBonus}
+                      stats={player?.stats}
                     />
                   );
                 })}
@@ -223,173 +220,10 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
                 {t("skills")}
               </h2>
             </Card>
-            <div
-              className="grid grid-cols-2 gap-2"
-              role="list"
-              aria-label={t("skillsList")}>
-              <Skill
-                skillName={t("skillNames.acrobatics")}
-                value={player?.stats?.masteries.acrobatics}
-                icon={<User2Icon aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.dexterity}
-                tooltip={t("abilities.dexterity")}
-              />
-              <Skill
-                skillName={t("skillNames.arcana")}
-                value={player?.stats?.masteries.arcana}
-                icon={<Sparkles aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.intelligence}
-                tooltip={t("abilities.intelligence")}
-              />
-              <Skill
-                skillName={t("skillNames.athletics")}
-                value={player?.stats?.masteries.athletics}
-                icon={<Footprints aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.strength}
-                tooltip={t("abilities.strength")}
-              />
-              <Skill
-                skillName={t("skillNames.stealth")}
-                value={player?.stats?.masteries.stealth}
-                icon={<VenetianMask aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.dexterity}
-                tooltip={t("abilities.dexterity")}
-              />
-              <Skill
-                skillName={t("skillNames.animalHandling")}
-                value={player?.stats?.masteries.animalHandling}
-                icon={<PawPrint aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.wisdom}
-                tooltip={t("abilities.wisdom")}
-              />
-              <Skill
-                skillName={t("skillNames.sleightHand")}
-                value={player?.stats?.masteries.sleightHand}
-                icon={<LockKeyhole aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.dexterity}
-                tooltip={t("abilities.dexterity")}
-              />
-              <Skill
-                skillName={t("skillNames.history")}
-                value={player?.stats?.masteries.history}
-                icon={<Notebook aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.intelligence}
-                tooltip={t("abilities.intelligence")}
-              />
-              <Skill
-                skillName={t("skillNames.intimidation")}
-                value={player?.stats?.masteries.intimidation}
-                icon={<User2Icon aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.charisma}
-                tooltip={t("abilities.charisma")}
-              />
-              <Skill
-                skillName={t("skillNames.insight")}
-                value={player?.stats?.masteries.insight}
-                icon={<Brain aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.wisdom}
-                tooltip={t("abilities.wisdom")}
-              />
-              <Skill
-                skillName={t("skillNames.investigation")}
-                value={player?.stats?.masteries.investigation}
-                icon={<CircleQuestionMark aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.intelligence}
-                tooltip={t("abilities.intelligence")}
-              />
-              <Skill
-                skillName={t("skillNames.medicine")}
-                value={player?.stats?.masteries.medicine}
-                icon={<CrossIcon aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.wisdom}
-                tooltip={t("abilities.wisdom")}
-              />
-              <Skill
-                skillName={t("skillNames.nature")}
-                value={player?.stats?.masteries.nature}
-                icon={<Sprout aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.intelligence}
-                tooltip={t("abilities.intelligence")}
-              />
-              <Skill
-                skillName={t("skillNames.perception")}
-                value={player?.stats?.masteries.perception}
-                icon={<Eye aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.wisdom}
-                tooltip={t("abilities.wisdom")}
-              />
-              <Skill
-                skillName={t("skillNames.persuasion")}
-                value={player?.stats?.masteries.persuasion}
-                icon={<MessageSquare aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.charisma}
-                tooltip={t("abilities.charisma")}
-              />
-              <Skill
-                skillName={t("skillNames.religion")}
-                value={player?.stats?.masteries.religion}
-                icon={<Church aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.intelligence}
-                tooltip={t("abilities.intelligence")}
-              />
-              <Skill
-                skillName={t("skillNames.performance")}
-                value={player?.stats?.masteries.performance}
-                icon={<MicVocal aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.charisma}
-                tooltip={t("abilities.charisma")}
-              />
-              <Skill
-                skillName={t("skillNames.survival")}
-                value={player?.stats?.masteries.survival}
-                icon={<TreePine aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.wisdom}
-                tooltip={t("abilities.wisdom")}
-              />
-              <Skill
-                skillName={t("skillNames.deception")}
-                value={player?.stats?.masteries.deception}
-                icon={<Drama aria-hidden="true" />}
-                accentColor={accentColor}
-                proficiencyBonus={player?.stats?.proficiencyBonus}
-                masteriesAbility={player?.stats?.abilityScores.charisma}
-                tooltip={t("abilities.charisma")}
-              />
-            </div>
+            <Skills
+              accentColor={accentColor}
+              stats={player?.stats}
+            />
           </div>
         </section>
 

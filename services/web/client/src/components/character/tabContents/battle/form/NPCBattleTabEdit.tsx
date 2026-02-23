@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
-import Skill from "@/components/character/tabContents/general/shared/Skill";
+import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import Image from "next/image";
 
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
@@ -456,7 +456,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
               const savingThrowValue = form.watch(`stats.savingThrows.${key}`) || 0;
               const valeurCalculer = Math.floor((abilityScore - 10) / 2);
               const isProficient = savingThrowValue !== 0;
-              const displayBonus = isProficient ? (valeurCalculer + savingThrowValue) : valeurCalculer;
+              const displayBonus = isProficient ? valeurCalculer + savingThrowValue : valeurCalculer;
 
               return (
                 <Skill

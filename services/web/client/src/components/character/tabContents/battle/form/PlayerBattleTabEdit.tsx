@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
-import Skill from "@/components/character/tabContents/general/shared/Skill";
+import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import Image from "next/image";
 
@@ -486,7 +486,10 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
               {t("savingThrows")}
             </h2>
           </Card>
-          <SavingThrowsEdit form={form} accentColor={accentColor} />
+          <SavingThrowsEdit
+            form={form}
+            accentColor={accentColor}
+          />
         </div>
 
         {/* Jets de sauvegarde contre la mort */}

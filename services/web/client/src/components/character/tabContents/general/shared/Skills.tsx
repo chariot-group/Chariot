@@ -1,7 +1,6 @@
-import { Controller, UseFormReturn } from "react-hook-form";
 import { Card } from "@/components/ui/card";
-import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { PlayerStats, Stats } from "@/types/character";
 import { calculateSkillBonus, getIconForValue } from "@/utils/global.utils";
 import {
   User2Icon,
@@ -22,12 +21,12 @@ import {
   TreePine,
   Drama,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
 
-interface SkillsEditProps {
-  form: UseFormReturn<any>;
+interface SkillsProps {
   accentColor: string;
-  enableHalfProficiency: boolean;
-  enableExpertise: boolean;
+  stats: PlayerStats;
 }
 
 type AbilityKey = "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
@@ -85,77 +84,28 @@ const skillsConfig: SkillConfig[] = [
   { key: "deception", translationKey: "deception", abilityKey: "charisma", icon: <Drama aria-hidden="true" /> },
 ];
 
-export default function SkillsEdit({ form, accentColor, enableHalfProficiency, enableExpertise }: SkillsEditProps) {
+export default function Skills({ accentColor, stats }: SkillsProps) {
   const t = useTranslations("characterDetail.player.general");
-
-  /**
-   * Détermine le prochain niveau de maîtrise selon les toggles actifs
-   * @param currentLevel Niveau actuel (0, 1, 2, ou 3)
-   * @returns Le prochain niveau
-   */
-  const getNextMasteryLevel = (currentLevel: number): number => {
-    const hasHalf = enableHalfProficiency;
-    const hasExpertise = enableExpertise;
-
-    if (!hasHalf && !hasExpertise) {
-      // Sans toggles : cycle 0 ↔ 2
-      return currentLevel === 0 ? 2 : 0;
-    } else if (hasHalf && !hasExpertise) {
-      // Avec demi-maîtrise seulement : cycle 0 → 1 → 2 → 0
-      if (currentLevel === 0) return 1;
-      if (currentLevel === 1) return 2;
-      return 0;
-    } else if (!hasHalf && hasExpertise) {
-      // Avec expertise seulement : cycle 0 → 2 → 3 → 0
-      if (currentLevel === 0) return 2;
-      if (currentLevel === 2) return 3;
-      return 0;
-    } else {
-      // Avec les deux : cycle 0 → 1 → 2 → 3 → 0
-      if (currentLevel === 0) return 1;
-      if (currentLevel === 1) return 2;
-      if (currentLevel === 2) return 3;
-      return 0;
-    }
-  };
-
-  /**
-   * Toggle le niveau de maîtrise d'une compétence
-   */
-  const toggleSkillProficiency = (skillKey: string, abilityKey: AbilityKey) => {
-    const currentMasteryLevel = form.watch(`stats.masteries.${skillKey}`) || 0;
-    const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
-    const abilityScore = form.watch(`stats.abilityScores.${abilityKey}`) || 10;
-
-    const nextMasteryLevel = getNextMasteryLevel(currentMasteryLevel);
-
-    // Mettre à jour le niveau de maîtrise dans le formulaire
-    form.setValue(`stats.masteries.${skillKey}`, nextMasteryLevel, { shouldDirty: true });
-  };
 
   return (
     <div className="grid grid-cols-2 gap-2">
       {skillsConfig.map(({ key, translationKey, abilityKey, icon }) => {
-        const masteryLevel = form.watch(`stats.masteries.${key}`) || 0;
-        const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
-        const abilityScore = form.watch(`stats.abilityScores.${abilityKey}`) || 10;
+        const masteryLevel = stats?.masteries[key as keyof typeof stats.masteries] || 0;
+        const proficiencyBonus = stats?.proficiencyBonus || 2;
+        const abilityScore = stats?.abilityScores[abilityKey] || 10;
         const skillBonus = calculateSkillBonus(masteryLevel, abilityScore, proficiencyBonus);
         const isActive = masteryLevel > 0;
 
         return (
-          <Controller
-            key={key}
-            name={`stats.masteries.${key}`}
-            control={form.control}
-            render={() => (
-              <button
-                type="button"
-                onClick={() => toggleSkillProficiency(key, abilityKey)}
-                className="text-left">
-                <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
-                  <p className="text-sm flex items-center gap-2">
+          <Tooltip key={key}>
+            <TooltipTrigger>
+              <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
+                <p className="text-sm grid grid-cols-3 justify-between">
+                  <div className="flex items-center col-span-2 gap-2">
                     <span className="shrink-0">{icon}</span>
                     <span className={`truncate ${isActive && "italic"}`}>{t(`skillNames.${translationKey}`)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 self-end justify-end">
                     <span className="font-bold shrink-0">{skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}</span>
                     <Image
                       src={getIconForValue(masteryLevel, accentColor)}
@@ -165,11 +115,12 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
                       className="shrink-0"
                       aria-hidden="true"
                     />
-                  </p>
-                </Card>
-              </button>
-            )}
-          />
+                  </div>
+                </p>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent>{t(`abilities.${abilityKey}`)}</TooltipContent>
+          </Tooltip>
         );
       })}
     </div>
