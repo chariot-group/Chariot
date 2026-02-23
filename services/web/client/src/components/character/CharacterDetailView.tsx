@@ -14,6 +14,7 @@ import { isPlayer } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export type CharacterTab = "general" | "battle" | "magic" | "inventory" | "history";
 
@@ -112,9 +113,17 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
               {/* Infos du personnage */}
               <div className="flex flex-row items-end gap-3 px-1.5 sm:px-0 sm:gap-4 md:gap-5 shrink-0 w-full truncate">
                 <div className="text-left xl:text-right mb-2 flex-1 truncate">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
-                    {character.firstname} {character.lastname}
-                  </h1>
+                  <Tooltip>
+                    <TooltipTrigger className="cursor-help truncate w-full text-end">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
+                        {character.firstname} {character.lastname}
+                      </h1>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {character.firstname} {character.lastname}
+                    </TooltipContent>
+                  </Tooltip>
+
                   <h2 className="text-sm sm:text-base text-gray-light italic truncate">{character.surname}</h2>
                   {isPlayer(character) ? (
                     <React.Fragment>

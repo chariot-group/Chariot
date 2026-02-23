@@ -35,6 +35,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
   const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
   const tAlignment = useTranslations("alignments");
+  const tEdit = useTranslations("characterDetail.edit");
 
   return (
     <div
@@ -58,6 +59,22 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               {t("character")}
             </h2>
             <dl className="flex flex-col gap-2">
+              <div className="flex flex-wrap gap-1">
+                <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
+                <dd className="text-sm sm:text-base">{npc?.firstname}</dd>
+              </div>
+              {npc.lastname && (
+                <div className="flex flex-wrap gap-1">
+                  <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
+                  <dd className="text-sm sm:text-base">{npc?.lastname}</dd>
+                </div>
+              )}
+              {npc.surname && (
+                <div className="flex flex-wrap gap-1">
+                  <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
+                  <dd className="text-sm sm:text-base">{npc?.surname}</dd>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row gap-2">
                 <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
                 <dd className="text-sm sm:text-base">
@@ -122,7 +139,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                   const abilityName = t(`abilities.${key}`);
                   const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
                   const abilityModifier = calculateAbilityBonus(abilityScore);
-                  const displayBonus = value !== 0 ? (abilityModifier + value) : abilityModifier;
+                  const displayBonus = value !== 0 ? abilityModifier + value : abilityModifier;
                   return (
                     <Skill
                       key={key}

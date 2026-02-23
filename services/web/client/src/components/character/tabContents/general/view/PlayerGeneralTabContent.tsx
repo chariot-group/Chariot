@@ -38,6 +38,8 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
   const tPlayer = useTranslations("characterDetail.player");
   const tAlignment = useTranslations("alignments");
   const tClass = useTranslations("classes");
+  const tEdit = useTranslations("characterDetail.edit");
+
   const [checked, setChecked] = useState<boolean>(player.inspiration);
 
   function infoExhaustionLevel(level: number): string {
@@ -65,13 +67,29 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               {t("character")}
             </h2>
             <dl className="flex flex-col gap-2 justify-between">
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-wrap gap-1">
+                <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
+                <dd className="text-sm sm:text-base">{player?.firstname}</dd>
+              </div>
+              {player.lastname && (
+                <div className="flex flex-wrap gap-1">
+                  <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
+                  <dd className="text-sm sm:text-base">{player?.lastname}</dd>
+                </div>
+              )}
+              {player.surname && (
+                <div className="flex flex-wrap gap-1">
+                  <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
+                  <dd className="text-sm sm:text-base">{player?.surname}</dd>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-1">
                 <dt className="text-sm sm:text-base font-semibold">{t("raceLabel")} :</dt>
                 <dd className="text-sm sm:text-base">
                   {player?.profile?.race} {player?.profile?.subrace?.length > 0 && `(${player?.profile?.subrace})`}
                 </dd>
               </div>
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-wrap gap-1">
                 <dt className="text-sm sm:text-base font-semibold">{t("globalLevel")} :</dt>
                 <dd className="text-sm sm:text-base">
                   {player?.progression?.level ?? 0} ({player?.progression?.experience ?? 0} XP)
