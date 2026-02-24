@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeft, Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { ArrowRightLeft, Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown, ChevronDown, BookPlus } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,6 +20,8 @@ import { ComboboxInput } from "@/components/ui/combobox-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { parseDamageFormula } from "@/utils/spell-damage.utils";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
@@ -434,15 +436,40 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             <Card className="gap-2 p-4 md:px-6 flex-row justify-between items-center shrink-0">
               <h3 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h3>
               <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={addSpell}
-                  className="flex items-center gap-2">
-                  <Plus className="size-4" />
-                  <span className="hidden sm:block">{tMagic("addSpell")}</span>
-                </Button>
+                <ButtonGroup>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addSpell}
+                    className="flex items-center gap-2 border">
+                    <BookPlus className="size-4" />
+                    <span className="hidden sm:block">{tMagic("addCodexSpell")}</span>
+                  </Button>
+                  <ButtonGroupSeparator />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="border"
+                        aria-label="More Options">
+                        <ChevronDown className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="min-w-40 border-none bg-transparent">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addSpell}
+                        className="flex items-center gap-2 border hover:bg-card">
+                        <Plus className="size-4" />
+                        <span className="hidden sm:block">{tMagic("addSpell")}</span>
+                      </Button>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </ButtonGroup>
                 <button
                   type="button"
                   onClick={() => {

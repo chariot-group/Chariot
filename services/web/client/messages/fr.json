@@ -563,6 +563,7 @@
       "spells": "Sorts",
       "spellSlotsEdit": "Emplacements de sorts",
       "addSpell": "Ajouter un sort",
+      "addCodexSpell": "Ajouter un sort via Codex",
       "selectSpellToEdit": "Sélectionnez un sort à gauche pour modifier ses détails",
       "noSpellsInLevel": "Aucun sort à ce niveau",
       "newSpell": "Nouveau sort",
