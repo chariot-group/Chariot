@@ -52,7 +52,7 @@ export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
   ] as const;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {skills.map(({ key, icon: Icon, ability }) => {
         const skillValue = stats?.skills?.[key] || 0;
 
@@ -60,14 +60,16 @@ export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
           <Tooltip key={key}>
             <TooltipTrigger>
               <Card className="p-2">
-                <div className="flex items-center gap-2">
-                  <Icon
-                    className="w-5 h-5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <div className="text-sm flex items-center gap-2">
+                <div className="text-sm grid grid-cols-3 justify-between">
+                  <div className="flex items-center col-span-2 gap-2">
+                    <Icon
+                      className="w-5 h-5 shrink-0"
+                      aria-hidden="true"
+                    />
                     <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
-                    <p className="text-xs text-gray-middle-light">{skillValue >= 0 ? `+${skillValue}` : skillValue}</p>
+                  </div>
+                  <div className="flex items-center gap-2 self-end justify-end">
+                    <span className="font-bold shrink-0">{skillValue >= 0 ? `+${skillValue}` : `${skillValue}`}</span>
                   </div>
                 </div>
               </Card>

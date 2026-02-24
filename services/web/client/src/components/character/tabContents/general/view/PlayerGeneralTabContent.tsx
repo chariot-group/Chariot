@@ -1,30 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Player } from "@/types/character";
-import {
-  Brain,
-  Church,
-  CircleQuestionMark,
-  CrossIcon,
-  Drama,
-  Eye,
-  Footprints,
-  LockKeyhole,
-  MessageSquare,
-  MicVocal,
-  Notebook,
-  PawPrint,
-  Sparkles,
-  Sprout,
-  TreePine,
-  User2Icon,
-  VenetianMask,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 import Skills from "../shared/Skills";

@@ -83,7 +83,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
         {/* Header avec onglets et infos du personnage */}
         <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
-            <div className="grid grid-cols-2">
+            <div className="md:grid md:grid-cols-2 flex flex-col-reverse">
               {/* Onglets */}
               <TabsList
                 className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
@@ -112,9 +112,9 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
 
               {/* Infos du personnage */}
               <div className="flex flex-row items-end gap-3 px-1.5 sm:px-0 sm:gap-4 md:gap-5 shrink-0 w-full truncate">
-                <div className="text-left xl:text-right mb-2 flex-1 truncate">
+                <div className="text-left xl:text-right mb-2 flex-1 truncate max-[425px]:flex max-[425px]:flex-row">
                   <Tooltip>
-                    <TooltipTrigger className="cursor-help truncate w-full text-end">
+                    <TooltipTrigger className="cursor-help truncate w-full md:text-end text-left">
                       <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
                         {character.firstname} {character.lastname}
                       </h1>
@@ -124,44 +124,46 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                     </TooltipContent>
                   </Tooltip>
 
-                  <h2 className="text-sm sm:text-base text-gray-light italic truncate">{character.surname}</h2>
-                  {isPlayer(character) ? (
-                    <React.Fragment>
-                      <p className="text-sm sm:text-base text-white font-semibold">
-                        {character.class.map((cls: { name: string; level: number }, index: number) => (
-                          <span key={index}>
-                            {tClass(cls.name)} Niv {cls.level}
-                            {index < character.class.length - 1 && " / "}
-                          </span>
-                        ))}
+                  <div className="flex flex-col gap-1">
+                    <h2 className="text-sm sm:text-base text-gray-light italic truncate">{character.surname}</h2>
+                    {isPlayer(character) ? (
+                      <React.Fragment>
+                        <p className="text-sm sm:text-base text-white font-semibold md:text-end text-left">
+                          {character.class.map((cls: { name: string; level: number }, index: number) => (
+                            <span key={index}>
+                              {tClass(cls.name)} Niv {cls.level}
+                              {index < character.class.length - 1 && " / "}
+                            </span>
+                          ))}
+                        </p>
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment>
+                        <p className="text-sm sm:text-base text-white font-semibold md:text-end text-left">
+                          <abbr
+                            title={t("npc.challengeRating")}
+                            className="no-underline cursor-help">
+                            {t("npc.challengeRatingAbbr")}
+                          </abbr>{" "}
+                          {character.challenge.challengeRating < 1
+                            ? character.challenge.challengeRating === 0.125
+                              ? "1/8"
+                              : character.challenge.challengeRating === 0.25
+                                ? "1/4"
+                                : character.challenge.challengeRating === 0.5
+                                  ? "1/2"
+                                  : character.challenge.challengeRating
+                            : character.challenge.challengeRating}{" "}
+                          ({character.challenge.experiencePoints} XP)
+                        </p>
+                      </React.Fragment>
+                    )}
+                    {character.groups && character.groups.length > 0 && (
+                      <p className="text-xs sm:text-sm text-white md:text-end text-left">
+                        {t("group")} : {character.groups[0].label}
                       </p>
-                    </React.Fragment>
-                  ) : (
-                    <React.Fragment>
-                      <p className="text-sm sm:text-base text-white font-semibold">
-                        <abbr
-                          title={t("npc.challengeRating")}
-                          className="no-underline cursor-help">
-                          {t("npc.challengeRatingAbbr")}
-                        </abbr>{" "}
-                        {character.challenge.challengeRating < 1
-                          ? character.challenge.challengeRating === 0.125
-                            ? "1/8"
-                            : character.challenge.challengeRating === 0.25
-                              ? "1/4"
-                              : character.challenge.challengeRating === 0.5
-                                ? "1/2"
-                                : character.challenge.challengeRating
-                          : character.challenge.challengeRating}{" "}
-                        ({character.challenge.experiencePoints} XP)
-                      </p>
-                    </React.Fragment>
-                  )}
-                  {character.groups && character.groups.length > 0 && (
-                    <p className="text-xs sm:text-sm text-white">
-                      {t("group")} : {character.groups[0].label}
-                    </p>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Photo de profil */}
