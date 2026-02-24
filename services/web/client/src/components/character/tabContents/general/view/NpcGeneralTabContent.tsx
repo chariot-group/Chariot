@@ -56,7 +56,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
                   <dd className="text-sm sm:text-base">{npc?.surname}</dd>
                 </div>
               )}
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-wrap gap-1">
                 <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
                 <dd className="text-sm sm:text-base">
                   {npc?.profile?.type} {npc?.profile?.subtype?.length > 0 && `(${npc?.profile?.subtype})`}
@@ -115,7 +115,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
 
         {/* Colonne 3 : Alignement, Perception passive et Aptitudes */}
         <section
-          className="flex flex-col gap-2 md:gap-4"
+          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1"
           aria-labelledby="additional-info-section"
           aria-label={tNpc("general.additionalInfo")}>
           {/* Alignement */}
@@ -125,7 +125,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             aria-labelledby="alignment-heading">
             <h2
               id="alignment-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
               {tPlayer("alignment")}
             </h2>
             <p
@@ -142,7 +142,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             aria-labelledby="passive-perception-heading">
             <h2
               id="passive-perception-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
               {t("passivePerception")}
             </h2>
             <p

@@ -83,38 +83,12 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
         {/* Header avec onglets et infos du personnage */}
         <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
-            <div className="md:grid md:grid-cols-2 flex flex-col-reverse">
-              {/* Onglets */}
-              <TabsList
-                className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
-                role="tablist"
-                aria-label={t("tabs.general")}>
-                {(["general", "battle", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
-                  <TabsTrigger
-                    key={tab}
-                    value={tab}
-                    role="tab"
-                    aria-selected={activeTab === tab}
-                    aria-controls={`${tab}-content`}
-                    className={`
-                                            flex-none p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
-                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                                            ${
-                                              activeTab === tab
-                                                ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
-                                                : `text-white bg-gray hover:bg-gray-middle`
-                                            }
-                                        `}>
-                    {t(`tabs.${tab}`)}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
+            <div className="xl:flex xl:flex-row-reverse justify-between">
               {/* Infos du personnage */}
-              <div className="flex flex-row items-end gap-3 px-1.5 sm:px-0 sm:gap-4 md:gap-5 shrink-0 w-full truncate">
-                <div className="text-left xl:text-right mb-2 flex-1 truncate max-[425px]:flex max-[425px]:flex-row">
+              <div className="flex flex-row items-end justify-between gap-4 xl:mb-0 mb-2">
+                <div className="flex flex-col items-start xl:items-end text-left xl:text-right xl:flex-1">
                   <Tooltip>
-                    <TooltipTrigger className="cursor-help truncate w-full md:text-end text-left">
+                    <TooltipTrigger className="cursor-help truncate">
                       <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
                         {character.firstname} {character.lastname}
                       </h1>
@@ -128,7 +102,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                     <h2 className="text-sm sm:text-base text-gray-light italic truncate">{character.surname}</h2>
                     {isPlayer(character) ? (
                       <React.Fragment>
-                        <p className="text-sm sm:text-base text-white font-semibold md:text-end text-left">
+                        <p className="text-sm sm:text-base text-white font-semibold">
                           {character.class.map((cls: { name: string; level: number }, index: number) => (
                             <span key={index}>
                               {tClass(cls.name)} Niv {cls.level}
@@ -139,7 +113,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                       </React.Fragment>
                     ) : (
                       <React.Fragment>
-                        <p className="text-sm sm:text-base text-white font-semibold md:text-end text-left">
+                        <p className="text-sm sm:text-base text-white font-semibold">
                           <abbr
                             title={t("npc.challengeRating")}
                             className="no-underline cursor-help">
@@ -159,7 +133,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                       </React.Fragment>
                     )}
                     {character.groups && character.groups.length > 0 && (
-                      <p className="text-xs sm:text-sm text-white md:text-end text-left">
+                      <p className="text-xs sm:text-sm text-white">
                         {t("group")} : {character.groups[0].label}
                       </p>
                     )}
@@ -177,6 +151,32 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                   />
                 </div>
               </div>
+
+              {/* Onglets */}
+              <TabsList
+                className="bg-transparent gap-1 flex-wrap justify-start self-start xl:self-end"
+                role="tablist"
+                aria-label={t("tabs.general")}>
+                {(["general", "battle", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
+                  <TabsTrigger
+                    key={tab}
+                    value={tab}
+                    role="tab"
+                    aria-selected={activeTab === tab}
+                    aria-controls={`${tab}-content`}
+                    className={`
+                      text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
+                      focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white grow-0
+                      ${
+                        activeTab === tab
+                          ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
+                          : `text-white bg-gray hover:bg-gray-middle`
+                      }
+                    `}>
+                    {t(`tabs.${tab}`)}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
             </div>
           </div>
         </div>

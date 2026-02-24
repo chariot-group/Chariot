@@ -82,7 +82,7 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
   ];
   return (
     <Card
-      className="gap-3 p-4 md:px-6 col-span-3 2xl:col-span-1 h-fit"
+      className="gap-3 p-4 md:px-6 h-fit"
       role="region"
       aria-labelledby="stats-heading-npc">
       <h2

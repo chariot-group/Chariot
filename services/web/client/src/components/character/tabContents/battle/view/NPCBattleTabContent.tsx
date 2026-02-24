@@ -18,14 +18,14 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
 
   return (
     <div className="w-full flex flex-col gap-4 items-start">
-      <div className="grid grid-cols-5 max-[426px]:grid-cols-1 gap-3 md:gap-4 w-full">
+      <div className="grid grid-cols-3 max-[426px]:grid-cols-1 gap-3 md:gap-4 w-full">
         {/* Statistiques */}
         <NpcStatistics
           npc={npc}
           accentColor={accentColor}
         />
         {/* Jet de sauvegarde */}
-        <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
+        <div className="flex flex-col gap-2">
           <Card
             className="gap-3 p-4 md:px-6  h-fit"
             role="region"
@@ -56,16 +56,12 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
           </div>
         </div>
         {/* Capacités et traits */}
-
-        <div className="col-span-3 2xl:col-span-2">
-          <AbilitiesSection
-            abilities={npc.abilities}
-            accentColor={accentColor}
-            title={t("abilitiesAndTraits")}
-            headingId="abilities-traits-heading-npc"
-            className="col-span-full lg:col-span-2"
-          />
-        </div>
+        <AbilitiesSection
+          abilities={npc.abilities}
+          accentColor={accentColor}
+          title={t("abilitiesAndTraits")}
+          headingId="abilities-traits-heading-npc"
+        />
       </div>
       {/* Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
