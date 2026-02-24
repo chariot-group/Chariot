@@ -3,7 +3,7 @@
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 import { Character, Spell, Spellcasting } from "@/types/character";
-import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown, WandSparkles } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { classWithSpellPrepared, getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
@@ -141,6 +141,22 @@ export default function CharacterMagicView({ character, accentColor }: Character
                         className="flex flex-wrap gap-2 shrink-0"
                         role="group"
                         aria-label={tMagic("spellcastingStats")}>
+                        <Card className="gap-3 p-2 md:px-6 flex-row items-center">
+                            <WandSparkles
+                                className="shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span
+                                className="text-sm md:text-base hidden sm:inline"
+                                aria-label={`${tMagic("spellcastingAbility")} : ${selectedSpellcasting?.ability}`}>
+                                {tMagic("spellcastingAbility")} : <strong>{selectedSpellcasting?.ability}</strong>
+                            </span>
+                            <span
+                                className="text-sm sm:hidden"
+                                aria-label={`${tMagic("attackBonus")}: ${selectedSpellcasting?.ability}`}>
+                                {tMagic("attackShort")} : <strong>{selectedSpellcasting?.ability}</strong>
+                            </span>
+                        </Card>
                         {isPlayer(character) && classWithSpellPrepared(selectedSpellcasting) && (
                             <Card className="gap-3 p-2 md:px-6 flex-row items-center">
                                 <Book
@@ -149,13 +165,13 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                 />
                                 <span
                                     className="text-sm md:text-base hidden sm:inline"
-                                    aria-label={`${tMagic("preparedSpells")}: ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
+                                    aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
                                     {tMagic("preparedSpells")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
                                 </span>
                                 <span
                                     className="text-sm sm:hidden"
-                                    aria-label={`${tMagic("preparedSpells")}: ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
-                                    {tMagic("preparedShort")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
+                                    aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
+                                    {tMagic("preparedShort")} : <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
                                 </span>
                             </Card>
                         )}

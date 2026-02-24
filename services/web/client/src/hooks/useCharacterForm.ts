@@ -134,6 +134,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
         resolver: zodResolver(resolvedSchema as any),
         defaultValues: defaultValues as any,
         mode: 'onChange',
+        shouldUnregister: false, // 🐛 FIX: Conserve les valeurs des champs même quand ils sont démontés
     });
 
     // Chargement des données existantes
