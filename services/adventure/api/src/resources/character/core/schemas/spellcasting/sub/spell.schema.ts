@@ -2,6 +2,7 @@ import { Prop, Schema } from '@nestjs/mongoose';
 import { SchemaFactory } from '@nestjs/mongoose';
 import { EffectType } from '@/resources/character/core/constants/effect-types.constant';
 import { ApiProperty } from '@nestjs/swagger';
+import { DamageDetails, DamageDetailsSchema, HealingDetails, HealingDetailsSchema } from './damage-details.schema';
 
 @Schema({ _id: false })
 export class Spell {
@@ -46,9 +47,17 @@ export class Spell {
   @Prop()
   damage?: string;
 
+  @ApiProperty({ type: () => DamageDetails })
+  @Prop({ type: DamageDetailsSchema })
+  damageDetails?: DamageDetails;
+
   @ApiProperty({ example: '4d8' })
   @Prop()
   healing?: string;
+
+  @ApiProperty({ type: () => HealingDetails })
+  @Prop({ type: HealingDetailsSchema })
+  healingDetails?: HealingDetails;
 }
 
 export const SpellSchema = SchemaFactory.createForClass(Spell);

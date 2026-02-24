@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { DamageDetailsDto, HealingDetailsDto } from './damage-details.dto';
 
 export class SpellDto {
 
@@ -53,8 +55,18 @@ export class SpellDto {
   @IsString()
   damage?: string;
 
+  @ApiProperty({ type: () => DamageDetailsDto })
+  @IsOptional()
+  @Type(() => DamageDetailsDto)
+  damageDetails?: DamageDetailsDto;
+
   @ApiProperty({ example: '4d8' })
   @IsOptional()
   @IsString()
   healing?: string;
+
+  @ApiProperty({ type: () => HealingDetailsDto })
+  @IsOptional()
+  @Type(() => HealingDetailsDto)
+  healingDetails?: HealingDetailsDto;
 }

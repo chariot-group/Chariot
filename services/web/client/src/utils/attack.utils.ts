@@ -1,0 +1,15 @@
+export const DEFAULT_DAMAGE_TYPES = [
+    "Acide",
+    "Contondant",
+    "Feu",
+    "Force",
+    "Foudre",
+    "Froid",
+    "Nécrotique",
+    "Perforant",
+    "Poison",
+    "Psychique",
+    "Radiant",
+    "Tonnerre",
+    "Tranchant",
+];

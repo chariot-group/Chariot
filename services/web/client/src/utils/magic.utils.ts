@@ -4,6 +4,20 @@ import { calculateAbilityBonus, isPlayer } from "@/utils/global.utils";
 /** Classes that use the prepared-spells mechanic */
 export const CLASSES_WITH_SPELL_PREPARED = ["artificer", "cleric", "druid", "paladin", "wizard"] as const;
 
+
+export const SPELL_SCHOOLS = [
+    "Abjuration",
+    "Conjuration",
+    "Divination",
+    "Enchantement",
+    "Évocation",
+    "Illusion",
+    "Nécromancie",
+    "Transmutation",
+];
+
+export const DICE_TYPES = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+
 /**
  * Vérifie si un sort de niveau 0 est présent dans la liste des sorts
  */
