@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
+import { DamageTypeInput } from "@/components/ui/damage-type-input";
 
 interface ActionUpdateSectionProps {
   title: string;
@@ -156,7 +157,14 @@ const ActionUpdateSection = ({
                       <Controller
                         name={`${fieldArrayName}.${index}.type`}
                         control={form.control}
-                        render={({ field: typeField }) => <Input {...typeField} />}
+                        render={({ field: typeField }) => (
+                          <DamageTypeInput
+                            id={`${fieldArrayName}.${index}.type`}
+                            value={typeField.value ?? ""}
+                            onChange={typeField.onChange}
+                            placeholder="Feu, Froid..."
+                          />
+                        )}
                       />
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
