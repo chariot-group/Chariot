@@ -12,6 +12,7 @@ import SavingThrowsEdit from "@/components/character/tabContents/general/form/Sa
 import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSkillsEdit";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import NpcColumn2Edit from "./NpcColumn2Edit";
+import NpcStatisticsUpdate from "../../shared/NpcStatisticsUpdate";
 
 interface NpcGeneralTabEditProps {
   npc: NPC;
@@ -317,6 +318,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
               </div>
             </div>
           </Card>
+
+          <NpcStatisticsUpdate
+            npc={npc}
+            accentColor={accentColor}
+            form={form}
+          />
 
           <NpcColumn2Edit
             form={form}

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import NpcColumn2 from "./NpcColumn2";
+import NpcStatistics from "../../shared/NpcStatistics";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -63,6 +64,11 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
               </div>
             </dl>
           </Card>
+
+          <NpcStatistics
+            npc={npc}
+            accentColor={accentColor}
+          />
 
           <NpcColumn2
             npc={npc}

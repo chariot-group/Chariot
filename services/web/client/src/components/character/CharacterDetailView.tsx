@@ -249,7 +249,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       </Tabs>
 
       {/* Footer avec boutons - fixe en bas */}
-      <div className="shrink-0 w-full px-4 sm:px-6 md:px-10 py-5 border-t border-transparent">
+      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
         <div className="w-full mx-auto flex flex-row-reverse gap-4">
           {isEditing ? (
             <>

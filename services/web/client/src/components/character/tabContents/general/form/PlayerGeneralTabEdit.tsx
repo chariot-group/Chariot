@@ -8,7 +8,7 @@ import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGr
 import { ClassNameEnum, AlignmentEnum } from "@/schemas/character";
 import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowRightLeft, Bird, Mountain, Plus, Shovel, Trash2, Waves } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import Column2Edit from "./Column2Edit";
+import StatisticsUpdate from "../../shared/StatisticsUpdate";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -584,6 +585,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               </div>
             </div>
           </Card>
+
+          {/* Section Points de Vie */}
+          <StatisticsUpdate
+            player={player}
+            accentColor={accentColor}
+            form={form}
+          />
 
           <Column2Edit
             form={form}
