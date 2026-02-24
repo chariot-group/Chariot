@@ -274,29 +274,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
             {/* Row 2 : Save DC + Attack Bonus with auto-calc */}
             <div className="grid grid-cols-2 gap-4">
-              {/* Prepared spells info (editable field) */}
-              {isPlayer(character) && classWithSpellPrepared(selectedSpellcasting) && classLevel > 0 && (
-                <Controller
-                  name={`spellcasting.${selectedSpellcastingIndex}.preparedSpells`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} orientation="vertical">
-                      <label htmlFor={`sc-prepared-${selectedSpellcastingIndex}`} className="text-sm font-medium">
-                        {tMagic("preparedSpells")}
-                      </label>
-                      <Input
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                        id={`sc-prepared-${selectedSpellcastingIndex}`}
-                        aria-invalid={fieldState.invalid}
-                        placeholder={String(calculatedPrepared)}
-                        type="number"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              )}
               {/* Attack Bonus */}
               <div className="flex flex-row items-center gap-2">
                 <Controller
@@ -376,20 +353,19 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     const hasSlots = level > 0 && selectedSpellcasting.spellSlotsByLevel?.[level] !== undefined;
 
                     return (
-                      <AccordionItem key={level} value={`level-${level}`} className="flex flex-col gap-2">
-                        <Card className="gap-0 p-0 overflow-hidden">
-                          <div className="flex items-center">
-                            {/* Accordion trigger takes remaining space */}
-                            <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline">
+                      <AccordionItem key={level} value={`level-${level}`} className="flex flex-col gap-2 w-full content-center">
+                        <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
+                          {/* Accordion trigger takes remaining space */}
+                          <div className="relative w-full">
+                            <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
                               <h3 className={`text-base md:text-lg font-medium ${accentColor}`}>
                                 {level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}
                               </h3>
                             </AccordionTrigger>
-
                             {/* Spell slot total (beside the trigger, level 1+) */}
                             {hasSlots && (
                               <div
-                                className="flex items-center gap-1.5 pr-10 shrink-0"
+                                className="flex items-center gap-1.5 shrink-0 absolute right-14 top-1/2 -translate-y-1/2"
                                 onClick={(e) => e.stopPropagation()}
                                 onKeyDown={(e) => e.stopPropagation()}>
                                 <Controller
@@ -401,7 +377,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                       onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                                       className="w-14 text-center h-8 text-sm"
                                       type="number"
-                                      min={0}
+                                      min={1}
                                       onClick={(e) => e.stopPropagation()}
                                       aria-label={`${tMagic("spellLevel", { level })} ${tEdit("slotsTotal")}`}
                                     />

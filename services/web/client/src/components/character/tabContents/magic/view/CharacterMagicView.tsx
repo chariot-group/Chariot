@@ -157,6 +157,22 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                 {tMagic("attackShort")} : <strong>{selectedSpellcasting?.ability}</strong>
                             </span>
                         </Card>
+                        <Card className="gap-3 p-2 md:px-6 flex-row items-center">
+                            <Dice5
+                                className="shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span
+                                className="text-sm md:text-base hidden sm:inline"
+                                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
+                                {tMagic("saveDC")}: <strong>{selectedSpellcasting?.saveDC}</strong>
+                            </span>
+                            <span
+                                className="text-sm sm:hidden"
+                                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
+                                {tMagic("saveDCShort")}: <strong>{selectedSpellcasting?.saveDC}</strong>
+                            </span>
+                        </Card>
                         {isPlayer(character) && classWithSpellPrepared(selectedSpellcasting) && (
                             <Card className="gap-3 p-2 md:px-6 flex-row items-center">
                                 <Book
@@ -189,22 +205,6 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                 className="text-sm sm:hidden"
                                 aria-label={`${tMagic("attackBonus")}: ${selectedSpellcasting?.attackBonus}`}>
                                 {tMagic("attackShort")}: <strong>{selectedSpellcasting?.attackBonus}</strong>
-                            </span>
-                        </Card>
-                        <Card className="gap-3 p-2 md:px-6 flex-row items-center">
-                            <Dice5
-                                className="shrink-0"
-                                aria-hidden="true"
-                            />
-                            <span
-                                className="text-sm md:text-base hidden sm:inline"
-                                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
-                                {tMagic("saveDC")}: <strong>{selectedSpellcasting?.saveDC}</strong>
-                            </span>
-                            <span
-                                className="text-sm sm:hidden"
-                                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
-                                {tMagic("saveDCShort")}: <strong>{selectedSpellcasting?.saveDC}</strong>
                             </span>
                         </Card>
                     </div>
