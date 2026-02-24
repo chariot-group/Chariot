@@ -203,7 +203,9 @@
     "battle": {
       "stats": "Estadísticas",
       "hitLevel": "Nivel",
-      "hitDice": "Dados de Golpe:",
+      "hitDice": "Dados de Golpe",
+      "multiplicator": "Multiplicador",
+      "bonusHealthDice": "Bonus de Dados de Golpe",
       "hitPointsRoll": "Tirada de Puntos de Golpe:",
       "savingThrows": "Tiradas de salvación",
       "deathSaves": "Salvaciones de Muerte",

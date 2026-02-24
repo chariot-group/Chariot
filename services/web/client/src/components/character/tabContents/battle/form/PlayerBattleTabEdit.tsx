@@ -28,10 +28,7 @@ interface PlayerBattleTabEditProps {
 export default function PlayerBattleTabEdit({ player, accentColor, form }: PlayerBattleTabEditProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
-  const tAbilities = useTranslations("characterDetail.player.general.abilities");
   const tClass = useTranslations("classes");
-
-  const abilityScoreKeys = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
   const {
     fields: abilitiesFields,

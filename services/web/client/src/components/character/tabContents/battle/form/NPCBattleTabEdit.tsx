@@ -197,7 +197,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="speed-walk"
-                      className="text-xs">
+                      className="text-sm">
                       {tEdit("walk")}
                     </label>
                     <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
@@ -229,7 +229,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="speed-climb"
-                      className="text-xs">
+                      className="text-sm">
                       {tEdit("climb")}
                     </label>
                     <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
@@ -260,7 +260,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="speed-swim"
-                      className="text-xs">
+                      className="text-sm">
                       {tEdit("swim")}
                     </label>
                     <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
@@ -291,7 +291,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="speed-fly"
-                      className="text-xs">
+                      className="text-sm">
                       {tEdit("fly")}
                     </label>
                     <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
@@ -322,7 +322,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="speed-burrow"
-                      className="text-xs">
+                      className="text-sm">
                       {tEdit("burrow")}
                     </label>
                     <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
@@ -360,7 +360,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="health-current"
-                      className="text-xs">
+                      className="text-sm">
                       {tEdit("currentHP")}
                     </label>
                     <Input
@@ -384,7 +384,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="health-max"
-                      className="text-xs">
+                      className="text-sm">
                       {tEdit("maxHP")}
                     </label>
                     <Input
@@ -408,7 +408,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="health-temp"
-                      className="text-xs">
+                      className="text-sm">
                       {tEdit("tempHP")}
                     </label>
                     <Input
@@ -428,7 +428,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
 
           {/* Hit Points Roll */}
           <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-medium">{t("healthPoints")}</h3>
+            <h3 className="text-sm font-medium">{t("hitDice")}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 items-center">
               <Controller
                 name="hitPointsRoll"
@@ -439,8 +439,8 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="hit-points-roll-level"
-                      className="text-sm font-medium">
-                      {t("hitPointsRoll")}
+                      className="text-sm">
+                      {t("multiplicator")}
                     </label>
                     <Input
                       id="hit-points-roll-level"
@@ -466,7 +466,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="hit-points-roll-dice"
-                      className="text-xs">
+                      className="text-sm">
                       {t("hitDice")}
                     </label>
                     <Select
@@ -499,8 +499,8 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     orientation="vertical">
                     <label
                       htmlFor="hit-points-roll-modifier"
-                      className="text-sm font-medium">
-                      {t("hitPointsRoll")}
+                      className="text-sm">
+                      {t("bonusHealthDice")}
                     </label>
                     <Input
                       id="hit-points-roll-modifier"
