@@ -11,6 +11,7 @@ import AbilityScoresEdit from "@/components/character/tabContents/general/form/A
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSkillsEdit";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
+import NpcColumn2Edit from "./NpcColumn2Edit";
 
 interface NpcGeneralTabEditProps {
   npc: NPC;
@@ -63,7 +64,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
           aria-labelledby="character-info-section">
           {/* Personnage */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-profile">
             <h2
@@ -79,8 +80,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                   name="firstname"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} orientation="vertical">
-                      <label htmlFor="character-firstname" className="text-sm font-medium">
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <label
+                        htmlFor="character-firstname"
+                        className="text-sm font-medium">
                         {tEdit("firstname")}
                       </label>
                       <Input
@@ -92,7 +97,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                         placeholder={tEdit("firstname")}
                         type="text"
                       />
-                      {fieldState.error && <FieldError id="character-firstname-error" errors={[fieldState.error]} />}
+                      {fieldState.error && (
+                        <FieldError
+                          id="character-firstname-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
                     </Field>
                   )}
                 />
@@ -101,8 +111,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                   name="lastname"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} orientation="vertical">
-                      <label htmlFor="character-lastname" className="text-sm font-medium">
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <label
+                        htmlFor="character-lastname"
+                        className="text-sm font-medium">
                         {tEdit("lastname")}
                       </label>
                       <Input
@@ -114,7 +128,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                         placeholder={tEdit("lastname")}
                         type="text"
                       />
-                      {fieldState.error && <FieldError id="character-lastname-error" errors={[fieldState.error]} />}
+                      {fieldState.error && (
+                        <FieldError
+                          id="character-lastname-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
                     </Field>
                   )}
                 />
@@ -123,8 +142,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                   name="surname"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} orientation="vertical">
-                      <label htmlFor="character-surname" className="text-sm font-medium">
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <label
+                        htmlFor="character-surname"
+                        className="text-sm font-medium">
                         {tEdit("surname")}
                       </label>
                       <Input
@@ -136,7 +159,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                         placeholder={tEdit("surname")}
                         type="text"
                       />
-                      {fieldState.error && <FieldError id="character-surname-error" errors={[fieldState.error]} />}
+                      {fieldState.error && (
+                        <FieldError
+                          id="character-surname-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
                     </Field>
                   )}
                 />
@@ -150,8 +178,13 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                     name="profile.type"
                     control={form.control}
                     render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid} orientation="vertical" className="flex-1">
-                        <label htmlFor="character-type" className="text-sm font-medium">
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="flex-1">
+                        <label
+                          htmlFor="character-type"
+                          className="text-sm font-medium">
                           {tEdit("type")}
                         </label>
                         <Input
@@ -163,7 +196,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                           placeholder={tEdit("type")}
                           type="text"
                         />
-                        {fieldState.error && <FieldError id="character-type-error" errors={[fieldState.error]} />}
+                        {fieldState.error && (
+                          <FieldError
+                            id="character-type-error"
+                            errors={[fieldState.error]}
+                          />
+                        )}
                       </Field>
                     )}
                   />
@@ -172,8 +210,13 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                     name="profile.subtype"
                     control={form.control}
                     render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid} orientation="vertical" className="flex-1">
-                        <label htmlFor="character-subtype" className="text-sm font-medium">
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="flex-1">
+                        <label
+                          htmlFor="character-subtype"
+                          className="text-sm font-medium">
                           {tNpc("subtypeLabel")}
                         </label>
                         <Input
@@ -185,7 +228,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                           placeholder={tNpc("subtypeLabel")}
                           type="text"
                         />
-                        {fieldState.error && <FieldError id="character-subtype-error" errors={[fieldState.error]} />}
+                        {fieldState.error && (
+                          <FieldError
+                            id="character-subtype-error"
+                            errors={[fieldState.error]}
+                          />
+                        )}
                       </Field>
                     )}
                   />
@@ -200,8 +248,13 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                     name="challenge.challengeRating"
                     control={form.control}
                     render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid} orientation="vertical" className="flex-1">
-                        <label htmlFor="challenge-rating" className="text-sm font-medium">
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="flex-1">
+                        <label
+                          htmlFor="challenge-rating"
+                          className="text-sm font-medium">
                           {tEdit("challengeRating")}
                         </label>
                         <Input
@@ -216,7 +269,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                           step="0.125"
                           min="0"
                         />
-                        {fieldState.error && <FieldError id="challenge-rating-error" errors={[fieldState.error]} />}
+                        {fieldState.error && (
+                          <FieldError
+                            id="challenge-rating-error"
+                            errors={[fieldState.error]}
+                          />
+                        )}
                       </Field>
                     )}
                   />
@@ -226,8 +284,13 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                     name="challenge.experiencePoints"
                     control={form.control}
                     render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid} orientation="vertical" className="flex-1">
-                        <label htmlFor="experience-points" className="text-sm font-medium">
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="flex-1">
+                        <label
+                          htmlFor="experience-points"
+                          className="text-sm font-medium">
                           {tEdit("experiencePoints")}
                         </label>
                         <Input
@@ -241,7 +304,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                           type="number"
                           min="0"
                         />
-                        {fieldState.error && <FieldError id="experience-points-error" errors={[fieldState.error]} />}
+                        {fieldState.error && (
+                          <FieldError
+                            id="experience-points-error"
+                            errors={[fieldState.error]}
+                          />
+                        )}
                       </Field>
                     )}
                   />
@@ -250,9 +318,15 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
             </div>
           </Card>
 
+          <NpcColumn2Edit
+            form={form}
+            accentColor={accentColor}
+            className="sm:hidden flex"
+          />
+
           {/* Caractéristiques */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-characteristics">
             <h2
@@ -266,7 +340,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
 
           {/* Languages */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-languages">
             <h2
@@ -280,8 +354,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                 name="stats.languages"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid} orientation="vertical">
-                    <label htmlFor="npc-languages" className="text-sm font-medium">
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="npc-languages"
+                      className="text-sm font-medium">
                       {t("languages")}
                     </label>
                     <TagInput
@@ -293,7 +371,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "npc-languages-error" : undefined}
                     />
-                    {fieldState.error && <FieldError id="npc-languages-error" errors={[fieldState.error]} />}
+                    {fieldState.error && (
+                      <FieldError
+                        id="npc-languages-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
                   </Field>
                 )}
               />
@@ -302,43 +385,15 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
         </section>
 
         {/* Colonne 2 : Jets de sauvegarde et Compétences */}
-        <section
-          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
-          aria-labelledby="characteristics-skills-section">
-          {/* Jets de sauvegarde */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
-            role="region"
-            aria-labelledby="character-savingthrows">
-            <h2
-              id="character-savingthrows-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("savingThrows")}
-            </h2>
-          </Card>
-          <div className="order-2">
-            <SavingThrowsEdit form={form} accentColor={accentColor} isNPC={true} />
-          </div>
-
-          {/* Compétences */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6 order-3"
-            role="region"
-            aria-labelledby="skills-heading-edit">
-            <h2
-              id="skills-heading-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("skills")}
-            </h2>
-          </Card>
-          <div className="order-4">
-            <NpcSkillsEdit form={form} accentColor={accentColor} />
-          </div>
-        </section>
+        <NpcColumn2Edit
+          form={form}
+          accentColor={accentColor}
+          className="sm:flex hidden"
+        />
 
         {/* Colonne 3 : Alignement, Perception passive et Aptitudes */}
         <section
-          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1 order-5 min-[450px]:order-0"
+          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1"
           aria-labelledby="additional-info-section">
           {/* Alignement */}
           <Card
@@ -354,8 +409,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
               name="profile.alignment"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="alignment" className="text-sm font-medium">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="alignment"
+                    className="text-sm font-medium">
                     {t("alignment")}
                   </label>
                   <Select
@@ -367,7 +426,9 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                     <SelectContent position="item-aligned">
                       <SelectGroup>
                         {AlignmentEnum.options.map((alignment) => (
-                          <SelectItem key={alignment} value={alignment}>
+                          <SelectItem
+                            key={alignment}
+                            value={alignment}>
                             {tAlignment(alignment as any)}
                           </SelectItem>
                         ))}
@@ -395,8 +456,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                 name="stats.passivePerception"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid} orientation="vertical">
-                    <label htmlFor="passive-perception" className="text-sm font-medium">
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="passive-perception"
+                      className="text-sm font-medium">
                       {t("passivePerceptionOverride")}
                     </label>
                     <Input
@@ -411,7 +476,12 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                       min="1"
                       max="40"
                     />
-                    {fieldState.error && <FieldError id="passive-perception-error" errors={[fieldState.error]} />}
+                    {fieldState.error && (
+                      <FieldError
+                        id="passive-perception-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
                   </Field>
                 )}
               />
@@ -435,7 +505,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
           </Card>
 
           {/* Capacités et traits */}
-          <div className="order-2 lg:order-1">
+          <div>
             <AbilitiesUpdateSection
               title={t("abilitiesAndTraits")}
               form={form}

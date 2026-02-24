@@ -1,29 +1,21 @@
 import { Player } from "@/types/character";
 import { Controller, UseFormReturn, useFieldArray } from "react-hook-form";
-import { useState } from "react";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
 import { ClassNameEnum, AlignmentEnum } from "@/schemas/character";
-import {
-  getLevelFromExperience,
-  getExperienceForLevel,
-  isLevelXpSynced,
-  getProficiencyBonusFromLevel,
-  isLevelProficiencyBonusSynced,
-} from "@/utils/global.utils";
+import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
-import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
-import SkillsEdit from "./SkillsEdit";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
+import Column2Edit from "./Column2Edit";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -36,9 +28,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
-
-  const [enableHalfProficiency, setEnableHalfProficiency] = useState(false);
-  const [enableExpertise, setEnableExpertise] = useState(false);
 
   const {
     fields: abilitiesFields,
@@ -101,7 +90,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
           aria-labelledby="character-info-section">
           {/* Personnage */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-profile">
             <h2
@@ -595,8 +584,16 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               </div>
             </div>
           </Card>
+
+          <Column2Edit
+            form={form}
+            accentColor={accentColor}
+            className="flex sm:hidden"
+          />
+
+          {/* Compétences */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-characteristics">
             <h2
@@ -607,8 +604,10 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
             <AbilityScoresEdit form={form} />
           </Card>
+
+          {/* Maîtrises */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-proficiencies">
             <h2
@@ -748,158 +747,16 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
             </div>
           </Card>
         </section>
+
         {/* Colonne 2 : Bonus, Jets de sauvegarde et Compétences */}
+        <Column2Edit
+          form={form}
+          accentColor={accentColor}
+          className="sm:flex hidden"
+        />
+
         <section
-          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
-          aria-labelledby="characteristics-skills-section">
-          {/* Bonus */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
-            role="region"
-            aria-labelledby="character-proficiencybonus">
-            <h2
-              id="character-proficiencybonus-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("proficiencyBonus")}
-            </h2>
-            {/* Bonus de maîtrise avec synchronisation */}
-            <div className="flex flex-col gap-2">
-              <Controller
-                name="stats.proficiencyBonus"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    orientation="vertical">
-                    <label
-                      htmlFor="proficiency-bonus"
-                      className="text-sm font-medium">
-                      {t("proficiencyBonusLabel")}
-                    </label>
-                    <Input
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 2)}
-                      id="proficiency-bonus"
-                      aria-invalid={fieldState.invalid}
-                      aria-describedby={fieldState.error ? "proficiency-bonus-error" : undefined}
-                      placeholder="+2"
-                      type="number"
-                      min="2"
-                      max="6"
-                    />
-                    {fieldState.error && (
-                      <FieldError
-                        id="proficiency-bonus-error"
-                        errors={[fieldState.error]}
-                      />
-                    )}
-                  </Field>
-                )}
-              />
-
-              {/* Suggestions de synchronisation bonus/niveau */}
-              {(() => {
-                const currentLevel = form.watch("progression.level") || 1;
-                const currentProficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
-                const calculatedBonus = getProficiencyBonusFromLevel(currentLevel);
-                const isSynced = isLevelProficiencyBonusSynced(currentLevel, currentProficiencyBonus);
-
-                if (isSynced) {
-                  return (
-                    <div className="flex items-center gap-2 p-2 bg-green/20 rounded text-sm text-green-600 dark:text-green-400">
-                      <span>✓ {t("proficiencyBonusSynced")}</span>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div className="flex flex-col gap-2">
-                    <div className="text-xs text-gray-middle-light">
-                      <span>⚠️ {t("proficiencyBonusMismatch", { level: currentLevel, bonus: calculatedBonus })}</span>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        form.setValue("stats.proficiencyBonus", calculatedBonus, { shouldDirty: true });
-                      }}
-                      className="text-xs">
-                      <ArrowRightLeft className="size-3 mr-1" />
-                      {t("syncProficiencyBonusButton", { bonus: calculatedBonus })}
-                    </Button>
-                  </div>
-                );
-              })()}
-            </div>
-          </Card>
-          {/* Jets de sauvegarde */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
-            role="region"
-            aria-labelledby="character-savingthrows">
-            <h2
-              id="character-savingthrows-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("savingThrows")}
-            </h2>
-          </Card>
-          <div className="order-1">
-            <SavingThrowsEdit
-              form={form}
-              accentColor={accentColor}
-            />
-          </div>
-          {/* Compétences */}
-          <Card
-            className="flex flex-wrap justify-between gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
-            role="region"
-            aria-labelledby="skills-heading-edit">
-            <h2
-              id="skills-heading-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("skills")}
-            </h2>
-            {/* Toggles pour demi-maîtrise et expertise */}
-            <div className="flex flex-wrap gap-4 px-3 rounded-lg text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="enable-half-proficiency"
-                  checked={enableHalfProficiency}
-                  onCheckedChange={(checked) => setEnableHalfProficiency(checked === true)}
-                />
-                <Label
-                  htmlFor="enable-half-proficiency"
-                  className="cursor-pointer text-sm">
-                  {t("enableHalfProficiency")}
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="enable-expertise"
-                  checked={enableExpertise}
-                  onCheckedChange={(checked) => setEnableExpertise(checked === true)}
-                />
-                <Label
-                  htmlFor="enable-expertise"
-                  className="cursor-pointer text-sm">
-                  {t("enableExpertise")}
-                </Label>
-              </div>
-            </div>
-          </Card>
-          <div className="order-3">
-            <SkillsEdit
-              form={form}
-              accentColor={accentColor}
-              enableHalfProficiency={enableHalfProficiency}
-              enableExpertise={enableExpertise}
-            />
-          </div>
-        </section>
-        <section
-          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1 order-5 min-[450px]:order-0"
+          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1"
           aria-labelledby="additional-info-section">
           {/* Épuisement */}
           <Card
@@ -1137,7 +994,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
             />
           </Card>
           {/* Capacités et traits */}
-          <div className="order-2 lg:order-1">
+          <div>
             <AbilitiesUpdateSection
               title={t("abilitiesAndTraits")}
               form={form}

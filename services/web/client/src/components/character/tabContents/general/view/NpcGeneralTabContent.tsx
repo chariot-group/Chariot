@@ -1,31 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { NPC } from "@/types/character";
-import {
-  Brain,
-  Church,
-  CircleQuestionMark,
-  CrossIcon,
-  Drama,
-  Eye,
-  Footprints,
-  LockKeyhole,
-  MessageSquare,
-  MicVocal,
-  Notebook,
-  PawPrint,
-  Sparkles,
-  Sprout,
-  TreePine,
-  User2Icon,
-  VenetianMask,
-} from "lucide-react";
 import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
-import { calculateAbilityBonus } from "@/utils/global.utils";
-import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
-import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
-import SkillsNpc from "../shared/SkillsNpc";
+import NpcColumn2 from "./NpcColumn2";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -52,7 +30,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
           aria-label={tNpc("general.characterInfo")}>
           {/* Personnage */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-heading">
             <h2
@@ -86,8 +64,14 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             </dl>
           </Card>
 
+          <NpcColumn2
+            npc={npc}
+            accentColor={accentColor}
+            className="sm:hidden flex"
+          />
+
           {/* Caractéristiques */}
-          <div className="order-3 min-[450px]:order-2">
+          <div>
             <AbilityScores
               character={npc}
               accentColor={accentColor}
@@ -96,7 +80,7 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
 
           {/* Maitrise */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="languages-heading">
             <h2
@@ -117,60 +101,15 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
         </section>
 
         {/* Colonne 2 : Jets de sauvegarde et Compétences */}
-        <section
-          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
-          aria-labelledby="characteristics-skills-section"
-          aria-label={tNpc("general.characteristicsSkills")}>
-          {/* Jets de sauvegarde */}
-          <div className="flex flex-col gap-2">
-            <Card
-              className="gap-3 py-4 px-4 md:px-6"
-              role="region"
-              aria-labelledby="saving-throws-heading">
-              <h2
-                id="saving-throws-heading"
-                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                {t("savingThrows")}
-              </h2>
-            </Card>
-            <div
-              className="grid grid-cols-2 gap-2"
-              role="list">
-              {npc?.stats &&
-                Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
-                  const abilityName = t(`abilities.${key}`);
-                  return (
-                    <SavingThrow
-                      key={key}
-                      label={abilityName}
-                      skillName={key as keyof typeof npc.stats.abilityScores}
-                      accentColor={accentColor}
-                      stats={npc?.stats}
-                    />
-                  );
-                })}
-            </div>
-          </div>
-
-          {/* Compétences */}
-          <div className="flex flex-col gap-2">
-            <Card
-              className="gap-3 py-4 px-4 md:px-6"
-              role="region"
-              aria-labelledby="skills-heading">
-              <h2
-                id="skills-heading"
-                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                {t("skills")}
-              </h2>
-            </Card>
-            <SkillsNpc stats={npc?.stats} />
-          </div>
-        </section>
+        <NpcColumn2
+          npc={npc}
+          accentColor={accentColor}
+          className="hidden sm:flex"
+        />
 
         {/* Colonne 3 : Alignement, Perception passive et Aptitudes */}
         <section
-          className="flex flex-col gap-2 md:gap-4 order-5 min-[450px]:order-0"
+          className="flex flex-col gap-2 md:gap-4"
           aria-labelledby="additional-info-section"
           aria-label={tNpc("general.additionalInfo")}>
           {/* Alignement */}

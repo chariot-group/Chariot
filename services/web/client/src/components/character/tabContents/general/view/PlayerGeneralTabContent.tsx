@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 import Skills from "../shared/Skills";
+import Column2 from "./Column2";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -39,7 +40,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
           aria-labelledby="character-info-section">
           {/* Personnage */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-1"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-heading">
             <h2
@@ -95,8 +96,14 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             </dl>
           </Card>
 
+          <Column2
+            player={player}
+            accentColor={accentColor}
+            className="flex sm:hidden"
+          />
+
           {/* Caractéristiques */}
-          <div className="order-3 min-[450px]:order-2">
+          <div>
             <AbilityScores
               character={player}
               accentColor={accentColor}
@@ -105,7 +112,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
 
           {/* Maitrise */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 order-4 min-[450px]:order-3"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="proficiencies-heading">
             <h2
@@ -135,81 +142,15 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
         </section>
 
         {/* Colonne 2 : Bonus, Jets de sauvegarde et Compétences */}
-        <section
-          className="flex flex-col gap-2 md:gap-4 order-2 min-[450px]:order-0"
-          aria-labelledby="characteristics-skills-section">
-          {/* Bonus */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
-            role="region"
-            aria-labelledby="proficiency-bonus-heading">
-            <h2
-              id="proficiency-bonus-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("proficiencyBonus")}
-            </h2>
-            <p
-              className="text-sm sm:text-base font-bold"
-              aria-label={`${t("proficiencyBonus")} ${player?.stats?.proficiencyBonus}`}>
-              {player?.stats?.proficiencyBonus >= 0
-                ? `+${player?.stats?.proficiencyBonus}`
-                : `${player?.stats?.proficiencyBonus}`}
-            </p>
-          </Card>
-
-          {/* Jet de sauvegarde */}
-          <div className="flex flex-col gap-2">
-            <Card
-              className="gap-3 py-4 px-4 md:px-6"
-              role="region"
-              aria-labelledby="saving-throws-heading">
-              <h2
-                id="saving-throws-heading"
-                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                {t("savingThrows")}
-              </h2>
-            </Card>
-            <div
-              className="grid grid-cols-2 gap-2"
-              role="list">
-              {player?.stats &&
-                Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
-                  const abilityName = t(`abilities.${key}`);
-                  return (
-                    <SavingThrow
-                      key={key}
-                      label={abilityName}
-                      skillName={key as keyof typeof player.stats.abilityScores}
-                      accentColor={accentColor}
-                      stats={player?.stats}
-                    />
-                  );
-                })}
-            </div>
-          </div>
-
-          {/* Compétences */}
-          <div className="flex flex-col gap-2 order-4 min-[450px]:order-3">
-            <Card
-              className="gap-3 py-4 px-4 md:px-6"
-              role="region"
-              aria-labelledby="skills-heading">
-              <h2
-                id="skills-heading"
-                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-                {t("skills")}
-              </h2>
-            </Card>
-            <Skills
-              accentColor={accentColor}
-              stats={player?.stats}
-            />
-          </div>
-        </section>
+        <Column2
+          player={player}
+          accentColor={accentColor}
+          className="sm:flex hidden"
+        />
 
         {/* Colonne 3 : Alignement, Perception passive, Historique et Aptitudes */}
         <section
-          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1 order-5 min-[450px]:order-0"
+          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1"
           aria-labelledby="additional-info-section">
           {/* Epuisement */}
           <Card
