@@ -11,6 +11,7 @@ import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 
 interface Props {
   npc: NPC;
@@ -187,22 +188,20 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
               {t("savingThrows")}
             </h2>
           </Card>
+
           <div
             className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
             role="list">
             {npc?.stats &&
               Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
                 const abilityName = tAbilities(key as any);
-                const abilityScore = npc?.stats?.abilityScores[key as keyof typeof npc.stats.abilityScores] || 0;
-                const valeurCalculer = Math.floor((abilityScore - 10) / 2);
-                const displayBonus = value !== 0 ? valeurCalculer + value : valeurCalculer;
                 return (
-                  <Skill
+                  <SavingThrow
                     key={key}
-                    skillName={abilityName}
-                    value={value !== 0 ? 2 : 0}
+                    label={abilityName}
+                    skillName={key as keyof typeof npc.stats.abilityScores}
                     accentColor={accentColor}
-                    skills={displayBonus}
+                    stats={npc.stats}
                   />
                 );
               })}

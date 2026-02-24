@@ -100,7 +100,7 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
           <Tooltip key={key}>
             <TooltipTrigger>
               <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
-                <p className="text-sm grid grid-cols-3 justify-between">
+                <div className="text-sm grid grid-cols-3 justify-between">
                   <div className="flex items-center col-span-2 gap-2">
                     <span className="shrink-0">{icon}</span>
                     <span className={`truncate ${isActive && "italic"}`}>{t(`skillNames.${translationKey}`)}</span>
@@ -116,7 +116,7 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
                       aria-hidden="true"
                     />
                   </div>
-                </p>
+                </div>
               </Card>
             </TooltipTrigger>
             <TooltipContent>{t(`abilities.${abilityKey}`)}</TooltipContent>

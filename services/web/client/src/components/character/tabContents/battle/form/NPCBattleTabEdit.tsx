@@ -13,6 +13,9 @@ import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
+import SavingThrowsEdit from "../../general/form/SavingThrowsEdit";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 interface NPCBattleTabEditProps {
   npc: NPC;
@@ -23,7 +26,23 @@ interface NPCBattleTabEditProps {
 export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTabEditProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
-  const tAbilities = useTranslations("characterDetail.player.general.abilities");
+
+  const hitPointsRollValue = form.watch("hitPointsRoll") || "";
+  const [level, dice, modifier] = parseHitPointsRoll(hitPointsRollValue);
+
+  // No need for setLevel, setDice, setModifier states
+
+  function parseHitPointsRoll(base: string): [string, string, string] {
+    const level: string = base && base.includes("d") ? base.split("d")[0] : "";
+    const dice: string = base && base.includes("d") ? base.split("d")[1].split("+")[0] : "";
+    const modifier: string = base && base.includes("+") ? base.split("+")[1] : "";
+    return [level, dice, modifier];
+  }
+
+  function buildHitPointsRoll(level: string, dice: string, modifier: string): string {
+    if (!level && !dice && !modifier) return "";
+    return `${level}d${dice}${Number(modifier) > 0 ? `+${modifier}` : ""}`;
+  }
 
   // Field arrays pour les listes dynamiques
   const {
@@ -61,9 +80,6 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
     control: form.control,
     name: "actions.lair",
   });
-
-  // Liste des ability scores pour les saving throws
-  const abilityScoreKeys = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
   return (
     <div className="w-full flex flex-col gap-4 items-start">
@@ -334,7 +350,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
           {/* Points de Vie */}
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium">{t("healthPoints")}</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 items-center">
               <Controller
                 name="stats.currentHitPoints"
                 control={form.control}
@@ -411,30 +427,98 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
           </div>
 
           {/* Hit Points Roll */}
-          <Controller
-            name="hitPointsRoll"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="hit-points-roll"
-                  className="text-sm font-medium">
-                  {t("hitPointsRoll")}
-                </label>
-                <Input
-                  {...field}
-                  value={field.value || ""}
-                  id="hit-points-roll"
-                  placeholder="ex: 8d10+16"
-                  className="text-sm"
-                  min={0}
-                />
-                {fieldState.error && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium">{t("healthPoints")}</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 items-center">
+              <Controller
+                name="hitPointsRoll"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="hit-points-roll-level"
+                      className="text-sm font-medium">
+                      {t("hitPointsRoll")}
+                    </label>
+                    <Input
+                      id="hit-points-roll-level"
+                      className="text-sm"
+                      min={0}
+                      type="number"
+                      value={level}
+                      onChange={(e) => {
+                        const newLevel = e.target.value;
+                        field.onChange(buildHitPointsRoll(newLevel, dice, modifier));
+                      }}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="hitPointsRoll"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="hit-points-roll-dice"
+                      className="text-xs">
+                      {t("hitDice")}
+                    </label>
+                    <Select
+                      value={dice}
+                      onValueChange={(value) => {
+                        field.onChange(buildHitPointsRoll(level, value, modifier));
+                      }}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent position="item-aligned">
+                        <SelectGroup>
+                          <SelectItem value="6">d6</SelectItem>
+                          <SelectItem value="8">d8</SelectItem>
+                          <SelectItem value="10">d10</SelectItem>
+                          <SelectItem value="12">d12</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="hitPointsRoll"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="hit-points-roll-modifier"
+                      className="text-sm font-medium">
+                      {t("hitPointsRoll")}
+                    </label>
+                    <Input
+                      id="hit-points-roll-modifier"
+                      className="text-sm"
+                      min={0}
+                      type="number"
+                      value={modifier}
+                      onChange={(e) => {
+                        const newModifier = e.target.value;
+                        field.onChange(buildHitPointsRoll(level, dice, newModifier));
+                      }}
+                    />
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </div>
+          </div>
         </Card>
 
         {/* Jets de sauvegarde */}
@@ -449,26 +533,10 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
               {t("savingThrows")}
             </h2>
           </Card>
-          <div className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2">
-            {abilityScoreKeys.map((key) => {
-              const abilityName = tAbilities(key as any);
-              const abilityScore = form.watch(`stats.abilityScores.${key}`) || 0;
-              const savingThrowValue = form.watch(`stats.savingThrows.${key}`) || 0;
-              const valeurCalculer = Math.floor((abilityScore - 10) / 2);
-              const isProficient = savingThrowValue !== 0;
-              const displayBonus = isProficient ? valeurCalculer + savingThrowValue : valeurCalculer;
-
-              return (
-                <Skill
-                  key={key}
-                  skillName={abilityName}
-                  value={isProficient ? 2 : 0}
-                  accentColor={accentColor}
-                  skills={displayBonus}
-                />
-              );
-            })}
-          </div>
+          <SavingThrowsEdit
+            form={form}
+            accentColor={accentColor}
+          />
         </div>
 
         {/* Capacités et traits */}
