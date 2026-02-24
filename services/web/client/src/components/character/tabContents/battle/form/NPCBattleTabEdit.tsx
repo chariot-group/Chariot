@@ -445,7 +445,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
                     <Input
                       id="hit-points-roll-level"
                       className="text-sm"
-                      min={0}
+                      min={1}
                       type="number"
                       value={level}
                       onChange={(e) => {
