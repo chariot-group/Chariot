@@ -6,7 +6,7 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown, ChevronDown, BookPlus } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -51,13 +51,75 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     setSelectedSpellIndex(null);
   }, [selectedSpellcastingIndex]);
 
-  const spellcastingList = character.spellcasting || [];
-
-  // ── Use useFieldArray for spells array management ──
-  const { fields: spellFields, append, remove } = useFieldArray({
+  // ── Use useFieldArray for spellcasting array management ──
+  const { fields: spellcastingFields, append: appendSpellcasting, remove: removeSpellcasting } = useFieldArray({
     control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spells`,
+    name: "spellcasting",
   });
+
+  const spellcastingList = spellcastingFields as any[];
+
+  // Observer les spells du spellcasting sélectionné avec useWatch
+  const currentSpells: any[] = useWatch({ 
+    control: form.control, 
+    name: `spellcasting.${selectedSpellcastingIndex}.spells` 
+  }) ?? [];
+
+  // Fonctions pour manipuler les spells directement
+  const addSpell = useCallback((spell: Partial<Spell>) => {
+    const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
+    form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spell], { shouldDirty: true });
+    
+    // Create spell slot entry if it doesn't exist (for levels 1+)
+    const spellLevel = Number(spell.level || 0);
+    if (spellLevel > 0) {
+      const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
+      if (!currentSlots[spellLevel]) {
+        form.setValue(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevel}`, { total: 2, used: 0 }, { shouldDirty: true });
+      }
+    }
+    
+    setSelectedSpellIndex(currentSpells.length);
+    const levelKey = `level-${spell.level || 0}`;
+    if (!openAccordionValues.includes(levelKey)) {
+      setOpenAccordionValues([...openAccordionValues, levelKey]);
+    }
+  }, [form, selectedSpellcastingIndex, openAccordionValues]);
+
+  const removeSpell = useCallback((index: number) => {
+    const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
+    const newSpells = currentSpells.filter((_: any, i: number) => i !== index);
+    form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, newSpells, { shouldDirty: true });
+    if (selectedSpellIndex === index) {
+      setSelectedSpellIndex(null);
+    } else if (selectedSpellIndex !== null && selectedSpellIndex > index) {
+      setSelectedSpellIndex(selectedSpellIndex - 1);
+    }
+  }, [form, selectedSpellcastingIndex, selectedSpellIndex]);
+
+  const appendSpellHelper = useCallback(() => {
+    const levels: number[] = [];
+    if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
+    const selectedSpellcasting = spellcastingList[selectedSpellcastingIndex];
+    if (selectedSpellcasting?.spellSlotsByLevel) {
+      Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+        const n = Number(l);
+        if (!levels.includes(n)) levels.push(n);
+      });
+    }
+    currentSpells.forEach((spell: any) => {
+      const n = Number(spell.level);
+      if (!levels.includes(n)) levels.push(n);
+    });
+    levels.sort((a, b) => a - b);
+
+    const defaultLevel = levels.length > 0 ? levels[0] : 1;
+    addSpell({ name: "", level: defaultLevel, school: "", description: "", components: [], castingTime: "", duration: "", range: "", effectType: "utility" });
+  }, [currentSpells, spellcastingList, selectedSpellcastingIndex, addSpell]);
+
+  const addSpellFromCodex = useCallback((spell: Partial<Spell>) => {
+    addSpell(spell);
+  }, [addSpell]);
 
   // ── Reactive watches (must be at top level) ──
   const proficiencyBonus: number = useWatch({ control: form.control, name: "stats.proficiencyBonus" }) ?? 2;
@@ -187,11 +249,56 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const calculatedSaveDC: number = calculateSpellSaveDC(proficiencyBonus, abilityScore);
   const calculatedAttackBonus: number = calculateSpellAttackBonus(proficiencyBonus, abilityScore);
 
+  // ── Functions to manage spellcasting ──
+  const addSpellcasting = () => {
+    // Find a class that doesn't have spellcasting yet
+    const classWithoutSpellcasting = classesList.find((cls: any) => {
+      const className = cls?.name?.toLowerCase();
+      if (!className) return false;
+      return !spellcastingList.some((sc: any) => {
+        const scClassName = sc?.className?.toLowerCase();
+        return scClassName === className;
+      });
+    });
+
+    const newSpellcasting = {
+      className: classWithoutSpellcasting?.name || "",
+      ability: "intelligence",
+      saveDC: 10,
+      attackBonus: 2,
+      spellSlotsByLevel: { "1": { total: 2, used: 0 } },
+      totalSlots: 2,
+      spells: [],
+    };
+
+    appendSpellcasting(newSpellcasting);
+    setSelectedSpellcastingIndex(spellcastingList.length);
+  };
+
+  const removeCurrentSpellcasting = () => {
+    if (spellcastingList.length > 0) {
+      removeSpellcasting(selectedSpellcastingIndex);
+      if (selectedSpellcastingIndex >= spellcastingList.length - 1) {
+        setSelectedSpellcastingIndex(Math.max(0, spellcastingList.length - 2));
+      }
+    }
+  };
+
+  // If no spellcasting, show interface to create first one
   if (spellcastingList.length === 0) {
     return (
-      <div className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-0" role="region" aria-labelledby="magic-tab-edit">
+      <div className="w-full flex flex-col gap-4 md:gap-6 px-2 sm:px-0 items-center justify-center py-12" role="region" aria-labelledby="magic-tab-edit">
         <h2 id="magic-tab-edit" className="sr-only">{tMagic("spells")}</h2>
-        <p className="text-center text-muted-foreground py-8">{tMagic("noMagicAbilities")}</p>
+        <p className="text-center text-muted-foreground text-base">{tMagic("noMagicAbilities")}</p>
+        <Button 
+          type="button" 
+          onClick={addSpellcasting}
+          variant="outline"
+          size="lg"
+          className="flex items-center gap-2">
+          <Plus className="size-4" />
+          {tMagic("addSpellcasting")}
+        </Button>
       </div>
     );
   }
@@ -210,56 +317,26 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   // Build sorted level list
   const levels: number[] = [];
-  if (spellFields.some((s: any) => Number(s.level) === 0)) levels.push(0);
-  if (selectedSpellcasting.spellSlotsByLevel) {
+  if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
+  if (selectedSpellcasting?.spellSlotsByLevel) {
     Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
       const n = Number(l);
       if (!levels.includes(n)) levels.push(n);
     });
   }
-  spellFields.forEach((spell: any) => {
+  currentSpells.forEach((spell: any) => {
     const n = Number(spell.level);
     if (!levels.includes(n)) levels.push(n);
   });
   levels.sort((a, b) => a - b);
 
   const spellIndicesByLevel = levels.reduce<Record<number, number[]>>((acc, level) => {
-    acc[level] = spellFields.reduce<number[]>((indices, spell, index) => {
-      if (Number((spell as any).level) === level) indices.push(index);
+    acc[level] = currentSpells.reduce<number[]>((indices, spell, index) => {
+      if (Number(spell.level) === level) indices.push(index);
       return indices;
     }, []);
     return acc;
   }, {});
-
-  const addSpell = () => {
-    const defaultLevel = levels.length > 0 ? levels[0] : 1;
-    append({ name: "", level: defaultLevel, school: "", description: "", components: [], castingTime: "", duration: "", range: "", effectType: "utility" });
-    const newIndex = spellFields.length;
-    setSelectedSpellIndex(newIndex);
-    const levelKey = `level-${defaultLevel}`;
-    if (!openAccordionValues.includes(levelKey)) {
-      setOpenAccordionValues([...openAccordionValues, levelKey]);
-    }
-  };
-
-  const addSpellFromCodex = (spell: Partial<Spell>) => {
-    append(spell);
-    const newIndex = spellFields.length;
-    setSelectedSpellIndex(newIndex);
-    const levelKey = `level-${spell.level || 0}`;
-    if (!openAccordionValues.includes(levelKey)) {
-      setOpenAccordionValues([...openAccordionValues, levelKey]);
-    }
-  };
-
-  const removeSpell = (index: number) => {
-    remove(index);
-    if (selectedSpellIndex === index) {
-      setSelectedSpellIndex(null);
-    } else if (selectedSpellIndex !== null && selectedSpellIndex > index) {
-      setSelectedSpellIndex(selectedSpellIndex - 1);
-    }
-  };
 
   // ── Auto-calc sync widget ──
   const SyncRow = ({
@@ -308,39 +385,96 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         <div className="flex flex-col gap-2 md:gap-4 h-full overflow-hidden">
 
           {/* Spellcasting class tabs */}
-          {spellcastingList.length > 1 && (
-            <nav className="flex flex-wrap gap-2 shrink-0" aria-label={tMagic("spellcastingClass")}>
-              {spellcastingList.map((sc, index) => {
-                let label = sc.className;
-                if (isPlayer(character)) {
-                  const cls = (character as any).class?.find(
-                    (c: any) => c.name.toLowerCase() === sc.className.toLowerCase(),
+          {spellcastingList.length > 0 && (
+            <div className="flex flex-col gap-2 shrink-0">
+              <nav className="flex flex-wrap gap-2" aria-label={tMagic("spellcastingClass")}>
+                {spellcastingList.map((sc, index) => {
+                  let label = sc?.className || tMagic("newSpellcasting");
+                  if (isPlayer(character) && sc?.className) {
+                    const cls = (character as any).class?.find(
+                      (c: any) => c?.name?.toLowerCase() === sc.className?.toLowerCase(),
+                    );
+                    label = cls ? `${tClass(cls.name)} ${tMagic("level")} ${cls.level}` : sc.className;
+                  }
+                  const isSelected = selectedSpellcastingIndex === index;
+                  return (
+                    <Card
+                      key={sc.id || index}
+                      className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? `bg-${accentColor}` : ""}`}
+                      onClick={() => { setSelectedSpellcastingIndex(index); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedSpellcastingIndex(index); } }}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}>
+                      <span className={`${isSelected ? "text-black" : accentColor} text-sm md:text-2xl font-semibold`}>{label}</span>
+                    </Card>
                   );
-                  label = cls ? `${tClass(cls.name)} ${tMagic("level")} ${cls.level}` : sc.className;
-                }
-                const isSelected = selectedSpellcastingIndex === index;
-                return (
+                })}
+                {classesList.length > spellcastingList.length && (
                   <Card
-                    key={index}
-                    className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? `bg-${accentColor}` : ""}`}
-                    onClick={() => { setSelectedSpellcastingIndex(index); }}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedSpellcastingIndex(index); } }}
+                    className="gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md border-dashed"
+                    onClick={addSpellcasting}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); addSpellcasting(); } }}
                     role="button"
-                    tabIndex={0}
-                    aria-pressed={isSelected}>
-                    <span className={`${isSelected ? "text-black" : accentColor} text-sm md:text-2xl font-semibold`}>{label}</span>
+                    tabIndex={0}>
+                    <Plus className={`size-5 md:size-6 ${accentColor}`} />
                   </Card>
-                );
-              })}
-            </nav>
+                )}
+              </nav>
+            </div>
           )}
 
           {/* Spellcasting stats card */}
           <Card className="gap-4 p-4 md:px-6 shrink-0">
-            <h3 className={`text-base md:text-lg font-semibold ${accentColor}`}>{tEdit("spellcastingStats")}</h3>
+            <div className="flex justify-between items-center">
+              <h3 className={`text-base md:text-lg font-semibold ${accentColor}`}>{tEdit("spellcastingStats")}</h3>
+              {spellcastingList.length > 0 && (
+                <ConfirmDialog
+                  title={tMagic("removeSpellcastingTitle")}
+                  description={tMagic("removeSpellcastingDescription", { className: selectedSpellcasting?.className || "" })}
+                  confirmLabel={tMagic("removeSpellcastingConfirm")}
+                  cancelLabel={tCommon("cancel")}
+                  onConfirm={removeCurrentSpellcasting}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-600">
+                    <Trash2 className="size-4" />
+                  </Button>
+                </ConfirmDialog>
+              )}
+            </div>
 
-            {/* Row 1 : Ability select + computed prepared spells */}
+            {/* Row 1 : Class name + Ability select */}
             <div className="grid grid-cols-2 gap-3">
+              {/* Class name */}
+              <Controller
+                name={`spellcasting.${selectedSpellcastingIndex}.className`}
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid} orientation="vertical">
+                    <label htmlFor={`sc-classname-${selectedSpellcastingIndex}`} className="text-sm font-medium">
+                      {tEdit("className")}
+                    </label>
+                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                      <SelectTrigger id={`sc-classname-${selectedSpellcastingIndex}`} className="w-full">
+                        <SelectValue placeholder={tEdit("selectClass")} />
+                      </SelectTrigger>
+                      <SelectContent position="item-aligned">
+                        <SelectGroup>
+                          {classesList.map((cls: any) => (
+                            <SelectItem key={cls.name} value={cls.name}>
+                              {tClass(cls.name)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
               {/* Ability */}
               <Controller
                 name={`spellcasting.${selectedSpellcastingIndex}.ability`}
@@ -351,7 +485,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       {tEdit("spellcastingAbility")}
                     </label>
                     <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                      <SelectTrigger id={`sc-ability-${selectedSpellcastingIndex}`} className="w-44">
+                      <SelectTrigger id={`sc-ability-${selectedSpellcastingIndex}`} className="w-full">
                         <SelectValue placeholder={tEdit("spellcastingAbility")} />
                       </SelectTrigger>
                       <SelectContent position="item-aligned">
@@ -368,6 +502,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   </Field>
                 )}
               />
+            </div>
+
+            {/* Row 2 : Save DC + Attack Bonus with auto-calc */}
+            <div className="grid grid-cols-2 gap-3">
               {/* Save DC */}
               <div className="flex flex-row gap-2">
                 <Controller
@@ -403,10 +541,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Row 2 : Save DC + Attack Bonus with auto-calc */}
-            <div className="grid grid-cols-2 gap-4">
               {/* Attack Bonus */}
               <div className="flex flex-row items-center gap-2">
                 <Controller
@@ -475,7 +610,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={addSpell}
+                        onClick={appendSpellHelper}
                         className="flex items-center gap-2 border hover:bg-card">
                         <Plus className="size-4" />
                         <span className="hidden sm:block">{tMagic("addSpell")}</span>
@@ -553,13 +688,13 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                               <p className="text-sm text-muted-foreground px-2">{tMagic("noSpellsInLevel")}</p>
                             ) : (
                               indices.map((spellIndex) => {
-                                const spell = spellFields[spellIndex] as any;
+                                const spell = currentSpells[spellIndex];
                                 const spellName = spell?.name;
                                 const isSelected = selectedSpellIndex === spellIndex;
 
                                 return (
                                   <Card
-                                    key={spell?.id || spellIndex}
+                                    key={spellIndex}
                                     onClick={() => {
 
                                       setSelectedSpellIndex(spellIndex);
@@ -1065,10 +1200,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               </Card>
               <ConfirmDialog
                 title={tMagic("removeSpellTitle")}
-                description={tMagic("removeSpellDescription", { name: (spellFields[selectedSpellIndex] as any)?.name || tMagic("newSpell") })}
+                description={tMagic("removeSpellDescription", { name: currentSpells[selectedSpellIndex]?.name || tMagic("newSpell") })}
                 confirmLabel={tMagic("removeSpellConfirm")}
                 cancelLabel={tCommon("cancel")}
-                onConfirm={() => removeSpell(selectedSpellIndex)}>
+                onConfirm={() => { if (selectedSpellIndex !== null) removeSpell(selectedSpellIndex); }}>
                 <Card className="px-3.5 py-3 w-fit">
                   <Button
                     type="button"

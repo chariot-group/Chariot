@@ -52,6 +52,17 @@ export default function CharacterMagicView({ character, accentColor }: Character
         return [`level-${minLevel}`];
     });
 
+    // Update selectedSpellcasting when character data changes
+    useEffect(() => {
+        if (character.spellcasting && character.spellcasting.length > 0) {
+            // Find the corresponding spellcasting by className
+            const updatedSpellcasting = character.spellcasting.find(
+                (sc) => sc.className === selectedSpellcasting?.className
+            ) || character.spellcasting[0];
+            setSelectedSpellcasting(updatedSpellcasting);
+        }
+    }, [character.spellcasting, character]);
+
     useEffect(() => {
         // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
         if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
@@ -220,8 +231,19 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                             levels.push(0);
                                         }
                                         if (selectedSpellcasting.spellSlotsByLevel) {
-                                            levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                                            Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                                                const n = Number(l);
+                                                if (!levels.includes(n)) levels.push(n);
+                                            });
                                         }
+                                        // Add all levels that have spells (even without slots)
+                                        if (selectedSpellcasting.spells) {
+                                            selectedSpellcasting.spells.forEach((spell) => {
+                                                const n = Number(spell.level);
+                                                if (!levels.includes(n)) levels.push(n);
+                                            });
+                                        }
+                                        levels.sort((a, b) => a - b);
 
                                         const allLevelValues = levels.map((level) => `level-${level}`);
                                         const isAllOpen = openAccordionValues.length > 0;
@@ -254,8 +276,22 @@ export default function CharacterMagicView({ character, accentColor }: Character
 
                                     // Add other levels from spellSlotsByLevel
                                     if (selectedSpellcasting.spellSlotsByLevel) {
-                                        levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                                        Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                                            const n = Number(l);
+                                            if (!levels.includes(n)) levels.push(n);
+                                        });
                                     }
+
+                                    // Add all levels that have spells (even without slots)
+                                    if (selectedSpellcasting.spells) {
+                                        selectedSpellcasting.spells.forEach((spell) => {
+                                            const n = Number(spell.level);
+                                            if (!levels.includes(n)) levels.push(n);
+                                        });
+                                    }
+
+                                    // Sort levels
+                                    levels.sort((a, b) => a - b);
 
                                     return (
                                         <Accordion
