@@ -8,7 +8,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { classWithSpellPrepared, getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
-import { formatDamageFormula } from "@/utils/spell-damage.utils";
+import SpellDisplay from "../SpellDisplay";
 
 interface CharacterMagicViewProps {
     character: Character;
@@ -336,92 +336,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
                         <ArrowLeft className="w-4 h-4" />
                         <span>{tMagic("backToList")}</span>
                     </button>
-                    <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-                        <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
-                            <h3
-                                className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold`}
-                                id="spell-name">
-                                {selectedSpell?.name}
-                            </h3>
-                        </Card>
-                        <div className="flex flex-wrap gap-2 items-start">
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.school")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.school}</span>
-                            </Card>
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.castingTime")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.castingTime}</span>
-                            </Card>
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.range")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.range}</span>
-                            </Card>
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.components")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.components?.join(", ")}</span>
-                            </Card>
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.duration")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.duration}</span>
-                            </Card>
-                            {(() => {
-                                const spell = selectedSpell as any;
-                                const damageFormula = spell?.damageDetails
-                                    ? formatDamageFormula(
-                                        spell.damageDetails.diceCount,
-                                        spell.damageDetails.diceType,
-                                        spell.damageDetails.bonus,
-                                        spell.damageDetails.damageType
-                                    )
-                                    : spell?.damage || null;
-
-                                return damageFormula ? (
-                                    <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                        <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                            {tMagic("damage")}:
-                                        </span>
-                                        <span className="text-sm md:text-base wrap-break-word">{damageFormula}</span>
-                                    </Card>
-                                ) : null;
-                            })()}
-                            {(() => {
-                                const spell = selectedSpell as any;
-                                const healingFormula = spell?.healingDetails
-                                    ? formatDamageFormula(
-                                        spell.healingDetails.diceCount,
-                                        spell.healingDetails.diceType,
-                                        spell.healingDetails.bonus
-                                    )
-                                    : spell?.healing || null;
-
-                                return healingFormula ? (
-                                    <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                        <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                            {tMagic("healing")}:
-                                        </span>
-                                        <span className="text-sm md:text-base wrap-break-word">{healingFormula}</span>
-                                    </Card>
-                                ) : null;
-                            })()}
-                            <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base`}>
-                                    {tMagic("spellDetails.description")}:
-                                </span>
-                                <span className="text-sm md:text-base leading-relaxed">{selectedSpell?.description}</span>
-                            </Card>
-                        </div>
-                    </div>
+                    <SpellDisplay spell={selectedSpell} accentColor={accentColor} />
                 </div>
             </div>
         </div>

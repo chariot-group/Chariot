@@ -582,7 +582,20 @@
       "slotsLabel": "empl.",
       "removeSpellTitle": "Supprimer le sort",
       "removeSpellDescription": "Êtes-vous sûr de vouloir supprimer « {name} » ?",
-      "removeSpellConfirm": "Supprimer"
+      "removeSpellConfirm": "Supprimer",
+      "codexDialog": {
+        "title": "Rechercher un sort dans Codex",
+        "searchPlaceholder": "Rechercher un sort...",
+        "noResults": "Aucun sort trouvé",
+        "searching": "Recherche en cours...",
+        "selectSpell": "Sélectionnez un sort pour voir les détails",
+        "validate": "Ajouter ce sort",
+        "cancel": "Annuler",
+        "loadMore": "Charger plus",
+        "error": "Erreur lors de la recherche",
+        "validatedByChariot": "Validé par Chariot",
+        "srdContent": "Contenu SRD (System Reference Document)"
+      }
     }
   },
   "classes": {

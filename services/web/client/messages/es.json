@@ -579,7 +579,20 @@
       "slotsLabel": "ranuras",
       "removeSpellTitle": "Eliminar conjuro",
       "removeSpellDescription": "¿Estás seguro de que quieres eliminar \"{name}\"?",
-      "removeSpellConfirm": "Eliminar"
+      "removeSpellConfirm": "Eliminar",
+      "codexDialog": {
+        "title": "Buscar un conjuro en Codex",
+        "searchPlaceholder": "Buscar un conjuro...",
+        "noResults": "No se encontraron conjuros",
+        "searching": "Buscando...",
+        "selectSpell": "Selecciona un conjuro para ver los detalles",
+        "validate": "Añadir este conjuro",
+        "cancel": "Cancelar",
+        "loadMore": "Cargar más",
+        "error": "Error al buscar",
+        "validatedByChariot": "Validado por Chariot",
+        "srdContent": "Contenido SRD (System Reference Document)"
+      }
     }
   },
   "classes": {

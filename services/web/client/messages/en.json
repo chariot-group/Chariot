@@ -577,7 +577,20 @@
       "slotsLabel": "slots",
       "removeSpellTitle": "Remove spell",
       "removeSpellDescription": "Are you sure you want to remove \"{name}\"?",
-      "removeSpellConfirm": "Remove"
+      "removeSpellConfirm": "Remove",
+      "codexDialog": {
+        "title": "Search for a spell in Codex",
+        "searchPlaceholder": "Search for a spell...",
+        "noResults": "No spells found",
+        "searching": "Searching...",
+        "selectSpell": "Select a spell to view details",
+        "validate": "Add this spell",
+        "cancel": "Cancel",
+        "loadMore": "Load more",
+        "error": "Error while searching",
+        "validatedByChariot": "Validated by Chariot",
+        "srdContent": "SRD Content (System Reference Document)"
+      }
     }
   },
   "classes": {

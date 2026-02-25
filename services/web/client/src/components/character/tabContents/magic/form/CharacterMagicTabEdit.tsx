@@ -22,6 +22,8 @@ import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { parseDamageFormula } from "@/utils/spell-damage.utils";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import CodexSpellSearchDialog from "../CodexSpellSearchDialog";
+import type { Spell } from "@/types/character";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
@@ -42,6 +44,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const [selectedSpellIndex, setSelectedSpellIndex] = useState<number | null>(null);
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const [openSpellDetailsAccordion, setOpenSpellDetailsAccordion] = useState<string[]>([]);
+  const [isCodexDialogOpen, setIsCodexDialogOpen] = useState(false);
 
   // Reset selected spell when switching spellcasting class
   useEffect(() => {
@@ -234,6 +237,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     const newIndex = spellFields.length;
     setSelectedSpellIndex(newIndex);
     const levelKey = `level-${defaultLevel}`;
+    if (!openAccordionValues.includes(levelKey)) {
+      setOpenAccordionValues([...openAccordionValues, levelKey]);
+    }
+  };
+
+  const addSpellFromCodex = (spell: Partial<Spell>) => {
+    append(spell);
+    const newIndex = spellFields.length;
+    setSelectedSpellIndex(newIndex);
+    const levelKey = `level-${spell.level || 0}`;
     if (!openAccordionValues.includes(levelKey)) {
       setOpenAccordionValues([...openAccordionValues, levelKey]);
     }
@@ -441,7 +454,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={addSpell}
+                    onClick={() => setIsCodexDialogOpen(true)}
                     className="flex items-center gap-2 border">
                     <BookPlus className="size-4" />
                     <span className="hidden sm:block">{tMagic("addCodexSpell")}</span>
@@ -1070,6 +1083,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           )}
         </div>
       </div>
+
+      {/* Dialog de recherche Codex */}
+      <CodexSpellSearchDialog
+        open={isCodexDialogOpen}
+        onOpenChange={setIsCodexDialogOpen}
+        onSpellSelected={addSpellFromCodex}
+        accentColor={accentColor}
+      />
     </div>
   );
 }
