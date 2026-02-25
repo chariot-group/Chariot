@@ -3,9 +3,9 @@
 import { useCampaigns } from "@/hooks/useCampaigns";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-import SidebarEnvironment from "./SidebarEnvironment";
-import SidebarContext from "./SidebarContext";
-import { ActionButton } from "./ActionButton";
+import SidebarEnvironment from "@/components/layout/Sidebar/SidebarEnvironment";
+import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
+import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
 
 /**
  * Main sidebar component

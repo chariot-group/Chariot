@@ -6,9 +6,9 @@ import { getProficiencyBonusFromLevel, isLevelProficiencyBonusSynced } from "@/u
 import { ArrowRightLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Controller, UseFormReturn } from "react-hook-form";
-import SavingThrowsEdit from "./SavingThrowsEdit";
+import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import { Label } from "@/components/ui/label";
-import SkillsEdit from "./SkillsEdit";
+import SkillsEdit from "@/components/character/tabContents/general/form/SkillsEdit";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 

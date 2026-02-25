@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Player } from "@/types/character";
 import { useTranslations } from "next-intl";
-import SavingThrow from "../shared/SavingThrow";
-import Skills from "../shared/Skills";
+import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
+import Skills from "@/components/character/tabContents/general/shared/Skills";
 
 interface Column2Props {
   player: Player;

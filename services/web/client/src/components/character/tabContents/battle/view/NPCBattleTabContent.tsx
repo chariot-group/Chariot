@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
-import NpcStatistics from "../../shared/NpcStatistics";
+import NpcStatistics from "@/components/character/tabContents/shared/NpcStatistics";
 
 interface Props {
   npc: NPC;

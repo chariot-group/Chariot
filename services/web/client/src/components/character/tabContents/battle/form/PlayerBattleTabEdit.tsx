@@ -11,7 +11,7 @@ import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
-import StatisticsUpdate from "../../shared/StatisticsUpdate";
+import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
 
 interface PlayerBattleTabEditProps {
   player: Player;

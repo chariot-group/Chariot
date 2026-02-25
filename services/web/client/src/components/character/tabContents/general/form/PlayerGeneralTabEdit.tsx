@@ -15,8 +15,8 @@ import AbilityScoresEdit from "@/components/character/tabContents/general/form/A
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
-import Column2Edit from "./Column2Edit";
-import StatisticsUpdate from "../../shared/StatisticsUpdate";
+import Column2Edit from "@/components/character/tabContents/general/form/Column2Edit";
+import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
 
 interface PlayerGeneralTabEditProps {
   player: Player;

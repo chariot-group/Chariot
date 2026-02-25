@@ -7,7 +7,7 @@ import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
-import Statistics from "../../shared/Statistics";
+import Statistics from "@/components/character/tabContents/shared/Statistics";
 
 interface Props {
   player: Player;

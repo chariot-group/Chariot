@@ -7,7 +7,7 @@ import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import { NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
-import CharacterHealthBar from "../../CharacterHealthBar";
+import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 
 interface NpcStatisticsProps {
   npc: NPC;

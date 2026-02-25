@@ -7,7 +7,7 @@ import NavigationService from "@/services/NavigationService";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import Logo from "@public/logo.svg";
-import { SidebarTrigger } from "../ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Header() {
   const pathname = usePathname();

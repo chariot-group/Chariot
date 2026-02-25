@@ -14,7 +14,7 @@ import { isPlayer } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export type CharacterTab = "general" | "battle" | "magic" | "inventory" | "history";
 

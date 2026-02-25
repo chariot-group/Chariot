@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import SavingThrow from "../shared/SavingThrow";
+import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 import { NPC } from "@/types/character";
-import SkillsNpc from "../shared/SkillsNpc";
+import SkillsNpc from "@/components/character/tabContents/general/shared/SkillsNpc";
 
 interface NpcColumn2Props {
   npc: NPC;

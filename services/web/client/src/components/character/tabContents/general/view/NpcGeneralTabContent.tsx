@@ -3,8 +3,8 @@ import { NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
-import NpcColumn2 from "./NpcColumn2";
-import NpcStatistics from "../../shared/NpcStatistics";
+import NpcColumn2 from "@/components/character/tabContents/general/view/NpcColumn2";
+import NpcStatistics from "@/components/character/tabContents/shared/NpcStatistics";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;

@@ -6,7 +6,7 @@ import { selectContextMode } from "@/store/slices/environmentSlice";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronRight, PlusCircleIcon, Loader2 } from "lucide-react";
 import { useGroups } from "@/hooks/useGroups";
-import GroupList from "./GroupList";
+import GroupList from "@/components/layout/Sidebar/GroupList";
 import { selectSelectedCampaign } from "@/store/slices/campaignSlice";
 import {
   selectOpenActiveGroups,

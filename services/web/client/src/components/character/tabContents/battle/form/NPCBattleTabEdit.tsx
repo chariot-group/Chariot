@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 
-import SavingThrowsEdit from "../../general/form/SavingThrowsEdit";
-import NpcStatisticsUpdate from "../../shared/NpcStatisticsUpdate";
+import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
+import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
 
 interface NPCBattleTabEditProps {
   npc: NPC;

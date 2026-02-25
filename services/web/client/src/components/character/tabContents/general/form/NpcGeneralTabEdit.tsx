@@ -11,8 +11,8 @@ import AbilityScoresEdit from "@/components/character/tabContents/general/form/A
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSkillsEdit";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
-import NpcColumn2Edit from "./NpcColumn2Edit";
-import NpcStatisticsUpdate from "../../shared/NpcStatisticsUpdate";
+import NpcColumn2Edit from "@/components/character/tabContents/general/form/NpcColumn2Edit";
+import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
 
 interface NpcGeneralTabEditProps {
   npc: NPC;

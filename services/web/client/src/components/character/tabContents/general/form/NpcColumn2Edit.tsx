@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
-import SavingThrowsEdit from "./SavingThrowsEdit";
-import NpcSkillsEdit from "./NpcSkillsEdit";
+import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
+import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSkillsEdit";
 import { useTranslations } from "next-intl";
 import { UseFormReturn } from "react-hook-form";
 
