@@ -190,6 +190,7 @@
       "diceType": "Tipo de dado",
       "bonus": "Bonificación",
       "damageType": "Tipo de daño",
+      "damageTypePlaceholder": "Fuego, Frío...",
       "slotsUsed": "Usados",
       "slotsTotal": "Total",
       "copperPieces": "Piezas de Cobre",
@@ -598,7 +599,16 @@
         "loadMore": "Cargar más",
         "error": "Error al buscar",
         "validatedByChariot": "Validado por Chariot",
-        "srdContent": "Contenido SRD (System Reference Document)"
+        "srdContent": "Contenido SRD (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 Todos los idiomas",
+          "fr": "🇫🇷 Francés",
+          "en": "🇬🇧 Inglés",
+          "es": "🇪🇸 Español"
+        },
+        "resultsCount": "{count} resultado{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+"
       }
     }
   },

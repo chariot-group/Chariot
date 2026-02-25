@@ -190,6 +190,7 @@
       "diceType": "Type de dé",
       "bonus": "Bonus",
       "damageType": "Type de dégâts",
+      "damageTypePlaceholder": "Feu, Froid...",
       "slotsUsed": "Utilisés",
       "slotsTotal": "Total",
       "copperPieces": "Pièces de Cuivre",
@@ -580,7 +581,7 @@
       "attackBonusSynced": "Conforme à la valeur calculée",
       "attackBonusMismatch": "Calculé : {calculated} (maît. {prof} + mod. {mod})",
       "syncAttackBonus": "Appliquer +{bonus}",
-      "preparedSpellsInfo": "Sorts préparés",
+      "preparedSpellsInfo": "Max : {count} préparés (niveau {level} + mod. {mod})",
       "slotsLabel": "empl.",
       "removeSpellTitle": "Supprimer le sort",
       "removeSpellDescription": "Êtes-vous sûr de vouloir supprimer « {name} » ?",
@@ -601,7 +602,16 @@
         "loadMore": "Charger plus",
         "error": "Erreur lors de la recherche",
         "validatedByChariot": "Validé par Chariot",
-        "srdContent": "Contenu SRD (System Reference Document)"
+        "srdContent": "Contenu SRD (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 Toutes les langues",
+          "fr": "🇫🇷 Français",
+          "en": "🇬🇧 English",
+          "es": "🇪🇸 Español"
+        },
+        "resultsCount": "{count} résultat{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+"
       }
     }
   },

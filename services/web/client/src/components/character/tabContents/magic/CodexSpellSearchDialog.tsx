@@ -181,10 +181,10 @@ export default function CodexSpellSearchDialog({
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">🌍 Toutes les langues</SelectItem>
-                                    <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                                    <SelectItem value="en">🇬🇧 English</SelectItem>
-                                    <SelectItem value="es">🇪🇸 Español</SelectItem>
+                                    <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
+                                    <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
+                                    <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
+                                    <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -368,7 +368,11 @@ export default function CodexSpellSearchDialog({
                                     {/* Indicateur de résultats */}
                                     {visibleCount > 0 && (
                                         <div className="text-center text-xs text-muted-foreground py-2">
-                                            {visibleCount} résultat{visibleCount > 1 ? 's' : ''}{hasMore ? '+' : ''}
+                                            {tDialog("resultsCount", {
+                                                count: visibleCount,
+                                                plural: visibleCount > 1 ? tDialog("resultsPlural") : "",
+                                                more: hasMore ? tDialog("resultsMore") : ""
+                                            })}
                                         </div>
                                     )}
                                 </>

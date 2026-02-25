@@ -190,6 +190,7 @@
       "diceType": "Dice Type",
       "bonus": "Bonus",
       "damageType": "Damage Type",
+      "damageTypePlaceholder": "Fire, Cold...",
       "slotsUsed": "Used",
       "slotsTotal": "Total",
       "copperPieces": "Copper Pieces",
@@ -596,7 +597,16 @@
         "loadMore": "Load more",
         "error": "Error while searching",
         "validatedByChariot": "Validated by Chariot",
-        "srdContent": "SRD Content (System Reference Document)"
+        "srdContent": "SRD Content (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 All languages",
+          "fr": "🇫🇷 French",
+          "en": "🇬🇧 English",
+          "es": "🇪🇸 Spanish"
+        },
+        "resultsCount": "{count} result{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+"
       }
     }
   },

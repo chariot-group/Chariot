@@ -1025,7 +1025,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     id={`spell-damage-type-${selectedSpellIndex}`}
                                     value={field.value ?? ""}
                                     onChange={field.onChange}
-                                    placeholder="Feu, Froid..."
+                                    placeholder={tEdit("damageTypePlaceholder")}
                                   />
                                 </Field>
                               )}
