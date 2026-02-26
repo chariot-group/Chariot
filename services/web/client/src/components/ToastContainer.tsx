@@ -10,7 +10,7 @@ const CustomToastContainer = () => {
       autoClose={2000}
       hideProgressBar
       closeButton={false}
-      className={"mb-10"}
+      className={"mb-20 sm:mb-10"}
     />
   );
 };
