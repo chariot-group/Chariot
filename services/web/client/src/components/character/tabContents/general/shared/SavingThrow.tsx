@@ -34,7 +34,7 @@ export default function SavingThrow({ label, skillName, accentColor, tooltip, st
           <Card className="p-2">
             <div className="text-sm flex items-center gap-2">
               <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-row gap-2">
                 <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
                 <Image
                   src={getIconForValue(masteryLevel, accentColor)}
@@ -59,7 +59,7 @@ export default function SavingThrow({ label, skillName, accentColor, tooltip, st
     <Card className="p-2">
       <p className="text-sm flex items-center gap-2 justify-between">
         <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-row gap-2">
           <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
           <Image
             src={getIconForValue(masteryLevel, accentColor)}
