@@ -22,9 +22,9 @@ import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { parseDamageFormula } from "@/utils/spell-damage.utils";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import CodexSpellSearchDialog from "../CodexSpellSearchDialog";
 import type { Spell } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
+import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 

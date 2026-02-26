@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { DamageDetailsDto, HealingDetailsDto } from './damage-details.dto';
+import { DamageDetailsDto, HealingDetailsDto } from '@/resources/character/core/dto/spellcasting/sub/damage-details.dto';
 
 export class SpellDto {
 

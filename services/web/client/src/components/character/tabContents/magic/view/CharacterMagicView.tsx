@@ -8,7 +8,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { classWithSpellPrepared, getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
-import SpellDisplay from "../SpellDisplay";
+import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 
 interface CharacterMagicViewProps {
     character: Character;

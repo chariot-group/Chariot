@@ -2,7 +2,7 @@ import { Prop, Schema } from '@nestjs/mongoose';
 import { SchemaFactory } from '@nestjs/mongoose';
 import { EffectType } from '@/resources/character/core/constants/effect-types.constant';
 import { ApiProperty } from '@nestjs/swagger';
-import { DamageDetails, DamageDetailsSchema, HealingDetails, HealingDetailsSchema } from './damage-details.schema';
+import { DamageDetails, DamageDetailsSchema, HealingDetails, HealingDetailsSchema } from '@/resources/character/core/schemas/spellcasting/sub/damage-details.schema';
 
 @Schema({ _id: false })
 export class Spell {
