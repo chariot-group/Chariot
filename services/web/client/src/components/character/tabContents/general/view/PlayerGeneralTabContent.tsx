@@ -8,9 +8,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 import Column2 from "@/components/character/tabContents/general/view/Column2";
-import CharacterHealthBar from "@/components/character/CharacterHealthBar";
-import ShieldIcon from "@public/assets/icons/shield-icon.svg";
-import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import Image from "next/image";
 import Statistics from "@/components/character/tabContents/shared/Statistics";
@@ -22,7 +19,6 @@ interface PlayerGeneralTabContentProps {
 
 export default function PlayerGeneralTabContent({ player, accentColor }: PlayerGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
-  const tbattle = useTranslations("characterDetail.battle");
   const tPlayer = useTranslations("characterDetail.player");
   const tAlignment = useTranslations("alignments");
   const tClass = useTranslations("classes");

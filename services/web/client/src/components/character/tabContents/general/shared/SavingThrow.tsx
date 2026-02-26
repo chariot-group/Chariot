@@ -19,6 +19,7 @@ interface SavingThrowProps {
 export default function SavingThrow({ label, skillName, accentColor, tooltip, stats }: SavingThrowProps) {
   const t = useTranslations("characterDetail.player.general");
 
+  const abilityName = t(`abilities.${skillName}`);
   const abilityScore = stats?.abilityScores?.[skillName] ?? 10;
   const savingThrowValue = stats?.savingThrows?.[skillName] ?? 0;
   const abilityModifier = Math.floor((abilityScore - 10) / 2);
@@ -31,18 +32,20 @@ export default function SavingThrow({ label, skillName, accentColor, tooltip, st
       <Tooltip>
         <TooltipTrigger asChild>
           <Card className="p-2">
-            <p className="text-sm flex items-center gap-2">
-              <span className={`truncate ${isProficient && "italic"}`}>{label}</span>{" "}
-              <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
-              <Image
-                src={getIconForValue(masteryLevel, accentColor)}
-                alt={t("masteryLevelIcon", { level: masteryLevel })}
-                width={20}
-                height={20}
-                className="shrink-0"
-                aria-hidden="true"
-              />
-            </p>
+            <div className="text-sm flex items-center gap-2">
+              <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
+              <div className="flex flex-wrap gap-2">
+                <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
+                <Image
+                  src={getIconForValue(masteryLevel, accentColor)}
+                  alt={t("masteryLevelIcon", { level: masteryLevel })}
+                  width={20}
+                  height={20}
+                  className="shrink-0"
+                  aria-hidden="true"
+                />
+              </div>
+            </div>
           </Card>
         </TooltipTrigger>
         <TooltipContent role="tooltip">
@@ -54,17 +57,19 @@ export default function SavingThrow({ label, skillName, accentColor, tooltip, st
 
   return (
     <Card className="p-2">
-      <p className="text-sm flex items-center gap-2">
-        <span className={`truncate ${isProficient && "italic"}`}>{skillName}</span>{" "}
-        <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
-        <Image
-          src={getIconForValue(masteryLevel, accentColor)}
-          alt={t("masteryLevelIcon", { level: masteryLevel })}
-          width={20}
-          height={20}
-          className="shrink-0"
-          aria-hidden="true"
-        />
+      <p className="text-sm flex items-center gap-2 justify-between">
+        <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
+        <div className="flex flex-wrap gap-2">
+          <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
+          <Image
+            src={getIconForValue(masteryLevel, accentColor)}
+            alt={t("masteryLevelIcon", { level: masteryLevel })}
+            width={20}
+            height={20}
+            className="shrink-0"
+            aria-hidden="true"
+          />
+        </div>
       </p>
     </Card>
   );
