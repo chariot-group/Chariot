@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Spell } from "@/types/character";
 import { useTranslations } from "next-intl";
 import CodexService from "@/services/CodexService";
-import SpellDisplay from "./SpellDisplay";
+import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import { Search, Loader2, BadgeCheck, FileBadge } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
