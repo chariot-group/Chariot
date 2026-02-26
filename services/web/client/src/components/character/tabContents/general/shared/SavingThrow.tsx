@@ -57,7 +57,7 @@ export default function SavingThrow({ label, skillName, accentColor, tooltip, st
 
   return (
     <Card className="p-2">
-      <p className="text-sm flex items-center gap-2 justify-between">
+      <div className="text-sm flex items-center gap-2 justify-between">
         <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
         <div className="flex flex-row gap-2">
           <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
@@ -70,7 +70,7 @@ export default function SavingThrow({ label, skillName, accentColor, tooltip, st
             aria-hidden="true"
           />
         </div>
-      </p>
+      </div>
     </Card>
   );
 }
