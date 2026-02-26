@@ -56,6 +56,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     setShowMobileDetails(false);
   }, [selectedSpellcastingIndex]);
 
+  // Manage focus when showing mobile details
+  useEffect(() => {
+    if (showMobileDetails && selectedSpellIndex !== null) {
+      const spellNameInput = document.getElementById(`spell-name-${selectedSpellIndex}`);
+      if (spellNameInput) {
+        spellNameInput.focus();
+      }
+    }
+  }, [showMobileDetails, selectedSpellIndex]);
+
   // ── Use useFieldArray for spellcasting array management ──
   const { fields: spellcastingFields, append: appendSpellcasting, remove: removeSpellcasting } = useFieldArray({
     control: form.control,
@@ -344,6 +354,40 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     return acc;
   }, {});
 
+  // ── Keyboard navigation for tabs ──
+  const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      const nextIndex = (index + 1) % spellcastingList.length;
+      setSelectedSpellcastingIndex(nextIndex);
+      // Focus next tab
+      setTimeout(() => {
+        document.getElementById(`spellcasting-tab-${nextIndex}`)?.focus();
+      }, 0);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      const prevIndex = (index - 1 + spellcastingList.length) % spellcastingList.length;
+      setSelectedSpellcastingIndex(prevIndex);
+      // Focus previous tab
+      setTimeout(() => {
+        document.getElementById(`spellcasting-tab-${prevIndex}`)?.focus();
+      }, 0);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setSelectedSpellcastingIndex(0);
+      setTimeout(() => {
+        document.getElementById(`spellcasting-tab-0`)?.focus();
+      }, 0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      const lastIndex = spellcastingList.length - 1;
+      setSelectedSpellcastingIndex(lastIndex);
+      setTimeout(() => {
+        document.getElementById(`spellcasting-tab-${lastIndex}`)?.focus();
+      }, 0);
+    }
+  };
+
   // ── Auto-calc sync widget ──
   const SyncRow = ({
     synced,
@@ -393,7 +437,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           {/* Spellcasting class tabs */}
           {spellcastingList.length > 0 && (
             <div className="flex flex-col gap-2 shrink-0">
-              <nav className="flex flex-wrap gap-2" aria-label={tMagic("spellcastingClass")}>
+              <div className="flex flex-wrap gap-2" role="tablist" aria-label={tMagic("spellcastingClass")}>
                 {spellcastingList.map((sc, index) => {
                   let label = sc?.className || tMagic("newSpellcasting");
                   if (isPlayer(character) && sc?.className) {
@@ -408,10 +452,19 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       key={sc.id || index}
                       className={`gap-3 p-3 sm:p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? `bg-${accentColor}` : ""}`}
                       onClick={() => { setSelectedSpellcastingIndex(index); }}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedSpellcastingIndex(index); } }}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={isSelected}>
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setSelectedSpellcastingIndex(index);
+                        } else {
+                          handleTabKeyDown(e, index);
+                        }
+                      }}
+                      role="tab"
+                      tabIndex={isSelected ? 0 : -1}
+                      aria-selected={isSelected}
+                      aria-controls={`spellcasting-panel-${index}`}
+                      id={`spellcasting-tab-${index}`}>
                       <span className={`${isSelected ? "text-black" : accentColor} text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-semibold`}>{label}</span>
                     </Card>
                   );
@@ -422,11 +475,12 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     onClick={addSpellcasting}
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); addSpellcasting(); } }}
                     role="button"
-                    tabIndex={0}>
-                    <Plus className={`size-5 md:size-6 ${accentColor}`} />
+                    tabIndex={0}
+                    aria-label={tMagic("addSpellcasting")}>
+                    <Plus className={`size-5 md:size-6 ${accentColor}`} aria-hidden="true" />
                   </Card>
                 )}
-              </nav>
+              </div>
             </div>
           )}
 
@@ -445,8 +499,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-red-500 hover:text-red-600">
-                    <Trash2 className="size-4" />
+                    className="text-red-500 hover:text-red-600"
+                    aria-label={tMagic("removeSpellcasting")}>
+                    <Trash2 className="size-4" aria-hidden="true" />
                   </Button>
                 </ConfirmDialog>
               )}
@@ -619,7 +674,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                         variant="ghost"
                         size="sm"
                         className="border"
-                        aria-label="More Options">
+                        aria-label={tMagic("moreSpellOptions")}>
                         <ChevronDown className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -643,7 +698,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allKeys);
                   }}
                   className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
-                  aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+                  aria-label={openAccordionValues.length > 0 ? tMagic("collapseAllSpellLevels") : tMagic("expandAllSpellLevels")}
                   aria-expanded={openAccordionValues.length > 0}>
                   {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
                 </button>
@@ -690,7 +745,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                       type="number"
                                       min={1}
                                       onClick={(e) => e.stopPropagation()}
-                                      aria-label={`${tMagic("spellLevel", { level })} ${tEdit("slotsTotal")}`}
+                                      aria-label={tMagic("spellSlotsTotalForLevel", { level })}
                                     />
                                   )}
                                 />
@@ -701,9 +756,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                         </Card>
 
                         <AccordionContent className="pb-2">
-                          <div className="flex flex-wrap gap-2" role="list">
+                          <ul className="flex flex-wrap gap-2">
                             {indices.length === 0 ? (
-                              <p className="text-sm text-muted-foreground px-2">{tMagic("noSpellsInLevel")}</p>
+                              <li className="text-sm text-muted-foreground px-2">{tMagic("noSpellsInLevel")}</li>
                             ) : (
                               indices.map((spellIndex) => {
                                 const spell = currentSpells[spellIndex];
@@ -711,31 +766,33 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                 const isSelected = selectedSpellIndex === spellIndex;
 
                                 return (
-                                  <Card
-                                    key={spellIndex}
-                                    onClick={() => {
-                                      setSelectedSpellIndex(spellIndex);
-                                      setShowMobileDetails(true);
-                                    }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault();
+                                  <li key={spellIndex}>
+                                    <Card
+                                      onClick={() => {
                                         setSelectedSpellIndex(spellIndex);
                                         setShowMobileDetails(true);
-                                      }
-                                    }}
-                                    className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
-                                    role="button"
-                                    tabIndex={0}
-                                    aria-pressed={isSelected}>
-                                    <span className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}>
-                                      {spellName || tMagic("newSpell")}
-                                    </span>
-                                  </Card>
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                          e.preventDefault();
+                                          setSelectedSpellIndex(spellIndex);
+                                          setShowMobileDetails(true);
+                                        }
+                                      }}
+                                      className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
+                                      role="button"
+                                      tabIndex={0}
+                                      aria-selected={isSelected}
+                                      aria-label={spellName || tMagic("newSpell")}>
+                                      <span className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`} aria-hidden="true">
+                                        {spellName || tMagic("newSpell")}
+                                      </span>
+                                    </Card>
+                                  </li>
                                 );
                               })
                             )}
-                          </div>
+                          </ul>
                         </AccordionContent>
                       </AccordionItem>
                     );
@@ -762,7 +819,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             <span>{tMagic("backToList")}</span>
           </button>
           {selectedSpellIndex === null ? (
-            <div className="flex items-center justify-center h-full min-h-48">
+            <div className="flex items-center justify-center h-full min-h-48" role="status" aria-live="polite">
               <p className="text-muted-foreground text-sm text-center px-4">{tMagic("selectSpellToEdit")}</p>
             </div>
           ) : (
@@ -1171,35 +1228,37 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     control={form.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid} orientation="vertical">
-                        <label className={`font-semibold text-sm md:text-base ${accentColor}`}>
-                          {tMagic("spellDetails.components")}
-                        </label>
-                        <div className="flex gap-4 flex-wrap">
-                          {["V", "S", "M"].map((component) => {
-                            const isChecked = (field.value ?? []).includes(component);
-                            return (
-                              <div key={component} className="flex items-center gap-2">
-                                <Checkbox
-                                  id={`spell-component-${component}-${selectedSpellIndex}`}
-                                  checked={isChecked}
-                                  onCheckedChange={(checked) => {
-                                    const currentValue = field.value ?? [];
-                                    if (checked) {
-                                      field.onChange([...currentValue, component]);
-                                    } else {
-                                      field.onChange(currentValue.filter((c: string) => c !== component));
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`spell-component-${component}-${selectedSpellIndex}`}
-                                  className="text-sm font-medium cursor-pointer select-none">
-                                  {component}
-                                </label>
-                              </div>
-                            );
-                          })}
-                        </div>
+                        <fieldset>
+                          <legend className={`font-semibold text-sm md:text-base ${accentColor}`}>
+                            {tMagic("spellDetails.components")}
+                          </legend>
+                          <div className="flex gap-4 flex-wrap mt-2">
+                            {["V", "S", "M"].map((component) => {
+                              const isChecked = (field.value ?? []).includes(component);
+                              return (
+                                <div key={component} className="flex items-center gap-2">
+                                  <Checkbox
+                                    id={`spell-component-${component}-${selectedSpellIndex}`}
+                                    checked={isChecked}
+                                    onCheckedChange={(checked) => {
+                                      const currentValue = field.value ?? [];
+                                      if (checked) {
+                                        field.onChange([...currentValue, component]);
+                                      } else {
+                                        field.onChange(currentValue.filter((c: string) => c !== component));
+                                      }
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={`spell-component-${component}-${selectedSpellIndex}`}
+                                    className="text-sm font-medium cursor-pointer select-none">
+                                    {component}
+                                  </label>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </fieldset>
                         {fieldState.error && <FieldError errors={[fieldState.error]} />}
                       </Field>
                     )}
@@ -1241,8 +1300,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="text-red-500 size-9 hover:border-none">
-                    <Trash2 className="size-5" />
+                    className="text-red-500 size-9 hover:border-none"
+                    aria-label={tMagic("removeSpellWithName", { name: currentSpells[selectedSpellIndex]?.name || tMagic("newSpell") })}>
+                    <Trash2 className="size-5" aria-hidden="true" />
                   </Button>
                 </Card>
               </ConfirmDialog>
