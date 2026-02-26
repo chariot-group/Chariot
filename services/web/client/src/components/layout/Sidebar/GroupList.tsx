@@ -10,6 +10,7 @@ import { ContextMenu, ContextMenuTrigger } from "@radix-ui/react-context-menu";
 import { ContextMenuContent, ContextMenuItem } from "@/components/ui/context-menu";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface GroupListProps {
   groups: Group[];
@@ -27,6 +28,7 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
   const t = useTranslations("sidebar");
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   // Extract character ID from current URL path
   const selectedCharacterId = pathname?.includes("/characters/")
@@ -86,7 +88,10 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                       aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
                       className={`text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${
                         isSelected ? "bg-card/50 font-bold" : ""
-                      }`}>
+                      }`}
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false);
+                      }}>
                       {character.firstname} {character.lastname}
                     </Link>
                   );
