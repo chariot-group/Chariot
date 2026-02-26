@@ -83,13 +83,13 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
         {/* Header avec onglets et infos du personnage */}
         <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
-            <div className="xl:flex xl:flex-row-reverse justify-between w-full">
+            <div className="justify-between w-full">
               {/* Infos du personnage */}
-              <div className="flex flex-row items-end justify-between gap-4 xl:mb-0 mb-2 border xl:w-1/2">
-                <div className="flex flex-col items-start xl:items-end text-left xl:text-right border">
+              <div className="flex flex-row items-end justify-between gap-4 xl:mb-0 mb-2">
+                <div className="flex flex-col items-start xl:items-end text-left xl:text-right xl:max-w-full lg:max-w-3/4 md:max-w-2/3 w-full">
                   <Tooltip>
-                    <TooltipTrigger className="cursor-help">
-                      <h1 className="text-2xl sm:text-3xl font-bold text-white text-end">
+                    <TooltipTrigger className="cursor-help w-full">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-white text-start xl:text-end truncatet">
                         {character.firstname} {character.lastname}
                       </h1>
                     </TooltipTrigger>
