@@ -141,6 +141,24 @@ class CodexService {
             codexSpellItem.translations[codexSpellItem.languages[0]] ||
             null;
     }
+
+    /**
+     * Vérifie si le service Codex est disponible
+     * @returns true si le service est disponible, false sinon
+     */
+    async checkHealth(): Promise<boolean> {
+        try {
+            // Utiliser l'endpoint /spells avec une requête minimale
+            await this.client.get('/spells', {
+                params: { page: 1, offset: 1 },
+                timeout: 3000
+            });
+            return true;
+        } catch (error) {
+            console.warn('Codex service is unavailable:', error);
+            return false;
+        }
+    }
 }
 
 export default new CodexService();

@@ -564,6 +564,7 @@
       "spellSlotsEdit": "Ranuras de conjuros",
       "addSpell": "Añadir un conjuro manualmente",
       "addCodexSpell": "Añadir un conjuro desde Codex",
+      "codexUnavailable": "Codex no está disponible actualmente",
       "selectSpellToEdit": "Selecciona un conjuro a la izquierda para editar sus detalles",
       "noSpellsInLevel": "No hay conjuros en este nivel",
       "newSpell": "Nuevo conjuro",

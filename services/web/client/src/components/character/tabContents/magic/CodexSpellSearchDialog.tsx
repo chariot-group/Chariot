@@ -65,7 +65,7 @@ export default function CodexSpellSearchDialog({
 
             // Vérifier si on a atteint la fin en comparant le nombre d'éléments reçus
             const reachedEnd = newResults.length < ITEMS_PER_PAGE;
-            
+
             // Mettre à jour les résultats en utilisant la forme fonctionnelle
             setSearchResults(prev => {
                 if (append) {
@@ -208,13 +208,13 @@ export default function CodexSpellSearchDialog({
                                 // Calculer le nombre de résultats visibles
                                 let visibleCount = 0;
                                 if (selectedLang) {
-                                    visibleCount = searchResults.filter(item => 
+                                    visibleCount = searchResults.filter(item =>
                                         CodexService.getSpellTranslation(item, selectedLang) !== null
                                     ).length;
                                 } else {
-                                    visibleCount = searchResults.reduce((count, item) => 
+                                    visibleCount = searchResults.reduce((count, item) =>
                                         count + item.languages.filter((lang: string) => item.translations[lang]).length
-                                    , 0);
+                                        , 0);
                                 }
 
                                 if (visibleCount === 0) {
@@ -226,86 +226,27 @@ export default function CodexSpellSearchDialog({
                                 }
 
                                 return (
-                                <>
-                                    <div className="flex flex-col gap-2">
-                                        {searchResults.map((spellItem) => {
-                                            // Si une langue est sélectionnée, afficher cette langue uniquement
-                                            if (selectedLang) {
-                                                const translation = CodexService.getSpellTranslation(spellItem, selectedLang);
-                                                if (!translation) return null;
-
-                                                const isSelected = selectedSpell?.name === translation.name;
-
-                                                return (
-                                                    <Card
-                                                        key={`${spellItem._id}-${selectedLang}`}
-                                                        onClick={() => handleSpellClick(spellItem)}
-                                                        className={`cursor-pointer p-3 hover:border-${accentColor} transition-all ${
-                                                            isSelected ? `border-${accentColor} border-2` : ""
-                                                        }`}
-                                                    >
-                                                        <div className="flex items-start justify-between gap-2">
-                                                            <div className="flex-1">
-                                                                <div className="font-semibold text-sm md:text-base">
-                                                                    {translation.name}
-                                                                </div>
-                                                                <div className="text-xs text-muted-foreground mt-1">
-                                                                    {tMagic("spellLevel", { level: translation.level })} • {translation.school}
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex gap-1.5 shrink-0">
-                                                                {spellItem.tag === 1 && (
-                                                                    <Tooltip>
-                                                                        <TooltipTrigger asChild>
-                                                                            <div className="cursor-help">
-                                                                                <BadgeCheck className="size-5 text-green-600" />
-                                                                            </div>
-                                                                        </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            <p>{tDialog("validatedByChariot")}</p>
-                                                                        </TooltipContent>
-                                                                    </Tooltip>
-                                                                )}
-                                                                {translation.srd && (
-                                                                    <Tooltip>
-                                                                        <TooltipTrigger asChild>
-                                                                            <div className="cursor-help">
-                                                                                <FileBadge className="size-5" />
-                                                                            </div>
-                                                                        </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            <p>{tDialog("srdContent")}</p>
-                                                                        </TooltipContent>
-                                                                    </Tooltip>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </Card>
-                                                );
-                                            } else {
-                                                // Aucune langue sélectionnée : afficher toutes les traductions disponibles
-                                                return spellItem.languages.map((lang: string) => {
-                                                    const translation = spellItem.translations[lang];
+                                    <>
+                                        <div className="flex flex-col gap-2">
+                                            {searchResults.map((spellItem) => {
+                                                // Si une langue est sélectionnée, afficher cette langue uniquement
+                                                if (selectedLang) {
+                                                    const translation = CodexService.getSpellTranslation(spellItem, selectedLang);
                                                     if (!translation) return null;
 
                                                     const isSelected = selectedSpell?.name === translation.name;
-                                                    const langEmoji = lang === 'fr' ? '🇫🇷' : lang === 'en' ? '🇬🇧' : '🇪🇸';
 
                                                     return (
                                                         <Card
-                                                            key={`${spellItem._id}-${lang}`}
+                                                            key={`${spellItem._id}-${selectedLang}`}
                                                             onClick={() => handleSpellClick(spellItem)}
-                                                            className={`cursor-pointer p-3 hover:border-${accentColor} transition-all ${
-                                                                isSelected ? `border-${accentColor} border-2` : ""
-                                                            }`}
+                                                            className={`cursor-pointer p-3 hover:border-${accentColor} transition-all ${isSelected ? `border-${accentColor} border-2` : ""
+                                                                }`}
                                                         >
                                                             <div className="flex items-start justify-between gap-2">
                                                                 <div className="flex-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-base">{langEmoji}</span>
-                                                                        <div className="font-semibold text-sm md:text-base">
-                                                                            {translation.name}
-                                                                        </div>
+                                                                    <div className="font-semibold text-sm md:text-base">
+                                                                        {translation.name}
                                                                     </div>
                                                                     <div className="text-xs text-muted-foreground mt-1">
                                                                         {tMagic("spellLevel", { level: translation.level })} • {translation.school}
@@ -340,42 +281,99 @@ export default function CodexSpellSearchDialog({
                                                             </div>
                                                         </Card>
                                                     );
-                                                });
-                                            }
-                                        })}
-                                    </div>
-                                    {/* Bouton Charger plus */}
-                                    {hasMore && visibleCount > 0 && (
-                                        <div className="flex justify-center pt-4 pb-2">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={loadMore}
-                                                disabled={isLoadingMore}
-                                                className="w-full"
-                                            >
-                                                {isLoadingMore ? (
-                                                    <>
-                                                        <Loader2 className="size-4 animate-spin mr-2" />
-                                                        {tDialog("searching")}
-                                                    </>
-                                                ) : (
-                                                    tDialog("loadMore")
-                                                )}
-                                            </Button>
-                                        </div>
-                                    )}
-                                    {/* Indicateur de résultats */}
-                                    {visibleCount > 0 && (
-                                        <div className="text-center text-xs text-muted-foreground py-2">
-                                            {tDialog("resultsCount", {
-                                                count: visibleCount,
-                                                plural: visibleCount > 1 ? tDialog("resultsPlural") : "",
-                                                more: hasMore ? tDialog("resultsMore") : ""
+                                                } else {
+                                                    // Aucune langue sélectionnée : afficher toutes les traductions disponibles
+                                                    return spellItem.languages.map((lang: string) => {
+                                                        const translation = spellItem.translations[lang];
+                                                        if (!translation) return null;
+
+                                                        const isSelected = selectedSpell?.name === translation.name;
+                                                        const langEmoji = lang === 'fr' ? '🇫🇷' : lang === 'en' ? '🇬🇧' : '🇪🇸';
+
+                                                        return (
+                                                            <Card
+                                                                key={`${spellItem._id}-${lang}`}
+                                                                onClick={() => handleSpellClick(spellItem)}
+                                                                className={`cursor-pointer p-3 hover:border-${accentColor} transition-all ${isSelected ? `border-${accentColor} border-2` : ""
+                                                                    }`}
+                                                            >
+                                                                <div className="flex items-start justify-between gap-2">
+                                                                    <div className="flex-1">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-base">{langEmoji}</span>
+                                                                            <div className="font-semibold text-sm md:text-base">
+                                                                                {translation.name}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="text-xs text-muted-foreground mt-1">
+                                                                            {tMagic("spellLevel", { level: translation.level })} • {translation.school}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex gap-1.5 shrink-0">
+                                                                        {spellItem.tag === 1 && (
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger asChild>
+                                                                                    <div className="cursor-help">
+                                                                                        <BadgeCheck className="size-5 text-green-600" />
+                                                                                    </div>
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent>
+                                                                                    <p>{tDialog("validatedByChariot")}</p>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        )}
+                                                                        {translation.srd && (
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger asChild>
+                                                                                    <div className="cursor-help">
+                                                                                        <FileBadge className="size-5" />
+                                                                                    </div>
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent>
+                                                                                    <p>{tDialog("srdContent")}</p>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </Card>
+                                                        );
+                                                    });
+                                                }
                                             })}
                                         </div>
-                                    )}
-                                </>
+                                        {/* Bouton Charger plus */}
+                                        {hasMore && visibleCount > 0 && (
+                                            <div className="flex justify-center pt-4 pb-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={loadMore}
+                                                    disabled={isLoadingMore}
+                                                    className="w-full"
+                                                >
+                                                    {isLoadingMore ? (
+                                                        <>
+                                                            <Loader2 className="size-4 animate-spin mr-2" />
+                                                            {tDialog("searching")}
+                                                        </>
+                                                    ) : (
+                                                        tDialog("loadMore")
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        )}
+                                        {/* Indicateur de résultats */}
+                                        {visibleCount > 0 && (
+                                            <div className="text-center text-xs text-muted-foreground py-2">
+                                                {tDialog("resultsCount", {
+                                                    count: visibleCount,
+                                                    plural: visibleCount > 1 ? tDialog("resultsPlural") : "",
+                                                    more: hasMore ? tDialog("resultsMore") : ""
+                                                })}
+                                            </div>
+                                        )}
+                                    </>
                                 );
                             })()}
                         </div>

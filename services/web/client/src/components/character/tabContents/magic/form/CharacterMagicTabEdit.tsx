@@ -24,6 +24,7 @@ import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import CodexSpellSearchDialog from "../CodexSpellSearchDialog";
 import type { Spell } from "@/types/character";
+import { useCodexHealth } from "@/hooks/useCodexHealth";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
@@ -46,6 +47,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const [openSpellDetailsAccordion, setOpenSpellDetailsAccordion] = useState<string[]>([]);
   const [isCodexDialogOpen, setIsCodexDialogOpen] = useState(false);
 
+  const { isAvailable: isCodexAvailable } = useCodexHealth();
+
   // Reset selected spell when switching spellcasting class
   useEffect(() => {
     setSelectedSpellIndex(null);
@@ -60,16 +63,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const spellcastingList = spellcastingFields as any[];
 
   // Observer les spells du spellcasting sélectionné avec useWatch
-  const currentSpells: any[] = useWatch({ 
-    control: form.control, 
-    name: `spellcasting.${selectedSpellcastingIndex}.spells` 
+  const currentSpells: any[] = useWatch({
+    control: form.control,
+    name: `spellcasting.${selectedSpellcastingIndex}.spells`
   }) ?? [];
 
   // Fonctions pour manipuler les spells directement
   const addSpell = useCallback((spell: Partial<Spell>) => {
     const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
     form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spell], { shouldDirty: true });
-    
+
     // Create spell slot entry if it doesn't exist (for levels 1+)
     const spellLevel = Number(spell.level || 0);
     if (spellLevel > 0) {
@@ -78,7 +81,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         form.setValue(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevel}`, { total: 2, used: 0 }, { shouldDirty: true });
       }
     }
-    
+
     setSelectedSpellIndex(currentSpells.length);
     const levelKey = `level-${spell.level || 0}`;
     if (!openAccordionValues.includes(levelKey)) {
@@ -290,8 +293,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       <div className="w-full flex flex-col gap-4 md:gap-6 px-2 sm:px-0 items-center justify-center py-12" role="region" aria-labelledby="magic-tab-edit">
         <h2 id="magic-tab-edit" className="sr-only">{tMagic("spells")}</h2>
         <p className="text-center text-muted-foreground text-base">{tMagic("noMagicAbilities")}</p>
-        <Button 
-          type="button" 
+        <Button
+          type="button"
           onClick={addSpellcasting}
           variant="outline"
           size="lg"
@@ -585,15 +588,27 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               <h3 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h3>
               <div className="flex items-center gap-2">
                 <ButtonGroup>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsCodexDialogOpen(true)}
-                    className="flex items-center gap-2 border">
-                    <BookPlus className="size-4" />
-                    <span className="hidden sm:block">{tMagic("addCodexSpell")}</span>
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsCodexDialogOpen(true)}
+                          disabled={!isCodexAvailable}
+                          className="flex items-center gap-2 border rounded-r-none">
+                          <BookPlus className="size-4" />
+                          <span className="hidden sm:block">{tMagic("addCodexSpell")}</span>
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!isCodexAvailable && (
+                      <TooltipContent>
+                        <p>{tMagic("codexUnavailable")}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
                   <ButtonGroupSeparator />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

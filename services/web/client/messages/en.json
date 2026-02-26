@@ -562,6 +562,7 @@
       "spellSlotsEdit": "Spell Slots",
       "addSpell": "Add a spell manually",
       "addCodexSpell": "Add a spell via Codex",
+      "codexUnavailable": "Codex is currently unavailable",
       "selectSpellToEdit": "Select a spell on the left to edit its details",
       "noSpellsInLevel": "No spells for this level",
       "newSpell": "New spell",
