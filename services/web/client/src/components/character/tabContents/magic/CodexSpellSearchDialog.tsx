@@ -145,7 +145,7 @@ export default function CodexSpellSearchDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-3/5 h-[90vh] flex flex-col p-0">
+            <DialogContent className="sm:w-4/5 h-[90vh] flex flex-col p-0">
                 <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
                     <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
                 </DialogHeader>

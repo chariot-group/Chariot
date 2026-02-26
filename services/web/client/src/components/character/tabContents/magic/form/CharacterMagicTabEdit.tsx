@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeft, Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown, ChevronDown, BookPlus } from "lucide-react";
+import { ArrowRightLeft, Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown, ChevronDown, BookPlus, ArrowLeft } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -46,12 +46,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const [openSpellDetailsAccordion, setOpenSpellDetailsAccordion] = useState<string[]>([]);
   const [isCodexDialogOpen, setIsCodexDialogOpen] = useState(false);
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
 
   const { isAvailable: isCodexAvailable } = useCodexHealth();
 
   // Reset selected spell when switching spellcasting class
   useEffect(() => {
     setSelectedSpellIndex(null);
+    setShowMobileDetails(false);
   }, [selectedSpellcastingIndex]);
 
   // ── Use useFieldArray for spellcasting array management ──
@@ -95,6 +97,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, newSpells, { shouldDirty: true });
     if (selectedSpellIndex === index) {
       setSelectedSpellIndex(null);
+      setShowMobileDetails(false);
     } else if (selectedSpellIndex !== null && selectedSpellIndex > index) {
       setSelectedSpellIndex(selectedSpellIndex - 1);
     }
@@ -382,10 +385,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       aria-labelledby="magic-tab-edit">
       <h2 id="magic-tab-edit" className="sr-only">{tMagic("spells")}</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 h-full overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr] lg:grid-cols-[1fr_1fr] xl:grid-cols-[1.2fr_1fr] gap-2 md:gap-4 h-full overflow-hidden">
 
         {/* ══ Left column ══ */}
-        <div className="flex flex-col gap-2 md:gap-4 h-full overflow-hidden">
+        <div className={`flex flex-col gap-2 md:gap-4 h-full overflow-hidden ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
 
           {/* Spellcasting class tabs */}
           {spellcastingList.length > 0 && (
@@ -403,13 +406,13 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   return (
                     <Card
                       key={sc.id || index}
-                      className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? `bg-${accentColor}` : ""}`}
+                      className={`gap-3 p-3 sm:p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? `bg-${accentColor}` : ""}`}
                       onClick={() => { setSelectedSpellcastingIndex(index); }}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedSpellcastingIndex(index); } }}
                       role="button"
                       tabIndex={0}
                       aria-pressed={isSelected}>
-                      <span className={`${isSelected ? "text-black" : accentColor} text-sm md:text-2xl font-semibold`}>{label}</span>
+                      <span className={`${isSelected ? "text-black" : accentColor} text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-semibold`}>{label}</span>
                     </Card>
                   );
                 })}
@@ -428,9 +431,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           )}
 
           {/* Spellcasting stats card */}
-          <Card className="gap-4 p-4 md:px-6 shrink-0">
+          <Card className="gap-3 sm:gap-4 p-3 sm:p-4 md:px-6 shrink-0">
             <div className="flex justify-between items-center">
-              <h3 className={`text-base md:text-lg font-semibold ${accentColor}`}>{tEdit("spellcastingStats")}</h3>
+              <h3 className={`text-sm sm:text-base md:text-lg font-semibold ${accentColor}`}>{tEdit("spellcastingStats")}</h3>
               {spellcastingList.length > 0 && (
                 <ConfirmDialog
                   title={tMagic("removeSpellcastingTitle")}
@@ -450,7 +453,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             </div>
 
             {/* Row 1 : Class name + Ability select */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Class name */}
               <Controller
                 name={`spellcasting.${selectedSpellcastingIndex}.className`}
@@ -508,9 +511,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             </div>
 
             {/* Row 2 : Save DC + Attack Bonus with auto-calc */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Save DC */}
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Controller
                   name={`spellcasting.${selectedSpellcastingIndex}.saveDC`}
                   control={form.control}
@@ -533,7 +536,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 />
 
                 {isPlayer(character) && currentAbilityKey && (
-                  <div className="self-end mb-0.5">
+                  <div className="self-start sm:self-end mb-0 sm:mb-0.5">
                     <SyncRow
                       synced={saveDCSynced}
                       syncedLabel={tMagic("saveDCSynced")}
@@ -546,7 +549,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               </div>
 
               {/* Attack Bonus */}
-              <div className="flex flex-row items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                 <Controller
                   name={`spellcasting.${selectedSpellcastingIndex}.attackBonus`}
                   control={form.control}
@@ -568,7 +571,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   )}
                 />
                 {isPlayer(character) && currentAbilityKey && (
-                  <div className="self-end mb-0.5">
+                  <div className="self-start sm:self-end mb-0 sm:mb-0.5">
                     <SyncRow
                       synced={attackBonusSynced}
                       syncedLabel={tMagic("attackBonusSynced")}
@@ -584,7 +587,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
           {/* Spell list */}
           <div className="flex flex-col gap-2 flex-1 overflow-hidden">
-            <Card className="gap-2 p-4 md:px-6 flex-row justify-between items-center shrink-0">
+            <Card className="gap-2 p-3 sm:p-4 md:px-6 flex-row justify-between items-center shrink-0">
               <h3 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h3>
               <div className="flex items-center gap-2">
                 <ButtonGroup>
@@ -673,7 +676,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                             {/* Spell slot total (beside the trigger, level 1+) */}
                             {hasSlots && (
                               <div
-                                className="flex items-center gap-1.5 shrink-0 absolute right-14 top-1/2 -translate-y-1/2"
+                                className="flex items-center gap-1 sm:gap-1.5 shrink-0 absolute right-12 sm:right-14 top-1/2 -translate-y-1/2"
                                 onClick={(e) => e.stopPropagation()}
                                 onKeyDown={(e) => e.stopPropagation()}>
                                 <Controller
@@ -683,7 +686,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     <Input
                                       {...field}
                                       onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                                      className="w-14 text-center h-8 text-sm"
+                                      className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
                                       type="number"
                                       min={1}
                                       onClick={(e) => e.stopPropagation()}
@@ -691,7 +694,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     />
                                   )}
                                 />
-                                <span className="text-xs text-muted-foreground">{tMagic("slotsLabel")}</span>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">{tMagic("slotsLabel")}</span>
                               </div>
                             )}
                           </div>
@@ -711,15 +714,21 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   <Card
                                     key={spellIndex}
                                     onClick={() => {
-
                                       setSelectedSpellIndex(spellIndex);
+                                      setShowMobileDetails(true);
                                     }}
-                                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedSpellIndex(spellIndex); } }}
-                                    className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-3 p-2 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-10`}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        setSelectedSpellIndex(spellIndex);
+                                        setShowMobileDetails(true);
+                                      }
+                                    }}
+                                    className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
                                     role="button"
                                     tabIndex={0}
                                     aria-pressed={isSelected}>
-                                    <span className={`truncate text-sm md:text-base ${isSelected ? "font-bold" : ""}`}>
+                                    <span className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}>
                                       {spellName || tMagic("newSpell")}
                                     </span>
                                   </Card>
@@ -741,9 +750,17 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
         {/* ══ Right column: spell detail edit ══ */}
         <div
-          className="flex flex-col gap-2 h-full overflow-hidden"
+          className={`flex flex-col gap-2 h-full overflow-hidden md:border-l md:pl-2 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
+          {/* Back button for mobile */}
+          <button
+            onClick={() => setShowMobileDetails(false)}
+            className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
+            aria-label={tMagic("backToList")}>
+            <ArrowLeft className="w-4 h-4" />
+            <span>{tMagic("backToList")}</span>
+          </button>
           {selectedSpellIndex === null ? (
             <div className="flex items-center justify-center h-full min-h-48">
               <p className="text-muted-foreground text-sm text-center px-4">{tMagic("selectSpellToEdit")}</p>
@@ -752,13 +769,13 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
 
               {/* Name */}
-              <Card className="gap-3 py-4 px-4 md:px-6">
+              <Card className="gap-2 sm:gap-3 py-3 sm:py-4 px-3 sm:px-4 md:px-6">
                 <Controller
                   name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.name`}
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid} orientation="vertical">
-                      <label htmlFor={`spell-name-${selectedSpellIndex}`} className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                      <label htmlFor={`spell-name-${selectedSpellIndex}`} className={`text-base sm:text-lg md:text-xl lg:text-2xl font-semibold ${accentColor}`}>
                         {tEdit("spellName")}
                       </label>
                       <Input
@@ -776,10 +793,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               </Card>
 
               {/* Spell metadata grid */}
-              <div className="flex flex-wrap gap-2 items-start">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2 items-start">
 
                 {/* Level */}
-                <Card className="flex flex-col gap-1 py-3 px-3 md:py-4 md:px-6">
+                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
                   <Controller
                     name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.level`}
                     control={form.control}
@@ -805,7 +822,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </Card>
 
                 {/* School */}
-                <Card className="flex flex-col gap-1 py-3 px-3 md:py-4 md:px-6">
+                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6 col-span-2 sm:col-span-1">
                   <Controller
                     name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.school`}
                     control={form.control}
@@ -829,7 +846,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </Card>
 
                 {/* Effect Type */}
-                <Card className="flex flex-col gap-1 py-3 px-3 md:py-4 md:px-6">
+                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6 col-span-2 sm:col-span-1">
                   <Controller
                     name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.effectType`}
                     control={form.control}
@@ -857,7 +874,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </Card>
 
                 {/* Casting Time */}
-                <Card className="flex flex-col gap-1 py-3 px-3 md:py-4 md:px-6">
+                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
                   <Controller
                     name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.castingTime`}
                     control={form.control}
@@ -881,7 +898,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </Card>
 
                 {/* Range */}
-                <Card className="flex flex-col gap-1 py-3 px-3 md:py-4 md:px-6">
+                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
                   <Controller
                     name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.range`}
                     control={form.control}
@@ -905,7 +922,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </Card>
 
                 {/* Duration */}
-                <Card className="flex flex-col gap-1 py-3 px-3 md:py-4 md:px-6">
+                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
                   <Controller
                     name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.duration`}
                     control={form.control}
@@ -936,9 +953,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   className="w-full flex flex-col gap-2">
 
                   {/* Damage */}
-                  <AccordionItem value="damage" className="flex flex-col gap-2 w-full">
+                  <AccordionItem value="damage" className="flex flex-col gap-2 w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3">
                     <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
-                      <AccordionTrigger className="flex-1 py-3 px-4 md:px-6 hover:no-underline w-full">
+                      <AccordionTrigger className="flex-1 py-2 sm:py-3 px-3 sm:px-4 md:px-6 hover:no-underline w-full">
                         <h3 className={`text-sm md:text-base font-semibold ${accentColor}`}>
                           {tEdit("spellDamage")}
                         </h3>
@@ -946,10 +963,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     </Card>
 
                     <AccordionContent className="pb-2">
-                      <Card className="flex flex-col gap-3 py-3 px-3 md:py-4 md:px-6 w-full">
-                        <div className="flex flex-wrap gap-3">
+                      <Card className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full">
+                        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
                           {/* Nombre de dés */}
-                          <div className="flex flex-col gap-1 flex-1 min-w-20">
+                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.diceCount`}
                               control={form.control}
@@ -974,7 +991,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           </div>
 
                           {/* Type de dé */}
-                          <div className="flex flex-col gap-1 flex-1 min-w-25">
+                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-25">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.diceType`}
                               control={form.control}
@@ -1003,7 +1020,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           </div>
 
                           {/* Bonus */}
-                          <div className="flex flex-col gap-1 flex-1 min-w-20">
+                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.bonus`}
                               control={form.control}
@@ -1027,7 +1044,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           </div>
 
                           {/* Type de dégâts */}
-                          <div className="flex flex-col gap-1 flex-1 min-w-37.5">
+                          <div className="flex flex-col gap-1 col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-37.5">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.damageType`}
                               control={form.control}
@@ -1052,9 +1069,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   </AccordionItem>
 
                   {/* Healing */}
-                  <AccordionItem value="healing" className="flex flex-col gap-2 w-full">
+                  <AccordionItem value="healing" className="flex flex-col gap-2 w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3">
                     <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
-                      <AccordionTrigger className="flex-1 py-3 px-4 md:px-6 hover:no-underline w-full">
+                      <AccordionTrigger className="flex-1 py-2 sm:py-3 px-3 sm:px-4 md:px-6 hover:no-underline w-full">
                         <h3 className={`text-sm md:text-base font-semibold ${accentColor}`}>
                           {tEdit("spellHealing")}
                         </h3>
@@ -1062,10 +1079,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     </Card>
 
                     <AccordionContent className="pb-2">
-                      <Card className="flex flex-col gap-3 py-3 px-3 md:py-4 md:px-6 w-full">
-                        <div className="flex flex-wrap gap-3">
+                      <Card className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full">
+                        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
                           {/* Nombre de dés */}
-                          <div className="flex flex-col gap-1 flex-1 min-w-20">
+                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.diceCount`}
                               control={form.control}
@@ -1090,7 +1107,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           </div>
 
                           {/* Type de dé */}
-                          <div className="flex flex-col gap-1 flex-1 min-w-25">
+                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-25">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.diceType`}
                               control={form.control}
@@ -1119,7 +1136,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           </div>
 
                           {/* Bonus */}
-                          <div className="flex flex-col gap-1 flex-1 min-w-20">
+                          <div className="flex flex-col gap-1 col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-20">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.bonus`}
                               control={form.control}
@@ -1148,7 +1165,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </Accordion>
 
                 {/* Components */}
-                <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
+                <Card className="flex flex-col gap-2 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3">
                   <Controller
                     name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.components`}
                     control={form.control}
@@ -1191,7 +1208,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               </div>
 
               {/* Description */}
-              <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6">
+              <Card className="flex flex-col gap-2 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6">
                 <Controller
                   name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.description`}
                   control={form.control}
