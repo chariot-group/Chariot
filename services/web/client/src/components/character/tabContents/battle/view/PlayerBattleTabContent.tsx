@@ -108,7 +108,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
           </div>
         </Card>
       </div>
-      <div className="grid lg:grid-cols-2 gap-2 w-full">
+      <div className="grid lg:grid-cols-2 max-[376px]:grid-cols-1 gap-2 w-full">
         {/* Capacités et traits */}
         <div className="order-2 lg:order-1">
           <AbilitiesSection
