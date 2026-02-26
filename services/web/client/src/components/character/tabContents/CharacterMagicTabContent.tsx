@@ -203,8 +203,19 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                       levels.push(0);
                     }
                     if (selectedSpellcasting.spellSlotsByLevel) {
-                      levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                      Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                        const n = Number(l);
+                        if (!levels.includes(n)) levels.push(n);
+                      });
                     }
+                    // Add all levels that have spells (even without slots)
+                    if (selectedSpellcasting.spells) {
+                      selectedSpellcasting.spells.forEach((spell) => {
+                        const n = Number(spell.level);
+                        if (!levels.includes(n)) levels.push(n);
+                      });
+                    }
+                    levels.sort((a, b) => a - b);
 
                     const allLevelValues = levels.map((level) => `level-${level}`);
                     const isAllOpen = openAccordionValues.length > 0;
@@ -237,8 +248,22 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
 
                   // Add other levels from spellSlotsByLevel
                   if (selectedSpellcasting.spellSlotsByLevel) {
-                    levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                    Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                      const n = Number(l);
+                      if (!levels.includes(n)) levels.push(n);
+                    });
                   }
+
+                  // Add all levels that have spells (even without slots)
+                  if (selectedSpellcasting.spells) {
+                    selectedSpellcasting.spells.forEach((spell) => {
+                      const n = Number(spell.level);
+                      if (!levels.includes(n)) levels.push(n);
+                    });
+                  }
+
+                  // Sort levels
+                  levels.sort((a, b) => a - b);
 
                   return (
                     <Accordion

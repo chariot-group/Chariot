@@ -96,6 +96,35 @@
   --toastify-toast-bd-radius: var(--radius);
 }
 
+/* Surcharger le positionnement du toast en mobile */
+.Toastify__toast-container--bottom-right {
+  bottom: 5rem !important; /* 80px - mb-20 */
+  right: 1rem !important; /* 16px de marge à droite */
+  left: 1rem !important; /* 16px de marge à gauche */
+  width: auto !important;
+}
+
+.Toastify__toast {
+  border-radius: 1rem !important; /* 16px au lieu de 36px pour mobile */
+  padding: 0.75rem 1rem !important; /* Padding réduit */
+  min-height: auto !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+@media (min-width: 640px) {
+  .Toastify__toast-container--bottom-right {
+    bottom: 2.5rem !important; /* 40px - mb-10 */
+    right: 1rem !important;
+    left: auto !important; /* Retour au positionnement normal à droite */
+    width: 320px !important; /* Largeur fixe sur desktop */
+  }
+
+  .Toastify__toast {
+    border-radius: 1.5rem !important; /* 24px sur desktop */
+    padding: 1rem 1.25rem !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
