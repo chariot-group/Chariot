@@ -51,10 +51,6 @@ export function ComboboxInput({
         ? [trimmedInput, ...filteredSuggestions]
         : filteredSuggestions;
 
-    useEffect(() => {
-        setShowSuggestions(allOptions.length > 0);
-    }, [allOptions.length]);
-
     const selectOption = (option: string) => {
         onChange(option);
         setInputValue(option);
@@ -152,9 +148,8 @@ export function ComboboxInput({
                                         aria-selected={index === highlightedIndex}
                                         onClick={() => selectOption(option)}
                                         onMouseEnter={() => setHighlightedIndex(index)}
-                                        className={`w-full text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] flex items-center justify-between ${
-                                            index === highlightedIndex ? "font-bold" : ""
-                                        } ${isCustom ? "italic" : ""}`}
+                                        className={`w-full text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] flex items-center justify-between ${index === highlightedIndex ? "font-bold" : ""
+                                            } ${isCustom ? "italic" : ""}`}
                                     >
                                         <span>
                                             {option}

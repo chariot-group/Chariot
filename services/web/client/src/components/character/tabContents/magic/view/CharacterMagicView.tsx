@@ -3,11 +3,12 @@
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 import { Character, Spell, Spellcasting } from "@/types/character";
-import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown, WandSparkles } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { classWithSpellPrepared, getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
+import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 
 interface CharacterMagicViewProps {
     character: Character;
@@ -50,6 +51,17 @@ export default function CharacterMagicView({ character, accentColor }: Character
         const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
         return [`level-${minLevel}`];
     });
+
+    // Update selectedSpellcasting when character data changes
+    useEffect(() => {
+        if (character.spellcasting && character.spellcasting.length > 0) {
+            // Find the corresponding spellcasting by className
+            const updatedSpellcasting = character.spellcasting.find(
+                (sc) => sc.className === selectedSpellcasting?.className
+            ) || character.spellcasting[0];
+            setSelectedSpellcasting(updatedSpellcasting);
+        }
+    }, [character.spellcasting, character]);
 
     useEffect(() => {
         // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
@@ -141,6 +153,38 @@ export default function CharacterMagicView({ character, accentColor }: Character
                         className="flex flex-wrap gap-2 shrink-0"
                         role="group"
                         aria-label={tMagic("spellcastingStats")}>
+                        <Card className="gap-3 p-2 md:px-6 flex-row items-center">
+                            <WandSparkles
+                                className="shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span
+                                className="text-sm md:text-base hidden sm:inline"
+                                aria-label={`${tMagic("spellcastingAbility")} : ${selectedSpellcasting?.ability}`}>
+                                {tMagic("spellcastingAbility")} : <strong>{selectedSpellcasting?.ability}</strong>
+                            </span>
+                            <span
+                                className="text-sm sm:hidden"
+                                aria-label={`${tMagic("attackBonus")}: ${selectedSpellcasting?.ability}`}>
+                                {tMagic("attackShort")} : <strong>{selectedSpellcasting?.ability}</strong>
+                            </span>
+                        </Card>
+                        <Card className="gap-3 p-2 md:px-6 flex-row items-center">
+                            <Dice5
+                                className="shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span
+                                className="text-sm md:text-base hidden sm:inline"
+                                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
+                                {tMagic("saveDC")}: <strong>{selectedSpellcasting?.saveDC}</strong>
+                            </span>
+                            <span
+                                className="text-sm sm:hidden"
+                                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
+                                {tMagic("saveDCShort")}: <strong>{selectedSpellcasting?.saveDC}</strong>
+                            </span>
+                        </Card>
                         {isPlayer(character) && classWithSpellPrepared(selectedSpellcasting) && (
                             <Card className="gap-3 p-2 md:px-6 flex-row items-center">
                                 <Book
@@ -149,13 +193,13 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                 />
                                 <span
                                     className="text-sm md:text-base hidden sm:inline"
-                                    aria-label={`${tMagic("preparedSpells")}: ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
+                                    aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
                                     {tMagic("preparedSpells")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
                                 </span>
                                 <span
                                     className="text-sm sm:hidden"
-                                    aria-label={`${tMagic("preparedSpells")}: ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
-                                    {tMagic("preparedShort")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
+                                    aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
+                                    {tMagic("preparedShort")} : <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
                                 </span>
                             </Card>
                         )}
@@ -175,22 +219,6 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                 {tMagic("attackShort")}: <strong>{selectedSpellcasting?.attackBonus}</strong>
                             </span>
                         </Card>
-                        <Card className="gap-3 p-2 md:px-6 flex-row items-center">
-                            <Dice5
-                                className="shrink-0"
-                                aria-hidden="true"
-                            />
-                            <span
-                                className="text-sm md:text-base hidden sm:inline"
-                                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
-                                {tMagic("saveDC")}: <strong>{selectedSpellcasting?.saveDC}</strong>
-                            </span>
-                            <span
-                                className="text-sm sm:hidden"
-                                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
-                                {tMagic("saveDCShort")}: <strong>{selectedSpellcasting?.saveDC}</strong>
-                            </span>
-                        </Card>
                     </div>
                     <div className="flex flex-col gap-2 flex-1 overflow-hidden">
                         <Card className="gap-2 sm:gap-3 p-4 md:px-6 h-fit justify-between flex-row items-center">
@@ -203,8 +231,19 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                             levels.push(0);
                                         }
                                         if (selectedSpellcasting.spellSlotsByLevel) {
-                                            levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                                            Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                                                const n = Number(l);
+                                                if (!levels.includes(n)) levels.push(n);
+                                            });
                                         }
+                                        // Add all levels that have spells (even without slots)
+                                        if (selectedSpellcasting.spells) {
+                                            selectedSpellcasting.spells.forEach((spell) => {
+                                                const n = Number(spell.level);
+                                                if (!levels.includes(n)) levels.push(n);
+                                            });
+                                        }
+                                        levels.sort((a, b) => a - b);
 
                                         const allLevelValues = levels.map((level) => `level-${level}`);
                                         const isAllOpen = openAccordionValues.length > 0;
@@ -237,8 +276,22 @@ export default function CharacterMagicView({ character, accentColor }: Character
 
                                     // Add other levels from spellSlotsByLevel
                                     if (selectedSpellcasting.spellSlotsByLevel) {
-                                        levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                                        Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                                            const n = Number(l);
+                                            if (!levels.includes(n)) levels.push(n);
+                                        });
                                     }
+
+                                    // Add all levels that have spells (even without slots)
+                                    if (selectedSpellcasting.spells) {
+                                        selectedSpellcasting.spells.forEach((spell) => {
+                                            const n = Number(spell.level);
+                                            if (!levels.includes(n)) levels.push(n);
+                                        });
+                                    }
+
+                                    // Sort levels
+                                    levels.sort((a, b) => a - b);
 
                                     return (
                                         <Accordion
@@ -319,53 +372,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
                         <ArrowLeft className="w-4 h-4" />
                         <span>{tMagic("backToList")}</span>
                     </button>
-                    <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-                        <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
-                            <h3
-                                className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold`}
-                                id="spell-name">
-                                {selectedSpell?.name}
-                            </h3>
-                        </Card>
-                        <div className="flex flex-wrap gap-2 items-start">
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.school")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.school}</span>
-                            </Card>
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.castingTime")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.castingTime}</span>
-                            </Card>
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.range")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.range}</span>
-                            </Card>
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.components")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.components?.join(", ")}</span>
-                            </Card>
-                            <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                                    {tMagic("spellDetails.duration")}:
-                                </span>
-                                <span className="text-sm md:text-base wrap-break-word">{selectedSpell?.duration}</span>
-                            </Card>
-                            <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                                <span className={`${accentColor} font-semibold text-sm md:text-base`}>
-                                    {tMagic("spellDetails.description")}:
-                                </span>
-                                <span className="text-sm md:text-base leading-relaxed">{selectedSpell?.description}</span>
-                            </Card>
-                        </div>
-                    </div>
+                    <SpellDisplay spell={selectedSpell} accentColor={accentColor} />
                 </div>
             </div>
         </div>

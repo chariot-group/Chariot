@@ -149,6 +149,19 @@ export interface Ability {
     description: string;
 }
 
+export interface DamageDetails {
+    diceCount: number | null;
+    diceType: string | null;
+    bonus: number | null;
+    damageType: string | null;
+}
+
+export interface HealingDetails {
+    diceCount: number | null;
+    diceType: string | null;
+    bonus: number | null;
+}
+
 export interface Spell {
     name: string;
     level: number;
@@ -161,6 +174,8 @@ export interface Spell {
     effectType: 'attack' | 'heal' | 'utility';
     damage?: string;
     healing?: string;
+    damageDetails?: DamageDetails;
+    healingDetails?: HealingDetails;
 }
 
 export interface Spellcasting {
