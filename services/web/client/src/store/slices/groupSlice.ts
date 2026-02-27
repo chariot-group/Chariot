@@ -7,7 +7,7 @@ const initialState: GroupState = {
     archivedGroups: [],
     loading: false,
     error: null,
-    openGroupId: null,
+    openGroupId: [],
     lastFetch: null,
 };
 
@@ -31,13 +31,29 @@ const groupSlice = createSlice({
             state.error = action.payload;
         },
         setOpenGroup: (state, action: PayloadAction<string | null>) => {
-            state.openGroupId = action.payload;
+            const current = Array.isArray(state.openGroupId)
+                ? state.openGroupId
+                : state.openGroupId
+                    ? [state.openGroupId as unknown as string]
+                    : [];
+
+            if (action.payload === null) {
+                state.openGroupId = [];
+                return;
+            }
+
+            const id = action.payload;
+            if (current.includes(id)) {
+                state.openGroupId = current.filter(groupId => groupId !== id);
+            } else {
+                state.openGroupId = [...current, id];
+            }
         },
         clearGroups: (state) => {
             state.activeGroups = [];
             state.archivedGroups = [];
             state.error = null;
-            state.openGroupId = null;
+            state.openGroupId = [];
             state.lastFetch = null;
         },
         invalidateCache: (state) => {

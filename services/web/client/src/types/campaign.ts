@@ -42,7 +42,7 @@ export interface GroupState {
     archivedGroups: Group[];
     loading: boolean;
     error: string | null;
-    openGroupId: string | null;
+    openGroupId: string[];
     lastFetch: number | null;
 }
 

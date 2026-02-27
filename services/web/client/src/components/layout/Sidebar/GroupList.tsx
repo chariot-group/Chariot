@@ -13,7 +13,7 @@ import { useTranslations } from "next-intl";
 
 interface GroupListProps {
   groups: Group[];
-  openGroupId: string | null;
+  openGroupId: string[];
   onToggleGroup: (groupId: string) => void;
 }
 
@@ -40,7 +40,7 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
   return (
     <div className="flex flex-col gap-2">
       {groups.map((group) => {
-        const isOpen = openGroupId === group._id;
+        const isOpen = openGroupId.includes(group._id);
 
         return (
           <Collapsible

@@ -85,8 +85,8 @@ export function useGroups() {
      * Toggle l'ouverture d'un groupe
      */
     const toggleGroup = useCallback((groupId: string) => {
-        dispatch(setOpenGroup(openGroupId === groupId ? null : groupId));
-    }, [dispatch, openGroupId]);
+        dispatch(setOpenGroup(groupId));
+    }, [dispatch]);
 
     /**
      * Ferme tous les groupes
