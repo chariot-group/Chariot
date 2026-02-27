@@ -25,7 +25,20 @@
     "returnToSheet": "Volver a la hoja de personaje",
     "selectCampaign": "Seleccionar campaña",
     "selectedCampaign": "Campaña seleccionada",
-    "selected": "seleccionado"
+    "selected": "seleccionado",
+    "createCampaignDialogTitle": "Crear una Nueva Campaña",
+    "createCampaignDialogDescription": "Dale un nombre a tu campaña para comenzar.",
+    "campaignName": "Nombre de la Campaña",
+    "campaignNamePlaceholder": "Ej: Los Aventureros del Norte",
+    "campaignCreatedSuccess": "¡Campaña {name} creada con éxito!"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "errors": {
+      "campaignNameRequired": "El nombre de la campaña es requerido",
+      "campaignCreationFailed": "Error al crear la campaña"
+    }
   },
   "error": {
     "title": "¡Ups! Algo salió mal",

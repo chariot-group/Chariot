@@ -25,7 +25,20 @@
     "returnToSheet": "Return to Character Sheet",
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
-    "selected": "selected"
+    "selected": "selected",
+    "createCampaignDialogTitle": "Create a New Campaign",
+    "createCampaignDialogDescription": "Give your campaign a name to get started.",
+    "campaignName": "Campaign Name",
+    "campaignNamePlaceholder": "E.g., The Northern Adventurers",
+    "campaignCreatedSuccess": "Campaign {name} created successfully!"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "errors": {
+      "campaignNameRequired": "Campaign name is required",
+      "campaignCreationFailed": "Failed to create campaign"
+    }
   },
   "error": {
     "title": "Oops! Something went wrong",
