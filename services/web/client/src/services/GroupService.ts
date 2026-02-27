@@ -15,12 +15,19 @@ class GroupService {
 
     /**
      * Récupère les groupes d'une campagne
+     * Si aucun paramètre n'est fourni, on laisse l'API appliquer ses valeurs par défaut.
      */
-    async getGroupsByCampaign(campaignId: string, params?: { page?: number; offset?: number }): Promise<Group[]> {
+    async getGroupsByCampaign(
+        campaignId: string,
+        params?: { page?: number; offset?: number; sort?: string; label?: string; type?: 'all' | 'active' | 'archived'; onlyWithMembers?: boolean },
+    ): Promise<Group[]> {
         try {
-            const response = await apiClient().get<PaginatedGroupsResponse>(`${this.BASE_PATH}/${campaignId}/groups`, {
-                params,
-            });
+            const axiosConfig = params ? { params } : undefined;
+
+            const response = await apiClient().get<PaginatedGroupsResponse>(
+                `${this.BASE_PATH}/${campaignId}/groups`,
+                axiosConfig,
+            );
 
             return response.data.data;
         } catch (error) {
@@ -48,8 +55,8 @@ class GroupService {
     async createGroup(campaignId: string, data: { label: string }): Promise<Group> {
         try {
             const response = await apiClient().post<{ data: Group }>(`/groups`, {
-                ...data,
-                campaignId,
+                label: data.label,
+                campaigns: [{ idCampaign: campaignId, type: 'active' }],
             });
             return response.data.data;
         } catch (error) {

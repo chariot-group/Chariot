@@ -15,6 +15,7 @@ import {
   setOpenArchivedGroups,
 } from "@/store/slices/sidebarSlice";
 import CharactersWithoutGroupList from "@/components/layout/Sidebar/CharactersWithoutGroupList";
+import { CreateGroupDialog } from "@/components/dialogs/CreateGroupDialog";
 
 /**
  * Context navigation component for GM mode
@@ -72,17 +73,19 @@ export default function SidebarContext() {
         <CollapsibleContent
           id="active-groups-content"
           className="my-2 flex mx-5 flex-col gap-2">
-          {/* Create group button */}
-          <button
-            type="button"
-            aria-label={t("createGroup")}
-            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
-            {t("createGroup")}
-            <PlusCircleIcon
-              aria-hidden="true"
-              className="w-5 h-5"
-            />
-          </button>
+          {/* Create group dialog */}
+          <CreateGroupDialog>
+            <button
+              type="button"
+              aria-label={t("createGroup")}
+              className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+              {t("createGroup")}
+              <PlusCircleIcon
+                aria-hidden="true"
+                className="w-5 h-5"
+              />
+            </button>
+          </CreateGroupDialog>
 
           {loading ? (
             <div className="flex justify-center items-center py-4">

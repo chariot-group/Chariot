@@ -30,14 +30,21 @@
     "createCampaignDialogDescription": "Give your campaign a name to get started.",
     "campaignName": "Campaign Name",
     "campaignNamePlaceholder": "E.g., The Northern Adventurers",
-    "campaignCreatedSuccess": "Campaign {name} created successfully!"
+    "campaignCreatedSuccess": "Campaign {name} created successfully!",
+    "createGroupDialogTitle": "Create a New Group",
+    "createGroupDialogDescription": "Give your group a name to get started.",
+    "groupName": "Group Name",
+    "groupNamePlaceholder": "E.g., The Heroes of Light",
+    "groupCreatedSuccess": "Group {name} created successfully!"
   },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
     "errors": {
       "campaignNameRequired": "Campaign name is required",
-      "campaignCreationFailed": "Failed to create campaign"
+      "campaignCreationFailed": "Failed to create campaign",
+      "groupNameRequired": "Group name is required",
+      "groupCreationFailed": "Failed to create group"
     }
   },
   "error": {

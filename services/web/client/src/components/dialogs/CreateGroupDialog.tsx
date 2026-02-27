@@ -15,48 +15,44 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCampaigns } from "@/hooks/useCampaigns";
+import { useGroups } from "@/hooks/useGroups";
 import { showToast } from "@/lib/toast";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 
-interface CreateCampaignDialogProps {
+interface CreateGroupDialogProps {
     /** The element that opens the dialog (e.g. a Button). */
     children: React.ReactNode;
 }
 
-export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
+export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
     const t = useTranslations("sidebar");
     const tCommon = useTranslations("common");
     const [open, setOpen] = useState(false);
-    const [campaignName, setCampaignName] = useState("");
+    const [groupName, setGroupName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
-    const { createCampaign, refreshCampaigns } = useCampaigns({ autoFetch: false });
+    const { createGroup, refreshGroups } = useGroups();
 
     const handleCreate = async () => {
-        if (!campaignName.trim()) {
-            showToast(tCommon("errors.campaignNameRequired"), "error");
+        if (!groupName.trim()) {
+            showToast(tCommon("errors.groupNameRequired"), "error");
             return;
         }
 
         setIsCreating(true);
         try {
-            const newCampaign = await createCampaign({
-                label: campaignName.trim(),
-                groups: {
-                    active: [],
-                    archived: [],
-                },
+            const newGroup = await createGroup({
+                label: groupName.trim(),
             });
 
-            // Rafraîchir la liste des campagnes avant d'afficher le succès
-            await refreshCampaigns();
-            showToast(t("campaignCreatedSuccess", { name: newCampaign.label }), "success");
+            // Rafraîchir la liste des groupes (même pattern que pour les campagnes)
+            await refreshGroups();
+            showToast(t("groupCreatedSuccess", { name: newGroup.label }), "success");
             setOpen(false);
-            setCampaignName("");
+            setGroupName("");
         } catch (error) {
-            console.error("Error creating campaign:", error);
-            showToast(tCommon("errors.campaignCreationFailed"), "error");
+            console.error("Error creating group:", error);
+            showToast(tCommon("errors.groupCreationFailed"), "error");
         } finally {
             setIsCreating(false);
         }
@@ -65,7 +61,7 @@ export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
     const handleOpenChange = (newOpen: boolean) => {
         setOpen(newOpen);
         if (!newOpen) {
-            setCampaignName("");
+            setGroupName("");
         }
     };
 
@@ -81,17 +77,17 @@ export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>{t("createCampaignDialogTitle")}</DialogTitle>
-                    <DialogDescription>{t("createCampaignDialogDescription")}</DialogDescription>
+                    <DialogTitle>{t("createGroupDialogTitle")}</DialogTitle>
+                    <DialogDescription>{t("createGroupDialogDescription")}</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="campaign-name">{t("campaignName")}</Label>
+                        <Label htmlFor="group-name">{t("groupName")}</Label>
                         <Input
-                            id="campaign-name"
-                            placeholder={t("campaignNamePlaceholder")}
-                            value={campaignName}
-                            onChange={(e) => setCampaignName(e.target.value)}
+                            id="group-name"
+                            placeholder={t("groupNamePlaceholder")}
+                            value={groupName}
+                            onChange={(e) => setGroupName(e.target.value)}
                             onKeyDown={handleKeyDown}
                             disabled={isCreating}
                             autoFocus
@@ -105,7 +101,7 @@ export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
                             {tCommon("cancel")}
                         </Button>
                     </DialogClose>
-                    <Button onClick={handleCreate} disabled={isCreating || !campaignName.trim()}>
+                    <Button onClick={handleCreate} disabled={isCreating || !groupName.trim()}>
                         {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {tCommon("save")}
                     </Button>

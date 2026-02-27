@@ -30,14 +30,21 @@
     "createCampaignDialogDescription": "Donnez un nom à votre campagne pour commencer.",
     "campaignName": "Nom de la campagne",
     "campaignNamePlaceholder": "Ex: Les Aventuriers du Nord",
-    "campaignCreatedSuccess": "Campagne {name} créée avec succès !"
+    "campaignCreatedSuccess": "Campagne {name} créée avec succès !",
+    "createGroupDialogTitle": "Créer un nouveau groupe",
+    "createGroupDialogDescription": "Donnez un nom à votre groupe pour commencer.",
+    "groupName": "Nom du groupe",
+    "groupNamePlaceholder": "Ex: Les Héros de la Lumière",
+    "groupCreatedSuccess": "Groupe {name} créé avec succès !"
   },
   "common": {
     "save": "Sauvegarder",
     "cancel": "Annuler",
     "errors": {
       "campaignNameRequired": "Le nom de la campagne est requis",
-      "campaignCreationFailed": "Échec de la création de la campagne"
+      "campaignCreationFailed": "Échec de la création de la campagne",
+      "groupNameRequired": "Le nom du groupe est requis",
+      "groupCreationFailed": "Échec de la création du groupe"
     }
   },
   "error": {
