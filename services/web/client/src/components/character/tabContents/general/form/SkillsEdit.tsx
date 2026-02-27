@@ -124,9 +124,6 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
    */
   const toggleSkillProficiency = (skillKey: string, abilityKey: AbilityKey) => {
     const currentMasteryLevel = form.watch(`stats.masteries.${skillKey}`) || 0;
-    const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
-    const abilityScore = form.watch(`stats.abilityScores.${abilityKey}`) || 10;
-
     const nextMasteryLevel = getNextMasteryLevel(currentMasteryLevel);
 
     // Mettre à jour le niveau de maîtrise dans le formulaire
@@ -153,19 +150,23 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
                 onClick={() => toggleSkillProficiency(key, abilityKey)}
                 className="text-left">
                 <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
-                  <p className="text-sm flex items-center gap-2">
-                    <span className="shrink-0">{icon}</span>
-                    <span className={`truncate ${isActive && "italic"}`}>{t(`skillNames.${translationKey}`)}</span>
-                    <span className="font-bold shrink-0">{skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}</span>
-                    <Image
-                      src={getIconForValue(masteryLevel, accentColor)}
-                      alt={t("masteryLevelIcon", { level: masteryLevel })}
-                      width={20}
-                      height={20}
-                      className="shrink-0"
-                      aria-hidden="true"
-                    />
-                  </p>
+                  <div className="text-sm grid grid-cols-3 justify-between">
+                    <div className="flex items-center col-span-2 gap-2">
+                      <span className="shrink-0">{icon}</span>
+                      <span className={`truncate ${isActive && "italic"}`}>{t(`skillNames.${translationKey}`)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 self-end justify-end">
+                      <span className="font-bold shrink-0">{skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}</span>
+                      <Image
+                        src={getIconForValue(masteryLevel, accentColor)}
+                        alt={t("masteryLevelIcon", { level: masteryLevel })}
+                        width={20}
+                        height={20}
+                        className="shrink-0"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
                 </Card>
               </button>
             )}

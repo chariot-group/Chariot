@@ -58,20 +58,22 @@ export default function SavingThrowsEdit({ form, accentColor, isNPC = false }: S
                 onClick={() => toggleSavingThrowProficiency(key)}
                 className="text-left">
                 <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
-                  <p className="text-sm flex items-center gap-2">
+                  <div className="text-sm flex items-center gap-2 justify-between">
                     <span className={`truncate ${isProficient && "italic"}`}>{label}</span>{" "}
-                    <span className="font-bold shrink-0">
-                      {displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}
-                    </span>
-                    <Image
-                      src={getIconForValue(masteryLevel, accentColor)}
-                      alt={t("masteryLevelIcon", { level: masteryLevel })}
-                      width={20}
-                      height={20}
-                      className="shrink-0"
-                      aria-hidden="true"
-                    />
-                  </p>
+                    <div className="flex flex-row gap-2">
+                      <span className="font-bold shrink-0">
+                        {displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}
+                      </span>
+                      <Image
+                        src={getIconForValue(masteryLevel, accentColor)}
+                        alt={t("masteryLevelIcon", { level: masteryLevel })}
+                        width={20}
+                        height={20}
+                        className="shrink-0"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
                 </Card>
               </button>
             )}
