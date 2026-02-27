@@ -89,7 +89,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 <div className="flex flex-col items-start xl:items-end text-left xl:text-right xl:max-w-full lg:max-w-3/4 md:max-w-2/3 w-full">
                   <Tooltip>
                     <TooltipTrigger className="cursor-help w-full">
-                      <h1 className="text-2xl sm:text-3xl font-bold text-white text-start xl:text-end truncatet">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-white text-start xl:text-end truncate">
                         {character.firstname} {character.lastname}
                       </h1>
                     </TooltipTrigger>
