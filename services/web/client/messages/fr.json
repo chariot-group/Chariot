@@ -266,6 +266,23 @@
       "armorClass": "Classe d'Armure",
       "armorClassTooltip": "Classe d'armure (CA) du personnage",
       "initiativeTooltip": "Bonus d'initiative",
+      "sizeTooltip": "Taille du personnage",
+      "sizes": {
+        "Tiny": "Très petit",
+        "Small": "Petit",
+        "Medium": "Moyen",
+        "Large": "Grand",
+        "Huge": "Très grand",
+        "Gargantuan": "Gigantesque"
+      },
+      "sizesAbbr": {
+        "Tiny": "TP",
+        "Small": "P",
+        "Medium": "M",
+        "Large": "G",
+        "Huge": "TG",
+        "Gargantuan": "Gig"
+      },
       "walkSpeedTooltip": "Vitesse de marche",
       "climbSpeedTooltip": "Vitesse d'escalade",
       "swimSpeedTooltip": "Vitesse de nage",

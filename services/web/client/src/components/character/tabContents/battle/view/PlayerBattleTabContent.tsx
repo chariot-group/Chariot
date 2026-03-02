@@ -9,7 +9,7 @@ import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import Skill from "@/components/character/tabContents/general/shared/Skill";
-import { Bird, Mountain, Shovel, Waves } from "lucide-react";
+import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -148,6 +148,25 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                 </div>
               </TooltipTrigger>
               <TooltipContent>{t("initiativeTooltip")}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  tabIndex={0}
+                  role="img"
+                  aria-label={`${t("sizeTooltip")} ${t(`sizes.${player.stats.size}` as any)}`}>
+                  <RulerIcon
+                    size={24}
+                    className="text-black"
+                    aria-hidden="true"
+                  />
+                  <span aria-hidden="true">
+                    {t(`sizesAbbr.${player.stats.size}` as any)}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{t(`sizes.${player.stats.size}` as any)}</TooltipContent>
             </Tooltip>
             {speedBadges.map(
               (badge) =>

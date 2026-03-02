@@ -266,6 +266,23 @@
       "armorClass": "Clase de Armadura",
       "armorClassTooltip": "Clase de armadura (CA) del personaje",
       "initiativeTooltip": "Bonificación de iniciativa",
+      "sizeTooltip": "Tamaño del personaje",
+      "sizes": {
+        "Tiny": "Diminuto",
+        "Small": "Pequeño",
+        "Medium": "Mediano",
+        "Large": "Grande",
+        "Huge": "Enorme",
+        "Gargantuan": "Gargantuesco"
+      },
+      "sizesAbbr": {
+        "Tiny": "D",
+        "Small": "P",
+        "Medium": "M",
+        "Large": "G",
+        "Huge": "E",
+        "Gargantuan": "Gar"
+      },
       "walkSpeedTooltip": "Velocidad de marcha",
       "climbSpeedTooltip": "Velocidad de escalada",
       "swimSpeedTooltip": "Velocidad de natación",

@@ -266,6 +266,23 @@
       "armorClass": "Armor Class",
       "armorClassTooltip": "Character's armor class (AC)",
       "initiativeTooltip": "Initiative bonus",
+      "sizeTooltip": "Character size",
+      "sizes": {
+        "Tiny": "Tiny",
+        "Small": "Small",
+        "Medium": "Medium",
+        "Large": "Large",
+        "Huge": "Huge",
+        "Gargantuan": "Gargantuan"
+      },
+      "sizesAbbr": {
+        "Tiny": "T",
+        "Small": "S",
+        "Medium": "M",
+        "Large": "L",
+        "Huge": "H",
+        "Gargantuan": "G"
+      },
       "walkSpeedTooltip": "Walking speed",
       "climbSpeedTooltip": "Climbing speed",
       "swimSpeedTooltip": "Swimming speed",
