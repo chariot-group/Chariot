@@ -29,7 +29,18 @@ export default function SidebarContext() {
   const selectedCampaign = useAppSelector(selectSelectedCampaign);
   const openActive = useAppSelector(selectOpenActiveGroups);
   const openArchived = useAppSelector(selectOpenArchivedGroups);
-  const { activeGroups, archivedGroups, loading, openGroupId, toggleGroup } = useGroups();
+  const {
+    activeGroups,
+    archivedGroups,
+    loading,
+    openGroupId,
+    toggleGroup,
+    createGroup,
+    refreshGroups,
+    archiveGroup,
+    unarchiveGroup,
+    deleteGroup,
+  } = useGroups();
 
   // Handle collapsible state changes
   const handleOpenActive = (isOpen: boolean) => {
@@ -74,7 +85,9 @@ export default function SidebarContext() {
           id="active-groups-content"
           className="my-2 flex mx-5 flex-col gap-2">
           {/* Create group dialog */}
-          <CreateGroupDialog>
+          <CreateGroupDialog
+            onCreateGroup={createGroup}
+            onRefreshGroups={refreshGroups}>
             <button
               type="button"
               aria-label={t("createGroup")}
@@ -96,6 +109,10 @@ export default function SidebarContext() {
               groups={activeGroups}
               openGroupId={openGroupId}
               onToggleGroup={toggleGroup}
+              isArchivedSection={false}
+              onArchiveGroup={archiveGroup}
+              onUnarchiveGroup={unarchiveGroup}
+              onDeleteGroup={deleteGroup}
             />
           )}
         </CollapsibleContent>
@@ -137,6 +154,10 @@ export default function SidebarContext() {
               groups={archivedGroups}
               openGroupId={openGroupId}
               onToggleGroup={toggleGroup}
+              isArchivedSection={true}
+              onArchiveGroup={archiveGroup}
+              onUnarchiveGroup={unarchiveGroup}
+              onDeleteGroup={deleteGroup}
             />
           )}
         </CollapsibleContent>

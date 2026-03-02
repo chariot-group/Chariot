@@ -17,6 +17,7 @@ import { selectSelectedCampaignId } from '@/store/slices/campaignContextSlice';
 import GroupService from '@/services/GroupService';
 import CampaignService from '@/services/CampaignService';
 import { Group } from '@/types/campaign';
+import { useToast } from '@/hooks/useToast';
 
 /**
  * Hook personnalisé pour gérer les groupes d'une campagne
@@ -29,6 +30,7 @@ export function useGroups() {
     const loading = useAppSelector(selectGroupsLoading);
     const error = useAppSelector(selectGroupsError);
     const openGroupId = useAppSelector(selectOpenGroupId);
+    const { success, error: toastError } = useToast();
 
     /**
      * Récupère les groupes de la campagne sélectionnée
@@ -121,6 +123,122 @@ export function useGroups() {
     }, [dispatch, fetchGroups]);
 
     /**
+     * Archive un groupe (le déplace de active vers archived pour la campagne courante)
+     * Met ensuite à jour les listes localement pour une UX plus fluide.
+     */
+    const archiveGroup = useCallback(
+        async (groupId: string) => {
+            if (!selectedCampaignId) {
+                throw new Error('No campaign selected');
+            }
+
+            try {
+                const activeIds = activeGroups.map(group => group._id);
+                const archivedIds = archivedGroups.map(group => group._id);
+
+                if (!activeIds.includes(groupId)) {
+                    return;
+                }
+
+                const newActiveIds = activeIds.filter(id => id !== groupId);
+                const newArchivedIds = archivedIds.includes(groupId)
+                    ? archivedIds
+                    : [...archivedIds, groupId];
+
+                await CampaignService.updateCampaign(selectedCampaignId, {
+                    groups: {
+                        active: newActiveIds,
+                        archived: newArchivedIds,
+                    },
+                });
+
+                const groupToArchive = activeGroups.find(group => group._id === groupId);
+                const newActiveGroups = activeGroups.filter(group => group._id !== groupId);
+                const newArchivedGroups = groupToArchive
+                    ? [...archivedGroups, groupToArchive]
+                    : archivedGroups;
+
+                dispatch(fetchGroupsSuccess({ active: newActiveGroups, archived: newArchivedGroups }));
+                success('Group archived');
+            } catch (e) {
+                const message = e instanceof Error ? e.message : 'Failed to archive group';
+                toastError(message);
+                throw e;
+            }
+        },
+        [selectedCampaignId, activeGroups, archivedGroups, dispatch, success, toastError],
+    );
+
+    /**
+     * Désarchive un groupe (le déplace de archived vers active pour la campagne courante)
+     * Met ensuite à jour les listes localement.
+     */
+    const unarchiveGroup = useCallback(
+        async (groupId: string) => {
+            if (!selectedCampaignId) {
+                throw new Error('No campaign selected');
+            }
+
+            try {
+                const activeIds = activeGroups.map(group => group._id);
+                const archivedIds = archivedGroups.map(group => group._id);
+
+                if (!archivedIds.includes(groupId)) {
+                    return;
+                }
+
+                const newArchivedIds = archivedIds.filter(id => id !== groupId);
+                const newActiveIds = activeIds.includes(groupId)
+                    ? activeIds
+                    : [...activeIds, groupId];
+
+                await CampaignService.updateCampaign(selectedCampaignId, {
+                    groups: {
+                        active: newActiveIds,
+                        archived: newArchivedIds,
+                    },
+                });
+
+                const groupToUnarchive = archivedGroups.find(group => group._id === groupId);
+                const newArchivedGroups = archivedGroups.filter(group => group._id !== groupId);
+                const newActiveGroups = groupToUnarchive
+                    ? [...activeGroups, groupToUnarchive]
+                    : activeGroups;
+
+                dispatch(fetchGroupsSuccess({ active: newActiveGroups, archived: newArchivedGroups }));
+                success('Group unarchived');
+            } catch (e) {
+                const message = e instanceof Error ? e.message : 'Failed to unarchive group';
+                toastError(message);
+                throw e;
+            }
+        },
+        [selectedCampaignId, activeGroups, archivedGroups, dispatch, success, toastError],
+    );
+
+    /**
+     * Supprime un groupe définitivement et met à jour les listes localement.
+     */
+    const deleteGroup = useCallback(
+        async (groupId: string) => {
+            try {
+                await GroupService.deleteGroup(groupId);
+
+                const newActiveGroups = activeGroups.filter(group => group._id !== groupId);
+                const newArchivedGroups = archivedGroups.filter(group => group._id !== groupId);
+
+                dispatch(fetchGroupsSuccess({ active: newActiveGroups, archived: newArchivedGroups }));
+                success('Group deleted');
+            } catch (e) {
+                const message = e instanceof Error ? e.message : 'Failed to delete group';
+                toastError(message);
+                throw e;
+            }
+        },
+        [activeGroups, archivedGroups, dispatch, success, toastError],
+    );
+
+    /**
      * Charge les groupes quand la campagne sélectionnée change
      */
     useEffect(() => {
@@ -142,5 +260,8 @@ export function useGroups() {
         closeAllGroups,
         createGroup,
         refreshGroups,
+        archiveGroup,
+        unarchiveGroup,
+        deleteGroup,
     };
 }

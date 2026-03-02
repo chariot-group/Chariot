@@ -15,23 +15,24 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useGroups } from "@/hooks/useGroups";
 import { showToast } from "@/lib/toast";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
+import { Group } from "@/types/campaign";
 
 interface CreateGroupDialogProps {
     /** The element that opens the dialog (e.g. a Button). */
     children: React.ReactNode;
+    onCreateGroup: (data: { label: string }) => Promise<Group>;
+    onRefreshGroups: () => Promise<void>;
 }
 
-export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
+export function CreateGroupDialog({ children, onCreateGroup, onRefreshGroups }: CreateGroupDialogProps) {
     const t = useTranslations("sidebar");
     const tCommon = useTranslations("common");
     const [open, setOpen] = useState(false);
     const [groupName, setGroupName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
-    const { createGroup, refreshGroups } = useGroups();
 
     const handleCreate = async () => {
         if (!groupName.trim()) {
@@ -41,12 +42,12 @@ export function CreateGroupDialog({ children }: CreateGroupDialogProps) {
 
         setIsCreating(true);
         try {
-            const newGroup = await createGroup({
+            const newGroup = await onCreateGroup({
                 label: groupName.trim(),
             });
 
             // Rafraîchir la liste des groupes (même pattern que pour les campagnes)
-            await refreshGroups();
+            await onRefreshGroups();
             showToast(t("groupCreatedSuccess", { name: newGroup.label }), "success");
             setOpen(false);
             setGroupName("");
