@@ -86,13 +86,16 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                       key={character._id}
                       aria-current={isSelected ? "page" : undefined}
                       aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
-                      className={`text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${
+                      title={`${character.firstname} ${character.lastname}`}
+                      className={`w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${
                         isSelected ? "bg-card/50 font-bold" : ""
                       }`}
                       onClick={() => {
                         if (isMobile) setOpenMobile(false);
                       }}>
-                      {character.firstname} {character.lastname}
+                      <span className="block min-w-0 flex-1 truncate">
+                        {character.firstname} {character.lastname}
+                      </span>
                     </Link>
                   );
                 })
