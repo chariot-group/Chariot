@@ -201,6 +201,8 @@
       "tempHP": "Temp HP",
       "defense": "Defense",
       "initiative": "Initiative",
+      "size": "Size",
+      "selectSize": "Select a size",
       "spellcastingStats": "Spellcasting Stats",
       "spellcastingAbility": "Spellcasting Ability",
       "spellSaveDC": "Spell Save DC",

@@ -201,6 +201,8 @@
       "tempHP": "PV Temporaires",
       "defense": "Défense",
       "initiative": "Initiative",
+      "size": "Taille",
+      "selectSize": "Sélectionner une taille",
       "spellcastingStats": "Statistiques de Magie",
       "spellcastingAbility": "Caractéristique d'Incantation",
       "spellSaveDC": "DD des Sorts",

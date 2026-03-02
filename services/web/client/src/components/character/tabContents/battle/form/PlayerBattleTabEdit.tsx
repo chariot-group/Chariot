@@ -18,6 +18,9 @@ import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RulerIcon } from "lucide-react";
+
+const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 
 interface PlayerBattleTabEditProps {
   player: Player;
@@ -150,6 +153,57 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                   {fieldState.error && (
                     <FieldError
                       id="initiative-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            {/* Taille */}
+            <Controller
+              name="stats.size"
+              control={form.control}
+              defaultValue="Medium"
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="size"
+                    className="text-sm font-medium">
+                    {tEdit("size")}
+                  </label>
+                  <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                    <Select
+                      value={field.value || "Medium"}
+                      onValueChange={field.onChange}>
+                      <SelectTrigger
+                        id="size"
+                        className="border-none bg-transparent">
+                        <SelectValue placeholder={tEdit("selectSize")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {SIZES.map((size) => (
+                            <SelectItem
+                              key={size}
+                              value={size}>
+                              {t(`sizes.${size}` as any)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <RulerIcon
+                      size={20}
+                      className="text-black shrink-0"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  {fieldState.error && (
+                    <FieldError
+                      id="size-error"
                       errors={[fieldState.error]}
                     />
                   )}

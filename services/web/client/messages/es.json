@@ -201,6 +201,8 @@
       "tempHP": "PV Temporales",
       "defense": "Defensa",
       "initiative": "Iniciativa",
+      "size": "Tamaño",
+      "selectSize": "Seleccionar un tamaño",
       "spellcastingStats": "Estadísticas de Hechicería",
       "spellcastingAbility": "Habilidad de Lanzamiento",
       "spellSaveDC": "CD de Salvación de Conjuros",
