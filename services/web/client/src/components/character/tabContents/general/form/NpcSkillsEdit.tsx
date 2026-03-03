@@ -53,7 +53,7 @@ export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps)
   ] as const;
 
   return (
-    <div className="grid grid-cols-1 gap-2">
+    <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
       {skills.map(({ key, icon: Icon, ability }) => {
         const abilityScore = form.watch(`stats.abilityScores.${ability}`) || 10;
         const abilityModifier = Math.floor((abilityScore - 10) / 2);

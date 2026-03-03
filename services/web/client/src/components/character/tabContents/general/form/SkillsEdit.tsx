@@ -131,7 +131,7 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
       {skillsConfig.map(({ key, translationKey, abilityKey, icon }) => {
         const masteryLevel = form.watch(`stats.masteries.${key}`) || 0;
         const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;
@@ -150,12 +150,12 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
                 onClick={() => toggleSkillProficiency(key, abilityKey)}
                 className="text-left">
                 <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
-                  <div className="text-sm grid grid-cols-3 justify-between">
-                    <div className="flex items-center col-span-2 gap-2">
+                  <div className="text-sm flex items-center justify-between gap-2">
+                    <div className="flex items-center min-w-0 flex-1 gap-2">
                       <span className="shrink-0">{icon}</span>
                       <span className={`truncate ${isActive && "italic"}`}>{t(`skillNames.${translationKey}`)}</span>
                     </div>
-                    <div className="flex items-center gap-2 self-end justify-end">
+                    <div className="flex items-center gap-2 shrink-0 justify-end">
                       <span className="font-bold shrink-0">{skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}</span>
                       <Image
                         src={getIconForValue(masteryLevel, accentColor)}
