@@ -79,10 +79,10 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
             className={`text-xl sm:text-2xl font-semibold self-start ${accentColor}`}>
             {t("deathSaves")}
           </h2>
-          <div className=" grid grid-cols-2 gap-2 items-center w-full">
+          <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2 items-center w-full">
             <span>{t("successes")}</span>
             <div
-              className="grid grid-cols-3 w-2/3 lg:w-4/5"
+              className="grid grid-cols-3 gap-1 md:gap-2 w-full md:w-3/4 xl:w-full justify-self-end md:justify-self-start xl:justify-self-end"
               role="group"
               aria-label={t("successes")}>
               {Array.from({ length: 3 }).map((_, index) => {
@@ -99,7 +99,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                       alt=""
                       width={20}
                       height={20}
-                      className="shrink-0"
+                      className="shrink-0 w-5 h-5"
                       aria-hidden="true"
                     />
                   </button>
@@ -108,7 +108,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
             </div>
             <span>{t("failures")}</span>
             <div
-              className="grid grid-cols-3 w-2/3 lg:w-4/5"
+              className="grid grid-cols-3 gap-1 md:gap-2 w-full md:w-3/4 xl:w-full justify-self-end md:justify-self-start xl:justify-self-end"
               role="group"
               aria-label={t("failures")}>
               {Array.from({ length: 3 }).map((_, index) => {
@@ -125,7 +125,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                       alt=""
                       width={20}
                       height={20}
-                      className="shrink-0"
+                      className="shrink-0 w-5 h-5"
                       aria-hidden="true"
                     />
                   </button>

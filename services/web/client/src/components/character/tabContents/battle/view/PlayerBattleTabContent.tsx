@@ -70,10 +70,10 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
             className={`text-xl sm:text-2xl font-semibold self-start ${accentColor}`}>
             {t("deathSaves")}
           </h2>
-          <div className=" grid grid-cols-2 gap-2 items-center w-full">
+          <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2 items-center w-full">
             <span>{t("successes")}</span>
             <div
-              className="grid grid-cols-3 w-2/3 lg:w-4/5"
+              className="grid grid-cols-3 gap-1 md:gap-1 w-full md:w-3/4 xl:w-full xl:max-w-45 justify-self-end md:justify-self-start xl:justify-self-end"
               role="status"
               aria-label={`${t("successes")} ${player.deathSaves.successes} ${t("unperformedThrow")}`}>
               {Array.from({ length: 3 }).map((_, index) => (
@@ -83,14 +83,14 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                   alt=""
                   width={20}
                   height={20}
-                  className="shrink-0"
+                  className="shrink-0 w-5 h-5"
                   aria-hidden="true"
                 />
               ))}
             </div>
             <span>{t("failures")}</span>
             <div
-              className="grid grid-cols-3 w-2/3 lg:w-4/5"
+              className="grid grid-cols-3 gap-1 md:gap-2 w-full md:w-3/4 xl:w-full xl:max-w-45 justify-self-end md:justify-self-start xl:justify-self-end"
               role="status"
               aria-label={`${t("failures")} ${player.deathSaves.failures} ${t("unperformedThrow")}`}>
               {Array.from({ length: 3 }).map((_, index) => (
@@ -100,7 +100,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                   alt=""
                   width={20}
                   height={20}
-                  className="shrink-0"
+                  className="shrink-0 w-5 h-5"
                   aria-hidden="true"
                 />
               ))}
