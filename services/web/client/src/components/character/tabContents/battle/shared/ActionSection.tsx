@@ -3,7 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Action } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { ChevronsDownUp, ChevronsUpDown, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 
 interface ActionSectionProps {
   title: string;

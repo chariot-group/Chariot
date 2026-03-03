@@ -20,7 +20,7 @@ interface DamageTypeInputProps {
 export function DamageTypeInput({
   value = "",
   onChange,
-  placeholder = "Type de dégâts",
+  placeholder = "",
   customDamageTypes = [],
   ...props
 }: DamageTypeInputProps) {

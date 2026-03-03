@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import { makeZodMessages } from '@/lib/zodErrorMap';
+
+
+type ZodMessages = ReturnType<typeof makeZodMessages>;
 
 // ===== Enums =====
 export const AlignmentEnum = z.enum([
@@ -112,10 +116,12 @@ export const AffinitiesSchema = z.object({
 });
 
 // ===== Ability =====
-export const AbilitySchema = z.object({
-    name: z.string().optional(),
-    description: z.string().optional(),
-});
+export function AbilitySchema(zm: ZodMessages) {
+    return z.object({
+        name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }),
+        description: z.string().optional(),
+    })
+};
 
 // ===== Spellcasting =====
 export const SpellSchema = z.object({
@@ -209,13 +215,15 @@ export const DifficultyClassSchema = z.object({
     successType: z.string().optional(),
 });
 
-export const ActionSchema = z.object({
-    name: z.string().optional(),
-    type: z.string().optional(),
-    description: z.string().optional(),
-    attackBonus: z.number().optional(),
-    damage: z.array(DamageSchema).optional(),
-    range: z.string().optional(),
-    dc: DifficultyClassSchema.optional(),
-    cost: z.number().optional(),
-});
+export function ActionSchema(zm: ZodMessages) {
+    return z.object({
+        name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }).optional(),
+        type: z.string().optional(),
+        description: z.string().optional(),
+        attackBonus: z.number().optional(),
+        damage: z.array(DamageSchema).optional(),
+        range: z.string().optional(),
+        dc: DifficultyClassSchema.optional().nullable(),
+        cost: z.number().optional(),
+    })
+};

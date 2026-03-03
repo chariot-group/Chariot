@@ -1,6 +1,4 @@
-import { Controller, UseFormReturn } from "react-hook-form";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import {
   Brain,
@@ -21,13 +19,14 @@ import {
   User2Icon,
   VenetianMask,
 } from "lucide-react";
+import { Stats } from "@/types/character";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface NpcSkillsEditProps {
-  form: UseFormReturn<any>;
-  accentColor: string;
+  stats: Stats;
 }
 
-export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps) {
+export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
   const t = useTranslations("characterDetail.player.general");
 
   // Configuration des compétences avec leur icône et caractéristique associée
@@ -55,43 +54,30 @@ export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps)
   return (
     <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
       {skills.map(({ key, icon: Icon, ability }) => {
-        const abilityScore = form.watch(`stats.abilityScores.${ability}`) || 10;
-        const abilityModifier = Math.floor((abilityScore - 10) / 2);
+        const skillValue = stats?.skills?.[key] || 0;
 
         return (
-          <Controller
-            key={key}
-            name={`stats.skills.${key}`}
-            control={form.control}
-            render={({ field, fieldState }) => (
+          <Tooltip key={key}>
+            <TooltipTrigger>
               <Card className="p-2">
-                <div className="flex items-center gap-2">
-                  <Icon
-                    className="w-5 h-5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <div className="flex-1 min-w-0">
+                <div className="text-sm flex items-center justify-between gap-2">
+                  <div className="flex items-center min-w-0 flex-1 gap-2">
+                    <Icon
+                      className="w-5 h-5 shrink-0"
+                      aria-hidden="true"
+                    />
                     <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
-                    <p className="text-xs text-gray-middle-light">
-                      {t(`abilities.${ability}`)} ({abilityModifier >= 0 ? `+${abilityModifier}` : abilityModifier})
-                    </p>
                   </div>
-                  <Input
-                    {...field}
-                    value={field.value === 0 ? "" : field.value}
-                    onChange={(e) => {
-                      const value = e.target.value === "" ? 0 : parseInt(e.target.value);
-                      field.onChange(isNaN(value) ? 0 : value);
-                    }}
-                    className="w-16 text-center"
-                    type="number"
-                    placeholder={abilityModifier >= 0 ? `+${abilityModifier}` : `${abilityModifier}`}
-                    aria-label={t(`skillNames.${key}`)}
-                  />
+                  <div className="flex items-center gap-2 shrink-0 justify-end">
+                    <span className="font-bold shrink-0">{skillValue >= 0 ? `+${skillValue}` : `${skillValue}`}</span>
+                  </div>
                 </div>
               </Card>
-            )}
-          />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t(`abilities.${ability}`)}</p>
+            </TooltipContent>
+          </Tooltip>
         );
       })}
     </div>

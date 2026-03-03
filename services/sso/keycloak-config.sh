@@ -39,7 +39,7 @@ echo "Keycloak host: $KEYCLOAK_HOST"
 RETRIES=30
 COUNT=0
 until /opt/keycloak/bin/kcadm.sh config credentials \
-  --server "http://${KEYCLOAK_HOST}:8080" \
+  --server "http://${KEYCLOAK_HOST}:8080/auth" \
   --realm master \
   --user "${KEYCLOAK_ADMIN_USER}" \
   --password "${KEYCLOAK_ADMIN_PASSWORD}" 2>&1; do
