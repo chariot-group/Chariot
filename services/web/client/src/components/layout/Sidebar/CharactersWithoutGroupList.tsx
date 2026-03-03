@@ -84,9 +84,9 @@ export default function CharactersWithoutGroupList() {
             aria-current={isSelected ? "page" : undefined}
             aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
             onClick={() => dispatch(clearSelectedCampaign())}
-            className={`w-full border-2 cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:border ${isSelected ? "bg-white" : ""}`}>
+            className={`w-full border-2 cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/character focus-visible:border ${isSelected ? "bg-white" : ""}`}>
             <span
-              className={`text-sm group-hover:font-bold group-hover:text-black ${isSelected ? "font-bold text-black" : ""}`}>
+              className={`text-sm min-w-0 truncate group-hover/character:font-bold group-hover/character:text-black ${isSelected ? "font-bold text-black" : ""}`}>
               {character.firstname} {character.lastname}
             </span>
           </Link>

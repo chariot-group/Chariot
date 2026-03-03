@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
+import { useRef } from "react";
 
 interface AbilitiesUpdateSectionProps {
   title: string;
@@ -46,7 +47,17 @@ const AbilitiesUpdateSection = ({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => append({ name: "", description: "" })}
+            ref={undefined}
+            onClick={() => {
+              append({ name: "", description: "" });
+              // Attendre le prochain rendu pour que le nouvel élément soit présent
+              setTimeout(() => {
+                const lastAbility = fields.length > 0 ? document.getElementById(`ability-${fields.length - 1}`) : null;
+                if (lastAbility) {
+                  lastAbility.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }, 100);
+            }}
             className="flex items-center gap-2">
             <Plus className="size-4" />
             <span className="hidden sm:block">{tEdit("add")}</span>
@@ -76,14 +87,19 @@ const AbilitiesUpdateSection = ({
           {fields.map((field, index) => {
             const abilityName = form.watch(`${fieldArrayName}.${index}.name`);
 
+            const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
+            const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
+            const hasError = nameError || descriptionError;
+
             return (
               <AccordionItem
                 key={field.id}
+                id={`ability-${index}`}
                 value={`ability-${index}`}
                 className="border-b border-gray">
                 <div className="relative">
                   <AccordionTrigger
-                    className="text-left w-full hover:no-underline pr-10 truncate"
+                    className={`text-left w-full hover:no-underline pr-10 truncate ${hasError ? "ring-destructive ring" : ""}`}
                     aria-label={`Détails de la capacité ${index + 1}`}>
                     <span className="font-medium truncate">{abilityName}</span>
                   </AccordionTrigger>
@@ -116,7 +132,6 @@ const AbilitiesUpdateSection = ({
                         <Input
                           {...nameField}
                           id={`${fieldArrayName}-name-${index}`}
-                          placeholder="Nom de la capacité"
                           className="text-sm"
                           aria-invalid={fieldState.invalid}
                         />

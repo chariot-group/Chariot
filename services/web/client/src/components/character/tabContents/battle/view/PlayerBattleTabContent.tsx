@@ -2,17 +2,12 @@ import { Card } from "@/components/ui/card";
 import { Player } from "@/types/character";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import ShieldIcon from "@public/assets/icons/shield-icon.svg";
-import FeatherIcon from "@public/assets/icons/feather-icon.svg";
-import RunningIcon from "@public/assets/icons/running-icon.svg";
-import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
-import Skill from "@/components/character/tabContents/general/shared/Skill";
-import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
+import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import Statistics from "@/components/character/tabContents/shared/Statistics";
 
 interface Props {
   player: Player;
@@ -21,194 +16,18 @@ interface Props {
 
 const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
   const t = useTranslations("characterDetail.battle");
-  const tClass = useTranslations("classes");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   // Configuration des badges de statistiques
-  const speedBadges = [
-    {
-      key: "walk",
-      value: player.stats.speed.walk,
-      icon: (
-        <Image
-          src={RunningIcon}
-          alt=""
-          aria-hidden="true"
-          className="size-6"
-        />
-      ),
-      tooltipKey: "walkSpeedTooltip",
-    },
-    {
-      key: "climb",
-      value: player.stats.speed.climb,
-      icon: (
-        <Mountain
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "climbSpeedTooltip",
-    },
-    {
-      key: "swim",
-      value: player.stats.speed.swim,
-      icon: (
-        <Waves
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "swimSpeedTooltip",
-    },
-    {
-      key: "fly",
-      value: player.stats.speed.fly,
-      icon: (
-        <Bird
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "flySpeedTooltip",
-    },
-    {
-      key: "burrow",
-      value: player.stats.speed.burrow,
-      icon: (
-        <Shovel
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "burrowSpeedTooltip",
-    },
-  ];
-
-  function isMastered(skill: string): boolean {
-    return player.stats.masteriesAbility[skill as keyof typeof player.stats.masteriesAbility] === true;
-  }
 
   return (
     <div className="w-full flex flex-col gap-4 items-start">
       <div className="grid grid-cols-4 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
         {/* Statistiques */}
-        <Card
-          className="gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit"
-          role="region"
-          aria-labelledby="stats-heading">
-          <h2
-            id="stats-heading"
-            className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-            {t("stats")}
-          </h2>
-          <div className="flex flex-row justify-start gap-2 text-xl font-extrabold flex-wrap">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  tabIndex={0}
-                  role="img"
-                  aria-label={`${t("armorClass")} ${player.stats.armorClass}`}>
-                  <Image
-                    src={ShieldIcon}
-                    alt=""
-                    aria-hidden="true"
-                    className="size-5"
-                    width={20}
-                    height={20}
-                  />
-                  <span aria-hidden="true">{player.stats.armorClass}</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{t("armorClassTooltip")}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  tabIndex={0}
-                  role="img"
-                  aria-label={`${t("initiativeTooltip")} ${player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}`}>
-                  <Image
-                    src={FeatherIcon}
-                    alt=""
-                    aria-hidden="true"
-                    className="size-5"
-                    width={20}
-                    height={20}
-                  />
-                  <span aria-hidden="true">
-                    {player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}
-                  </span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{t("initiativeTooltip")}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  tabIndex={0}
-                  role="img"
-                  aria-label={`${t("sizeTooltip")} ${t(`sizes.${player.stats.size}` as any)}`}>
-                  <RulerIcon
-                    size={24}
-                    className="text-black"
-                    aria-hidden="true"
-                  />
-                  <span aria-hidden="true">
-                    {t(`sizesAbbr.${player.stats.size}` as any)}
-                  </span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{t(`sizes.${player.stats.size}` as any)}</TooltipContent>
-            </Tooltip>
-            {speedBadges.map(
-              (badge) =>
-                badge.value > 0 && (
-                  <Tooltip key={badge.key}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        tabIndex={0}
-                        role="img"
-                        aria-label={`${t(badge.tooltipKey as any)} ${badge.value} ${t("feet")}`}>
-                        {badge.icon}
-                        <span aria-hidden="true">
-                          {badge.value}
-                          {t("feetAbbr")}
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>{t(badge.tooltipKey as any)}</TooltipContent>
-                  </Tooltip>
-                ),
-            )}
-          </div>
-          <CharacterHealthBar
-            currentHP={player.stats.currentHitPoints}
-            maxHP={player.stats.maxHitPoints}
-            tempHP={player.stats.tempHitPoints}
-          />
-          <div className="text-lg px-2">
-            <span>{t("hitDice")}</span>
-            {player.class.map((c, i) => (
-              <span key={c.name}>
-                {i === 0 ? " " : " + "}
-                <span className="font-bold">
-                  {c.level}d{c.hitDice}
-                </span>
-                {` (${tClass(c.name)})`}
-              </span>
-            ))}
-          </div>
-        </Card>
-
+        <Statistics
+          player={player}
+          accentColor={accentColor}
+        />
         {/* Jet de sauvegarde */}
         <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
           <Card
@@ -226,18 +45,14 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
             role="list">
             {player?.stats &&
               Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
-                const isMasteredKey = isMastered(key);
-                const abilityName = tAbilities(key as any);
-                const abilityScore = player.stats.abilityScores[key as keyof typeof player.stats.abilityScores] || 10;
-                const abilityModifier = Math.floor((abilityScore - 10) / 2);
-                const displayBonus = value !== 0 ? (abilityModifier + value) : abilityModifier;
+                const abilityName = tAbilities(key);
                 return (
                   <Skill
                     key={key}
-                    skillName={abilityName}
-                    value={isMasteredKey ? 2 : 0}
+                    label={abilityName}
+                    skillName={key as keyof typeof player.stats.abilityScores}
                     accentColor={accentColor}
-                    skills={displayBonus}
+                    stats={player?.stats}
                   />
                 );
               })}
@@ -254,10 +69,10 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
             className={`text-xl sm:text-2xl font-semibold self-start ${accentColor}`}>
             {t("deathSaves")}
           </h2>
-          <div className=" grid grid-cols-2 gap-2 items-center w-full">
+          <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2 items-center w-full">
             <span>{t("successes")}</span>
             <div
-              className="grid grid-cols-3 w-2/3 lg:w-4/5"
+              className="grid grid-cols-3 gap-1 md:gap-1 w-full md:w-3/4 xl:w-full xl:max-w-45 justify-self-end md:justify-self-start xl:justify-self-end"
               role="status"
               aria-label={`${t("successes")} ${player.deathSaves.successes} ${t("unperformedThrow")}`}>
               {Array.from({ length: 3 }).map((_, index) => (
@@ -267,14 +82,14 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                   alt=""
                   width={20}
                   height={20}
-                  className="shrink-0"
+                  className="shrink-0 w-5 h-5"
                   aria-hidden="true"
                 />
               ))}
             </div>
             <span>{t("failures")}</span>
             <div
-              className="grid grid-cols-3 w-2/3 lg:w-4/5"
+              className="grid grid-cols-3 gap-1 md:gap-2 w-full md:w-3/4 xl:w-full xl:max-w-45 justify-self-end md:justify-self-start xl:justify-self-end"
               role="status"
               aria-label={`${t("failures")} ${player.deathSaves.failures} ${t("unperformedThrow")}`}>
               {Array.from({ length: 3 }).map((_, index) => (
@@ -284,7 +99,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                   alt=""
                   width={20}
                   height={20}
-                  className="shrink-0"
+                  className="shrink-0 w-5 h-5"
                   aria-hidden="true"
                 />
               ))}
@@ -292,7 +107,7 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
           </div>
         </Card>
       </div>
-      <div className="grid lg:grid-cols-2 gap-2 w-full">
+      <div className="grid lg:grid-cols-2 max-[376px]:grid-cols-1 gap-2 w-full">
         {/* Capacités et traits */}
         <div className="order-2 lg:order-1">
           <AbilitiesSection

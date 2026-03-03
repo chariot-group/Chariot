@@ -8,8 +8,10 @@ import LocaleDetector from "@/components/LocaleDetector";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
-import AppLayout from "@/components/layout/AppLayout";
 import PostLoginNavigator from "@/components/PostLoginNavigator";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -50,12 +52,18 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <KeycloakProvider>
             <ReduxProvider>
-              <PostLoginNavigator />
-              <AppLayout>
-                <LocaleDetector />
-                <ToastContainer />
-                {children}
-              </AppLayout>
+              <SidebarProvider>
+                <AppSidebar />
+
+                <div className="flex w-full flex-col h-screen overflow-hidden">
+                  <PostLoginNavigator />
+                  <LocaleDetector />
+                  <ToastContainer />
+                  <Header />
+
+                  {children}
+                </div>
+              </SidebarProvider>
             </ReduxProvider>
           </KeycloakProvider>
         </NextIntlClientProvider>

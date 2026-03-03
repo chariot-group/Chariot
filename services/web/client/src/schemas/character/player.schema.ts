@@ -87,7 +87,7 @@ export const PlayerProfileSchema = z.object({
  */
 export function createPlayerSchema(zm: ZodMessages) {
     return createCharacterSchema(zm).extend({
-        actions: z.array(ActionSchema).optional(),
+        actions: z.array(ActionSchema(zm)).optional(),
 
         inspiration: z.boolean({ message: zm.required() }).optional(),
 

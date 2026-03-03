@@ -7,6 +7,8 @@ import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFi
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { Field, FieldError } from "@/components/ui/field";
+import { DamageTypeInput } from "@/components/ui/damage-type-input";
 
 interface ActionUpdateSectionProps {
   title: string;
@@ -42,7 +44,7 @@ const ActionUpdateSection = ({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() =>
+            onClick={() => {
               append({
                 name: "",
                 type: "",
@@ -50,8 +52,15 @@ const ActionUpdateSection = ({
                 attackBonus: 0,
                 damage: [],
                 range: "",
-              })
-            }
+              });
+              // Attendre le prochain rendu pour que le nouvel élément soit présent
+              setTimeout(() => {
+                const lastAction = fields.length > 0 ? document.getElementById(`action-${fields.length - 1}`) : null;
+                if (lastAction) {
+                  lastAction.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }, 100);
+            }}
             className="flex items-center gap-2">
             <Plus className="size-4" />
             <span className="hidden sm:block">{tEdit("add")}</span>
@@ -82,12 +91,21 @@ const ActionUpdateSection = ({
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
             const actionType = form.watch(`${fieldArrayName}.${index}.type`);
 
+            // Vérifie si au moins un champ de l'action courante est invalide
+            const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
+            const typeError = form.getFieldState(`${fieldArrayName}.${index}.type`).invalid;
+            const attackBonusError = form.getFieldState(`${fieldArrayName}.${index}.attackBonus`).invalid;
+            const rangeError = form.getFieldState(`${fieldArrayName}.${index}.range`).invalid;
+            const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
+            const hasError = nameError || typeError || attackBonusError || rangeError || descriptionError;
+
             return (
               <AccordionItem
+                id={`action-${index}`}
                 key={field.id}
                 value={`action-${index}`}
                 className="flex flex-col gap-2">
-                <Card className="gap-2 p-0 flex-col">
+                <Card className={`gap-2 p-0 flex-col ${hasError ? "ring-destructive ring" : ""}`}>
                   <div className="relative py-3 px-3 md:py-2 md:px-6">
                     <AccordionTrigger
                       className="w-full items-center gap-2 pr-10"
@@ -119,12 +137,18 @@ const ActionUpdateSection = ({
                       <Controller
                         name={`${fieldArrayName}.${index}.name`}
                         control={form.control}
-                        render={({ field: nameField }) => (
-                          <Input
-                            {...nameField}
-                            placeholder="Nom de l'action"
-                            className="flex-1"
-                          />
+                        render={({ field: nameField, fieldState }) => (
+                          <Field
+                            data-invalid={fieldState.invalid}
+                            orientation="vertical">
+                            <Input
+                              {...nameField}
+                              className="text-sm"
+                              required
+                              aria-invalid={fieldState.invalid}
+                            />
+                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                          </Field>
                         )}
                       />
                     </Card>
@@ -133,7 +157,14 @@ const ActionUpdateSection = ({
                       <Controller
                         name={`${fieldArrayName}.${index}.type`}
                         control={form.control}
-                        render={({ field: typeField }) => <Input {...typeField} />}
+                        render={({ field: typeField }) => (
+                          <DamageTypeInput
+                            id={`${fieldArrayName}.${index}.type`}
+                            value={typeField.value ?? ""}
+                            onChange={typeField.onChange}
+                            placeholder="Feu, Froid..."
+                          />
+                        )}
                       />
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
@@ -172,7 +203,6 @@ const ActionUpdateSection = ({
                           <Textarea
                             {...descField}
                             value={descField.value || ""}
-                            placeholder="Description de l'action"
                           />
                         )}
                       />
