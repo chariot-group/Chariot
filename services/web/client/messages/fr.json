@@ -41,7 +41,12 @@
     "createGroupDialogDescription": "Donnez un nom à votre groupe pour commencer.",
     "groupName": "Nom du groupe",
     "groupNamePlaceholder": "Ex: Les Héros de la Lumière",
-    "groupCreatedSuccess": "Groupe {name} créé avec succès !"
+    "groupCreatedSuccess": "Groupe {name} créé avec succès !",
+    "createCharacter": "Créer un personnage",
+    "createCharacterDialogTitle": "Créer un nouveau personnage",
+    "createCharacterDialogDescription": "Quel type de personnage souhaitez-vous créer ?",
+    "playerCharacter": "Personnage joueur",
+    "npcCharacter": "PNJ"
   },
   "common": {
     "save": "Sauvegarder",
@@ -136,6 +141,14 @@
       "button-aria": "Naviguer vers la création de personnage"
     }
   },  
+  "characterCreate": {
+    "titlePlayer": "Créer un personnage joueur",
+    "titleNpc": "Créer un PNJ",
+    "description": "Remplissez la fiche complète du personnage. Vous pourrez modifier ces informations plus tard depuis la fiche.",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "saving": "Création..."
+  },
   "characterForm": {
     "createSuccess": "Personnage créé avec succès",
     "createError": "Échec de la création du personnage",

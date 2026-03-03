@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, PlusCircle } from "lucide-react";
 import { Group } from "@/types/campaign";
 import Link from "next/link";
 import { useAppSelector } from "@/store/hooks";
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
+import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 
 interface GroupListProps {
   groups: Group[];
@@ -131,6 +132,20 @@ export default function GroupList({
                 })
               ) : (
                 <div className="text-xs text-gray-400 px-3 py-1">{t("noCharacters")}</div>
+              )}
+              
+              {/* Create character button - only for non-archived groups */}
+              {!isArchivedSection && selectedCampaignId && (
+                <CreateCharacterDialog campaignId={selectedCampaignId} groupId={group._id}>
+                  <button
+                    type="button"
+                    aria-label={t("createCharacter")}
+                    className="text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 text-gray-400 hover:text-white"
+                  >
+                    <PlusCircle className="w-3 h-3" aria-hidden="true" />
+                    {t("createCharacter")}
+                  </button>
+                </CreateCharacterDialog>
               )}
             </CollapsibleContent>
           </Collapsible>

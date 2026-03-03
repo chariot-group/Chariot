@@ -41,7 +41,12 @@
     "createGroupDialogDescription": "Dale un nombre a tu grupo para comenzar.",
     "groupName": "Nombre del Grupo",
     "groupNamePlaceholder": "Ej: Los Héroes de la Luz",
-    "groupCreatedSuccess": "¡Grupo {name} creado con éxito!"
+    "groupCreatedSuccess": "¡Grupo {name} creado con éxito!",
+    "createCharacter": "Crear un personaje",
+    "createCharacterDialogTitle": "Crear un nuevo personaje",
+    "createCharacterDialogDescription": "¿Qué tipo de personaje quieres crear?",
+    "playerCharacter": "Personaje jugador",
+    "npcCharacter": "PNJ"
   },
   "common": {
     "save": "Guardar",
@@ -144,6 +149,14 @@
     "missingId": "No se puede actualizar: falta el identificador del personaje",
     "changesCancelled": "Cambios cancelados"
   },
+  "characterCreate": {
+    "titlePlayer": "Crear un personaje jugador",
+    "titleNpc": "Crear un PNJ",
+    "description": "Rellena la ficha completa del personaje. Podrás modificar esta información más tarde desde la ficha.",
+    "cancel": "Cancelar",
+    "create": "Crear",
+    "saving": "Creando..."
+  },  
   "zodErrors": {
     "invalidTypeReceived": "Entrada inválida",
     "required": "Requerido",

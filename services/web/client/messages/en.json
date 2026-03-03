@@ -41,7 +41,12 @@
     "createGroupDialogDescription": "Give your group a name to get started.",
     "groupName": "Group Name",
     "groupNamePlaceholder": "E.g., The Heroes of Light",
-    "groupCreatedSuccess": "Group {name} created successfully!"
+    "groupCreatedSuccess": "Group {name} created successfully!",
+    "createCharacter": "Create a character",
+    "createCharacterDialogTitle": "Create a new character",
+    "createCharacterDialogDescription": "What type of character do you want to create?",
+    "playerCharacter": "Player character",
+    "npcCharacter": "NPC"
   },
   "common": {
     "save": "Save",
@@ -135,6 +140,14 @@
       "button": "Create a character",
       "button-aria": "Navigate to character creation"
     }
+  },
+  "characterCreate": {
+    "titlePlayer": "Create a player character",
+    "titleNpc": "Create an NPC",
+    "description": "Fill in the complete character sheet. You can modify this information later from the sheet.",
+    "cancel": "Cancel",
+    "create": "Create",
+    "saving": "Creating..."
   },
   "characterForm": {
     "createSuccess": "Character created successfully",

@@ -20,7 +20,7 @@ type ZodMessages = ReturnType<typeof makeZodMessages>;
  */
 export function createCharacterSchema(zm: ZodMessages) {
     return z.object({
-        firstname: z.string({ message: zm.required() }),
+        firstname: z.string({ message: zm.required() }).trim().min(1, { message: zm.required() }),
 
         lastname: z.string().optional(),
         surname: z.string().optional(),

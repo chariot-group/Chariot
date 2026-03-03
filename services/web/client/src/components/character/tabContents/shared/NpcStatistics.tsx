@@ -16,11 +16,12 @@ interface NpcStatisticsProps {
 
 export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) {
   const t = useTranslations("characterDetail.battle");
+  const speed = npc.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
 
   const speedBadges = [
     {
       key: "walk",
-      value: npc.stats.speed.walk,
+      value: speed.walk,
       icon: (
         <Image
           src={RunningIcon}
@@ -33,7 +34,7 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
     },
     {
       key: "climb",
-      value: npc.stats.speed.climb,
+      value: speed.climb,
       icon: (
         <Mountain
           size={24}
@@ -45,7 +46,7 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
     },
     {
       key: "swim",
-      value: npc.stats.speed.swim,
+      value: speed.swim,
       icon: (
         <Waves
           size={24}
@@ -57,7 +58,7 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
     },
     {
       key: "fly",
-      value: npc.stats.speed.fly,
+      value: speed.fly,
       icon: (
         <Bird
           size={24}
@@ -69,7 +70,7 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
     },
     {
       key: "burrow",
-      value: npc.stats.speed.burrow,
+      value: speed.burrow,
       icon: (
         <Shovel
           size={24}

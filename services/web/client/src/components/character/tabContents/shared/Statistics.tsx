@@ -17,11 +17,12 @@ interface StatisticsProps {
 export default function Statistics({ player, accentColor }: StatisticsProps) {
   const t = useTranslations("characterDetail.battle");
   const tClass = useTranslations("classes");
+  const speed = player.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
 
   const speedBadges = [
     {
       key: "walk",
-      value: player.stats.speed.walk,
+      value: speed.walk,
       icon: (
         <Image
           src={RunningIcon}
@@ -34,7 +35,7 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
     },
     {
       key: "climb",
-      value: player.stats.speed.climb,
+      value: speed.climb,
       icon: (
         <Mountain
           size={24}
@@ -46,7 +47,7 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
     },
     {
       key: "swim",
-      value: player.stats.speed.swim,
+      value: speed.swim,
       icon: (
         <Waves
           size={24}
@@ -58,7 +59,7 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
     },
     {
       key: "fly",
-      value: player.stats.speed.fly,
+      value: speed.fly,
       icon: (
         <Bird
           size={24}
@@ -70,7 +71,7 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
     },
     {
       key: "burrow",
-      value: player.stats.speed.burrow,
+      value: speed.burrow,
       icon: (
         <Shovel
           size={24}

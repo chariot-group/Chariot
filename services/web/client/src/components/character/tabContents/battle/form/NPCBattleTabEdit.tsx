@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
+
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
 
@@ -63,6 +64,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
           accentColor={accentColor}
           form={form}
         />
+
         {/* Jets de sauvegarde */}
         <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
           <Card
