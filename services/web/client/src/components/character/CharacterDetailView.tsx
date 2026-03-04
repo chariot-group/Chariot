@@ -3,14 +3,10 @@
 import { User, SquarePen, X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import CharacterInventoryTabContent from "@/components/character/tabContents/inventory/CharacterInventoryTabContent";
+import { Tabs } from "@/components/ui/tabs";
 import React, { useState, useEffect } from "react";
-import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
-import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
-import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
-import CharacterMagicTabContent from "@/components/character/tabContents/magic/CharacterMagicTabContent";
-import CharacterTabs, { CharacterTab, TAB_COLORS, CHARACTER_TABS } from "@/components/character/CharacterTabs";
+import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
@@ -172,68 +168,11 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
 
         {/* Contenu des onglets - scrollable */}
         <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
-          {CHARACTER_TABS.map((tab) => (
-            <TabsContent
-              key={tab}
-              value={tab}
-              className="mt-0 focus:outline-none"
-              role="tabpanel"
-              id={`${tab}-content`}
-              aria-labelledby={tab}
-              tabIndex={0}>
-              {(() => {
-                switch (tab) {
-                  case "general":
-                    return (
-                      <CharacterGeneralTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  case "battle":
-                    return (
-                      <CharacterBattleTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  case "magic":
-                    return (
-                      <CharacterMagicTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  case "inventory":
-                    return (
-                      <CharacterInventoryTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  case "history":
-                    return (
-                      <CharacterHistoryTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  default:
-                    return null;
-                }
-              })()}
-            </TabsContent>
-          ))}
+          <CharacterTabPanels
+            character={character}
+            form={form}
+            isEditing={isEditing}
+          />
         </div>
       </Tabs>
 

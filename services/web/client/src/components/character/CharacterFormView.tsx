@@ -3,14 +3,10 @@
 import { User, X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import CharacterInventoryTabContent from "@/components/character/tabContents/inventory/CharacterInventoryTabContent";
+import { Tabs } from "@/components/ui/tabs";
 import React, { useState, useEffect } from "react";
-import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
-import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
-import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
-import CharacterMagicTabContent from "@/components/character/tabContents/magic/CharacterMagicTabContent";
-import CharacterTabs, { CharacterTab, TAB_COLORS, CHARACTER_TABS } from "@/components/character/CharacterTabs";
+import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
@@ -368,68 +364,11 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
 
         {/* Contenu des onglets - scrollable */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden w-full mx-auto px-2 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
-          {CHARACTER_TABS.map((tab) => (
-            <TabsContent
-              key={tab}
-              value={tab}
-              className="mt-0 focus:outline-none"
-              role="tabpanel"
-              id={`${tab}-content`}
-              aria-labelledby={tab}
-              tabIndex={0}>
-              {(() => {
-                switch (tab) {
-                  case "general":
-                    return (
-                      <CharacterGeneralTabContent
-                        character={placeholderCharacter}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={true}
-                      />
-                    );
-                  case "battle":
-                    return (
-                      <CharacterBattleTabContent
-                        character={placeholderCharacter}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={true}
-                      />
-                    );
-                  case "magic":
-                    return (
-                      <CharacterMagicTabContent
-                        character={placeholderCharacter}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={true}
-                      />
-                    );
-                  case "inventory":
-                    return (
-                      <CharacterInventoryTabContent
-                        character={placeholderCharacter}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={true}
-                      />
-                    );
-                  case "history":
-                    return (
-                      <CharacterHistoryTabContent
-                        character={placeholderCharacter}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={true}
-                      />
-                    );
-                  default:
-                    return null;
-                }
-              })()}
-            </TabsContent>
-          ))}
+          <CharacterTabPanels
+            character={placeholderCharacter}
+            form={form}
+            isEditing={true}
+          />
         </div>
       </Tabs>
 
@@ -449,6 +388,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
               }
             }}
             className={`
+              order-2 sm:order-0
               w-full text-base sm:text-lg font-semibold py-4 sm:py-5.5
               ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
               ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
@@ -475,7 +415,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
                 handleCancel();
               }
             }}
-            className="w-full text-base sm:text-lg font-semibold py-4 sm:py-5.5"
+            className="order-1 sm:order-0 w-full text-base sm:text-lg font-semibold py-4 sm:py-5.5"
             aria-label={tCreate("cancel")}>
             <X className="size-5" aria-hidden="true" />
             {tCreate("cancel")}

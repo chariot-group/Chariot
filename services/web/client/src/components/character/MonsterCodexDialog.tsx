@@ -155,7 +155,7 @@ export default function MonsterCodexDialog({
                     <div
                         className={`flex flex-col gap-4 w-full lg:w-1/4 overflow-hidden min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
                         {/* Barre de recherche et filtre de langue */}
-                        <div className="flex flex-col sm:flex-row gap-2 w-full">
+                        <div className="flex flex-col md:flex-row lg:flex-col gap-2 w-full">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                                 <Input
