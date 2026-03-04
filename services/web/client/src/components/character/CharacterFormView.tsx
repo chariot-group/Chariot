@@ -373,8 +373,8 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       </Tabs>
 
       {/* Footer avec boutons - fixe en bas */}
-      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent overflow-x-hidden">
-        <div className="w-full mx-auto grid grid-cols-2 sm:flex sm:flex-row-reverse gap-2 sm:gap-4">
+      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
+        <div className="w-full mx-auto flex flex-row-reverse gap-4">
           {/* Bouton Créer */}
           <Button
             type="button"
@@ -388,14 +388,13 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
               }
             }}
             className={`
-              order-2 sm:order-0
-              w-full text-base sm:text-lg font-semibold py-4 sm:py-5.5
-              ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
-              ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
-              ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
-              ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
-              ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
-            `}
+          text-base sm:text-lg font-semibold py-4 sm:py-5.5
+          ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
+          ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
+          ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
+          ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
+          ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+        `}
             aria-label={tCreate("create")}
             aria-busy={isSaving}>
             <Save className="size-5" aria-hidden="true" />
@@ -415,7 +414,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
                 handleCancel();
               }
             }}
-            className="order-1 sm:order-0 w-full text-base sm:text-lg font-semibold py-4 sm:py-5.5"
+            className="text-base sm:text-lg font-semibold py-4 sm:py-5.5"
             aria-label={tCreate("cancel")}>
             <X className="size-5" aria-hidden="true" />
             {tCreate("cancel")}
