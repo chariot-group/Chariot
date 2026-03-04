@@ -109,6 +109,19 @@ export default function GroupList({
             <CollapsibleContent
               id={`group-${group._id}-content`}
               className="mt-1 ml-3 flex flex-col gap-1">
+              {/* Create character button - only for non-archived groups */}
+              {!isArchivedSection && selectedCampaignId && (
+                <CreateCharacterDialog campaignId={selectedCampaignId} groupId={group._id}>
+                  <button
+                    type="button"
+                    aria-label={t("createCharacter")}
+                    className="text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 text-gray-400 hover:text-white"
+                  >
+                    <PlusCircle className="w-3 h-3" aria-hidden="true" />
+                    {t("createCharacter")}
+                  </button>
+                </CreateCharacterDialog>
+              )}
               {group.characters && group.characters.length > 0 ? (
                 group.characters.map((character) => {
                   const isSelected = selectedCharacterId === character._id;
@@ -132,20 +145,6 @@ export default function GroupList({
                 })
               ) : (
                 <div className="text-xs text-gray-400 px-3 py-1">{t("noCharacters")}</div>
-              )}
-              
-              {/* Create character button - only for non-archived groups */}
-              {!isArchivedSection && selectedCampaignId && (
-                <CreateCharacterDialog campaignId={selectedCampaignId} groupId={group._id}>
-                  <button
-                    type="button"
-                    aria-label={t("createCharacter")}
-                    className="text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 text-gray-400 hover:text-white"
-                  >
-                    <PlusCircle className="w-3 h-3" aria-hidden="true" />
-                    {t("createCharacter")}
-                  </button>
-                </CreateCharacterDialog>
               )}
             </CollapsibleContent>
           </Collapsible>

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import CodexService from "@/services/CodexService";
-import { Search, Loader2, BadgeCheck, FileBadge } from "lucide-react";
+import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
 
@@ -25,6 +25,7 @@ export default function MonsterCodexDialog({
     onMonsterSelected,
 }: MonsterCodexDialogProps) {
     const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
+    const tMagic = useTranslations("characterDetail.magic");
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedLang, setSelectedLang] = useState<string | null>(null);
@@ -35,6 +36,7 @@ export default function MonsterCodexDialog({
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
+    const [showMobileDetails, setShowMobileDetails] = useState(false);
     const isLoadingRef = useRef(false);
 
     const ITEMS_PER_PAGE = 20;
@@ -108,6 +110,7 @@ export default function MonsterCodexDialog({
             setSelectedLang(null);
             setSearchResults([]);
             setSelectedMonster(null);
+            setShowMobileDetails(false);
             setError(null);
             setCurrentPage(1);
             setHasMore(false);
@@ -131,6 +134,7 @@ export default function MonsterCodexDialog({
         const langToUse = selectedLang || codexMonsterItem.languages[0];
         const convertedMonster = CodexService.convertToChariotNPC(codexMonsterItem, langToUse);
         setSelectedMonster(convertedMonster);
+        setShowMobileDetails(true);
     };
 
     const handleValidate = () => {
@@ -148,9 +152,10 @@ export default function MonsterCodexDialog({
 
                 <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
                     {/* Partie gauche : Recherche et résultats */}
-                    <div className="flex flex-col gap-4 w-full lg:w-1/4 overflow-hidden min-h-0 lg:min-h-full">
+                    <div
+                        className={`flex flex-col gap-4 w-full lg:w-1/4 overflow-hidden min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
                         {/* Barre de recherche et filtre de langue */}
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                                 <Input
@@ -376,9 +381,20 @@ export default function MonsterCodexDialog({
                     </div>
 
                     {/* Partie droite : Affichage du monstre sélectionné */}
-                    <div className="flex flex-col w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4">
+                    <div
+                        className={`flex-col w-full lg:w-3/4 overflow-y-auto lg:overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="lg:hidden self-start mb-2 px-2"
+                            onClick={() => setShowMobileDetails(false)}
+                            aria-label={tMagic("backToList")}
+                        >
+                            <ArrowLeft className="size-4 mr-2" />
+                            {tMagic("backToList")}
+                        </Button>
                         {selectedMonster ? (
-                            <div className="h-full min-h-0 pr-0 lg:pr-2 overflow-hidden">
+                            <div className="h-full min-h-0 pr-0 lg:pr-2 overflow-visible lg:overflow-hidden">
                                 <MonsterPreview monster={selectedMonster} />
                             </div>
                         ) : (

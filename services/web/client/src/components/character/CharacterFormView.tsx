@@ -323,7 +323,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const handleCreate = form.handleSubmit(onCreate);
 
   return (
-    <main className="flex flex-col h-full overflow-hidden">
+    <main className="flex flex-col h-full overflow-hidden overflow-x-hidden">
       <Tabs
         defaultValue="general"
         value={activeTab}
@@ -367,7 +367,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         </div>
 
         {/* Contenu des onglets - scrollable */}
-        <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden w-full mx-auto px-2 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
           {CHARACTER_TABS.map((tab) => (
             <TabsContent
               key={tab}
@@ -434,8 +434,8 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       </Tabs>
 
       {/* Footer avec boutons - fixe en bas */}
-      <div className="shrink-0 w-full px-4 sm:px-6 md:px-10 py-5 border-t border-transparent">
-        <div className="w-full mx-auto flex flex-row-reverse gap-4">
+      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent overflow-x-hidden">
+        <div className="w-full mx-auto grid grid-cols-2 sm:flex sm:flex-row-reverse gap-2 sm:gap-4">
           {/* Bouton Créer */}
           <Button
             type="button"
@@ -449,7 +449,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
               }
             }}
             className={`
-              text-lg font-semibold py-5.5
+              w-full text-base sm:text-lg font-semibold py-4 sm:py-5.5
               ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
               ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
               ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
@@ -475,7 +475,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
                 handleCancel();
               }
             }}
-            className="text-lg font-semibold py-5.5"
+            className="w-full text-base sm:text-lg font-semibold py-4 sm:py-5.5"
             aria-label={tCreate("cancel")}>
             <X className="size-5" aria-hidden="true" />
             {tCreate("cancel")}

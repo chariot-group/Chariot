@@ -14,6 +14,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { User, Users, BookOpen } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface CreateCharacterDialogProps {
   /** The element that opens the dialog (e.g. a Button). */
@@ -31,9 +32,11 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
   const t = useTranslations("sidebar");
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { setOpenMobile } = useSidebar();
 
   const handleSelectType = (type: "players" | "npcs" | "npcs-codex") => {
     setOpen(false);
+    setOpenMobile(false);
     router.push(`/campaigns/${campaignId}/groups/${groupId}/characters/new/${type}`);
   };
 
@@ -50,7 +53,7 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
           <Button
             variant="outline"
             onClick={() => handleSelectType("players")}
-            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-blue hover:text-black hover:border-blue hover:scale-105 transition-all duration-200 shadow-md hover:shadow-blue/50"
+            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-red hover:text-white hover:border-red hover:scale-105 transition-all duration-200 shadow-md hover:shadow-red/50"
           >
             <div className="p-3 rounded-full bg-blue/10">
               <User className="w-12 h-12 text-blue" aria-hidden="true" />

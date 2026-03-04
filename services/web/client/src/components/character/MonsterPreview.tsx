@@ -213,7 +213,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
     const readOnlyForm = {} as any;
 
     return (
-        <div className="w-full flex flex-col gap-2 md:gap-4 px-1 min-h-0 h-full">
+        <div className="w-full flex flex-col gap-2 md:gap-4 px-1 min-h-0 h-full overflow-y-auto lg:overflow-hidden">
             <Card className="gap-3 py-4 px-4 md:px-6">
                 <h2 className="text-xl sm:text-2xl font-semibold purple">{tGeneral("character")}</h2>
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6">
@@ -270,14 +270,14 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
             <Tabs
                 value={activeTab}
                 onValueChange={(value) => setActiveTab(value as CharacterTab)}
-                className="flex flex-col flex-1 min-h-0 overflow-hidden ">
+                className="flex flex-col lg:flex-1 lg:min-h-0 lg:overflow-hidden">
                 <CharacterTabs
                     activeTab={activeTab}
                     listClassName="gap-1 flex-nowrap w-full overflow-x-auto pb-1 pr-1"
                     triggerClassName="grow-0 shrink-0"
                 />
 
-                <div className="flex-1 min-h-0 overflow-y-auto pr-1 mt-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+                <div className="mt-1 lg:flex-1 lg:min-h-0 lg:overflow-y-auto pr-0 lg:pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
                     {CHARACTER_TABS.map((tab) => (
                         <TabsContent key={tab} value={tab} className="mt-0 focus:outline-none">
                             {(() => {

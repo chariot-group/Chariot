@@ -6,6 +6,7 @@ import MonsterCodexDialog from "@/components/character/MonsterCodexDialog";
 import { NPC } from "@/types/character";
 import { useAppDispatch } from "@/store/hooks";
 import { clearNpcCodexDraft, setNpcCodexDraft } from "@/store/slices/codexDraftSlice";
+import { useSidebar } from "@/components/ui/sidebar";
 
 /**
  * Page for creating an NPC from Codex
@@ -16,6 +17,7 @@ export default function CreateNpcFromCodexPage() {
   const router = useRouter();
   const params = useParams();
   const dispatch = useAppDispatch();
+  const { setOpenMobile } = useSidebar();
   const [isDialogOpen, setIsDialogOpen] = useState(true);
 
   const campaignId = params.idCampaign as string;
@@ -28,6 +30,7 @@ export default function CreateNpcFromCodexPage() {
 
   const handleMonsterSelected = (monster: Partial<NPC>) => {
     dispatch(setNpcCodexDraft(monster));
+    setOpenMobile(false);
 
     // Rediriger vers la page de création de NPC (lecture des données via store mémoire)
     router.push(`/campaigns/${campaignId}/groups/${groupId}/characters/new/npcs?fromCodex=1`);
