@@ -14,6 +14,9 @@ import CharacterTabs, { CharacterTab, TAB_COLORS, CHARACTER_TABS } from "@/compo
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
+import { useMemo, useRef } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -32,6 +35,8 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
+  const reduxCodexDraft = useAppSelector(selectNpcCodexDraft);
 
   const campaignId = params.idCampaign as string;
   const resolvedGroupId = groupId || (params.idGroup as string);
@@ -39,6 +44,19 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
   const tabFromUrl = (searchParams.get("tab") as CharacterTab) || "general";
   const [activeTab, setActiveTab] = useState<CharacterTab>(tabFromUrl);
+
+  // Lire les données pré-remplies depuis l'URL (pour NPC depuis codex)
+  const codexDataParam = searchParams.get("codexData");
+
+  const codexData = useMemo(() => {
+    if (reduxCodexDraft) return reduxCodexDraft;
+    if (!codexDataParam) return null;
+    try {
+      return JSON.parse(decodeURIComponent(codexDataParam));
+    } catch {
+      return null;
+    }
+  }, [reduxCodexDraft, codexDataParam]);
 
   // Synchroniser l'état local avec l'URL au chargement
   useEffect(() => {
@@ -95,6 +113,58 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     charisma: false,
   };
 
+  const defaultNpcSkills = { ...defaultMasteries };
+
+  const getAbilityModifier = (value?: number): number => Math.floor(((value ?? 10) - 10) / 2);
+
+  const npcCodexDefaults = useMemo(() => {
+    if (!codexData) return null;
+
+    const abilityScores = {
+      strength: codexData.stats?.abilityScores?.strength ?? 10,
+      dexterity: codexData.stats?.abilityScores?.dexterity ?? 10,
+      constitution: codexData.stats?.abilityScores?.constitution ?? 10,
+      intelligence: codexData.stats?.abilityScores?.intelligence ?? 10,
+      wisdom: codexData.stats?.abilityScores?.wisdom ?? 10,
+      charisma: codexData.stats?.abilityScores?.charisma ?? 10,
+    };
+
+    const codexSavingThrows = codexData.stats?.savingThrows || {};
+    const dexterityModifier = getAbilityModifier(abilityScores.dexterity);
+    const baseArmorClass = codexData.stats?.armorClass ?? 0;
+    const computedArmorClass = Math.max(baseArmorClass, 10 + dexterityModifier);
+    const normalizedSavingThrows = {
+      strength: Math.max(0, (codexSavingThrows.strength ?? getAbilityModifier(abilityScores.strength)) - getAbilityModifier(abilityScores.strength)),
+      dexterity: Math.max(0, (codexSavingThrows.dexterity ?? getAbilityModifier(abilityScores.dexterity)) - getAbilityModifier(abilityScores.dexterity)),
+      constitution: Math.max(0, (codexSavingThrows.constitution ?? getAbilityModifier(abilityScores.constitution)) - getAbilityModifier(abilityScores.constitution)),
+      intelligence: Math.max(0, (codexSavingThrows.intelligence ?? getAbilityModifier(abilityScores.intelligence)) - getAbilityModifier(abilityScores.intelligence)),
+      wisdom: Math.max(0, (codexSavingThrows.wisdom ?? getAbilityModifier(abilityScores.wisdom)) - getAbilityModifier(abilityScores.wisdom)),
+      charisma: Math.max(0, (codexSavingThrows.charisma ?? getAbilityModifier(abilityScores.charisma)) - getAbilityModifier(abilityScores.charisma)),
+    };
+
+    return {
+      ...codexData,
+      groups: resolvedGroupId ? [resolvedGroupId] : codexData.groups || [],
+      stats: {
+        ...(codexData.stats || {}),
+        armorClass: computedArmorClass,
+        abilityScores,
+        speed: {
+          walk: codexData.stats?.speed?.walk ?? 30,
+          climb: codexData.stats?.speed?.climb ?? 0,
+          swim: codexData.stats?.speed?.swim ?? 0,
+          fly: codexData.stats?.speed?.fly ?? 0,
+          burrow: codexData.stats?.speed?.burrow ?? 0,
+        },
+        savingThrows: normalizedSavingThrows,
+        skills: {
+          ...defaultNpcSkills,
+          ...(codexData.stats?.skills || {}),
+        },
+      },
+    };
+  }, [codexData, resolvedGroupId]);
+
   // Default values for a new character with the group pre-assigned
   const defaultValues = characterType === "players"
     ? {
@@ -108,7 +178,9 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         masteriesAbility: defaultMasteriesAbility,
       },
     }
-    : {
+    : npcCodexDefaults ? {
+      ...npcCodexDefaults,
+    } : {
       groups: resolvedGroupId ? [resolvedGroupId] : [],
       profile: {
         alignment: "True Neutral",
@@ -125,6 +197,20 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       router.push(`/campaigns/${campaignId}/groups/${resolvedGroupId}/characters/${createdCharacter._id}`);
     },
   });
+
+  const hasAppliedCodexDefaultsRef = useRef(false);
+
+  useEffect(() => {
+    if (characterType !== "npcs") return;
+    if (!npcCodexDefaults) return;
+    if (hasAppliedCodexDefaultsRef.current) return;
+
+    hasAppliedCodexDefaultsRef.current = true;
+    form.reset(npcCodexDefaults as any);
+    if (reduxCodexDraft) {
+      dispatch(clearNpcCodexDraft());
+    }
+  }, [characterType, npcCodexDefaults, form, reduxCodexDraft, dispatch]);
 
   // Create a placeholder character object for the tab content components
   // This is needed because the tab components expect a character prop

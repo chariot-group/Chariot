@@ -9,6 +9,7 @@ import groupReducer from './slices/groupSlice';
 import sidebarReducer from './slices/sidebarSlice';
 import characterReducer from './slices/characterSlice';
 import userReducer from './slices/userSlice';
+import codexDraftReducer from './slices/codexDraftSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
 import { UserState } from '@/types/user';
 
@@ -102,6 +103,7 @@ const rootReducer = combineReducers({
     sidebar: sidebarReducer,
     character: characterReducer,
     user: userReducer,
+    codexDraft: codexDraftReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

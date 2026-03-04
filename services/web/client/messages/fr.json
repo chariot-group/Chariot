@@ -46,7 +46,8 @@
     "createCharacterDialogTitle": "Créer un nouveau personnage",
     "createCharacterDialogDescription": "Quel type de personnage souhaitez-vous créer ?",
     "playerCharacter": "Personnage joueur",
-    "npcCharacter": "PNJ"
+    "npcCharacter": "PNJ",
+    "npcCodexCharacter": "PNJ depuis le Codex"
   },
   "common": {
     "save": "Sauvegarder",
@@ -677,6 +678,37 @@
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+"
+      },
+      "monsterCodexDialog": {
+        "title": "Rechercher un monstre dans Codex",
+        "searchPlaceholder": "Rechercher un monstre...",
+        "noResults": "Aucun monstre trouvé",
+        "searching": "Recherche en cours...",
+        "selectMonster": "Sélectionnez un monstre pour voir les détails",
+        "validate": "Utiliser ce monstre",
+        "cancel": "Annuler",
+        "loadMore": "Charger plus",
+        "error": "Erreur lors de la recherche",
+        "validatedByChariot": "Validé par Chariot",
+        "srdContent": "Contenu SRD (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 Toutes les langues",
+          "fr": "🇫🇷 Français",
+          "en": "🇬🇧 English",
+          "es": "🇪🇸 Español"
+        },
+        "resultsCount": "{count} résultat{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+",
+        "monsterInfo": "CR {cr} • {type}",
+        "preview": {
+          "challengeRatingShort": "FP",
+          "experiencePointsShort": "XP",
+          "calculatedArmorClass": "CA calculée",
+          "sourceArmorClass": "source: {value}",
+          "hitPointsDice": "Dés de points de vie",
+          "estimatedProficiencyBonus": "Bonus de maîtrise (estimé)"
+        }
       }
     }
   },

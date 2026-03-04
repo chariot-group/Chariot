@@ -46,7 +46,8 @@
     "createCharacterDialogTitle": "Create a new character",
     "createCharacterDialogDescription": "What type of character do you want to create?",
     "playerCharacter": "Player character",
-    "npcCharacter": "NPC"
+    "npcCharacter": "NPC",
+    "npcCodexCharacter": "NPC from Codex"
   },
   "common": {
     "save": "Save",
@@ -672,6 +673,37 @@
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+"
+      },
+      "monsterCodexDialog": {
+        "title": "Search for a monster in Codex",
+        "searchPlaceholder": "Search for a monster...",
+        "noResults": "No monsters found",
+        "searching": "Searching...",
+        "selectMonster": "Select a monster to view details",
+        "validate": "Use this monster",
+        "cancel": "Cancel",
+        "loadMore": "Load more",
+        "error": "Error while searching",
+        "validatedByChariot": "Validated by Chariot",
+        "srdContent": "SRD Content (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 All languages",
+          "fr": "🇫🇷 French",
+          "en": "🇬🇧 English",
+          "es": "🇪🇸 Spanish"
+        },
+        "resultsCount": "{count} result{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+",
+        "monsterInfo": "CR {cr} • {type}",
+        "preview": {
+          "challengeRatingShort": "CR",
+          "experiencePointsShort": "XP",
+          "calculatedArmorClass": "Calculated AC",
+          "sourceArmorClass": "source: {value}",
+          "hitPointsDice": "Hit points dice",
+          "estimatedProficiencyBonus": "Estimated proficiency bonus"
+        }
       }
     }
   },
