@@ -8,12 +8,12 @@ import { useUser } from "@/hooks/useUser";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { Eye, EyeOff, ShoppingCart, SquarePen, User } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useProfileForm } from "@/hooks/useProfileForm";
 import ReadProfile from "@/components/profile/ReadProfile";
 import UpdateProfile from "@/components/profile/UpdateProfile";
@@ -21,10 +21,12 @@ import UpdateProfile from "@/components/profile/UpdateProfile";
 export default function ProfilePage() {
   const pathname = usePathname();
   const locale = pathname.split("/")[1] || "fr";
-  const { user, loading } = useUser({ autoFetch: true });
+  const { user, loading, refreshUser } = useUser({ autoFetch: true });
+  const hasRefreshedOnOpenRef = useRef(false);
   const [viewNewPassword, setViewNewPassword] = useState<boolean>(false);
   const [viewConfirmNewPassword, setViewConfirmNewPassword] = useState<boolean>(false);
   const t = useTranslations("ProfilePage");
+  const router = useRouter();
 
   const tEdit = useTranslations("ProfilePage.editProfile");
   const tAuth = useTranslations("auth");
@@ -45,14 +47,22 @@ export default function ProfilePage() {
     if (loading) return;
 
     if (!user) {
-      // Utiliser Next.js router au lieu de window.location pour éviter les boucles
       const timer = setTimeout(() => {
-        window.location.href = `/${locale}/welcome`;
+        router.push(`/${locale}/welcome`);
       }, 500); // Délai de grâce pour attendre le chargement
 
       return () => clearTimeout(timer);
     }
   }, [user, loading, locale]);
+
+  useEffect(() => {
+    if (loading || !user || hasRefreshedOnOpenRef.current) return;
+
+    hasRefreshedOnOpenRef.current = true;
+    refreshUser().catch(() => {
+      hasRefreshedOnOpenRef.current = false;
+    });
+  }, [loading, refreshUser, user]);
 
   return (
     <main
@@ -421,10 +431,8 @@ export default function ProfilePage() {
                 e.preventDefault();
                 setIsUpdating(true);
               }
-            }}
-            aria-label={tEdit("updateProfileLabel")}>
-            <SquarePen aria-hidden="true" />               {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
-
+            }}>
+            <SquarePen aria-hidden="true" /> {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
           </Button>
         )}
       </div>

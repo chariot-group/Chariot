@@ -14,6 +14,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { SeederModule } from '@/seeder/seeder.module';
 import { UserModule } from '@/resources/user/user.module';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
+import { StripeModule } from '@/resources/stripe/stripe.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
     MetricsModule,
     SeederModule,
     PrometheusModule.register(),
-    UserModule
+    UserModule,
+    StripeModule
   ],
   controllers: [AppController],
   providers: [

@@ -58,6 +58,9 @@ services:
       KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KEYCLOAK_URL: ${KEYCLOAK_URL}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      SHOWCASE_URL: ${SHOWCASE_URL}
     depends_on:
       chariot-mongo:
         condition: service_healthy

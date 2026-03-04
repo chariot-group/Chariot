@@ -21,7 +21,7 @@ services:
       GATEWAY_RATE_LIMIT_WINDOW: ${GATEWAY_RATE_LIMIT_WINDOW:-60000}
       # Backend services - add more as needed with pattern {SERVICE_NAME}_SERVICE_URL
       ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL:-http://chariot-adventure:9000}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000,http://localhost:3001}
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}

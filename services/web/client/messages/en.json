@@ -53,6 +53,11 @@
     "profile": "Profile",
     "logout": "Log Out"
   },
+  "payment": {
+    "reloadSuccess": "Your account was reloaded with {chars} chars.",
+    "reloadSuccessUnknown": "Your payment is confirmed, your account reload is in progress.",
+    "reloadPending": "Payment confirmed, balance update in progress."
+  },
   "ProfilePage": {
     "pageTitle": "User Profile",
     "changePasswordTitle": "Change Password",
