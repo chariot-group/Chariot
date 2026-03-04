@@ -222,7 +222,9 @@
     "battle": {
       "stats": "Stats",
       "hitLevel": "Level",
-      "hitDice": "Hit Dice:",
+      "hitDice": "Hit Dice",
+      "bonusHealthDice": "Bonus Health Dice",
+      "multiplicator": "Multiplicator",
       "hitPointsRoll": "Hit Points Roll:",
       "savingThrows": "Saving Throws",
       "deathSaves": "Death Saves",

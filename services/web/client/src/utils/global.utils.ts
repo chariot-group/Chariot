@@ -59,7 +59,6 @@ export function calculateMasteryLevel(masteryLevel: number, skills: number, prof
     let result: number = 0;
     if (skills!) {
         result = skills;
-        console.log(skills!, result);
     } else {
         if (!proficiencyBonus || !masteriesAbility) return 0;
         let value = calculateAbilityBonus(masteriesAbility) + proficiencyBonus * 2;
@@ -71,6 +70,33 @@ export function calculateMasteryLevel(masteryLevel: number, skills: number, prof
     let arroundedResult = Math.floor(result);
     return arroundedResult;
 }
+
+/**
+    * Calcule le bonus total d'une compétence selon son niveau de maîtrise
+    * @param masteryLevel 0 = non maîtrisé, 1 = demi-maîtrise, 2 = maîtrisé, 3 = expertise
+    * @param abilityScore Score de la caractéristique
+    * @param proficiencyBonus Bonus de maîtrise
+    * @returns Le bonus total calculé
+*/
+export function calculateSkillBonus(masteryLevel: number, abilityScore: number, proficiencyBonus: number): number {
+    const abilityModifier = Math.floor((abilityScore - 10) / 2);
+
+    if (masteryLevel === 0) {
+        // Pas de maîtrise : seulement le modificateur
+        return abilityModifier;
+    } else if (masteryLevel === 1) {
+        // Demi-maîtrise : modificateur + (bonus de maîtrise / 2 arrondi à l'inférieur)
+        return abilityModifier + Math.floor(proficiencyBonus / 2);
+    } else if (masteryLevel === 2) {
+        // Maîtrise : modificateur + bonus de maîtrise
+        return abilityModifier + proficiencyBonus;
+    } else if (masteryLevel === 3) {
+        // Expertise : modificateur + (bonus de maîtrise * 2)
+        return abilityModifier + proficiencyBonus * 2;
+    }
+
+    return abilityModifier;
+};
 
 /**
  * Vérifie si un personnage est un joueur

@@ -42,13 +42,14 @@ export default function SidebarEnvironment() {
       <CollapsibleTrigger
         aria-expanded={open}
         aria-controls="spaces-content"
-        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:border ${open ? "bg-white" : ""}`}>
-        <span className={`text-sm group-hover:font-bold group-hover:text-black ${open ? "text-black font-bold" : ""}`}>
+        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/environment focus-visible:border ${open ? "bg-white" : ""}`}>
+        <span
+          className={`text-sm group-hover/environment:font-bold group-hover/environment:text-black ${open ? "text-black font-bold" : ""}`}>
           {t("yourSpaces")}
         </span>
         <ChevronRight
           aria-hidden="true"
-          className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${open ? "rotate-90 text-black" : ""}`}
+          className={`w-5 h-5 group-hover/environment:text-black transition-all duration-100 ${open ? "rotate-90 text-black" : ""}`}
         />
       </CollapsibleTrigger>
       <CollapsibleContent

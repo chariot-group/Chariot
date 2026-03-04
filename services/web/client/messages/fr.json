@@ -222,7 +222,9 @@
     "battle": {
       "stats": "Statistiques",
       "hitLevel": "Niveau",
-      "hitDice": "Dés de Vie :",
+      "hitDice": "Dé de Vie",
+      "bonusHealthDice": "Bonus de vie",
+      "multiplicator": "Multiplicateur",
       "hitPointsRoll": "Dés de points de Vie :",
       "savingThrows": "Jets de sauvegarde",
       "deathSaves": "JDS contre la Mort",

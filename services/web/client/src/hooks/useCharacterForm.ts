@@ -189,6 +189,15 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             setIsSaving(true);
             setSuccess(false);
 
+            // Valider le formulaire avant de poursuivre (tous les champs)
+            form.clearErrors();
+            const isValid = await form.trigger(undefined, { shouldFocus: true });
+            if (!isValid) {
+                toast.error(t('updateError'));
+                setIsSaving(false);
+                return;
+            }
+
             // Transformer les groups en tableau d'IDs si nécessaire
             const sanitizedData = { ...data } as any;
             if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {

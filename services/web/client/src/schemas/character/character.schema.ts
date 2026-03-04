@@ -25,11 +25,10 @@ export function createCharacterSchema(zm: ZodMessages) {
         lastname: z.string().optional(),
         surname: z.string().optional(),
         avatar: z.string().optional(),
-        groups: z.array(z.string()).optional(),
 
         stats: StatsSchema.optional(),
         affinities: AffinitiesSchema.optional(),
-        abilities: z.array(AbilitySchema).optional(),
+        abilities: z.array(AbilitySchema(zm)).optional(),
         spellcasting: z.array(SpellcastingSchema).optional(),
         appearance: AppearanceSchema.optional(),
         background: BackgroundSchema.optional(),

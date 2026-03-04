@@ -6,11 +6,13 @@ import { makeZodMessages } from '@/lib/zodErrorMap';
 type ZodMessages = ReturnType<typeof makeZodMessages>;
 
 // ===== NPC Actions =====
-export const ActionsSchema = z.object({
-    standard: z.array(ActionSchema).optional(),
-    legendary: z.array(ActionSchema).optional(),
-    lair: z.array(ActionSchema).optional(),
-});
+export function ActionsSchema(zm: ZodMessages) {
+    return z.object({
+        standard: z.array(ActionSchema(zm)).optional(),
+        legendary: z.array(ActionSchema(zm)).optional(),
+        lair: z.array(ActionSchema(zm)).optional(),
+    });
+};
 
 // ===== Challenge =====
 export const ChallengeSchema = z.object({
@@ -32,7 +34,7 @@ export const NPCProfileSchema = z.object({
  */
 export function createNpcSchema(zm: ZodMessages) {
     return createCharacterSchema(zm).extend({
-        actions: ActionsSchema.optional(),
+        actions: ActionsSchema(zm).optional(),
         challenge: ChallengeSchema.optional(),
         profile: NPCProfileSchema.optional(),
         hitPointsRoll: z.string().optional(),

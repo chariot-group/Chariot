@@ -82,8 +82,6 @@ export function useProfileForm() {
             setIsUpdating(false);
             toast.success(t('successMessage'));
         } catch (err) {
-            console.log('response', err);
-
             // Check for specific error messages
             if (err instanceof Error) {
                 // Email already in use

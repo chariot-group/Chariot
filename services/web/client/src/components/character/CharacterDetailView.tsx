@@ -14,6 +14,7 @@ import { isPlayer } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export type CharacterTab = "general" | "battle" | "magic" | "inventory" | "history";
 
@@ -57,7 +58,6 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     router.replace(`?${params.toString()}`, { scroll: false });
   };
 
-
   // Déterminer le type de personnage
   const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
 
@@ -73,7 +73,6 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     },
   });
 
-
   return (
     <main className="flex flex-col h-full overflow-hidden">
       <Tabs
@@ -84,75 +83,61 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
         {/* Header avec onglets et infos du personnage */}
         <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
-            <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-0 xl:gap-8">
-              {/* Onglets */}
-              <TabsList
-                className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
-                role="tablist"
-                aria-label={t("tabs.general")}>
-                {(["general", "battle", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
-                  <TabsTrigger
-                    key={tab}
-                    value={tab}
-                    role="tab"
-                    aria-selected={activeTab === tab}
-                    aria-controls={`${tab}-content`}
-                    className={`
-                                            flex-none p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
-                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                                            ${activeTab === tab
-                        ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
-                        : `text-white bg-gray hover:bg-gray-middle`
-                      }
-                                        `}>
-                    {t(`tabs.${tab}`)}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
+            <div className="justify-between w-full">
               {/* Infos du personnage */}
-              <div className="flex flex-row items-end gap-3 px-1.5 sm:px-0 sm:gap-4 md:gap-5 shrink-0 w-full xl:w-auto">
-                <div className="text-left xl:text-right mb-2 flex-1">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">
-                    {character.firstname} {character.lastname}
-                  </h1>
-                  {isPlayer(character) ? (
-                    <React.Fragment>
-                      <p className="text-sm sm:text-base text-white font-semibold">
-                        {character.class.map((cls: { name: string; level: number }, index: number) => (
-                          <span key={index}>
-                            {tClass(cls.name)} Niv {cls.level}
-                            {index < character.class.length - 1 && " / "}
-                          </span>
-                        ))}
+              <div className="flex flex-row items-end justify-between gap-4 xl:mb-0 mb-2">
+                <div className="flex flex-col items-start xl:items-end text-left xl:text-right xl:max-w-full lg:max-w-3/4 md:max-w-2/3 w-full">
+                  <Tooltip>
+                    <TooltipTrigger className="cursor-help w-full">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-white text-start xl:text-end truncate">
+                        {character.firstname} {character.lastname}
+                      </h1>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {character.firstname} {character.lastname}
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <div className="flex flex-col gap-1">
+                    <h2 className="text-sm sm:text-base text-gray-light italic truncate">{character.surname}</h2>
+                    {isPlayer(character) ? (
+                      <React.Fragment>
+                        <p className="text-sm sm:text-base text-white font-semibold">
+                          {character.class.map((cls: { name: string; level: number }, index: number) => (
+                            <span key={index}>
+                              {tClass(cls.name)} Niv {cls.level}
+                              {index < character.class.length - 1 && " / "}
+                            </span>
+                          ))}
+                        </p>
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment>
+                        <p className="text-sm sm:text-base text-white font-semibold">
+                          <abbr
+                            title={t("npc.challengeRating")}
+                            className="no-underline cursor-help">
+                            {t("npc.challengeRatingAbbr")}
+                          </abbr>{" "}
+                          {character.challenge.challengeRating < 1
+                            ? character.challenge.challengeRating === 0.125
+                              ? "1/8"
+                              : character.challenge.challengeRating === 0.25
+                                ? "1/4"
+                                : character.challenge.challengeRating === 0.5
+                                  ? "1/2"
+                                  : character.challenge.challengeRating
+                            : character.challenge.challengeRating}{" "}
+                          ({character.challenge.experiencePoints} XP)
+                        </p>
+                      </React.Fragment>
+                    )}
+                    {character.groups && character.groups.length > 0 && (
+                      <p className="text-xs sm:text-sm text-white">
+                        {t("group")} : {character.groups[0].label}
                       </p>
-                    </React.Fragment>
-                  ) : (
-                    <React.Fragment>
-                      <p className="text-sm sm:text-base text-white font-semibold">
-                        <abbr
-                          title={t("npc.challengeRating")}
-                          className="no-underline cursor-help">
-                          {t("npc.challengeRatingAbbr")}
-                        </abbr>{" "}
-                        {character.challenge.challengeRating < 1
-                          ? character.challenge.challengeRating === 0.125
-                            ? "1/8"
-                            : character.challenge.challengeRating === 0.25
-                              ? "1/4"
-                              : character.challenge.challengeRating === 0.5
-                                ? "1/2"
-                                : character.challenge.challengeRating
-                          : character.challenge.challengeRating}{" "}
-                        ({character.challenge.experiencePoints} XP)
-                      </p>
-                    </React.Fragment>
-                  )}
-                  {character.groups && character.groups.length > 0 && (
-                    <p className="text-xs sm:text-sm text-white">
-                      {t("group")} : {character.groups[0].label}
-                    </p>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Photo de profil */}
@@ -166,6 +151,32 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                   />
                 </div>
               </div>
+
+              {/* Onglets */}
+              <TabsList
+                className="bg-transparent gap-1 flex-wrap justify-start self-start xl:self-end"
+                role="tablist"
+                aria-label={t("tabs.general")}>
+                {(["general", "battle", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
+                  <TabsTrigger
+                    key={tab}
+                    value={tab}
+                    role="tab"
+                    aria-selected={activeTab === tab}
+                    aria-controls={`${tab}-content`}
+                    className={`
+                      text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
+                      focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white grow-0
+                      ${
+                        activeTab === tab
+                          ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
+                          : `text-white bg-gray hover:bg-gray-middle`
+                      }
+                    `}>
+                    {t(`tabs.${tab}`)}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
             </div>
           </div>
         </div>
@@ -238,7 +249,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       </Tabs>
 
       {/* Footer avec boutons - fixe en bas */}
-      <div className="shrink-0 w-full px-4 sm:px-6 md:px-10 py-5 border-t border-transparent">
+      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
         <div className="w-full mx-auto flex flex-row-reverse gap-4">
           {isEditing ? (
             <>
@@ -264,7 +275,10 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 `}
                 aria-label={t("saveChanges")}
                 aria-busy={isSaving}>
-                <Save className="size-5" aria-hidden="true" />
+                <Save
+                  className="size-5"
+                  aria-hidden="true"
+                />
                 {isSaving ? t("saving") : t("saveChanges")}
               </Button>
               <Button
@@ -285,7 +299,10 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 }}
                 className="text-lg font-semibold py-5.5"
                 aria-label={t("cancel")}>
-                <X className="size-5" aria-hidden="true" />
+                <X
+                  className="size-5"
+                  aria-hidden="true"
+                />
                 {t("cancel")}
               </Button>
             </>
@@ -310,7 +327,10 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
               `}
               aria-label={t("editCharacter")}>
-              <SquarePen className="size-5" aria-hidden="true" />
+              <SquarePen
+                className="size-5"
+                aria-hidden="true"
+              />
               {t("editCharacter")}
             </Button>
           )}

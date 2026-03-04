@@ -31,7 +31,7 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
       <div className="flex flex-row justify-between">
         <h2
           id={headingId}
-          className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+          className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
           {title}
         </h2>
         <div className="flex justify-end shrink-0">

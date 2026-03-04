@@ -11,7 +11,7 @@ export class KeycloakService {
     private adminClient: KcAdminClient;
 
     constructor(private configService: ConfigService) {
-        const keycloakUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL', 'http://localhost:8080');
+        const keycloakUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL', 'http://keycloak:8080/auth');
 
         this.adminClient = new KcAdminClient({
             baseUrl: keycloakUrl,
@@ -86,7 +86,7 @@ export class KeycloakService {
             this.logger.debug(`Verifying current password for user: ${username}`);
 
             const testClient = new KcAdminClient({
-                baseUrl: this.configService.get<string>('KEYCLOAK_INTERNAL_URL', 'http://localhost:8080'),
+                baseUrl: this.configService.get<string>('KEYCLOAK_INTERNAL_URL', 'http://keycloak:8080/auth'),
                 realmName: realm,
             });
 
