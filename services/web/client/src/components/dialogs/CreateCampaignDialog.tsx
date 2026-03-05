@@ -19,6 +19,9 @@ import { useCampaigns } from "@/hooks/useCampaigns";
 import { showToast } from "@/lib/toast";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
+import { useAppDispatch } from "@/store/hooks";
+import { setSelectedCampaign } from "@/store/slices/campaignContextSlice";
+import { setContextMode } from "@/store/slices/environmentSlice";
 
 interface CreateCampaignDialogProps {
     /** The element that opens the dialog (e.g. a Button). */
@@ -28,6 +31,7 @@ interface CreateCampaignDialogProps {
 export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
     const t = useTranslations("sidebar");
     const tCommon = useTranslations("common");
+    const dispatch = useAppDispatch();
     const [open, setOpen] = useState(false);
     const [campaignName, setCampaignName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
@@ -48,6 +52,9 @@ export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
                     archived: [],
                 },
             });
+
+            dispatch(setSelectedCampaign(newCampaign._id));
+            dispatch(setContextMode("gm"));
 
             // Rafraîchir la liste des campagnes avant d'afficher le succès
             await refreshCampaigns();
@@ -79,7 +86,7 @@ export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
                 <DialogHeader>
                     <DialogTitle>{t("createCampaignDialogTitle")}</DialogTitle>
                     <DialogDescription>{t("createCampaignDialogDescription")}</DialogDescription>

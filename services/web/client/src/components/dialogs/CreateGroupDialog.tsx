@@ -19,6 +19,10 @@ import { showToast } from "@/lib/toast";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { Group } from "@/types/campaign";
+import { usePathname, useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
+import { setOpenGroup } from "@/store/slices/groupSlice";
 
 interface CreateGroupDialogProps {
     /** The element that opens the dialog (e.g. a Button). */
@@ -30,6 +34,10 @@ interface CreateGroupDialogProps {
 export function CreateGroupDialog({ children, onCreateGroup, onRefreshGroups }: CreateGroupDialogProps) {
     const t = useTranslations("sidebar");
     const tCommon = useTranslations("common");
+    const dispatch = useAppDispatch();
+    const router = useRouter();
+    const pathname = usePathname();
+    const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
     const [open, setOpen] = useState(false);
     const [groupName, setGroupName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
@@ -48,6 +56,14 @@ export function CreateGroupDialog({ children, onCreateGroup, onRefreshGroups }: 
 
             // Rafraîchir la liste des groupes (même pattern que pour les campagnes)
             await onRefreshGroups();
+
+            dispatch(setOpenGroup(newGroup._id));
+
+            if (selectedCampaignId && newGroup.characters?.length > 0) {
+                const locale = pathname?.split("/")[1] || "fr";
+                router.push(`/${locale}/campaigns/${selectedCampaignId}/groups/${newGroup._id}/characters/${newGroup.characters[0]._id}`);
+            }
+
             showToast(t("groupCreatedSuccess", { name: newGroup.label }), "success");
             setOpen(false);
             setGroupName("");
@@ -76,7 +92,7 @@ export function CreateGroupDialog({ children, onCreateGroup, onRefreshGroups }: 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
                 <DialogHeader>
                     <DialogTitle>{t("createGroupDialogTitle")}</DialogTitle>
                     <DialogDescription>{t("createGroupDialogDescription")}</DialogDescription>

@@ -166,8 +166,6 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
                 );
             }
 
-            console.log('🔍 [useCharacterForm] Données AVANT envoi à l\'API:', JSON.stringify(sanitizedData, null, 2));
-
             const createdCharacter = await CharacterService.createCharacter(type, sanitizedData as any);
 
             toast.success(t('createSuccess'));
