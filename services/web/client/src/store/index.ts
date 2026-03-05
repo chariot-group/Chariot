@@ -1,15 +1,15 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, Persistor, createTransform } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import environmentReducer from './slices/environmentSlice';
-import campaignReducer from './slices/campaignSlice';
-import actionButtonReducer from './slices/actionButtonSlice';
-import campaignContextReducer from './slices/campaignContextSlice';
-import groupReducer from './slices/groupSlice';
-import sidebarReducer from './slices/sidebarSlice';
-import characterReducer from './slices/characterSlice';
-import userReducer from './slices/userSlice';
-import codexDraftReducer from './slices/codexDraftSlice';
+import environmentReducer from '@/store/slices/environmentSlice';
+import campaignReducer from '@/store/slices/campaignSlice';
+import actionButtonReducer from '@/store/slices/actionButtonSlice';
+import campaignContextReducer from '@/store/slices/campaignContextSlice';
+import groupReducer from '@/store/slices/groupSlice';
+import sidebarReducer from '@/store/slices/sidebarSlice';
+import characterReducer from '@/store/slices/characterSlice';
+import userReducer from '@/store/slices/userSlice';
+import codexDraftReducer from '@/store/slices/codexDraftSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
 import { UserState } from '@/types/user';
 
