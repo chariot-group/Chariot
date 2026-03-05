@@ -13,6 +13,7 @@ import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
+import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -190,7 +191,12 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     defaultValues,
     onSuccess: (createdCharacter) => {
       // Redirect to the newly created character's page
-      router.push(`/campaigns/${campaignId}/groups/${resolvedGroupId}/characters/${createdCharacter._id}`);
+      if (campaignId && resolvedGroupId) {
+        router.push(`/campaigns/${campaignId}/groups/${resolvedGroupId}/characters/${createdCharacter._id}`);
+      } else {
+        dispatch(upsertCharacterWithoutGroup(createdCharacter));
+        router.push(`/characters/${createdCharacter._id}`);
+      }
     },
   });
 

@@ -2,12 +2,13 @@
 
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import { useEffect, useRef, useCallback } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, PlusCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useAppDispatch } from "@/store/hooks";
+import { useSidebar } from "@/components/ui/sidebar";
 
 /**
  * Component to display players without group with infinite scroll
@@ -19,6 +20,7 @@ export default function CharactersWithoutGroupList() {
 
   const observerTarget = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
+  const { setOpenMobile } = useSidebar();
 
   const pathname = usePathname();
 
@@ -75,6 +77,20 @@ export default function CharactersWithoutGroupList() {
       className="flex gap-3 flex-col overflow-y-auto px-3 py-4"
       aria-label={t("playerNavigation")}>
       <h2 className="text-lg text-white">{t("yourCharacters")}</h2>
+
+      {/* Create character button */}
+      <Link
+        href="/characters/new/players"
+        onClick={() => setOpenMobile(false)}
+        aria-label={t("createCharacter")}
+        className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+        {t("createCharacter")}
+        <PlusCircleIcon
+          aria-hidden="true"
+          className="w-5 h-5"
+        />
+      </Link>
+
       {characters.map((character) => {
         const isSelected = selectedCharacterId === character._id;
         return (
