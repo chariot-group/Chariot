@@ -421,10 +421,8 @@ export default function ProfilePage() {
                 e.preventDefault();
                 setIsUpdating(true);
               }
-            }}
-            aria-label={tEdit("updateProfileLabel")}>
-            <SquarePen aria-hidden="true" />               {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
-
+            }}>
+            <SquarePen aria-hidden="true" /> {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
           </Button>
         )}
       </div>

@@ -6,10 +6,7 @@ import AbilityScores from "@/components/character/tabContents/general/shared/Abi
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
-import { Bird, Mountain, Shovel, Waves } from "lucide-react";
 import Column2 from "@/components/character/tabContents/general/view/Column2";
-import RunningIcon from "@public/assets/icons/running-icon.svg";
-import Image from "next/image";
 import Statistics from "@/components/character/tabContents/shared/Statistics";
 
 interface PlayerGeneralTabContentProps {
@@ -25,70 +22,6 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
   const tEdit = useTranslations("characterDetail.edit");
 
   const [checked, setChecked] = useState<boolean>(player.inspiration);
-
-  const speedBadges = [
-    {
-      key: "walk",
-      value: player.stats.speed.walk,
-      icon: (
-        <Image
-          src={RunningIcon}
-          alt=""
-          aria-hidden="true"
-          className="size-6"
-        />
-      ),
-      tooltipKey: "walkSpeedTooltip",
-    },
-    {
-      key: "climb",
-      value: player.stats.speed.climb,
-      icon: (
-        <Mountain
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "climbSpeedTooltip",
-    },
-    {
-      key: "swim",
-      value: player.stats.speed.swim,
-      icon: (
-        <Waves
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "swimSpeedTooltip",
-    },
-    {
-      key: "fly",
-      value: player.stats.speed.fly,
-      icon: (
-        <Bird
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "flySpeedTooltip",
-    },
-    {
-      key: "burrow",
-      value: player.stats.speed.burrow,
-      icon: (
-        <Shovel
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "burrowSpeedTooltip",
-    },
-  ];
 
   function infoExhaustionLevel(level: number): string {
     return t(`exhaustionLevels.${level}`);

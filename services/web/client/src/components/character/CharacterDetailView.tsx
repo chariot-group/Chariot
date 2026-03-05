@@ -3,28 +3,15 @@
 import { User, SquarePen, X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CharacterInventoryTabContent from "@/components/character/tabContents/inventory/CharacterInventoryTabContent";
+import { Tabs } from "@/components/ui/tabs";
 import React, { useState, useEffect } from "react";
-import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
-import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
-import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
-import CharacterMagicTabContent from "@/components/character/tabContents/magic/CharacterMagicTabContent";
+import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-
-export type CharacterTab = "general" | "battle" | "magic" | "inventory" | "history";
-
-const TAB_COLORS: Record<CharacterTab, string> = {
-  general: "blue",
-  battle: "red",
-  magic: "pink",
-  inventory: "yellow",
-  history: "green",
-};
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -73,6 +60,14 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     },
   });
 
+  // Si on arrive avec mode=edit (création depuis la sidebar, ou autre lien), ouvrir directement en édition
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "edit") {
+      setIsEditing(true);
+    }
+  }, [searchParams, setIsEditing]);
+
   return (
     <main className="flex flex-col h-full overflow-hidden">
       <Tabs
@@ -113,23 +108,32 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                       </React.Fragment>
                     ) : (
                       <React.Fragment>
-                        <p className="text-sm sm:text-base text-white font-semibold">
-                          <abbr
-                            title={t("npc.challengeRating")}
-                            className="no-underline cursor-help">
-                            {t("npc.challengeRatingAbbr")}
-                          </abbr>{" "}
-                          {character.challenge.challengeRating < 1
-                            ? character.challenge.challengeRating === 0.125
-                              ? "1/8"
-                              : character.challenge.challengeRating === 0.25
-                                ? "1/4"
-                                : character.challenge.challengeRating === 0.5
-                                  ? "1/2"
-                                  : character.challenge.challengeRating
-                            : character.challenge.challengeRating}{" "}
-                          ({character.challenge.experiencePoints} XP)
-                        </p>
+                        {(() => {
+                          const challengeRating = character.challenge?.challengeRating ?? 0;
+                          const experiencePoints = character.challenge?.experiencePoints ?? 0;
+
+                          const displayChallengeRating =
+                            challengeRating < 1
+                              ? challengeRating === 0.125
+                                ? "1/8"
+                                : challengeRating === 0.25
+                                  ? "1/4"
+                                  : challengeRating === 0.5
+                                    ? "1/2"
+                                    : challengeRating
+                              : challengeRating;
+
+                          return (
+                            <p className="text-sm sm:text-base text-white font-semibold">
+                              <abbr
+                                title={t("npc.challengeRating")}
+                                className="no-underline cursor-help">
+                                {t("npc.challengeRatingAbbr")}
+                              </abbr>{" "}
+                              {displayChallengeRating} ({experiencePoints} XP)
+                            </p>
+                          );
+                        })()}
                       </React.Fragment>
                     )}
                     {character.groups && character.groups.length > 0 && (
@@ -153,98 +157,22 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
               </div>
 
               {/* Onglets */}
-              <TabsList
-                className="bg-transparent gap-1 flex-wrap justify-start self-start xl:self-end"
-                role="tablist"
-                aria-label={t("tabs.general")}>
-                {(["general", "battle", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
-                  <TabsTrigger
-                    key={tab}
-                    value={tab}
-                    role="tab"
-                    aria-selected={activeTab === tab}
-                    aria-controls={`${tab}-content`}
-                    className={`
-                      text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
-                      focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white grow-0
-                      ${
-                        activeTab === tab
-                          ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
-                          : `text-white bg-gray hover:bg-gray-middle`
-                      }
-                    `}>
-                    {t(`tabs.${tab}`)}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+              <CharacterTabs
+                activeTab={activeTab}
+                listClassName="gap-1 flex-wrap justify-start self-start xl:self-end"
+                triggerClassName="grow-0"
+              />
             </div>
           </div>
         </div>
 
         {/* Contenu des onglets - scrollable */}
         <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
-          {(["general", "battle", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
-            <TabsContent
-              key={tab}
-              value={tab}
-              className="mt-0 focus:outline-none"
-              role="tabpanel"
-              id={`${tab}-content`}
-              aria-labelledby={tab}
-              tabIndex={0}>
-              {(() => {
-                switch (tab) {
-                  case "general":
-                    return (
-                      <CharacterGeneralTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  case "battle":
-                    return (
-                      <CharacterBattleTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  case "magic":
-                    return (
-                      <CharacterMagicTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  case "inventory":
-                    return (
-                      <CharacterInventoryTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  case "history":
-                    return (
-                      <CharacterHistoryTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                        form={form}
-                        isEditing={isEditing}
-                      />
-                    );
-                  default:
-                    return null;
-                }
-              })()}
-            </TabsContent>
-          ))}
+          <CharacterTabPanels
+            character={character}
+            form={form}
+            isEditing={isEditing}
+          />
         </div>
       </Tabs>
 

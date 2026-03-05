@@ -1,6 +1,12 @@
 "use client";
 import Choice, { ChoiceProps } from "@/components/layout/Welcome/Choice";
 import { useTranslations } from "use-intl/react";
+import { useState } from "react";
+import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
+import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/store/hooks";
+import { setContextMode } from "@/store/slices/environmentSlice";
+import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 
 import Campaign from "@public/welcome/campaign.svg";
 import Session from "@public/welcome/session.svg";
@@ -8,22 +14,36 @@ import Character from "@public/welcome/character.svg";
 
 export default function WelcomePage() {
   const t = useTranslations("welcome");
+  const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const handleCampaignClick = () => {
+    setIsCreateCampaignOpen(true);
+  };
+
+  const handleCharacterClick = () => {
+    dispatch(setContextMode("player"));
+    dispatch(clearSelectedCampaign());
+    router.push("/characters/new/players");
+  };
 
   const choices: ChoiceProps[] = [
     {
       image: Campaign,
       realm: "campaign",
-      link: "#",
+      onClick: handleCampaignClick,
     },
     {
       image: Session,
       realm: "session",
-      link: "#",
+      disabled: true,
+      tooltip: t("session.comingSoon"),
     },
     {
       image: Character,
       realm: "character",
-      link: "#",
+      onClick: handleCharacterClick,
     },
   ];
 
@@ -42,9 +62,17 @@ export default function WelcomePage() {
             image={choice.image}
             realm={choice.realm}
             link={choice.link}
+            onClick={choice.onClick}
+            disabled={choice.disabled}
+            tooltip={choice.tooltip}
           />
         ))}
       </div>
+
+      <CreateCampaignDialog
+        open={isCreateCampaignOpen}
+        onOpenChange={setIsCreateCampaignOpen}
+      />
     </main>
   );
 }

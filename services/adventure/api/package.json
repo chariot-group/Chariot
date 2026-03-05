@@ -26,7 +26,6 @@
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
     "@keycloak/keycloak-admin-client": "^26.5.4",
-    "@nestjs/cli": "^11.0.0",
     "@nestjs/common": "^11.0.13",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.13",
@@ -55,6 +54,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
     "@nestjs/testing": "^11.0.13",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",

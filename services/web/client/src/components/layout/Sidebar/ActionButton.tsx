@@ -11,6 +11,7 @@ import {
 import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ActionButtonConfig {
   label: string;
@@ -20,6 +21,7 @@ interface ActionButtonConfig {
   backgroundColor: string;
   textColor: string;
   state: ActionButtonState;
+  tooltip?: string;
 }
 
 export function ActionButton() {
@@ -42,11 +44,12 @@ export function ActionButton() {
         return {
           label: t("launchSession"),
           state: "launchSession",
-          action: () => {},
-          disabled: false,
+          action: () => { },
+          disabled: true,
           icon: <PlayCircle className="size-6" />,
           backgroundColor: "bg-yellow",
           textColor: "text-black",
+          tooltip: t("comingSoon"),
         };
       }
 
@@ -55,7 +58,7 @@ export function ActionButton() {
         return {
           label: t("initBattle"),
           state: "initBattle",
-          action: () => {},
+          action: () => { },
           disabled: false,
           icon: <LucideSwords className="size-6" />,
           backgroundColor: "bg-red",
@@ -68,7 +71,7 @@ export function ActionButton() {
         return {
           label: t("startBattle"),
           state: "startBattle",
-          action: () => {},
+          action: () => { },
           disabled: false,
           icon: <LucideSwords className="size-6" />,
           backgroundColor: "bg-pink",
@@ -81,7 +84,7 @@ export function ActionButton() {
         return {
           label: t("reset"),
           state: "reset",
-          action: () => {},
+          action: () => { },
           disabled: false,
           icon: <RotateCcw className="size-6" />,
           backgroundColor: "bg-gray-600",
@@ -94,7 +97,7 @@ export function ActionButton() {
         return {
           label: t("returnToBattle"),
           state: "returnToBattle",
-          action: () => {},
+          action: () => { },
           disabled: false,
           icon: <ArrowLeft className="size-6" />,
           backgroundColor: "bg-yellow",
@@ -107,11 +110,12 @@ export function ActionButton() {
         return {
           label: t("joinSession"),
           state: "joinSession",
-          action: () => {},
-          disabled: false,
+          action: () => { },
+          disabled: true,
           icon: <Users className="size-6" />,
           backgroundColor: "bg-green",
           textColor: "text-black",
+          tooltip: t("comingSoon"),
         };
       }
 
@@ -120,7 +124,7 @@ export function ActionButton() {
         return {
           label: t("returnToSheet"),
           state: "returnToSheet",
-          action: () => {},
+          action: () => { },
           disabled: false,
           icon: <UserCircle className="size-6" />,
           backgroundColor: "bg-yellow",
@@ -133,7 +137,7 @@ export function ActionButton() {
     return {
       label: t("launchSession"),
       state: "launchSession",
-      action: () => {},
+      action: () => { },
       disabled: false,
       icon: <PlayCircle className="size-6" />,
       backgroundColor: "bg-yellow",
@@ -142,14 +146,26 @@ export function ActionButton() {
   };
 
   const button = getButtonState();
-
-  return (
+  const buttonContent = (
     <Button
       onClick={button.action}
       disabled={button.disabled}
-      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} cursor-pointer rounded-[12px] flex items-center gap-3`}>
+      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} rounded-2xl flex items-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
       {button.icon}
       <span className="text-lg">{button.label}</span>
     </Button>
+  );
+
+  return (
+    button.disabled && button.tooltip ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="w-full inline-flex">{buttonContent}</span>
+        </TooltipTrigger>
+        <TooltipContent side="top">{button.tooltip}</TooltipContent>
+      </Tooltip>
+    ) : (
+      buttonContent
+    )
   );
 }

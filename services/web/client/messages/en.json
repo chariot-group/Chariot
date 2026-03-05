@@ -16,16 +16,52 @@
     "noGroups": "No groups",
     "noCharacters": "No characters",
     "archive": "Archive",
+    "unarchive": "Restore",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "groupActions": "Group actions",
+    "characterActions": "Character actions",
+    "deleteGroupDialogTitle": "Delete group",
+    "deleteGroupDialogDescription": "Are you sure you want to delete this group? This action cannot be undone.",
+    "deleteCharacterDialogTitle": "Delete character",
+    "deleteCharacterDialogDescription": "Are you sure you want to delete this character? This action cannot be undone.",
     "launchSession": "Launch Session",
     "initBattle": "Initialize Battle",
     "startBattle": "Start Battle",
     "reset": "Reset",
     "returnToBattle": "Return to Battle",
     "joinSession": "Join Session",
+    "comingSoon": "Coming soon",
     "returnToSheet": "Return to Character Sheet",
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
-    "selected": "selected"
+    "selected": "selected",
+    "createCampaignDialogTitle": "Create a New Campaign",
+    "createCampaignDialogDescription": "Give your campaign a name to get started.",
+    "campaignName": "Campaign Name",
+    "campaignNamePlaceholder": "E.g., The Northern Adventurers",
+    "campaignCreatedSuccess": "Campaign {name} created successfully!",
+    "createGroupDialogTitle": "Create a New Group",
+    "createGroupDialogDescription": "Give your group a name to get started.",
+    "groupName": "Group Name",
+    "groupNamePlaceholder": "E.g., The Heroes of Light",
+    "groupCreatedSuccess": "Group {name} created successfully!",
+    "createCharacter": "Create a character",
+    "createCharacterDialogTitle": "Create a new character",
+    "createCharacterDialogDescription": "What type of character do you want to create?",
+    "playerCharacter": "Player character",
+    "npcCharacter": "NPC",
+    "npcCodexCharacter": "NPC from Codex"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "errors": {
+      "campaignNameRequired": "Campaign name is required",
+      "campaignCreationFailed": "Failed to create campaign",
+      "groupNameRequired": "Group name is required",
+      "groupCreationFailed": "Failed to create group"
+    }
   },
   "error": {
     "title": "Oops! Something went wrong",
@@ -102,13 +138,22 @@
     "session": {
       "title": "Join <br /> a session",
       "button": "Join a session",
-      "button-aria": "Navigate to session joining"
+      "button-aria": "Navigate to session joining",
+      "comingSoon": "Coming soon"
     },
     "character": {
       "title": "Create your first <br /> character",
       "button": "Create a character",
       "button-aria": "Navigate to character creation"
     }
+  },
+  "characterCreate": {
+    "titlePlayer": "Create a player character",
+    "titleNpc": "Create an NPC",
+    "description": "Fill in the complete character sheet. You can modify this information later from the sheet.",
+    "cancel": "Cancel",
+    "create": "Create",
+    "saving": "Creating..."
   },
   "characterForm": {
     "createSuccess": "Character created successfully",
@@ -175,6 +220,8 @@
       "tempHP": "Temp HP",
       "defense": "Defense",
       "initiative": "Initiative",
+      "size": "Size",
+      "selectSize": "Select a size",
       "spellcastingStats": "Spellcasting Stats",
       "spellcastingAbility": "Spellcasting Ability",
       "spellSaveDC": "Spell Save DC",
@@ -242,6 +289,23 @@
       "armorClass": "Armor Class",
       "armorClassTooltip": "Character's armor class (AC)",
       "initiativeTooltip": "Initiative bonus",
+      "sizeTooltip": "Character size",
+      "sizes": {
+        "Tiny": "Tiny",
+        "Small": "Small",
+        "Medium": "Medium",
+        "Large": "Large",
+        "Huge": "Huge",
+        "Gargantuan": "Gargantuan"
+      },
+      "sizesAbbr": {
+        "Tiny": "T",
+        "Small": "S",
+        "Medium": "M",
+        "Large": "L",
+        "Huge": "H",
+        "Gargantuan": "G"
+      },
       "walkSpeedTooltip": "Walking speed",
       "climbSpeedTooltip": "Climbing speed",
       "swimSpeedTooltip": "Swimming speed",
@@ -614,6 +678,37 @@
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+"
+      },
+      "monsterCodexDialog": {
+        "title": "Search for a monster in Codex",
+        "searchPlaceholder": "Search for a monster...",
+        "noResults": "No monsters found",
+        "searching": "Searching...",
+        "selectMonster": "Select a monster to view details",
+        "validate": "Use this monster",
+        "cancel": "Cancel",
+        "loadMore": "Load more",
+        "error": "Error while searching",
+        "validatedByChariot": "Validated by Chariot",
+        "srdContent": "SRD Content (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 All languages",
+          "fr": "🇫🇷 French",
+          "en": "🇬🇧 English",
+          "es": "🇪🇸 Spanish"
+        },
+        "resultsCount": "{count} result{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+",
+        "monsterInfo": "CR {cr} • {type}",
+        "preview": {
+          "challengeRatingShort": "CR",
+          "experiencePointsShort": "XP",
+          "calculatedArmorClass": "Calculated AC",
+          "sourceArmorClass": "source: {value}",
+          "hitPointsDice": "Hit points dice",
+          "estimatedProficiencyBonus": "Estimated proficiency bonus"
+        }
       }
     }
   },

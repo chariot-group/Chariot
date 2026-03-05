@@ -28,7 +28,6 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
           player={player}
           accentColor={accentColor}
         />
-
         {/* Jet de sauvegarde */}
         <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
           <Card

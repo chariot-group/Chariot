@@ -5,14 +5,48 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "use-intl";
 import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface ChoiceProps {
   image: StaticImageData;
   realm: string;
-  link: string;
+  link?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  tooltip?: string;
 }
-export default function Choice({ image, realm, link }: ChoiceProps) {
+export default function Choice({ image, realm, link, onClick, disabled = false, tooltip }: ChoiceProps) {
   const t = useTranslations("welcome");
+
+  const buttonAria = t(`${realm}.button-aria`, { default: t(`${realm}.button`) });
+
+  const buttonContent = disabled ? (
+    <Button
+      type="button"
+      disabled
+      aria-label={buttonAria}
+      className="w-[90%] text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11 cursor-not-allowed opacity-60">
+      {t(`${realm}.button`)}
+    </Button>
+  ) : onClick ? (
+    <Button
+      type="button"
+      onClick={onClick}
+      aria-label={buttonAria}
+      className="w-[90%] hover:bg-primary/90 text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11">
+      {t(`${realm}.button`)}
+    </Button>
+  ) : (
+    <Button
+      className="w-[90%] hover:bg-primary/90 text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11"
+      asChild>
+      <Link
+        href={link || "#"}
+        aria-label={buttonAria}>
+        {t(`${realm}.button`)}
+      </Link>
+    </Button>
+  );
 
   return (
     <article
@@ -31,16 +65,16 @@ export default function Choice({ image, realm, link }: ChoiceProps) {
           className="mb-2 sm:mb-3 text-center text-xs sm:text-sm md:text-base lg:text-lg font-semibold px-2 leading-tight"
           dangerouslySetInnerHTML={{ __html: t.raw(`${realm}.title`) }}></h3>
 
-        <Link
-          href={link}
-          className="w-[90%] inline-block rounded-md"
-          aria-label={t(`${realm}.button-aria`, { default: t(`${realm}.button`) })}>
-          <Button
-            className="w-full hover:bg-primary/90 text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11"
-            asChild>
-            <span>{t(`${realm}.button`)}</span>
-          </Button>
-        </Link>
+        {disabled && tooltip ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="w-[90%] inline-flex">{buttonContent}</span>
+            </TooltipTrigger>
+            <TooltipContent side="top">{tooltip}</TooltipContent>
+          </Tooltip>
+        ) : (
+          buttonContent
+        )}
       </Card>
     </article>
   );

@@ -1,6 +1,6 @@
-import { Controller, Get, Logger } from '@nestjs/common';
-import { AppService } from '@/app.service';
-import { SkipThrottle } from '@nestjs/throttler';
+import { Controller, Get, Logger } from "@nestjs/common";
+import { AppService } from "@/app.service";
+import { SkipThrottle } from "@nestjs/throttler";
 
 @Controller()
 export class AppController {
@@ -11,7 +11,7 @@ export class AppController {
   @Get()
   @SkipThrottle()
   getInfo() {
-    this.logger.log('Gateway info requested');
+    this.logger.log("Gateway info requested");
     return this.appService.getGatewayInfo();
   }
 }

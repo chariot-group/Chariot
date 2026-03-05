@@ -4,13 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Player } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Controller, useFieldArray, UseFormReturn } from "react-hook-form";
-import { Bird, Mountain, Shovel, Waves } from "lucide-react";
+import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import Image from "next/image";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 interface StatisticsProps {
   player: Player;
   accentColor: string;
@@ -54,6 +55,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                 <Input
                   {...field}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                   id="armor-class"
                   aria-invalid={fieldState.invalid}
@@ -97,6 +99,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                 <Input
                   {...field}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                   id="initiative"
                   aria-invalid={fieldState.invalid}
@@ -117,6 +120,56 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
               {fieldState.error && (
                 <FieldError
                   id="initiative-error"
+                  errors={[fieldState.error]}
+                />
+              )}
+            </Field>
+          )}
+        />
+        {/* Taille */}
+        <Controller
+          name="stats.size"
+          control={form.control}
+          defaultValue="Medium"
+          render={({ field, fieldState }) => (
+            <Field
+              data-invalid={fieldState.invalid}
+              orientation="vertical">
+              <label
+                htmlFor="size"
+                className="text-sm font-medium">
+                {tEdit("size")}
+              </label>
+              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                <Select
+                  value={field.value || "Medium"}
+                  onValueChange={field.onChange}>
+                  <SelectTrigger
+                    id="size"
+                    className="border-none bg-transparent">
+                    <SelectValue placeholder={tEdit("selectSize")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {SIZES.map((size) => (
+                        <SelectItem
+                          key={size}
+                          value={size}>
+                          {t(`sizes.${size}` as any)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <RulerIcon
+                  size={20}
+                  className="text-black shrink-0"
+                  aria-hidden="true"
+                />
+              </div>
+              {fieldState.error && (
+                <FieldError
+                  id="size-error"
                   errors={[fieldState.error]}
                 />
               )}
@@ -144,6 +197,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? 0}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-walk"
                     type="number"
@@ -176,6 +230,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? 0}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-climb"
                     type="number"
@@ -207,6 +262,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? 0}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-swim"
                     type="number"
@@ -238,6 +294,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? 0}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-fly"
                     type="number"
@@ -269,6 +326,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? 0}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-burrow"
                     type="number"
@@ -306,6 +364,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 </label>
                 <Input
                   {...field}
+                  value={field.value ?? 0}
                   onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                   id="health-current"
                   type="number"
@@ -330,6 +389,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 </label>
                 <Input
                   {...field}
+                  value={field.value ?? 0}
                   onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                   id="health-max"
                   type="number"
@@ -354,6 +414,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 </label>
                 <Input
                   {...field}
+                  value={field.value ?? 0}
                   onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                   id="health-temp"
                   type="number"
@@ -391,6 +452,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                       </label>
                       <Input
                         {...field}
+                        value={field.value ?? 1}
                         onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                         id={`class-${index}-level`}
                         type="number"

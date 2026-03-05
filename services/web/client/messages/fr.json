@@ -16,16 +16,52 @@
     "noGroups": "Aucun groupe",
     "noCharacters": "Aucun personnage",
     "archive": "Archiver",
+    "unarchive": "Restaurer",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "groupActions": "Actions sur le groupe",
+    "characterActions": "Actions sur le personnage",
+    "deleteGroupDialogTitle": "Supprimer le groupe",
+    "deleteGroupDialogDescription": "Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible.",
+    "deleteCharacterDialogTitle": "Supprimer le personnage",
+    "deleteCharacterDialogDescription": "Êtes-vous sûr de vouloir supprimer ce personnage ? Cette action est irréversible.",
     "launchSession": "Lancer une session",
     "initBattle": "Initier un combat",
     "startBattle": "Lancer le combat",
     "reset": "Réinitialiser",
     "returnToBattle": "Retour au combat",
     "joinSession": "Rejoindre la session",
+    "comingSoon": "Bientôt disponible",
     "returnToSheet": "Retour à la fiche personnage",
     "selectCampaign": "Sélectionner la campagne",
     "selectedCampaign": "Campagne sélectionnée",
-    "selected": "sélectionné"
+    "selected": "sélectionné",
+    "createCampaignDialogTitle": "Créer une nouvelle campagne",
+    "createCampaignDialogDescription": "Donnez un nom à votre campagne pour commencer.",
+    "campaignName": "Nom de la campagne",
+    "campaignNamePlaceholder": "Ex: Les Aventuriers du Nord",
+    "campaignCreatedSuccess": "Campagne {name} créée avec succès !",
+    "createGroupDialogTitle": "Créer un nouveau groupe",
+    "createGroupDialogDescription": "Donnez un nom à votre groupe pour commencer.",
+    "groupName": "Nom du groupe",
+    "groupNamePlaceholder": "Ex: Les Héros de la Lumière",
+    "groupCreatedSuccess": "Groupe {name} créé avec succès !",
+    "createCharacter": "Créer un personnage",
+    "createCharacterDialogTitle": "Créer un nouveau personnage",
+    "createCharacterDialogDescription": "Quel type de personnage souhaitez-vous créer ?",
+    "playerCharacter": "Personnage joueur",
+    "npcCharacter": "PNJ",
+    "npcCodexCharacter": "PNJ depuis Codex"
+  },
+  "common": {
+    "save": "Sauvegarder",
+    "cancel": "Annuler",
+    "errors": {
+      "campaignNameRequired": "Le nom de la campagne est requis",
+      "campaignCreationFailed": "Échec de la création de la campagne",
+      "groupNameRequired": "Le nom du groupe est requis",
+      "groupCreationFailed": "Échec de la création du groupe"
+    }
   },
   "error": {
     "title": "Oups ! Une erreur s'est produite",
@@ -102,7 +138,8 @@
     "session": {
       "title": "Rejoindre <br /> une session",
       "button": "Rejoindre une session",
-      "button-aria": "Naviguer vers la participation à une session"
+      "button-aria": "Naviguer vers la participation à une session",
+      "comingSoon": "Bientôt disponible"
     },
     "character": {
       "title": "Créer votre premier <br /> personnage",
@@ -110,6 +147,14 @@
       "button-aria": "Naviguer vers la création de personnage"
     }
   },  
+  "characterCreate": {
+    "titlePlayer": "Créer un personnage joueur",
+    "titleNpc": "Créer un PNJ",
+    "description": "Remplissez la fiche complète du personnage. Vous pourrez modifier ces informations plus tard depuis la fiche.",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "saving": "Création..."
+  },
   "characterForm": {
     "createSuccess": "Personnage créé avec succès",
     "createError": "Échec de la création du personnage",
@@ -175,6 +220,8 @@
       "tempHP": "PV Temporaires",
       "defense": "Défense",
       "initiative": "Initiative",
+      "size": "Taille",
+      "selectSize": "Sélectionner une taille",
       "spellcastingStats": "Statistiques de Magie",
       "spellcastingAbility": "Caractéristique d'Incantation",
       "spellSaveDC": "DD des Sorts",
@@ -242,6 +289,23 @@
       "armorClass": "Classe d'Armure",
       "armorClassTooltip": "Classe d'armure (CA) du personnage",
       "initiativeTooltip": "Bonus d'initiative",
+      "sizeTooltip": "Taille du personnage",
+      "sizes": {
+        "Tiny": "Très petit",
+        "Small": "Petit",
+        "Medium": "Moyen",
+        "Large": "Grand",
+        "Huge": "Très grand",
+        "Gargantuan": "Gigantesque"
+      },
+      "sizesAbbr": {
+        "Tiny": "TP",
+        "Small": "P",
+        "Medium": "M",
+        "Large": "G",
+        "Huge": "TG",
+        "Gargantuan": "Gig"
+      },
       "walkSpeedTooltip": "Vitesse de marche",
       "climbSpeedTooltip": "Vitesse d'escalade",
       "swimSpeedTooltip": "Vitesse de nage",
@@ -619,6 +683,37 @@
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+"
+      },
+      "monsterCodexDialog": {
+        "title": "Rechercher un monstre dans Codex",
+        "searchPlaceholder": "Rechercher un monstre...",
+        "noResults": "Aucun monstre trouvé",
+        "searching": "Recherche en cours...",
+        "selectMonster": "Sélectionnez un monstre pour voir les détails",
+        "validate": "Utiliser ce monstre",
+        "cancel": "Annuler",
+        "loadMore": "Charger plus",
+        "error": "Erreur lors de la recherche",
+        "validatedByChariot": "Validé par Chariot",
+        "srdContent": "Contenu SRD (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 Toutes les langues",
+          "fr": "🇫🇷 Français",
+          "en": "🇬🇧 English",
+          "es": "🇪🇸 Español"
+        },
+        "resultsCount": "{count} résultat{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+",
+        "monsterInfo": "CR {cr} • {type}",
+        "preview": {
+          "challengeRatingShort": "FP",
+          "experiencePointsShort": "XP",
+          "calculatedArmorClass": "CA calculée",
+          "sourceArmorClass": "source: {value}",
+          "hitPointsDice": "Dés de points de vie",
+          "estimatedProficiencyBonus": "Bonus de maîtrise (estimé)"
+        }
       }
     }
   },

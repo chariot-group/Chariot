@@ -1,21 +1,30 @@
 "use client";
 
+import * as React from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, PlusCircle } from "lucide-react";
 import { Group } from "@/types/campaign";
 import Link from "next/link";
 import { useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { ContextMenu, ContextMenuTrigger } from "@radix-ui/react-context-menu";
 import { ContextMenuContent, ContextMenuItem } from "@/components/ui/context-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
+import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 
 interface GroupListProps {
   groups: Group[];
-  openGroupId: string | null;
+  openGroupId: string[];
   onToggleGroup: (groupId: string) => void;
+  /** True when this list represents archived groups section */
+  isArchivedSection: boolean;
+  onArchiveGroup: (groupId: string) => Promise<void>;
+  onUnarchiveGroup: (groupId: string) => Promise<void>;
+  onDeleteGroup: (groupId: string) => Promise<void>;
 }
 
 /**
@@ -24,11 +33,20 @@ interface GroupListProps {
  * Highlights currently selected character
  * Provides context menu for group actions (archive, etc.)
  */
-export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupListProps) {
+export default function GroupList({
+  groups,
+  openGroupId,
+  onToggleGroup,
+  isArchivedSection,
+  onArchiveGroup,
+  onUnarchiveGroup,
+  onDeleteGroup,
+}: GroupListProps) {
   const t = useTranslations("sidebar");
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+  const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
 
   // Extract character ID from current URL path
   const selectedCharacterId = pathname?.includes("/characters/")
@@ -42,7 +60,7 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
   return (
     <div className="flex flex-col gap-2">
       {groups.map((group) => {
-        const isOpen = openGroupId === group._id;
+        const isOpen = openGroupId.includes(group._id);
 
         return (
           <Collapsible
@@ -64,19 +82,46 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                   />
                 </CollapsibleTrigger>
               </ContextMenuTrigger>
-              <ContextMenuContent className="w-full flex-col bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex group">
+              <ContextMenuContent
+                className="w-56 bg-card rounded-[12px] py-1.5 px-1.5 shadow focus-visible:outline-none"
+                aria-label={t("groupActions")}>
+                {isArchivedSection ? (
+                  <ContextMenuItem
+                    className="cursor-pointer focus-visible:border rounded-[8px] px-2 py-1.5 text-sm hover:text-primary"
+                    onClick={() => onUnarchiveGroup(group._id)}>
+                    {t("unarchive")}
+                  </ContextMenuItem>
+                ) : (
+                  <ContextMenuItem
+                    className="cursor-pointer focus-visible:border rounded-[8px] px-2 py-1.5 text-sm hover:text-primary"
+                    onClick={() => onArchiveGroup(group._id)}>
+                    {t("archive")}
+                  </ContextMenuItem>
+                )}
+
                 <ContextMenuItem
-                  className="cursor-pointer focus-visible:border"
-                  onClick={() => {
-                    console.log("Archived");
-                  }}>
-                  {t("archive")}
+                  className="cursor-pointer focus-visible:border rounded-[8px] px-2 py-1.5 text-sm text-red-500 hover:text-red-600 focus:text-red-600"
+                  onClick={() => setGroupPendingDelete(group)}>
+                  {t("delete")}
                 </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
             <CollapsibleContent
               id={`group-${group._id}-content`}
               className="mt-1 ml-3 flex flex-col gap-1">
+              {/* Create character button - only for non-archived groups */}
+              {!isArchivedSection && selectedCampaignId && (
+                <CreateCharacterDialog campaignId={selectedCampaignId} groupId={group._id}>
+                  <button
+                    type="button"
+                    aria-label={t("createCharacter")}
+                    className="text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 text-gray-400 hover:text-white"
+                  >
+                    <PlusCircle className="w-3 h-3" aria-hidden="true" />
+                    {t("createCharacter")}
+                  </button>
+                </CreateCharacterDialog>
+              )}
               {group.characters && group.characters.length > 0 ? (
                 group.characters.map((character) => {
                   const isSelected = selectedCharacterId === character._id;
@@ -87,9 +132,8 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
                       aria-current={isSelected ? "page" : undefined}
                       aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
                       title={`${character.firstname} ${character.lastname}`}
-                      className={`w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${
-                        isSelected ? "bg-card/50 font-bold" : ""
-                      }`}
+                      className={`w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${isSelected ? "bg-card/50 font-bold" : ""
+                        }`}
                       onClick={() => {
                         if (isMobile) setOpenMobile(false);
                       }}>
@@ -106,6 +150,40 @@ export default function GroupList({ groups, openGroupId, onToggleGroup }: GroupL
           </Collapsible>
         );
       })}
+      {groupPendingDelete && (
+        <Dialog
+          open={!!groupPendingDelete}
+          onOpenChange={(open) => {
+            if (!open) setGroupPendingDelete(null);
+          }}>
+          <DialogContent className="sm:max-w-sm rounded-[15px] bg-card">
+            <DialogHeader>
+              <DialogTitle>{t("deleteGroupDialogTitle")}</DialogTitle>
+              <DialogDescription>{t("deleteGroupDialogDescription")}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setGroupPendingDelete(null)}>
+                {t("cancel")}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                className="text-black"
+                onClick={async () => {
+                  if (groupPendingDelete) {
+                    await onDeleteGroup(groupPendingDelete._id);
+                  }
+                  setGroupPendingDelete(null);
+                }}>
+                {t("delete")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

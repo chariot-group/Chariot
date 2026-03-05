@@ -6,6 +6,27 @@ import { makeZodMessages } from '@/lib/zodErrorMap';
 
 type ZodMessages = ReturnType<typeof makeZodMessages>;
 
+export const DEFAULT_PLAYER_MASTERIES = {
+    athletics: 0,
+    acrobatics: 0,
+    sleightHand: 0,
+    stealth: 0,
+    arcana: 0,
+    history: 0,
+    investigation: 0,
+    nature: 0,
+    religion: 0,
+    animalHandling: 0,
+    insight: 0,
+    medicine: 0,
+    perception: 0,
+    survival: 0,
+    deception: 0,
+    intimidation: 0,
+    performance: 0,
+    persuasion: 0,
+} as const;
+
 // ===== Player Stats =====
 export function createPlayerMasteriesSchema(zm: ZodMessages) {
     return z.object({
@@ -27,7 +48,7 @@ export function createPlayerMasteriesSchema(zm: ZodMessages) {
         intimidation: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
         performance: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
         persuasion: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-    });
+    }).default(DEFAULT_PLAYER_MASTERIES);
 }
 
 export const PlayerMasteriesAbilitySchema = z.object({
@@ -45,7 +66,7 @@ export function createPlayerStatsSchema(zm: ZodMessages) {
         armors: z.array(z.string({ message: zm.required() })).optional(),
         weapons: z.array(z.string({ message: zm.required() })).optional(),
         tools: z.array(z.string({ message: zm.required() })).optional(),
-        masteries: createPlayerMasteriesSchema(zm).optional(),
+        masteries: createPlayerMasteriesSchema(zm),
         masteriesAbility: PlayerMasteriesAbilitySchema.optional(),
     });
 }

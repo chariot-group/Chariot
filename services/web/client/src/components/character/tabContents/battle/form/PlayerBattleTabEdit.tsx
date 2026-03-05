@@ -6,7 +6,6 @@ import AbilitiesUpdateSection from "@/components/character/tabContents/shared/Ab
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import Image from "next/image";
-
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
 import { Button } from "@/components/ui/button";
@@ -50,7 +49,6 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
           accentColor={accentColor}
           form={form}
         />
-
         {/* Jets de Sauvegarde */}
         <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
           <Card
