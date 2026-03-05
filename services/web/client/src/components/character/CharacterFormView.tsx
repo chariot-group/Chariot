@@ -14,6 +14,7 @@ import { useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
+import { addCharacterToGroup } from "@/store/slices/groupSlice";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -192,6 +193,16 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     onSuccess: (createdCharacter) => {
       // Redirect to the newly created character's page
       if (campaignId && resolvedGroupId) {
+        dispatch(addCharacterToGroup({
+          groupId: resolvedGroupId,
+          character: {
+            _id: createdCharacter._id,
+            firstname: createdCharacter.firstname,
+            lastname: createdCharacter.lastname,
+            surname: createdCharacter.surname,
+            userId: (createdCharacter as any).userId,
+          },
+        }));
         router.push(`/campaigns/${campaignId}/groups/${resolvedGroupId}/characters/${createdCharacter._id}`);
       } else {
         dispatch(upsertCharacterWithoutGroup(createdCharacter));

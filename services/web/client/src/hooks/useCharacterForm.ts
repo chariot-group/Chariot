@@ -159,9 +159,16 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             setIsSaving(true);
             setSuccess(false);
 
-            console.log('🔍 [useCharacterForm] Données AVANT envoi à l\'API:', JSON.stringify(data, null, 2));
+            const sanitizedData = { ...data } as any;
+            if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {
+                sanitizedData.groups = sanitizedData.groups.map((group: any) =>
+                    typeof group === 'object' ? group._id : group
+                );
+            }
 
-            const createdCharacter = await CharacterService.createCharacter(type, data as any);
+            console.log('🔍 [useCharacterForm] Données AVANT envoi à l\'API:', JSON.stringify(sanitizedData, null, 2));
+
+            const createdCharacter = await CharacterService.createCharacter(type, sanitizedData as any);
 
             toast.success(t('createSuccess'));
             setSuccess(true);

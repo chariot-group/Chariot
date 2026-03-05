@@ -59,6 +59,38 @@ const groupSlice = createSlice({
         invalidateCache: (state) => {
             state.lastFetch = null;
         },
+        addCharacterToGroup: (
+            state,
+            action: PayloadAction<{
+                groupId: string;
+                character: { _id: string; firstname: string; lastname: string; surname: string; userId?: string };
+            }>,
+        ) => {
+            const { groupId, character } = action.payload;
+
+            const targetGroup = state.activeGroups.find(group => group._id === groupId)
+                ?? state.archivedGroups.find(group => group._id === groupId);
+
+            if (!targetGroup) {
+                return;
+            }
+
+            const alreadyExists = targetGroup.characters.some(existing => existing._id === character._id);
+            if (alreadyExists) {
+                return;
+            }
+
+            targetGroup.characters = [
+                ...targetGroup.characters,
+                {
+                    _id: character._id,
+                    firstname: character.firstname,
+                    lastname: character.lastname,
+                    surname: character.surname,
+                    userId: character.userId ?? '',
+                },
+            ];
+        },
     },
 });
 
@@ -69,6 +101,7 @@ export const {
     setOpenGroup,
     clearGroups,
     invalidateCache,
+    addCharacterToGroup,
 } = groupSlice.actions;
 
 // Selectors
