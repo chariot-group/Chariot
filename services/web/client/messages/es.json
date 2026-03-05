@@ -47,7 +47,7 @@
     "createCharacterDialogDescription": "¿Qué tipo de personaje quieres crear?",
     "playerCharacter": "Personaje jugador",
     "npcCharacter": "PNJ",
-    "npcCodexCharacter": "PNJ desde el Codex"
+    "npcCodexCharacter": "PNJ desde Codex"
   },
   "common": {
     "save": "Guardar",

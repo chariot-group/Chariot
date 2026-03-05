@@ -18,12 +18,15 @@ import GroupService from '@/services/GroupService';
 import CampaignService from '@/services/CampaignService';
 import { Group } from '@/types/campaign';
 import { useToast } from '@/hooks/useToast';
+import { usePathname, useRouter } from 'next/navigation';
 
 /**
  * Hook personnalisé pour gérer les groupes d'une campagne
  */
 export function useGroups() {
     const dispatch = useAppDispatch();
+    const router = useRouter();
+    const pathname = usePathname();
     const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
     const activeGroups = useAppSelector(selectActiveGroups);
     const archivedGroups = useAppSelector(selectArchivedGroups);
@@ -228,6 +231,39 @@ export function useGroups() {
                 const newArchivedGroups = archivedGroups.filter(group => group._id !== groupId);
 
                 dispatch(fetchGroupsSuccess({ active: newActiveGroups, archived: newArchivedGroups }));
+
+                const campaignIdFromPath = pathname?.match(/\/campaigns\/([^/]+)/)?.[1];
+                const campaignIdForRedirect = selectedCampaignId || campaignIdFromPath;
+                const localeFromPath = pathname?.split('/')[1] || 'fr';
+
+                if (campaignIdForRedirect && pathname?.includes(`/groups/${groupId}`)) {
+                    const groupWithCharacter =
+                        newActiveGroups.find(group => (group.characters?.length || 0) > 0)
+                        || newArchivedGroups.find(group => (group.characters?.length || 0) > 0);
+
+                    if (groupWithCharacter && groupWithCharacter.characters[0]?._id) {
+                        if (!openGroupId.includes(groupWithCharacter._id)) {
+                            dispatch(setOpenGroup(groupWithCharacter._id));
+                        }
+                        router.replace(`/campaigns/${campaignIdForRedirect}/groups/${groupWithCharacter._id}/characters/${groupWithCharacter.characters[0]._id}`);
+                    } else if (newActiveGroups.length > 0) {
+                        const fallbackGroup = newActiveGroups[0];
+                        if (!openGroupId.includes(fallbackGroup._id)) {
+                            dispatch(setOpenGroup(fallbackGroup._id));
+                        }
+                        router.replace(`/campaigns/${campaignIdForRedirect}/groups/${fallbackGroup._id}/characters/new/players`);
+                    } else if (newArchivedGroups.length > 0) {
+                        const fallbackGroup = newArchivedGroups[0];
+                        if (!openGroupId.includes(fallbackGroup._id)) {
+                            dispatch(setOpenGroup(fallbackGroup._id));
+                        }
+                        router.replace(`/campaigns/${campaignIdForRedirect}/groups/${fallbackGroup._id}/characters/new/players`);
+                    } else {
+                        dispatch(setOpenGroup(null));
+                        router.replace(`/${localeFromPath}`);
+                    }
+                }
+
                 success('Group deleted');
             } catch (e) {
                 const message = e instanceof Error ? e.message : 'Failed to delete group';
@@ -235,7 +271,7 @@ export function useGroups() {
                 throw e;
             }
         },
-        [activeGroups, archivedGroups, dispatch, success, toastError],
+        [activeGroups, archivedGroups, dispatch, openGroupId, pathname, router, selectedCampaignId, success, toastError],
     );
 
     /**
