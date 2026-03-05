@@ -183,6 +183,24 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       profile: {
         alignment: "True Neutral",
       },
+      stats: {
+        size: "Medium",
+        maxHitPoints: 10,
+        currentHitPoints: 10,
+        tempHitPoints: 0,
+        armorClass: 10,
+        initiative: 0,
+        speed: { walk: 30, climb: 0, swim: 0, fly: 0, burrow: 0 },
+        abilityScores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
+        languages: [],
+        passivePerception: 10,
+        savingThrows: defaultSavingThrows,
+        skills: defaultNpcSkills,
+        senses: [],
+      },
+      challenge: { challengeRating: 0, experiencePoints: 0 },
+      actions: { standard: [], legendary: [], lair: [] },
+      hitPointsRoll: "",
     };
 
   // Initialiser le formulaire avec useCharacterForm (characterId = null pour création)

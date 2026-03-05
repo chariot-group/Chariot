@@ -67,6 +67,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                 <Input
                   {...field}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                   id="armor-class"
                   aria-invalid={fieldState.invalid}
@@ -111,6 +112,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                 <Input
                   {...field}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                   id="initiative"
                   aria-invalid={fieldState.invalid}
@@ -208,6 +210,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <div className="flex w-full items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-walk"
                     type="number"
@@ -240,6 +243,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-climb"
                     type="number"
@@ -271,6 +275,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-swim"
                     type="number"
@@ -302,6 +307,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-fly"
                     type="number"
@@ -333,6 +339,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
+                    value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                     id="speed-burrow"
                     type="number"
@@ -370,6 +377,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 </label>
                 <Input
                   {...field}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                   id="health-current"
                   type="number"
@@ -394,6 +402,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 </label>
                 <Input
                   {...field}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                   id="health-max"
                   type="number"
@@ -418,6 +427,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 </label>
                 <Input
                   {...field}
+                  value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                   id="health-temp"
                   type="number"
