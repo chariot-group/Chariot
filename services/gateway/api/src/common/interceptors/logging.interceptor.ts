@@ -1,13 +1,7 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { Request, Response } from 'express';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from "@nestjs/common";
+import { Observable } from "rxjs";
+import { tap } from "rxjs/operators";
+import { Request, Response } from "express";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -17,7 +11,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const { method, url, ip, headers } = request;
-    const userAgent = headers['user-agent'] || 'Unknown';
+    const userAgent = headers["user-agent"] || "Unknown";
     const startTime = Date.now();
 
     // Log incoming request
@@ -30,7 +24,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: (data) => {
+        next: () => {
           const duration = Date.now() - startTime;
           const { statusCode } = response;
 
@@ -46,18 +40,15 @@ export class LoggingInterceptor implements NestInterceptor {
           const duration = Date.now() - startTime;
           const statusCode = error.status || 500;
 
-          this.logger.error(
-            `Error ${method} ${url} - ${statusCode} - ${duration}ms`,
-            {
-              method,
-              url,
-              statusCode,
-              duration,
-              ip,
-              error: error.message,
-              stack: error.stack,
-            },
-          );
+          this.logger.error(`Error ${method} ${url} - ${statusCode} - ${duration}ms`, {
+            method,
+            url,
+            statusCode,
+            duration,
+            ip,
+            error: error.message,
+            stack: error.stack,
+          });
         },
       }),
     );

@@ -1,8 +1,8 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { AxiosResponse } from 'axios';
-import { firstValueFrom } from 'rxjs';
-import { ServicesConfig } from '@/proxy/services.config';
+import { Injectable, Logger, BadRequestException } from "@nestjs/common";
+import { HttpService } from "@nestjs/axios";
+import { AxiosResponse } from "axios";
+import { firstValueFrom } from "rxjs";
+import { ServicesConfig } from "@/proxy/services.config";
 
 @Injectable()
 export class ProxyService {
@@ -40,9 +40,9 @@ export class ProxyService {
 
     // Clean headers - remove host and connection headers
     const cleanHeaders = { ...headers };
-    delete cleanHeaders['host'];
-    delete cleanHeaders['connection'];
-    delete cleanHeaders['content-length'];
+    delete cleanHeaders["host"];
+    delete cleanHeaders["connection"];
+    delete cleanHeaders["content-length"];
 
     this.logger.debug(`Forwarding ${method} request to ${serviceName}: ${url}`);
 
@@ -57,15 +57,10 @@ export class ProxyService {
 
       const response = await firstValueFrom(observable);
 
-      this.logger.debug(
-        `Received response from ${serviceName}: ${response.status}`,
-      );
+      this.logger.debug(`Received response from ${serviceName}: ${response.status}`);
       return response;
     } catch (error) {
-      this.logger.error(
-        `Error forwarding to ${serviceName}: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error forwarding to ${serviceName}: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -80,7 +75,7 @@ export class ProxyService {
     body?: any,
     headers?: Record<string, string>,
   ): Promise<AxiosResponse> {
-    return this.forward('adventure', method, path, body, headers);
+    return this.forward("adventure", method, path, body, headers);
   }
 
   /**
@@ -94,8 +89,6 @@ export class ProxyService {
    * Get all configured services
    */
   getAvailableServices(): string[] {
-    return this.servicesConfig
-      .getEnabledServices()
-      .map((service) => service.name);
+    return this.servicesConfig.getEnabledServices().map((service) => service.name);
   }
 }
