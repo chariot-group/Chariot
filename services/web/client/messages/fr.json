@@ -31,6 +31,7 @@
     "reset": "Réinitialiser",
     "returnToBattle": "Retour au combat",
     "joinSession": "Rejoindre la session",
+    "comingSoon": "Bientôt disponible",
     "returnToSheet": "Retour à la fiche personnage",
     "selectCampaign": "Sélectionner la campagne",
     "selectedCampaign": "Campagne sélectionnée",
@@ -137,7 +138,8 @@
     "session": {
       "title": "Rejoindre <br /> une session",
       "button": "Rejoindre une session",
-      "button-aria": "Naviguer vers la participation à une session"
+      "button-aria": "Naviguer vers la participation à une session",
+      "comingSoon": "Bientôt disponible"
     },
     "character": {
       "title": "Créer votre premier <br /> personnage",

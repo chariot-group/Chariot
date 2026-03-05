@@ -25,14 +25,19 @@ import { setContextMode } from "@/store/slices/environmentSlice";
 
 interface CreateCampaignDialogProps {
     /** The element that opens the dialog (e.g. a Button). */
-    children: React.ReactNode;
+    children?: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
-export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
+export function CreateCampaignDialog({ children, open: controlledOpen, onOpenChange }: CreateCampaignDialogProps) {
     const t = useTranslations("sidebar");
     const tCommon = useTranslations("common");
     const dispatch = useAppDispatch();
-    const [open, setOpen] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
+    const isControlled = controlledOpen !== undefined;
+    const open = isControlled ? controlledOpen : internalOpen;
+
     const [campaignName, setCampaignName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
     const { createCampaign, refreshCampaigns } = useCampaigns({ autoFetch: false });
@@ -59,7 +64,7 @@ export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
             // Rafraîchir la liste des campagnes avant d'afficher le succès
             await refreshCampaigns();
             showToast(t("campaignCreatedSuccess", { name: newCampaign.label }), "success");
-            setOpen(false);
+            handleOpenChange(false);
             setCampaignName("");
         } catch (error) {
             console.error("Error creating campaign:", error);
@@ -70,7 +75,11 @@ export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
     };
 
     const handleOpenChange = (newOpen: boolean) => {
-        setOpen(newOpen);
+        if (!isControlled) {
+            setInternalOpen(newOpen);
+        }
+        onOpenChange?.(newOpen);
+
         if (!newOpen) {
             setCampaignName("");
         }
@@ -85,7 +94,7 @@ export function CreateCampaignDialog({ children }: CreateCampaignDialogProps) {
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+            {children && <DialogTrigger asChild>{children}</DialogTrigger>}
             <DialogContent className="sm:max-w-106.25">
                 <DialogHeader>
                     <DialogTitle>{t("createCampaignDialogTitle")}</DialogTitle>
