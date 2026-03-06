@@ -10,7 +10,7 @@ services:
     ports:
       - "3000"
     environment:
-      NODE_ENV: integration
+      NODE_ENV: production
     networks:
       - chariot-group-network-integ
       - traefik-public
