@@ -6,7 +6,7 @@ import { ProxyService } from "@/proxy/proxy.service";
 export class ProxyController {
   private readonly logger = new Logger(ProxyController.name);
 
-  constructor(private readonly proxyService: ProxyService) {}
+  constructor(private readonly proxyService: ProxyService) { }
 
   @All("*")
   async proxyRequest(@Req() req: Request, @Res() res: Response) {
