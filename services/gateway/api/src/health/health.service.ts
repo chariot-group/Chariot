@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-import { ServicesConfig } from '@/proxy/services.config';
+import { Injectable, Logger } from "@nestjs/common";
+import { HttpService } from "@nestjs/axios";
+import { firstValueFrom } from "rxjs";
+import { ServicesConfig } from "@/proxy/services.config";
 
 @Injectable()
 export class HealthService {
@@ -14,10 +14,10 @@ export class HealthService {
 
   async getHealth() {
     return {
-      status: 'ok',
+      status: "ok",
       timestamp: new Date().toISOString(),
-      service: 'chariot-gateway',
-      version: '1.0.0',
+      service: "chariot-gateway",
+      version: "1.0.0",
     };
   }
 
@@ -39,9 +39,7 @@ export class HealthService {
           );
           checks[service.name] = response.status === 200;
         } catch (error) {
-          this.logger.warn(
-            `${service.name} service health check failed: ${error.message}`,
-          );
+          this.logger.warn(`${service.name} service health check failed: ${error.message}`);
           checks[service.name] = false;
         }
       }),
@@ -50,7 +48,7 @@ export class HealthService {
     const isReady = Object.values(checks).every((check) => check === true);
 
     return {
-      status: isReady ? 'ready' : 'not_ready',
+      status: isReady ? "ready" : "not_ready",
       timestamp: new Date().toISOString(),
       checks,
     };

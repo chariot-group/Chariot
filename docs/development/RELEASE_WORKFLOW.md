@@ -244,19 +244,61 @@ Production deployment:
 - Automatic health check
 - Discord notification: "✅ v1.3.0 deployed to production"
 
-Sync with develop:
+Post-release sync (mandatory):
 ```bash
 git checkout develop
 git pull origin develop
-git merge release/v1.3.0 --no-ff
+git merge origin/main --no-ff
 git push origin develop
 ```
+
+Why this matters:
+- Guarantees `main` has no commit missing in `develop` after each production release.
+- Prevents long conflict sessions in the next release cycle.
+- Keeps `develop` as the source of truth without rewriting its history.
+
+Optional stabilization (outside release window): keep `integ` equal to `main`
+```bash
+git fetch origin --prune
+git push --force-with-lease origin origin/main:integ
+```
+
+Use this only when you intentionally want `integ` to mirror production between release campaigns.
+
+Verification checks (run after synchronization):
+```bash
+git rev-list --left-right --count origin/develop...origin/main
+git rev-list --left-right --count origin/develop...origin/integ
+```
+
+Expected values:
+- `origin/develop...origin/main` -> `X 0` (`X >= 0`)
+- `origin/develop...origin/integ` -> `Y 0` (`Y >= 0`)
+
+Interpretation:
+- Right value `0` means the target branch (`main` or `integ`) has no commit that `develop` does not have.
 
 Cleanup:
 ```bash
 git branch -d release/v1.3.0
 git push origin --delete release/v1.3.0
 ```
+
+---
+
+## Appendix: Anti-drift guardrails
+
+Rule 1: Never rewrite `develop`
+- Do not force-push `develop`.
+- If production introduces merge commits, absorb them with `git merge origin/main --no-ff` on `develop`.
+
+Rule 2: Preserve branch direction
+- Feature flow remains `develop` -> `integ` -> `main`.
+- Hotfixes on `main` must be merged back into `develop` immediately.
+
+Rule 3: Verify branch health regularly
+- Run `git rev-list --left-right --count` checks before and after each release.
+- Any non-zero right value must be resolved before starting the next release.
 
 Create a GitHub Release:
 - Tag: `v1.3.0`

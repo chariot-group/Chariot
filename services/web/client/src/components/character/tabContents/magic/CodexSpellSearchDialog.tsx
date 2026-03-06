@@ -10,7 +10,7 @@ import { Spell } from "@/types/character";
 import { useTranslations } from "next-intl";
 import CodexService from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
-import { Search, Loader2, BadgeCheck, FileBadge } from "lucide-react";
+import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CodexSpellSearchDialogProps {
@@ -38,6 +38,7 @@ export default function CodexSpellSearchDialog({
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
+    const [showMobileDetails, setShowMobileDetails] = useState(false);
     const isLoadingRef = useRef(false);
 
     const ITEMS_PER_PAGE = 20;
@@ -111,6 +112,7 @@ export default function CodexSpellSearchDialog({
             setSelectedLang(null);
             setSearchResults([]);
             setSelectedSpell(null);
+            setShowMobileDetails(false);
             setError(null);
             setCurrentPage(1);
             setHasMore(false);
@@ -134,6 +136,7 @@ export default function CodexSpellSearchDialog({
         const langToUse = selectedLang || codexSpellItem.languages[0];
         const convertedSpell = CodexService.convertToChariotSpell(codexSpellItem, langToUse);
         setSelectedSpell(convertedSpell);
+        setShowMobileDetails(true);
     };
 
     const handleValidate = () => {
@@ -152,9 +155,10 @@ export default function CodexSpellSearchDialog({
 
                 <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-6">
                     {/* Partie gauche : Recherche et résultats */}
-                    <div className="flex flex-col gap-4 w-full lg:w-1/2 overflow-hidden">
+                    <div
+                        className={`flex flex-col gap-4 w-full lg:w-1/2 overflow-hidden ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
                         {/* Barre de recherche et filtre de langue */}
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                                 <Input
@@ -380,7 +384,18 @@ export default function CodexSpellSearchDialog({
                     </div>
 
                     {/* Partie droite : Affichage du sort sélectionné */}
-                    <div className="flex flex-col w-full lg:w-1/2 overflow-hidden border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4">
+                    <div
+                        className={`flex-col w-full lg:w-1/2 overflow-hidden border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="lg:hidden self-start mb-2 px-2"
+                            onClick={() => setShowMobileDetails(false)}
+                            aria-label={tMagic("backToList")}
+                        >
+                            <ArrowLeft className="size-4 mr-2" />
+                            {tMagic("backToList")}
+                        </Button>
                         {selectedSpell ? (
                             <>
                                 <h3 className={`text-xl font-semibold mb-4 ${accentColor}`}>

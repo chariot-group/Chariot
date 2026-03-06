@@ -148,13 +148,25 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
      * Fonction de création d'un nouveau personnage
      */
     const onCreate = async (data: TFormValues): Promise<void> => {
+        form.clearErrors();
+        const isValid = await form.trigger(undefined, { shouldFocus: true });
+        if (!isValid) {
+            toast.error(t('createError'));
+            return;
+        }
+
         try {
             setIsSaving(true);
             setSuccess(false);
 
-            console.log('🔍 [useCharacterForm] Données AVANT envoi à l\'API:', JSON.stringify(data, null, 2));
+            const sanitizedData = { ...data } as any;
+            if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {
+                sanitizedData.groups = sanitizedData.groups.map((group: any) =>
+                    typeof group === 'object' ? group._id : group
+                );
+            }
 
-            const createdCharacter = await CharacterService.createCharacter(type, data as any);
+            const createdCharacter = await CharacterService.createCharacter(type, sanitizedData as any);
 
             toast.success(t('createSuccess'));
             setSuccess(true);
@@ -241,6 +253,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             toast.info(t('changesCancelled'));
         } else {
             form.reset(defaultValues as any);
+            toast.info(t('changesCancelled'));
         }
         setSuccess(false);
     };

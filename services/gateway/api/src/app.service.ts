@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from "@nestjs/common";
 
 @Injectable()
 export class AppService {
@@ -6,15 +6,15 @@ export class AppService {
 
   getGatewayInfo() {
     return {
-      name: 'Chariot API Gateway',
-      version: '1.0.0',
-      description: 'Centralized API Gateway for Chariot microservices',
+      name: "Chariot API Gateway",
+      version: "1.0.0",
+      description: "Centralized API Gateway for Chariot microservices",
       environment: process.env.NODE_ENV,
       endpoints: {
-        health: '/health',
-        ready: '/ready',
-        metrics: '/metrics',
-        adventure: '/api/*',
+        health: "/health",
+        ready: "/ready",
+        metrics: "/metrics",
+        adventure: "/api/*",
       },
     };
   }

@@ -8,7 +8,6 @@ export class KeycloakAdminService {
     private adminClient: KcAdminClient;
 
     constructor(private configService: ConfigService) {
-        console.log('Keycloak Admin Service Config:', this.configService.get<string>('KEYCLOAK_INTERNAL_URL'));
         const keycloakUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL', 'http://keycloak:8080/auth');
 
         this.adminClient = new KcAdminClient({

@@ -310,17 +310,58 @@ export class GroupService {
       const group = await this.groupModel.findById(id).exec();
 
       const start: number = Date.now();
-      group.deletedAt = new Date();
+      const deletionDate = new Date();
+      group.deletedAt = deletionDate;
 
-      await this.characterModel
-        .updateMany(
-          { _id: { $in: group.characters } },
-          { $pull: { groups: id } },
-        )
-        .exec();
+      const characterIds = (group.characters || []).map((character: any) =>
+        character._id ? character._id : character,
+      );
+
+      if (characterIds.length > 0) {
+        await this.characterModel
+          .updateMany(
+            { _id: { $in: characterIds }, deletedAt: null },
+            { $pull: { groups: id } },
+          )
+          .exec();
+
+        const orphanCharacters = await this.characterModel
+          .find({
+            _id: { $in: characterIds },
+            deletedAt: null,
+            $or: [{ groups: { $exists: false } }, { groups: { $size: 0 } }],
+          })
+          .select('_id')
+          .lean()
+          .exec();
+
+        const orphanCharacterIds = orphanCharacters.map((character) => character._id);
+
+        if (orphanCharacterIds.length > 0) {
+          await this.characterModel
+            .updateMany(
+              { _id: { $in: orphanCharacterIds }, deletedAt: null },
+              { $set: { deletedAt: deletionDate } },
+            )
+            .exec();
+        }
+      }
+
+      if (group.campaigns && group.campaigns.length > 0) {
+        await this.campaignModel.updateMany(
+          { _id: { $in: group.campaigns } },
+          {
+            $pull: {
+              'groups.active': id,
+              'groups.archived': id,
+              'groups.main': id,
+            },
+          },
+        );
+      }
 
       group.characters = [];
-      group.save();
+      await group.save();
 
       const end: number = Date.now();
 

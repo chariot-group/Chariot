@@ -93,7 +93,7 @@ export const SenseSchema = z.object({
 
 // ===== Stats =====
 export const StatsSchema = z.object({
-    size: z.string(), // REQUIRED dans Mongoose
+    size: z.string().default('Medium'), // REQUIRED dans Mongoose
     maxHitPoints: z.number().optional(),
     currentHitPoints: z.number().optional(),
     tempHitPoints: z.number().optional(),

@@ -74,11 +74,20 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                 aria-label={`${t("details")} ${action.name}`}>
                 <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                   <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("attackDC")}</span>
-                  <span
-                    className="text-sm md:text-base"
-                    aria-label={`${t("attackDC")} ${action.attackBonus ? `+${action.attackBonus}` : t("noValue") || "none"}`}>
-                    {action.attackBonus ? `+${action.attackBonus}` : "-"}
-                  </span>
+                  {(() => {
+                    const attackOrDc = action.attackBonus !== undefined && action.attackBonus !== null
+                      ? `+${action.attackBonus}`
+                      : action.dc?.dcValue
+                        ? `DC ${action.dc.dcValue}`
+                        : "-";
+                    return (
+                      <span
+                        className="text-sm md:text-base"
+                        aria-label={`${t("attackDC")} ${attackOrDc}`}>
+                        {attackOrDc}
+                      </span>
+                    );
+                  })()}
                 </Card>
                 <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                   <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
@@ -87,11 +96,11 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                   <span className="text-sm md:text-base">
                     {action.damage && action.damage.length > 0
                       ? action.damage.map((d, i) => (
-                          <span key={i}>
-                            {d.dice} {d.type}
-                            {i < action.damage!.length - 1 ? " + " : ""}
-                          </span>
-                        ))
+                        <span key={i}>
+                          {d.dice} {d.type}
+                          {i < action.damage!.length - 1 ? " + " : ""}
+                        </span>
+                      ))
                       : "-"}{" "}
                     {action.range && `(${action.range})`}
                   </span>

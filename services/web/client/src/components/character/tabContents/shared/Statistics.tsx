@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Player } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { Bird, Mountain, Shovel, Waves } from "lucide-react";
+import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import Image from "next/image";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
@@ -17,11 +17,12 @@ interface StatisticsProps {
 export default function Statistics({ player, accentColor }: StatisticsProps) {
   const t = useTranslations("characterDetail.battle");
   const tClass = useTranslations("classes");
+  const speed = player.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
 
   const speedBadges = [
     {
       key: "walk",
-      value: player.stats.speed.walk,
+      value: speed.walk,
       icon: (
         <Image
           src={RunningIcon}
@@ -34,7 +35,7 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
     },
     {
       key: "climb",
-      value: player.stats.speed.climb,
+      value: speed.climb,
       icon: (
         <Mountain
           size={24}
@@ -46,7 +47,7 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
     },
     {
       key: "swim",
-      value: player.stats.speed.swim,
+      value: speed.swim,
       icon: (
         <Waves
           size={24}
@@ -58,7 +59,7 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
     },
     {
       key: "fly",
-      value: player.stats.speed.fly,
+      value: speed.fly,
       icon: (
         <Bird
           size={24}
@@ -70,7 +71,7 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
     },
     {
       key: "burrow",
-      value: player.stats.speed.burrow,
+      value: speed.burrow,
       icon: (
         <Shovel
           size={24}
@@ -134,6 +135,25 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
             </div>
           </TooltipTrigger>
           <TooltipContent>{t("initiativeTooltip")}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+              tabIndex={0}
+              role="img"
+              aria-label={`${t("sizeTooltip")} ${t(`sizes.${player.stats.size}` as any)}`}>
+              <RulerIcon
+                size={24}
+                className="text-black"
+                aria-hidden="true"
+              />
+              <span aria-hidden="true">
+                {t(`sizesAbbr.${player.stats.size}` as any)}
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{t(`sizes.${player.stats.size}` as any)}</TooltipContent>
         </Tooltip>
         {speedBadges.map(
           (badge) =>

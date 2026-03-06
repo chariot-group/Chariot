@@ -10,7 +10,7 @@ import helmet from 'helmet';
 const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, '');
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
+  const logger = new Logger("Bootstrap");
 
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger({
@@ -48,10 +48,10 @@ async function bootstrap() {
         callback(null, false);
       }
     },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    exposedHeaders: ['Authorization'],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    exposedHeaders: ["Authorization"],
   });
 
   app.use(
@@ -74,11 +74,11 @@ async function bootstrap() {
   );
 
   const port = process.env.GATEWAY_PORT || 8082;
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port, "0.0.0.0");
 
   logger.log(`Chariot API Gateway running on port ${port}`);
   logger.log(`Environment: ${process.env.NODE_ENV}`);
-  logger.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
+  logger.log(`Allowed CORS origins: ${allowedOrigins.join(", ")}`);
 }
 
 bootstrap();

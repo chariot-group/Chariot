@@ -1,40 +1,32 @@
-import {
-  Controller,
-  All,
-  Req,
-  Res,
-  Logger,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
-import { ProxyService } from '@/proxy/proxy.service';
+import { Controller, All, Req, Res, Logger, HttpException, HttpStatus } from "@nestjs/common";
+import { Request, Response } from "express";
+import { ProxyService } from "@/proxy/proxy.service";
 
-@Controller('api')
+@Controller("api")
 export class ProxyController {
   private readonly logger = new Logger(ProxyController.name);
 
   constructor(private readonly proxyService: ProxyService) { }
 
-  @All('*')
+  @All("*")
   async proxyRequest(@Req() req: Request, @Res() res: Response) {
     try {
       // Handle OPTIONS preflight requests locally (CORS)
       // Do not forward to backend services
-      if (req.method === 'OPTIONS') {
+      if (req.method === "OPTIONS") {
         return res.status(204).end();
       }
 
       // Extract service name and path from URL
       // Expected format: /api/{service}/{path}
-      const urlWithoutPrefix = req.originalUrl.replace(/^\/api/, '');
-      const segments = urlWithoutPrefix.split('/').filter(Boolean);
+      const urlWithoutPrefix = req.originalUrl.replace(/^\/api/, "");
+      const segments = urlWithoutPrefix.split("/").filter(Boolean);
 
       if (segments.length === 0) {
         // No service specified - return available services
         const services = this.proxyService.getAvailableServices();
         return res.status(200).json({
-          message: 'API Gateway',
+          message: "API Gateway",
           available_services: services,
         });
       }
@@ -47,25 +39,19 @@ export class ProxyController {
       if (this.proxyService.hasService(potentialService)) {
         // First segment is a service name: /api/{service}/{path}
         serviceName = potentialService;
-        targetPath = '/' + segments.slice(1).join('/');
+        targetPath = "/" + segments.slice(1).join("/");
       } else {
         // Fallback to Adventure service for backward compatibility: /api/{path}
-        serviceName = 'adventure';
-        targetPath = '/' + segments.join('/');
-        this.logger.debug(
-          `No service '${potentialService}' found, falling back to adventure service`,
-        );
+        serviceName = "adventure";
+        targetPath = "/" + segments.join("/");
+        this.logger.debug(`No service '${potentialService}' found, falling back to adventure service`);
       }
 
       // Preserve query string if present
-      const queryString = req.originalUrl.includes('?')
-        ? '?' + req.originalUrl.split('?')[1]
-        : '';
+      const queryString = req.originalUrl.includes("?") ? "?" + req.originalUrl.split("?")[1] : "";
       const fullTargetPath = targetPath + queryString;
 
-      this.logger.debug(
-        `Proxying request to ${serviceName} service: ${req.method} ${fullTargetPath}`,
-      );
+      this.logger.debug(`Proxying request to ${serviceName} service: ${req.method} ${fullTargetPath}`);
 
       const requestBody = (req as any).rawBody ?? req.body;
 
@@ -80,20 +66,17 @@ export class ProxyController {
       // Forward response headers but filter out CORS headers
       // CORS is managed at gateway level only
       const corsHeaders = [
-        'access-control-allow-origin',
-        'access-control-allow-credentials',
-        'access-control-allow-methods',
-        'access-control-allow-headers',
-        'access-control-expose-headers',
-        'access-control-max-age',
+        "access-control-allow-origin",
+        "access-control-allow-credentials",
+        "access-control-allow-methods",
+        "access-control-allow-headers",
+        "access-control-expose-headers",
+        "access-control-max-age",
       ];
 
       Object.entries(response.headers).forEach(([key, value]) => {
         const lowerKey = key.toLowerCase();
-        if (
-          lowerKey !== 'transfer-encoding' &&
-          !corsHeaders.includes(lowerKey)
-        ) {
+        if (lowerKey !== "transfer-encoding" && !corsHeaders.includes(lowerKey)) {
           res.setHeader(key, value as string);
         }
       });
@@ -112,10 +95,7 @@ export class ProxyController {
           error: error.name,
         });
       } else {
-        throw new HttpException(
-          'Service temporarily unavailable',
-          HttpStatus.SERVICE_UNAVAILABLE,
-        );
+        throw new HttpException("Service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE);
       }
     }
   }
