@@ -3,7 +3,7 @@ FROM node:20-alpine AS base
 FROM base AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 
 FROM base AS builder
 WORKDIR /app
@@ -37,5 +37,8 @@ ENV PORT=3000
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+# Ensure SWC runtime helpers are available in the final image.
+COPY --from=deps /app/node_modules/@swc/helpers ./node_modules/@swc/helpers
+COPY --from=deps /app/node_modules/tslib ./node_modules/tslib
 
 CMD ["node", "server.js"]
