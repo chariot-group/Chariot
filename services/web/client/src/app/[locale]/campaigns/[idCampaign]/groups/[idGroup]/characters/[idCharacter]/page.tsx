@@ -26,8 +26,8 @@ export default function Character() {
     const remainingArchived = archivedGroups.filter((group) => group._id !== groupId);
 
     const groupWithCharacter =
-      remainingActive.find((group) => (group.characters?.length || 0) > 0)
-      || remainingArchived.find((group) => (group.characters?.length || 0) > 0);
+      remainingActive.find((group) => (group.characters?.length || 0) > 0) ||
+      remainingArchived.find((group) => (group.characters?.length || 0) > 0);
 
     if (groupWithCharacter && groupWithCharacter.characters[0]?._id) {
       return `/campaigns/${campaignId}/groups/${groupWithCharacter._id}/characters/${groupWithCharacter.characters[0]._id}`;
@@ -77,6 +77,12 @@ export default function Character() {
   }
 
   if (!loading && (error || !character)) {
+    setTimeout(() => {
+      if (!character) {
+        router.push(`/404`);
+      }
+    }, 500);
+
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -84,5 +90,10 @@ export default function Character() {
     );
   }
 
-  return <CharacterDetailView character={character as Player | NPC} onCharacterUpdate={refetch} />;
+  return (
+    <CharacterDetailView
+      character={character as Player | NPC}
+      onCharacterUpdate={refetch}
+    />
+  );
 }

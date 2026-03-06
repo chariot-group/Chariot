@@ -53,11 +53,13 @@ export class ProxyController {
 
       this.logger.debug(`Proxying request to ${serviceName} service: ${req.method} ${fullTargetPath}`);
 
+      const requestBody = (req as any).rawBody ?? req.body;
+
       const response = await this.proxyService.forward(
         serviceName,
         req.method,
         fullTargetPath,
-        req.body,
+        requestBody,
         req.headers as Record<string, string>,
       );
 

@@ -800,3 +800,32 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/services/UserService.ts` - updateCurrentUser method
 - `services/web/client/src/types/user.ts` - UpdateUserDto type
 - `services/web/client/messages/{en|fr|es}.json` - i18n translations
+
+---
+
+## FR-011: Stripe Checkout and Webhook Access Control
+
+**Rule**: Stripe checkout creation must be restricted to authenticated users, while webhook processing must be publicly accessible only through Stripe signature validation.
+
+**Requirements**:
+- Endpoint `POST /stripe/checkout` requires authenticated user context from Keycloak guard
+- `userId` must be sourced from `request.user.keycloakId` only
+- `userId` must not be provided in checkout request body DTO
+- Endpoint `POST /stripe/webhook` must be marked public (`@Public()`) to allow Stripe callbacks
+- Webhook requests must be validated with Stripe signature header and webhook secret before processing
+
+**Prohibitions**:
+- Accepting `userId` from checkout body payload
+- Requiring user JWT authentication on webhook endpoint
+- Processing webhook event without Stripe signature validation
+
+**Tests**:
+- Controller unit test verifies checkout calls service with `request.user.keycloakId`
+- Controller unit test verifies webhook route is marked public
+- Controller unit test verifies missing raw body is rejected
+
+**References**:
+- `services/adventure/api/src/resources/stripe/stripe.controller.ts`
+- `services/adventure/api/src/resources/stripe/stripe.service.ts`
+- `services/adventure/api/src/resources/stripe/dto/checkout.dto.ts`
+- `services/adventure/api/src/resources/stripe/stripe.controller.spec.ts`

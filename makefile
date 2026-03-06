@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout
 
 # Configuration
 SERVICES_DIR := services
@@ -263,6 +263,27 @@ else
 	fi
 	@echo "$(GREEN)✓ Tests e2e terminés$(NC)"
 endif
+
+stripe-login: ## Authentifie Stripe CLI (navigateur) pour les tests webhooks locaux
+	@echo "$(YELLOW)Authentification Stripe CLI...$(NC)"
+	@env -u STRIPE_API_KEY stripe login
+
+stripe-listen: ## Démarre Stripe CLI et forward les webhooks vers le gateway local
+	@echo "$(YELLOW)Démarrage de Stripe CLI listener...$(NC)"
+	@if [ -n "$(STRIPE_CLI_API_KEY)" ]; then \
+		STRIPE_API_KEY=$(STRIPE_CLI_API_KEY) stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/api/stripe/webhook}; \
+	else \
+		env -u STRIPE_API_KEY stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/api/stripe/webhook}; \
+	fi
+
+stripe-trigger-checkout: ## Déclenche un event Stripe checkout.session.completed en local
+	@echo "$(YELLOW)Déclenchement d'un webhook Stripe checkout.session.completed...$(NC)"
+	@if [ -n "$(STRIPE_CLI_API_KEY)" ]; then \
+		STRIPE_API_KEY=$(STRIPE_CLI_API_KEY) stripe trigger checkout.session.completed; \
+	else \
+		env -u STRIPE_API_KEY stripe trigger checkout.session.completed; \
+	fi
+	@echo "$(GREEN)✓ Event Stripe déclenché$(NC)"
 
 seed: ## Lance le seeder pour adventure
 	@echo "$(YELLOW)Exécution du seeder pour adventure...$(NC)"

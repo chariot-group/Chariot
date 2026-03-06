@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 interface ErrorProps {
@@ -12,6 +13,7 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   const t = useTranslations("error");
+  const router = useRouter();
 
   useEffect(() => {
     // Log l'erreur côté client pour le monitoring
@@ -51,7 +53,7 @@ export default function Error({ error, reset }: ErrorProps) {
             {t("actions.retry")}
           </button>
           <button
-            onClick={() => (window.location.href = "/")}
+            onClick={() => router.push("/")}
             className="cursor-pointer flex-1 px-4 py-2 bg-primary rounded-lg hover:bg-primary/90 transition-colors font-medium">
             {t("actions.home")}
           </button>

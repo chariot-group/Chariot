@@ -89,6 +89,11 @@
     "profile": "Profil",
     "logout": "Se déconnecter"
   },
+  "payment": {
+    "reloadSuccess": "Votre compte a été rechargé de {chars} chars.",
+    "reloadSuccessUnknown": "Votre paiement est validé, le rechargement de votre compte est en cours.",
+    "reloadPending": "Paiement confirmé, mise à jour du solde en cours."
+  },
   "ProfilePage": {
     "pageTitle": "Profil utilisateur",
     "changePasswordTitle": "Changer de mot de passe",

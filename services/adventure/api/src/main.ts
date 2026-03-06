@@ -14,6 +14,7 @@ async function bootstrap() {
   let AppModuleToUse = AppModule;
 
   const app = await NestFactory.create(AppModuleToUse, {
+    rawBody: true,
     logger: WinstonModule.createLogger({
       instance: instance,
     }),
@@ -29,8 +30,17 @@ async function bootstrap() {
     exposedHeaders: ['Authorization'],
   });
 
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    },
+  }));
+  app.use(express.urlencoded({
+    extended: true,
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    },
+  }));
   app.use(cookieParser());
 
   app.useGlobalFilters(new ErrorDetailsFilter());

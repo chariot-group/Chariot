@@ -89,6 +89,11 @@
     "profile": "Perfil",
     "logout": "Cerrar sesión"
   },
+  "payment": {
+    "reloadSuccess": "Tu cuenta se recargó con {chars} chars.",
+    "reloadSuccessUnknown": "Tu pago está confirmado, la recarga de tu cuenta está en curso.",
+    "reloadPending": "Pago confirmado, actualización del saldo en curso."
+  },
   "ProfilePage": {
     "pageTitle": "Perfil de usuario",
     "changePasswordTitle": "Cambiar contraseña",

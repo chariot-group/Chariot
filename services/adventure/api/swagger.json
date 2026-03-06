@@ -419,7 +419,9 @@
         "tags": [
           "Player"
         ]
-      },
+      }
+    },
+    "/characters/players/without-group": {
       "get": {
         "operationId": "PlayerController_getPlayersWithoutGroup",
         "parameters": [
@@ -1441,6 +1443,271 @@
           "Campaign"
         ]
       }
+    },
+    "/user/me": {
+      "get": {
+        "operationId": "UserController_findOne",
+        "parameters": [],
+        "responses": {
+          "401": {
+            "description": "User not authenticated"
+          },
+          "default": {
+            "description": "User information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/UserInfoDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current authenticated user information",
+        "tags": [
+          "User"
+        ]
+      },
+      "put": {
+        "operationId": "UserController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User profile updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/UserInfoDto"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data"
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "404": {
+            "description": "User not found in Keycloak"
+          },
+          "500": {
+            "description": "Internal server error or Keycloak communication failure"
+          }
+        },
+        "summary": "Update current authenticated user profile",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/me/password": {
+      "put": {
+        "operationId": "UserController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    },
+                    {
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Password changed successfully"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input - validation failed"
+          },
+          "401": {
+            "description": "Current password is incorrect"
+          },
+          "403": {
+            "description": "New password does not meet complexity requirements"
+          },
+          "500": {
+            "description": "Keycloak API error"
+          }
+        },
+        "summary": "Change password for current authenticated user",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/stripe/checkout": {
+      "post": {
+        "operationId": "StripeController_createCheckout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Checkout session created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Stripe checkout session created in 120 ms"
+                    },
+                    "data": {
+                      "type": "string",
+                      "example": "https://checkout.stripe.com/c/pay/cs_test_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid checkout request payload"
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "500": {
+            "description": "Internal error while creating Stripe session"
+          }
+        },
+        "summary": "Create a Stripe checkout session for the authenticated user",
+        "tags": [
+          "Stripe"
+        ]
+      }
+    },
+    "/stripe/webhook": {
+      "post": {
+        "operationId": "StripeController_handleWebhook",
+        "parameters": [
+          {
+            "name": "stripe-signature",
+            "required": true,
+            "in": "header",
+            "description": "Stripe signature used to validate webhook authenticity",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook event handled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Stripe webhook handled in 24 ms"
+                    },
+                    "data": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid webhook payload/signature or missing raw body"
+          }
+        },
+        "summary": "Stripe webhook endpoint (public, verified by Stripe signature)",
+        "tags": [
+          "Stripe"
+        ]
+      }
+    },
+    "/stripe/products": {
+      "get": {
+        "operationId": "StripeController_getProducts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Products fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/IResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Fetch all Stripe products",
+        "tags": [
+          "Stripe"
+        ]
+      }
     }
   },
   "info": {
@@ -1461,8 +1728,8 @@
         "type": "oauth2",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/auth",
-            "tokenUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/token",
+            "authorizationUrl": "http://localhost:8080/auth/realms/chariot/protocol/openid-connect/auth",
+            "tokenUrl": "http://localhost:8080/auth/realms/chariot/protocol/openid-connect/token",
             "scopes": {
               "openid": "OpenID Connect"
             }
@@ -1765,6 +2032,10 @@
             "type": "number",
             "example": 15
           },
+          "initiative": {
+            "type": "number",
+            "example": 3
+          },
           "speed": {
             "$ref": "#/components/schemas/Speed"
           },
@@ -1804,6 +2075,7 @@
           "currentHitPoints",
           "tempHitPoints",
           "armorClass",
+          "initiative",
           "speed",
           "abilityScores",
           "languages",
@@ -1874,6 +2146,80 @@
         "type": "object",
         "properties": {}
       },
+      "DamageDetails": {
+        "type": "object",
+        "properties": {
+          "diceCount": {
+            "type": "number",
+            "example": 8,
+            "description": "Nombre de dés"
+          },
+          "diceType": {
+            "type": "string",
+            "example": "d6",
+            "description": "Type de dé",
+            "enum": [
+              "d4",
+              "d6",
+              "d8",
+              "d10",
+              "d12",
+              "d20",
+              "d100"
+            ]
+          },
+          "bonus": {
+            "type": "number",
+            "example": 3,
+            "description": "Bonus aux dégâts"
+          },
+          "damageType": {
+            "type": "string",
+            "example": "Feu",
+            "description": "Type de dégâts"
+          }
+        },
+        "required": [
+          "diceCount",
+          "diceType",
+          "bonus",
+          "damageType"
+        ]
+      },
+      "HealingDetails": {
+        "type": "object",
+        "properties": {
+          "diceCount": {
+            "type": "number",
+            "example": 4,
+            "description": "Nombre de dés"
+          },
+          "diceType": {
+            "type": "string",
+            "example": "d8",
+            "description": "Type de dé",
+            "enum": [
+              "d4",
+              "d6",
+              "d8",
+              "d10",
+              "d12",
+              "d20",
+              "d100"
+            ]
+          },
+          "bonus": {
+            "type": "number",
+            "example": 3,
+            "description": "Bonus aux soins"
+          }
+        },
+        "required": [
+          "diceCount",
+          "diceType",
+          "bonus"
+        ]
+      },
       "Spell": {
         "type": "object",
         "properties": {
@@ -1929,9 +2275,15 @@
             "type": "string",
             "example": "8d6"
           },
+          "damageDetails": {
+            "$ref": "#/components/schemas/DamageDetails"
+          },
           "healing": {
             "type": "string",
             "example": "4d8"
+          },
+          "healingDetails": {
+            "$ref": "#/components/schemas/HealingDetails"
           }
         },
         "required": [
@@ -1945,12 +2297,18 @@
           "range",
           "effectType",
           "damage",
-          "healing"
+          "damageDetails",
+          "healing",
+          "healingDetails"
         ]
       },
       "Spellcasting": {
         "type": "object",
         "properties": {
+          "className": {
+            "type": "string",
+            "example": "Wizard"
+          },
           "ability": {
             "type": "string",
             "example": "Intelligence"
@@ -1992,6 +2350,7 @@
           }
         },
         "required": [
+          "className",
           "ability",
           "saveDC",
           "attackBonus",
@@ -2102,9 +2461,13 @@
             "type": "number",
             "example": 0
           },
-          "notes": {
+          "treasure": {
             "type": "string",
             "example": "Some notes about the treasure."
+          },
+          "equipment": {
+            "type": "string",
+            "example": "Some notes about the equipment."
           }
         },
         "required": [
@@ -2113,7 +2476,8 @@
           "ep",
           "gp",
           "pp",
-          "notes"
+          "treasure",
+          "equipment"
         ]
       },
       "Conditions": {
@@ -2273,6 +2637,31 @@
           "type"
         ]
       },
+      "DifficultyClass": {
+        "type": "object",
+        "properties": {
+          "dcType": {
+            "type": "string",
+            "example": "wis",
+            "description": "Ability score type for the saving throw"
+          },
+          "dcValue": {
+            "type": "number",
+            "example": 18,
+            "description": "DC value to beat"
+          },
+          "successType": {
+            "type": "string",
+            "example": "none",
+            "description": "Effect on successful save"
+          }
+        },
+        "required": [
+          "dcType",
+          "dcValue",
+          "successType"
+        ]
+      },
       "Action": {
         "type": "object",
         "properties": {
@@ -2284,24 +2673,42 @@
             "type": "string",
             "example": "Melee Weapon Attack"
           },
+          "description": {
+            "type": "string",
+            "example": "The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute."
+          },
           "attackBonus": {
             "type": "number",
             "example": 5
           },
           "damage": {
-            "$ref": "#/components/schemas/Damage"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Damage"
+            }
           },
           "range": {
             "type": "string",
             "example": "5 ft."
+          },
+          "dc": {
+            "$ref": "#/components/schemas/DifficultyClass"
+          },
+          "cost": {
+            "type": "number",
+            "example": 2,
+            "description": "Cost of the action (for legendary actions)"
           }
         },
         "required": [
           "name",
           "type",
+          "description",
           "attackBonus",
           "damage",
-          "range"
+          "range",
+          "dc",
+          "cost"
         ]
       },
       "Actions": {
@@ -2354,7 +2761,7 @@
         "properties": {
           "alignment": {
             "type": "string",
-            "example": "A brave warrior from the north"
+            "example": "Chaotic Good"
           },
           "type": {
             "type": "string",
@@ -2382,9 +2789,21 @@
               }
             ]
           },
-          "name": {
+          "firstname": {
             "type": "string",
             "example": "Aragorn"
+          },
+          "lastname": {
+            "type": "string",
+            "example": "Elessar"
+          },
+          "surname": {
+            "type": "string",
+            "example": "Fils d'Arathorn"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "http://example.com/avatar.png"
           },
           "stats": {
             "$ref": "#/components/schemas/Stats"
@@ -2435,11 +2854,18 @@
           },
           "profile": {
             "$ref": "#/components/schemas/NPCProfile"
+          },
+          "hitPointsRoll": {
+            "type": "string",
+            "example": "18d8+54"
           }
         },
         "required": [
           "_id",
-          "name",
+          "firstname",
+          "lastname",
+          "surname",
+          "avatar",
           "stats",
           "affinities",
           "abilities",
@@ -2698,6 +3124,10 @@
             "type": "number",
             "example": 15
           },
+          "initiative": {
+            "type": "number",
+            "example": 3
+          },
           "passivePerception": {
             "type": "number",
             "example": 12
@@ -2737,6 +3167,7 @@
           "currentHitPoints",
           "tempHitPoints",
           "armorClass",
+          "initiative",
           "passivePerception",
           "languages",
           "abilityScores",
@@ -2803,6 +3234,80 @@
           "description"
         ]
       },
+      "DamageDetailsDto": {
+        "type": "object",
+        "properties": {
+          "diceCount": {
+            "type": "number",
+            "example": 8,
+            "description": "Nombre de dés"
+          },
+          "diceType": {
+            "type": "string",
+            "example": "d6",
+            "description": "Type de dé",
+            "enum": [
+              "d4",
+              "d6",
+              "d8",
+              "d10",
+              "d12",
+              "d20",
+              "d100"
+            ]
+          },
+          "bonus": {
+            "type": "number",
+            "example": 3,
+            "description": "Bonus aux dégâts"
+          },
+          "damageType": {
+            "type": "string",
+            "example": "Feu",
+            "description": "Type de dégâts"
+          }
+        },
+        "required": [
+          "diceCount",
+          "diceType",
+          "bonus",
+          "damageType"
+        ]
+      },
+      "HealingDetailsDto": {
+        "type": "object",
+        "properties": {
+          "diceCount": {
+            "type": "number",
+            "example": 4,
+            "description": "Nombre de dés"
+          },
+          "diceType": {
+            "type": "string",
+            "example": "d8",
+            "description": "Type de dé",
+            "enum": [
+              "d4",
+              "d6",
+              "d8",
+              "d10",
+              "d12",
+              "d20",
+              "d100"
+            ]
+          },
+          "bonus": {
+            "type": "number",
+            "example": 3,
+            "description": "Bonus aux soins"
+          }
+        },
+        "required": [
+          "diceCount",
+          "diceType",
+          "bonus"
+        ]
+      },
       "SpellDto": {
         "type": "object",
         "properties": {
@@ -2858,9 +3363,15 @@
             "type": "string",
             "example": "8d6"
           },
+          "damageDetails": {
+            "$ref": "#/components/schemas/DamageDetailsDto"
+          },
           "healing": {
             "type": "string",
             "example": "4d8"
+          },
+          "healingDetails": {
+            "$ref": "#/components/schemas/HealingDetailsDto"
           }
         },
         "required": [
@@ -2874,12 +3385,18 @@
           "range",
           "effectType",
           "damage",
-          "healing"
+          "damageDetails",
+          "healing",
+          "healingDetails"
         ]
       },
       "SpellcastingDto": {
         "type": "object",
         "properties": {
+          "className": {
+            "type": "string",
+            "example": "Wizard"
+          },
           "ability": {
             "type": "string",
             "example": "Intelligence"
@@ -2921,6 +3438,7 @@
           }
         },
         "required": [
+          "className",
           "ability",
           "saveDC",
           "attackBonus",
@@ -3031,9 +3549,13 @@
             "type": "number",
             "example": 20
           },
-          "notes": {
+          "treasure": {
             "type": "string",
             "example": "Found in a hidden chest behind the waterfall."
+          },
+          "equipment": {
+            "type": "string",
+            "example": "Sword, shield, and leather armor."
           }
         },
         "required": [
@@ -3042,7 +3564,8 @@
           "ep",
           "gp",
           "pp",
-          "notes"
+          "treasure",
+          "equipment"
         ]
       },
       "ConditionsDto": {
@@ -3137,6 +3660,31 @@
           "type"
         ]
       },
+      "DifficultyClassDto": {
+        "type": "object",
+        "properties": {
+          "dcType": {
+            "type": "string",
+            "example": "wis",
+            "description": "Ability score type for the saving throw"
+          },
+          "dcValue": {
+            "type": "number",
+            "example": 18,
+            "description": "DC value to beat"
+          },
+          "successType": {
+            "type": "string",
+            "example": "none",
+            "description": "Effect on successful save"
+          }
+        },
+        "required": [
+          "dcType",
+          "dcValue",
+          "successType"
+        ]
+      },
       "ActionDto": {
         "type": "object",
         "properties": {
@@ -3148,24 +3696,42 @@
             "type": "string",
             "example": "A ball of fire that explodes upon impact."
           },
+          "description": {
+            "type": "string",
+            "example": "The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute."
+          },
           "attackBonus": {
             "type": "number",
             "example": 5
           },
           "damage": {
-            "$ref": "#/components/schemas/DamageDto"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DamageDto"
+            }
           },
           "range": {
             "type": "string",
             "example": "30 feet"
+          },
+          "dc": {
+            "$ref": "#/components/schemas/DifficultyClassDto"
+          },
+          "cost": {
+            "type": "number",
+            "example": 2,
+            "description": "Cost of the action (for legendary actions)"
           }
         },
         "required": [
           "name",
           "type",
+          "description",
           "attackBonus",
           "damage",
-          "range"
+          "range",
+          "dc",
+          "cost"
         ]
       },
       "ActionsDto": {
@@ -3218,7 +3784,23 @@
         "properties": {
           "alignment": {
             "type": "string",
-            "example": "A brave warrior from the north"
+            "example": "Lawful Good",
+            "enum": [
+              "Lawful Good",
+              "Neutral Good",
+              "Chaotic Good",
+              "Lawful Neutral",
+              "True Neutral",
+              "Chaotic Neutral",
+              "Lawful Evil",
+              "Neutral Evil",
+              "Chaotic Evil",
+              "Unaligned",
+              "Any Good Alignment",
+              "Any Evil Alignment",
+              "Any Lawful Alignment",
+              "Any Chaotic Alignment"
+            ]
           },
           "type": {
             "type": "string",
@@ -3238,9 +3820,21 @@
       "CreateNpcDto": {
         "type": "object",
         "properties": {
-          "name": {
+          "firstname": {
             "type": "string",
             "example": "Aragorn"
+          },
+          "lastname": {
+            "type": "string",
+            "example": "Elessar"
+          },
+          "surname": {
+            "type": "string",
+            "example": "Fils d'Arathorn"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "http://example.com/avatar.png"
           },
           "groups": {
             "example": "60f7c2ab4f1a256e1c8b4567",
@@ -3287,10 +3881,17 @@
           },
           "profile": {
             "$ref": "#/components/schemas/NPCProfileDto"
+          },
+          "hitPointsRoll": {
+            "type": "string",
+            "example": "18d8+54"
           }
         },
         "required": [
-          "name",
+          "firstname",
+          "lastname",
+          "surname",
+          "avatar",
           "groups",
           "stats",
           "affinities",
@@ -3355,76 +3956,76 @@
         "type": "object",
         "properties": {
           "athletics": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "acrobatics": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "sleightHand": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "stealth": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "arcana": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "history": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "investigation": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "nature": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 2
           },
           "religion": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 3
           },
           "animalHandling": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 1
           },
           "insight": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "medicine": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "perception": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "survival": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 1
           },
           "deception": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "intimidation": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 2
           },
           "performance": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           },
           "persuasion": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 0
           }
         },
         "required": [
@@ -3508,6 +4109,10 @@
             "type": "number",
             "example": 15
           },
+          "initiative": {
+            "type": "number",
+            "example": 3
+          },
           "speed": {
             "$ref": "#/components/schemas/Speed"
           },
@@ -3544,6 +4149,36 @@
             "type": "number",
             "example": 0
           },
+          "armors": {
+            "example": [
+              "Leather",
+              "Chainmail"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tools": {
+            "example": [
+              "Thieves' Tools",
+              "Smith's Tools"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "weapons": {
+            "example": [
+              "Shortsword",
+              "Longbow"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "masteries": {
             "$ref": "#/components/schemas/Masteries"
           },
@@ -3557,6 +4192,7 @@
           "currentHitPoints",
           "tempHitPoints",
           "armorClass",
+          "initiative",
           "speed",
           "abilityScores",
           "languages",
@@ -3565,6 +4201,9 @@
           "skills",
           "senses",
           "proficiencyBonus",
+          "armors",
+          "tools",
+          "weapons",
           "masteries",
           "masteriesAbility"
         ]
@@ -3590,8 +4229,12 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
-            "example": "Warrior"
+            "example": "Warrior",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Class"
+              }
+            ]
           },
           "subclass": {
             "type": "string",
@@ -3618,7 +4261,7 @@
         "properties": {
           "alignment": {
             "type": "string",
-            "example": "A brave warrior from the north"
+            "example": "Chaotic Good"
           },
           "race": {
             "type": "string",
@@ -3627,12 +4270,40 @@
           "subrace": {
             "type": "string",
             "example": "High Elf"
+          },
+          "history": {
+            "type": "string",
+            "example": "A skilled archer from the northern forests."
           }
         },
         "required": [
           "alignment",
           "race",
-          "subrace"
+          "subrace",
+          "history"
+        ]
+      },
+      "DeathSaves": {
+        "type": "object",
+        "properties": {
+          "successes": {
+            "type": "number",
+            "example": 0,
+            "description": "Number of successful death saving throws (0-3)",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "failures": {
+            "type": "number",
+            "example": 0,
+            "description": "Number of failed death saving throws (0-3). Three failures means death.",
+            "minimum": 0,
+            "maximum": 3
+          }
+        },
+        "required": [
+          "successes",
+          "failures"
         ]
       },
       "Player": {
@@ -3646,9 +4317,21 @@
               }
             ]
           },
-          "name": {
+          "firstname": {
             "type": "string",
             "example": "Aragorn"
+          },
+          "lastname": {
+            "type": "string",
+            "example": "Elessar"
+          },
+          "surname": {
+            "type": "string",
+            "example": "Fils d'Arathorn"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "http://example.com/avatar.png"
           },
           "stats": {
             "$ref": "#/components/schemas/PlayerStats"
@@ -3691,6 +4374,12 @@
             "type": "string",
             "example": null
           },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Action"
+            }
+          },
           "inspiration": {
             "type": "boolean",
             "example": true
@@ -3713,11 +4402,17 @@
             "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
             "minimum": 0,
             "maximum": 6
+          },
+          "deathSaves": {
+            "$ref": "#/components/schemas/DeathSaves"
           }
         },
         "required": [
           "_id",
-          "name",
+          "firstname",
+          "lastname",
+          "surname",
+          "avatar",
           "stats",
           "affinities",
           "abilities",
@@ -3728,87 +4423,89 @@
           "conditions",
           "groups",
           "deletedAt",
+          "actions",
           "inspiration",
           "progression",
           "class",
           "profile",
-          "exhaustionLevel"
+          "exhaustionLevel",
+          "deathSaves"
         ]
       },
       "MasteryDto": {
         "type": "object",
         "properties": {
           "athletics": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 3
           },
           "acrobatics": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           },
           "sleightHand": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 1
           },
           "stealth": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           },
           "arcana": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 1
           },
           "history": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           },
           "investigation": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 1
           },
           "nature": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           },
           "religion": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 3
           },
           "animalHandling": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           },
           "insight": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 1
           },
           "medicine": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           },
           "perception": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 2
           },
           "survival": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           },
           "deception": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 3
           },
           "intimidation": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           },
           "performance": {
-            "type": "boolean",
-            "example": true
+            "type": "number",
+            "example": 2
           },
           "persuasion": {
-            "type": "boolean",
-            "example": false
+            "type": "number",
+            "example": 0
           }
         },
         "required": [
@@ -3892,6 +4589,10 @@
             "type": "number",
             "example": 15
           },
+          "initiative": {
+            "type": "number",
+            "example": 3
+          },
           "passivePerception": {
             "type": "number",
             "example": 12
@@ -3928,6 +4629,36 @@
             "type": "number",
             "example": 2
           },
+          "armors": {
+            "example": [
+              "Leather",
+              "Chainmail"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tools": {
+            "example": [
+              "Thieves' Tools",
+              "Smith's Tools"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "weapons": {
+            "example": [
+              "Shortsword",
+              "Longbow"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "masteries": {
             "$ref": "#/components/schemas/MasteryDto"
           },
@@ -3941,6 +4672,7 @@
           "currentHitPoints",
           "tempHitPoints",
           "armorClass",
+          "initiative",
           "passivePerception",
           "languages",
           "abilityScores",
@@ -3949,6 +4681,9 @@
           "skills",
           "senses",
           "proficiencyBonus",
+          "armors",
+          "tools",
+          "weapons",
           "masteries",
           "masteriesAbility"
         ]
@@ -3975,11 +4710,26 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Warrior"
+            "example": "Fighter",
+            "enum": [
+              "Artificer",
+              "Barbarian",
+              "Bard",
+              "Cleric",
+              "Druid",
+              "Fighter",
+              "Monk",
+              "Paladin",
+              "Ranger",
+              "Rogue",
+              "Sorcerer",
+              "Warlock",
+              "Wizard"
+            ]
           },
           "subclass": {
-            "type": "number",
-            "example": 1
+            "type": "string",
+            "example": "Champion"
           },
           "level": {
             "type": "number",
@@ -4002,7 +4752,23 @@
         "properties": {
           "alignment": {
             "type": "string",
-            "example": "A brave warrior from the north"
+            "example": "Lawful Good",
+            "enum": [
+              "Lawful Good",
+              "Neutral Good",
+              "Chaotic Good",
+              "Lawful Neutral",
+              "True Neutral",
+              "Chaotic Neutral",
+              "Lawful Evil",
+              "Neutral Evil",
+              "Chaotic Evil",
+              "Unaligned",
+              "Any Good Alignment",
+              "Any Evil Alignment",
+              "Any Lawful Alignment",
+              "Any Chaotic Alignment"
+            ]
           },
           "race": {
             "type": "string",
@@ -4011,20 +4777,56 @@
           "subrace": {
             "type": "string",
             "example": "High Elf"
+          },
+          "history": {
+            "type": "string",
+            "example": "A skilled archer from the northern forests."
           }
         },
         "required": [
           "alignment",
           "race",
-          "subrace"
+          "subrace",
+          "history"
         ]
+      },
+      "DeathSavesDto": {
+        "type": "object",
+        "properties": {
+          "successes": {
+            "type": "number",
+            "example": 0,
+            "description": "Number of successful death saving throws (0-3)",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "failures": {
+            "type": "number",
+            "example": 0,
+            "description": "Number of failed death saving throws (0-3). Three failures means death.",
+            "minimum": 0,
+            "maximum": 3
+          }
+        }
       },
       "CreatePlayerDto": {
         "type": "object",
         "properties": {
-          "name": {
+          "firstname": {
             "type": "string",
             "example": "Aragorn"
+          },
+          "lastname": {
+            "type": "string",
+            "example": "Elessar"
+          },
+          "surname": {
+            "type": "string",
+            "example": "Fils d'Arathorn"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "http://example.com/avatar.png"
           },
           "groups": {
             "example": "60f7c2ab4f1a256e1c8b4567",
@@ -4063,6 +4865,12 @@
           "conditions": {
             "$ref": "#/components/schemas/ConditionsDto"
           },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionDto"
+            }
+          },
           "inspiration": {
             "type": "boolean",
             "example": false
@@ -4085,10 +4893,16 @@
             "description": "Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death",
             "minimum": 0,
             "maximum": 6
+          },
+          "deathSaves": {
+            "$ref": "#/components/schemas/DeathSavesDto"
           }
         },
         "required": [
-          "name",
+          "firstname",
+          "lastname",
+          "surname",
+          "avatar",
           "groups",
           "stats",
           "affinities",
@@ -4098,10 +4912,12 @@
           "background",
           "treasure",
           "conditions",
+          "actions",
           "inspiration",
           "progression",
           "class",
-          "profile"
+          "profile",
+          "deathSaves"
         ]
       },
       "UpdatePlayerDto": {
@@ -4119,9 +4935,21 @@
               }
             ]
           },
-          "name": {
+          "firstname": {
             "type": "string",
             "example": "Aragorn"
+          },
+          "lastname": {
+            "type": "string",
+            "example": "Elessar"
+          },
+          "surname": {
+            "type": "string",
+            "example": "Fils d'Arathorn"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "http://example.com/avatar.png"
           },
           "stats": {
             "$ref": "#/components/schemas/Stats"
@@ -4167,7 +4995,10 @@
         },
         "required": [
           "_id",
-          "name",
+          "firstname",
+          "lastname",
+          "surname",
+          "avatar",
           "stats",
           "affinities",
           "abilities",
@@ -4348,6 +5179,142 @@
         },
         "required": [
           "label"
+        ]
+      },
+      "HistoryDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-15T10:30:00Z"
+          },
+          "campaignName": {
+            "type": "string",
+            "example": "Summer Campaign"
+          },
+          "value": {
+            "type": "number",
+            "example": 100
+          }
+        },
+        "required": [
+          "date",
+          "campaignName",
+          "value"
+        ]
+      },
+      "UserInfoDto": {
+        "type": "object",
+        "properties": {
+          "keycloakId": {
+            "type": "string",
+            "description": "Keycloak unique identifier",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "example": "user@example.com"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username",
+            "example": "john_doe"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "User first name",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User last name",
+            "example": "Doe"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "User avatar URL",
+            "example": "https://example.com/avatar.jpg",
+            "pattern": "^https?://.+\\.(jpg|jpeg|png|gif|webp)$",
+            "nullable": true
+          },
+          "balance": {
+            "type": "number",
+            "example": 500
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryDto"
+            }
+          }
+        },
+        "required": [
+          "keycloakId",
+          "email",
+          "username",
+          "balance",
+          "history"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Current password of the user",
+            "example": "CurrentPassword123!"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password (must be at least 8 characters)",
+            "example": "NewSecurePassword456!",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "UpdateUserProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "User first name",
+            "example": "John",
+            "minLength": 2
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User last name",
+            "example": "Doe",
+            "minLength": 2
+          },
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "example": "john.doe@example.com"
+          }
+        }
+      },
+      "CheckoutDto": {
+        "type": "object",
+        "properties": {
+          "packId": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439012"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "Starter Pack"
+          }
+        },
+        "required": [
+          "packId",
+          "displayName"
         ]
       },
       "InvalidParamDto": {

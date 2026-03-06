@@ -162,4 +162,28 @@ export class UserService {
       throw new InternalServerErrorException(message);
     }
   }
+
+  async addTokens(keycloakId: string, amount: number): Promise<void> {
+    try {
+      const start: number = Date.now();
+
+      const user = await this.userModel.findOne({ keycloakId }).exec();
+      if (!user) {
+        const message: string = `User #${keycloakId} not found in database`;
+        this.logger.error(message, null, this.SERVICE_NAME);
+        throw new NotFoundException(message);
+      }
+
+      user.balance += amount;
+      await user.save();
+
+      const end: number = Date.now();
+      const message: string = `Added ${amount} tokens to user #${keycloakId} in ${end - start}ms`;
+      this.logger.log(message, this.SERVICE_NAME);
+    } catch (error) {
+      const message = `Error while adding tokens to user #${keycloakId}: ${error.message}`;
+      this.logger.error(message, error.stack, this.SERVICE_NAME);
+      throw new InternalServerErrorException(message);
+    }
+  }
 }

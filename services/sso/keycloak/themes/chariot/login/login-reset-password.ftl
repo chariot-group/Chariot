@@ -23,7 +23,7 @@
 
 
             <div class="form-submit button-row">
-                <button class="cancel" onClick="location.href='${url.loginUrl}'">${msg('doCancel')}</button>
+                <button type="button" class="cancel" onClick="location.href='${url.loginUrl}'">${msg('doCancel')}</button>
                 <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg('doSubmit')}"/>
             </div>
             
