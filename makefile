@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout
 
 # Configuration
 SERVICES_DIR := services
@@ -44,7 +44,7 @@ network: ## Crée le réseau Docker si nécessaire
 up: network ## Lance tous les services (ENV=dev par défaut)
 ifdef SERVICE
 	@echo "$(YELLOW)Démarrage du service $(SERVICE) ($(ENV))...$(NC)"
-	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml up --build -d
+	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml up -d
 	@echo "$(GREEN)✓ Service $(SERVICE) démarré$(NC)"
 else
 	@echo "$(YELLOW)Démarrage de tous les services ($(ENV))...$(NC)"
@@ -53,7 +53,7 @@ else
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Démarrage de $$service...$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up --build -d && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up -d && cd ../..; \
 		else \
 			echo "$(RED)✗ Fichier $$compose_file introuvable$(NC)"; \
 		fi; \
@@ -94,6 +94,24 @@ endif
 	@echo "$(GREEN)✓ Services arrêtés et volumes supprimés$(NC)"
 
 restart: down up ## Redémarre les services
+
+rebuild: ## Rebuild et lance les services (avec reconstruction des images)
+ifdef SERVICE
+	@echo "$(YELLOW)Rebuild et démarrage du service $(SERVICE) ($(ENV))...$(NC)"
+	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml up --build -d
+	@echo "$(GREEN)✓ Service $(SERVICE) rebuilded et démarré$(NC)"
+else
+	@echo "$(YELLOW)Rebuild et démarrage de tous les services ($(ENV))...$(NC)"
+	@for dir in $(SERVICES_DIR)/*/; do \
+		service=$$(basename $$dir); \
+		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
+		if [ -f "$$compose_file" ]; then \
+			echo "$(BLUE)→ Rebuild de $$service...$(NC)"; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up --build -d && cd ../..; \
+		fi; \
+	done
+	@echo "$(GREEN)✓ Tous les services sont rebuilded et démarrés$(NC)"
+endif
 
 pull: ## Pull les images depuis le registry (pour prod/integ)
 ifdef SERVICE
@@ -245,6 +263,27 @@ else
 	fi
 	@echo "$(GREEN)✓ Tests e2e terminés$(NC)"
 endif
+
+stripe-login: ## Authentifie Stripe CLI (navigateur) pour les tests webhooks locaux
+	@echo "$(YELLOW)Authentification Stripe CLI...$(NC)"
+	@env -u STRIPE_API_KEY stripe login
+
+stripe-listen: ## Démarre Stripe CLI et forward les webhooks vers le gateway local
+	@echo "$(YELLOW)Démarrage de Stripe CLI listener...$(NC)"
+	@if [ -n "$(STRIPE_CLI_API_KEY)" ]; then \
+		STRIPE_API_KEY=$(STRIPE_CLI_API_KEY) stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/api/stripe/webhook}; \
+	else \
+		env -u STRIPE_API_KEY stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/api/stripe/webhook}; \
+	fi
+
+stripe-trigger-checkout: ## Déclenche un event Stripe checkout.session.completed en local
+	@echo "$(YELLOW)Déclenchement d'un webhook Stripe checkout.session.completed...$(NC)"
+	@if [ -n "$(STRIPE_CLI_API_KEY)" ]; then \
+		STRIPE_API_KEY=$(STRIPE_CLI_API_KEY) stripe trigger checkout.session.completed; \
+	else \
+		env -u STRIPE_API_KEY stripe trigger checkout.session.completed; \
+	fi
+	@echo "$(GREEN)✓ Event Stripe déclenché$(NC)"
 
 seed: ## Lance le seeder pour adventure
 	@echo "$(YELLOW)Exécution du seeder pour adventure...$(NC)"

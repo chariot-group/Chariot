@@ -6,7 +6,7 @@ import { selectContextMode } from "@/store/slices/environmentSlice";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronRight, PlusCircleIcon, Loader2 } from "lucide-react";
 import { useGroups } from "@/hooks/useGroups";
-import GroupList from "./GroupList";
+import GroupList from "@/components/layout/Sidebar/GroupList";
 import { selectSelectedCampaign } from "@/store/slices/campaignSlice";
 import {
   selectOpenActiveGroups,
@@ -15,6 +15,7 @@ import {
   setOpenArchivedGroups,
 } from "@/store/slices/sidebarSlice";
 import CharactersWithoutGroupList from "@/components/layout/Sidebar/CharactersWithoutGroupList";
+import { CreateGroupDialog } from "@/components/dialogs/CreateGroupDialog";
 
 /**
  * Context navigation component for GM mode
@@ -28,7 +29,18 @@ export default function SidebarContext() {
   const selectedCampaign = useAppSelector(selectSelectedCampaign);
   const openActive = useAppSelector(selectOpenActiveGroups);
   const openArchived = useAppSelector(selectOpenArchivedGroups);
-  const { activeGroups, archivedGroups, loading, openGroupId, toggleGroup } = useGroups();
+  const {
+    activeGroups,
+    archivedGroups,
+    loading,
+    openGroupId,
+    toggleGroup,
+    createGroup,
+    refreshGroups,
+    archiveGroup,
+    unarchiveGroup,
+    deleteGroup,
+  } = useGroups();
 
   // Handle collapsible state changes
   const handleOpenActive = (isOpen: boolean) => {
@@ -59,30 +71,34 @@ export default function SidebarContext() {
         <CollapsibleTrigger
           aria-expanded={openActive}
           aria-controls="active-groups-content"
-          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:border ${openActive ? "bg-white" : ""}`}>
+          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/context focus-visible:border ${openActive ? "bg-white" : ""}`}>
           <span
-            className={`text-sm group-hover:font-bold group-hover:text-black ${openActive ? "text-black font-bold" : ""}`}>
+            className={`text-sm group-hover/context:font-bold group-hover/context:text-black ${openActive ? "text-black font-bold" : ""}`}>
             {t("yourGroups")}
           </span>
           <ChevronRight
             aria-hidden="true"
-            className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${openActive ? "rotate-90 text-black" : ""}`}
+            className={`w-5 h-5 group-hover/context:text-black transition-all duration-100 ${openActive ? "rotate-90 text-black" : ""}`}
           />
         </CollapsibleTrigger>
         <CollapsibleContent
           id="active-groups-content"
           className="my-2 flex mx-5 flex-col gap-2">
-          {/* Create group button */}
-          <button
-            type="button"
-            aria-label={t("createGroup")}
-            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
-            {t("createGroup")}
-            <PlusCircleIcon
-              aria-hidden="true"
-              className="w-5 h-5"
-            />
-          </button>
+          {/* Create group dialog */}
+          <CreateGroupDialog
+            onCreateGroup={createGroup}
+            onRefreshGroups={refreshGroups}>
+            <button
+              type="button"
+              aria-label={t("createGroup")}
+              className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+              {t("createGroup")}
+              <PlusCircleIcon
+                aria-hidden="true"
+                className="w-5 h-5"
+              />
+            </button>
+          </CreateGroupDialog>
 
           {loading ? (
             <div className="flex justify-center items-center py-4">
@@ -93,6 +109,10 @@ export default function SidebarContext() {
               groups={activeGroups}
               openGroupId={openGroupId}
               onToggleGroup={toggleGroup}
+              isArchivedSection={false}
+              onArchiveGroup={archiveGroup}
+              onUnarchiveGroup={unarchiveGroup}
+              onDeleteGroup={deleteGroup}
             />
           )}
         </CollapsibleContent>
@@ -106,14 +126,14 @@ export default function SidebarContext() {
         <CollapsibleTrigger
           aria-expanded={openArchived}
           aria-controls="archived-groups-content"
-          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:border ${openArchived ? "bg-white" : ""}`}>
+          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/context focus-visible:border ${openArchived ? "bg-white" : ""}`}>
           <span
-            className={`text-sm group-hover:font-bold group-hover:text-black ${openArchived ? "text-black font-bold" : ""}`}>
+            className={`text-sm group-hover/context:font-bold group-hover/context:text-black ${openArchived ? "text-black font-bold" : ""}`}>
             {t("yourArchives")}
           </span>
           <ChevronRight
             aria-hidden="true"
-            className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${openArchived ? "rotate-90 text-black" : ""}`}
+            className={`w-5 h-5 group-hover/context:text-black transition-all duration-100 ${openArchived ? "rotate-90 text-black" : ""}`}
           />
         </CollapsibleTrigger>
         <CollapsibleContent
@@ -134,6 +154,10 @@ export default function SidebarContext() {
               groups={archivedGroups}
               openGroupId={openGroupId}
               onToggleGroup={toggleGroup}
+              isArchivedSection={true}
+              onArchiveGroup={archiveGroup}
+              onUnarchiveGroup={unarchiveGroup}
+              onDeleteGroup={deleteGroup}
             />
           )}
         </CollapsibleContent>

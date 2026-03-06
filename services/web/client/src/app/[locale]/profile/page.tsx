@@ -5,64 +5,64 @@ import { Card } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { Eye, EyeOff, ShoppingCart, SquarePen, User } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import * as z from "zod";
+import { use, useEffect, useRef, useState } from "react";
+import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
-
 import Token from "@public/assets/token.svg";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useProfileForm } from "@/hooks/useProfileForm";
+import ReadProfile from "@/components/profile/ReadProfile";
+import UpdateProfile from "@/components/profile/UpdateProfile";
 
 export default function ProfilePage() {
   const pathname = usePathname();
   const locale = pathname.split("/")[1] || "fr";
-  const { user, loading } = useUser({ autoFetch: true });
+  const { user, loading, refreshUser } = useUser({ autoFetch: true });
+  const hasRefreshedOnOpenRef = useRef(false);
   const [viewNewPassword, setViewNewPassword] = useState<boolean>(false);
   const [viewConfirmNewPassword, setViewConfirmNewPassword] = useState<boolean>(false);
   const t = useTranslations("ProfilePage");
+  const router = useRouter();
 
-  const passwordSchema = z
-    .object({
-      currentPassword: z.string().min(1, t("passwordError.required")),
-      newPassword: z.string().min(8, t("passwordError.min")),
-      confirmNewPassword: z.string().min(8, t("passwordError.min")),
-    })
-    .refine((data) => data.newPassword === data.confirmNewPassword, {
-      message: t("passwordError.mismatch"),
-      path: ["confirmNewPassword"],
-    });
+  const tEdit = useTranslations("ProfilePage.editProfile");
+  const tAuth = useTranslations("auth");
 
-  const form = useForm<z.infer<typeof passwordSchema>>({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmNewPassword: "",
-    },
-  });
+  const {
+    form: formProfile,
+    isLoading: isLoadingProfile,
+    isUpdating,
+    setIsUpdating,
+    onUpdate,
+    onCancel,
+  } = useProfileForm();
 
-  function onSubmit(data: z.infer<typeof passwordSchema>) {
-    // TODO: implement password change
-    console.log("Change password data:", data);
-  }
+  const { form: formPassword, onSubmit, isLoading: isLoadingPassword } = usePasswordForm();
 
   useEffect(() => {
     // Ne pas rediriger pendant la transition utilisateur ou le chargement
     if (loading) return;
 
     if (!user) {
-      // Utiliser Next.js router au lieu de window.location pour éviter les boucles
       const timer = setTimeout(() => {
-        window.location.href = `/${locale}/welcome`;
+        router.push(`/${locale}/welcome`);
       }, 500); // Délai de grâce pour attendre le chargement
 
       return () => clearTimeout(timer);
     }
   }, [user, loading, locale]);
+
+  useEffect(() => {
+    if (loading || !user || hasRefreshedOnOpenRef.current) return;
+
+    hasRefreshedOnOpenRef.current = true;
+    refreshUser().catch(() => {
+      hasRefreshedOnOpenRef.current = false;
+    });
+  }, [loading, refreshUser, user]);
 
   return (
     <main
@@ -72,44 +72,16 @@ export default function ProfilePage() {
       <h1 className="sr-only">{t("pageTitle")}</h1>
       <div className="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-2 gap-2 py-2 sm:py-4 md:py-6 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 gap-2">
-          <Card
-            className="flex flex-col xl:flex-row overflow-hidden"
-            role="region"
-            aria-labelledby="profile-info-heading">
-            <h2
-              id="profile-info-heading"
-              className="sr-only">
-              {t("pageTitle")}
-            </h2>
-            <div
-              className="relative w-full xl:w-1/2 aspect-video"
-              role="img"
-              aria-label={user?.username ? `${user.username} profile picture` : "Default profile picture"}>
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-middle-light rounded-[15px]">
-                <User
-                  className="h-16 w-16"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col justify-between gap-2 sm:gap-3 w-full xl:w-1/2">
-              <div>
-                <p
-                  className="text-2xl sm:text-3xl lg:text-4xl font-bold wrap-break-word"
-                  aria-label="Username">
-                  {user?.username}
-                </p>
-                <p
-                  className="text-base sm:text-lg lg:text-xl font-semibold wrap-break-word"
-                  aria-label="Full name">{`${user?.firstName} ${user?.lastName}`}</p>
-              </div>
-              <p
-                className="text-xs sm:text-sm text-muted-foreground break-all"
-                aria-label="Email address">
-                {user?.email}
-              </p>
-            </div>
-          </Card>
+          {!isUpdating && <ReadProfile user={user} />}
+          {isUpdating && (
+            <UpdateProfile
+              user={user}
+              form={formProfile}
+              isLoading={isLoadingProfile}
+              onSubmit={onUpdate}
+              onCancel={onCancel}
+            />
+          )}
           <Card
             className="gap-6 sm:gap-8 md:gap-10"
             role="region"
@@ -117,17 +89,17 @@ export default function ProfilePage() {
             <h2
               id="change-password-heading"
               className="text-lg sm:text-xl font-bold">
-              {t("changePassword")}
+              {t("changePasswordTitle")}
             </h2>
             <div className="px-0 sm:px-2">
               <form
                 id="form-reset-password"
-                onSubmit={form.handleSubmit(onSubmit)}
-                aria-label={t("changePassword")}>
+                onSubmit={formPassword.handleSubmit(onSubmit)}
+                aria-label={t("changePasswordTitle")}>
                 <FieldGroup>
                   <Controller
                     name="currentPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
@@ -158,7 +130,7 @@ export default function ProfilePage() {
                   />
                   <Controller
                     name="newPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
@@ -218,7 +190,7 @@ export default function ProfilePage() {
                   />
                   <Controller
                     name="confirmNewPassword"
-                    control={form.control}
+                    control={formPassword.control}
                     render={({ field, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
@@ -286,13 +258,16 @@ export default function ProfilePage() {
                 <Button
                   type="submit"
                   form="form-reset-password"
+                  disabled={isLoadingPassword}
+                  tabIndex={0}
                   className="w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
-                  aria-label={t("updatePassword")}>
+                  aria-label={t("updatePassword")}
+                  aria-busy={isLoadingPassword}>
                   <SquarePen
                     className="h-4 w-4 sm:h-5 sm:w-5"
                     aria-hidden="true"
                   />
-                  <span>{t("updatePassword")}</span>
+                  <span>{isLoadingPassword ? tAuth("loading") : t("updatePassword")}</span>
                 </Button>
               </Field>
             </div>
@@ -410,6 +385,56 @@ export default function ProfilePage() {
             </Link>
           </div>
         </Card>
+      </div>
+      <div className="w-full max-w-7xl flex flex-row-reverse py-2 sm:py-4 md:py-6 lg:py-8">
+        {isUpdating ? (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isLoadingProfile}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onCancel();
+                }
+              }}
+              aria-label={tEdit("cancelUpdate")}>
+              {tEdit("cancelUpdate")}
+            </Button>
+            <Button
+              type="button"
+              form="form-update-profile"
+              onClick={() => formProfile.handleSubmit(onUpdate)()}
+              disabled={isLoadingProfile || !formProfile.formState.isValid}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  formProfile.handleSubmit(onUpdate)();
+                }
+              }}
+              aria-label={tEdit("updateProfile")}
+              aria-busy={isLoadingProfile}>
+              {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
+            </Button>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            onClick={() => setIsUpdating(true)}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsUpdating(true);
+              }
+            }}>
+            <SquarePen aria-hidden="true" /> {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
+          </Button>
+        )}
       </div>
     </main>
   );

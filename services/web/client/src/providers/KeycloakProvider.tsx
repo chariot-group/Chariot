@@ -42,6 +42,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [userTransitioning, setUserTransitioning] = useState(false); // Solution 1
 
+  const visibilityHandlerRef = useRef<(() => void) | null>(null);
+
   // Ref to store interval ID
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -129,6 +131,24 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
           }, 60000); // Check every 60 seconds
         }
 
+        const handleVisibilityChange = () => {
+          if (document.visibilityState !== "visible") return;
+
+          kc.updateToken(70)
+            .then((refreshed) => {
+              if (refreshed) setToken(kc.token || null);
+            })
+            .catch(() => {
+              // Token expiré et refresh token mort → forcer reconnexion
+              setAuthenticated(false);
+              setToken(null);
+              kc.login();
+            });
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        visibilityHandlerRef.current = handleVisibilityChange;
+
         setLoading(false);
       } catch (error) {
         console.error("Keycloak initialization failed", error);
@@ -142,6 +162,9 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     return () => {
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
+      }
+      if (visibilityHandlerRef.current) {
+        document.removeEventListener("visibilitychange", visibilityHandlerRef.current);
       }
     };
   }, []);

@@ -43,7 +43,7 @@ describe('KeycloakAuthGuard', () => {
           useValue: {
             get: jest.fn((key: string, defaultValue?: string) => {
               const config: Record<string, string> = {
-                KEYCLOAK_INTERNAL_URL: 'http://localhost:8080',
+                KEYCLOAK_INTERNAL_URL: 'http://localhost:8080/auth',
                 KEYCLOAK_URL: 'http://localhost:8080',
                 KEYCLOAK_REALM: 'test-realm',
                 KEYCLOAK_CLIENT_ID: 'test-client',

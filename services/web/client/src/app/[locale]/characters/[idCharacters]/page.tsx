@@ -1,7 +1,7 @@
 "use client";
 
 import { useCharacter } from "@/hooks/useCharacter";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import CharacterDetailView from "@/components/character/CharacterDetailView";
@@ -9,7 +9,8 @@ import CharacterDetailView from "@/components/character/CharacterDetailView";
 export default function Character() {
   const params = useParams();
   const characterId = params.idCharacters as string;
-  const { character, loading, error } = useCharacter(characterId);
+  const { character, loading, error, refetch } = useCharacter(characterId);
+  const router = useRouter();
 
   if (loading) {
     return (
@@ -24,7 +25,7 @@ export default function Character() {
     // Utiliser un délai de grâce pour éviter les redirections pendant transition
     setTimeout(() => {
       if (!character) {
-        window.location.href = `/404`;
+        router.push(`/404`);
       }
     }, 500);
 
@@ -35,5 +36,10 @@ export default function Character() {
     );
   }
 
-  return <CharacterDetailView character={character as Player | NPC} />;
+  return (
+    <CharacterDetailView
+      character={character as Player | NPC}
+      onCharacterUpdate={refetch}
+    />
+  );
 }

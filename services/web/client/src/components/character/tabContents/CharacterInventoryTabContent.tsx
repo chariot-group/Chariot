@@ -9,15 +9,25 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatCompactNumber, formatNumberWithSpaces } from "@/utils/inventory.utils";
+import { UseFormReturn } from "react-hook-form";
+import CharacterInventoryTabEdit from "@/components/character/tabContents/inventory/form/CharacterInventoryTabEdit";
 
 interface Props {
   accentColor: string;
   character: Player | NPC;
+  form: UseFormReturn<any>;
+  isEditing: boolean;
 }
 
-const CharacterInventoryTabContent = ({ accentColor, character }: Props) => {
+const CharacterInventoryTabContent = ({ accentColor, character, form, isEditing }: Props) => {
   const t = useTranslations("characterDetail.inventory");
 
+  // Mode édition
+  if (isEditing) {
+    return <CharacterInventoryTabEdit character={character} accentColor={accentColor} form={form} />;
+  }
+
+  // Mode lecture
   return (
     <div className="w-full flex flex-col lg:flex-row gap-2 md:gap-4 items-start">
       <div className="flex flex-col gap-2 md:gap-4 w-full lg:w-2/5">

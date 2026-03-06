@@ -1,0 +1,91 @@
+"use client";
+
+import * as React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { User, Users, BookOpen } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
+
+interface CreateCharacterDialogProps {
+  /** The element that opens the dialog (e.g. a Button). */
+  children: React.ReactNode;
+  /** Campaign ID for the URL */
+  campaignId: string;
+  /** Group ID for the URL */
+  groupId: string;
+}
+
+/**
+ * Dialog for choosing character type (Player or NPC) before creation
+ */
+export function CreateCharacterDialog({ children, campaignId, groupId }: CreateCharacterDialogProps) {
+  const t = useTranslations("sidebar");
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { setOpenMobile } = useSidebar();
+
+  const handleSelectType = (type: "players" | "npcs" | "npcs-codex") => {
+    setOpen(false);
+    setOpenMobile(false);
+    router.push(`/campaigns/${campaignId}/groups/${groupId}/characters/new/${type}`);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="sm:max-w-150">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{t("createCharacterDialogTitle")}</DialogTitle>
+          <DialogDescription className="text-base">{t("createCharacterDialogDescription")}</DialogDescription>
+        </DialogHeader>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-6">
+          {/* Player Character Option */}
+          <Button
+            variant="outline"
+            onClick={() => handleSelectType("players")}
+            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-red hover:text-white hover:border-red hover:scale-105 transition-all duration-200 shadow-md hover:shadow-red/50"
+          >
+            <div className="p-3 rounded-full bg-blue/10">
+              <User className="w-12 h-12 text-blue" aria-hidden="true" />
+            </div>
+            <span className="text-base font-semibold">{t("playerCharacter")}</span>
+          </Button>
+
+          {/* NPC Manual Option */}
+          <Button
+            variant="outline"
+            onClick={() => handleSelectType("npcs")}
+            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-red hover:text-white hover:border-red hover:scale-105 transition-all duration-200 shadow-md hover:shadow-red/50"
+          >
+            <div className="p-3 rounded-full bg-red/10">
+              <Users className="w-12 h-12 text-red" aria-hidden="true" />
+            </div>
+            <span className="text-base font-semibold">{t("npcCharacter")}</span>
+          </Button>
+
+          {/* NPC from Codex Option */}
+          <Button
+            variant="outline"
+            onClick={() => handleSelectType("npcs-codex")}
+            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-purple hover:text-white hover:border-purple hover:scale-105 transition-all duration-200 shadow-md hover:shadow-purple/50"
+          >
+            <div className="p-3 rounded-full bg-purple/10">
+              <BookOpen className="w-12 h-12 text-purple" aria-hidden="true" />
+            </div>
+            <span className="text-base font-semibold text-center">{t("npcCodexCharacter")}</span>
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

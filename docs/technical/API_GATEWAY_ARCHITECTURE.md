@@ -90,7 +90,7 @@ Exposed on `/metrics`:
 | `GATEWAY_RATE_LIMIT_MAX` | 100 | Max requests per window |
 | `GATEWAY_RATE_LIMIT_WINDOW` | 60000 | Time window (ms) |
 | `ADVENTURE_SERVICE_URL` | http://chariot-adventure:9000 | Backend URL |
-| `FRONTEND_URL` | http://localhost:3000 | Allowed CORS origin |
+| `FRONTEND_URL` | http://localhost:3000,http://localhost:3001 | Allowed CORS origins (comma-separated) |
 
 ### Ports
 

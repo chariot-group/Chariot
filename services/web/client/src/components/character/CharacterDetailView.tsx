@@ -1,119 +1,147 @@
 "use client";
 
-import { User } from "lucide-react";
+import { User, SquarePen, X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TabContentPlaceholder from "@/components/character/TabContentPlaceholder";
-import CharacterInventoryTabContent from "@/components/character/tabContents/CharacterInventoryTabContent";
-import React, { useState } from "react";
-import CharacterHistoryTabContent from "@/components/character/tabContents/CharacterHistoryTabContent";
-import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
-import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
-import Image from "next/image";
-import CharacterMagicTabContent from "@/components/character/tabContents/CharacterMagicTabContent";
+import { Tabs } from "@/components/ui/tabs";
+import React, { useState, useEffect } from "react";
+import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
-
-export type CharacterTab = "general" | "combat" | "magic" | "inventory" | "history";
-
-const TAB_COLORS: Record<CharacterTab, string> = {
-  general: "blue",
-  combat: "red",
-  magic: "pink",
-  inventory: "yellow",
-  history: "green",
-};
+import { Button } from "@/components/ui/button";
+import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
+  onCharacterUpdate?: () => void; // Callback pour rafraîchir les données du parent
 }
 
-export default function CharacterDetailView({ character }: CharacterDetailViewProps) {
+export default function CharacterDetailView({ character, onCharacterUpdate }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
   const tPlaceholder = useTranslations("characterDetail.placeholder");
-  const [activeTab, setActiveTab] = useState<CharacterTab>("general");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
+  const tabFromUrl = (searchParams.get("tab") as CharacterTab) || "general";
+  const [activeTab, setActiveTab] = useState<CharacterTab>(tabFromUrl);
+
+  // Synchroniser l'état local avec l'URL au chargement
+  useEffect(() => {
+    const currentTab = (searchParams.get("tab") as CharacterTab) || "general";
+    setActiveTab(currentTab);
+  }, [searchParams]);
+
+  // Fonction pour changer d'onglet et mettre à jour l'URL
+  const handleTabChange = (newTab: string) => {
+    const tab = newTab as CharacterTab;
+    setActiveTab(tab);
+    // Mettre à jour l'URL sans recharger la page
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  // Déterminer le type de personnage
+  const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
+
+  // Initialiser le formulaire avec useCharacterForm
+  const { form, onUpdate, onCancel, isEditing, setIsEditing, isSaving } = useCharacterForm({
+    characterId: character._id,
+    type: characterType,
+    onSuccess: () => {
+      // Rafraîchir les données du parent après la mise à jour
+      if (onCharacterUpdate) {
+        onCharacterUpdate();
+      }
+    },
+  });
+
+  // Si on arrive avec mode=edit (création depuis la sidebar, ou autre lien), ouvrir directement en édition
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "edit") {
+      setIsEditing(true);
+    }
+  }, [searchParams, setIsEditing]);
 
   return (
-    <main>
+    <main className="flex flex-col h-full overflow-hidden">
       <Tabs
         defaultValue="general"
         value={activeTab}
-        onValueChange={(value: string) => setActiveTab(value as CharacterTab)}
-        className="w-full">
+        onValueChange={handleTabChange}
+        className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* Header avec onglets et infos du personnage */}
-        <div>
+        <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
-            <div className="flex flex-col-reverse xl:flex-row items-start xl:items-end xl:justify-between gap-0 xl:gap-8">
-              {/* Onglets */}
-              <TabsList
-                className="bg-transparent gap-1 sm:gap-3 md:gap-4 flex-wrap justify-start self-start xl:self-end"
-                role="tablist"
-                aria-label={t("tabs.general")}>
-                {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
-                  <TabsTrigger
-                    key={tab}
-                    value={tab}
-                    role="tab"
-                    aria-selected={activeTab === tab}
-                    aria-controls={`${tab}-content`}
-                    className={`
-                                            flex-none p-2 md:p-4 text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap
-                                            focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white
-                                            ${
-                                              activeTab === tab
-                                                ? `bg-${TAB_COLORS[tab]} ${tab === "combat" ? "text-white" : "text-black"}`
-                                                : `text-white bg-gray hover:bg-gray-middle`
-                                            }
-                                        `}>
-                    {t(`tabs.${tab}`)}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
+            <div className="justify-between w-full">
               {/* Infos du personnage */}
-              <div className="flex flex-row items-end gap-3 sm:gap-4 md:gap-5 shrink-0 w-full xl:w-auto">
-                <div className="text-left xl:text-right mb-2 flex-1">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">
-                    {character.firstname} {character.lastname}
-                  </h1>
-                  {isPlayer(character) ? (
-                    <React.Fragment>
-                      <p className="text-sm sm:text-base text-white font-semibold">
-                        {character.class.map((cls: { name: string; level: number }, index: number) => (
-                          <span key={index}>
-                            {tClass(cls.name)} Niv {cls.level}
-                            {index < character.class.length - 1 && " / "}
-                          </span>
-                        ))}
+              <div className="flex flex-row items-end justify-between gap-4 xl:mb-0 mb-2">
+                <div className="flex flex-col items-start xl:items-end text-left xl:text-right xl:max-w-full lg:max-w-3/4 md:max-w-2/3 w-full">
+                  <Tooltip>
+                    <TooltipTrigger className="cursor-help w-full">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-white text-start xl:text-end truncate">
+                        {character.firstname} {character.lastname}
+                      </h1>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {character.firstname} {character.lastname}
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <div className="flex flex-col gap-1">
+                    <h2 className="text-sm sm:text-base text-gray-light italic truncate">{character.surname}</h2>
+                    {isPlayer(character) ? (
+                      <React.Fragment>
+                        <p className="text-sm sm:text-base text-white font-semibold">
+                          {character.class.map((cls: { name: string; level: number }, index: number) => (
+                            <span key={index}>
+                              {tClass(cls.name)} Niv {cls.level}
+                              {index < character.class.length - 1 && " / "}
+                            </span>
+                          ))}
+                        </p>
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment>
+                        {(() => {
+                          const challengeRating = character.challenge?.challengeRating ?? 0;
+                          const experiencePoints = character.challenge?.experiencePoints ?? 0;
+
+                          const displayChallengeRating =
+                            challengeRating < 1
+                              ? challengeRating === 0.125
+                                ? "1/8"
+                                : challengeRating === 0.25
+                                  ? "1/4"
+                                  : challengeRating === 0.5
+                                    ? "1/2"
+                                    : challengeRating
+                              : challengeRating;
+
+                          return (
+                            <p className="text-sm sm:text-base text-white font-semibold">
+                              <abbr
+                                title={t("npc.challengeRating")}
+                                className="no-underline cursor-help">
+                                {t("npc.challengeRatingAbbr")}
+                              </abbr>{" "}
+                              {displayChallengeRating} ({experiencePoints} XP)
+                            </p>
+                          );
+                        })()}
+                      </React.Fragment>
+                    )}
+                    {character.groups && character.groups.length > 0 && (
+                      <p className="text-xs sm:text-sm text-white">
+                        {t("group")} : {character.groups[0].label}
                       </p>
-                    </React.Fragment>
-                  ) : (
-                    <React.Fragment>
-                      <p className="text-sm sm:text-base text-white font-semibold">
-                        <abbr
-                          title={t("npc.challengeRating")}
-                          className="no-underline cursor-help">
-                          {t("npc.challengeRatingAbbr")}
-                        </abbr>{" "}
-                        {character.challenge.challengeRating < 1
-                          ? character.challenge.challengeRating === 0.125
-                            ? "1/8"
-                            : character.challenge.challengeRating === 0.25
-                              ? "1/4"
-                              : character.challenge.challengeRating === 0.5
-                                ? "1/2"
-                                : character.challenge.challengeRating
-                          : character.challenge.challengeRating}{" "}
-                        ({character.challenge.experiencePoints} XP)
-                      </p>
-                    </React.Fragment>
-                  )}
-                  {character.groups && character.groups.length > 0 && (
-                    <p className="text-xs sm:text-sm text-white">
-                      {t("group")} : {character.groups[0].label}
-                    </p>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Photo de profil */}
@@ -127,66 +155,115 @@ export default function CharacterDetailView({ character }: CharacterDetailViewPr
                   />
                 </div>
               </div>
+
+              {/* Onglets */}
+              <CharacterTabs
+                activeTab={activeTab}
+                listClassName="gap-1 flex-wrap justify-start self-start xl:self-end"
+                triggerClassName="grow-0"
+              />
             </div>
           </div>
         </div>
 
-        {/* Contenu des onglets */}
-        <div className="w-full mx-auto px-4 sm:px-6 min-[325px]:py-10 md:px-8 py-16 lg:py-4">
-          {(["general", "combat", "magic", "inventory", "history"] as CharacterTab[]).map((tab) => (
-            <TabsContent
-              key={tab}
-              value={tab}
-              className="mt-0 focus:outline-none"
-              role="tabpanel"
-              id={`${tab}-content`}
-              aria-labelledby={tab}
-              tabIndex={0}>
-              {(() => {
-                switch (tab) {
-                  case "general":
-                    return (
-                      <CharacterGeneralTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                      />
-                    );
-                  case "combat":
-                    return (
-                      <CharacterBattleTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                      />
-                    );
-                  case "magic":
-                    return (
-                      <CharacterMagicTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                      />
-                    );
-                  case "inventory":
-                    return (
-                      <CharacterInventoryTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                      />
-                    );
-                  case "history":
-                    return (
-                      <CharacterHistoryTabContent
-                        character={character}
-                        accentColor={TAB_COLORS[tab]}
-                      />
-                    );
-                  default:
-                    return null;
-                }
-              })()}
-            </TabsContent>
-          ))}
+        {/* Contenu des onglets - scrollable */}
+        <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+          <CharacterTabPanels
+            character={character}
+            form={form}
+            isEditing={isEditing}
+          />
         </div>
       </Tabs>
+
+      {/* Footer avec boutons - fixe en bas */}
+      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
+        <div className="w-full mx-auto flex flex-row-reverse gap-4">
+          {isEditing ? (
+            <>
+              {/* Mode édition : boutons Annuler et Sauvegarder */}
+              <Button
+                type="button"
+                onClick={() => onUpdate(form.getValues())}
+                disabled={isSaving || !form.formState.isDirty}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onUpdate(form.getValues());
+                  }
+                }}
+                className={`
+                  text-lg font-semibold py-5.5
+                  ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
+                  ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
+                  ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
+                  ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
+                  ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+                `}
+                aria-label={t("saveChanges")}
+                aria-busy={isSaving}>
+                <Save
+                  className="size-5"
+                  aria-hidden="true"
+                />
+                {isSaving ? t("saving") : t("saveChanges")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  onCancel();
+                  setIsEditing(false);
+                }}
+                disabled={isSaving}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onCancel();
+                    setIsEditing(false);
+                  }
+                }}
+                className="text-lg font-semibold py-5.5"
+                aria-label={t("cancel")}>
+                <X
+                  className="size-5"
+                  aria-hidden="true"
+                />
+                {t("cancel")}
+              </Button>
+            </>
+          ) : (
+            /* Mode lecture : bouton Modifier */
+            <Button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setIsEditing(true);
+                }
+              }}
+              className={`
+                text-lg font-semibold py-5.5
+                ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
+                ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
+                ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
+                ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
+                ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+              `}
+              aria-label={t("editCharacter")}>
+              <SquarePen
+                className="size-5"
+                aria-hidden="true"
+              />
+              {t("editCharacter")}
+            </Button>
+          )}
+        </div>
+      </div>
     </main>
   );
 }

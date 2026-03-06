@@ -58,6 +58,15 @@ const campaignSlice = createSlice({
         invalidateCache: (state) => {
             state.lastFetch = null;
         },
+        upsertCampaign: (state, action: PayloadAction<Campaign>) => {
+            const index = state.campaigns.findIndex(c => c._id === action.payload._id);
+            if (index !== -1) {
+                state.campaigns[index] = action.payload;
+            } else {
+                state.campaigns.unshift(action.payload);
+                state.total += 1;
+            }
+        },
     },
 });
 
@@ -69,6 +78,7 @@ export const {
     fetchCampaignsFailure,
     clearCampaigns,
     invalidateCache,
+    upsertCampaign,
 } = campaignSlice.actions;
 
 // Selectors

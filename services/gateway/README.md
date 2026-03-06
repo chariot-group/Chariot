@@ -32,7 +32,7 @@ ADVENTURE_SERVICE_URL=http://chariot-adventure:9000
 # USERS_SERVICE_URL=http://chariot-users:9001
 # ORDERS_SERVICE_URL=http://chariot-orders:9002
 
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3000,http://localhost:3001
 ```
 
 ## Dynamic Routing

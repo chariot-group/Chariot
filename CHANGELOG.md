@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.0] - 06-03-2026
+
+### Added
+- Added route to manage Stripe purchases
+- Ability to create an entity from Codex
+- Form for adding and modifying entities
+
+### Changed
+- Adjustment of the overall UX for better user understanding
+- Optimization of development tools
+
+### Fixed
+
 ## [2.0.0] - 07-02-2026
 
 ### Added

@@ -16,16 +16,52 @@
     "noGroups": "Sin grupos",
     "noCharacters": "Sin personajes",
     "archive": "Archivar",
+    "unarchive": "Restaurar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "groupActions": "Acciones del grupo",
+    "characterActions": "Acciones del personaje",
+    "deleteGroupDialogTitle": "Eliminar grupo",
+    "deleteGroupDialogDescription": "¿Estás seguro de que quieres eliminar este grupo? Esta acción no se puede deshacer.",
+    "deleteCharacterDialogTitle": "Eliminar personaje",
+    "deleteCharacterDialogDescription": "¿Estás seguro de que quieres eliminar este personaje? Esta acción no se puede deshacer.",
     "launchSession": "Iniciar sesión",
     "initBattle": "Inicializar batalla",
     "startBattle": "Comenzar batalla",
     "reset": "Reiniciar",
     "returnToBattle": "Volver a la batalla",
     "joinSession": "Unirse a la sesión",
+    "comingSoon": "Próximamente",
     "returnToSheet": "Volver a la hoja de personaje",
     "selectCampaign": "Seleccionar campaña",
     "selectedCampaign": "Campaña seleccionada",
-    "selected": "seleccionado"
+    "selected": "seleccionado",
+    "createCampaignDialogTitle": "Crear una Nueva Campaña",
+    "createCampaignDialogDescription": "Dale un nombre a tu campaña para comenzar.",
+    "campaignName": "Nombre de la Campaña",
+    "campaignNamePlaceholder": "Ej: Los Aventureros del Norte",
+    "campaignCreatedSuccess": "¡Campaña {name} creada con éxito!",
+    "createGroupDialogTitle": "Crear un Nuevo Grupo",
+    "createGroupDialogDescription": "Dale un nombre a tu grupo para comenzar.",
+    "groupName": "Nombre del Grupo",
+    "groupNamePlaceholder": "Ej: Los Héroes de la Luz",
+    "groupCreatedSuccess": "¡Grupo {name} creado con éxito!",
+    "createCharacter": "Crear un personaje",
+    "createCharacterDialogTitle": "Crear un nuevo personaje",
+    "createCharacterDialogDescription": "¿Qué tipo de personaje quieres crear?",
+    "playerCharacter": "Personaje jugador",
+    "npcCharacter": "PNJ",
+    "npcCodexCharacter": "PNJ desde Codex"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "errors": {
+      "campaignNameRequired": "El nombre de la campaña es requerido",
+      "campaignCreationFailed": "Error al crear la campaña",
+      "groupNameRequired": "El nombre del grupo es requerido",
+      "groupCreationFailed": "Error al crear el grupo"
+    }
   },
   "error": {
     "title": "¡Ups! Algo salió mal",
@@ -53,9 +89,14 @@
     "profile": "Perfil",
     "logout": "Cerrar sesión"
   },
+  "payment": {
+    "reloadSuccess": "Tu cuenta se recargó con {chars} chars.",
+    "reloadSuccessUnknown": "Tu pago está confirmado, la recarga de tu cuenta está en curso.",
+    "reloadPending": "Pago confirmado, actualización del saldo en curso."
+  },
   "ProfilePage": {
     "pageTitle": "Perfil de usuario",
-    "changePassword": "Cambiar contraseña",
+    "changePasswordTitle": "Cambiar contraseña",
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
     "confirmNewPassword": "Confirmar nueva contraseña",
@@ -64,11 +105,30 @@
     "yourTokens": "Tus tokens:",
     "noHistory": "No hay historial disponible",
     "reloadTokens": "Recargar tus tokens",
-    "togglePasswordVisibility": "Mostrar/ocultar contraseña",
-    "passwordError": {
-      "min": "La contraseña debe contener al menos 8 caracteres",
-      "mismatch": "Las contraseñas no coinciden",
-      "required": "Este campo es obligatorio"
+    "changePassword": {
+      "successMessage": "Contraseña cambiada correctamente",
+      "errorMessage": "Error al cambiar la contraseña",
+      "incorrectPassword": "La contraseña actual es incorrecta",
+      "complexityError": "La nueva contraseña no cumple con los requisitos de complejidad",
+      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
+      "validation": {
+        "currentPasswordRequired": "La contraseña actual es obligatoria",
+        "newPasswordMin": "La contraseña debe tener al menos 8 caracteres",
+        "confirmPasswordRequired": "Por favor, confirma tu contraseña",
+        "passwordMismatch": "Las contraseñas no coinciden"
+      }
+    },
+    "editProfile": {
+      "successMessage": "Perfil actualizado correctamente",
+      "errorMessage": "Error al actualizar el perfil",
+      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
+      "emailAlreadyInUse": "Esta dirección de correo electrónico ya está en uso por otra cuenta",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo electrónico",
+      "updateProfile": "Actualizar perfil",
+      "cancelUpdate": "Cancelar",
+      "formLabel": "Formulario de actualización de perfil"
     }
   },
   "welcome": {
@@ -83,25 +143,135 @@
     "session": {
       "title": "Únete a <br /> una sesión",
       "button": "Unirse a una sesión",
-      "button-aria": "Navegar hacia unirse a una sesión"
+      "button-aria": "Navegar hacia unirse a una sesión",
+      "comingSoon": "Próximamente"
     },
     "character": {
       "title": "Crea tu primer <br /> personaje",
       "button": "Crear un personaje",
       "button-aria": "Navegar hacia la creación de personaje"
     }
+  },  
+  "characterForm": {
+    "createSuccess": "Personaje creado con éxito",
+    "createError": "Error al crear el personaje",
+    "updateSuccess": "Personaje actualizado con éxito",
+    "updateError": "Error al actualizar el personaje",
+    "missingId": "No se puede actualizar: falta el identificador del personaje",
+    "changesCancelled": "Cambios cancelados"
   },
+  "characterCreate": {
+    "titlePlayer": "Crear un personaje jugador",
+    "titleNpc": "Crear un PNJ",
+    "description": "Rellena la ficha completa del personaje. Podrás modificar esta información más tarde desde la ficha.",
+    "cancel": "Cancelar",
+    "create": "Crear",
+    "saving": "Creando..."
+  },  
+  "zodErrors": {
+    "invalidTypeReceived": "Entrada inválida",
+    "required": "Requerido",
+    "tooSmall": {
+      "string": {
+        "inclusive": "La cadena debe contener al menos {minimum} carácter(es)"
+      },
+      "number": {
+        "inclusive": "El número debe ser mayor o igual a {minimum}"
+      },
+      "array": {
+        "inclusive": "El array debe contener al menos {minimum} elemento(s)"
+      }
+    },
+    "tooBig": {
+      "string": {
+        "inclusive": "La cadena debe contener como máximo {maximum} carácter(es)"
+      },
+      "number": {
+        "inclusive": "El número debe ser menor o igual a {maximum}"
+      },
+      "array": {
+        "inclusive": "El array debe contener como máximo {maximum} elemento(s)"
+      }
+    },
+    "invalidString": {
+      "email": "Email inválido",
+      "url": "URL inválida",
+      "uuid": "UUID inválido"
+    },
+    "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}"
+  },  
   "characterDetail": {
+    "editCharacter": "Modificar personaje",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "edit": {
+      "basicInfo": "Información Básica",
+      "firstname": "Nombre",
+      "lastname": "Apellido",
+      "surname": "Apodo",
+      "optional": "opcional",
+      "profile": "Perfil",
+      "race": "Raza",
+      "alignment": "Alineamiento",
+      "challenge": "Desafío",
+      "challengeRating": "Índice de Desafío",
+      "experiencePoints": "Puntos de Experiencia",
+      "type": "Tipo",
+      "combatStats": "Estadísticas de Combate",
+      "editInProgress": "Edición en progreso",
+      "currentHP": "PV Actuales",
+      "maxHP": "PV Máximo",
+      "tempHP": "PV Temporales",
+      "defense": "Defensa",
+      "initiative": "Iniciativa",
+      "size": "Tamaño",
+      "selectSize": "Seleccionar un tamaño",
+      "spellcastingStats": "Estadísticas de Hechicería",
+      "spellcastingAbility": "Habilidad de Lanzamiento",
+      "spellSaveDC": "CD de Salvación de Conjuros",
+      "spellAttackBonus": "Bonificación de Ataque de Conjuros",
+      "className": "Clase",
+      "selectClass": "Seleccionar una clase",
+      "spellName": "Nombre del conjuro",
+      "spellLevelLabel": "Nivel",
+      "spellEffectType": "Tipo de efecto",
+      "spellDamage": "Daño",
+      "spellHealing": "Curación",
+      "diceCount": "Número de dados",
+      "diceType": "Tipo de dado",
+      "bonus": "Bonificación",
+      "damageType": "Tipo de daño",
+      "damageTypePlaceholder": "Fuego, Frío...",
+      "slotsUsed": "Usados",
+      "slotsTotal": "Total",
+      "copperPieces": "Piezas de Cobre",
+      "silverPieces": "Piezas de Plata",
+      "electrumPieces": "Piezas de Electro",
+      "goldPieces": "Piezas de Oro",
+      "platinumPieces": "Piezas de Platino",
+      "reset": "Reiniciar",
+      "speeds": "Velocidades",
+      "walk": "Caminar",
+      "climb": "Escalar",
+      "swim": "Nadar",
+      "fly": "Volar",
+      "burrow": "Excavar",
+      "add": "Añadir"
+    },
     "tabs": {
       "general": "General",
-      "combat": "Combate",
+      "battle": "Combate",
       "magic": "Magia",
       "inventory": "Inventario",
       "history": "Historia"
     },
-    "combat": {
+    "battle": {
       "stats": "Estadísticas",
-      "hitDice": "Dados de Golpe:",
+      "hitLevel": "Nivel",
+      "hitDice": "Dados de Golpe",
+      "multiplicator": "Multiplicador",
+      "bonusHealthDice": "Bonus de Dados de Golpe",
       "hitPointsRoll": "Tirada de Puntos de Golpe:",
       "savingThrows": "Tiradas de salvación",
       "deathSaves": "Salvaciones de Muerte",
@@ -118,10 +288,29 @@
       "damageType": "Daño/Tipo:",
       "description": "Descripción:",
       "details": "detalles",
+      "type": "Tipo",
+      "name": "Nombre",
       "descriptionPrefix": "descripción",
       "armorClass": "Clase de Armadura",
       "armorClassTooltip": "Clase de armadura (CA) del personaje",
       "initiativeTooltip": "Bonificación de iniciativa",
+      "sizeTooltip": "Tamaño del personaje",
+      "sizes": {
+        "Tiny": "Diminuto",
+        "Small": "Pequeño",
+        "Medium": "Mediano",
+        "Large": "Grande",
+        "Huge": "Enorme",
+        "Gargantuan": "Gargantuesco"
+      },
+      "sizesAbbr": {
+        "Tiny": "D",
+        "Small": "P",
+        "Medium": "M",
+        "Large": "G",
+        "Huge": "E",
+        "Gargantuan": "Gar"
+      },
       "walkSpeedTooltip": "Velocidad de marcha",
       "climbSpeedTooltip": "Velocidad de escalada",
       "swimSpeedTooltip": "Velocidad de natación",
@@ -157,6 +346,7 @@
       "class": "Clase",
       "alignment": "Alineamiento",
       "general": {
+        "title": "Pestaña General",
         "characterInfoLabel": "Información general del personaje",
         "character": "Personaje",
         "raceLabel": "Raza",
@@ -199,14 +389,20 @@
         },
         "skills": "Habilidades",
         "proficiencyBonus": "Bonificador de competencia",
+        "abilityBonus": "Bonificador",
         "skillsList": "Lista de habilidades del personaje",
         "passivePerception": "Percepción pasiva",
+        "passivePerceptionOverride": "Valor personalizado",
+        "passivePerceptionMismatch": "⚠️ Valor esperado: {calculated} según Sabiduría y competencia en Percepción",
         "background": "Trasfondo",
+        "abilitiesAndTraits": "Habilidades y rasgos",
         "characterAbilities": "Aptitudes",
         "abilityDetails": "Detalles de la aptitud",
         "abilityDescription": "Descripción de",
         "characteristics": "Características",
         "masteryLevelIcon": "Nivel de competencia {level}",
+        "enableHalfProficiency": "Media competencia",
+        "enableExpertise": "Pericia",
         "noLanguages": "Ninguno",
         "skillNames": {
           "acrobatics": "Acrobacias",
@@ -227,7 +423,136 @@
           "performance": "Actuación",
           "survival": "Supervivencia",
           "deception": "Engaño"
-        }
+        },
+        "proficiencyOptions": {
+          "languages": [
+            "Común",
+            "Enano",
+            "Élfico",
+            "Gigante",
+            "Gnómico",
+            "Goblin",
+            "Mediano",
+            "Orco",
+            "Abisal",
+            "Celestial",
+            "Dracónico",
+            "Habla Profunda",
+            "Infernal",
+            "Primordial",
+            "Silvano",
+            "Infracomún"
+          ],
+          "tools": [
+            "Herramientas de artesano",
+            "Kit de disfraz",
+            "Kit de falsificación",
+            "Conjunto de juego",
+            "Kit de herboristería",
+            "Instrumento musical",
+            "Herramientas de navegación",
+            "Kit de envenenador",
+            "Herramientas de ladrón"
+          ],
+          "weapons": [
+            "Armas marciales",
+            "Armas simples",
+            "Bastón",
+            "Daga",
+            "Garrote",
+            "Hacha de mano",
+            "Jabalina",
+            "Lanza",
+            "Martillo ligero",
+            "Maza",
+            "Garrote grande",
+            "Hoz",
+            "Arco corto",
+            "Dardo",
+            "Honda",
+            "Cimitarra",
+            "Guja",
+            "Espada grande",
+            "Espada corta",
+            "Espada larga",
+            "Mangual",
+            "Látigo",
+            "Hacha grande",
+            "Hacha de batalla",
+            "Alabarda",
+            "Lanza de caballería",
+            "Mazo",
+            "Martillo de guerra",
+            "Lucero del alba",
+            "Pico de guerra",
+            "Pica",
+            "Estoque",
+            "Tridente",
+            "Ballesta de mano",
+            "Ballesta pesada",
+            "Arco largo",
+            "Red",
+            "Cerbatana"
+          ],
+          "armors": [
+            "Armadura ligera",
+            "Armadura media",
+            "Armadura pesada",
+            "Escudos"
+          ],
+          "backgrounds": [
+            "Acólito",
+            "Charlatán",
+            "Criminal",
+            "Artista",
+            "Héroe del pueblo",
+            "Artesano de gremio",
+            "Ermitaño",
+            "Noble",
+            "Forastero",
+            "Sabio",
+            "Marinero",
+            "Soldado",
+            "Huérfano",
+            "Antropólogo",
+            "Arqueólogo",
+            "Guardia de la ciudad",
+            "Artesano de clan",
+            "Erudito recluido",
+            "Cortesano",
+            "Agente de facción",
+            "Viajero lejano",
+            "Atormentado",
+            "Heredero",
+            "Caballero",
+            "Veterano mercenario",
+            "Pirata",
+            "Cazarrecompensas urbano",
+            "Trasfondo personalizado"
+          ]
+        },
+        "race": "Raza",
+        "class": "Clase",
+        "alignment": "Alineamiento",
+        "subrace": "Subraza",
+        "level": "Nivel",
+        "experience": "Experiencia",
+        "className": "Nombre de la clase",
+        "classLevel": "Nivel de clase",
+        "subclass": "Subclase",
+        "selectClass": "Seleccionar una clase",
+        "xpLevelSynced": "Nivel y XP sincronizados",
+        "xpLevelMismatch": "Con {xp} XP, el nivel debería ser {level}",
+        "syncLevelButton": "Nivel → {level}",
+        "syncXpButton": "XP → {xp}",
+        "proficiencyBonusLabel": "Bonificador de competencia",
+        "proficiencyBonusSynced": "Bonificador de competencia y nivel sincronizados",
+        "proficiencyBonusMismatch": "En el nivel {level}, el bonificador de competencia debería ser +{bonus}",
+        "syncProficiencyBonusButton": "Bonificador → +{bonus}",
+        "classLevelExceeds": "Total supera el nivel global",
+        "classLevelExceedsGlobal": "Total de niveles de clase ({total}) supera el nivel global ({global})",
+        "classLevelInfo": "Nivel de esta clase: {classLevel} | Total: {totalLevel}/{globalLevel}",
+        "addSecondClass": "Añadir una segunda clase"
       }
     },
     "npc": {
@@ -239,10 +564,13 @@
       "challengeRatingAbbr": "ID",
       "alignment": "Alineamiento",
       "general": {
+        "title": "Pestaña General",
         "npcInfoLabel": "Información general del PNJ",
         "characterInfo": "Información del personaje",
         "characteristicsSkills": "Características y habilidades",
-        "additionalInfo": "Información adicional"
+        "additionalInfo": "Información adicional",
+        "skillsInfo": "Las habilidades de los PNJ se definen manualmente. Cada habilidad puede tener un valor de bonificación personalizado.",
+        "skillsHint": "Nota: Las habilidades se muestran actualmente en modo de solo lectura. La edición completa de habilidades estará disponible en una futura actualización."
       }
     },
     "placeholder": {
@@ -280,6 +608,7 @@
       "attackShort": "Atq.",
       "saveDC": "CD de salvación",
       "saveDCShort": "CD",
+      "spellcastingAbility": "Habilidad de lanzamiento",
       "cantrips": "Trucos",
       "noCantrips": "Sin trucos",
       "spellLevel": "Conjuros de nivel {level}",
@@ -292,6 +621,8 @@
         "duration": "Duración",
         "description": "Descripción"
       },
+      "damage": "Daño",
+      "healing": "Curación",
       "mainRegion": "Sección de magia",
       "spellListRegion": "Lista de conjuros",
       "spellDetailRegion": "Detalles del conjuro",
@@ -300,7 +631,92 @@
       "backToList": "Volver a la lista",
       "expandAll": "Expandir todo",
       "collapseAll": "Colapsar todo",
-      "spells": "Conjuros"
+      "spells": "Conjuros",
+      "spellSlotsEdit": "Ranuras de conjuros",
+      "addSpell": "Añadir un conjuro manualmente",
+      "addCodexSpell": "Añadir un conjuro desde Codex",
+      "codexUnavailable": "Codex no está disponible actualmente",
+      "selectSpellToEdit": "Selecciona un conjuro a la izquierda para editar sus detalles",
+      "noSpellsInLevel": "No hay conjuros en este nivel",
+      "newSpell": "Nuevo conjuro",
+      "effectTypes": {
+        "attack": "Ataque",
+        "heal": "Curación",
+        "utility": "Utilitario"
+      },
+      "saveDCSynced": "Coincide con el valor calculado",
+      "saveDCMismatch": "Calculado: {calculated} (8 + comp. {prof} + mod. {mod})",
+      "syncSaveDC": "Aplicar {dc}",
+      "attackBonusSynced": "Coincide con el valor calculado",
+      "attackBonusMismatch": "Calculado: {calculated} (comp. {prof} + mod. {mod})",
+      "syncAttackBonus": "Aplicar +{bonus}",
+      "preparedSpellsInfo": "Máx.: {count} preparados (nivel {level} + mod. {mod})",
+      "slotsLabel": "ranuras",
+      "removeSpellTitle": "Eliminar conjuro",
+      "removeSpellDescription": "¿Estás seguro de que quieres eliminar \"{name}\"?",
+      "removeSpellConfirm": "Eliminar",      "removeSpellcasting": "Eliminar capacidades mágicas",      "removeSpellcastingTitle": "Eliminar capacidades mágicas",
+      "removeSpellcastingDescription": "¿Estás seguro de que quieres eliminar las capacidades mágicas de {className}? Todos los conjuros asociados también serán eliminados.",
+      "removeSpellcastingConfirm": "Eliminar",
+      "addSpellcasting": "Añadir capacidades mágicas",
+      "newSpellcasting": "Nueva clase mágica",
+      "spellSlotsTotalForLevel": "Número de espacios de conjuro de nivel {level}",
+      "moreSpellOptions": "Más opciones de conjuros",
+      "removeSpellWithName": "Eliminar conjuro {name}",
+      "expandAllSpellLevels": "Expandir todos los niveles de conjuros",
+      "collapseAllSpellLevels": "Contraer todos los niveles de conjuros",
+      "codexDialog": {
+        "title": "Buscar un conjuro en Codex",
+        "searchPlaceholder": "Buscar un conjuro...",
+        "noResults": "No se encontraron conjuros",
+        "searching": "Buscando...",
+        "selectSpell": "Selecciona un conjuro para ver los detalles",
+        "validate": "Añadir este conjuro",
+        "cancel": "Cancelar",
+        "loadMore": "Cargar más",
+        "error": "Error al buscar",
+        "validatedByChariot": "Validado por Chariot",
+        "srdContent": "Contenido SRD (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 Todos los idiomas",
+          "fr": "🇫🇷 Francés",
+          "en": "🇬🇧 Inglés",
+          "es": "🇪🇸 Español"
+        },
+        "resultsCount": "{count} resultado{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+"
+      },
+      "monsterCodexDialog": {
+        "title": "Buscar un monstruo en Codex",
+        "searchPlaceholder": "Buscar un monstruo...",
+        "noResults": "No se encontraron monstruos",
+        "searching": "Buscando...",
+        "selectMonster": "Selecciona un monstruo para ver los detalles",
+        "validate": "Usar este monstruo",
+        "cancel": "Cancelar",
+        "loadMore": "Cargar más",
+        "error": "Error al buscar",
+        "validatedByChariot": "Validado por Chariot",
+        "srdContent": "Contenido SRD (System Reference Document)",
+        "languageFilter": {
+          "all": "🌍 Todos los idiomas",
+          "fr": "🇫🇷 Francés",
+          "en": "🇬🇧 Inglés",
+          "es": "🇪🇸 Español"
+        },
+        "resultsCount": "{count} resultado{plural}{more}",
+        "resultsPlural": "s",
+        "resultsMore": "+",
+        "monsterInfo": "CR {cr} • {type}",
+        "preview": {
+          "challengeRatingShort": "CR",
+          "experiencePointsShort": "XP",
+          "calculatedArmorClass": "CA calculada",
+          "sourceArmorClass": "fuente: {value}",
+          "hitPointsDice": "Dados de puntos de golpe",
+          "estimatedProficiencyBonus": "Bonificación de competencia (estimada)"
+        }
+      }
     }
   },
   "classes": {
@@ -332,5 +748,6 @@
     "Any Good Alignment": "Cualquier alineación buena",
     "Any Evil Alignment": "Cualquier alineación malvada",
     "Any Lawful Alignment": "Cualquier alineación legal",
-    "Any Chaotic Alignment": "Cualquier alineación caótica"  }
+    "Any Chaotic Alignment": "Cualquier alineación caótica"  
+  }
 }
