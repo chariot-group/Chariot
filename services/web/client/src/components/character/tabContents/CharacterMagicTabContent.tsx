@@ -17,12 +17,12 @@ interface CharacterMagicTabContentProps {
 export default function CharacterMagicTabContent({ character, accentColor }: CharacterMagicTabContentProps) {
   const tClass = useTranslations("classes");
   const tMagic = useTranslations("characterDetail.magic");
+
   const [selectedSpellcasting, setSelectedSpellcasting] = useState<Spellcasting | null>(
     character.spellcasting?.[0] || null,
   );
 
   const [showMobileDetails, setShowMobileDetails] = useState(false);
-  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const selectedSpellRef = useRef<HTMLDivElement | null>(null);
 
   const [selectedSpell, setSelectedSpell] = useState<Spell | null>(() => {
@@ -40,6 +40,26 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
     const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
     return selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
   });
+
+  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>(() => {
+    if (!selectedSpellcasting || !selectedSpellcasting.spells || selectedSpellcasting.spells.length === 0) {
+      return [];
+    }
+
+    // Find the lowest level and open its accordion
+    const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
+    return [`level-${minLevel}`];
+  });
+
+  useEffect(() => {
+    // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
+    if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
+      const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
+      const firstSpell = selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
+      setSelectedSpell(firstSpell);
+      setOpenAccordionValues([`level-${minLevel}`]);
+    }
+  }, [selectedSpellcasting]);
 
   useEffect(() => {
     if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
@@ -183,8 +203,19 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                       levels.push(0);
                     }
                     if (selectedSpellcasting.spellSlotsByLevel) {
-                      levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                      Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                        const n = Number(l);
+                        if (!levels.includes(n)) levels.push(n);
+                      });
                     }
+                    // Add all levels that have spells (even without slots)
+                    if (selectedSpellcasting.spells) {
+                      selectedSpellcasting.spells.forEach((spell) => {
+                        const n = Number(spell.level);
+                        if (!levels.includes(n)) levels.push(n);
+                      });
+                    }
+                    levels.sort((a, b) => a - b);
 
                     const allLevelValues = levels.map((level) => `level-${level}`);
                     const isAllOpen = openAccordionValues.length > 0;
@@ -217,8 +248,22 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
 
                   // Add other levels from spellSlotsByLevel
                   if (selectedSpellcasting.spellSlotsByLevel) {
-                    levels.push(...Object.keys(selectedSpellcasting.spellSlotsByLevel).map(Number));
+                    Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                      const n = Number(l);
+                      if (!levels.includes(n)) levels.push(n);
+                    });
                   }
+
+                  // Add all levels that have spells (even without slots)
+                  if (selectedSpellcasting.spells) {
+                    selectedSpellcasting.spells.forEach((spell) => {
+                      const n = Number(spell.level);
+                      if (!levels.includes(n)) levels.push(n);
+                    });
+                  }
+
+                  // Sort levels
+                  levels.sort((a, b) => a - b);
 
                   return (
                     <Accordion

@@ -136,7 +136,7 @@ export function usePlayersWithoutGroup(pageSize: number = 10): UsePlayersWithout
         if (characters.length === 0 && !loading && !error) {
             fetchCharacters();
         }
-    }, []);
+    }, [characters.length, loading, error, fetchCharacters]);
 
     return {
         characters,

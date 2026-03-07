@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Development
+.env*
+!.env.example
+*.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+docker-compose*
+compose*.yml
+.dockerignore
+
+# Scripts
+*.sh
+!keycloak-config.sh
+
+# Logs
+logs
+*.log

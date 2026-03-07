@@ -7,7 +7,7 @@ const initialState: GroupState = {
     archivedGroups: [],
     loading: false,
     error: null,
-    openGroupId: null,
+    openGroupId: [],
     lastFetch: null,
 };
 
@@ -31,17 +31,65 @@ const groupSlice = createSlice({
             state.error = action.payload;
         },
         setOpenGroup: (state, action: PayloadAction<string | null>) => {
-            state.openGroupId = action.payload;
+            const current = Array.isArray(state.openGroupId)
+                ? state.openGroupId
+                : state.openGroupId
+                    ? [state.openGroupId as unknown as string]
+                    : [];
+
+            if (action.payload === null) {
+                state.openGroupId = [];
+                return;
+            }
+
+            const id = action.payload;
+            if (current.includes(id)) {
+                state.openGroupId = current.filter(groupId => groupId !== id);
+            } else {
+                state.openGroupId = [...current, id];
+            }
         },
         clearGroups: (state) => {
             state.activeGroups = [];
             state.archivedGroups = [];
             state.error = null;
-            state.openGroupId = null;
+            state.openGroupId = [];
             state.lastFetch = null;
         },
         invalidateCache: (state) => {
             state.lastFetch = null;
+        },
+        addCharacterToGroup: (
+            state,
+            action: PayloadAction<{
+                groupId: string;
+                character: { _id: string; firstname: string; lastname: string; surname: string; userId?: string };
+            }>,
+        ) => {
+            const { groupId, character } = action.payload;
+
+            const targetGroup = state.activeGroups.find(group => group._id === groupId)
+                ?? state.archivedGroups.find(group => group._id === groupId);
+
+            if (!targetGroup) {
+                return;
+            }
+
+            const alreadyExists = targetGroup.characters.some(existing => existing._id === character._id);
+            if (alreadyExists) {
+                return;
+            }
+
+            targetGroup.characters = [
+                ...targetGroup.characters,
+                {
+                    _id: character._id,
+                    firstname: character.firstname,
+                    lastname: character.lastname,
+                    surname: character.surname,
+                    userId: character.userId ?? '',
+                },
+            ];
         },
     },
 });
@@ -53,6 +101,7 @@ export const {
     setOpenGroup,
     clearGroups,
     invalidateCache,
+    addCharacterToGroup,
 } = groupSlice.actions;
 
 // Selectors

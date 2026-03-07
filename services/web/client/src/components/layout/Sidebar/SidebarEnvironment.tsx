@@ -7,6 +7,7 @@ import { selectOpenEnvironment, setOpenEnvironment } from "@/store/slices/sideba
 import { ChevronRight, PlusCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import CampaignList from "@/components/layout/Sidebar/CampaignList";
+import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
 
 /**
  * Environment selector component
@@ -42,13 +43,14 @@ export default function SidebarEnvironment() {
       <CollapsibleTrigger
         aria-expanded={open}
         aria-controls="spaces-content"
-        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group focus-visible:border ${open ? "bg-white" : ""}`}>
-        <span className={`text-sm group-hover:font-bold group-hover:text-black ${open ? "text-black font-bold" : ""}`}>
+        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/environment focus-visible:border ${open ? "bg-white" : ""}`}>
+        <span
+          className={`text-sm group-hover/environment:font-bold group-hover/environment:text-black ${open ? "text-black font-bold" : ""}`}>
           {t("yourSpaces")}
         </span>
         <ChevronRight
           aria-hidden="true"
-          className={`w-5 h-5 group-hover:text-black transition-all duration-100 ${open ? "rotate-90 text-black" : ""}`}
+          className={`w-5 h-5 group-hover/environment:text-black transition-all duration-100 ${open ? "rotate-90 text-black" : ""}`}
         />
       </CollapsibleTrigger>
       <CollapsibleContent
@@ -67,15 +69,16 @@ export default function SidebarEnvironment() {
           aria-hidden="true"
         />
 
-        {/* Switch to GM mode and create campaign */}
-        <button
-          type="button"
-          onClick={() => changeEnvironment("gm")}
-          aria-label={t("createCampaign")}
-          className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
-          {t("createCampaign")}
-          <PlusCircleIcon className="w-5 h-5" />
-        </button>
+        {/* Create campaign dialog */}
+        <CreateCampaignDialog>
+          <button
+            type="button"
+            aria-label={t("createCampaign")}
+            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
+            {t("createCampaign")}
+            <PlusCircleIcon className="w-5 h-5" />
+          </button>
+        </CreateCampaignDialog>
 
         {/* Campaign list */}
         <CampaignList />

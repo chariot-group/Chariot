@@ -17,14 +17,17 @@ services:
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: ${GATEWAY_URL:-http://localhost:8082}
+      NEXT_PUBLIC_CODEX_URL: ${CODEX_URL:-http://localhost:9001}
       NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
       NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
-      WATCHPACK_POLLING: "true"
-      CHOKIDAR_USEPOLLING: "true"
+      # File watching optimizations (no polling needed on modern Docker Desktop)
+      WATCHPACK_POLLING: "false"
+      CHOKIDAR_USEPOLLING: "false"
+    shm_size: 512mb
     networks:
       - chariot-group-network
-    command: ["sh", "-c", "npm install && npm run dev"]
+    command: ["npm", "run", "dev"]
 
 networks:
   chariot-group-network:

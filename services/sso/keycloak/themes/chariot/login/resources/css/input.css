@@ -33,7 +33,7 @@ body {
 }
 
 .cancel {
-  border: 0.3rem solid #565656 !important;
+  border: 1px solid #565656 !important;
   border-radius: 36px !important;
   border-color: #FFFFFF !important;
 
@@ -42,6 +42,10 @@ body {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
+}
+
+.cancel:hover {
+  border: 2px solid #565656 !important;
 }
 
 .login-pf-page {
@@ -65,7 +69,8 @@ body {
 .logo-container {
   position: absolute;
   top: 2rem;
-  right: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 10;
 }
 
@@ -535,5 +540,215 @@ span[id^="input-error"] {
     height: 44px;
     padding: 0.875rem;
     font-size: 0.875rem;
+  }
+}
+
+/* Responsive hard-fixes for tablet/mobile login layout */
+@media (max-width: 1024px) {
+  .card-pf {
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .form-fields-row {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    max-width: 100%;
+  }
+
+  .form-column {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .form-group,
+  div[class*="FormGroup"],
+  .form-submit,
+  #kc-login {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .button-row {
+    flex-direction: column !important;
+  }
+
+  .cancel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-pf-page {
+    padding: 5.5rem 1rem 1rem;
+  }
+
+  .logo-container {
+    top: 1rem;
+  }
+
+  #kc-container-wrapper {
+    max-width: 100%;
+    min-height: auto;
+  }
+
+  .form-fields,
+  .form-fields-row {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    max-width: 100%;
+  }
+
+  #kc-form-options {
+    flex-wrap: wrap;
+  }
+
+  #kc-form-options span {
+    line-height: 1.35;
+  }
+
+  .toggle-password {
+    right: 0.75rem;
+  }
+
+  .card-pf {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    background-size: 1500px auto !important;
+    background-attachment: scroll !important;
+  }
+
+  #kc-header-wrapper {
+    line-height: 1.3;
+  }
+}
+
+/* Cross-page harmonization */
+#kc-content-wrapper {
+  width: 100%;
+}
+
+#kc-form {
+  gap: 1.5rem;
+}
+
+#kc-form-wrapper {
+  gap: 1rem;
+}
+
+.form-fields-row {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.form-column {
+  align-items: stretch;
+}
+
+#kc-form-options span,
+#kc-registration span {
+  display: block;
+  line-height: 1.35;
+}
+
+#kc-info {
+  width: 100%;
+  max-width: 700px;
+  margin-top: 0.25rem;
+}
+
+#kc-info-wrapper,
+.instruction {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  #kc-form {
+    gap: 1.25rem;
+  }
+
+  #kc-form-wrapper {
+    gap: 0.75rem;
+  }
+}
+
+/* Final responsive alignment fixes */
+#kc-container,
+#kc-container-wrapper,
+#kc-content,
+#kc-content-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cancel {
+  background: transparent !important;
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .form-fields-row {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .form-column {
+    max-width: 340px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .button-row {
+    flex-direction: row !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-fields,
+  .form-fields-row,
+  .form-submit {
+    align-items: center;
+  }
+
+  .form-group,
+  div[class*="FormGroup"],
+  .button-row {
+    width: min(100%, 420px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #kc-login,
+  .cancel,
+  .button-row > input,
+  .button-row > button,
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  .form-control {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-fields-row .form-column {
+    width: 100%;
+    align-items: center;
+  }
+
+  .form-fields-row .form-column > div[class*="FormGroup"] {
+    width: calc(100% - 2rem);
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }

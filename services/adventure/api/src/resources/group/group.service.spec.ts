@@ -50,6 +50,10 @@ describe('GroupService', () => {
     };
     characterModel = {
       updateMany: jest.fn(),
+      find: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockReturnThis(),
+      exec: jest.fn(),
     };
 
     const mockGroupsCreatedCounter = {
@@ -472,17 +476,33 @@ describe('GroupService', () => {
       const mockGroup = {
         _id: id,
         characters: [new Types.ObjectId(), new Types.ObjectId()],
+        campaigns: [new Types.ObjectId()],
         save: jest.fn(),
       };
       groupModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockGroup),
       });
       characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      characterModel.find.mockReturnThis();
+      characterModel.select.mockReturnThis();
+      characterModel.lean.mockReturnThis();
+      characterModel.exec.mockResolvedValue([]);
+      campaignModel.updateMany.mockResolvedValue({});
       const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
 
       const result = await service.remove(id);
 
       expect(characterModel.updateMany).toHaveBeenCalled();
+      expect(campaignModel.updateMany).toHaveBeenCalledWith(
+        { _id: { $in: mockGroup.campaigns } },
+        {
+          $pull: {
+            'groups.active': id,
+            'groups.archived': id,
+            'groups.main': id,
+          },
+        },
+      );
       expect(mockGroup.save).toHaveBeenCalled();
       expect(result).toHaveProperty('message');
       expect(result.data).toBe(mockGroup);
@@ -509,6 +529,7 @@ describe('GroupService', () => {
       const mockGroup = {
         _id: id,
         characters: [],
+        campaigns: [],
         deletedAt: null,
         save: jest.fn(),
       };
@@ -532,6 +553,7 @@ describe('GroupService', () => {
       const mockGroup = {
         _id: id,
         characters: [characterId1, characterId2],
+        campaigns: [],
         save: jest.fn(),
       };
 
@@ -539,6 +561,10 @@ describe('GroupService', () => {
         exec: jest.fn().mockResolvedValue(mockGroup),
       });
       characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      characterModel.find.mockReturnThis();
+      characterModel.select.mockReturnThis();
+      characterModel.lean.mockReturnThis();
+      characterModel.exec.mockResolvedValue([]);
       jest.spyOn(service['logger'], 'verbose').mockImplementation();
 
       await service.remove(id);
@@ -552,6 +578,7 @@ describe('GroupService', () => {
       const mockGroup = {
         _id: id,
         characters: characterIds,
+        campaigns: [],
         save: jest.fn(),
       };
 
@@ -559,12 +586,16 @@ describe('GroupService', () => {
         exec: jest.fn().mockResolvedValue(mockGroup),
       });
       characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      characterModel.find.mockReturnThis();
+      characterModel.select.mockReturnThis();
+      characterModel.lean.mockReturnThis();
+      characterModel.exec.mockResolvedValue([]);
       jest.spyOn(service['logger'], 'verbose').mockImplementation();
 
       await service.remove(id);
 
       expect(characterModel.updateMany).toHaveBeenCalledWith(
-        { _id: { $in: characterIds } },
+        { _id: { $in: characterIds }, deletedAt: null },
         { $pull: { groups: id } },
       );
     });
@@ -574,6 +605,7 @@ describe('GroupService', () => {
       const mockGroup = {
         _id: id,
         characters: [],
+        campaigns: [],
         save: jest.fn(),
       };
 
@@ -587,6 +619,37 @@ describe('GroupService', () => {
 
       expect(result.message).toMatch(/delete in \d+ms/);
       loggerSpy.mockRestore();
+    });
+
+    it('should soft delete orphan characters after group removal', async () => {
+      const id = new Types.ObjectId();
+      const orphanCharacterId = new Types.ObjectId();
+      const mockGroup = {
+        _id: id,
+        characters: [orphanCharacterId],
+        campaigns: [],
+        save: jest.fn(),
+      };
+
+      groupModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockGroup),
+      });
+      characterModel.updateMany
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue({}) })
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue({}) });
+      characterModel.find.mockReturnThis();
+      characterModel.select.mockReturnThis();
+      characterModel.lean.mockReturnThis();
+      characterModel.exec.mockResolvedValue([{ _id: orphanCharacterId }]);
+      jest.spyOn(service['logger'], 'verbose').mockImplementation();
+
+      await service.remove(id);
+
+      expect(characterModel.updateMany).toHaveBeenNthCalledWith(
+        2,
+        { _id: { $in: [orphanCharacterId] }, deletedAt: null },
+        { $set: { deletedAt: expect.any(Date) } },
+      );
     });
   });
 

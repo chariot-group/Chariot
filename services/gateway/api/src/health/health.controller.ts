@@ -1,6 +1,6 @@
-import { Controller, Get, Logger } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
-import { HealthService } from '@/health/health.service';
+import { Controller, Get, Logger } from "@nestjs/common";
+import { SkipThrottle } from "@nestjs/throttler";
+import { HealthService } from "@/health/health.service";
 
 @Controller()
 export class HealthController {
@@ -8,17 +8,17 @@ export class HealthController {
 
   constructor(private readonly healthService: HealthService) {}
 
-  @Get('health')
+  @Get("health")
   @SkipThrottle()
   async checkHealth() {
-    this.logger.debug('Health check requested');
+    this.logger.debug("Health check requested");
     return this.healthService.getHealth();
   }
 
-  @Get('ready')
+  @Get("ready")
   @SkipThrottle()
   async checkReadiness() {
-    this.logger.debug('Readiness check requested');
+    this.logger.debug("Readiness check requested");
     return this.healthService.getReadiness();
   }
 }

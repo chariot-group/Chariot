@@ -74,6 +74,26 @@ const characterSlice = createSlice({
             state.errorWithoutGroup = action.payload;
         },
 
+        upsertCharacterWithoutGroup: (state, action: PayloadAction<Character>) => {
+            const character = action.payload;
+            const hasGroups = Array.isArray(character.groups) && character.groups.length > 0;
+            const existingIndex = state.charactersWithoutGroup.findIndex((item) => item._id === character._id);
+
+            if (hasGroups) {
+                if (existingIndex !== -1) {
+                    state.charactersWithoutGroup.splice(existingIndex, 1);
+                    state.totalWithoutGroup = Math.max(0, state.totalWithoutGroup - 1);
+                }
+            } else if (existingIndex !== -1) {
+                state.charactersWithoutGroup[existingIndex] = character;
+            } else {
+                state.charactersWithoutGroup.unshift(character);
+                state.totalWithoutGroup += 1;
+            }
+
+            state.hasMoreWithoutGroup = state.charactersWithoutGroup.length < state.totalWithoutGroup;
+        },
+
         // All characters
         fetchAllCharactersStart: (state) => {
             state.loadingAll = true;
@@ -119,6 +139,7 @@ export const {
     fetchAllCharactersStart,
     fetchAllCharactersSuccess,
     fetchAllCharactersFailure,
+    upsertCharacterWithoutGroup,
     clearCharacters,
     invalidateCharacterCache,
 } = characterSlice.actions;

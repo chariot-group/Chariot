@@ -1,92 +1,61 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { BookOpen, Swords, Sparkles, Package, ScrollText } from "lucide-react";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 export type CharacterTab =
     | "general"
-    | "combat"
+    | "battle"
     | "magic"
     | "inventory"
     | "history";
 
 interface CharacterTabsProps {
     activeTab: CharacterTab;
-    onTabChange: (tab: CharacterTab) => void;
+    listClassName?: string;
+    triggerClassName?: string;
 }
 
-export const TAB_COLORS: Record<CharacterTab, string> = {
-    general: "var(--blue)",
-    combat: "var(--red)",
-    magic: "var(--pink)",
-    inventory: "var(--yellow)",
-    history: "var(--green)",
-};
+export const CHARACTER_TABS: CharacterTab[] = ["general", "battle", "magic", "inventory", "history"];
 
-const TAB_ICONS = {
-    general: BookOpen,
-    combat: Swords,
-    magic: Sparkles,
-    inventory: Package,
-    history: ScrollText,
+export const TAB_COLORS: Record<CharacterTab, string> = {
+    general: "blue",
+    battle: "red",
+    magic: "pink",
+    inventory: "yellow",
+    history: "green",
 };
 
 export default function CharacterTabs({
     activeTab,
-    onTabChange,
+    listClassName,
+    triggerClassName,
 }: CharacterTabsProps) {
-    const t = useTranslations("characterDetail.tabs");
-
-    const tabs: CharacterTab[] = [
-        "general",
-        "combat",
-        "magic",
-        "inventory",
-        "history",
-    ];
+    const t = useTranslations("characterDetail");
 
     return (
-        <div className="flex flex-col gap-2">
-            {tabs.map((tab) => {
-                const Icon = TAB_ICONS[tab];
-                const isActive = activeTab === tab;
-                const color = TAB_COLORS[tab];
-
-                return (
-                    <button
-                        key={tab}
-                        onClick={() => onTabChange(tab)}
-                        className={`
-                            flex items-center gap-3 px-6 py-4 rounded-lg
-                            transition-all duration-200
-                            text-left
-                            ${
-                                isActive
-                                    ? "bg-gray shadow-lg scale-105"
-                                    : "bg-gray/50 hover:bg-gray/70 hover:scale-102"
-                            }
-                        `}
-                        style={{
-                            borderLeft: isActive
-                                ? `4px solid ${color}`
-                                : "4px solid transparent",
-                        }}
-                    >
-                        <Icon
-                            className="w-5 h-5 shrink-0"
-                            style={{ color: isActive ? color : "#b2b2b2" }}
-                        />
-                        <span
-                            className={`font-semibold ${
-                                isActive ? "text-white" : "text-gray-light"
-                            }`}
-                            style={{ color: isActive ? color : undefined }}
-                        >
-                            {t(tab)}
-                        </span>
-                    </button>
-                );
-            })}
-        </div>
+        <TabsList
+            className={cn("bg-transparent gap-1 flex-wrap justify-start self-start xl:self-end", listClassName)}
+            role="tablist"
+            aria-label={t("tabs.general")}>
+            {CHARACTER_TABS.map((tab) => (
+                <TabsTrigger
+                    key={tab}
+                    value={tab}
+                    role="tab"
+                    aria-selected={activeTab === tab}
+                    aria-controls={`${tab}-content`}
+                    className={cn(
+                        "text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white",
+                        activeTab === tab
+                            ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
+                            : "text-white bg-gray hover:bg-gray-middle",
+                        triggerClassName,
+                    )}>
+                    {t(`tabs.${tab}`)}
+                </TabsTrigger>
+            ))}
+        </TabsList>
     );
 }

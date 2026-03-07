@@ -6,6 +6,7 @@ Documentation of development processes and workflows.
 
 - [Branching policy](BRANCHING_POLICY.md) - Branch strategy and naming
 - [Release workflow](RELEASE_WORKFLOW.md) - Delivery process
+- [Stripe dev flow](STRIPE_DEV_FLOW.md) - Checkout/webhook path and local test procedure
 
 ## 🔗 Useful links
 
