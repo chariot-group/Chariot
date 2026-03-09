@@ -28,7 +28,7 @@
     "@keycloak/keycloak-admin-client": "^26.5.4",
     "@nestjs/common": "^11.0.13",
     "@nestjs/config": "^4.0.3",
-    "@nestjs/core": "^11.0.13",
+    "@nestjs/core": "^11.1.16",
     "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/passport": "^11.0.5",
