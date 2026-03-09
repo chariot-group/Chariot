@@ -8,6 +8,9 @@ import CharacterService from '@/services/CharacterService';
 import { Player, NPC } from '@/types/character';
 import { createPlayerSchema, createNpcSchema } from '@/schemas/character';
 import { makeZodMessages } from '@/lib/zodErrorMap';
+import { useAppDispatch } from '@/store/hooks';
+import { upsertCharacterWithoutGroup } from '@/store/slices/characterSlice';
+import { upsertCharacterInGroups } from '@/store/slices/groupSlice';
 
 /**
  * Type de personnage supporté
@@ -120,6 +123,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
     // Hooks
     const { character, loading: isLoading, error, refetch } = useCharacter(characterId);
     const toast = useToast();
+    const dispatch = useAppDispatch();
     const t = useTranslations('characterForm');
     const tZod = useTranslations('zodErrors');
 
@@ -223,6 +227,16 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
                 characterId,
                 sanitizedData as any
             );
+
+            // Keep sidebar lists synchronized after update (name/group display).
+            dispatch(upsertCharacterWithoutGroup(updatedCharacter));
+            dispatch(upsertCharacterInGroups({
+                _id: updatedCharacter._id,
+                firstname: updatedCharacter.firstname,
+                lastname: updatedCharacter.lastname,
+                surname: updatedCharacter.surname,
+                userId: (updatedCharacter as any).userId,
+            }));
 
             toast.success(t('updateSuccess'));
             setSuccess(true);
