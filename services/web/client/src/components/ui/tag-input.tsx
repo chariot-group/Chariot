@@ -85,8 +85,6 @@ export function TagInput({
         } else if (e.key === "Escape") {
             setShowSuggestions(false);
             setHighlightedIndex(-1);
-        } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
-            removeTag(value.length - 1);
         }
     };
 
