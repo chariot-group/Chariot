@@ -167,6 +167,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const defaultValues = characterType === "players"
     ? {
       groups: resolvedGroupId ? [resolvedGroupId] : [],
+      class: [{ name: "", subclass: "", level: 1, hitDice: 0 }],
       profile: {
         alignment: "True Neutral",
       },

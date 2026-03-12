@@ -448,7 +448,8 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                       <label
                         htmlFor={`class-${index}-level`}
                         className="text-xs">
-                        {t("hitLevel")} ({tClass(className)})
+                        {t("hitLevel")}
+                        {className ? ` (${tClass(className)})` : ""}
                       </label>
                       <Input
                         {...field}
