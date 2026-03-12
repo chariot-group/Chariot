@@ -69,7 +69,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
   }, [searchParams, setIsEditing]);
 
   return (
-    <main className="flex flex-col h-full overflow-hidden">
+    <main className="flex flex-col h-dvh overflow-hidden">
       <Tabs
         defaultValue="general"
         value={activeTab}
