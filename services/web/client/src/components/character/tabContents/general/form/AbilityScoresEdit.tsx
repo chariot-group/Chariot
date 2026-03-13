@@ -20,7 +20,7 @@ export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
     ] as const;
 
     return (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {abilityScores.map(({ key, label }) => (
                 <Controller
                     key={key}
@@ -34,7 +34,7 @@ export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
                         return (
                             <Field data-invalid={fieldState.invalid} orientation="vertical">
                                 <div className="grid grid-cols-2 items-baseline">
-                                    <div>
+                                    <div className="truncate">
                                         <label htmlFor={`ability-${key}`} className="text-sm font-medium">
                                             {label}
                                         </label>
@@ -47,7 +47,7 @@ export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
                                                 type="number"
                                                 min="1"
                                                 max="30"
-                                                className="flex-1"
+                                                className="flex-1 px-1"
                                                 aria-invalid={fieldState.invalid}
                                                 aria-describedby={fieldState.error ? `ability-${key}-error` : undefined}
                                             />
