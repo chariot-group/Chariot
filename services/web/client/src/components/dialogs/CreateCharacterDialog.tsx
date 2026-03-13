@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { User, Users, BookOpen } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CreateCharacterDialogProps {
   /** The element that opens the dialog (e.g. a Button). */
