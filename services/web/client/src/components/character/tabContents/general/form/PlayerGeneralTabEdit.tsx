@@ -488,7 +488,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                 orientation="vertical">
                                 <label
                                   htmlFor={`class-level-${index}`}
-                                  className="text-sm font-medium">
+                                  className="text-sm font-medium truncate">
                                   {t("classLevel")}
                                 </label>
                                 <Input
@@ -578,7 +578,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       onClick={() => appendClass({ name: "", subclass: "", level: 1, hitDice: 0 })}
                       className="flex items-center gap-2 border-dashed">
                       <Plus className="size-4" />
-                      <span>{t("addSecondClass")}</span>
+                      <span className="truncate">{t("addSecondClass")}</span>
                     </Button>
                   )}
                 </div>

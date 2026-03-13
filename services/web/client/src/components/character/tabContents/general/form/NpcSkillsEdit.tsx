@@ -65,15 +65,18 @@ export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps)
             control={form.control}
             render={({ field, fieldState }) => (
               <Card className="p-2">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-row items-center gap-2">
                   <Icon
                     className="w-5 h-5 shrink-0"
                     aria-hidden="true"
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
+                    <p className="text-xs text-gray-middle-light truncate">
+                      {t(`abilities.${ability}`)} 
+                    </p>
                     <p className="text-xs text-gray-middle-light">
-                      {t(`abilities.${ability}`)} ({abilityModifier >= 0 ? `+${abilityModifier}` : abilityModifier})
+                      ({abilityModifier >= 0 ? `+${abilityModifier}` : abilityModifier})
                     </p>
                   </div>
                   <Input

@@ -38,7 +38,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
         {t("stats")}
       </h2>
 
-      <div className="flex flex-row gap-2">
+      <div className="grid grid-cols-2 gap-4">
         {/* Classe d'Armure */}
         <Controller
           name="stats.armorClass"
@@ -49,7 +49,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
               orientation="vertical">
               <label
                 htmlFor="armor-class"
-                className="text-sm font-medium">
+                className="text-sm font-medium truncate">
                 {t("armorClass")}
               </label>
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
@@ -126,6 +126,8 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
             </Field>
           )}
         />
+      </div>
+      <div className="w-fit">
         {/* Taille */}
         <Controller
           name="stats.size"
@@ -177,11 +179,10 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
           )}
         />
       </div>
-
       {/* Vitesses */}
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-medium">{tEdit("speeds")}</h3>
-        <div className="grid sm:grid-cols-3 grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
           <Controller
             name="stats.speed.walk"
             control={form.control}
@@ -359,7 +360,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 orientation="vertical">
                 <label
                   htmlFor="health-current"
-                  className="text-xs">
+                  className="text-xs truncate">
                   {tEdit("currentHP")}
                 </label>
                 <Input
@@ -384,7 +385,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 orientation="vertical">
                 <label
                   htmlFor="health-max"
-                  className="text-xs">
+                  className="text-xs truncate">
                   {tEdit("maxHP")}
                 </label>
                 <Input
@@ -409,7 +410,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 orientation="vertical">
                 <label
                   htmlFor="health-temp"
-                  className="text-xs">
+                  className="text-xs truncate">
                   {tEdit("tempHP")}
                 </label>
                 <Input

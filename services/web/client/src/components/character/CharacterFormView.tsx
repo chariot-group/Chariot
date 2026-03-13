@@ -355,7 +355,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const handleCreate = form.handleSubmit(onCreate);
 
   return (
-    <main className="flex flex-col h-full overflow-hidden overflow-x-hidden">
+    <main className="flex flex-col h-dvh overflow-hidden overflow-x-hidden">
       <Tabs
         defaultValue="general"
         value={activeTab}

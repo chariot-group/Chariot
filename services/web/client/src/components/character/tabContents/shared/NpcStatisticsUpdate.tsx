@@ -50,7 +50,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
         {t("stats")}
       </h2>
 
-      <div className="flex flex-row gap-2">
+      <div className="grid grid-cols-2 gap-4">
         {/* Classe d'Armure */}
         <Controller
           name="stats.armorClass"
@@ -61,7 +61,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
               orientation="vertical">
               <label
                 htmlFor="armor-class"
-                className="text-sm font-medium">
+                className="text-sm font-medium truncate">
                 {t("armorClass")}
               </label>
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
@@ -139,6 +139,8 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
             </Field>
           )}
         />
+      </div>
+      <div className="w-fit">
         {/* Taille */}
         <Controller
           name="stats.size"
@@ -194,7 +196,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
       {/* Vitesses */}
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-medium">{tEdit("speeds")}</h3>
-        <div className="grid sm:grid-cols-3 grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
           <Controller
             name="stats.speed.walk"
             control={form.control}
@@ -372,7 +374,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 orientation="vertical">
                 <label
                   htmlFor="health-current"
-                  className="text-sm">
+                  className="text-sm truncate">
                   {tEdit("currentHP")}
                 </label>
                 <Input
@@ -397,7 +399,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 orientation="vertical">
                 <label
                   htmlFor="health-max"
-                  className="text-sm">
+                  className="text-sm truncate">
                   {tEdit("maxHP")}
                 </label>
                 <Input
@@ -422,7 +424,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 orientation="vertical">
                 <label
                   htmlFor="health-temp"
-                  className="text-sm">
+                  className="text-sm truncate">
                   {tEdit("tempHP")}
                 </label>
                 <Input
@@ -481,7 +483,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 orientation="vertical">
                 <label
                   htmlFor="hit-points-roll-dice"
-                  className="text-sm">
+                  className="text-sm truncate">
                   {t("hitDice")}
                 </label>
                 <Select
@@ -514,7 +516,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 orientation="vertical">
                 <label
                   htmlFor="hit-points-roll-modifier"
-                  className="text-sm">
+                  className="text-sm truncate">
                   {t("bonusHealthDice")}
                 </label>
                 <Input
