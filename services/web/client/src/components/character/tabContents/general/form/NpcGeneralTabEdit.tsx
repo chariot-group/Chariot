@@ -261,7 +261,9 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                         <Input
                           {...field}
                           value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value === "" ? 0 : parseFloat(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))
+                          }
                           id="challenge-rating"
                           aria-invalid={fieldState.invalid}
                           aria-describedby={fieldState.error ? "challenge-rating-error" : undefined}
@@ -297,7 +299,9 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                         <Input
                           {...field}
                           value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value === "" ? 0 : parseInt(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value, 10))
+                          }
                           id="experience-points"
                           aria-invalid={fieldState.invalid}
                           aria-describedby={fieldState.error ? "experience-points-error" : undefined}

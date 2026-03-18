@@ -322,7 +322,9 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           <Input
                             {...field}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value, 10))
+                            }
                             id="character-xp"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-xp-error" : undefined}
