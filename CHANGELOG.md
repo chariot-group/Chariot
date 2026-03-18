@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.1] - 18-03-2026
+
+### Added
+
+### Changed
+
+### Fixed
+- Fixed visibility issues with the Edit button at the bottom of the page on mobile browsers
+- Fixed display issues for certain fields in NPC view/form edit mode when the screen is split into two sections
+- Fixed a bug when creating NPCs via Codex
+- Fixed a bug in NPC display within the Codex creation list
+- Fixed missing class field in the player character form
+- Fixed sidebar name not updating after saving a player or non-player character
+- Fixed input handling in combobox fields that prevented entering custom values
+
 ## [2.1.0] - 06-03-2026
 
 ### Added
