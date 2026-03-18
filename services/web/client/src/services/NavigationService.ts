@@ -21,6 +21,12 @@ interface NavigationDestination {
     reason: 'character-without-group' | 'character-in-campaign' | 'no-characters';
 }
 
+/**
+ * Petit délai pour sérialiser les requêtes API et éviter le rate limiting
+ * Durant la navigation post-login
+ */
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 class NavigationService {
     /**
      * Charge les personnages sans groupe via Redux (optimisation: cache partagé avec Sidebar)
@@ -51,6 +57,7 @@ class NavigationService {
 
     /**
      * Charge les campagnes via Redux (optimisation: cache partagé avec Sidebar)
+     * Avec délai pour éviter rate limiting au démarrage
      */
     private async loadCampaigns(dispatch: AppDispatch, getState: () => RootState): Promise<void> {
         const state = getState();
@@ -61,6 +68,9 @@ class NavigationService {
         if (isLoading || campaigns.length > 0) {
             return;
         }
+
+        // Délai de 150ms pour sérialiser les requêtes après les personnages
+        await delay(150);
 
         dispatch(fetchCampaignsStart());
         try {
@@ -109,6 +119,10 @@ class NavigationService {
                     reason: 'character-without-group'
                 };
             }
+
+            // Délai avant de charger les campagnes pour éviter les requêtes parallèles
+            // qui déclencheraient le rate limiting au startup
+            await delay(100);
 
             // Priorité 2: Charger et vérifier les personnages dans les campagnes via Redux
             await this.loadCampaigns(dispatch, getState);

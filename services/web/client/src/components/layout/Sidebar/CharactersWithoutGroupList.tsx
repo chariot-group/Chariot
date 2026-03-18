@@ -10,7 +10,14 @@ import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import CharacterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
@@ -18,10 +25,14 @@ import { Character } from "@/types/character";
 /**
  * Component to display players without group with infinite scroll
  * Auto-loads more characters when scrolling to bottom
+ *
+ * ⚠️ IMPORTANT: autoFetch=false at startup to prevent loop with NavigationService
  */
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");
-  const { characters, loading, loadingMore, hasMore, loadMoreCharacters, refetch, error } = usePlayersWithoutGroup(10);
+  const { characters, loading, loadingMore, hasMore, loadMoreCharacters, refetch, error } = usePlayersWithoutGroup(10, {
+    autoFetch: false,
+  });
   const router = useRouter();
 
   const observerTarget = useRef<HTMLDivElement>(null);
