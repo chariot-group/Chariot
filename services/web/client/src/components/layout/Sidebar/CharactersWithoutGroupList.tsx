@@ -26,7 +26,7 @@ import { Character } from "@/types/character";
  * Component to display players without group with infinite scroll
  * Auto-loads more characters when scrolling to bottom
  *
- * ⚠️ IMPORTANT: autoFetch=false at startup to prevent loop with NavigationService
+ * autoFetch=false: NavigationService loads characters at login; hook respects 3s cooldown
  */
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");

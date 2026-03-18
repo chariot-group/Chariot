@@ -13,8 +13,7 @@ import { useTranslations } from "next-intl";
  * Displays user's campaigns and allows selection
  * Auto-loads more campaigns when scrolling to bottom
  *
- * ⚠️ IMPORTANT: autoFetch=false at startup to prevent loop with NavigationService
- * Once sidebar is user-interacted or after 5s, can re-enable
+ * autoFetch=false: NavigationService loads campaigns at login; hook respects 3s cooldown
  */
 export default function CampaignList() {
   const t = useTranslations("sidebar");
