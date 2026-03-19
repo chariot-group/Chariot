@@ -705,7 +705,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       </label>
                       <Input
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                         id={`sc-savedc-${selectedSpellcastingIndex}`}
                         aria-invalid={fieldState.invalid}
                         placeholder={String(calculatedSaveDC)}
@@ -753,7 +752,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       </label>
                       <Input
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                         id={`sc-atk-${selectedSpellcastingIndex}`}
                         aria-invalid={fieldState.invalid}
                         placeholder={`+${calculatedAttackBonus}`}
@@ -892,9 +890,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   render={({ field }) => (
                                     <Input
                                       {...field}
-                                      onChange={(e) =>
-                                        field.onChange(e.target.value === "" ? 0 : Number(e.target.value))
-                                      }
                                       className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
                                       type="number"
                                       min={1}
@@ -1031,7 +1026,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                         </label>
                         <Input
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                           id={`spell-level-${selectedSpellIndex}`}
                           aria-invalid={fieldState.invalid}
                           type="number"
@@ -1224,9 +1218,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   </label>
                                   <Input
                                     {...field}
-                                    onChange={(e) =>
-                                      field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
-                                    }
                                     value={field.value ?? ""}
                                     id={`spell-damage-dice-count-${selectedSpellIndex}`}
                                     type="number"
@@ -1288,9 +1279,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   </label>
                                   <Input
                                     {...field}
-                                    onChange={(e) =>
-                                      field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
-                                    }
                                     value={field.value ?? ""}
                                     id={`spell-damage-bonus-${selectedSpellIndex}`}
                                     type="number"
@@ -1360,9 +1348,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   </label>
                                   <Input
                                     {...field}
-                                    onChange={(e) =>
-                                      field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
-                                    }
                                     value={field.value ?? ""}
                                     id={`spell-healing-dice-count-${selectedSpellIndex}`}
                                     type="number"
@@ -1424,9 +1409,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   </label>
                                   <Input
                                     {...field}
-                                    onChange={(e) =>
-                                      field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
-                                    }
                                     value={field.value ?? ""}
                                     id={`spell-healing-bonus-${selectedSpellIndex}`}
                                     type="number"

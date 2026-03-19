@@ -68,7 +68,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                   id="armor-class"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "armor-class-error" : undefined}
@@ -113,7 +112,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                   id="initiative"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "initiative-error" : undefined}
@@ -213,7 +211,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                   <Input
                     {...field}
                     value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                     id="speed-walk"
                     type="number"
                     min={0}
@@ -246,7 +243,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                   <Input
                     {...field}
                     value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                     id="speed-climb"
                     type="number"
                     className="text-sm"
@@ -278,7 +274,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                   <Input
                     {...field}
                     value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                     id="speed-swim"
                     type="number"
                     min={0}
@@ -310,7 +305,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                   <Input
                     {...field}
                     value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                     id="speed-fly"
                     type="number"
                     className="text-sm"
@@ -342,7 +336,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                   <Input
                     {...field}
                     value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                     id="speed-burrow"
                     type="number"
                     className="text-sm"
@@ -380,7 +373,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                   id="health-current"
                   type="number"
                   className="text-sm"
@@ -405,7 +397,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                   id="health-max"
                   type="number"
                   className="text-sm"
@@ -430,7 +421,6 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                   id="health-temp"
                   type="number"
                   className="text-sm"

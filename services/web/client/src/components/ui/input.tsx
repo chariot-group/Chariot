@@ -3,26 +3,10 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 function Input({ className, type, onFocus, ...props }: React.ComponentProps<"input">) {
-  const handleFocus = React.useCallback<React.FocusEventHandler<HTMLInputElement>>(
-    (event) => {
-      onFocus?.(event);
-
-      if (event.defaultPrevented || type !== "number") {
-        return;
-      }
-
-      if (event.currentTarget.value === "0") {
-        event.currentTarget.select();
-      }
-    },
-    [onFocus, type],
-  );
-
   return (
     <input
       type={type}
       data-slot="input"
-      onFocus={handleFocus}
       className={cn(
         "file:text-foreground placeholder:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-[15px] bg-gray-middle-light px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         "focus-visible:border",

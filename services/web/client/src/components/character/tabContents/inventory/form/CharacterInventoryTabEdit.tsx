@@ -59,8 +59,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             {...restField}
                             value={value ?? ""}
                             onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
+                              onChange(Number(e.target.value));
                             }}
                             id="inventory-pp"
                             aria-label={t("platinumPieces")}
@@ -104,8 +103,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             {...restField}
                             value={value ?? ""}
                             onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
+                              onChange(Number(e.target.value));
                             }}
                             id="inventory-gp"
                             aria-label={t("goldPieces")}
@@ -149,8 +147,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             {...restField}
                             value={value ?? ""}
                             onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
+                              onChange(Number(e.target.value));
                             }}
                             id="inventory-ep"
                             aria-label={t("electrumPieces")}
@@ -194,8 +191,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             {...restField}
                             value={value ?? ""}
                             onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
+                              onChange(Number(e.target.value));
                             }}
                             id="inventory-sp"
                             aria-label={t("silverPieces")}
@@ -239,8 +235,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             {...restField}
                             value={value ?? ""}
                             onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
+                              onChange(Number(e.target.value));
                             }}
                             id="inventory-cp"
                             aria-label={t("copperPieces")}

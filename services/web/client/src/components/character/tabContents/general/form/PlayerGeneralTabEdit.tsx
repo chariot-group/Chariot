@@ -286,7 +286,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           <Input
                             {...field}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                             id="character-level"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-level-error" : undefined}
@@ -322,9 +321,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           <Input
                             {...field}
                             value={field.value || ""}
-                            onChange={(e) =>
-                              field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value, 10))
-                            }
                             id="character-xp"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-xp-error" : undefined}
@@ -496,7 +492,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                 <Input
                                   {...field}
                                   value={field.value || ""}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                                   id={`class-level-${index}`}
                                   aria-invalid={fieldState.invalid}
                                   aria-describedby={fieldState.error ? `class-level-${index}-error` : undefined}
@@ -895,7 +890,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     <Input
                       {...field}
                       value={field.value || ""}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
                       id="passive-perception"
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "passive-perception-error" : undefined}
