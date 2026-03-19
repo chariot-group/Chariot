@@ -4,6 +4,16 @@ import { makeZodMessages } from '@/lib/zodErrorMap';
 
 type ZodMessages = ReturnType<typeof makeZodMessages>;
 
+// ===== Helpers =====
+/**
+ * Helper pour les champs numériques qui acceptent des strings en saisie
+ * Valide que la string est un nombre valide et la convertit en number pour l'envoi
+ */
+const numericInput = (optional = false) => {
+    const schema = z.coerce.number();
+    return optional ? schema.optional() : schema;
+};
+
 // ===== Enums =====
 export const AlignmentEnum = z.enum([
     'Lawful Good',
@@ -40,69 +50,69 @@ export const ClassNameEnum = z.enum([
 
 // ===== Stats Sub-Schemas =====
 export const SpeedSchema = z.object({
-    walk: z.number().optional(),
-    climb: z.number().optional(),
-    swim: z.number().optional(),
-    fly: z.number().optional(),
-    burrow: z.number().optional(),
+    walk: numericInput(true),
+    climb: numericInput(true),
+    swim: numericInput(true),
+    fly: numericInput(true),
+    burrow: numericInput(true),
 });
 
 export const AbilityScoresSchema = z.object({
-    strength: z.number().optional(),
-    dexterity: z.number().optional(),
-    constitution: z.number().optional(),
-    intelligence: z.number().optional(),
-    wisdom: z.number().optional(),
-    charisma: z.number().optional(),
+    strength: numericInput(true),
+    dexterity: numericInput(true),
+    constitution: numericInput(true),
+    intelligence: numericInput(true),
+    wisdom: numericInput(true),
+    charisma: numericInput(true),
 });
 
 export const SavingThrowsSchema = z.object({
-    strength: z.number().optional(),
-    dexterity: z.number().optional(),
-    constitution: z.number().optional(),
-    intelligence: z.number().optional(),
-    wisdom: z.number().optional(),
-    charisma: z.number().optional(),
+    strength: numericInput(true),
+    dexterity: numericInput(true),
+    constitution: numericInput(true),
+    intelligence: numericInput(true),
+    wisdom: numericInput(true),
+    charisma: numericInput(true),
 });
 
 export const SkillSchema = z.object({
-    athletics: z.number().optional(),
-    acrobatics: z.number().optional(),
-    sleightHand: z.number().optional(),
-    stealth: z.number().optional(),
-    arcana: z.number().optional(),
-    history: z.number().optional(),
-    investigation: z.number().optional(),
-    nature: z.number().optional(),
-    religion: z.number().optional(),
-    animalHandling: z.number().optional(),
-    insight: z.number().optional(),
-    medicine: z.number().optional(),
-    perception: z.number().optional(),
-    survival: z.number().optional(),
-    deception: z.number().optional(),
-    intimidation: z.number().optional(),
-    performance: z.number().optional(),
-    persuasion: z.number().optional(),
+    athletics: numericInput(true),
+    acrobatics: numericInput(true),
+    sleightHand: numericInput(true),
+    stealth: numericInput(true),
+    arcana: numericInput(true),
+    history: numericInput(true),
+    investigation: numericInput(true),
+    nature: numericInput(true),
+    religion: numericInput(true),
+    animalHandling: numericInput(true),
+    insight: numericInput(true),
+    medicine: numericInput(true),
+    perception: numericInput(true),
+    survival: numericInput(true),
+    deception: numericInput(true),
+    intimidation: numericInput(true),
+    performance: numericInput(true),
+    persuasion: numericInput(true),
 });
 
 export const SenseSchema = z.object({
     name: z.string().optional(),
-    value: z.number().optional(),
+    value: numericInput(true),
 });
 
 // ===== Stats =====
 export const StatsSchema = z.object({
     size: z.string().default('Medium'), // REQUIRED dans Mongoose
-    maxHitPoints: z.number().optional(),
-    currentHitPoints: z.number().optional(),
-    tempHitPoints: z.number().optional(),
-    armorClass: z.number().optional(),
-    initiative: z.number().optional(),
+    maxHitPoints: numericInput(true),
+    currentHitPoints: numericInput(true),
+    tempHitPoints: numericInput(true),
+    armorClass: numericInput(true),
+    initiative: numericInput(true),
     speed: SpeedSchema.optional(),
     abilityScores: AbilityScoresSchema.optional(),
     languages: z.array(z.string()).optional(),
-    passivePerception: z.number().optional(),
+    passivePerception: numericInput(true),
     savingThrows: SavingThrowsSchema.optional(),
     skills: SkillSchema.optional(),
     senses: z.array(SenseSchema).optional(),
@@ -126,7 +136,7 @@ export function AbilitySchema(zm: ZodMessages) {
 // ===== Spellcasting =====
 export const SpellSchema = z.object({
     name: z.string().optional(),
-    level: z.number().optional(),
+    level: numericInput(true),
     school: z.string().optional(),
     description: z.string().optional(),
     components: z.array(z.string()).optional(),
@@ -139,25 +149,25 @@ export const SpellSchema = z.object({
 });
 
 export const SpellSlotSchema = z.object({
-    total: z.number().optional(),
-    used: z.number().optional(),
+    total: numericInput(true),
+    used: numericInput(true),
 });
 
 export const SpellcastingSchema = z.object({
     className: z.string().optional(),
     ability: z.string().optional(),
-    saveDC: z.number().optional(),
-    attackBonus: z.number().optional(),
+    saveDC: numericInput(true),
+    attackBonus: numericInput(true),
     spellSlotsByLevel: z.record(z.string(), SpellSlotSchema).optional(),
-    totalSlots: z.number().optional(),
+    totalSlots: numericInput(true),
     spells: z.array(SpellSchema).optional(),
 });
 
 // ===== Appearance =====
 export const AppearanceSchema = z.object({
-    age: z.number().min(0).optional(),
-    height: z.number().min(0).optional(),
-    weight: z.number().min(0).optional(),
+    age: z.coerce.number().min(0).optional(),
+    height: z.coerce.number().min(0).optional(),
+    weight: z.coerce.number().min(0).optional(),
     eyes: z.string().optional(),
     skin: z.string().optional(),
     hair: z.string().optional(),
@@ -176,11 +186,11 @@ export const BackgroundSchema = z.object({
 
 // ===== Treasure =====
 export const TreasureSchema = z.object({
-    cp: z.number().min(0).optional(),
-    sp: z.number().min(0).optional(),
-    ep: z.number().min(0).optional(),
-    gp: z.number().min(0).optional(),
-    pp: z.number().min(0).optional(),
+    cp: z.coerce.number().min(0).optional(),
+    sp: z.coerce.number().min(0).optional(),
+    ep: z.coerce.number().min(0).optional(),
+    gp: z.coerce.number().min(0).optional(),
+    pp: z.coerce.number().min(0).optional(),
     treasure: z.string().optional(),
     equipment: z.string().optional(),
 });
@@ -211,7 +221,7 @@ export const DamageSchema = z.object({
 
 export const DifficultyClassSchema = z.object({
     dcType: z.string().optional(),
-    dcValue: z.number().int().min(0).optional(),
+    dcValue: z.coerce.number().int().min(0).optional(),
     successType: z.string().optional(),
 });
 
@@ -220,10 +230,10 @@ export function ActionSchema(zm: ZodMessages) {
         name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }).optional(),
         type: z.string().optional(),
         description: z.string().optional(),
-        attackBonus: z.number().optional(),
+        attackBonus: numericInput(true),
         damage: z.array(DamageSchema).optional(),
         range: z.string().optional(),
         dc: DifficultyClassSchema.optional().nullable(),
-        cost: z.number().optional(),
+        cost: numericInput(true),
     })
 };

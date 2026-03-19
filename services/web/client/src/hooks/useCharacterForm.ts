@@ -170,7 +170,10 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
                 );
             }
 
-            const createdCharacter = await CharacterService.createCharacter(type, sanitizedData as any);
+            // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
+            const parsedData = await resolvedSchema.parseAsync(sanitizedData);
+
+            const createdCharacter = await CharacterService.createCharacter(type, parsedData as any);
 
             toast.success(t('createSuccess'));
             setSuccess(true);
@@ -222,10 +225,13 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
                 );
             }
 
+            // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
+            const parsedData = await resolvedSchema.parseAsync(sanitizedData);
+
             const updatedCharacter = await CharacterService.updateCharacter(
                 type,
                 characterId,
-                sanitizedData as any
+                parsedData as any
             );
 
             // Keep sidebar lists synchronized after update (name/group display).

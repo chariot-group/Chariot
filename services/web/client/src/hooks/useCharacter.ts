@@ -14,6 +14,7 @@ import {
     selectCharactersWithoutGroupError,
     selectCharactersWithoutGroupHasMore,
     selectCharactersWithoutGroupCurrentPage,
+    selectCharactersWithoutGroupLastFetch,
     clearCharacters,
 } from '@/store/slices/characterSlice';
 
@@ -77,7 +78,8 @@ export function useCharacter(characterId: string | null): UseCharacterReturn {
 /**
  * Hook pour récupérer tous les joueurs sans groupe avec infinite scroll et cache persistant
  */
-export function usePlayersWithoutGroup(pageSize: number = 10): UsePlayersWithoutGroupReturn {
+export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFetch?: boolean } = {}): UsePlayersWithoutGroupReturn {
+    const { autoFetch = true } = options;
     const dispatch = useAppDispatch();
     const characters = useAppSelector(selectCharactersWithoutGroup);
     const loading = useAppSelector(selectCharactersWithoutGroupLoading);
@@ -85,6 +87,7 @@ export function usePlayersWithoutGroup(pageSize: number = 10): UsePlayersWithout
     const error = useAppSelector(selectCharactersWithoutGroupError);
     const hasMore = useAppSelector(selectCharactersWithoutGroupHasMore);
     const currentPage = useAppSelector(selectCharactersWithoutGroupCurrentPage);
+    const lastFetchWithoutGroup = useAppSelector(selectCharactersWithoutGroupLastFetch);
 
     /**
      * Récupère la première page des joueurs sans groupe
@@ -132,11 +135,23 @@ export function usePlayersWithoutGroup(pageSize: number = 10): UsePlayersWithout
     }, [dispatch, fetchCharacters]);
 
     // Chargement automatique si aucune donnée en cache
+    // ⚠️ Cooldown: skip if fetched within last 3 seconds (prevents infinite loops)
     useEffect(() => {
-        if (characters.length === 0 && !loading && !error) {
-            fetchCharacters();
+        const now = Date.now();
+        const timeSinceLastFetch = lastFetchWithoutGroup ? now - lastFetchWithoutGroup : Infinity;
+
+        // Skip if:
+        // - autoFetch is disabled
+        // - Characters already loaded
+        // - Currently loading
+        // - Previous error
+        // - Fetched within last 3 seconds (cooldown prevents loop)
+        if (!autoFetch || characters.length > 0 || loading || error || timeSinceLastFetch < 3000) {
+            return;
         }
-    }, [characters.length, loading, error, fetchCharacters]);
+
+        fetchCharacters();
+    }, [autoFetch, characters.length, loading, error, fetchCharacters, lastFetchWithoutGroup]);
 
     return {
         characters,

@@ -52,6 +52,7 @@ class NavigationService {
 
     /**
      * Charge les campagnes via Redux (optimisation: cache partagé avec Sidebar)
+     * Note: Les délais et le debouncing sont gérés par useCampaigns hook avec cooldown de 3s
      */
     private async loadCampaigns(dispatch: AppDispatch, getState: () => RootState): Promise<void> {
         const state = getState();
@@ -111,8 +112,7 @@ class NavigationService {
                 };
             }
 
-            // Priorité 2: Charger et vérifier les personnages dans les campagnes via Redux
-            await this.loadCampaigns(dispatch, getState);
+            // Priorité 2: Vérifier les personnages dans les campagnes
             const campaigns = selectCampaigns(getState());
 
             if (campaigns.length > 0) {

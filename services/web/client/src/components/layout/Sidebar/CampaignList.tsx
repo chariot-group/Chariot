@@ -15,6 +15,8 @@ import NavigationService from "@/services/NavigationService";
  * Campaign list component with infinite scroll
  * Displays user's campaigns and allows selection
  * Auto-loads more campaigns when scrolling to bottom
+ *
+ * autoFetch=false: NavigationService loads campaigns at login; hook respects 3s cooldown
  */
 export default function CampaignList() {
   const t = useTranslations("sidebar");
@@ -22,7 +24,7 @@ export default function CampaignList() {
   const pathname = usePathname();
   const locale = pathname?.split("/")[1] || "fr";
   const { campaigns, loading, loadingMore, hasMore, loadMoreCampaigns, error } = useCampaigns({
-    autoFetch: true,
+    autoFetch: false,
     pageSize: 5,
   });
 

@@ -85,7 +85,7 @@ class CharacterService {
     async getPlayersWithoutGroup(page: number = 1, offset: number = 10): Promise<PaginatedCharactersResponse> {
         try {
             const response = await apiClient().get<PaginatedCharactersResponse>(
-                `${this.BASE_PATH}/players//without-group`,
+                `${this.BASE_PATH}/players/without-group`,
                 {
                     params: { page, offset }
                 }
