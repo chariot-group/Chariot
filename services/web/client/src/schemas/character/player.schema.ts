@@ -86,12 +86,22 @@ export const ProgressionSchema = z.object({
 });
 
 // ===== Class =====
-export const ClassSchema = z.object({
-    name: ClassNameEnum, // REQUIRED
-    subclass: z.string().optional(),
-    level: z.coerce.number().optional(),
-    hitDice: z.coerce.number().optional(),
-});
+export function ClassSchema(zm: ZodMessages) {
+    return z.object({
+        name: z.string().or(ClassNameEnum).superRefine((value, ctx) => {
+            if (value === "" || value === undefined || value === null) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: zm.required(),
+                });
+                return z.NEVER;
+            }
+        }),
+        subclass: z.string().optional(),
+        level: z.coerce.number().optional(),
+        hitDice: z.coerce.number().optional(),
+    })
+};
 
 // ===== Player Profile =====
 export const PlayerProfileSchema = z.object({
@@ -113,7 +123,7 @@ export function createPlayerSchema(zm: ZodMessages) {
         inspiration: z.boolean({ message: zm.required() }).optional(),
 
         progression: ProgressionSchema.optional(),
-        class: z.array(ClassSchema).optional(),
+        class: z.array(ClassSchema(zm)).optional(),
         profile: PlayerProfileSchema.optional(),
         stats: createPlayerStatsSchema(zm).optional(),
         exhaustionLevel: z.coerce.number().int().min(0, { message: zm.minNumber(0) }).max(6, { message: zm.maxNumber(6) }).optional(),

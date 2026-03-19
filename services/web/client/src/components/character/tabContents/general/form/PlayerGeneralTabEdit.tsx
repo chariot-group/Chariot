@@ -572,7 +572,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => appendClass({ name: "", subclass: "", level: 1, hitDice: 0 })}
+                      onClick={() => appendClass({ name: undefined, subclass: "", level: 1, hitDice: 0 })}
                       className="flex items-center gap-2 border-dashed">
                       <Plus className="size-4" />
                       <span className="truncate">{t("addSecondClass")}</span>
