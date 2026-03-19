@@ -146,6 +146,7 @@ const ActionUpdateSection = ({
                               className="text-sm"
                               required
                               aria-invalid={fieldState.invalid}
+                              placeholder={t("name")}
                             />
                             {fieldState.error && <FieldError errors={[fieldState.error]} />}
                           </Field>
@@ -162,7 +163,7 @@ const ActionUpdateSection = ({
                             id={`${fieldArrayName}.${index}.type`}
                             value={typeField.value ?? ""}
                             onChange={typeField.onChange}
-                            placeholder="Feu, Froid..."
+                            placeholder={tEdit("damageTypePlaceholder")}
                           />
                         )}
                       />
@@ -180,6 +181,7 @@ const ActionUpdateSection = ({
                             onChange={(e) => attackField.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                             type="number"
                             min={0}
+                            placeholder={tEdit("zeroPlaceholder")}
                           />
                         )}
                       />
@@ -191,7 +193,12 @@ const ActionUpdateSection = ({
                       <Controller
                         name={`${fieldArrayName}.${index}.range`}
                         control={form.control}
-                        render={({ field: rangeField }) => <Input {...rangeField} />}
+                        render={({ field: rangeField }) => (
+                          <Input
+                            {...rangeField}
+                            placeholder={t("damageType")}
+                          />
+                        )}
                       />
                     </Card>
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
@@ -203,6 +210,7 @@ const ActionUpdateSection = ({
                           <Textarea
                             {...descField}
                             value={descField.value || ""}
+                            placeholder={t("description")}
                           />
                         )}
                       />

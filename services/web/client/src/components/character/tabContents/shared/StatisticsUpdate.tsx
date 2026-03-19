@@ -409,7 +409,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   onConstraintResult={({ wasClamped, source }) => handleCurrentHpConstraintResult({ wasClamped, source })}
                   triggerLabel={`${tEdit("currentHP")} quick calculator`}
                   inputLabel={`${tEdit("currentHP")} value`}
-                  tooltipPlaceholder="Saisir un nombre"
+                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
                   inputProps={{
                     id: "health-current",
                     className: "text-sm",
@@ -448,7 +448,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   onConstraintResult={({ wasClamped, source }) => handleMaxHpConstraintResult({ wasClamped, source })}
                   triggerLabel={`${tEdit("maxHP")} quick calculator`}
                   inputLabel={`${tEdit("maxHP")} value`}
-                  tooltipPlaceholder="Saisir un nombre"
+                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
                   inputProps={{
                     id: "health-max",
                     className: "text-sm",
@@ -486,7 +486,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   onApply={(nextValue) => field.onChange(nextValue)}
                   triggerLabel={`${tEdit("tempHP")} quick calculator`}
                   inputLabel={`${tEdit("tempHP")} value`}
-                  tooltipPlaceholder="Saisir un nombre"
+                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
                   inputProps={{
                     id: "health-temp",
                     className: "text-sm",

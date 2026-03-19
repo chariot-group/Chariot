@@ -289,7 +289,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                           id="challenge-rating"
                           aria-invalid={fieldState.invalid}
                           aria-describedby={fieldState.error ? "challenge-rating-error" : undefined}
-                          placeholder="0, 1/8, 1/4, 1/2"
+                          placeholder={tEdit("challengeRatingPlaceholder")}
                           type="text"
                           inputMode="decimal"
                         />
@@ -324,7 +324,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                           id="experience-points"
                           aria-invalid={fieldState.invalid}
                           aria-describedby={fieldState.error ? "experience-points-error" : undefined}
-                          placeholder="0"
+                          placeholder={tEdit("zeroPlaceholder")}
                           type="number"
                           min="0"
                         />

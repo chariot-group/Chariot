@@ -1040,7 +1040,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     type="number"
                                     min={0}
                                     className="w-full"
-                                    placeholder="8"
+                                    placeholder={tEdit("damageDiceCountPlaceholder")}
                                   />
                                 </Field>
                               )}
@@ -1059,7 +1059,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   </label>
                                   <Select value={field.value ?? ""} onValueChange={field.onChange}>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="d6" />
+                                      <SelectValue placeholder={tEdit("damageDiceTypePlaceholder")} />
                                     </SelectTrigger>
                                     <SelectContent position="item-aligned">
                                       <SelectGroup>
@@ -1093,7 +1093,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     id={`spell-damage-bonus-${selectedSpellIndex}`}
                                     type="number"
                                     className="w-full"
-                                    placeholder="0"
+                                    placeholder={tEdit("zeroPlaceholder")}
                                   />
                                 </Field>
                               )}
@@ -1156,7 +1156,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     type="number"
                                     min={0}
                                     className="w-full"
-                                    placeholder="4"
+                                    placeholder={tEdit("healingDiceCountPlaceholder")}
                                   />
                                 </Field>
                               )}
@@ -1175,7 +1175,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   </label>
                                   <Select value={field.value ?? ""} onValueChange={field.onChange}>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="d8" />
+                                      <SelectValue placeholder={tEdit("healingDiceTypePlaceholder")} />
                                     </SelectTrigger>
                                     <SelectContent position="item-aligned">
                                       <SelectGroup>
@@ -1209,7 +1209,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     id={`spell-healing-bonus-${selectedSpellIndex}`}
                                     type="number"
                                     className="w-full"
-                                    placeholder="0"
+                                    placeholder={tEdit("zeroPlaceholder")}
                                   />
                                 </Field>
                               )}

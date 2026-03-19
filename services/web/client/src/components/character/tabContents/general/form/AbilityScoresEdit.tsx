@@ -50,6 +50,7 @@ export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
                                                 className="flex-1 px-1"
                                                 aria-invalid={fieldState.invalid}
                                                 aria-describedby={fieldState.error ? `ability-${key}-error` : undefined}
+                                                placeholder={t("abilityScorePlaceholder")}
                                             />
                                         </div>
                                     </div>

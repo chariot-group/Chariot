@@ -66,7 +66,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             aria-label={t("platinumPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("platinumPieces")}
+                            placeholder={t("pp")}
                             min={0}
                             type="number"
                           />
@@ -111,7 +111,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             aria-label={t("goldPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("goldPieces")}
+                            placeholder={t("gp")}
                             min={0}
                             type="number"
                           />
@@ -156,7 +156,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             aria-label={t("electrumPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("electrumPieces")}
+                            placeholder={t("ep")}
                             type="number"
                             min={0}
                           />
@@ -201,7 +201,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             aria-label={t("silverPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("silverPieces")}
+                            placeholder={t("sp")}
                             type="number"
                             min={0}
                           />
@@ -246,7 +246,7 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                             aria-label={t("copperPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("copperPieces")}
+                            placeholder={t("cp")}
                             type="number"
                             min={0}
                           />

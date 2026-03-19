@@ -290,7 +290,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             id="character-level"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-level-error" : undefined}
-                            placeholder="1"
+                            placeholder={tEdit("levelPlaceholder")}
                             type="number"
                             min="1"
                             max="20"
@@ -326,7 +326,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             id="character-xp"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-xp-error" : undefined}
-                            placeholder="0"
+                            placeholder={tEdit("zeroPlaceholder")}
                             type="number"
                             min="0"
                           />
@@ -498,7 +498,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                   id={`class-level-${index}`}
                                   aria-invalid={fieldState.invalid}
                                   aria-describedby={fieldState.error ? `class-level-${index}-error` : undefined}
-                                  placeholder="1"
+                                  placeholder={tEdit("levelPlaceholder")}
                                   type="number"
                                   min="1"
                                   max={maxLevelForThisClass}

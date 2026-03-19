@@ -134,6 +134,7 @@ const AbilitiesUpdateSection = ({
                           id={`${fieldArrayName}-name-${index}`}
                           className="text-sm"
                           aria-invalid={fieldState.invalid}
+                          placeholder={tBattle("name")}
                         />
                         {fieldState.error && <FieldError errors={[fieldState.error]} />}
                       </Field>
@@ -154,7 +155,7 @@ const AbilitiesUpdateSection = ({
                         <Textarea
                           {...descField}
                           id={`${fieldArrayName}-description-${index}`}
-                          placeholder="Description de la capacité"
+                          placeholder={tBattle("description")}
                           rows={3}
                           className="text-sm"
                         />
