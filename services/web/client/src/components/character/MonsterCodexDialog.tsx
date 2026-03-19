@@ -12,6 +12,7 @@ import CodexService from "@/services/CodexService";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
+import { formatChallengeRating } from "@/utils/challengeRating.utils";
 
 interface MonsterCodexDialogProps {
     open: boolean;
@@ -250,7 +251,7 @@ export default function MonsterCodexDialog({
                                                                         {translation.firstname}
                                                                     </div>
                                                                     <div className="text-xs text-muted-foreground mt-1">
-                                                                        {tDialog("monsterInfo", { cr: translation.challenge.challengeRating, type: translation.profile.type })}
+                                                                        {tDialog("monsterInfo", { cr: formatChallengeRating(translation.challenge.challengeRating), type: translation.profile.type })}
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex gap-1.5 shrink-0">
@@ -307,7 +308,7 @@ export default function MonsterCodexDialog({
                                                                             </div>
                                                                         </div>
                                                                         <div className="text-xs text-muted-foreground mt-1">
-                                                                            {tDialog("monsterInfo", { cr: translation.challenge.challengeRating, type: translation.profile.type })}
+                                                                            {tDialog("monsterInfo", { cr: formatChallengeRating(translation.challenge.challengeRating), type: translation.profile.type })}
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex gap-1.5 shrink-0">

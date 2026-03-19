@@ -13,6 +13,7 @@ import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
+import { formatChallengeRating } from "@/utils/challengeRating.utils";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -146,17 +147,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                         {(() => {
                           const challengeRating = character.challenge?.challengeRating ?? 0;
                           const experiencePoints = character.challenge?.experiencePoints ?? 0;
-
-                          const displayChallengeRating =
-                            challengeRating < 1
-                              ? challengeRating === 0.125
-                                ? "1/8"
-                                : challengeRating === 0.25
-                                  ? "1/4"
-                                  : challengeRating === 0.5
-                                    ? "1/2"
-                                    : challengeRating
-                              : challengeRating;
+                          const displayChallengeRating = formatChallengeRating(challengeRating);
 
                           return (
                             <p className="text-sm sm:text-base text-white font-semibold">

@@ -13,6 +13,8 @@ import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSk
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import NpcColumn2Edit from "@/components/character/tabContents/general/form/NpcColumn2Edit";
 import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
+import { formatChallengeRating, parseChallengeRatingInput } from "@/utils/challengeRating.utils";
+import { useEffect, useState } from "react";
 
 interface NpcGeneralTabEditProps {
   npc: NPC;
@@ -25,6 +27,15 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
   const tNpc = useTranslations("characterDetail.npc");
   const tEdit = useTranslations("characterDetail.edit");
   const tAlignment = useTranslations("alignments");
+  const [challengeRatingInput, setChallengeRatingInput] = useState<string>(() =>
+    formatChallengeRating(form.getValues("challenge.challengeRating"))
+  );
+
+  const watchedChallengeRating = form.watch("challenge.challengeRating");
+
+  useEffect(() => {
+    setChallengeRatingInput(formatChallengeRating(watchedChallengeRating));
+  }, [watchedChallengeRating]);
 
   // Gestion dynamique des abilities
   const {
@@ -259,16 +270,28 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                           {tEdit("challengeRating")}
                         </label>
                         <Input
-                          {...field}
-                          value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value === "" ? 0 : parseFloat(e.target.value))}
+                          name={field.name}
+                          ref={field.ref}
+                          value={challengeRatingInput}
+                          onChange={(e) => setChallengeRatingInput(e.target.value)}
+                          onBlur={() => {
+                            field.onBlur();
+                            const parsedValue = parseChallengeRatingInput(challengeRatingInput);
+
+                            if (Number.isNaN(parsedValue)) {
+                              setChallengeRatingInput(formatChallengeRating(field.value));
+                              return;
+                            }
+
+                            field.onChange(parsedValue);
+                            setChallengeRatingInput(formatChallengeRating(parsedValue));
+                          }}
                           id="challenge-rating"
                           aria-invalid={fieldState.invalid}
                           aria-describedby={fieldState.error ? "challenge-rating-error" : undefined}
-                          placeholder="0"
-                          type="number"
-                          step="0.125"
-                          min="0"
+                          placeholder="0, 1/8, 1/4, 1/2"
+                          type="text"
+                          inputMode="decimal"
                         />
                         {fieldState.error && (
                           <FieldError
