@@ -223,6 +223,10 @@
       "currentHP": "PV Actuales",
       "maxHP": "PV Máximo",
       "tempHP": "PV Temporales",
+      "quickErrors": {
+        "currentAboveMax": "Los PV actuales no pueden superar los PV máximos.",
+        "maxBelowCurrent": "Los PV máximos no pueden ser inferiores a los PV actuales."
+      },
       "defense": "Defensa",
       "initiative": "Iniciativa",
       "size": "Tamaño",

@@ -223,6 +223,10 @@
       "currentHP": "Current HP",
       "maxHP": "Max HP",
       "tempHP": "Temp HP",
+      "quickErrors": {
+        "currentAboveMax": "Current HP cannot exceed max HP.",
+        "maxBelowCurrent": "Max HP cannot be lower than current HP."
+      },
       "defense": "Defense",
       "initiative": "Initiative",
       "size": "Size",

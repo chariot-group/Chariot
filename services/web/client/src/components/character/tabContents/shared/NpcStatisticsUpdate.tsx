@@ -11,6 +11,8 @@ import { NPC } from "@/types/character";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
+import { useState } from "react";
 
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 
@@ -23,6 +25,40 @@ interface NpcStatisticsUpdateProps {
 export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStatisticsUpdateProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
+  const currentHitPointsValue = Number(form.watch("stats.currentHitPoints") ?? 0);
+  const maxHitPointsValue = Number(form.watch("stats.maxHitPoints") ?? 0);
+  const safeCurrentHitPoints = Number.isFinite(currentHitPointsValue) ? Math.max(0, currentHitPointsValue) : 0;
+  const safeMaxHitPoints = Number.isFinite(maxHitPointsValue) ? Math.max(0, maxHitPointsValue) : 0;
+  const currentHpConstraintMessage = tEdit("quickErrors.currentAboveMax");
+  const maxHpConstraintMessage = tEdit("quickErrors.maxBelowCurrent");
+  const [currentHpQuickError, setCurrentHpQuickError] = useState<string | null>(null);
+  const [maxHpQuickError, setMaxHpQuickError] = useState<string | null>(null);
+
+  function handleCurrentHpConstraintResult(payload: { wasClamped: boolean; source: "quick-action" | "direct-input" }) {
+    if (payload.source !== "quick-action") {
+      return;
+    }
+
+    if (payload.wasClamped) {
+      setCurrentHpQuickError(currentHpConstraintMessage);
+      return;
+    }
+
+    setCurrentHpQuickError(null);
+  }
+
+  function handleMaxHpConstraintResult(payload: { wasClamped: boolean; source: "quick-action" | "direct-input" }) {
+    if (payload.source !== "quick-action") {
+      return;
+    }
+
+    if (payload.wasClamped) {
+      setMaxHpQuickError(maxHpConstraintMessage);
+      return;
+    }
+
+    setMaxHpQuickError(null);
+  }
 
   const hitPointsRollValue = form.watch("hitPointsRoll") || "";
   const [level, dice, modifier] = parseHitPointsRoll(hitPointsRollValue);
@@ -377,16 +413,31 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                   className="text-sm truncate">
                   {tEdit("currentHP")}
                 </label>
-                <Input
-                  {...field}
+                <QuickNumberCalculator
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                  id="health-current"
-                  type="number"
-                  className="text-sm"
+                  currentValue={field.value}
                   min={0}
+                  max={safeMaxHitPoints}
+                  onValueChange={(nextValue) => field.onChange(nextValue)}
+                  onApply={(nextValue) => field.onChange(nextValue)}
+                  onConstraintResult={({ wasClamped, source }) => handleCurrentHpConstraintResult({ wasClamped, source })}
+                  triggerLabel={`${tEdit("currentHP")} quick calculator`}
+                  inputLabel={`${tEdit("currentHP")} value`}
+                  tooltipPlaceholder="Saisir un nombre"
+                  inputProps={{
+                    id: "health-current",
+                    className: "text-sm",
+                    name: field.name,
+                    onBlur: field.onBlur,
+                    "aria-invalid": fieldState.invalid || !!currentHpQuickError,
+                    "aria-describedby": fieldState.error || currentHpQuickError ? "health-current-error" : undefined,
+                  }}
                 />
-                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                {(currentHpQuickError || fieldState.error?.message) && (
+                  <FieldError id="health-current-error">
+                    {currentHpQuickError ?? fieldState.error?.message}
+                  </FieldError>
+                )}
               </Field>
             )}
           />
@@ -402,16 +453,30 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                   className="text-sm truncate">
                   {tEdit("maxHP")}
                 </label>
-                <Input
-                  {...field}
+                <QuickNumberCalculator
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                  id="health-max"
-                  type="number"
-                  className="text-sm"
-                  min={0}
+                  currentValue={field.value}
+                  min={safeCurrentHitPoints}
+                  onValueChange={(nextValue) => field.onChange(nextValue)}
+                  onApply={(nextValue) => field.onChange(nextValue)}
+                  onConstraintResult={({ wasClamped, source }) => handleMaxHpConstraintResult({ wasClamped, source })}
+                  triggerLabel={`${tEdit("maxHP")} quick calculator`}
+                  inputLabel={`${tEdit("maxHP")} value`}
+                  tooltipPlaceholder="Saisir un nombre"
+                  inputProps={{
+                    id: "health-max",
+                    className: "text-sm",
+                    name: field.name,
+                    onBlur: field.onBlur,
+                    "aria-invalid": fieldState.invalid || !!maxHpQuickError,
+                    "aria-describedby": fieldState.error || maxHpQuickError ? "health-max-error" : undefined,
+                  }}
                 />
-                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                {(maxHpQuickError || fieldState.error?.message) && (
+                  <FieldError id="health-max-error">
+                    {maxHpQuickError ?? fieldState.error?.message}
+                  </FieldError>
+                )}
               </Field>
             )}
           />
@@ -427,16 +492,30 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                   className="text-sm truncate">
                   {tEdit("tempHP")}
                 </label>
-                <Input
-                  {...field}
+                <QuickNumberCalculator
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                  id="health-temp"
-                  type="number"
-                  className="text-sm"
+                  currentValue={field.value}
                   min={0}
+                  onValueChange={(nextValue) => field.onChange(nextValue)}
+                  onApply={(nextValue) => field.onChange(nextValue)}
+                  triggerLabel={`${tEdit("tempHP")} quick calculator`}
+                  inputLabel={`${tEdit("tempHP")} value`}
+                  tooltipPlaceholder="Saisir un nombre"
+                  inputProps={{
+                    id: "health-temp",
+                    className: "text-sm",
+                    name: field.name,
+                    onBlur: field.onBlur,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? "health-temp-error" : undefined,
+                  }}
                 />
-                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="health-temp-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
