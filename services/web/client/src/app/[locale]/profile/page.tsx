@@ -17,6 +17,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useProfileForm } from "@/hooks/useProfileForm";
 import ReadProfile from "@/components/profile/ReadProfile";
 import UpdateProfile from "@/components/profile/UpdateProfile";
+import { isEnterWithModifiers, isEnterWithoutModifiers } from "@/utils/keyboard.utils";
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -95,6 +96,11 @@ export default function ProfilePage() {
               <form
                 id="form-reset-password"
                 onSubmit={formPassword.handleSubmit(onSubmit)}
+                onKeyDown={(event) => {
+                  if (isEnterWithModifiers(event)) {
+                    event.preventDefault();
+                  }
+                }}
                 aria-label={t("changePasswordTitle")}>
                 <FieldGroup>
                   <Controller
@@ -405,17 +411,10 @@ export default function ProfilePage() {
               {tEdit("cancelUpdate")}
             </Button>
             <Button
-              type="button"
+              type="submit"
               form="form-update-profile"
-              onClick={() => formProfile.handleSubmit(onUpdate)()}
               disabled={isLoadingProfile || !formProfile.formState.isValid}
               tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  formProfile.handleSubmit(onUpdate)();
-                }
-              }}
               aria-label={tEdit("updateProfile")}
               aria-busy={isLoadingProfile}>
               {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
@@ -427,7 +426,7 @@ export default function ProfilePage() {
             onClick={() => setIsUpdating(true)}
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
+              if (isEnterWithoutModifiers(e) || e.key === " ") {
                 e.preventDefault();
                 setIsUpdating(true);
               }

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -68,13 +69,46 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     }
   }, [searchParams, setIsEditing]);
 
+  useEffect(() => {
+    const handleGlobalShortcuts = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isEditing) {
+        event.preventDefault();
+        event.stopPropagation();
+        onCancel();
+        setIsEditing(false);
+        return;
+      }
+
+      if (!isEditing || !isEnterWithoutModifiers(event) || isTypingInInputElement(event.target)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      form.handleSubmit(onUpdate)();
+    };
+
+    window.addEventListener("keydown", handleGlobalShortcuts, true);
+
+    return () => {
+      window.removeEventListener("keydown", handleGlobalShortcuts, true);
+    };
+  }, [form, isEditing, onCancel, onUpdate, setIsEditing]);
+
   return (
     <main className="flex flex-col h-dvh overflow-hidden">
-      <Tabs
-        defaultValue="general"
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      <form
+        id="character-update-form"
+        className="flex flex-col flex-1 min-h-0"
+        onSubmit={form.handleSubmit(onUpdate)}
+        onKeyDown={(event) => {
+          if (isEnterWithModifiers(event)) {
+            event.preventDefault();
+          }
+        }}>
+        <Tabs
+          defaultValue="general"
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* Header avec onglets et infos du personnage */}
         <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
@@ -174,26 +208,20 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
             isEditing={isEditing}
           />
         </div>
-      </Tabs>
+        </Tabs>
 
-      {/* Footer avec boutons - fixe en bas */}
-      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
-        <div className="w-full mx-auto flex flex-row-reverse gap-4">
-          {isEditing ? (
-            <>
-              {/* Mode édition : boutons Annuler et Sauvegarder */}
-              <Button
-                type="button"
-                onClick={() => onUpdate(form.getValues())}
-                disabled={isSaving || !form.formState.isDirty}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onUpdate(form.getValues());
-                  }
-                }}
-                className={`
+        {/* Footer avec boutons - fixe en bas */}
+        <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
+          <div className="w-full mx-auto flex flex-row-reverse gap-4">
+            {isEditing ? (
+              <>
+                {/* Mode édition : boutons Annuler et Sauvegarder */}
+                <Button
+                  type="submit"
+                  form="character-update-form"
+                  disabled={isSaving || !form.formState.isDirty}
+                  tabIndex={0}
+                  className={`
                   text-lg font-semibold py-5.5
                   ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
                   ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
@@ -201,52 +229,52 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                   ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
                   ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
                 `}
-                aria-label={t("saveChanges")}
-                aria-busy={isSaving}>
-                <Save
-                  className="size-5"
-                  aria-hidden="true"
-                />
-                {isSaving ? t("saving") : t("saveChanges")}
-              </Button>
+                  aria-label={t("saveChanges")}
+                  aria-busy={isSaving}>
+                  <Save
+                    className="size-5"
+                    aria-hidden="true"
+                  />
+                  {isSaving ? t("saving") : t("saveChanges")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    onCancel();
+                    setIsEditing(false);
+                  }}
+                  disabled={isSaving}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onCancel();
+                      setIsEditing(false);
+                    }
+                  }}
+                  className="text-lg font-semibold py-5.5"
+                  aria-label={t("cancel")}>
+                  <X
+                    className="size-5"
+                    aria-hidden="true"
+                  />
+                  {t("cancel")}
+                </Button>
+              </>
+            ) : (
+              /* Mode lecture : bouton Modifier */
               <Button
                 type="button"
-                variant="outline"
-                onClick={() => {
-                  onCancel();
-                  setIsEditing(false);
-                }}
-                disabled={isSaving}
+                onClick={() => setIsEditing(true)}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    onCancel();
-                    setIsEditing(false);
+                    setIsEditing(true);
                   }
                 }}
-                className="text-lg font-semibold py-5.5"
-                aria-label={t("cancel")}>
-                <X
-                  className="size-5"
-                  aria-hidden="true"
-                />
-                {t("cancel")}
-              </Button>
-            </>
-          ) : (
-            /* Mode lecture : bouton Modifier */
-            <Button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setIsEditing(true);
-                }
-              }}
-              className={`
+                className={`
                 text-lg font-semibold py-5.5
                 ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
                 ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
@@ -254,16 +282,17 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
                 ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
               `}
-              aria-label={t("editCharacter")}>
-              <SquarePen
-                className="size-5"
-                aria-hidden="true"
-              />
-              {t("editCharacter")}
-            </Button>
-          )}
+                aria-label={t("editCharacter")}>
+                <SquarePen
+                  className="size-5"
+                  aria-hidden="true"
+                />
+                {t("editCharacter")}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      </form>
     </main>
   );
 }

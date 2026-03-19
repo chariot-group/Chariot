@@ -15,6 +15,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
+import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -352,15 +353,45 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     router.back();
   };
 
-  const handleCreate = form.handleSubmit(onCreate);
+  useEffect(() => {
+    const handleGlobalShortcuts = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        handleCancel();
+        return;
+      }
+
+      if (!isEnterWithoutModifiers(event) || isTypingInInputElement(event.target)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      form.handleSubmit(onCreate)();
+    };
+
+    window.addEventListener("keydown", handleGlobalShortcuts, true);
+
+    return () => {
+      window.removeEventListener("keydown", handleGlobalShortcuts, true);
+    };
+  }, [form, handleCancel, onCreate]);
 
   return (
     <main className="flex flex-col h-dvh overflow-hidden overflow-x-hidden">
-      <Tabs
-        defaultValue="general"
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      <form
+        id="character-create-form"
+        className="flex flex-col flex-1 min-h-0"
+        onSubmit={form.handleSubmit(onCreate)}
+        onKeyDown={(event) => {
+          if (isEnterWithModifiers(event)) {
+            event.preventDefault();
+          }
+        }}>
+        <Tabs
+          defaultValue="general"
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* Header avec onglets et titre de création */}
         <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
@@ -406,24 +437,18 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
             isEditing={true}
           />
         </div>
-      </Tabs>
+        </Tabs>
 
-      {/* Footer avec boutons - fixe en bas */}
-      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
-        <div className="w-full mx-auto flex flex-row-reverse gap-4">
-          {/* Bouton Créer */}
-          <Button
-            type="button"
-            onClick={handleCreate}
-            disabled={isSaving}
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleCreate();
-              }
-            }}
-            className={`
+        {/* Footer avec boutons - fixe en bas */}
+        <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
+          <div className="w-full mx-auto flex flex-row-reverse gap-4">
+            {/* Bouton Créer */}
+            <Button
+              type="submit"
+              form="character-create-form"
+              disabled={isSaving}
+              tabIndex={0}
+              className={`
           text-base sm:text-lg font-semibold py-4 sm:py-5.5
           ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
           ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
@@ -431,32 +456,33 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
           ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
         `}
-            aria-label={tCreate("create")}
-            aria-busy={isSaving}>
-            <Save className="size-5" aria-hidden="true" />
-            {isSaving ? tCreate("saving") : tCreate("create")}
-          </Button>
+              aria-label={tCreate("create")}
+              aria-busy={isSaving}>
+              <Save className="size-5" aria-hidden="true" />
+              {isSaving ? tCreate("saving") : tCreate("create")}
+            </Button>
 
-          {/* Bouton Annuler */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isSaving}
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleCancel();
-              }
-            }}
-            className="text-base sm:text-lg font-semibold py-4 sm:py-5.5"
-            aria-label={tCreate("cancel")}>
-            <X className="size-5" aria-hidden="true" />
-            {tCreate("cancel")}
-          </Button>
+            {/* Bouton Annuler */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSaving}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleCancel();
+                }
+              }}
+              className="text-base sm:text-lg font-semibold py-4 sm:py-5.5"
+              aria-label={tCreate("cancel")}>
+              <X className="size-5" aria-hidden="true" />
+              {tCreate("cancel")}
+            </Button>
+          </div>
         </div>
-      </div>
+      </form>
     </main>
   );
 }
