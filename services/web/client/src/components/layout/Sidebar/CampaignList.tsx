@@ -7,6 +7,9 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { selectSelectedCampaignId, setSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import NavigationService from "@/services/NavigationService";
 
 /**
  * Campaign list component with infinite scroll
@@ -15,6 +18,9 @@ import { useTranslations } from "next-intl";
  */
 export default function CampaignList() {
   const t = useTranslations("sidebar");
+  const router = useRouter();
+  const pathname = usePathname();
+  const locale = pathname?.split("/")[1] || "fr";
   const { campaigns, loading, loadingMore, hasMore, loadMoreCampaigns, error } = useCampaigns({
     autoFetch: true,
     pageSize: 5,
@@ -26,11 +32,15 @@ export default function CampaignList() {
 
   /**
    * Handle campaign selection
-   * Switches to GM mode and sets selected campaign
+   * Switches to GM mode, sets selected campaign and redirects to first character
    */
-  const handleCampaignClick = (campaignId: string) => {
+  const handleCampaignClick = async (campaignId: string) => {
     dispatch(setSelectedCampaign(campaignId));
     dispatch(setContextMode("gm"));
+
+    // Determine destination and redirect
+    const destination = await NavigationService.determineSpaceDestination(campaignId, locale);
+    router.push(destination.path);
   };
 
   /**

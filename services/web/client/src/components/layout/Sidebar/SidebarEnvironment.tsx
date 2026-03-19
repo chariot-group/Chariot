@@ -2,12 +2,16 @@
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { ContextMode, setContextMode } from "@/store/slices/environmentSlice";
+import { ContextMode, setContextMode, selectIsGmMode } from "@/store/slices/environmentSlice";
 import { selectOpenEnvironment, setOpenEnvironment } from "@/store/slices/sidebarSlice";
 import { ChevronRight, PlusCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import CampaignList from "@/components/layout/Sidebar/CampaignList";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import NavigationService from "@/services/NavigationService";
 
 /**
  * Environment selector component
@@ -16,24 +20,38 @@ import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog"
  */
 export default function SidebarEnvironment() {
   const t = useTranslations("sidebar");
+  const router = useRouter();
+  const pathname = usePathname();
+  const locale = pathname?.split("/")[1] || "fr";
   const dispatch = useAppDispatch();
+  const getState = useAppSelector((state) => state);
   const open = useAppSelector(selectOpenEnvironment);
+  const isGmMode = useAppSelector(selectIsGmMode);
 
   /**
    * Handle environment mode change
-   * When switching to player mode, clear selected campaign and redirect to home
+   * When switching to player mode, redirect to first player character
+   * When switching to GM mode, close the environment selector
    */
-  const changeEnvironment = (environment: ContextMode) => {
+  const changeEnvironment = async (environment: ContextMode) => {
     dispatch(setContextMode(environment));
 
     if (environment === "player") {
       handleOpenChange(false);
+      // Redirect to first player character
+      const destination = await NavigationService.determinePlayerSpaceDestination(locale, dispatch, () => getState);
+      router.push(destination.path);
     }
   };
 
   const handleOpenChange = (isOpen: boolean) => {
     dispatch(setOpenEnvironment(isOpen));
   };
+
+  useEffect(() => {
+    const spaceName = isGmMode ? t("gmSpace") : t("playerSpace");
+    toast.info(t("environmentChanged", { space: spaceName.toLocaleLowerCase() }));
+  }, [isGmMode]);
 
   return (
     <Collapsible
@@ -46,7 +64,7 @@ export default function SidebarEnvironment() {
         className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/environment focus-visible:border ${open ? "bg-white" : ""}`}>
         <span
           className={`text-sm group-hover/environment:font-bold group-hover/environment:text-black ${open ? "text-black font-bold" : ""}`}>
-          {t("yourSpaces")}
+          {isGmMode ? t("gmSpace") : t("playerSpace")}
         </span>
         <ChevronRight
           aria-hidden="true"

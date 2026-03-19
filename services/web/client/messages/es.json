@@ -1,5 +1,8 @@
 {
   "sidebar": {
+    "gmSpace": "Espacio del máster",
+    "playerSpace": "Espacio de jugador",
+    "environmentChanged": "Ahora estás en el {space}.",
     "mainNavigation": "Navegación principal",
     "gmNavigation": "Navegación de director de juego",
     "playerNavigation": "Navegación de jugador",
