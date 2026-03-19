@@ -1,6 +1,6 @@
 "use client";
 
-import { User, SquarePen, X, Save } from "lucide-react";
+import { SquarePen, X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
@@ -21,7 +21,6 @@ interface CharacterDetailViewProps {
 export default function CharacterDetailView({ character, onCharacterUpdate }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
-  const tPlaceholder = useTranslations("characterDetail.placeholder");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -78,96 +77,86 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
         {/* Header avec onglets et infos du personnage */}
         <div className="shrink-0">
           <div className="mx-auto sm:px-6 md:px-8 px-2">
-            <div className="justify-between w-full">
-              {/* Infos du personnage */}
-              <div className="flex flex-row items-end justify-between gap-4 xl:mb-0 mb-2">
-                <div className="flex flex-col items-start xl:items-end text-left xl:text-right xl:max-w-full lg:max-w-3/4 md:max-w-2/3 w-full">
+            <div className="w-full flex flex-col lg:flex-row-reverse lg:justify-between gap-2">
+              {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
+              <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
+                {/* Ligne 1: Nom du personnage */}
+                <div className="min-w-0 justify-start lg:justify-end flex">
                   <Tooltip>
-                    <TooltipTrigger className="cursor-help w-full">
-                      <h1 className="text-2xl sm:text-3xl font-bold text-white text-start xl:text-end truncate">
-                        {character.firstname} {character.lastname}
+                    <TooltipTrigger className="cursor-help truncate flex flex-row items-end gap-2">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
+                        {character.firstname?.trim()} {character.lastname?.trim()}{" "}
                       </h1>
+                      {character.surname && (
+                        <span className="ml-auto text-gray-light italic lg:text-md text-sm">
+                          ({character.surname?.trim()})
+                        </span>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent>
-                      {character.firstname} {character.lastname}
+                      {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
                     </TooltipContent>
                   </Tooltip>
-
-                  <div className="flex flex-col gap-1">
-                    <h2 className="text-sm sm:text-base text-gray-light italic truncate">{character.surname}</h2>
-                    {isPlayer(character) ? (
-                      <React.Fragment>
-                        <p className="text-sm sm:text-base text-white font-semibold">
-                          {character.class.map((cls: { name: string; level: number }, index: number) => (
-                            <span key={index}>
-                              {tClass(cls.name)} Niv {cls.level}
-                              {index < character.class.length - 1 && " / "}
-                            </span>
-                          ))}
-                        </p>
-                      </React.Fragment>
-                    ) : (
-                      <React.Fragment>
-                        {(() => {
-                          const challengeRating = character.challenge?.challengeRating ?? 0;
-                          const experiencePoints = character.challenge?.experiencePoints ?? 0;
-
-                          const displayChallengeRating =
-                            challengeRating < 1
-                              ? challengeRating === 0.125
-                                ? "1/8"
-                                : challengeRating === 0.25
-                                  ? "1/4"
-                                  : challengeRating === 0.5
-                                    ? "1/2"
-                                    : challengeRating
-                              : challengeRating;
-
-                          return (
-                            <p className="text-sm sm:text-base text-white font-semibold">
-                              <abbr
-                                title={t("npc.challengeRating")}
-                                className="no-underline cursor-help">
-                                {t("npc.challengeRatingAbbr")}
-                              </abbr>{" "}
-                              {displayChallengeRating} ({experiencePoints} XP)
-                            </p>
-                          );
-                        })()}
-                      </React.Fragment>
-                    )}
-                    {character.groups && character.groups.length > 0 && (
-                      <p className="text-xs sm:text-sm text-white">
-                        {t("group")} : {character.groups[0].label}
-                      </p>
-                    )}
-                  </div>
                 </div>
 
-                {/* Photo de profil */}
-                <div
-                  className="max-[425px]:hidden w-28 h-20 sm:w-20 sm:h-24 md:w-40 md:h-28 rounded-[15px] bg-gray flex items-center justify-center overflow-hidden shrink-0"
-                  role="img"
-                  aria-label={tPlaceholder("noImage")}>
-                  <User
-                    className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-middle-light"
-                    aria-hidden="true"
-                  />
+                {/* Ligne 2: Surnom + Classe/CR + Groupe */}
+                <div className="flex flex-col gap-2 text-sm items-start lg:items-end justify-end">
+                  {isPlayer(character) ? (
+                    <div className="text-white font-semibold">
+                      {character.class.map((cls: { name: string; level: number }, index: number) => (
+                        <span key={index}>
+                          {tClass(cls.name)} Niv {cls.level}
+                          {index < character.class.length - 1 && " / "}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-white font-semibold">
+                      {(() => {
+                        const challengeRating = character.challenge?.challengeRating ?? 0;
+                        const experiencePoints = character.challenge?.experiencePoints ?? 0;
+
+                        const displayChallengeRating =
+                          challengeRating < 1
+                            ? challengeRating === 0.125
+                              ? "1/8"
+                              : challengeRating === 0.25
+                                ? "1/4"
+                                : challengeRating === 0.5
+                                  ? "1/2"
+                                  : challengeRating
+                            : challengeRating;
+
+                        return (
+                          <React.Fragment>
+                            <abbr
+                              title={t("npc.challengeRating")}
+                              className="no-underline cursor-help">
+                              {t("npc.challengeRatingAbbr")}
+                            </abbr>{" "}
+                            {displayChallengeRating} ({experiencePoints} XP)
+                          </React.Fragment>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Onglets */}
-              <CharacterTabs
-                activeTab={activeTab}
-                listClassName="gap-1 flex-wrap justify-start self-start xl:self-end"
-                triggerClassName="grow-0"
-              />
+              {/* Onglets - À gauche sur lg, en dessous sur mobile */}
+              <div className="flex flex-col gap-2 min-w-0 lg:max-w-[50%] lg:self-end overflow-x-auto lg:overflow-x-visible overflow-y-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+                <CharacterTabs
+                  activeTab={activeTab}
+                  listClassName="gap-1 lg:flex-wrap"
+                  triggerClassName="grow-0"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Contenu des onglets - scrollable */}
-        <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+        <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
           <CharacterTabPanels
             character={character}
             form={form}
@@ -177,10 +166,10 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       </Tabs>
 
       {/* Footer avec boutons - fixe en bas */}
-      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 py-5 border-t border-transparent">
-        <div className="w-full mx-auto flex flex-row-reverse gap-4">
+      <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 border-t border-transparent">
+        <div className="w-full mx-auto flex flex-row-reverse gap-2">
           {isEditing ? (
-            <>
+            <React.Fragment>
               {/* Mode édition : boutons Annuler et Sauvegarder */}
               <Button
                 type="button"
@@ -194,7 +183,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                   }
                 }}
                 className={`
-                  text-lg font-semibold py-5.5
+                  lg:text-sm text-xs font-semibold
                   ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
                   ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
                   ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
@@ -204,7 +193,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 aria-label={t("saveChanges")}
                 aria-busy={isSaving}>
                 <Save
-                  className="size-5"
+                  className="lg:size-5 size-4"
                   aria-hidden="true"
                 />
                 {isSaving ? t("saving") : t("saveChanges")}
@@ -225,15 +214,15 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                     setIsEditing(false);
                   }
                 }}
-                className="text-lg font-semibold py-5.5"
+                className="lg:text-sm text-xs font-semibold"
                 aria-label={t("cancel")}>
                 <X
-                  className="size-5"
+                  className="lg:size-5 size-4"
                   aria-hidden="true"
                 />
                 {t("cancel")}
               </Button>
-            </>
+            </React.Fragment>
           ) : (
             /* Mode lecture : bouton Modifier */
             <Button
@@ -247,7 +236,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 }
               }}
               className={`
-                text-lg font-semibold py-5.5
+                lg:text-sm text-xs font-semibold
                 ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
                 ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
                 ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
@@ -256,7 +245,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
               `}
               aria-label={t("editCharacter")}>
               <SquarePen
-                className="size-5"
+                className="lg:size-5 size-4"
                 aria-hidden="true"
               />
               {t("editCharacter")}
