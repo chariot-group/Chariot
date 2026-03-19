@@ -261,7 +261,6 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                         <Input
                           {...field}
                           value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value === "" ? 0 : parseFloat(e.target.value))}
                           id="challenge-rating"
                           aria-invalid={fieldState.invalid}
                           aria-describedby={fieldState.error ? "challenge-rating-error" : undefined}
@@ -297,7 +296,6 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                         <Input
                           {...field}
                           value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value === "" ? 0 : parseInt(e.target.value))}
                           id="experience-points"
                           aria-invalid={fieldState.invalid}
                           aria-describedby={fieldState.error ? "experience-points-error" : undefined}
@@ -474,14 +472,11 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                     <Input
                       {...field}
                       value={field.value || ""}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
                       id="passive-perception"
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "passive-perception-error" : undefined}
                       placeholder={calculatePassivePerception().toString()}
                       type="number"
-                      min="1"
-                      max="40"
                     />
                     {fieldState.error && (
                       <FieldError

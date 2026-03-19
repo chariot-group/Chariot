@@ -177,7 +177,7 @@ const ActionUpdateSection = ({
                         render={({ field: attackField }) => (
                           <Input
                             {...attackField}
-                            onChange={(e) => attackField.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                            value={attackField.value ?? ""}
                             type="number"
                             min={0}
                           />

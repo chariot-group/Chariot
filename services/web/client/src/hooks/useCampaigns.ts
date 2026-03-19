@@ -13,6 +13,7 @@ import {
     selectCurrentPage,
     selectHasMore,
     selectTotal,
+    selectLastFetch,
     invalidateCache,
     clearCampaigns,
 } from '@/store/slices/campaignSlice';
@@ -44,6 +45,7 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
     const currentPage = useAppSelector(selectCurrentPage);
     const hasMore = useAppSelector(selectHasMore);
     const total = useAppSelector(selectTotal);
+    const lastFetch = useAppSelector(selectLastFetch);
     const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
     const contextMode = useAppSelector(selectContextMode);
 
@@ -153,12 +155,21 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
         // - Keycloak is still loading
         // - User is not authenticated
         // - Campaigns are already loaded
+        // - Still within 3-second cooldown from last fetch (prevents infinite loops)
         if (!autoFetch || keycloakLoading || !authenticated || campaigns.length > 0) {
             return;
         }
 
+        const now = Date.now();
+        const timeSinceLastFetch = lastFetch ? now - lastFetch : Infinity;
+
+        // Skip if fetched within last 3 seconds
+        if (timeSinceLastFetch < 3000) {
+            return;
+        }
+
         fetchCampaigns();
-    }, [autoFetch, keycloakLoading, authenticated, fetchCampaigns, campaigns.length]);
+    }, [autoFetch, keycloakLoading, authenticated, fetchCampaigns, campaigns.length, lastFetch]);
 
     return {
         campaigns,
