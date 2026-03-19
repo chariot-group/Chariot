@@ -80,6 +80,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       }
 
       if (!isEditing || !isEnterWithoutModifiers(event) || isTypingInInputElement(event.target)) return;
+      if (!form.formState.isDirty) return;
 
       event.preventDefault();
       event.stopPropagation();
