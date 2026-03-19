@@ -47,6 +47,19 @@ export default function GroupList({
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
+  const [isDeletingGroup, setIsDeletingGroup] = React.useState(false);
+
+  const handleConfirmDelete = React.useCallback(async () => {
+    if (!groupPendingDelete || isDeletingGroup) return;
+
+    try {
+      setIsDeletingGroup(true);
+      await onDeleteGroup(groupPendingDelete._id);
+      setGroupPendingDelete(null);
+    } finally {
+      setIsDeletingGroup(false);
+    }
+  }, [groupPendingDelete, isDeletingGroup, onDeleteGroup]);
 
   // Extract character ID from current URL path
   const selectedCharacterId = pathname?.includes("/characters/")
@@ -154,9 +167,19 @@ export default function GroupList({
         <Dialog
           open={!!groupPendingDelete}
           onOpenChange={(open) => {
-            if (!open) setGroupPendingDelete(null);
+            if (!open && !isDeletingGroup) setGroupPendingDelete(null);
           }}>
-          <DialogContent className="sm:max-w-sm rounded-[15px] bg-card">
+          <DialogContent
+            className="sm:max-w-sm rounded-[15px] bg-card"
+            onEscapeKeyDown={() => {
+              if (!isDeletingGroup) setGroupPendingDelete(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void handleConfirmDelete();
+              }
+            }}>
             <DialogHeader>
               <DialogTitle>{t("deleteGroupDialogTitle")}</DialogTitle>
               <DialogDescription>{t("deleteGroupDialogDescription")}</DialogDescription>
@@ -165,6 +188,7 @@ export default function GroupList({
               <Button
                 type="button"
                 variant="outline"
+                disabled={isDeletingGroup}
                 onClick={() => setGroupPendingDelete(null)}>
                 {t("cancel")}
               </Button>
@@ -172,11 +196,9 @@ export default function GroupList({
                 type="button"
                 variant="destructive"
                 className="text-black"
-                onClick={async () => {
-                  if (groupPendingDelete) {
-                    await onDeleteGroup(groupPendingDelete._id);
-                  }
-                  setGroupPendingDelete(null);
+                disabled={isDeletingGroup}
+                onClick={() => {
+                  void handleConfirmDelete();
                 }}>
                 {t("delete")}
               </Button>
