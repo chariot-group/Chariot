@@ -108,7 +108,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                 {action.description && (
                   <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
                     <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
-                    <span className="text-sm md:text-base italic break-all">{action.description}</span>
+                    <span className="text-sm md:text-base italic whitespace-pre-wrap wrap-break-word">{action.description}</span>
                   </Card>
                 )}
               </div>
