@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import NavigationService from "@/services/NavigationService";
+import { setSelectedCampaign } from "@/store/slices/campaignContextSlice";
 
 /**
  * Environment selector component
@@ -37,6 +38,8 @@ export default function SidebarEnvironment() {
     dispatch(setContextMode(environment));
 
     if (environment === "player") {
+      dispatch(setSelectedCampaign(null));
+
       // Redirect to first player character
       const destination = await NavigationService.determinePlayerSpaceDestination(locale, dispatch, () => getState);
       router.push(destination.path);
