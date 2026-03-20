@@ -193,8 +193,6 @@ export function QuickNumberCalculator({
         {...restInputProps}
         type="number"
         value={inputValue}
-        min={typeof min === "number" ? min : undefined}
-        max={typeof max === "number" ? max : undefined}
         disabled={disabled}
         onClick={(event) => {
           inputOnClick?.(event);
