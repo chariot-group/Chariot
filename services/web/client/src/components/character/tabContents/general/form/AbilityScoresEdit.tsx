@@ -4,32 +4,32 @@ import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 
 interface AbilityScoresEditProps {
-  form: UseFormReturn<any>;
+    form: UseFormReturn<any>;
 }
 
 export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
-  const t = useTranslations("characterDetail.player.general");
+    const t = useTranslations("characterDetail.player.general");
 
-  const abilityScores = [
-    { key: "strength", label: t("abilities.strength") },
-    { key: "dexterity", label: t("abilities.dexterity") },
-    { key: "constitution", label: t("abilities.constitution") },
-    { key: "intelligence", label: t("abilities.intelligence") },
-    { key: "wisdom", label: t("abilities.wisdom") },
-    { key: "charisma", label: t("abilities.charisma") },
-  ] as const;
+    const abilityScores = [
+        { key: "strength", label: t("abilities.strength") },
+        { key: "dexterity", label: t("abilities.dexterity") },
+        { key: "constitution", label: t("abilities.constitution") },
+        { key: "intelligence", label: t("abilities.intelligence") },
+        { key: "wisdom", label: t("abilities.wisdom") },
+        { key: "charisma", label: t("abilities.charisma") },
+    ] as const;
 
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-      {abilityScores.map(({ key, label }) => (
-        <Controller
-          key={key}
-          name={`stats.abilityScores.${key}`}
-          control={form.control}
-          render={({ field, fieldState }) => {
-            const score = field.value || 10;
-            const modifier = Math.floor((score - 10) / 2);
-            const modifierText = modifier >= 0 ? `+${modifier}` : `${modifier}`;
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {abilityScores.map(({ key, label }) => (
+                <Controller
+                    key={key}
+                    name={`stats.abilityScores.${key}`}
+                    control={form.control}
+                    render={({ field, fieldState }) => {
+                        const score = field.value || 10;
+                        const modifier = Math.floor((score - 10) / 2);
+                        const modifierText = modifier >= 0 ? `+${modifier}` : `${modifier}`;
 
             return (
               <Field
@@ -53,6 +53,7 @@ export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
                         className="flex-1 px-1"
                         aria-invalid={fieldState.invalid}
                         aria-describedby={fieldState.error ? `ability-${key}-error` : undefined}
+                        placeholder={t("abilityScorePlaceholder")}
                       />
                     </div>
                   </div>

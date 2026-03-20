@@ -98,7 +98,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                         className={`${accentColor} text-xl md:text-2xl font-semibold`}>
                         {t("alliesAndOrgs")}
                     </h2>
-                    <p className="text-sm md:text-base wrap-break-words">{character?.background?.alliesAndOrgs}</p>
+                    <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.alliesAndOrgs}</p>
                 </Card>
             </div>
 
@@ -113,7 +113,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                         className={`${accentColor} text-xl md:text-2xl font-semibold`}>
                         {t("flaws")}
                     </h2>
-                    <p className="text-sm md:text-base wrap-break-words">{character?.background?.flaws}</p>
+                    <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.flaws}</p>
                 </Card>
                 <Card
                     className="gap-3 py-4 px-4 md:px-6 break-all"
@@ -124,7 +124,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                         className={`${accentColor} text-xl md:text-2xl font-semibold`}>
                         {t("bonds")}
                     </h2>
-                    <p className="text-sm md:text-base wrap-break-words">{character?.background?.bonds}</p>
+                    <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.bonds}</p>
                 </Card>
             </div>
 
@@ -139,7 +139,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                         className={`${accentColor} text-xl md:text-2xl font-semibold`}>
                         {t("personalityTraits")}
                     </h2>
-                    <p className="text-sm md:text-base wrap-break-words">{character?.background?.personalityTraits}</p>
+                    <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.personalityTraits}</p>
                 </Card>
                 <Card
                     className="gap-3 py-4 px-4 md:px-6 break-all"
@@ -150,7 +150,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                         className={`${accentColor} text-xl md:text-2xl font-semibold`}>
                         {t("ideals")}
                     </h2>
-                    <p className="text-sm md:text-base wrap-break-words">{character?.background?.ideals}</p>
+                    <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.ideals}</p>
                 </Card>
             </div>
 
@@ -165,7 +165,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                         className={`${accentColor} text-xl md:text-2xl font-semibold`}>
                         {t("backstory")}
                     </h2>
-                    <p className="text-sm md:text-base wrap-break-words">{character?.background?.backstory}</p>
+                    <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.backstory}</p>
                 </Card>
             </div>
 
@@ -180,7 +180,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                         className={`${accentColor} text-xl md:text-2xl font-semibold`}>
                         {t("description")}
                     </h2>
-                    <p className="text-sm md:text-base wrap-break-words">{character?.appearance?.description}</p>
+                    <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.appearance?.description}</p>
                 </Card>
             </div>
         </div>

@@ -106,9 +106,9 @@ export function ClassSchema(zm: ZodMessages) {
 // ===== Player Profile =====
 export const PlayerProfileSchema = z.object({
     alignment: AlignmentEnum, // REQUIRED
-    race: z.string().optional(),
-    subrace: z.string().optional(),
-    history: z.string().optional(),
+    race: z.preprocess((value) => (value === null ? "" : value), z.string().optional()),
+    subrace: z.preprocess((value) => (value === null ? "" : value), z.string().optional()),
+    history: z.preprocess((value) => (value === null ? "" : value), z.string().optional()),
 });
 
 /**

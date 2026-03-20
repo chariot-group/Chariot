@@ -82,7 +82,9 @@ export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps)
                     value={field.value === 0 ? "" : field.value}
                     className="w-16 text-center"
                     type="number"
-                    placeholder={abilityModifier >= 0 ? `+${abilityModifier}` : `${abilityModifier}`}
+                    placeholder={t("abilityBonusPlaceholder", {
+                      value: abilityModifier >= 0 ? `+${abilityModifier}` : `${abilityModifier}`,
+                    })}
                     aria-label={t(`skillNames.${key}`)}
                   />
                 </div>

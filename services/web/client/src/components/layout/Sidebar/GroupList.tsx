@@ -55,6 +55,19 @@ export default function GroupList({
   const { isMobile, setOpenMobile } = useSidebar();
   const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
   const openGroupIds = Array.isArray(openGroupId) ? openGroupId : [];
+  const [isDeletingGroup, setIsDeletingGroup] = React.useState(false);
+
+  const handleConfirmDelete = React.useCallback(async () => {
+    if (!groupPendingDelete || isDeletingGroup) return;
+
+    try {
+      setIsDeletingGroup(true);
+      await onDeleteGroup(groupPendingDelete._id);
+      setGroupPendingDelete(null);
+    } finally {
+      setIsDeletingGroup(false);
+    }
+  }, [groupPendingDelete, isDeletingGroup, onDeleteGroup]);
 
   // Extract character ID from current URL path
   const selectedCharacterId = pathname?.includes("/characters/")
@@ -142,9 +155,8 @@ export default function GroupList({
                       aria-current={isSelected ? "page" : undefined}
                       aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
                       title={`${character.firstname} ${character.lastname}`}
-                      className={`w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${
-                        isSelected ? "bg-card/50 font-bold" : ""
-                      }`}
+                      className={`w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${isSelected ? "bg-card/50 font-bold" : ""
+                        }`}
                       onClick={() => {
                         if (isMobile) setOpenMobile(false);
                       }}>
@@ -165,15 +177,26 @@ export default function GroupList({
         <Dialog
           open={!!groupPendingDelete}
           onOpenChange={(open) => {
-            if (!open) setGroupPendingDelete(null);
+            if (!open && !isDeletingGroup) setGroupPendingDelete(null);
           }}>
-          <DialogContent className="sm:max-w-sm rounded-[15px] bg-card">
+          <DialogContent
+            className="sm:max-w-sm rounded-[15px] bg-card"
+            onEscapeKeyDown={() => {
+              if (!isDeletingGroup) setGroupPendingDelete(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void handleConfirmDelete();
+              }
+            }}>
             <DialogHeader>
               <DialogTitle>{t("deleteGroupDialogTitle")}</DialogTitle>
               <DialogDescription>{t("deleteGroupDialogDescription")}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button
+                disabled={isDeletingGroup}
                 type="button"
                 variant="outline"
                 onClick={() => setGroupPendingDelete(null)}>
@@ -183,11 +206,9 @@ export default function GroupList({
                 type="button"
                 variant="destructive"
                 className="text-black"
-                onClick={async () => {
-                  if (groupPendingDelete) {
-                    await onDeleteGroup(groupPendingDelete._id);
-                  }
-                  setGroupPendingDelete(null);
+                disabled={isDeletingGroup}
+                onClick={() => {
+                  void handleConfirmDelete();
                 }}>
                 {t("delete")}
               </Button>

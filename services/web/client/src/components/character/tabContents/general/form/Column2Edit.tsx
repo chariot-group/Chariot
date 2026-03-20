@@ -20,6 +20,7 @@ interface Column2EditProps {
 
 export default function Column2Edit({ form, accentColor, className }: Column2EditProps) {
   const t = useTranslations("characterDetail.player.general");
+  const tEdit = useTranslations("characterDetail.edit");
   const [enableHalfProficiency, setEnableHalfProficiency] = useState<boolean>(false);
   const [enableExpertise, setEnableExpertise] = useState<boolean>(false);
 
@@ -57,7 +58,7 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
                   id="proficiency-bonus"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "proficiency-bonus-error" : undefined}
-                  placeholder="+2"
+                  placeholder={tEdit("proficiencyBonusPlaceholder")}
                   type="number"
                   min="2"
                   max="6"

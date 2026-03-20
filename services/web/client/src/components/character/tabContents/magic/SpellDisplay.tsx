@@ -107,7 +107,7 @@ export default function SpellDisplay({ spell, accentColor, showTitle = true }: S
                     <span className={`${accentColor} font-semibold text-sm md:text-base`}>
                         {tMagic("spellDetails.description")}:
                     </span>
-                    <span className="text-sm md:text-base leading-relaxed">{spell.description}</span>
+                    <span className="text-sm md:text-base leading-relaxed whitespace-pre-wrap wrap-break-word">{spell.description}</span>
                 </Card>
             </div>
         </div>
