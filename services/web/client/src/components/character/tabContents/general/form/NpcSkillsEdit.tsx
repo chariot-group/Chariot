@@ -72,9 +72,7 @@ export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps)
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
-                    <p className="text-xs text-gray-middle-light truncate">
-                      {t(`abilities.${ability}`)} 
-                    </p>
+                    <p className="text-xs text-gray-middle-light truncate">{t(`abilities.${ability}`)}</p>
                     <p className="text-xs text-gray-middle-light">
                       ({abilityModifier >= 0 ? `+${abilityModifier}` : abilityModifier})
                     </p>
@@ -82,10 +80,6 @@ export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps)
                   <Input
                     {...field}
                     value={field.value === 0 ? "" : field.value}
-                    onChange={(e) => {
-                      const value = e.target.value === "" ? 0 : parseInt(e.target.value);
-                      field.onChange(isNaN(value) ? 0 : value);
-                    }}
                     className="w-16 text-center"
                     type="number"
                     placeholder={t("abilityBonusPlaceholder", {

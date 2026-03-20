@@ -21,12 +21,13 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
       className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-4"
       role="main"
       aria-labelledby="history-tab-edit">
-      <h2 id="history-tab-edit" className="sr-only">
+      <h2
+        id="history-tab-edit"
+        className="sr-only">
         {t("backstory")}
       </h2>
 
       <div className="flex flex-col gap-2 md:gap-4">
-
         {/* Section Apparence */}
         <Card className="gap-4">
           <h2
@@ -41,8 +42,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
               name="appearance.eyes"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="appearance-eyes" className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="appearance-eyes"
+                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
                     <Eye
                       className="shrink-0 w-4 h-4"
                       aria-hidden="true"
@@ -58,7 +63,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     placeholder={t("eyes")}
                     type="text"
                   />
-                  {fieldState.error && <FieldError id="appearance-eyes-error" errors={[fieldState.error]} />}
+                  {fieldState.error && (
+                    <FieldError
+                      id="appearance-eyes-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
                 </Field>
               )}
             />
@@ -68,8 +78,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
               name="appearance.age"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="appearance-age" className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="appearance-age"
+                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
                     <Cake
                       className="shrink-0 w-4 h-4"
                       aria-hidden="true"
@@ -78,10 +92,6 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   </label>
                   <Input
                     {...field}
-                    onChange={(e) => {
-                      const value = e.target.valueAsNumber;
-                      field.onChange(isNaN(value) ? undefined : value);
-                    }}
                     min={0}
                     value={field.value ?? ""}
                     id="appearance-age"
@@ -91,7 +101,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     placeholder={t("age")}
                     type="number"
                   />
-                  {fieldState.error && <FieldError id="appearance-age-error" errors={[fieldState.error]} />}
+                  {fieldState.error && (
+                    <FieldError
+                      id="appearance-age-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
                 </Field>
               )}
             />
@@ -101,8 +116,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
               name="appearance.skin"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="appearance-skin" className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="appearance-skin"
+                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
                     <PersonStanding
                       className="shrink-0 w-4 h-4"
                       aria-hidden="true"
@@ -118,7 +137,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     placeholder={t("skin")}
                     type="text"
                   />
-                  {fieldState.error && <FieldError id="appearance-skin-error" errors={[fieldState.error]} />}
+                  {fieldState.error && (
+                    <FieldError
+                      id="appearance-skin-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
                 </Field>
               )}
             />
@@ -128,8 +152,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
               name="appearance.height"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="appearance-height" className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="appearance-height"
+                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
                     <Ruler
                       className="shrink-0 w-4 h-4"
                       aria-hidden="true"
@@ -139,10 +167,6 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   <Input
                     {...field}
                     min={0}
-                    onChange={(e) => {
-                      const value = e.target.valueAsNumber;
-                      field.onChange(isNaN(value) ? undefined : value);
-                    }}
                     value={field.value ?? ""}
                     id="appearance-height"
                     tabIndex={4}
@@ -151,7 +175,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     placeholder={t("height")}
                     type="number"
                   />
-                  {fieldState.error && <FieldError id="appearance-height-error" errors={[fieldState.error]} />}
+                  {fieldState.error && (
+                    <FieldError
+                      id="appearance-height-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
                 </Field>
               )}
             />
@@ -161,8 +190,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
               name="appearance.weight"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="appearance-weight" className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="appearance-weight"
+                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
                     <Scale
                       className="shrink-0 w-4 h-4"
                       aria-hidden="true"
@@ -172,10 +205,6 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   <Input
                     {...field}
                     min={0}
-                    onChange={(e) => {
-                      const value = e.target.valueAsNumber;
-                      field.onChange(isNaN(value) ? undefined : value);
-                    }}
                     value={field.value ?? ""}
                     id="appearance-weight"
                     tabIndex={5}
@@ -184,7 +213,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     placeholder={t("weight")}
                     type="number"
                   />
-                  {fieldState.error && <FieldError id="appearance-weight-error" errors={[fieldState.error]} />}
+                  {fieldState.error && (
+                    <FieldError
+                      id="appearance-weight-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
                 </Field>
               )}
             />
@@ -194,8 +228,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
               name="appearance.hair"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation="vertical">
-                  <label htmlFor="appearance-hair" className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="appearance-hair"
+                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
                     <Scissors
                       className="shrink-0 w-4 h-4"
                       aria-hidden="true"
@@ -211,7 +249,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                     placeholder={t("hair")}
                     type="text"
                   />
-                  {fieldState.error && <FieldError id="appearance-hair-error" errors={[fieldState.error]} />}
+                  {fieldState.error && (
+                    <FieldError
+                      id="appearance-hair-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
                 </Field>
               )}
             />
@@ -230,7 +273,9 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             name="background.alliesAndOrgs"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
                 <Textarea
                   {...field}
                   id="background-alliesAndOrgs"
@@ -240,7 +285,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   placeholder={t("alliesAndOrgs")}
                   rows={6}
                 />
-                {fieldState.error && <FieldError id="background-alliesAndOrgs-error" errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="background-alliesAndOrgs-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
@@ -258,7 +308,9 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             name="background.flaws"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
                 <Textarea
                   {...field}
                   id="background-flaws"
@@ -268,7 +320,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   placeholder={t("flaws")}
                   rows={6}
                 />
-                {fieldState.error && <FieldError id="background-flaws-error" errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="background-flaws-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
@@ -284,7 +341,9 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             name="background.bonds"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
                 <Textarea
                   {...field}
                   id="background-bonds"
@@ -294,7 +353,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   placeholder={t("bonds")}
                   rows={6}
                 />
-                {fieldState.error && <FieldError id="background-bonds-error" errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="background-bonds-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
@@ -313,7 +377,9 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             name="background.personalityTraits"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
                 <Textarea
                   {...field}
                   id="background-personalityTraits"
@@ -323,7 +389,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   placeholder={t("personalityTraits")}
                   rows={6}
                 />
-                {fieldState.error && <FieldError id="background-personalityTraits-error" errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="background-personalityTraits-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
@@ -339,7 +410,9 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             name="background.ideals"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
                 <Textarea
                   {...field}
                   id="background-ideals"
@@ -349,7 +422,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   placeholder={t("ideals")}
                   rows={6}
                 />
-                {fieldState.error && <FieldError id="background-ideals-error" errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="background-ideals-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
@@ -367,7 +445,9 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             name="background.backstory"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
                 <Textarea
                   {...field}
                   id="background-backstory"
@@ -377,7 +457,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   placeholder={t("backstory")}
                   rows={6}
                 />
-                {fieldState.error && <FieldError id="background-backstory-error" errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="background-backstory-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
@@ -397,7 +482,9 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
             name="appearance.description"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} orientation="vertical">
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
                 <Textarea
                   {...field}
                   id="appearance-description"
@@ -407,7 +494,12 @@ export default function CharacterHistoryTabEdit({ character, accentColor, form }
                   placeholder={t("description")}
                   rows={6}
                 />
-                {fieldState.error && <FieldError id="appearance-description-error" errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="appearance-description-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />

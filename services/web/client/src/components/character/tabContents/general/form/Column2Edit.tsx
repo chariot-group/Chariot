@@ -55,7 +55,6 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
                 <Input
                   {...field}
                   value={field.value || ""}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 2)}
                   id="proficiency-bonus"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "proficiency-bonus-error" : undefined}

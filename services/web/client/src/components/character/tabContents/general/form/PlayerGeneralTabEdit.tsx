@@ -286,7 +286,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           <Input
                             {...field}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                             id="character-level"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-level-error" : undefined}
@@ -322,7 +321,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           <Input
                             {...field}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                             id="character-xp"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-xp-error" : undefined}
@@ -494,7 +492,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                 <Input
                                   {...field}
                                   value={field.value || ""}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                                   id={`class-level-${index}`}
                                   aria-invalid={fieldState.invalid}
                                   aria-describedby={fieldState.error ? `class-level-${index}-error` : undefined}
@@ -575,7 +572,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => appendClass({ name: "", subclass: "", level: 1, hitDice: 0 })}
+                      onClick={() => appendClass({ name: undefined, subclass: "", level: 1, hitDice: 0 })}
                       className="flex items-center gap-2 border-dashed">
                       <Plus className="size-4" />
                       <span className="truncate">{t("addSecondClass")}</span>
@@ -893,7 +890,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     <Input
                       {...field}
                       value={field.value || ""}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
                       id="passive-perception"
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "passive-perception-error" : undefined}

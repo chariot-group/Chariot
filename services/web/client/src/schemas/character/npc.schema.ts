@@ -16,8 +16,8 @@ export function ActionsSchema(zm: ZodMessages) {
 
 // ===== Challenge =====
 export const ChallengeSchema = z.object({
-    challengeRating: z.number().optional(),
-    experiencePoints: z.number().optional(),
+    challengeRating: z.coerce.number().optional(),
+    experiencePoints: z.coerce.number().optional(),
 });
 
 // ===== NPC Profile =====

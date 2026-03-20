@@ -31,44 +31,48 @@ export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
                         const modifier = Math.floor((score - 10) / 2);
                         const modifierText = modifier >= 0 ? `+${modifier}` : `${modifier}`;
 
-                        return (
-                            <Field data-invalid={fieldState.invalid} orientation="vertical">
-                                <div className="grid grid-cols-2 items-baseline">
-                                    <div className="truncate">
-                                        <label htmlFor={`ability-${key}`} className="text-sm font-medium">
-                                            {label}
-                                        </label>
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                {...field}
-                                                value={field.value || ""}
-                                                onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
-                                                id={`ability-${key}`}
-                                                type="number"
-                                                min="1"
-                                                max="30"
-                                                className="flex-1 px-1"
-                                                aria-invalid={fieldState.invalid}
-                                                aria-describedby={fieldState.error ? `ability-${key}-error` : undefined}
-                                                placeholder={t("abilityScorePlaceholder")}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col min-w-10 items-center gap-3">
-                                        <label className="text-xs text-gray-middle-light leading-none">{t("abilityBonus")}</label>
-                                        <span className="text-sm font-bold text-center leading-tight">
-                                            {modifierText}
-                                        </span>
-                                    </div>
-                                    {fieldState.error && (
-                                        <FieldError id={`ability-${key}-error`} errors={[fieldState.error]} />
-                                    )}
-                                </div>
-                            </Field>
-                        );
-                    }}
-                />
-            ))}
-        </div>
-    );
+            return (
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <div className="grid grid-cols-2 items-baseline">
+                  <div className="truncate">
+                    <label
+                      htmlFor={`ability-${key}`}
+                      className="text-sm font-medium">
+                      {label}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        id={`ability-${key}`}
+                        type="number"
+                        min="1"
+                        max="30"
+                        className="flex-1 px-1"
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={fieldState.error ? `ability-${key}-error` : undefined}
+                        placeholder={t("abilityScorePlaceholder")}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col min-w-10 items-center gap-3">
+                    <label className="text-xs text-gray-middle-light leading-none">{t("abilityBonus")}</label>
+                    <span className="text-sm font-bold text-center leading-tight">{modifierText}</span>
+                  </div>
+                  {fieldState.error && (
+                    <FieldError
+                      id={`ability-${key}-error`}
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </div>
+              </Field>
+            );
+          }}
+        />
+      ))}
+    </div>
+  );
 }

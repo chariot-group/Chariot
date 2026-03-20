@@ -92,7 +92,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                   id="armor-class"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "armor-class-error" : undefined}
@@ -136,7 +135,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                   id="initiative"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "initiative-error" : undefined}
@@ -234,8 +232,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-walk"
                     type="number"
                     min={0}
@@ -267,8 +264,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-climb"
                     type="number"
                     className="text-sm"
@@ -299,8 +295,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-swim"
                     type="number"
                     min={0}
@@ -331,8 +326,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-fly"
                     type="number"
                     className="text-sm"
@@ -363,8 +357,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-burrow"
                     type="number"
                     className="text-sm"
@@ -400,7 +393,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   {tEdit("currentHP")}
                 </label>
                 <QuickNumberCalculator
-                  value={field.value ?? 0}
+                  value={field.value ?? ""}
                   currentValue={field.value}
                   min={0}
                   max={safeMaxHitPoints}
@@ -440,7 +433,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   {tEdit("maxHP")}
                 </label>
                 <QuickNumberCalculator
-                  value={field.value ?? 0}
+                  value={field.value ?? ""}
                   currentValue={field.value}
                   min={safeCurrentHitPoints}
                   onValueChange={(nextValue) => field.onChange(nextValue)}
@@ -479,7 +472,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   {tEdit("tempHP")}
                 </label>
                 <QuickNumberCalculator
-                  value={field.value ?? 0}
+                  value={field.value ?? ""}
                   currentValue={field.value}
                   min={0}
                   onValueChange={(nextValue) => field.onChange(nextValue)}
@@ -534,7 +527,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                       <Input
                         {...field}
                         value={field.value ?? 1}
-                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                         id={`class-${index}-level`}
                         type="number"
                         className="text-sm"

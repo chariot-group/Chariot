@@ -9,7 +9,14 @@ import { useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { ContextMenu, ContextMenuTrigger } from "@radix-ui/react-context-menu";
 import { ContextMenuContent, ContextMenuItem } from "@/components/ui/context-menu";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -18,7 +25,7 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 
 interface GroupListProps {
   groups: Group[];
-  openGroupId: string[];
+  openGroupId: string[] | null | undefined;
   onToggleGroup: (groupId: string) => void;
   /** True when this list represents archived groups section */
   isArchivedSection: boolean;
@@ -47,6 +54,7 @@ export default function GroupList({
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
+  const openGroupIds = Array.isArray(openGroupId) ? openGroupId : [];
   const [isDeletingGroup, setIsDeletingGroup] = React.useState(false);
 
   const handleConfirmDelete = React.useCallback(async () => {
@@ -73,7 +81,7 @@ export default function GroupList({
   return (
     <div className="flex flex-col gap-2">
       {groups.map((group) => {
-        const isOpen = openGroupId.includes(group._id);
+        const isOpen = openGroupIds.includes(group._id);
 
         return (
           <Collapsible
@@ -86,9 +94,7 @@ export default function GroupList({
                   aria-expanded={isOpen}
                   aria-controls={`group-${group._id}-content`}
                   className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center focus-visible:border ${isOpen ? "font-bold" : ""}`}>
-                  <span className={`text-sm text-left ${isOpen ? "font-bold" : ""}`}>
-                    {group.label}
-                  </span>
+                  <span className={`text-sm text-left ${isOpen ? "font-bold" : ""}`}>{group.label}</span>
                   <ChevronRight
                     aria-hidden="true"
                     className={`w-4 h-4 transition-all duration-100 ${isOpen ? "rotate-90" : ""}`}
@@ -124,13 +130,17 @@ export default function GroupList({
               className="mt-1 ml-3 flex flex-col gap-1">
               {/* Create character button - only for non-archived groups */}
               {!isArchivedSection && selectedCampaignId && (
-                <CreateCharacterDialog campaignId={selectedCampaignId} groupId={group._id}>
+                <CreateCharacterDialog
+                  campaignId={selectedCampaignId}
+                  groupId={group._id}>
                   <button
                     type="button"
                     aria-label={t("createCharacter")}
-                    className="text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 text-gray-400 hover:text-white"
-                  >
-                    <PlusCircle className="w-3 h-3" aria-hidden="true" />
+                    className="text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 text-gray-400 hover:text-white">
+                    <PlusCircle
+                      className="w-3 h-3"
+                      aria-hidden="true"
+                    />
                     {t("createCharacter")}
                   </button>
                 </CreateCharacterDialog>
@@ -186,9 +196,9 @@ export default function GroupList({
             </DialogHeader>
             <DialogFooter>
               <Button
+                disabled={isDeletingGroup}
                 type="button"
                 variant="outline"
-                disabled={isDeletingGroup}
                 onClick={() => setGroupPendingDelete(null)}>
                 {t("cancel")}
               </Button>
