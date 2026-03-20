@@ -612,42 +612,45 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             {/* Row 1 : Class name + Ability select */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Class name */}
-              <Controller
-                name={`spellcasting.${selectedSpellcastingIndex}.className`}
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    orientation="vertical">
-                    <label
-                      htmlFor={`sc-classname-${selectedSpellcastingIndex}`}
-                      className="text-sm font-medium">
-                      {tEdit("className")}
-                    </label>
-                    <Select
-                      value={field.value ?? ""}
-                      onValueChange={field.onChange}>
-                      <SelectTrigger
-                        id={`sc-classname-${selectedSpellcastingIndex}`}
-                        className="w-full">
-                        <SelectValue placeholder={tEdit("selectClass")} />
-                      </SelectTrigger>
-                      <SelectContent position="item-aligned">
-                        <SelectGroup>
-                          {classesList.map((cls: any) => (
-                            <SelectItem
-                              key={cls.name}
-                              value={cls.name}>
-                              {tClass(cls.name)}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
+
+              {isPlayer(character) && (
+                <Controller
+                  name={`spellcasting.${selectedSpellcastingIndex}.className`}
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <label
+                        htmlFor={`sc-classname-${selectedSpellcastingIndex}`}
+                        className="text-sm font-medium">
+                        {tEdit("className")}
+                      </label>
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}>
+                        <SelectTrigger
+                          id={`sc-classname-${selectedSpellcastingIndex}`}
+                          className="w-full">
+                          <SelectValue placeholder={tEdit("selectClass")} />
+                        </SelectTrigger>
+                        <SelectContent position="item-aligned">
+                          <SelectGroup>
+                            {classesList.map((cls: any) => (
+                              <SelectItem
+                                key={cls.name}
+                                value={cls.name}>
+                                {tClass(cls.name)}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+              )}
               {/* Ability */}
               <Controller
                 name={`spellcasting.${selectedSpellcastingIndex}.ability`}
