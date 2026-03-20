@@ -1,5 +1,8 @@
 {
   "sidebar": {
+    "gmSpace": "Game Master Space",
+    "playerSpace": "Player Space",
+    "environmentChanged": "You are now in the {space}.",
     "mainNavigation": "Main navigation",
     "gmNavigation": "Game Master navigation",
     "playerNavigation": "Player navigation",

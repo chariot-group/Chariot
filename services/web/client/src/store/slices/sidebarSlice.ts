@@ -30,7 +30,7 @@ const sidebarSlice = createSlice({
             // Close archived groups and environment when opening active groups
             if (action.payload) {
                 state.openArchivedGroups = false;
-                state.openEnvironment = false;
+                state.openEnvironment = true;
             }
         },
         setOpenArchivedGroups: (state, action: PayloadAction<boolean>) => {
@@ -38,7 +38,7 @@ const sidebarSlice = createSlice({
             // Close active groups and environment when opening archived groups
             if (action.payload) {
                 state.openActiveGroups = false;
-                state.openEnvironment = false;
+                state.openEnvironment = true;
             }
         },
         closeAllMenus: (state) => {
