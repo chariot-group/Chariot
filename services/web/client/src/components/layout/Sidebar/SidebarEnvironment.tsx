@@ -37,7 +37,6 @@ export default function SidebarEnvironment() {
     dispatch(setContextMode(environment));
 
     if (environment === "player") {
-      handleOpenChange(false);
       // Redirect to first player character
       const destination = await NavigationService.determinePlayerSpaceDestination(locale, dispatch, () => getState);
       router.push(destination.path);
