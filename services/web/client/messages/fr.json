@@ -227,6 +227,10 @@
         "currentAboveMax": "Les PV actuels ne peuvent pas dépasser les PV max.",
         "maxBelowCurrent": "Les PV max ne peuvent pas être inférieurs aux PV actuels."
       },
+      "quickWarnings": {
+        "currentOutOfBounds": "La valeur des PV actuels a été ajustée automatiquement entre 0 et les PV max.",
+        "maxBelowCurrent": "La valeur des PV max a été ajustée automatiquement pour rester supérieure ou égale aux PV actuels."
+      },
       "defense": "Défense",
       "initiative": "Initiative",
       "size": "Taille",

@@ -11,7 +11,7 @@ import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import Image from "next/image";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
-import { useState } from "react";
+import { useToast } from "@/hooks/useToast";
 
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 interface StatisticsProps {
@@ -27,35 +27,24 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
   const maxHitPointsValue = Number(form.watch("stats.maxHitPoints") ?? 0);
   const safeCurrentHitPoints = Number.isFinite(currentHitPointsValue) ? Math.max(0, currentHitPointsValue) : 0;
   const safeMaxHitPoints = Number.isFinite(maxHitPointsValue) ? Math.max(0, maxHitPointsValue) : 0;
-  const currentHpConstraintMessage = tEdit("quickErrors.currentAboveMax");
-  const maxHpConstraintMessage = tEdit("quickErrors.maxBelowCurrent");
-  const [currentHpQuickError, setCurrentHpQuickError] = useState<string | null>(null);
-  const [maxHpQuickError, setMaxHpQuickError] = useState<string | null>(null);
+  const currentHpConstraintWarning = tEdit("quickWarnings.currentOutOfBounds");
+  const maxHpConstraintWarning = tEdit("quickWarnings.maxBelowCurrent");
+  const { info } = useToast();
 
   function handleCurrentHpConstraintResult(payload: { wasClamped: boolean; source: "quick-action" | "direct-input" }) {
-    if (payload.source !== "quick-action") {
-      return;
-    }
-
     if (payload.wasClamped) {
-      setCurrentHpQuickError(currentHpConstraintMessage);
-      return;
+      info(currentHpConstraintWarning);
     }
 
-    setCurrentHpQuickError(null);
+    form.clearErrors(["stats.currentHitPoints", "stats.maxHitPoints"]);
   }
 
   function handleMaxHpConstraintResult(payload: { wasClamped: boolean; source: "quick-action" | "direct-input" }) {
-    if (payload.source !== "quick-action") {
-      return;
-    }
-
     if (payload.wasClamped) {
-      setMaxHpQuickError(maxHpConstraintMessage);
-      return;
+      info(maxHpConstraintWarning);
     }
 
-    setMaxHpQuickError(null);
+    form.clearErrors(["stats.currentHitPoints", "stats.maxHitPoints"]);
   }
 
   const { fields: classFields } = useFieldArray({
@@ -408,15 +397,11 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                     className: "text-sm",
                     name: field.name,
                     onBlur: field.onBlur,
-                    "aria-invalid": fieldState.invalid || !!currentHpQuickError,
-                    "aria-describedby": fieldState.error || currentHpQuickError ? "health-current-error" : undefined,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? "health-current-error" : undefined,
                   }}
                 />
-                {(currentHpQuickError || fieldState.error?.message) && (
-                  <FieldError id="health-current-error">
-                    {currentHpQuickError ?? fieldState.error?.message}
-                  </FieldError>
-                )}
+                {fieldState.error && <FieldError id="health-current-error">{fieldState.error.message}</FieldError>}
               </Field>
             )}
           />
@@ -447,15 +432,11 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                     className: "text-sm",
                     name: field.name,
                     onBlur: field.onBlur,
-                    "aria-invalid": fieldState.invalid || !!maxHpQuickError,
-                    "aria-describedby": fieldState.error || maxHpQuickError ? "health-max-error" : undefined,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? "health-max-error" : undefined,
                   }}
                 />
-                {(maxHpQuickError || fieldState.error?.message) && (
-                  <FieldError id="health-max-error">
-                    {maxHpQuickError ?? fieldState.error?.message}
-                  </FieldError>
-                )}
+                {fieldState.error && <FieldError id="health-max-error">{fieldState.error.message}</FieldError>}
               </Field>
             )}
           />
