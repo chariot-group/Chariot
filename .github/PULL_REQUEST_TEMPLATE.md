@@ -5,6 +5,8 @@
 - [ ] J'ai testé mes changements localement  
 - [ ] J'ai ajouté/mis à jour la documentation (si nécessaire)  
 - [ ] J'ai ajouté des tests pour couvrir mes changements  
+- [ ] J'ai testé le responsive du projet depuis mon navigateur
+- [ ] J'ai testé le responsive du projet depuis mon téléphone
 
 ## 🔍 Contrôles pour le reviewer
 - [ ] La branche d’origine et la branche de destination sont correctes  
