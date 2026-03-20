@@ -5,7 +5,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
-import { selectSelectedCampaignId, setSelectedCampaign } from "@/store/slices/campaignContextSlice";
+import { selectSelectedCampaignId, setSelectedCampaign, setGroupToOpen } from "@/store/slices/campaignContextSlice";
+import { setOpenActiveGroups } from "@/store/slices/sidebarSlice";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
@@ -35,13 +36,21 @@ export default function CampaignList() {
   /**
    * Handle campaign selection
    * Switches to GM mode, sets selected campaign and redirects to first character
+   * Also auto-opens the active groups section and the group containing the character
    */
   const handleCampaignClick = async (campaignId: string) => {
     dispatch(setSelectedCampaign(campaignId));
     dispatch(setContextMode("gm"));
+    dispatch(setOpenActiveGroups(true));
 
     // Determine destination and redirect
     const destination = await NavigationService.determineSpaceDestination(campaignId, locale);
+
+    // Save the group ID to open automatically when groups are loaded
+    if (destination.groupId) {
+      dispatch(setGroupToOpen(destination.groupId));
+    }
+
     router.push(destination.path);
   };
 

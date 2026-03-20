@@ -5,6 +5,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronRight, PlusCircleIcon, Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import { useGroups } from "@/hooks/useGroups";
 import GroupList from "@/components/layout/Sidebar/GroupList";
 import { selectSelectedCampaign } from "@/store/slices/campaignSlice";
@@ -14,6 +15,8 @@ import {
   setOpenActiveGroups,
   setOpenArchivedGroups,
 } from "@/store/slices/sidebarSlice";
+import { selectGroupToOpen, setGroupToOpen } from "@/store/slices/campaignContextSlice";
+import { setOpenGroup } from "@/store/slices/groupSlice";
 import CharactersWithoutGroupList from "@/components/layout/Sidebar/CharactersWithoutGroupList";
 import { CreateGroupDialog } from "@/components/dialogs/CreateGroupDialog";
 
@@ -29,6 +32,7 @@ export default function SidebarContext() {
   const selectedCampaign = useAppSelector(selectSelectedCampaign);
   const openActive = useAppSelector(selectOpenActiveGroups);
   const openArchived = useAppSelector(selectOpenArchivedGroups);
+  const groupToOpen = useAppSelector(selectGroupToOpen);
   const {
     activeGroups,
     archivedGroups,
@@ -50,6 +54,14 @@ export default function SidebarContext() {
   const handleOpenArchived = (isOpen: boolean) => {
     dispatch(setOpenArchivedGroups(isOpen));
   };
+
+  // Auto-open group when groups are loaded
+  useEffect(() => {
+    if (!loading && groupToOpen && !openGroupId.includes(groupToOpen)) {
+      dispatch(setOpenGroup(groupToOpen));
+      dispatch(setGroupToOpen(null)); // Clear the flag after opening
+    }
+  }, [loading, groupToOpen, openGroupId, dispatch]);
 
   // Only render in GM mode
   if (contextMode !== "gm") {

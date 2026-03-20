@@ -20,6 +20,8 @@ import {
 interface NavigationDestination {
     path: string;
     reason: 'character-without-group' | 'character-in-campaign' | 'character-in-space' | 'no-characters';
+    groupId?: string;
+    characterId?: string;
 }
 
 class NavigationService {
@@ -196,7 +198,9 @@ class NavigationService {
                     const firstCharacter = group.characters[0];
                     return {
                         path: `/${locale}/campaigns/${campaignId}/groups/${group._id}/characters/${firstCharacter._id}`,
-                        reason: 'character-in-space'
+                        reason: 'character-in-space',
+                        groupId: group._id,
+                        characterId: firstCharacter._id
                     };
                 }
             }
@@ -208,7 +212,9 @@ class NavigationService {
                     const firstCharacter = group.characters[0];
                     return {
                         path: `/${locale}/campaigns/${campaignId}/groups/${group._id}/characters/${firstCharacter._id}`,
-                        reason: 'character-in-space'
+                        reason: 'character-in-space',
+                        groupId: group._id,
+                        characterId: firstCharacter._id
                     };
                 }
             }
