@@ -8,9 +8,9 @@ import { useAppDispatch } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 
-import Campaign from "@public/welcome/campaign.svg";
-import Session from "@public/welcome/session.svg";
-import Character from "@public/welcome/character.svg";
+import Campaign from "@public/welcome/campaign.webp";
+import Session from "@public/welcome/session.webp";
+import Character from "@public/welcome/character.webp";
 
 export default function WelcomePage() {
   const t = useTranslations("welcome");
