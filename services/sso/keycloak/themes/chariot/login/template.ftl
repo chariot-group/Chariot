@@ -16,7 +16,7 @@
     <#assign themeVersion=properties.themeVersion!'1'>
     <title>${msg("loginTitle",(realm.displayName!''))}</title>
     <link rel="icon" href="${url.resourcesPath}/img/favicon.ico" />
-    <link rel="icon" href="${url.resourcesPath}/img/logo.svg" type="image/svg+xml" />
+    <link rel="icon" href="${url.resourcesPath}/img/favicon.svg" type="image/svg+xml" />
     <#if properties.stylesCommon?has_content>
         <#list properties.stylesCommon?split(' ') as style>
             <link href="${url.resourcesCommonPath}/${style}?v=${themeVersion}" rel="stylesheet" />
