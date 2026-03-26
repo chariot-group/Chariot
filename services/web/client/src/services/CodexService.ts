@@ -117,19 +117,11 @@ interface CodexMonsterTranslation {
             };
         }> | Record<string, { total: number; used: number }>;
         totalSlots?: number;
-        spells?: Array<{
-            name?: string;
-            level?: number;
-            school?: string;
-            description?: string;
-            components?: string[];
-            castingTime?: string;
-            duration?: string;
-            range?: string;
-            effectType?: 'attack' | 'heal' | 'utility';
-            damage?: string;
-            healing?: string;
-        }>;
+        spells?: Array<
+            | string          // ID brut (findall)
+            | CodexSpellItem  // Objet peuplé (après fetch)
+            | { name?: string; level?: number; school?: string; description?: string; components?: string[]; castingTime?: string; duration?: string; range?: string; effectType?: 'attack' | 'heal' | 'utility'; damage?: string; healing?: string; _id?: string } // forme aplatie
+        >;
     }>;
     actions: {
         standard: Array<{
@@ -237,7 +229,9 @@ class CodexService {
         return 'Unaligned';
     }
 
-    private normalizeSpellcasting(codexSpellcasting: CodexMonsterTranslation['spellcasting'] = []) {
+    private normalizeSpellcasting(codexSpellcasting: CodexMonsterTranslation['spellcasting'] = [], lang?: string) {
+        const effectTypeMap: Record<number, 'attack' | 'heal' | 'utility'> = { 0: 'attack', 1: 'heal', 2: 'utility' };
+
         return codexSpellcasting.map((entry) => {
             let normalizedSlots: Record<string, { total: number; used: number }> = {};
 
@@ -253,19 +247,44 @@ class CodexService {
                 normalizedSlots = entry.spellSlotsByLevel;
             }
 
-            const normalizedSpells = (entry.spells || []).map((spell) => ({
-                name: spell.name || '',
-                level: spell.level ?? 0,
-                school: spell.school || '',
-                description: spell.description || '',
-                components: spell.components || [],
-                castingTime: spell.castingTime || '',
-                duration: spell.duration || '',
-                range: spell.range || '',
-                effectType: spell.effectType || 'utility',
-                damage: spell.damage,
-                healing: spell.healing,
-            }));
+            const normalizedSpells = (entry.spells || []).map((spell) => {
+                // Objet sort peuplé : { _id, translations: { en: {...} }, languages: [...] }
+                if (spell && typeof spell === 'object' && 'translations' in spell) {
+                    const s = spell as CodexSpellItem;
+                    const spellLang = (lang && s.translations[lang])
+                        ? lang
+                        : (s.translations['en'] ? 'en' : s.languages[0]);
+                    const t = spellLang ? s.translations[spellLang] : undefined;
+                    return {
+                        name: t?.name || '',
+                        level: t?.level ?? 0,
+                        school: t?.school || '',
+                        description: t?.description || '',
+                        components: t?.components || [],
+                        castingTime: t?.castingTime || '',
+                        duration: t?.duration || '',
+                        range: t?.range || '',
+                        effectType: (typeof t?.effectType === 'number' ? effectTypeMap[t.effectType] : t?.effectType) || 'utility' as const,
+                        damage: t?.damage ?? undefined,
+                        healing: undefined as string | undefined,
+                    };
+                }
+                // Forme aplatie ou ID non résolu
+                const flat = spell as any;
+                return {
+                    name: flat.name || '',
+                    level: flat.level ?? 0,
+                    school: flat.school || '',
+                    description: flat.description || '',
+                    components: flat.components || [],
+                    castingTime: flat.castingTime || '',
+                    duration: flat.duration || '',
+                    range: flat.range || '',
+                    effectType: flat.effectType || 'utility' as const,
+                    damage: flat.damage,
+                    healing: flat.healing,
+                };
+            });
 
             return {
                 className: entry.className || 'Monster',
@@ -504,7 +523,7 @@ class CodexService {
             },
             affinities: translation.affinities,
             abilities: translation.abilities,
-            spellcasting: this.normalizeSpellcasting(translation.spellcasting),
+            spellcasting: this.normalizeSpellcasting(translation.spellcasting, lang),
             actions: {
                 standard: (translation.actions?.standard || []).map((action) => normalizeAction(action)),
                 legendary: (translation.actions?.legendary || []).map((action) => normalizeAction(action)),
@@ -537,6 +556,72 @@ class CodexService {
                 unconscious: false,
             },
         };
+    }
+
+    /**
+     * Fetche un sort par son ID. Gère les réponses en objet ou en tableau.
+     */
+    async getSpellById(id: string): Promise<CodexSpellItem | null> {
+        try {
+            const response = await this.client.get<{ message: string; data: CodexSpellItem | CodexSpellItem[] }>(`/spells/${id}`);
+            const data = response.data.data;
+            const item = Array.isArray(data) ? data[0] : data;
+            return item ?? null;
+        } catch (err) {
+            console.error(`Failed to fetch spell ${id}:`, err);
+            return null;
+        }
+    }
+
+    /**
+     * Peuple les sorts de toute une liste de monstres en une seule passe.
+     * Collecte tous les IDs uniques, les fetche en parallèle, puis remplace les références.
+     */
+    async populateMonstersList(monsters: CodexMonsterItem[]): Promise<CodexMonsterItem[]> {
+        const spellIdSet = new Set<string>();
+        for (const monster of monsters) {
+            for (const lang of monster.languages) {
+                const translation = monster.translations[lang];
+                if (!translation?.spellcasting) continue;
+                for (const entry of translation.spellcasting) {
+                    console.log(`Processing spellcasting entry for monster ${translation.firstname} in language ${lang}`);
+                    for (const spell of entry.spells || []) {
+                        const id = (spell as any).spell;
+                        if (id) spellIdSet.add(id);
+                    }
+                }
+            }
+        }
+
+        console.log(`Found ${spellIdSet.size} unique spell IDs to fetch for ${monsters.length} monsters`);
+
+        if (spellIdSet.size === 0) return monsters;
+
+        const spellMap = new Map<string, CodexSpellItem>();
+        await Promise.all(
+            Array.from(spellIdSet).map(async (id) => {
+                const spell = await this.getSpellById(id);
+                if (spell) spellMap.set(id, spell);
+            })
+        );
+
+        if (spellMap.size === 0) return monsters;
+
+        return monsters.map((monster) => {
+            const cloned: CodexMonsterItem = JSON.parse(JSON.stringify(monster));
+            for (const lang of cloned.languages) {
+                const translation = cloned.translations[lang];
+                if (!translation?.spellcasting) continue;
+                for (const entry of translation.spellcasting) {
+                    if (!entry.spells) continue;
+                    entry.spells = entry.spells.map((spell) => {
+                        const id = (spell as any).spell;
+                        return id && spellMap.has(id) ? spellMap.get(id)! : spell;
+                    }) as typeof entry.spells;
+                }
+            }
+            return cloned;
+        });
     }
 
     /**
