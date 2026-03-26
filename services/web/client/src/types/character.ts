@@ -176,6 +176,8 @@ export interface Spell {
     healing?: string;
     damageDetails?: DamageDetails;
     healingDetails?: HealingDetails;
+    /** NPC only — number of times this spell can be cast per day (undefined = at will) */
+    usesPerDay?: number | null;
 }
 
 export interface Spellcasting {
@@ -184,6 +186,8 @@ export interface Spellcasting {
     saveDC: number;
     attackBonus: number;
     spellSlotsByLevel: Record<string, { total: number; used: number }>;
+    /** NPC only — tracker of uses per day keyed by usesPerDay value (e.g. "2" → {used: 0, total: 2}) */
+    spellSlotsByUses?: Record<string, { used: number; total: number }>;
     totalSlots: number;
     spells: Spell[];
 }

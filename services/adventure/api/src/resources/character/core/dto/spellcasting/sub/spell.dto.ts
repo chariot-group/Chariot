@@ -69,4 +69,9 @@ export class SpellDto {
   @IsOptional()
   @Type(() => HealingDetailsDto)
   healingDetails?: HealingDetailsDto;
+
+  @ApiProperty({ example: 2, nullable: true, description: 'NPC only — uses per day. Null means at will.' })
+  @IsOptional()
+  @IsNumber()
+  usesPerDay?: number | null;
 }

@@ -134,6 +134,19 @@ export function AbilitySchema(zm: ZodMessages) {
 };
 
 // ===== Spellcasting =====
+const DamageDetailsSchema = z.object({
+    diceCount: z.coerce.number().nullable().optional(),
+    diceType: z.string().nullable().optional(),
+    bonus: z.coerce.number().nullable().optional(),
+    damageType: z.string().nullable().optional(),
+}).nullish();
+
+const HealingDetailsSchema = z.object({
+    diceCount: z.coerce.number().nullable().optional(),
+    diceType: z.string().nullable().optional(),
+    bonus: z.coerce.number().nullable().optional(),
+}).nullish();
+
 export const SpellSchema = z.object({
     name: z.string().optional(),
     level: numericInput(true),
@@ -146,6 +159,9 @@ export const SpellSchema = z.object({
     effectType: z.enum(['attack', 'heal', 'utility']).optional(),
     damage: z.string().optional(),
     healing: z.string().optional(),
+    damageDetails: DamageDetailsSchema,
+    healingDetails: HealingDetailsSchema,
+    usesPerDay: z.number().nullable().optional(),
 });
 
 export const SpellSlotSchema = z.object({
@@ -159,6 +175,25 @@ export const SpellcastingSchema = z.object({
     saveDC: numericInput(true),
     attackBonus: numericInput(true),
     spellSlotsByLevel: z.record(z.string(), SpellSlotSchema).optional(),
+    spellSlotsByUses: z.preprocess((val) => {
+        if (val === null || val === undefined) return val;
+        // RHF peut avoir converti un objet à clés numériques en tableau
+        if (Array.isArray(val)) {
+            const obj: Record<string, any> = {};
+            (val as any[]).forEach((item, i) => {
+                if (item != null) obj[`k${i}`] = item;
+            });
+            return obj;
+        }
+        if (typeof val === 'object') {
+            const obj: Record<string, any> = {};
+            for (const [k, v] of Object.entries(val as Record<string, any>)) {
+                obj[/^\d+$/.test(k) ? `k${k}` : k] = v;
+            }
+            return obj;
+        }
+        return val;
+    }, z.record(z.string(), SpellSlotSchema).optional()),
     totalSlots: numericInput(true),
     spells: z.array(SpellSchema).optional(),
 });

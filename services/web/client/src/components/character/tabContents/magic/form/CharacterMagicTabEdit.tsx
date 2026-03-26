@@ -28,6 +28,9 @@ import {
   calculateSpellSaveDC,
   DICE_TYPES,
   SPELL_SCHOOLS,
+  getNpcUsesGroups,
+  getSpellsByUses,
+  npcUsesKey,
 } from "@/utils/magic.utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -108,26 +111,45 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         shouldDirty: true,
       });
 
-      // Create spell slot entry if it doesn't exist (for levels 1+)
-      const spellLevel = Number(spell.level || 0);
-      if (spellLevel > 0) {
-        const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
-        if (!currentSlots[spellLevel]) {
-          form.setValue(
-            `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevel}`,
-            { total: 2, used: 0 },
-            { shouldDirty: true },
-          );
+      if (isPlayer(character)) {
+        // Create spell slot entry if it doesn't exist (for levels 1+)
+        const spellLevel = Number(spell.level || 0);
+        if (spellLevel > 0) {
+          const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
+          if (!currentSlots[spellLevel]) {
+            form.setValue(
+              `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevel}`,
+              { total: 2, used: 0 },
+              { shouldDirty: true },
+            );
+          }
+        }
+        const levelKey = `level-${spell.level || 0}`;
+        if (!openAccordionValues.includes(levelKey)) {
+          setOpenAccordionValues([...openAccordionValues, levelKey]);
+        }
+      } else {
+        // NPC: initialise spellSlotsByUses entry for this usesPerDay value
+        const uses = spell.usesPerDay ?? null;
+        if (uses !== null) {
+          const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
+          if (!currentByUses[`k${uses}`]) {
+            form.setValue(
+              `spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}`,
+              { used: 0, total: uses },
+              { shouldDirty: true },
+            );
+          }
+        }
+        const usesKey = npcUsesKey(uses);
+        if (!openAccordionValues.includes(usesKey)) {
+          setOpenAccordionValues([...openAccordionValues, usesKey]);
         }
       }
 
       setSelectedSpellIndex(currentSpells.length);
-      const levelKey = `level-${spell.level || 0}`;
-      if (!openAccordionValues.includes(levelKey)) {
-        setOpenAccordionValues([...openAccordionValues, levelKey]);
-      }
     },
-    [form, selectedSpellcastingIndex, openAccordionValues],
+    [form, selectedSpellcastingIndex, openAccordionValues, character],
   );
 
   const removeSpell = useCallback(
@@ -146,6 +168,23 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   );
 
   const appendSpellHelper = useCallback(() => {
+    if (!isPlayer(character)) {
+      // NPC: new spell defaults to "at will" (usesPerDay = null)
+      addSpell({
+        name: "",
+        level: 1,
+        school: "",
+        description: "",
+        components: [],
+        castingTime: "",
+        duration: "",
+        range: "",
+        effectType: "utility",
+        usesPerDay: null,
+      });
+      return;
+    }
+
     const levels: number[] = [];
     if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
     const selectedSpellcasting = spellcastingList[selectedSpellcastingIndex];
@@ -173,7 +212,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       range: "",
       effectType: "utility",
     });
-  }, [currentSpells, spellcastingList, selectedSpellcastingIndex, addSpell]);
+  }, [currentSpells, spellcastingList, selectedSpellcastingIndex, addSpell, character]);
 
   const addSpellFromCodex = useCallback(
     (spell: Partial<Spell>) => {
@@ -220,6 +259,25 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     control: form.control,
     name: `${watchPath}.healing` as any,
   });
+  const currentUsesPerDay = useWatch({
+    control: form.control,
+    name: `${watchPath}.usesPerDay` as any,
+  });
+
+  // NPC: sync spellSlotsByUses when usesPerDay changes on the selected spell
+  useEffect(() => {
+    if (isPlayer(character) || selectedSpellIndex === null) return;
+    const uses: number | null = currentUsesPerDay ?? null;
+    if (uses === null) return;
+    const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
+    if (!currentByUses[`k${uses}`]) {
+      form.setValue(
+        `spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}`,
+        { used: 0, total: uses },
+        { shouldDirty: true },
+      );
+    }
+  }, [currentUsesPerDay, selectedSpellIndex, selectedSpellcastingIndex, form, character]);
 
   // Auto-parse old damage/healing formulas when spell is selected
   useEffect(() => {
@@ -401,26 +459,54 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const saveDCSynced = isPlayer(character) && currentSaveDC === calculatedSaveDC;
   const attackBonusSynced = isPlayer(character) && currentAttackBonus === calculatedAttackBonus;
 
-  // Build sorted level list
+  // Build sorted level list (player) or uses-per-day groups (NPC)
   const levels: number[] = [];
-  if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
-  if (selectedSpellcasting?.spellSlotsByLevel) {
-    Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
-      const n = Number(l);
+  const npcUsesGroups: Array<number | null> = [];
+
+  if (isPlayer(character)) {
+    if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
+    if (selectedSpellcasting?.spellSlotsByLevel) {
+      Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+        const n = Number(l);
+        if (!levels.includes(n)) levels.push(n);
+      });
+    }
+    currentSpells.forEach((spell: any) => {
+      const n = Number(spell.level);
       if (!levels.includes(n)) levels.push(n);
     });
+    levels.sort((a, b) => a - b);
+  } else {
+    // NPC: group by usesPerDay
+    const seen = new Set<number | null>();
+    currentSpells.forEach((spell: any) => {
+      seen.add(spell.usesPerDay ?? null);
+    });
+    const groups = Array.from(seen);
+    groups.sort((a, b) => {
+      if (a === null) return -1;
+      if (b === null) return 1;
+      return a - b;
+    });
+    npcUsesGroups.push(...groups);
   }
-  currentSpells.forEach((spell: any) => {
-    const n = Number(spell.level);
-    if (!levels.includes(n)) levels.push(n);
-  });
-  levels.sort((a, b) => a - b);
 
   const spellIndicesByLevel = levels.reduce<Record<number, number[]>>((acc, level) => {
     acc[level] = currentSpells.reduce<number[]>((indices, spell, index) => {
       if (Number(spell.level) === level) indices.push(index);
       return indices;
     }, []);
+    return acc;
+  }, {});
+
+  // NPC: spell indices grouped by usesPerDay, sorted alphabetically within each group
+  const npcSpellIndicesByUses = npcUsesGroups.reduce<Record<string, number[]>>((acc, uses) => {
+    const key = npcUsesKey(uses);
+    acc[key] = currentSpells
+      .map((spell: any, index: number) => ({ spell, index }))
+      .filter(({ spell }: { spell: any }) => (spell.usesPerDay ?? null) === uses)
+      .sort(({ spell: a }: { spell: any }, { spell: b }: { spell: any }) => (a.name || "").localeCompare(b.name || ""))
+      .map(({ index }: { index: number }) => index);
     return acc;
   }, {});
 
@@ -842,7 +928,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 <button
                   type="button"
                   onClick={() => {
-                    const allKeys = levels.map((l) => `level-${l}`);
+                    const allKeys = isPlayer(character)
+                      ? levels.map((l) => `level-${l}`)
+                      : npcUsesGroups.map((u) => npcUsesKey(u));
                     setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allKeys);
                   }}
                   className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
@@ -858,52 +946,153 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             <nav
               className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               aria-label={tMagic("spellListRegion")}>
-              {levels.length > 0 ? (
+              {isPlayer(character) ? (
+                /* ── Player: accordion by level ── */
+                levels.length > 0 ? (
+                  <Accordion
+                    type="multiple"
+                    value={openAccordionValues}
+                    onValueChange={setOpenAccordionValues}
+                    className="w-full flex flex-col gap-2">
+                    {levels.map((level) => {
+                      const indices = spellIndicesByLevel[level] ?? [];
+                      const hasSlots = level > 0 && selectedSpellcasting.spellSlotsByLevel?.[level] !== undefined;
+
+                      return (
+                        <AccordionItem
+                          key={level}
+                          value={`level-${level}`}
+                          className="flex flex-col gap-2 w-full content-center">
+                          <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
+                            <div className="relative w-full">
+                              <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
+                                <h3 className={`text-base md:text-lg font-medium ${accentColor}`}>
+                                  {level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}
+                                </h3>
+                              </AccordionTrigger>
+                              {hasSlots && (
+                                <div
+                                  className="flex items-center gap-1 sm:gap-1.5 shrink-0 absolute right-12 sm:right-14 top-1/2 -translate-y-1/2"
+                                  onClick={(e) => e.stopPropagation()}
+                                  onKeyDown={(e) => e.stopPropagation()}>
+                                  <Controller
+                                    name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total`}
+                                    control={form.control}
+                                    render={({ field }) => (
+                                      <Input
+                                        {...field}
+                                        className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
+                                        type="number"
+                                        min={1}
+                                        onClick={(e) => e.stopPropagation()}
+                                        aria-label={tMagic("spellSlotsTotalForLevel", { level })}
+                                      />
+                                    )}
+                                  />
+                                  <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">
+                                    {tMagic("slotsLabel")}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </Card>
+
+                          <AccordionContent className="pb-2">
+                            <ul className="flex flex-wrap gap-2">
+                              {indices.length === 0 ? (
+                                <li className="text-sm text-muted-foreground px-2">{tMagic("noSpellsInLevel")}</li>
+                              ) : (
+                                indices.map((spellIndex) => {
+                                  const spell = currentSpells[spellIndex];
+                                  const spellName = spell?.name;
+                                  const isSelected = selectedSpellIndex === spellIndex;
+
+                                  return (
+                                    <li key={spellIndex}>
+                                      <Card
+                                        onClick={() => {
+                                          setSelectedSpellIndex(spellIndex);
+                                          setShowMobileDetails(true);
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            setSelectedSpellIndex(spellIndex);
+                                            setShowMobileDetails(true);
+                                          }
+                                        }}
+                                        className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-selected={isSelected}
+                                        aria-label={spellName || tMagic("newSpell")}>
+                                        <span
+                                          className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
+                                          aria-hidden="true">
+                                          {spellName || tMagic("newSpell")}
+                                        </span>
+                                      </Card>
+                                    </li>
+                                  );
+                                })
+                              )}
+                            </ul>
+                          </AccordionContent>
+                        </AccordionItem>
+                      );
+                    })}
+                  </Accordion>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">{tMagic("noMagicAbilities")}</p>
+                )
+              ) : /* ── NPC: accordion by uses per day ── */
+              npcUsesGroups.length > 0 ? (
                 <Accordion
                   type="multiple"
                   value={openAccordionValues}
                   onValueChange={setOpenAccordionValues}
                   className="w-full flex flex-col gap-2">
-                  {levels.map((level) => {
-                    const indices = spellIndicesByLevel[level] ?? [];
-                    const hasSlots = level > 0 && selectedSpellcasting.spellSlotsByLevel?.[level] !== undefined;
+                  {npcUsesGroups.map((uses) => {
+                    const key = npcUsesKey(uses);
+                    const indices = npcSpellIndicesByUses[key] ?? [];
+                    const usesTracker =
+                      uses !== null ? (selectedSpellcasting?.spellSlotsByUses?.[`k${uses}`] ?? null) : null;
 
                     return (
                       <AccordionItem
-                        key={level}
-                        value={`level-${level}`}
+                        key={key}
+                        value={key}
                         className="flex flex-col gap-2 w-full content-center">
                         <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
-                          {/* Accordion trigger takes remaining space */}
                           <div className="relative w-full">
                             <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
                               <h3 className={`text-base md:text-lg font-medium ${accentColor}`}>
-                                {level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}
+                                {uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}
                               </h3>
                             </AccordionTrigger>
-                            {/* Spell slot total (beside the trigger, level 1+) */}
-                            {hasSlots && (
+                            {/* Uses tracker (used / total) — only for limited-use groups */}
+                            {uses !== null && (
                               <div
                                 className="flex items-center gap-1 sm:gap-1.5 shrink-0 absolute right-12 sm:right-14 top-1/2 -translate-y-1/2"
                                 onClick={(e) => e.stopPropagation()}
                                 onKeyDown={(e) => e.stopPropagation()}>
                                 <Controller
-                                  name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total`}
+                                  name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}.used`}
                                   control={form.control}
                                   render={({ field }) => (
                                     <Input
                                       {...field}
-                                      className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
+                                      className="w-10 sm:w-12 text-center h-7 sm:h-8 text-xs sm:text-sm"
                                       type="number"
-                                      min={1}
+                                      min={0}
+                                      max={uses}
                                       onClick={(e) => e.stopPropagation()}
-                                      aria-label={tMagic("spellSlotsTotalForLevel", { level })}
+                                      aria-label={tMagic("npc.usedLabel", { uses })}
                                     />
                                   )}
                                 />
-                                <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">
-                                  {tMagic("slotsLabel")}
-                                </span>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground">/</span>
+                                <span className="text-[10px] sm:text-xs font-semibold">{uses}</span>
                               </div>
                             )}
                           </div>
@@ -1041,6 +1230,42 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     )}
                   />
                 </Card>
+
+                {/* Uses per day (NPC only) */}
+                {!isPlayer(character) && (
+                  <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
+                    <Controller
+                      name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.usesPerDay`}
+                      control={form.control}
+                      render={({ field, fieldState }) => (
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          orientation="vertical">
+                          <label
+                            htmlFor={`spell-uses-per-day-${selectedSpellIndex}`}
+                            className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
+                            {tMagic("npc.usesPerDayLabel")}
+                          </label>
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              field.onChange(val === "" ? null : Number(val));
+                            }}
+                            id={`spell-uses-per-day-${selectedSpellIndex}`}
+                            aria-invalid={fieldState.invalid}
+                            type="number"
+                            min={1}
+                            placeholder={tMagic("npc.atWill")}
+                            className="w-20"
+                          />
+                          {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                        </Field>
+                      )}
+                    />
+                  </Card>
+                )}
 
                 {/* School */}
                 <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6 col-span-2 sm:col-span-1">

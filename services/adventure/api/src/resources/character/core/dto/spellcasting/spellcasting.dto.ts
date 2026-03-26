@@ -35,6 +35,10 @@ export class SpellcastingDto {
   @IsOptional()
   spellSlotsByLevel?: Map<number, { total?: number; used?: number }>;
 
+  @ApiProperty({ description: 'NPC only — uses per day tracker', example: { 2: { used: 1, total: 2 } } })
+  @IsOptional()
+  spellSlotsByUses?: Map<number, { used?: number; total?: number }>;
+
   @ApiProperty({ example: 10 })
   @IsOptional()
   @IsNumber()

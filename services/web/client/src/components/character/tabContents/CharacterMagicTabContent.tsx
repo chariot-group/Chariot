@@ -6,7 +6,15 @@ import { Character, Spell, Spellcasting } from "@/types/character";
 import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { classWithSpellPrepared, getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
+import {
+  classWithSpellPrepared,
+  getSpellByLevel,
+  hasLevel0Spells,
+  numberSpellsPrepare,
+  getNpcUsesGroups,
+  getSpellsByUses,
+  npcUsesKey,
+} from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
 
 interface CharacterMagicTabContentProps {
@@ -30,6 +38,12 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       return null;
     }
 
+    if (!isPlayer(character)) {
+      const groups = getNpcUsesGroups(selectedSpellcasting);
+      const firstGroup = groups[0] ?? null;
+      return getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null;
+    }
+
     // Find the first level 0 spell
     const level0Spells = selectedSpellcasting.spells.filter((spell) => spell.level === 0);
     if (level0Spells.length > 0) {
@@ -46,6 +60,11 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       return [];
     }
 
+    if (!isPlayer(character)) {
+      const groups = getNpcUsesGroups(selectedSpellcasting);
+      return groups.length > 0 ? [npcUsesKey(groups[0])] : [];
+    }
+
     // Find the lowest level and open its accordion
     const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
     return [`level-${minLevel}`];
@@ -54,19 +73,29 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   useEffect(() => {
     // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
     if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
-      const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
-      const firstSpell = selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
-      setSelectedSpell(firstSpell);
-      setOpenAccordionValues([`level-${minLevel}`]);
+      if (!isPlayer(character)) {
+        const groups = getNpcUsesGroups(selectedSpellcasting);
+        const firstGroup = groups[0] ?? null;
+        setSelectedSpell(getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null);
+        setOpenAccordionValues(groups.length > 0 ? [npcUsesKey(groups[0])] : []);
+      } else {
+        const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
+        const firstSpell = selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
+        setSelectedSpell(firstSpell);
+        setOpenAccordionValues([`level-${minLevel}`]);
+      }
     }
   }, [selectedSpellcasting]);
 
   useEffect(() => {
     if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
       // Open the accordion containing the selected spell
-      const spellLevel = `level-${selectedSpell.level}`;
-      if (!openAccordionValues.includes(spellLevel)) {
-        setOpenAccordionValues([...openAccordionValues, spellLevel]);
+      const accordionKey = isPlayer(character)
+        ? `level-${selectedSpell.level}`
+        : npcUsesKey(selectedSpell.usesPerDay ?? null);
+
+      if (!openAccordionValues.includes(accordionKey)) {
+        setOpenAccordionValues([...openAccordionValues, accordionKey]);
       }
 
       // Wait for accordion animation to complete before scrolling
@@ -198,29 +227,31 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               <div className="flex justify-end shrink-0">
                 <button
                   onClick={() => {
-                    const levels: number[] = [];
-                    if (hasLevel0Spells(selectedSpellcasting)) {
-                      levels.push(0);
+                    let allValues: string[];
+                    if (!isPlayer(character)) {
+                      allValues = getNpcUsesGroups(selectedSpellcasting).map(npcUsesKey);
+                    } else {
+                      const levels: number[] = [];
+                      if (hasLevel0Spells(selectedSpellcasting)) {
+                        levels.push(0);
+                      }
+                      if (selectedSpellcasting.spellSlotsByLevel) {
+                        Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                          const n = Number(l);
+                          if (!levels.includes(n)) levels.push(n);
+                        });
+                      }
+                      if (selectedSpellcasting.spells) {
+                        selectedSpellcasting.spells.forEach((spell) => {
+                          const n = Number(spell.level);
+                          if (!levels.includes(n)) levels.push(n);
+                        });
+                      }
+                      levels.sort((a, b) => a - b);
+                      allValues = levels.map((level) => `level-${level}`);
                     }
-                    if (selectedSpellcasting.spellSlotsByLevel) {
-                      Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
-                        const n = Number(l);
-                        if (!levels.includes(n)) levels.push(n);
-                      });
-                    }
-                    // Add all levels that have spells (even without slots)
-                    if (selectedSpellcasting.spells) {
-                      selectedSpellcasting.spells.forEach((spell) => {
-                        const n = Number(spell.level);
-                        if (!levels.includes(n)) levels.push(n);
-                      });
-                    }
-                    levels.sort((a, b) => a - b);
-
-                    const allLevelValues = levels.map((level) => `level-${level}`);
                     const isAllOpen = openAccordionValues.length > 0;
-
-                    setOpenAccordionValues(isAllOpen ? [] : allLevelValues);
+                    setOpenAccordionValues(isAllOpen ? [] : allValues);
                   }}
                   className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
                   aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
@@ -238,15 +269,87 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               aria-atomic="false">
               {selectedSpellcasting &&
                 (() => {
-                  // Build array of all spell levels to display
+                  if (!isPlayer(character)) {
+                    // ── NPC: grouped by uses per day ──
+                    const usesGroups = getNpcUsesGroups(selectedSpellcasting);
+                    return (
+                      <Accordion
+                        type="multiple"
+                        value={openAccordionValues}
+                        onValueChange={setOpenAccordionValues}
+                        className="w-full flex flex-col gap-2">
+                        {usesGroups.map((uses) => {
+                          const key = npcUsesKey(uses);
+                          const spells = getSpellsByUses(selectedSpellcasting, uses);
+                          const tracker =
+                            uses !== null ? (selectedSpellcasting.spellSlotsByUses?.[`k${uses}`] ?? null) : null;
+
+                          return (
+                            <AccordionItem
+                              key={key}
+                              value={key}
+                              className={`flex flex-col gap-2`}>
+                              <Card className="gap-3 p-0">
+                                <AccordionTrigger className="py-4 px-4 md:px-6">
+                                  <div className="flex items-center gap-3">
+                                    <h2 className={`text-base md:text-lg font-medium ${accentColor}`}>
+                                      {uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}
+                                    </h2>
+                                    {uses !== null && (
+                                      <span className="text-sm font-mono px-2 py-0.5 rounded bg-muted border">
+                                        {tracker?.used ?? 0} / {uses}
+                                      </span>
+                                    )}
+                                  </div>
+                                </AccordionTrigger>
+                              </Card>
+
+                              <AccordionContent className="pb-4">
+                                <div
+                                  className="flex flex-wrap gap-2"
+                                  role="list">
+                                  {spells.map((spell, index) => (
+                                    <Card
+                                      ref={selectedSpell === spell ? selectedSpellRef : null}
+                                      onClick={() => {
+                                        setSelectedSpell(spell);
+                                        setShowMobileDetails(true);
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                          e.preventDefault();
+                                          setSelectedSpell(spell);
+                                          setShowMobileDetails(true);
+                                        }
+                                      }}
+                                      key={index}
+                                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      role="button"
+                                      tabIndex={0}
+                                      aria-pressed={selectedSpell === spell}
+                                      aria-label={`${tMagic("selectSpell")}: ${spell.name}`}>
+                                      <span
+                                        className={`truncate text-sm md:text-base lg:text-lg ${selectedSpell === spell && "font-bold"}`}>
+                                        {spell.name}
+                                      </span>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          );
+                        })}
+                      </Accordion>
+                    );
+                  }
+
+                  // ── Player: grouped by spell level ──
                   const levels: number[] = [];
 
-                  // Add level 0 if cantrips exist
                   if (hasLevel0Spells(selectedSpellcasting)) {
                     levels.push(0);
                   }
 
-                  // Add other levels from spellSlotsByLevel
                   if (selectedSpellcasting.spellSlotsByLevel) {
                     Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
                       const n = Number(l);
@@ -254,7 +357,6 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                     });
                   }
 
-                  // Add all levels that have spells (even without slots)
                   if (selectedSpellcasting.spells) {
                     selectedSpellcasting.spells.forEach((spell) => {
                       const n = Number(spell.level);
@@ -262,7 +364,6 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                     });
                   }
 
-                  // Sort levels
                   levels.sort((a, b) => a - b);
 
                   return (
@@ -353,6 +454,19 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               </h3>
             </Card>
             <div className="flex flex-wrap gap-2 items-start">
+              {/* Level — NPC only */}
+              {!isPlayer(character) && selectedSpell?.level != null && (
+                <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+                  <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                    {tMagic("spellDetails.level")}:
+                  </span>
+                  <span className="text-sm md:text-base wrap-break-word">
+                    {selectedSpell.level === 0
+                      ? tMagic("cantrips")
+                      : tMagic("spellLevel", { level: selectedSpell.level })}
+                  </span>
+                </Card>
+              )}
               <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
                 <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                   {tMagic("spellDetails.school")}:

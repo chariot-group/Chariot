@@ -642,6 +642,7 @@
       "spellLevel": "Level {level} spells",
       "spellSlots": "{used} / {total}",
       "spellDetails": {
+        "level": "Level",
         "school": "School",
         "castingTime": "Casting time",
         "range": "Range",
@@ -690,6 +691,12 @@
       "removeSpellWithName": "Remove spell {name}",
       "expandAllSpellLevels": "Expand all spell levels",
       "collapseAllSpellLevels": "Collapse all spell levels",
+      "npc": {
+        "atWill": "At will",
+        "usesPerDay": "{count}/day",
+        "usesPerDayLabel": "Uses / day",
+        "usedLabel": "Used out of {uses}"
+      },
       "codexDialog": {
         "title": "Search for a spell in Codex",
         "searchPlaceholder": "Search for a spell...",
