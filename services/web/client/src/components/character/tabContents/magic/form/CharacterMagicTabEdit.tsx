@@ -514,7 +514,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         <div
           className={`flex flex-col gap-2 md:gap-4 h-full overflow-hidden ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
           {/* Spellcasting class tabs */}
-          {spellcastingList.length > 0 && (
+          {isPlayer(character) && spellcastingList.length > 0 && (
             <div className="flex flex-col gap-2 shrink-0">
               <div
                 className="flex flex-wrap gap-2"
