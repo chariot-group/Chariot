@@ -342,7 +342,14 @@
       "noValue": "Aucune valeur",
       "hpAbbr": "PV",
       "feet": "pieds",
-      "feetAbbr": "pi"
+      "feetAbbr": "pi",
+      "affinities": "Affinités",
+      "resistances": "Résistances",
+      "resistancesPlaceholder": "Feu, Froid...",
+      "vulnerabilities": "Vulnérabilités",
+      "vulnerabilitiesPlaceholder": "Feu, Froid...",
+      "immunities": "Immunités",
+      "immunitiesPlaceholder": "Feu, Froid..."
     },
     "history": {
       "appearance": "Apparence",
