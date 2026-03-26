@@ -79,6 +79,7 @@ const ActionUpdateSection = ({
             aria-expanded={openAccordionValues.length > 0}>
             {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
           </button>
+            type="button"
         </div>
       </Card>
       {fields.length > 0 && (

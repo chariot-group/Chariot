@@ -965,6 +965,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           aria-label={tMagic("spellDetailRegion")}>
           {/* Back button for mobile */}
           <button
+            type="button"
             onClick={() => setShowMobileDetails(false)}
             className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
             aria-label={tMagic("backToList")}>
