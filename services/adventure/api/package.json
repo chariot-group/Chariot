@@ -25,10 +25,10 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
-    "@keycloak/keycloak-admin-client": "^26.5.4",
-    "@nestjs/common": "^11.1.16",
+    "@keycloak/keycloak-admin-client": "^26.5.6",
+    "@nestjs/common": "^11.1.17",
     "@nestjs/config": "^4.0.3",
-    "@nestjs/core": "^11.1.16",
+    "@nestjs/core": "^11.1.17",
     "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/passport": "^11.0.5",
