@@ -695,7 +695,8 @@
         "atWill": "At will",
         "usesPerDay": "{count}/day",
         "usesPerDayLabel": "Uses / day",
-        "usedLabel": "Used out of {uses}"
+        "usedLabel": "Used out of {uses}",
+        "usedSpellLabel": "Used today"
       },
       "codexDialog": {
         "title": "Search for a spell in Codex",

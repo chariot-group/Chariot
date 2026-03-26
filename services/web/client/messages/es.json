@@ -648,7 +648,8 @@
         "range": "Alcance",
         "components": "Componentes",
         "duration": "Duración",
-        "description": "Descripción"
+        "description": "Descripción",
+        "usesTracker": "Usos"
       },
       "damage": "Daño",
       "healing": "Curación",
@@ -697,7 +698,8 @@
         "atWill": "A voluntad",
         "usesPerDay": "{count}/día",
         "usesPerDayLabel": "Usos / día",
-        "usedLabel": "Usado de {uses}"
+        "usedLabel": "Usado de {uses}",
+        "usedSpellLabel": "Usado hoy"
       },
       "codexDialog": {
         "title": "Buscar un conjuro en Codex",

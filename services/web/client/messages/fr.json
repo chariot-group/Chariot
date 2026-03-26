@@ -651,7 +651,8 @@
         "range": "Portée",
         "components": "Composants",
         "duration": "Durée",
-        "description": "Description"
+        "description": "Description",
+        "usesTracker": "Utilisations"
       },
       "damage": "Dégâts",
       "healing": "Soins",
@@ -700,7 +701,8 @@
         "atWill": "À volonté",
         "usesPerDay": "{count}/jour",
         "usesPerDayLabel": "Utilisations / jour",
-        "usedLabel": "Utilisé sur {uses}"
+        "usedLabel": "Utilisé sur {uses}",
+        "usedSpellLabel": "Utilisé aujourd'hui"
       },
       "codexDialog": {
         "title": "Rechercher un sort dans Codex",

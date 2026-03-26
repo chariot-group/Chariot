@@ -312,8 +312,6 @@ export default function CharacterMagicView({ character, accentColor }: Character
                         {usesGroups.map((uses) => {
                           const key = npcUsesKey(uses);
                           const spells = getSpellsByUses(selectedSpellcasting, uses);
-                          const tracker =
-                            uses !== null ? (selectedSpellcasting.spellSlotsByUses?.[`k${uses}`] ?? null) : null;
 
                           return (
                             <AccordionItem
@@ -325,7 +323,6 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                   <div className="flex items-center gap-3">
                                     <h2 className={`text-base md:text-lg font-medium ${accentColor}`}>
                                       {uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}
-                                      {uses !== null && `: ${tracker?.used ?? 0} / ${uses}`}
                                     </h2>
                                   </div>
                                 </AccordionTrigger>
@@ -359,6 +356,11 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                         className={`truncate text-sm md:text-base lg:text-lg ${selectedSpell === spell && "font-bold"}`}>
                                         {spell.name}
                                       </span>
+                                      {uses !== null && (
+                                        <span className="text-xs text-muted-foreground">
+                                          {spell.used ?? 0} / {uses}
+                                        </span>
+                                      )}
                                     </Card>
                                   ))}
                                 </div>

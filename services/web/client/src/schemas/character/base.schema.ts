@@ -162,6 +162,7 @@ export const SpellSchema = z.object({
     damageDetails: DamageDetailsSchema,
     healingDetails: HealingDetailsSchema,
     usesPerDay: z.number().nullable().optional(),
+    used: numericInput(true),
 });
 
 export const SpellSlotSchema = z.object({

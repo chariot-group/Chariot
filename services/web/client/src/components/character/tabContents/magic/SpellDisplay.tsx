@@ -46,6 +46,17 @@ export default function SpellDisplay({ spell, accentColor, showTitle = true, isN
             </span>
           </Card>
         )}
+        {/* Uses tracker — NPC only, limited-use spells */}
+        {isNpc && spell.usesPerDay != null && (
+          <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+            <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+              {tMagic("spellDetails.usesTracker")}:
+            </span>
+            <span className="text-sm md:text-base wrap-break-word font-semibold">
+              {spell.used ?? 0} / {spell.usesPerDay}
+            </span>
+          </Card>
+        )}
         <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
           <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
             {tMagic("spellDetails.school")}:

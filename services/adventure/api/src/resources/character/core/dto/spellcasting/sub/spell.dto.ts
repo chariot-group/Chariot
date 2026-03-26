@@ -74,4 +74,9 @@ export class SpellDto {
   @IsOptional()
   @IsNumber()
   usesPerDay?: number | null;
+
+  @ApiProperty({ example: 1, description: 'NPC only — number of times this spell has been cast today.' })
+  @IsOptional()
+  @IsNumber()
+  used?: number;
 }

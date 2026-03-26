@@ -43,6 +43,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import type { Spell } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
 import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
+import React from "react";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
@@ -1055,8 +1056,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   {npcUsesGroups.map((uses) => {
                     const key = npcUsesKey(uses);
                     const indices = npcSpellIndicesByUses[key] ?? [];
-                    const usesTracker =
-                      uses !== null ? (selectedSpellcasting?.spellSlotsByUses?.[`k${uses}`] ?? null) : null;
 
                     return (
                       <AccordionItem
@@ -1070,31 +1069,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                 {uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}
                               </h3>
                             </AccordionTrigger>
-                            {/* Uses tracker (used / total) — only for limited-use groups */}
-                            {uses !== null && (
-                              <div
-                                className="flex items-center gap-1 sm:gap-1.5 shrink-0 absolute right-12 sm:right-14 top-1/2 -translate-y-1/2"
-                                onClick={(e) => e.stopPropagation()}
-                                onKeyDown={(e) => e.stopPropagation()}>
-                                <Controller
-                                  name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}.used`}
-                                  control={form.control}
-                                  render={({ field }) => (
-                                    <Input
-                                      {...field}
-                                      className="w-10 sm:w-12 text-center h-7 sm:h-8 text-xs sm:text-sm"
-                                      type="number"
-                                      min={0}
-                                      max={uses}
-                                      onClick={(e) => e.stopPropagation()}
-                                      aria-label={tMagic("npc.usedLabel", { uses })}
-                                    />
-                                  )}
-                                />
-                                <span className="text-[10px] sm:text-xs text-muted-foreground">/</span>
-                                <span className="text-[10px] sm:text-xs font-semibold">{uses}</span>
-                              </div>
-                            )}
                           </div>
                         </Card>
 
@@ -1132,6 +1106,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                         aria-hidden="true">
                                         {spellName || tMagic("newSpell")}
                                       </span>
+                                      {uses !== null && (
+                                        <span className="text-[10px] sm:text-xs text-muted-foreground">
+                                          {spell?.used ?? 0} / {uses}
+                                        </span>
+                                      )}
                                     </Card>
                                   </li>
                                 );
@@ -1233,38 +1212,72 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
                 {/* Uses per day (NPC only) */}
                 {!isPlayer(character) && (
-                  <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
-                    <Controller
-                      name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.usesPerDay`}
-                      control={form.control}
-                      render={({ field, fieldState }) => (
-                        <Field
-                          data-invalid={fieldState.invalid}
-                          orientation="vertical">
-                          <label
-                            htmlFor={`spell-uses-per-day-${selectedSpellIndex}`}
-                            className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                            {tMagic("npc.usesPerDayLabel")}
-                          </label>
-                          <Input
-                            {...field}
-                            value={field.value ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              field.onChange(val === "" ? null : Number(val));
-                            }}
-                            id={`spell-uses-per-day-${selectedSpellIndex}`}
-                            aria-invalid={fieldState.invalid}
-                            type="number"
-                            min={1}
-                            placeholder={tMagic("npc.atWill")}
-                            className="w-20"
-                          />
-                          {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                        </Field>
-                      )}
-                    />
-                  </Card>
+                  <React.Fragment>
+                    <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+                        <Controller
+                          name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.usesPerDay`}
+                          control={form.control}
+                          render={({ field, fieldState }) => (
+                            <Field
+                              data-invalid={fieldState.invalid}
+                              orientation="vertical">
+                              <label
+                                htmlFor={`spell-uses-per-day-${selectedSpellIndex}`}
+                                className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
+                                {tMagic("npc.usesPerDayLabel")}
+                              </label>
+                              <Input
+                                {...field}
+                                value={field.value ?? ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  field.onChange(val === "" ? null : Number(val));
+                                }}
+                                id={`spell-uses-per-day-${selectedSpellIndex}`}
+                                aria-invalid={fieldState.invalid}
+                                type="number"
+                                min={1}
+                                placeholder={tMagic("npc.atWill")}
+                                className="w-20"
+                              />
+                              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                            </Field>
+                          )}
+                        />
+                      </div>
+                    </Card>
+                    <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+                        <Controller
+                          name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.used`}
+                          control={form.control}
+                          render={({ field, fieldState }) => (
+                            <Field
+                              data-invalid={fieldState.invalid}
+                              orientation="vertical">
+                              <label
+                                htmlFor={`spell-used-${selectedSpellIndex}`}
+                                className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
+                                {tMagic("npc.usedSpellLabel")}
+                              </label>
+                              <Input
+                                {...field}
+                                value={field.value ?? 0}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                                id={`spell-used-${selectedSpellIndex}`}
+                                aria-invalid={fieldState.invalid}
+                                type="number"
+                                min={0}
+                                className="w-20"
+                              />
+                              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                            </Field>
+                          )}
+                        />
+                      </div>
+                    </Card>
+                  </React.Fragment>
                 )}
 
                 {/* School */}

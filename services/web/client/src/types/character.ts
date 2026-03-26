@@ -178,6 +178,8 @@ export interface Spell {
     healingDetails?: HealingDetails;
     /** NPC only — number of times this spell can be cast per day (undefined = at will) */
     usesPerDay?: number | null;
+    /** NPC only — number of times this spell has been cast today */
+    used?: number;
 }
 
 export interface Spellcasting {
