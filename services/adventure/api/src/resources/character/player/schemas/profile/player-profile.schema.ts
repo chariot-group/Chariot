@@ -16,6 +16,10 @@ export class PlayerProfile extends Profile {
   @ApiProperty({ example: 'A skilled archer from the northern forests.' })
   @Prop()
   history?: string;
+
+  @ApiProperty({ example: 'Entertainer' })
+  @Prop()
+  background?: string;
 }
 
 export const PlayerProfileSchema = SchemaFactory.createForClass(PlayerProfile);
