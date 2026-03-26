@@ -584,7 +584,6 @@ class CodexService {
                 const translation = monster.translations[lang];
                 if (!translation?.spellcasting) continue;
                 for (const entry of translation.spellcasting) {
-                    console.log(`Processing spellcasting entry for monster ${translation.firstname} in language ${lang}`);
                     for (const spell of entry.spells || []) {
                         const id = (spell as any).spell;
                         if (id) spellIdSet.add(id);
@@ -592,9 +591,6 @@ class CodexService {
                 }
             }
         }
-
-        console.log(`Found ${spellIdSet.size} unique spell IDs to fetch for ${monsters.length} monsters`);
-
         if (spellIdSet.size === 0) return monsters;
 
         const spellMap = new Map<string, CodexSpellItem>();
