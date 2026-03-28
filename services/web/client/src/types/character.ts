@@ -301,9 +301,12 @@ export interface DifficultyClass {
     successType?: string;
 }
 
+export type ActionUsageType = "action" | "bonus_action" | "reaction";
+
 export interface Action {
     name: string;
     type: string;
+    usageType?: ActionUsageType;
     description?: string;
     attackBonus: number;
     damage?: Damage[];

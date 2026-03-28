@@ -9,6 +9,8 @@ import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ActionUsageType } from "@/types/character";
 
 interface ActionUpdateSectionProps {
   title: string;
@@ -19,6 +21,15 @@ interface ActionUpdateSectionProps {
   remove: UseFieldArrayRemove;
   accentColor: string;
 }
+
+const ACTION_USAGE_OPTIONS: ActionUsageType[] = ["action", "bonus_action", "reaction"];
+
+const normalizeUsageType = (usageType?: string): ActionUsageType => {
+  if (usageType === "bonus_action" || usageType === "reaction" || usageType === "action") {
+    return usageType;
+  }
+  return "action";
+};
 
 const ActionUpdateSection = ({
   title,
@@ -48,6 +59,7 @@ const ActionUpdateSection = ({
               append({
                 name: "",
                 type: "",
+                usageType: "action",
                 description: "",
                 attackBonus: 0,
                 damage: [],
@@ -89,15 +101,14 @@ const ActionUpdateSection = ({
           className="w-full flex flex-col gap-2">
           {fields.map((field, index) => {
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
-            const actionType = form.watch(`${fieldArrayName}.${index}.type`);
+            const usageType = normalizeUsageType(form.watch(`${fieldArrayName}.${index}.usageType`));
 
             // Vérifie si au moins un champ de l'action courante est invalide
             const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
-            const typeError = form.getFieldState(`${fieldArrayName}.${index}.type`).invalid;
             const attackBonusError = form.getFieldState(`${fieldArrayName}.${index}.attackBonus`).invalid;
             const rangeError = form.getFieldState(`${fieldArrayName}.${index}.range`).invalid;
             const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
-            const hasError = nameError || typeError || attackBonusError || rangeError || descriptionError;
+            const hasError = nameError || attackBonusError || rangeError || descriptionError;
 
             return (
               <AccordionItem
@@ -113,7 +124,7 @@ const ActionUpdateSection = ({
                       <div className="truncate flex items-center gap-1">
                         <span className={`text-base md:text-lg font-medium text-left truncate`}>{actionName}</span>
                         <span className="text-base md:text-lg font-medium text-left">
-                          {actionType && ` (${actionType})`}
+                          {` (${t(`usageTypeOptions.${usageType}`)})`}
                         </span>
                       </div>
                     </AccordionTrigger>
@@ -150,6 +161,31 @@ const ActionUpdateSection = ({
                             />
                             {fieldState.error && <FieldError errors={[fieldState.error]} />}
                           </Field>
+                        )}
+                      />
+                    </Card>
+                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("usageType")}</span>
+                      <Controller
+                        name={`${fieldArrayName}.${index}.usageType`}
+                        control={form.control}
+                        render={({ field: usageTypeField }) => (
+                          <Select
+                            value={normalizeUsageType(usageTypeField.value)}
+                            onValueChange={usageTypeField.onChange}>
+                            <SelectTrigger className="w-full sm:w-45">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ACTION_USAGE_OPTIONS.map((option) => (
+                                <SelectItem
+                                  key={option}
+                                  value={option}>
+                                  {t(`usageTypeOptions.${option}`)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         )}
                       />
                     </Card>

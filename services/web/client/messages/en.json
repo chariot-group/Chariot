@@ -308,6 +308,15 @@
       "damageType": "Damage/Type:",
       "description": "Description:",
       "type": "Type",
+      "usageType": "Action type",
+      "usageTypeOptions": {
+        "action": "Action",
+        "bonus_action": "Bonus action",
+        "reaction": "Reaction"
+      },
+      "usageTypeUnavailableTooltip": "No {type} is available for this character.",
+      "prioritizeByUsage": "Prioritize",
+      "all": "All",
       "name": "Name",
       "details": "details",
       "descriptionPrefix": "description",

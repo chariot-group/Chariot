@@ -225,10 +225,13 @@ export const DifficultyClassSchema = z.object({
     successType: z.string().optional(),
 });
 
+export const ActionUsageTypeEnum = z.enum(["action", "bonus_action", "reaction"]);
+
 export function ActionSchema(zm: ZodMessages) {
     return z.object({
         name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }).optional(),
         type: z.string().optional(),
+        usageType: ActionUsageTypeEnum.default("action"),
         description: z.string().optional(),
         attackBonus: numericInput(true),
         damage: z.array(DamageSchema).optional(),

@@ -309,6 +309,15 @@
       "description": "Descripción:",
       "details": "detalles",
       "type": "Tipo",
+      "usageType": "Tipo de acción",
+      "usageTypeOptions": {
+        "action": "Acción",
+        "bonus_action": "Acción adicional",
+        "reaction": "Reacción"
+      },
+      "usageTypeUnavailableTooltip": "No hay {type} disponible para este personaje.",
+      "prioritizeByUsage": "Priorizar",
+      "all": "Todo",
       "name": "Nombre",
       "descriptionPrefix": "descripción",
       "armorClass": "Clase de Armadura",

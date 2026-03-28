@@ -308,6 +308,15 @@
       "damageType": "Dégâts/Type :",
       "description": "Description :",
       "type": "Type",
+      "usageType": "Type d'action",
+      "usageTypeOptions": {
+        "action": "Action",
+        "bonus_action": "Action bonus",
+        "reaction": "Réaction"
+      },
+      "usageTypeUnavailableTooltip": "Aucune {type} n'est disponible pour ce personnage.",
+      "prioritizeByUsage": "Prioriser",
+      "all": "Tout",
       "name": "Nom",
       "details": "détails",
       "descriptionPrefix": "description",
