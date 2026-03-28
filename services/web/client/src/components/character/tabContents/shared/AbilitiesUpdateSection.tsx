@@ -79,7 +79,6 @@ const AbilitiesUpdateSection = ({
             aria-expanded={openAccordionValues.length > 0}>
             {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
           </button>
-            type="button"
         </div>
       </div>
       {fields.length > 0 && (
