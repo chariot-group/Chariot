@@ -143,6 +143,16 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
                   <span className="font-semibold">{t("resistances")} :</span> {player.affinities.resistances.join(", ")}
                 </p>
               )}
+              {player?.affinities?.vulnerabilities?.length > 0 && (
+                <p className="text-sm sm:text-base wrap-break-word">
+                  <span className="font-semibold">{t("vulnerabilities")} :</span> {player.affinities.vulnerabilities.join(", ")}
+                </p>
+              )}
+              {player?.affinities?.immunities?.length > 0 && (
+                <p className="text-sm sm:text-base wrap-break-word">
+                  <span className="font-semibold">{t("immunities")} :</span> {player.affinities.immunities.join(", ")}
+                </p>
+              )}
             </div>
           </Card>
         </div>

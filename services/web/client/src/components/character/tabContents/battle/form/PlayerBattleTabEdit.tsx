@@ -185,35 +185,97 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("affinities")}
             </h2>
-            <Controller
-              name="affinities.resistances"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="battle-player-resistances"
-                    className="text-sm font-medium">
-                    {t("resistances")}
-                  </label>
-                  <DamageTypeTagInput
-                    id="battle-player-resistances"
-                    value={field.value || []}
-                    onChange={field.onChange}
-                    placeholder={t("resistancesPlaceholder")}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "battle-player-resistances-error" : undefined}
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="battle-player-resistances-error"
-                      errors={[fieldState.error]}
+            <div className="flex flex-col gap-4">
+              <Controller
+                name="affinities.resistances"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="battle-player-resistances"
+                      className="text-sm font-medium">
+                      {t("resistances")}
+                    </label>
+                    <DamageTypeTagInput
+                      id="battle-player-resistances"
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      placeholder={t("resistancesPlaceholder")}
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "battle-player-resistances-error" : undefined}
                     />
-                  )}
-                </Field>
-              )}
-            />
+                    {fieldState.error && (
+                      <FieldError
+                        id="battle-player-resistances-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="affinities.vulnerabilities"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="battle-player-vulnerabilities"
+                      className="text-sm font-medium">
+                      {t("vulnerabilities")}
+                    </label>
+                    <DamageTypeTagInput
+                      id="battle-player-vulnerabilities"
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      placeholder={t("vulnerabilitiesPlaceholder")}
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "battle-player-vulnerabilities-error" : undefined}
+                    />
+                    {fieldState.error && (
+                      <FieldError
+                        id="battle-player-vulnerabilities-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="affinities.immunities"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="vertical">
+                    <label
+                      htmlFor="battle-player-immunities"
+                      className="text-sm font-medium">
+                      {t("immunities")}
+                    </label>
+                    <DamageTypeTagInput
+                      id="battle-player-immunities"
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      placeholder={t("immunitiesPlaceholder")}
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "battle-player-immunities-error" : undefined}
+                    />
+                    {fieldState.error && (
+                      <FieldError
+                        id="battle-player-immunities-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
+                  </Field>
+                )}
+              />
+            </div>
           </Card>
         </div>
       </div>
