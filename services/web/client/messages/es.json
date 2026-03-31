@@ -306,6 +306,7 @@
       "actionDetails": "Detalles de la acción",
       "attackDC": "Ataque/CD:",
       "damageType": "Daño/Tipo:",
+      "range": "Alcance",
       "description": "Descripción:",
       "details": "detalles",
       "type": "Tipo",

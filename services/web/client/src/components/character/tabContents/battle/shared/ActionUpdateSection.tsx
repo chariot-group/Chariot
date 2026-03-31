@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
@@ -43,8 +43,27 @@ const ActionUpdateSection = ({
   const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
   const tEdit = useTranslations("characterDetail.edit");
+  const tCommon = useTranslations("common");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+
+  const watchedActions = form.watch(fieldArrayName) as Array<{ damage?: Array<{ type?: string }> }> | undefined;
+  const existingDamageTypes = useMemo(() => {
+    const uniqueByNormalizedType = new Map<string, string>();
+
+    (watchedActions ?? []).forEach((action) => {
+      (action?.damage ?? []).forEach((damage) => {
+        const normalizedType = (damage?.type ?? "").trim().toLowerCase();
+        if (!normalizedType) return;
+
+        if (!uniqueByNormalizedType.has(normalizedType)) {
+          uniqueByNormalizedType.set(normalizedType, (damage?.type ?? "").trim());
+        }
+      });
+    });
+
+    return Array.from(uniqueByNormalizedType.values());
+  }, [watchedActions]);
 
   return (
     <section className="flex flex-col gap-2 w-full">
@@ -58,11 +77,10 @@ const ActionUpdateSection = ({
             onClick={() => {
               append({
                 name: "",
-                type: "",
                 usageType: "action",
                 description: "",
                 attackBonus: 0,
-                damage: [],
+                damage: [{ dice: "", type: "" }],
                 range: "",
               });
               // Attendre le prochain rendu pour que le nouvel élément soit présent
@@ -106,9 +124,10 @@ const ActionUpdateSection = ({
             // Vérifie si au moins un champ de l'action courante est invalide
             const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
             const attackBonusError = form.getFieldState(`${fieldArrayName}.${index}.attackBonus`).invalid;
+            const damageError = form.getFieldState(`${fieldArrayName}.${index}.damage`).invalid;
             const rangeError = form.getFieldState(`${fieldArrayName}.${index}.range`).invalid;
             const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
-            const hasError = nameError || attackBonusError || rangeError || descriptionError;
+            const hasError = nameError || attackBonusError || damageError || rangeError || descriptionError;
 
             return (
               <AccordionItem
@@ -190,21 +209,6 @@ const ActionUpdateSection = ({
                       />
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("type")}</span>
-                      <Controller
-                        name={`${fieldArrayName}.${index}.type`}
-                        control={form.control}
-                        render={({ field: typeField }) => (
-                          <DamageTypeInput
-                            id={`${fieldArrayName}.${index}.type`}
-                            value={typeField.value ?? ""}
-                            onChange={typeField.onChange}
-                            placeholder={tEdit("damageTypePlaceholder")}
-                          />
-                        )}
-                      />
-                    </Card>
-                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                       <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                         {t("attackDC")}
                       </span>
@@ -227,12 +231,90 @@ const ActionUpdateSection = ({
                         {t("damageType")}
                       </span>
                       <Controller
+                        name={`${fieldArrayName}.${index}.damage`}
+                        control={form.control}
+                        render={({ field: damageField }) => {
+                          const damages = Array.isArray(damageField.value) ? damageField.value : [];
+
+                          const updateDamage = (damageIndex: number, key: "dice" | "type", value: string) => {
+                            const updatedDamages = [...damages];
+                            const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "" };
+                            const normalizedValue = key === "type" ? value.trim() : value;
+
+                            if (key === "type" && normalizedValue) {
+                              const duplicatedType = updatedDamages.some((damage, indexInList) => {
+                                if (indexInList === damageIndex) return false;
+                                return (damage?.type ?? "").trim().toLowerCase() === normalizedValue.toLowerCase();
+                              });
+
+                              // Keep one damage type per entry and avoid duplicates within the same action.
+                              if (duplicatedType) return;
+                            }
+
+                            updatedDamages[damageIndex] = {
+                              ...currentDamage,
+                              [key]: normalizedValue,
+                            };
+                            damageField.onChange(updatedDamages);
+                          };
+
+                          return (
+                            <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-80">
+                              {damages.map((damage, damageIndex) => (
+                                <div
+                                  key={damageIndex}
+                                  className="flex items-center gap-2 w-full">
+                                  <Input
+                                    value={damage?.dice ?? ""}
+                                    onChange={(event) => updateDamage(damageIndex, "dice", event.target.value)}
+                                    placeholder="1d6"
+                                    className="w-24"
+                                  />
+                                  <DamageTypeInput
+                                    id={`${fieldArrayName}.${index}.damage.${damageIndex}.type`}
+                                    value={damage?.type ?? ""}
+                                    onChange={(value) => updateDamage(damageIndex, "type", value)}
+                                    placeholder={tEdit("damageTypePlaceholder")}
+                                    customDamageTypes={existingDamageTypes}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      damageField.onChange(damages.filter((_: unknown, i: number) => i !== damageIndex));
+                                    }}
+                                    aria-label={`${tCommon("delete")} ${damageIndex + 1}`}
+                                    className="text-red-500 shrink-0">
+                                    <Trash2 className="size-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => damageField.onChange([...damages, { dice: "", type: "" }])}
+                                className="w-fit flex items-center gap-2">
+                                <Plus className="size-4" />
+                                {tEdit("add")}
+                              </Button>
+                            </div>
+                          );
+                        }}
+                      />
+                    </Card>
+                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                        {t("range")}
+                      </span>
+                      <Controller
                         name={`${fieldArrayName}.${index}.range`}
                         control={form.control}
                         render={({ field: rangeField }) => (
                           <Input
                             {...rangeField}
-                            placeholder={t("damageType")}
+                            placeholder={t("range")}
                           />
                         )}
                       />

@@ -306,6 +306,7 @@
       "actionDetails": "Action details for",
       "attackDC": "Attack/DC:",
       "damageType": "Damage/Type:",
+      "range": "Range",
       "description": "Description:",
       "type": "Type",
       "usageType": "Action type",
