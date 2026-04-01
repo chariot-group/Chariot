@@ -701,6 +701,11 @@
         "usedLabel": "Usado de {uses}",
         "usedSpellLabel": "Usado hoy"
       },
+      "displayMode": {
+        "label": "Ordenar conjuros por",
+        "byLevel": "Nivel",
+        "byUses": "Usos / día"
+      },
       "codexDialog": {
         "title": "Buscar un conjuro en Codex",
         "searchPlaceholder": "Buscar un conjuro...",

@@ -39,14 +39,14 @@ export default function CharacterMagicView({ character, accentColor }: Character
       return null;
     }
 
-    if (!isPlayer(character)) {
-      // NPC: first spell from the "at will" group (or first group alphabetically)
+    const initMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+    if (initMode === "byUses") {
       const groups = getNpcUsesGroups(selectedSpellcasting);
       const firstGroup = groups[0] ?? null;
       return getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null;
     }
 
-    // Find the first level 0 spell
+    // byLevel: find the first level 0 spell
     const level0Spells = selectedSpellcasting.spells.filter((spell) => spell.level === 0);
     if (level0Spells.length > 0) {
       return level0Spells[0];
@@ -62,13 +62,13 @@ export default function CharacterMagicView({ character, accentColor }: Character
       return [];
     }
 
-    if (!isPlayer(character)) {
-      // NPC: open the first uses-per-day group
+    const initMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+    if (initMode === "byUses") {
       const groups = getNpcUsesGroups(selectedSpellcasting);
       return groups.length > 0 ? [npcUsesKey(groups[0])] : [];
     }
 
-    // Find the lowest level and open its accordion
+    // byLevel: find the lowest level and open its accordion
     const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
     return [`level-${minLevel}`];
   });
@@ -87,7 +87,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
   useEffect(() => {
     // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
     if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
-      if (!isPlayer(character)) {
+      const mode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+      if (mode === "byUses") {
         const groups = getNpcUsesGroups(selectedSpellcasting);
         const firstGroup = groups[0] ?? null;
         setSelectedSpell(getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null);
@@ -104,9 +105,9 @@ export default function CharacterMagicView({ character, accentColor }: Character
   useEffect(() => {
     if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
       // Open the accordion containing the selected spell
-      const accordionKey = isPlayer(character)
-        ? `level-${selectedSpell.level}`
-        : npcUsesKey(selectedSpell.usesPerDay ?? null);
+      const effectiveMode = selectedSpellcasting?.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+      const accordionKey =
+        effectiveMode === "byLevel" ? `level-${selectedSpell.level}` : npcUsesKey(selectedSpell.usesPerDay ?? null);
 
       if (!openAccordionValues.includes(accordionKey)) {
         setOpenAccordionValues([...openAccordionValues, accordionKey]);
@@ -132,6 +133,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
       </div>
     );
   }
+
+  const effectiveDisplayMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
 
   return (
     <div
@@ -259,7 +262,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
                   type="button"
                   onClick={() => {
                     let allValues: string[];
-                    if (!isPlayer(character)) {
+                    if (effectiveDisplayMode === "byUses") {
                       allValues = getNpcUsesGroups(selectedSpellcasting).map(npcUsesKey);
                     } else {
                       const levels: number[] = [];
@@ -300,8 +303,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
               aria-atomic="false">
               {selectedSpellcasting &&
                 (() => {
-                  if (!isPlayer(character)) {
-                    // ── NPC: grouped by uses per day ──
+                  if (effectiveDisplayMode === "byUses") {
+                    // ── Grouped by uses per day ──
                     const usesGroups = getNpcUsesGroups(selectedSpellcasting);
                     return (
                       <Accordion
@@ -372,7 +375,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
                     );
                   }
 
-                  // ── Player: grouped by spell level ──
+                  // ── Grouped by spell level ──
                   const levels: number[] = [];
 
                   // Add level 0 if cantrips exist

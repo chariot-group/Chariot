@@ -704,6 +704,11 @@
         "usedLabel": "Utilisé sur {uses}",
         "usedSpellLabel": "Utilisé aujourd'hui"
       },
+      "displayMode": {
+        "label": "Trier les sorts par",
+        "byLevel": "Niveau",
+        "byUses": "Utilisations / jour"
+      },
       "codexDialog": {
         "title": "Rechercher un sort dans Codex",
         "searchPlaceholder": "Rechercher un sort...",

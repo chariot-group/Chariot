@@ -38,7 +38,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       return null;
     }
 
-    if (!isPlayer(character)) {
+    const initMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+    if (initMode === "byUses") {
       const groups = getNpcUsesGroups(selectedSpellcasting);
       const firstGroup = groups[0] ?? null;
       return getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null;
@@ -60,7 +61,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       return [];
     }
 
-    if (!isPlayer(character)) {
+    const initMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+    if (initMode === "byUses") {
       const groups = getNpcUsesGroups(selectedSpellcasting);
       return groups.length > 0 ? [npcUsesKey(groups[0])] : [];
     }
@@ -73,7 +75,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   useEffect(() => {
     // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
     if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
-      if (!isPlayer(character)) {
+      const mode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+      if (mode === "byUses") {
         const groups = getNpcUsesGroups(selectedSpellcasting);
         const firstGroup = groups[0] ?? null;
         setSelectedSpell(getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null);
@@ -90,9 +93,9 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   useEffect(() => {
     if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
       // Open the accordion containing the selected spell
-      const accordionKey = isPlayer(character)
-        ? `level-${selectedSpell.level}`
-        : npcUsesKey(selectedSpell.usesPerDay ?? null);
+      const effectiveMode = selectedSpellcasting?.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+      const accordionKey =
+        effectiveMode === "byLevel" ? `level-${selectedSpell.level}` : npcUsesKey(selectedSpell.usesPerDay ?? null);
 
       if (!openAccordionValues.includes(accordionKey)) {
         setOpenAccordionValues([...openAccordionValues, accordionKey]);
@@ -118,6 +121,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       </div>
     );
   }
+
+  const effectiveDisplayMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
 
   return (
     <div
@@ -228,7 +233,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 <button
                   onClick={() => {
                     let allValues: string[];
-                    if (!isPlayer(character)) {
+                    if (effectiveDisplayMode === "byUses") {
                       allValues = getNpcUsesGroups(selectedSpellcasting).map(npcUsesKey);
                     } else {
                       const levels: number[] = [];
@@ -269,8 +274,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               aria-atomic="false">
               {selectedSpellcasting &&
                 (() => {
-                  if (!isPlayer(character)) {
-                    // ── NPC: grouped by uses per day ──
+                  if (effectiveDisplayMode === "byUses") {
+                    // ── Grouped by uses per day ──
                     const usesGroups = getNpcUsesGroups(selectedSpellcasting);
                     return (
                       <Accordion
@@ -343,7 +348,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                     );
                   }
 
-                  // ── Player: grouped by spell level ──
+                  // ── Grouped by spell level ──
                   const levels: number[] = [];
 
                   if (hasLevel0Spells(selectedSpellcasting)) {

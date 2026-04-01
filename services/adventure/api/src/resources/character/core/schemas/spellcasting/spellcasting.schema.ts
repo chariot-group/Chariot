@@ -49,6 +49,10 @@ export class Spellcasting {
   })
   spellSlotsByUses?: Map<number, { used?: number; total?: number }>;
 
+  @ApiProperty({ example: 'byLevel', description: 'Display mode for spells: byLevel or byUses', required: false })
+  @Prop({ default: 'byLevel' })
+  displayMode?: string;
+
   @ApiProperty({ example: 10 })
   @Prop({ default: 0 })
   totalSlots: number;

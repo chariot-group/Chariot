@@ -191,6 +191,8 @@ export interface Spellcasting {
     /** NPC only — tracker of uses per day keyed by usesPerDay value (e.g. "2" → {used: 0, total: 2}) */
     spellSlotsByUses?: Record<string, { used: number; total: number }>;
     totalSlots: number;
+    /** How spells are grouped in the list: 'byLevel' (default for players) or 'byUses' (default for NPCs) */
+    displayMode?: 'byLevel' | 'byUses';
     spells: Spell[];
 }
 

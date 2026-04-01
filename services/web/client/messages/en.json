@@ -698,6 +698,11 @@
         "usedLabel": "Used out of {uses}",
         "usedSpellLabel": "Used today"
       },
+      "displayMode": {
+        "label": "Sort spells by",
+        "byLevel": "Level",
+        "byUses": "Uses / day"
+      },
       "codexDialog": {
         "title": "Search for a spell in Codex",
         "searchPlaceholder": "Search for a spell...",
