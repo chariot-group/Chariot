@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatSignedBonus } from "@/utils/attack.utils";
 
 interface ActionSectionProps {
   title: string;
@@ -117,69 +118,72 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
         {displayedActions.map((action, index) => {
           const usageType = normalizeUsageType(action.usageType);
           return (
-          <AccordionItem
-            key={`${action.name}-${index}`}
-            value={`${action.name}-${index}`}
-            className="flex flex-col gap-2">
-            <Card className="gap-2 p-0 flex-col">
-              <AccordionTrigger
-                className="py-3 px-3 md:py-4 md:px-6 rounded-md truncate"
-                aria-label={`${t("actionDetails")} ${action.name}`}>
-                <div className="truncate flex items-center gap-1">
-                  <span className="text-base md:text-lg font-medium text-left truncate">{action.name}</span>
-                  <span className="text-base md:text-lg font-medium text-left">
-                    {` (${t(`usageTypeOptions.${usageType}`)})`}
-                  </span>
-                </div>
-              </AccordionTrigger>
-            </Card>
-            <AccordionContent>
-              <div
-                className="flex flex-wrap gap-2 items-start"
-                role="region"
-                aria-label={`${t("details")} ${action.name}`}>
-                <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                  <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("attackDC")}</span>
-                  {(() => {
-                    const attackOrDc = action.attackBonus !== undefined && action.attackBonus !== null
-                      ? `+${action.attackBonus}`
-                      : action.dc?.dcValue
-                        ? `DC ${action.dc.dcValue}`
-                        : "-";
-                    return (
-                      <span
-                        className="text-sm md:text-base"
-                        aria-label={`${t("attackDC")} ${attackOrDc}`}>
-                        {attackOrDc}
-                      </span>
-                    );
-                  })()}
-                </Card>
-                <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                  <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                    {t("damageType")}
-                  </span>
-                  <span className="text-sm md:text-base">
-                    {action.damage && action.damage.length > 0
-                      ? action.damage.map((d, i) => (
-                        <span key={i}>
-                          {d.dice} {d.type}
-                          {i < action.damage!.length - 1 ? " + " : ""}
+            <AccordionItem
+              key={`${action.name}-${index}`}
+              value={`${action.name}-${index}`}
+              className="flex flex-col gap-2">
+              <Card className="gap-2 p-0 flex-col">
+                <AccordionTrigger
+                  className="py-3 px-3 md:py-4 md:px-6 rounded-md truncate"
+                  aria-label={`${t("actionDetails")} ${action.name}`}>
+                  <div className="truncate flex items-center gap-1">
+                    <span className="text-base md:text-lg font-medium text-left truncate">{action.name}</span>
+                    <span className="text-base md:text-lg font-medium text-left">
+                      {` (${t(`usageTypeOptions.${usageType}`)})`}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+              </Card>
+              <AccordionContent>
+                <div
+                  className="flex flex-wrap gap-2 items-start"
+                  role="region"
+                  aria-label={`${t("details")} ${action.name}`}>
+                  <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("attackDC")}</span>
+                    {(() => {
+                      const attackOrDc = action.attackBonus !== undefined && action.attackBonus !== null
+                        ? formatSignedBonus(action.attackBonus)
+                        : action.dc?.dcValue
+                          ? `DC ${action.dc.dcValue}`
+                          : "-";
+                      return (
+                        <span
+                          className="text-sm md:text-base"
+                          aria-label={`${t("attackDC")} ${attackOrDc}`}>
+                          {attackOrDc}
                         </span>
-                      ))
-                      : "-"}{" "}
-                    {action.range && `(${action.range})`}
-                  </span>
-                </Card>
-                {action.description && (
-                  <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                    <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
-                    <span className="text-sm md:text-base italic whitespace-pre-wrap wrap-break-word">{action.description}</span>
+                      );
+                    })()}
                   </Card>
-                )}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+                  <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                      {t("damageType")}
+                    </span>
+                    <span className="text-sm md:text-base">
+                      {action.damage && action.damage.length > 0
+                        ? action.damage.map((d, i) => (
+                          <span key={i}>
+                            {d.dice} {d.type}
+                            {i < action.damage!.length - 1 ? " + " : ""}
+                          </span>
+                        ))
+                        : action.damageBonus !== undefined && action.damageBonus !== null
+                          ? `${action.damageBonus >= 0 ? "+" : ""}${action.damageBonus}`
+                          : "-"}
+                      {action.damage && action.damage.length > 0 && action.damageBonus !== undefined && action.damageBonus !== null && ` ${formatSignedBonus(action.damageBonus)}`}
+                      {action.range && ` (${action.range})`}
+                    </span>
+                  </Card>
+                  {action.description && (
+                    <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
+                      <span className="text-sm md:text-base italic whitespace-pre-wrap wrap-break-word">{action.description}</span>
+                    </Card>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           );
         })}
       </Accordion>

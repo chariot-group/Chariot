@@ -241,6 +241,7 @@ export function ActionSchema(zm: ZodMessages) {
             usageType: ActionUsageTypeEnum.default("action"),
             description: z.string().optional(),
             attackBonus: numericInput(true),
+            damageBonus: numericInput(true),
             damage: z.array(DamageSchema).optional(),
             range: z.string().optional(),
             dc: DifficultyClassSchema.optional().nullable(),

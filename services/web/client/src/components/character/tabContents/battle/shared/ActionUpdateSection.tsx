@@ -10,7 +10,14 @@ import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-rea
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ActionUsageType } from "@/types/character";
+import { ActionUsageType, AbilityScores } from "@/types/character";
+import {
+  ABILITY_SCORE_SHORT_LABELS,
+  ATTACK_ABILITY_SCORE_KEYS,
+  formatSignedBonus,
+  getAttackSuggestionOptions,
+  getProficiencyBonusFromChallengeRating,
+} from "@/utils/attack.utils";
 
 interface ActionUpdateSectionProps {
   title: string;
@@ -44,10 +51,22 @@ const ActionUpdateSection = ({
   const tMagic = useTranslations("characterDetail.magic");
   const tEdit = useTranslations("characterDetail.edit");
   const tCommon = useTranslations("common");
+  const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+  const [selectedAttackAbilityKeys, setSelectedAttackAbilityKeys] = useState<Record<number, string | null>>({});
 
   const watchedActions = form.watch(fieldArrayName) as Array<{ damage?: Array<{ type?: string }> }> | undefined;
+  const watchedAbilityScores = form.watch("stats.abilityScores") as Partial<AbilityScores> | undefined;
+  const watchedProficiencyBonus = Number(form.watch("stats.proficiencyBonus") ?? 0);
+  const watchedChallengeRating = Number(form.watch("challenge.challengeRating") ?? 0);
+  const proficiencyBonus = watchedProficiencyBonus > 0
+    ? watchedProficiencyBonus
+    : getProficiencyBonusFromChallengeRating(watchedChallengeRating);
+  const attackSuggestions = useMemo(
+    () => getAttackSuggestionOptions(watchedAbilityScores, proficiencyBonus),
+    [proficiencyBonus, watchedAbilityScores],
+  );
   const existingDamageTypes = useMemo(() => {
     const uniqueByNormalizedType = new Map<string, string>();
 
@@ -120,14 +139,16 @@ const ActionUpdateSection = ({
           {fields.map((field, index) => {
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
             const usageType = normalizeUsageType(form.watch(`${fieldArrayName}.${index}.usageType`));
+            const selectedAbilityKey = selectedAttackAbilityKeys[index];
 
             // Vérifie si au moins un champ de l'action courante est invalide
             const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
             const attackBonusError = form.getFieldState(`${fieldArrayName}.${index}.attackBonus`).invalid;
+            const damageBonusError = form.getFieldState(`${fieldArrayName}.${index}.damageBonus`).invalid;
             const damageError = form.getFieldState(`${fieldArrayName}.${index}.damage`).invalid;
             const rangeError = form.getFieldState(`${fieldArrayName}.${index}.range`).invalid;
             const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
-            const hasError = nameError || attackBonusError || damageError || rangeError || descriptionError;
+            const hasError = nameError || attackBonusError || damageBonusError || damageError || rangeError || descriptionError;
 
             return (
               <AccordionItem
@@ -212,19 +233,46 @@ const ActionUpdateSection = ({
                       <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                         {t("attackDC")}
                       </span>
-                      <Controller
-                        name={`${fieldArrayName}.${index}.attackBonus`}
-                        control={form.control}
-                        render={({ field: attackField }) => (
-                          <Input
-                            {...attackField}
-                            value={attackField.value ?? ""}
-                            type="number"
-                            min={0}
-                            placeholder={tEdit("zeroPlaceholder")}
-                          />
-                        )}
-                      />
+                      <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-80">
+                        <Controller
+                          name={`${fieldArrayName}.${index}.attackBonus`}
+                          control={form.control}
+                          render={({ field: attackField }) => (
+                            <Input
+                              {...attackField}
+                              value={attackField.value ?? ""}
+                              type="number"
+                              onChange={(event) => {
+                                setSelectedAttackAbilityKeys((current) => ({ ...current, [index]: null }));
+                                attackField.onChange(event);
+                              }}
+                              placeholder={tEdit("zeroPlaceholder")}
+                            />
+                          )}
+                        />
+                        <div className="flex flex-wrap gap-1">
+                          {attackSuggestions.map((suggestion) => {
+                            const isSelected = selectedAttackAbilityKeys[index] === suggestion.key;
+
+                            return (
+                              <Button
+                                key={suggestion.key}
+                                type="button"
+                                variant={isSelected ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => {
+                                  form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, { shouldDirty: true });
+                                  form.setValue(`${fieldArrayName}.${index}.damageBonus`, suggestion.damageBonus, { shouldDirty: true });
+                                  setSelectedAttackAbilityKeys((current) => ({ ...current, [index]: suggestion.key }));
+                                }}
+                                title={`${tAbilities(suggestion.key)} ${formatSignedBonus(suggestion.attackBonus)}`}
+                                className="h-7 px-2 text-xs">
+                                {ABILITY_SCORE_SHORT_LABELS[suggestion.key]} {formatSignedBonus(suggestion.attackBonus)}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                       <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
@@ -250,7 +298,6 @@ const ActionUpdateSection = ({
                               // Keep one damage type per entry and avoid duplicates within the same action.
                               if (duplicatedType) return;
                             }
-
                             updatedDamages[damageIndex] = {
                               ...currentDamage,
                               [key]: normalizedValue,
@@ -303,6 +350,51 @@ const ActionUpdateSection = ({
                           );
                         }}
                       />
+                    </Card>
+                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                        {tEdit("bonus")}
+                      </span>
+                      <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-80">
+                        <Controller
+                          name={`${fieldArrayName}.${index}.damageBonus`}
+                          control={form.control}
+                          render={({ field: damageBonusField }) => (
+                            <Input
+                              {...damageBonusField}
+                              value={damageBonusField.value ?? ""}
+                              type="number"
+                              onChange={(event) => {
+                                setSelectedAttackAbilityKeys((current) => ({ ...current, [index]: null }));
+                                damageBonusField.onChange(event);
+                              }}
+                              placeholder={tEdit("zeroPlaceholder")}
+                            />
+                          )}
+                        />
+                        <div className="flex flex-wrap gap-1">
+                          {attackSuggestions.map((suggestion) => {
+                            const isSelected = selectedAttackAbilityKeys[index] === suggestion.key;
+
+                            return (
+                              <Button
+                                key={`damage-${suggestion.key}`}
+                                type="button"
+                                variant={isSelected ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => {
+                                  form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, { shouldDirty: true });
+                                  form.setValue(`${fieldArrayName}.${index}.damageBonus`, suggestion.damageBonus, { shouldDirty: true });
+                                  setSelectedAttackAbilityKeys((current) => ({ ...current, [index]: suggestion.key }));
+                                }}
+                                title={`${tAbilities(suggestion.key)} ${formatSignedBonus(suggestion.damageBonus)}`}
+                                className="h-7 px-2 text-xs">
+                                {ABILITY_SCORE_SHORT_LABELS[suggestion.key]} {formatSignedBonus(suggestion.damageBonus)}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                       <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>

@@ -309,6 +309,7 @@ export interface Action {
     usageType?: ActionUsageType;
     description?: string;
     attackBonus: number;
+    damageBonus?: number;
     damage?: Damage[];
     range: string;
     dc?: DifficultyClass;
