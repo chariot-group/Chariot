@@ -585,8 +585,10 @@ class CodexService {
                 if (!translation?.spellcasting) continue;
                 for (const entry of translation.spellcasting) {
                     for (const spell of entry.spells || []) {
-                        const id = (spell as any).spell;
-                        if (id) spellIdSet.add(id);
+                        const id = spell as string;
+                        if (id) {
+                            spellIdSet.add(id)
+                        };
                     }
                 }
             }
@@ -597,7 +599,9 @@ class CodexService {
         await Promise.all(
             Array.from(spellIdSet).map(async (id) => {
                 const spell = await this.getSpellById(id);
-                if (spell) spellMap.set(id, spell);
+                if (spell) {
+                    spellMap.set(id, spell)
+                };
             })
         );
 
@@ -611,8 +615,11 @@ class CodexService {
                 for (const entry of translation.spellcasting) {
                     if (!entry.spells) continue;
                     entry.spells = entry.spells.map((spell) => {
-                        const id = (spell as any).spell;
-                        return id && spellMap.has(id) ? spellMap.get(id)! : spell;
+                        const id = spell as string;
+                        if (id && spellMap.has(id)) {
+                            return spellMap.get(id);
+                        }
+                        return spell;
                     }) as typeof entry.spells;
                 }
             }
