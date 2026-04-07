@@ -54,7 +54,7 @@ export function ComboboxInput({
 
     useEffect(() => {
         if (isSelectingOptionRef.current) return;
-        setShowSuggestions(inputValue.length > 0 && allOptions.length > 0);
+        setShowSuggestions(inputValue.length > 0 && allOptions.length > 1);
     }, [inputValue, allOptions.length]);
 
     const selectOption = (option: string) => {
