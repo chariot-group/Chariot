@@ -24,7 +24,7 @@
     "swagger:generate": "ts-node -r tsconfig-paths/register src/swagger-generator.ts"
   },
   "dependencies": {
-    "@faker-js/faker": "^10.3.0",
+    "@faker-js/faker": "^10.4.0",
     "@keycloak/keycloak-admin-client": "^26.5.6",
     "@nestjs/common": "^11.1.18",
     "@nestjs/config": "^4.0.3",
