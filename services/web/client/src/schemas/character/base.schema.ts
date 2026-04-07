@@ -175,7 +175,7 @@ export const SpellcastingSchema = z.object({
     ability: z.string().optional(),
     saveDC: numericInput(true),
     attackBonus: numericInput(true),
-    displayMode: z.enum(['byLevel', 'byUses']).optional(),
+    isInnate: z.boolean().optional(),
     spellSlotsByLevel: z.record(z.string(), SpellSlotSchema).optional(),
     spellSlotsByUses: z.preprocess((val) => {
         if (val === null || val === undefined) return val;

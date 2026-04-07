@@ -39,8 +39,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
       return null;
     }
 
-    const initMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
-    if (initMode === "byUses") {
+    const isInnate = selectedSpellcasting.isInnate ?? false;
+    if (isInnate) {
       const groups = getNpcUsesGroups(selectedSpellcasting);
       const firstGroup = groups[0] ?? null;
       return getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null;
@@ -62,8 +62,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
       return [];
     }
 
-    const initMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
-    if (initMode === "byUses") {
+    const isInnate = selectedSpellcasting.isInnate ?? false;
+    if (isInnate) {
       const groups = getNpcUsesGroups(selectedSpellcasting);
       return groups.length > 0 ? [npcUsesKey(groups[0])] : [];
     }
@@ -87,8 +87,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
   useEffect(() => {
     // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
     if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
-      const mode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
-      if (mode === "byUses") {
+      const isInnate = selectedSpellcasting.isInnate ?? false;
+      if (isInnate) {
         const groups = getNpcUsesGroups(selectedSpellcasting);
         const firstGroup = groups[0] ?? null;
         setSelectedSpell(getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null);
@@ -105,9 +105,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
   useEffect(() => {
     if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
       // Open the accordion containing the selected spell
-      const effectiveMode = selectedSpellcasting?.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
-      const accordionKey =
-        effectiveMode === "byLevel" ? `level-${selectedSpell.level}` : npcUsesKey(selectedSpell.usesPerDay ?? null);
+      const isInnate = selectedSpellcasting?.isInnate ?? false;
+      const accordionKey = !isInnate ? `level-${selectedSpell.level}` : npcUsesKey(selectedSpell.usesPerDay ?? null);
 
       if (!openAccordionValues.includes(accordionKey)) {
         setOpenAccordionValues([...openAccordionValues, accordionKey]);
@@ -134,7 +133,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
     );
   }
 
-  const effectiveDisplayMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+  const isInnate = selectedSpellcasting.isInnate ?? false;
 
   return (
     <div
@@ -262,7 +261,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
                   type="button"
                   onClick={() => {
                     let allValues: string[];
-                    if (effectiveDisplayMode === "byUses") {
+                    if (isInnate) {
                       allValues = getNpcUsesGroups(selectedSpellcasting).map(npcUsesKey);
                     } else {
                       const levels: number[] = [];
@@ -303,7 +302,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
               aria-atomic="false">
               {selectedSpellcasting &&
                 (() => {
-                  if (effectiveDisplayMode === "byUses") {
+                  if (isInnate) {
                     // ── Grouped by uses per day ──
                     const usesGroups = getNpcUsesGroups(selectedSpellcasting);
                     return (

@@ -49,9 +49,9 @@ export class Spellcasting {
   })
   spellSlotsByUses?: Map<number, { used?: number; total?: number }>;
 
-  @ApiProperty({ example: 'byLevel', description: 'Display mode for spells: byLevel or byUses', required: false })
-  @Prop({ default: 'byLevel' })
-  displayMode?: string;
+  @ApiProperty({ example: false, description: 'Whether spells are innate (grouped by uses per day)', required: false })
+  @Prop({ default: false })
+  isInnate?: boolean;
 
   @ApiProperty({ example: 10 })
   @Prop({ default: 0 })

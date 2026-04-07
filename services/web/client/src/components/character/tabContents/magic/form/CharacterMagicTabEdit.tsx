@@ -112,42 +112,32 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         shouldDirty: true,
       });
 
-      if (isPlayer(character)) {
-        // Create spell slot entry if it doesn't exist (for levels 1+)
-        const spellLevel = Number(spell.level || 0);
-        if (spellLevel > 0) {
-          const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
-          if (!currentSlots[spellLevel]) {
-            form.setValue(
-              `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevel}`,
-              { total: 2, used: 0 },
-              { shouldDirty: true },
-            );
-          }
+      const spellLevel = Number(spell.level || 0);
+      if (spellLevel > 0) {
+        const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
+        if (!currentSlots[spellLevel]) {
+          form.setValue(
+            `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevel}`,
+            { total: 2, used: 0 },
+            { shouldDirty: true },
+          );
         }
       }
 
-      if (!isPlayer(character)) {
-        // NPC: initialise spellSlotsByUses entry for this usesPerDay value
-        const uses = spell.usesPerDay ?? null;
-        if (uses !== null) {
-          const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
-          if (!currentByUses[`k${uses}`]) {
-            form.setValue(
-              `spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}`,
-              { used: 0, total: uses },
-              { shouldDirty: true },
-            );
-          }
+      const uses = spell.usesPerDay ?? null;
+      if (uses !== null) {
+        const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
+        if (!currentByUses[`k${uses}`]) {
+          form.setValue(
+            `spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}`,
+            { used: 0, total: uses },
+            { shouldDirty: true },
+          );
         }
       }
 
       // Open the accordion for the new spell based on display mode
-      const spellDisplayMode =
-        form.getValues(`spellcasting.${selectedSpellcastingIndex}.displayMode`) ??
-        (isPlayer(character) ? "byLevel" : "byUses");
-      const accordionKey =
-        spellDisplayMode === "byLevel" ? `level-${spell.level || 0}` : npcUsesKey((spell as any).usesPerDay ?? null);
+      const accordionKey = !isInnate ? `level-${spell.level || 0}` : npcUsesKey((spell as any).usesPerDay ?? null);
       if (!openAccordionValues.includes(accordionKey)) {
         setOpenAccordionValues([...openAccordionValues, accordionKey]);
       }
@@ -173,23 +163,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   );
 
   const appendSpellHelper = useCallback(() => {
-    if (!isPlayer(character)) {
-      // NPC: new spell defaults to "at will" (usesPerDay = null)
-      addSpell({
-        name: "",
-        level: 1,
-        school: "",
-        description: "",
-        components: [],
-        castingTime: "",
-        duration: "",
-        range: "",
-        effectType: "utility",
-        usesPerDay: null,
-      });
-      return;
-    }
-
     const levels: number[] = [];
     if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
     const selectedSpellcasting = spellcastingList[selectedSpellcastingIndex];
@@ -216,6 +189,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       duration: "",
       range: "",
       effectType: "utility",
+      usesPerDay: null,
     });
   }, [currentSpells, spellcastingList, selectedSpellcastingIndex, addSpell, character]);
 
@@ -242,11 +216,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     name: `spellcasting.${selectedSpellcastingIndex}.attackBonus`,
   });
 
-  const currentDisplayMode: "byLevel" | "byUses" =
+  const isInnate: boolean =
     useWatch({
       control: form.control,
-      name: `spellcasting.${selectedSpellcastingIndex}.displayMode`,
-    }) ?? (isPlayer(character) ? "byLevel" : "byUses");
+      name: `spellcasting.${selectedSpellcastingIndex}.isInnate`,
+    }) ?? false;
 
   // Watch current spell damage and healing details
   const watchPath =
@@ -277,7 +251,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   // NPC: sync spellSlotsByUses when usesPerDay changes on the selected spell
   useEffect(() => {
-    if (isPlayer(character) || selectedSpellIndex === null) return;
+    if (!isInnate || selectedSpellIndex === null) return;
     const uses: number | null = currentUsesPerDay ?? null;
     if (uses === null) return;
     const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
@@ -414,7 +388,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       ability: "intelligence",
       saveDC: 10,
       attackBonus: 2,
-      displayMode: isPlayer(character) ? "byLevel" : "byUses",
+      isInnate: false,
       spellSlotsByLevel: { "1": { total: 2, used: 0 } },
       totalSlots: 2,
       spells: [],
@@ -475,7 +449,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const levels: number[] = [];
   const npcUsesGroups: Array<number | null> = [];
 
-  if (currentDisplayMode === "byLevel") {
+  if (!isInnate) {
     if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
     if (selectedSpellcasting?.spellSlotsByLevel) {
       Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
@@ -685,15 +659,15 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   {tEdit("spellcastingStats")}
                 </h3>
                 <Controller
-                  name={`spellcasting.${selectedSpellcastingIndex}.displayMode`}
+                  name={`spellcasting.${selectedSpellcastingIndex}.isInnate`}
                   control={form.control}
-                  defaultValue={isPlayer(character) ? "byLevel" : "byUses"}
+                  defaultValue={isInnate}
                   render={({ field }) => (
                     <div className="flex items-center gap-1.5">
                       <Checkbox
                         id={`sc-displaymode-${selectedSpellcastingIndex}`}
-                        checked={(field.value ?? (isPlayer(character) ? "byLevel" : "byUses")) === "byUses"}
-                        onCheckedChange={(checked) => field.onChange(checked ? "byUses" : "byLevel")}
+                        checked={field.value ?? isInnate}
+                        onCheckedChange={(checked) => field.onChange(!!checked)}
                       />
                       <label
                         htmlFor={`sc-displaymode-${selectedSpellcastingIndex}`}
@@ -961,10 +935,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 <button
                   type="button"
                   onClick={() => {
-                    const allKeys =
-                      currentDisplayMode === "byLevel"
-                        ? levels.map((l) => `level-${l}`)
-                        : npcUsesGroups.map((u) => npcUsesKey(u));
+                    const allKeys = !isInnate
+                      ? levels.map((l) => `level-${l}`)
+                      : npcUsesGroups.map((u) => npcUsesKey(u));
                     setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allKeys);
                   }}
                   className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
@@ -980,7 +953,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             <nav
               className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               aria-label={tMagic("spellListRegion")}>
-              {currentDisplayMode === "byLevel" ? (
+              {!isInnate ? (
                 /* ── Accordion by level ── */
                 levels.length > 0 ? (
                   <Accordion
@@ -1244,7 +1217,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </Card>
 
                 {/* Uses per day (NPC only) */}
-                {!isPlayer(character) && (
+                {!isInnate && (
                   <React.Fragment>
                     <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
                       <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">

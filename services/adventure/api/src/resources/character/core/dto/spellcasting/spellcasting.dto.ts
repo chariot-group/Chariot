@@ -1,6 +1,6 @@
 import {
   IsArray,
-  IsIn,
+  IsBoolean,
   IsNumber,
   IsOptional,
   IsString,
@@ -40,11 +40,10 @@ export class SpellcastingDto {
   @IsOptional()
   spellSlotsByUses?: Map<number, { used?: number; total?: number }>;
 
-  @ApiProperty({ example: 'byLevel', description: 'Display mode for spells: byLevel or byUses', required: false })
+  @ApiProperty({ example: false, description: 'Whether spells are innate (grouped by uses per day)', required: false })
   @IsOptional()
-  @IsString()
-  @IsIn(['byLevel', 'byUses'])
-  displayMode?: string;
+  @IsBoolean()
+  isInnate?: boolean;
 
   @ApiProperty({ example: 10 })
   @IsOptional()

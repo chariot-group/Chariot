@@ -38,8 +38,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       return null;
     }
 
-    const initMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
-    if (initMode === "byUses") {
+    const isInnate = selectedSpellcasting.isInnate ?? !isPlayer(character);
+    if (isInnate) {
       const groups = getNpcUsesGroups(selectedSpellcasting);
       const firstGroup = groups[0] ?? null;
       return getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null;
@@ -61,8 +61,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       return [];
     }
 
-    const initMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
-    if (initMode === "byUses") {
+    const isInnate = selectedSpellcasting.isInnate ?? false;
+    if (isInnate) {
       const groups = getNpcUsesGroups(selectedSpellcasting);
       return groups.length > 0 ? [npcUsesKey(groups[0])] : [];
     }
@@ -75,8 +75,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   useEffect(() => {
     // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
     if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
-      const mode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
-      if (mode === "byUses") {
+      const isInnate = selectedSpellcasting.isInnate ?? false;
+      if (isInnate) {
         const groups = getNpcUsesGroups(selectedSpellcasting);
         const firstGroup = groups[0] ?? null;
         setSelectedSpell(getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null);
@@ -93,9 +93,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   useEffect(() => {
     if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
       // Open the accordion containing the selected spell
-      const effectiveMode = selectedSpellcasting?.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
-      const accordionKey =
-        effectiveMode === "byLevel" ? `level-${selectedSpell.level}` : npcUsesKey(selectedSpell.usesPerDay ?? null);
+      const isInnate = selectedSpellcasting?.isInnate ?? false;
+      const accordionKey = !isInnate ? `level-${selectedSpell.level}` : npcUsesKey(selectedSpell.usesPerDay ?? null);
 
       if (!openAccordionValues.includes(accordionKey)) {
         setOpenAccordionValues([...openAccordionValues, accordionKey]);
@@ -122,13 +121,14 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
     );
   }
 
-  const effectiveDisplayMode = selectedSpellcasting.displayMode ?? (isPlayer(character) ? "byLevel" : "byUses");
+  const isInnate = selectedSpellcasting.isInnate ?? !isPlayer(character);
 
   return (
     <div
       className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0 max-h-[calc(100vh-20rem)] relative"
       role="region"
       aria-label={tMagic("mainRegion")}>
+      <h1>TEST TEST</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 h-full overflow-hidden">
         {/* Left column: Spell list (hidden on mobile when showing details) */}
         <div
@@ -233,7 +233,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 <button
                   onClick={() => {
                     let allValues: string[];
-                    if (effectiveDisplayMode === "byUses") {
+                    if (isInnate) {
                       allValues = getNpcUsesGroups(selectedSpellcasting).map(npcUsesKey);
                     } else {
                       const levels: number[] = [];
@@ -274,7 +274,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               aria-atomic="false">
               {selectedSpellcasting &&
                 (() => {
-                  if (effectiveDisplayMode === "byUses") {
+                  if (isInnate) {
                     // ── Grouped by uses per day ──
                     const usesGroups = getNpcUsesGroups(selectedSpellcasting);
                     return (
@@ -302,7 +302,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                     </h2>
                                     {uses !== null && (
                                       <span className="text-sm font-mono px-2 py-0.5 rounded bg-muted border">
-                                        {tracker?.used ?? 0} / {uses}
+                                        {tracker ?? 0} / {uses}
                                       </span>
                                     )}
                                   </div>

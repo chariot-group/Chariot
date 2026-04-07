@@ -189,10 +189,10 @@ export interface Spellcasting {
     attackBonus: number;
     spellSlotsByLevel: Record<string, { total: number; used: number }>;
     /** NPC only — tracker of uses per day keyed by usesPerDay value (e.g. "2" → {used: 0, total: 2}) */
-    spellSlotsByUses?: Record<string, { used: number; total: number }>;
+    spellSlotsByUses?: Record<string, number | null>;
     totalSlots: number;
-    /** How spells are grouped in the list: 'byLevel' (default for players) or 'byUses' (default for NPCs) */
-    displayMode?: 'byLevel' | 'byUses';
+    /** Whether spells are innate (grouped by uses per day). false = by level (default), true = innate/by uses */
+    isInnate?: boolean;
     spells: Spell[];
 }
 

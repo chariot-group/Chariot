@@ -13,6 +13,7 @@ interface CodexSpellTranslation {
     effectType: number; // 0 = attack, 1 = heal, 2 = utility
     damage: string | null;
     srd: boolean;
+    usesPerDay: number | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -116,6 +117,8 @@ interface CodexMonsterTranslation {
                 used: number;
             };
         }> | Record<string, { total: number; used: number }>;
+        spellSlotsByUses?: Record<string, number | null>;
+        isInnate?: boolean;
         totalSlots?: number;
         spells?: Array<
             | string          // ID brut (findall)
@@ -247,6 +250,19 @@ class CodexService {
                 normalizedSlots = entry.spellSlotsByLevel;
             }
 
+            let normalizedSlotsUse: Record<string, number | null> = {};
+
+            if (Array.isArray(entry.spellSlotsByUses)) {
+                normalizedSlotsUse = entry.spellSlotsByUses.reduce((acc, slot) => {
+                    acc[String(slot.usesPerDay)] = slot.usesPerDay;
+                    return acc;
+                }, {} as Record<string, number | null>);
+            } else if (entry.spellSlotsByUses && typeof entry.spellSlotsByUses === 'object') {
+                normalizedSlotsUse = entry.spellSlotsByUses;
+            }
+
+            console.log('Normalized slots by uses:', normalizedSlotsUse);
+
             const normalizedSpells = (entry.spells || []).map((spell) => {
                 // Objet sort peuplé : { _id, translations: { en: {...} }, languages: [...] }
                 if (spell && typeof spell === 'object' && 'translations' in spell) {
@@ -264,6 +280,8 @@ class CodexService {
                         castingTime: t?.castingTime || '',
                         duration: t?.duration || '',
                         range: t?.range || '',
+                        usesPerDay: t?.usesPerDay ?? null,
+                        used: 0,
                         effectType: (typeof t?.effectType === 'number' ? effectTypeMap[t.effectType] : t?.effectType) || 'utility' as const,
                         damage: t?.damage ?? undefined,
                         healing: undefined as string | undefined,
@@ -282,6 +300,8 @@ class CodexService {
                     range: flat.range || '',
                     effectType: flat.effectType || 'utility' as const,
                     damage: flat.damage,
+                    usesPerDay: flat?.usesPerDay ?? null,
+                    used: 0,
                     healing: flat.healing,
                 };
             });
@@ -291,7 +311,9 @@ class CodexService {
                 ability: entry.ability || 'WIS',
                 saveDC: entry.saveDC ?? 10,
                 attackBonus: entry.attackBonus ?? 0,
+                isInnate: entry.isInnate ?? false,
                 spellSlotsByLevel: normalizedSlots,
+                spellSlotsByUses: normalizedSlotsUse,
                 totalSlots: entry.totalSlots ?? Object.values(normalizedSlots).reduce((sum, slot) => sum + (slot.total || 0), 0),
                 spells: normalizedSpells,
             };
@@ -384,6 +406,8 @@ class CodexService {
             castingTime: translation.castingTime,
             duration: translation.duration,
             range: translation.range,
+            usesPerDay: translation.usesPerDay,
+            used: 0,
             effectType: effectTypeMap[translation.effectType] || 'utility',
             damage: translation.damage || undefined,
         };
@@ -617,7 +641,11 @@ class CodexService {
                     entry.spells = entry.spells.map((spell) => {
                         const id = spell as string;
                         if (id && spellMap.has(id)) {
-                            return spellMap.get(id);
+                            let spellItem = spellMap.get(id)!;
+                            if (entry.spellSlotsByUses) {
+                                spellItem.translations[lang].usesPerDay = entry.spellSlotsByUses![id] ?? null;
+                            }
+                            return spellItem;
                         }
                         return spell;
                     }) as typeof entry.spells;
