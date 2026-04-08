@@ -1189,7 +1189,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   type="multiple"
                   value={openSpellDetailsAccordion}
                   onValueChange={setOpenSpellDetailsAccordion}
-                  className="w-full flex flex-col gap-2">
+                    className="w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3 flex flex-col gap-2">
                   {/* Damage */}
                   <AccordionItem
                     value="damage"
