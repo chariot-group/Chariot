@@ -225,6 +225,7 @@ export const ConditionsSchema = z.object({
 // ===== Actions =====
 export const DamageSchema = z.object({
     dice: z.string().optional(),
+    applyAbilityBonus: z.boolean().optional(),
     type: z
         .string()
         .trim()
@@ -251,7 +252,6 @@ export function ActionSchema(zm: ZodMessages) {
             attackAbility: AbilityScoreKeyEnum.optional(),
             description: z.string().optional(),
             attackBonus: numericInput(true),
-            damageBonus: numericInput(true),
             damage: z.array(DamageSchema).optional(),
             range: z.string().optional(),
             dc: DifficultyClassSchema.optional().nullable(),

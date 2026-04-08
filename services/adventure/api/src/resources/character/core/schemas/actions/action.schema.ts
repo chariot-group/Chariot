@@ -30,10 +30,6 @@ export class Action {
   @Prop()
   attackBonus?: number;
 
-  @ApiProperty({ example: 2, description: 'Bonus damage applied to the attack' })
-  @Prop()
-  damageBonus?: number;
-
   @ApiProperty({ type: [Damage] })
   @Prop({ type: [Damage], default: [] })
   damage?: Damage[];

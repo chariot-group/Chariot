@@ -293,6 +293,7 @@ export interface Player extends Character {
 export interface Damage {
     dice: string;
     type: string;
+    applyAbilityBonus?: boolean;
 }
 
 export interface DifficultyClass {
@@ -310,7 +311,6 @@ export interface Action {
     attackAbility?: keyof AbilityScores;
     description?: string;
     attackBonus: number;
-    damageBonus?: number;
     damage?: Damage[];
     range: string;
     dc?: DifficultyClass;

@@ -168,10 +168,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                             {i < action.damage!.length - 1 ? " + " : ""}
                           </span>
                         ))
-                        : action.damageBonus !== undefined && action.damageBonus !== null
-                          ? `${action.damageBonus >= 0 ? "+" : ""}${action.damageBonus}`
-                          : "-"}
-                      {action.damage && action.damage.length > 0 && action.damageBonus !== undefined && action.damageBonus !== null && ` ${formatSignedBonus(action.damageBonus)}`}
+                        : "-"}
                       {action.range && ` (${action.range})`}
                     </span>
                   </Card>
