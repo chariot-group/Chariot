@@ -8,9 +8,9 @@ import { useAppDispatch } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 
-import Campaign from "@public/welcome/campaign.svg";
-import Session from "@public/welcome/session.svg";
-import Character from "@public/welcome/character.svg";
+import Campaign from "@public/welcome/campaign.webp";
+import Session from "@public/welcome/session.webp";
+import Character from "@public/welcome/character.webp";
 
 export default function WelcomePage() {
   const t = useTranslations("welcome");
@@ -47,8 +47,23 @@ export default function WelcomePage() {
     },
   ];
 
+  const imageAttributions = [
+    {
+      key: "campaign",
+      text: "designed by liuzishan - Freepik.com",
+    },
+    {
+      key: "character",
+      text: "designed by Freepik",
+    },
+    {
+      key: "session",
+      text: "designed by upklyak - Freepik.com",
+    },
+  ] as const;
+
   return (
-    <main className="flex flex-col items-center pt-8 md:pt-16 lg:pt-25 h-full px-4 sm:px-6 md:px-8">
+    <main className="flex flex-col items-center pt-8 md:pt-16 lg:pt-25 h-full px-4 sm:px-6 md:px-8 pb-6 md:pb-8">
       <h1 className="text-base sm:text-lg md:text-xl">{t("title")}</h1>
       <h2 className="mb-4 sm:mb-6 md:mb-8 text-xl sm:text-2xl md:text-3xl font-bold text-center">{t("subTitle")}</h2>
 

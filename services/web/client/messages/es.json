@@ -153,8 +153,14 @@
       "title": "Crea tu primer <br /> personaje",
       "button": "Crear un personaje",
       "button-aria": "Navegar hacia la creación de personaje"
+    },
+    "imageCredits": {
+      "title": "Créditos de imágenes",
+      "campaign": "Imagen de campaña:",
+      "character": "Imagen de personaje:",
+      "session": "Imagen de sesión:"
     }
-  },  
+  },
   "characterForm": {
     "createSuccess": "Personaje creado con éxito",
     "createError": "Error al crear el personaje",

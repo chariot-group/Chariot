@@ -153,6 +153,12 @@
       "title": "Create your first <br /> character",
       "button": "Create a character",
       "button-aria": "Navigate to character creation"
+    },
+    "imageCredits": {
+      "title": "Image credits",
+      "campaign": "Campaign image:",
+      "character": "Character image:",
+      "session": "Session image:"
     }
   },
   "characterCreate": {

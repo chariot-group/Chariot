@@ -154,8 +154,14 @@
       "title": "Créer votre premier <br /> personnage",
       "button": "Créer un personnage",
       "button-aria": "Naviguer vers la création de personnage"
+    },
+    "imageCredits": {
+      "title": "Crédits des images",
+      "campaign": "Image campagne :",
+      "character": "Image personnage :",
+      "session": "Image session :"
     }
-  },  
+  },
   "characterCreate": {
     "titlePlayer": "Créer un personnage joueur",
     "titleNpc": "Créer un PNJ",
