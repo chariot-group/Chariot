@@ -37,6 +37,7 @@ import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { parseDamageFormula } from "@/utils/spell-damage.utils";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { formatSignedBonus } from "@/utils/attack.utils";
 import type { Spell } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
 import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
@@ -219,6 +220,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const currentHealing = useWatch({
     control: form.control,
     name: `${watchPath}.healing` as any,
+  });
+  const currentEffectType = useWatch({
+    control: form.control,
+    name: `${watchPath}.effectType` as any,
   });
 
   // Auto-parse old damage/healing formulas when spell is selected
@@ -1189,7 +1194,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   type="multiple"
                   value={openSpellDetailsAccordion}
                   onValueChange={setOpenSpellDetailsAccordion}
-                    className="w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3 flex flex-col gap-2">
+                  className="w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3 flex flex-col gap-2">
                   {/* Damage */}
                   <AccordionItem
                     value="damage"
@@ -1202,6 +1207,21 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
                     <AccordionContent className="pb-2">
                       <Card className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full">
+                        {currentEffectType === "attack" && (
+                          <div className="flex flex-col gap-1 sm:max-w-48">
+                            <label
+                              htmlFor={`spell-attack-bonus-${selectedSpellIndex}`}
+                              className="text-xs font-medium">
+                              {tMagic("attackBonus")}
+                            </label>
+                            <Input
+                              id={`spell-attack-bonus-${selectedSpellIndex}`}
+                              value={formatSignedBonus(calculatedAttackBonus)}
+                              readOnly
+                              aria-readonly="true"
+                            />
+                          </div>
+                        )}
                         <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
                           {/* Nombre de dés */}
                           <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
