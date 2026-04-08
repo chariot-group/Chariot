@@ -66,6 +66,15 @@ export const AbilityScoresSchema = z.object({
     charisma: numericInput(true),
 });
 
+export const AbilityScoreKeyEnum = z.enum([
+    'strength',
+    'dexterity',
+    'constitution',
+    'intelligence',
+    'wisdom',
+    'charisma',
+]);
+
 export const SavingThrowsSchema = z.object({
     strength: numericInput(true),
     dexterity: numericInput(true),
@@ -239,6 +248,7 @@ export function ActionSchema(zm: ZodMessages) {
             name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }).optional(),
             type: z.string().optional(),
             usageType: ActionUsageTypeEnum.default("action"),
+            attackAbility: AbilityScoreKeyEnum.optional(),
             description: z.string().optional(),
             attackBonus: numericInput(true),
             damageBonus: numericInput(true),

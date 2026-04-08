@@ -307,6 +307,7 @@ export interface Action {
     name: string;
     type: string;
     usageType?: ActionUsageType;
+    attackAbility?: keyof AbilityScores;
     description?: string;
     attackBonus: number;
     damageBonus?: number;

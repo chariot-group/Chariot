@@ -18,6 +18,10 @@ export class Action {
   @Prop()
   usageType?: string;
 
+  @ApiProperty({ example: 'strength', enum: ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'] })
+  @Prop()
+  attackAbility?: string;
+
   @ApiProperty({ example: 'The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute.' })
   @Prop()
   description?: string;

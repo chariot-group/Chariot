@@ -18,7 +18,7 @@ export const DEFAULT_DAMAGE_TYPES = [
 ];
 
 export const ABILITY_SCORE_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
-export const ATTACK_ABILITY_SCORE_KEYS = ["strength", "dexterity"] as const;
+export const ATTACK_ABILITY_SCORE_KEYS = ABILITY_SCORE_KEYS;
 
 export type AbilityScoreKey = (typeof ABILITY_SCORE_KEYS)[number];
 

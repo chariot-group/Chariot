@@ -5,15 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ActionUsageType, AbilityScores } from "@/types/character";
 import {
+  AbilityScoreKey,
   ABILITY_SCORE_SHORT_LABELS,
-  ATTACK_ABILITY_SCORE_KEYS,
   formatSignedBonus,
   getAttackSuggestionOptions,
   getProficiencyBonusFromChallengeRating,
@@ -54,9 +54,13 @@ const ActionUpdateSection = ({
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
-  const [selectedAttackAbilityKeys, setSelectedAttackAbilityKeys] = useState<Record<number, string | null>>({});
 
-  const watchedActions = form.watch(fieldArrayName) as Array<{ damage?: Array<{ type?: string }> }> | undefined;
+  const watchedActions = form.watch(fieldArrayName) as Array<{
+    attackAbility?: AbilityScoreKey;
+    attackBonus?: number;
+    damageBonus?: number;
+    damage?: Array<{ type?: string }>;
+  }> | undefined;
   const watchedAbilityScores = form.watch("stats.abilityScores") as Partial<AbilityScores> | undefined;
   const watchedProficiencyBonus = Number(form.watch("stats.proficiencyBonus") ?? 0);
   const watchedChallengeRating = Number(form.watch("challenge.challengeRating") ?? 0);
@@ -67,6 +71,25 @@ const ActionUpdateSection = ({
     () => getAttackSuggestionOptions(watchedAbilityScores, proficiencyBonus),
     [proficiencyBonus, watchedAbilityScores],
   );
+
+  useEffect(() => {
+    (watchedActions ?? []).forEach((action, index) => {
+      const selectedAbilityKey = action?.attackAbility;
+      if (!selectedAbilityKey) return;
+
+      const matchingSuggestion = attackSuggestions.find((suggestion) => suggestion.key === selectedAbilityKey);
+      if (!matchingSuggestion) return;
+
+      if (action.attackBonus !== matchingSuggestion.attackBonus) {
+        form.setValue(`${fieldArrayName}.${index}.attackBonus`, matchingSuggestion.attackBonus, { shouldDirty: true });
+      }
+
+      if (action.damageBonus !== matchingSuggestion.damageBonus) {
+        form.setValue(`${fieldArrayName}.${index}.damageBonus`, matchingSuggestion.damageBonus, { shouldDirty: true });
+      }
+    });
+  }, [attackSuggestions, fieldArrayName, form, watchedActions]);
+
   const existingDamageTypes = useMemo(() => {
     const uniqueByNormalizedType = new Map<string, string>();
 
@@ -139,7 +162,7 @@ const ActionUpdateSection = ({
           {fields.map((field, index) => {
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
             const usageType = normalizeUsageType(form.watch(`${fieldArrayName}.${index}.usageType`));
-            const selectedAbilityKey = selectedAttackAbilityKeys[index];
+            const selectedAbilityKey = form.watch(`${fieldArrayName}.${index}.attackAbility`) as AbilityScoreKey | undefined;
 
             // Vérifie si au moins un champ de l'action courante est invalide
             const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
@@ -243,7 +266,7 @@ const ActionUpdateSection = ({
                               value={attackField.value ?? ""}
                               type="number"
                               onChange={(event) => {
-                                setSelectedAttackAbilityKeys((current) => ({ ...current, [index]: null }));
+                                form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, { shouldDirty: true });
                                 attackField.onChange(event);
                               }}
                               placeholder={tEdit("zeroPlaceholder")}
@@ -252,7 +275,7 @@ const ActionUpdateSection = ({
                         />
                         <div className="flex flex-wrap gap-1">
                           {attackSuggestions.map((suggestion) => {
-                            const isSelected = selectedAttackAbilityKeys[index] === suggestion.key;
+                            const isSelected = selectedAbilityKey === suggestion.key;
 
                             return (
                               <Button
@@ -263,7 +286,7 @@ const ActionUpdateSection = ({
                                 onClick={() => {
                                   form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, { shouldDirty: true });
                                   form.setValue(`${fieldArrayName}.${index}.damageBonus`, suggestion.damageBonus, { shouldDirty: true });
-                                  setSelectedAttackAbilityKeys((current) => ({ ...current, [index]: suggestion.key }));
+                                  form.setValue(`${fieldArrayName}.${index}.attackAbility`, suggestion.key, { shouldDirty: true });
                                 }}
                                 title={`${tAbilities(suggestion.key)} ${formatSignedBonus(suggestion.attackBonus)}`}
                                 className="h-7 px-2 text-xs">
@@ -365,7 +388,7 @@ const ActionUpdateSection = ({
                               value={damageBonusField.value ?? ""}
                               type="number"
                               onChange={(event) => {
-                                setSelectedAttackAbilityKeys((current) => ({ ...current, [index]: null }));
+                                form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, { shouldDirty: true });
                                 damageBonusField.onChange(event);
                               }}
                               placeholder={tEdit("zeroPlaceholder")}
@@ -374,7 +397,7 @@ const ActionUpdateSection = ({
                         />
                         <div className="flex flex-wrap gap-1">
                           {attackSuggestions.map((suggestion) => {
-                            const isSelected = selectedAttackAbilityKeys[index] === suggestion.key;
+                            const isSelected = selectedAbilityKey === suggestion.key;
 
                             return (
                               <Button
@@ -385,7 +408,7 @@ const ActionUpdateSection = ({
                                 onClick={() => {
                                   form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, { shouldDirty: true });
                                   form.setValue(`${fieldArrayName}.${index}.damageBonus`, suggestion.damageBonus, { shouldDirty: true });
-                                  setSelectedAttackAbilityKeys((current) => ({ ...current, [index]: suggestion.key }));
+                                  form.setValue(`${fieldArrayName}.${index}.attackAbility`, suggestion.key, { shouldDirty: true });
                                 }}
                                 title={`${tAbilities(suggestion.key)} ${formatSignedBonus(suggestion.damageBonus)}`}
                                 className="h-7 px-2 text-xs">
