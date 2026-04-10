@@ -731,12 +731,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                         </SelectTrigger>
                         <SelectContent position="item-aligned">
                           <SelectGroup>
-                            {classesList.map((cls: any) => (
-                              <SelectItem
-                                key={cls.name}
-                                value={cls.name}>
-                                {tClass(cls.name)}
-                              </SelectItem>
+                            {classesList.map((cls: any, index: number) => (
+                              <React.Fragment key={index}>
+                                {cls.name.length > 1 && (
+                                  <SelectItem
+                                    key={cls.name}
+                                    value={cls.name}>
+                                    {tClass(cls.name)}
+                                  </SelectItem>
+                                )}
+                              </React.Fragment>
                             ))}
                           </SelectGroup>
                         </SelectContent>
