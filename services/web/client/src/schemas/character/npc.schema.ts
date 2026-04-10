@@ -22,7 +22,7 @@ export const ChallengeSchema = z.object({
 
 // ===== NPC Profile =====
 export const NPCProfileSchema = z.object({
-    alignment: AlignmentEnum,
+    alignment: AlignmentEnum.optional(),
     type: z.string().optional(),
     subtype: z.string().optional(),
 });

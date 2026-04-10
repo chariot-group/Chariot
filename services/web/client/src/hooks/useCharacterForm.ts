@@ -141,10 +141,27 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
         shouldUnregister: false, // 🐛 FIX: Conserve les valeurs des champs même quand ils sont démontés
     });
 
+    // Normalise les clés numériques de spellSlotsByUses en "k{n}" pour éviter
+    // que react-hook-form les interprète comme des indices de tableau.
+    const normalizeSpellSlots = (data: any): any => {
+        if (!data?.spellcasting) return data;
+        return {
+            ...data,
+            spellcasting: data.spellcasting.map((sc: any) => {
+                if (!sc?.spellSlotsByUses) return sc;
+                const normalized: Record<string, any> = {};
+                for (const [k, v] of Object.entries(sc.spellSlotsByUses)) {
+                    normalized[/^\d+$/.test(k) ? `k${k}` : k] = v;
+                }
+                return { ...sc, spellSlotsByUses: normalized };
+            }),
+        };
+    };
+
     // Chargement des données existantes
     useEffect(() => {
         if (character && characterId) {
-            form.reset(character as any);
+            form.reset(normalizeSpellSlots(character) as any);
         }
     }, [character, characterId, form]);
 

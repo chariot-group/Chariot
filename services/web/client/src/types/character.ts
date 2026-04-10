@@ -176,6 +176,10 @@ export interface Spell {
     healing?: string;
     damageDetails?: DamageDetails;
     healingDetails?: HealingDetails;
+    /** NPC only — number of times this spell can be cast per day (undefined = at will) */
+    usesPerDay?: number | null;
+    /** NPC only — number of times this spell has been cast today */
+    used?: number;
 }
 
 export interface Spellcasting {
@@ -184,7 +188,11 @@ export interface Spellcasting {
     saveDC: number;
     attackBonus: number;
     spellSlotsByLevel: Record<string, { total: number; used: number }>;
+    /** NPC only — tracker of uses per day keyed by usesPerDay value (e.g. "2" → {used: 0, total: 2}) */
+    spellSlotsByUses?: Record<string, number | null>;
     totalSlots: number;
+    /** Whether spells are innate (grouped by uses per day). false = by level (default), true = innate/by uses */
+    isInnate?: boolean;
     spells: Spell[];
 }
 

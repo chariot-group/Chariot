@@ -659,12 +659,14 @@
       "spellLevel": "Conjuros de nivel {level}",
       "spellSlots": "{used} / {total}",
       "spellDetails": {
+        "level": "Nivel",
         "school": "Escuela",
         "castingTime": "Tiempo de lanzamiento",
         "range": "Alcance",
         "components": "Componentes",
         "duration": "Duración",
-        "description": "Descripción"
+        "description": "Descripción",
+        "usesTracker": "Usos"
       },
       "damage": "Daño",
       "healing": "Curación",
@@ -709,6 +711,18 @@
       "removeSpellWithName": "Eliminar conjuro {name}",
       "expandAllSpellLevels": "Expandir todos los niveles de conjuros",
       "collapseAllSpellLevels": "Contraer todos los niveles de conjuros",
+      "npc": {
+        "atWill": "A voluntad",
+        "usesPerDay": "{count}/día",
+        "usesPerDayLabel": "Usos / día",
+        "usedLabel": "Usado de {uses}",
+        "usedSpellLabel": "Usado hoy"
+      },
+      "displayMode": {
+        "label": "Ordenar conjuros por",
+        "byLevel": "Nivel",
+        "byUses": "Usos / día"
+      },
       "codexDialog": {
         "title": "Buscar un conjuro en Codex",
         "searchPlaceholder": "Buscar un conjuro...",

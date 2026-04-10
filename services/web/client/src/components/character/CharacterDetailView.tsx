@@ -14,6 +14,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
+import { useToast } from "@/hooks/useToast";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -23,6 +24,7 @@ interface CharacterDetailViewProps {
 export default function CharacterDetailView({ character, onCharacterUpdate }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
+  const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -84,7 +86,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
 
       event.preventDefault();
       event.stopPropagation();
-      form.handleSubmit(onUpdate)();
+      form.handleSubmit(onUpdate, () => toast.error(t("updateError")))();
     };
 
     window.addEventListener("keydown", handleGlobalShortcuts, true);

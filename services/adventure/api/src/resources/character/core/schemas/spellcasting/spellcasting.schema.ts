@@ -36,6 +36,23 @@ export class Spellcasting {
   })
   spellSlotsByLevel?: Map<number, { total?: number; used?: number }>;
 
+  @ApiProperty({ description: 'NPC only — tracker of uses per day keyed by usesPerDay value', example: { 2: { used: 1, total: 2 } } })
+  @Prop({
+    type: Map,
+    of: new MongooseSchema(
+      {
+        used: { type: Number, default: 0 },
+        total: { type: Number, default: 0 },
+      },
+      { _id: false },
+    ),
+  })
+  spellSlotsByUses?: Map<number, { used?: number; total?: number }>;
+
+  @ApiProperty({ example: false, description: 'Whether spells are innate (grouped by uses per day)', required: false })
+  @Prop({ default: false })
+  isInnate?: boolean;
+
   @ApiProperty({ example: 10 })
   @Prop({ default: 0 })
   totalSlots: number;

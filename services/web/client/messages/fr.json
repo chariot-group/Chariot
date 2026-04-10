@@ -663,12 +663,14 @@
       "spellLevel": "Sorts de niveau {level}",
       "spellSlots": "{used} / {total}",
       "spellDetails": {
+        "level": "Niveau",
         "school": "École",
         "castingTime": "Temps d'incantation",
         "range": "Portée",
         "components": "Composants",
         "duration": "Durée",
-        "description": "Description"
+        "description": "Description",
+        "usesTracker": "Utilisations"
       },
       "damage": "Dégâts",
       "healing": "Soins",
@@ -713,6 +715,18 @@
       "removeSpellWithName": "Supprimer le sort {name}",
       "expandAllSpellLevels": "Développer tous les niveaux de sorts",
       "collapseAllSpellLevels": "Réduire tous les niveaux de sorts",
+      "npc": {
+        "atWill": "À volonté",
+        "usesPerDay": "{count}/jour",
+        "usesPerDayLabel": "Utilisations / jour",
+        "usedLabel": "Utilisé sur {uses}",
+        "usedSpellLabel": "Utilisé aujourd'hui"
+      },
+      "displayMode": {
+        "label": "Trier les sorts par",
+        "byLevel": "Niveau",
+        "byUses": "Utilisations / jour"
+      },
       "codexDialog": {
         "title": "Rechercher un sort dans Codex",
         "searchPlaceholder": "Rechercher un sort...",
