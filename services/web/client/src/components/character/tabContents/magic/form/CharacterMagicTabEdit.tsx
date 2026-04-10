@@ -1223,7 +1223,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </Card>
 
                 {/* Uses per day (NPC only) */}
-                {!isInnate && (
+                {isInnate && (
                   <React.Fragment>
                     <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
                       <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
