@@ -9,7 +9,7 @@ RUN apk upgrade --no-cache
 COPY package*.json ./
 
 # Install dependencies (this layer will be cached unless package.json changes)
-RUN npm install
+RUN npm ci
 
 # Copy source code
 COPY . .
