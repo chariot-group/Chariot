@@ -60,6 +60,8 @@ services:
     networks:
       - chariot-network
       - chariot-group-network-prod
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
 volumes:
   chariot_mongodb_data_prod:
