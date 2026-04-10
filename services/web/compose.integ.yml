@@ -23,6 +23,7 @@ services:
       - "traefik.http.services.chariot-frontend-integ.loadbalancer.server.port=3000"
       - "traefik.http.routers.chariot-frontend-integ.service=chariot-frontend-integ"
       - "traefik.docker.network=traefik-public"
+      - "com.centurylinklabs.watchtower.enable=true"
 
 networks:
   chariot-group-network-integ:

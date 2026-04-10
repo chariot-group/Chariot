@@ -31,6 +31,7 @@ services:
       - "traefik.http.services.chariot-gateway-integ.loadbalancer.server.port=8082"
       - "traefik.http.routers.chariot-gateway-integ.service=chariot-gateway-integ"
       - "traefik.docker.network=traefik-public"
+      - "com.centurylinklabs.watchtower.enable=true"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
       interval: 30s

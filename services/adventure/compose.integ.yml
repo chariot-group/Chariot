@@ -57,6 +57,8 @@ services:
     depends_on:
       chariot-mongo:
         condition: service_healthy
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     networks:
       - chariot-network
       - chariot-group-network-integ
