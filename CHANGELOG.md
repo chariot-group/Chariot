@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.2.2] - 10-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+- Submit form for codex innate spellcaster
+
+## [2.2.1] - 10-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+- Fix integ banner
+
+
 ## [2.2.0] - 10-04-2026
 
 ### Added
