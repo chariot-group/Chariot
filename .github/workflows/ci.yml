@@ -150,10 +150,12 @@ jobs:
             echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.PROD_CODEX_URL }}" >> $GITHUB_OUTPUT
+            echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           else
             echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.INTEG_CODEX_URL }}" >> $GITHUB_OUTPUT
+            echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up QEMU
@@ -186,6 +188,7 @@ jobs:
             NEXT_PUBLIC_CODEX_URL=${{ steps.env.outputs.codex_url }}
             NEXT_PUBLIC_KEYCLOAK_REALM=chariot
             NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
+            NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
 
       - name: Output image tags
         run: |
@@ -240,7 +243,7 @@ jobs:
           platforms: linux/amd64
           build-args: |
             NODE_ENV=production
-
+            NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
       - name: Output image tags
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-adventure-${{ steps.env.outputs.env_name }}:latest"
@@ -294,7 +297,7 @@ jobs:
           platforms: linux/amd64
           build-args: |
             NODE_ENV=production
-
+            NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
       - name: Output image tags
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-gateway-${{ steps.env.outputs.env_name }}:latest"
