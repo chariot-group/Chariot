@@ -106,3 +106,48 @@ export function classWithSpellPrepared(spellCasting: Spellcasting): boolean {
         spellCasting.className.toLowerCase() as (typeof CLASSES_WITH_SPELL_PREPARED)[number],
     );
 }
+
+// ─── NPC spell helpers ────────────────────────────────────────────────────────
+
+/**
+ * Sentinel value for "at will" spells in NPC spellcasting.
+ * Stored as null / undefined on the spell, displayed as "À volonté".
+ */
+export const NPC_AT_WILL_KEY = "atWill" as const;
+
+/**
+ * Returns the sorted list of unique uses-per-day groups for a NPC spellcasting.
+ * "At will" (null/undefined) comes first, then numeric groups sorted ascending.
+ */
+export function getNpcUsesGroups(spellcasting: Spellcasting): Array<number | null> {
+    const seen = new Set<number | null>();
+    for (const spell of spellcasting.spells) {
+        const u = spell.usesPerDay ?? null;
+        seen.add(u);
+    }
+    const groups = Array.from(seen);
+    groups.sort((a, b) => {
+        if (a === null) return -1;
+        if (b === null) return 1;
+        return a - b;
+    });
+    return groups;
+}
+
+/**
+ * Returns spells for a given usesPerDay group.
+ * Pass null for "at will" spells.
+ * Spells are sorted alphabetically by name.
+ */
+export function getSpellsByUses(spellcasting: Spellcasting, usesPerDay: number | null): Spell[] {
+    return spellcasting.spells
+        .filter((spell) => (spell.usesPerDay ?? null) === usesPerDay)
+        .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Returns the accordion key for a uses-per-day group.
+ */
+export function npcUsesKey(usesPerDay: number | null): string {
+    return usesPerDay === null ? "uses-atWill" : `uses-${usesPerDay}`;
+}

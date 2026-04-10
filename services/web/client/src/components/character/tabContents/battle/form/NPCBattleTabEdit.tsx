@@ -7,6 +7,9 @@ import AbilitiesUpdateSection from "@/components/character/tabContents/shared/Ab
 
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
+import { Controller } from "react-hook-form";
+import { Field, FieldError } from "@/components/ui/field";
+import { DamageTypeTagInput } from "@/components/ui/damage-type-tag-input";
 
 interface NPCBattleTabEditProps {
   npc: NPC;
@@ -16,7 +19,6 @@ interface NPCBattleTabEditProps {
 
 export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTabEditProps) {
   const t = useTranslations("characterDetail.battle");
-  const tEdit = useTranslations("characterDetail.edit");
 
   // Field arrays pour les listes dynamiques
   const {
@@ -97,8 +99,114 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
         </div>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+        <Card
+          className="gap-3 p-4 md:px-6 h-fit"
+          role="region"
+          aria-labelledby="battle-affinities-heading-npc-edit">
+          <h2
+            id="battle-affinities-heading-npc-edit"
+            className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+            {t("affinities")}
+          </h2>
+
+          <div className="flex flex-col gap-4">
+            <Controller
+              name="affinities.resistances"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="battle-npc-resistances"
+                    className="text-sm font-medium">
+                    {t("resistances")}
+                  </label>
+                  <DamageTypeTagInput
+                    id="battle-npc-resistances"
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    placeholder={t("resistancesPlaceholder")}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "battle-npc-resistances-error" : undefined}
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="battle-npc-resistances-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="affinities.vulnerabilities"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="battle-npc-vulnerabilities"
+                    className="text-sm font-medium">
+                    {t("vulnerabilities")}
+                  </label>
+                  <DamageTypeTagInput
+                    id="battle-npc-vulnerabilities"
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    placeholder={t("vulnerabilitiesPlaceholder")}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "battle-npc-vulnerabilities-error" : undefined}
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="battle-npc-vulnerabilities-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="affinities.immunities"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="battle-npc-immunities"
+                    className="text-sm font-medium">
+                    {t("immunities")}
+                  </label>
+                  <DamageTypeTagInput
+                    id="battle-npc-immunities"
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    placeholder={t("immunitiesPlaceholder")}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "battle-npc-immunities-error" : undefined}
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="battle-npc-immunities-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+          </div>
+        </Card>
+      </div>
+
       {/* Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+
         {/* Actions Standards */}
         <ActionUpdateSection
           title={t("actions")}

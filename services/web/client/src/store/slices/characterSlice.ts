@@ -152,6 +152,7 @@ export const selectCharactersWithoutGroupError = (state: RootState) => state.cha
 export const selectCharactersWithoutGroupHasMore = (state: RootState) => state.character.hasMoreWithoutGroup;
 export const selectCharactersWithoutGroupTotal = (state: RootState) => state.character.totalWithoutGroup;
 export const selectCharactersWithoutGroupCurrentPage = (state: RootState) => state.character.currentPageWithoutGroup;
+export const selectCharactersWithoutGroupLastFetch = (state: RootState) => state.character.lastFetchWithoutGroup;
 
 // Selectors - All characters
 export const selectAllCharacters = (state: RootState) => state.character.allCharacters;

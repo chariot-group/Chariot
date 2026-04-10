@@ -1,5 +1,8 @@
 {
   "sidebar": {
+    "gmSpace": "Espace maître du jeu",
+    "playerSpace": "Espace joueur",
+    "environmentChanged": "Vous êtes maintenant dans l''{space}.",
     "mainNavigation": "Navigation principale",
     "gmNavigation": "Navigation maître du jeu",
     "playerNavigation": "Navigation joueur",
@@ -55,6 +58,7 @@
   },
   "common": {
     "save": "Sauvegarder",
+    "delete": "Supprimer",
     "cancel": "Annuler",
     "errors": {
       "campaignNameRequired": "Le nom de la campagne est requis",
@@ -150,8 +154,14 @@
       "title": "Créer votre premier <br /> personnage",
       "button": "Créer un personnage",
       "button-aria": "Naviguer vers la création de personnage"
+    },
+    "imageCredits": {
+      "title": "Crédits des images",
+      "campaign": "Image campagne :",
+      "character": "Image personnage :",
+      "session": "Image session :"
     }
-  },  
+  },
   "characterCreate": {
     "titlePlayer": "Créer un personnage joueur",
     "titleNpc": "Créer un PNJ",
@@ -223,6 +233,14 @@
       "currentHP": "PV Actuels",
       "maxHP": "PV Maximum",
       "tempHP": "PV Temporaires",
+      "quickErrors": {
+        "currentAboveMax": "Les PV actuels ne peuvent pas dépasser les PV max.",
+        "maxBelowCurrent": "Les PV max ne peuvent pas être inférieurs aux PV actuels."
+      },
+      "quickWarnings": {
+        "currentOutOfBounds": "La valeur des PV actuels a été ajustée automatiquement entre 0 et les PV max.",
+        "maxBelowCurrent": "La valeur des PV max a été ajustée automatiquement pour rester supérieure ou égale aux PV actuels."
+      },
       "defense": "Défense",
       "initiative": "Initiative",
       "size": "Taille",
@@ -243,6 +261,15 @@
       "bonus": "Bonus",
       "damageType": "Type de dégâts",
       "damageTypePlaceholder": "Feu, Froid...",
+      "quickNumberPlaceholder": "Saisir un nombre",
+      "levelPlaceholder": "1",
+      "zeroPlaceholder": "0",
+      "proficiencyBonusPlaceholder": "+2",
+      "challengeRatingPlaceholder": "0, 1/8, 1/4, 1/2",
+      "damageDiceCountPlaceholder": "8",
+      "damageDiceTypePlaceholder": "d6",
+      "healingDiceCountPlaceholder": "4",
+      "healingDiceTypePlaceholder": "d8",
       "slotsUsed": "Utilisés",
       "slotsTotal": "Total",
       "copperPieces": "Pièces de Cuivre",
@@ -286,8 +313,18 @@
       "actionDetails": "Détails de l'action",
       "attackDC": "Attaque/DD :",
       "damageType": "Dégâts/Type :",
+      "range": "Portée",
       "description": "Description :",
       "type": "Type",
+      "usageType": "Type d'action",
+      "usageTypeOptions": {
+        "action": "Action",
+        "bonus_action": "Action bonus",
+        "reaction": "Réaction"
+      },
+      "usageTypeUnavailableTooltip": "Aucune {type} n'est disponible pour ce personnage.",
+      "prioritizeByUsage": "Prioriser",
+      "all": "Tout",
       "name": "Nom",
       "details": "détails",
       "descriptionPrefix": "description",
@@ -322,7 +359,14 @@
       "noValue": "Aucune valeur",
       "hpAbbr": "PV",
       "feet": "pieds",
-      "feetAbbr": "pi"
+      "feetAbbr": "pi",
+      "affinities": "Affinités",
+      "resistances": "Résistances",
+      "resistancesPlaceholder": "Feu, Froid...",
+      "vulnerabilities": "Vulnérabilités",
+      "vulnerabilitiesPlaceholder": "Feu, Froid...",
+      "immunities": "Immunités",
+      "immunitiesPlaceholder": "Feu, Froid..."
     },
     "history": {
       "appearance": "Apparence",
@@ -390,6 +434,8 @@
         "skills": "Compétences",
         "proficiencyBonus": "Bonus de maîtrise",
         "abilityBonus": "Bonus",
+        "abilityScorePlaceholder": "10",
+        "abilityBonusPlaceholder": "{value}",
         "skillsList": "Liste des compétences du personnage",
         "passivePerception": "Perception passive",
         "passivePerceptionOverride": "Valeur personnalisée",
@@ -617,12 +663,14 @@
       "spellLevel": "Sorts de niveau {level}",
       "spellSlots": "{used} / {total}",
       "spellDetails": {
+        "level": "Niveau",
         "school": "École",
         "castingTime": "Temps d'incantation",
         "range": "Portée",
         "components": "Composants",
         "duration": "Durée",
-        "description": "Description"
+        "description": "Description",
+        "usesTracker": "Utilisations"
       },
       "damage": "Dégâts",
       "healing": "Soins",
@@ -667,6 +715,18 @@
       "removeSpellWithName": "Supprimer le sort {name}",
       "expandAllSpellLevels": "Développer tous les niveaux de sorts",
       "collapseAllSpellLevels": "Réduire tous les niveaux de sorts",
+      "npc": {
+        "atWill": "À volonté",
+        "usesPerDay": "{count}/jour",
+        "usesPerDayLabel": "Utilisations / jour",
+        "usedLabel": "Utilisé sur {uses}",
+        "usedSpellLabel": "Utilisé aujourd'hui"
+      },
+      "displayMode": {
+        "label": "Trier les sorts par",
+        "byLevel": "Niveau",
+        "byUses": "Utilisations / jour"
+      },
       "codexDialog": {
         "title": "Rechercher un sort dans Codex",
         "searchPlaceholder": "Rechercher un sort...",

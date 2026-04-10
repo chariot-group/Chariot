@@ -254,7 +254,7 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
               {t("background")}
             </h2>
             <p
-              className="font-semibold text-sm sm:text-base sm:text-right"
+              className="font-semibold text-sm sm:text-base sm:text-right whitespace-pre-wrap wrap-break-word"
               aria-label={`${t("background")} : ${player?.profile?.history}`}>
               {player?.profile?.history}
             </p>

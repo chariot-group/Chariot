@@ -58,6 +58,14 @@ export class Spell {
   @ApiProperty({ type: () => HealingDetails })
   @Prop({ type: HealingDetailsSchema })
   healingDetails?: HealingDetails;
+
+  @ApiProperty({ example: 2, nullable: true, description: 'NPC only — number of times this spell can be cast per day. Null means at will.' })
+  @Prop({ default: null })
+  usesPerDay?: number | null;
+
+  @ApiProperty({ example: 1, description: 'NPC only — number of times this spell has been cast today.' })
+  @Prop({ default: 0 })
+  used?: number;
 }
 
 export const SpellSchema = SchemaFactory.createForClass(Spell);

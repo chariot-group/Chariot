@@ -5,10 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ActionUsageType, AbilityScores } from "@/types/character";
+import {
+  AbilityScoreKey,
+  ABILITY_SCORE_SHORT_LABELS,
+  formatSignedBonus,
+  getAttackSuggestionOptions,
+  getProficiencyBonusFromChallengeRating,
+} from "@/utils/attack.utils";
 
 interface ActionUpdateSectionProps {
   title: string;
@@ -19,6 +28,28 @@ interface ActionUpdateSectionProps {
   remove: UseFieldArrayRemove;
   accentColor: string;
 }
+
+const ACTION_USAGE_OPTIONS: ActionUsageType[] = ["action", "bonus_action", "reaction"];
+
+const normalizeUsageType = (usageType?: string): ActionUsageType => {
+  if (usageType === "bonus_action" || usageType === "reaction" || usageType === "action") {
+    return usageType;
+  }
+  return "action";
+};
+
+const TRAILING_DAMAGE_BONUS_REGEX = /([+-]\d+)$/;
+
+const stripTrailingDamageBonus = (dice: string): string => {
+  return dice.trim().replace(/\s+/g, "").replace(TRAILING_DAMAGE_BONUS_REGEX, "");
+};
+
+const applyAbilityModifierToDice = (dice: string, abilityModifier: number): string => {
+  const baseDice = stripTrailingDamageBonus(dice);
+  if (!baseDice) return "";
+  if (abilityModifier === 0) return baseDice;
+  return `${baseDice}${formatSignedBonus(abilityModifier)}`;
+};
 
 const ActionUpdateSection = ({
   title,
@@ -32,8 +63,113 @@ const ActionUpdateSection = ({
   const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
   const tEdit = useTranslations("characterDetail.edit");
+  const tCommon = useTranslations("common");
+  const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+
+  const watchedActions = form.watch(fieldArrayName) as Array<{
+    attackAbility?: AbilityScoreKey;
+    attackBonus?: number;
+    damage?: Array<{ dice?: string; type?: string; applyAbilityBonus?: boolean }>;
+  }> | undefined;
+  const watchedAbilityScores = form.watch("stats.abilityScores") as Partial<AbilityScores> | undefined;
+  const watchedProficiencyBonus = Number(form.watch("stats.proficiencyBonus") ?? 0);
+  const watchedChallengeRating = Number(form.watch("challenge.challengeRating") ?? 0);
+  const proficiencyBonus = watchedProficiencyBonus > 0
+    ? watchedProficiencyBonus
+    : getProficiencyBonusFromChallengeRating(watchedChallengeRating);
+  const attackSuggestions = useMemo(
+    () => getAttackSuggestionOptions(watchedAbilityScores, proficiencyBonus),
+    [proficiencyBonus, watchedAbilityScores],
+  );
+
+  useEffect(() => {
+    (watchedActions ?? []).forEach((action, index) => {
+      const selectedAbilityKey = action?.attackAbility;
+      if (!selectedAbilityKey) return;
+
+      const matchingSuggestion = attackSuggestions.find((suggestion) => suggestion.key === selectedAbilityKey);
+      if (!matchingSuggestion) return;
+
+      if (action.attackBonus !== matchingSuggestion.attackBonus) {
+        form.setValue(`${fieldArrayName}.${index}.attackBonus`, matchingSuggestion.attackBonus, { shouldDirty: false });
+      }
+
+      (action.damage ?? []).forEach((damage, damageIndex) => {
+        if (!damage?.applyAbilityBonus) return;
+
+        const currentDice = `${damage.dice ?? ""}`;
+        const syncedDice = applyAbilityModifierToDice(currentDice, matchingSuggestion.damageBonus);
+
+        if (currentDice !== syncedDice) {
+          form.setValue(`${fieldArrayName}.${index}.damage.${damageIndex}.dice`, syncedDice, { shouldDirty: false });
+        }
+      });
+    });
+  }, [attackSuggestions, fieldArrayName, form, watchedActions]);
+
+  useEffect(() => {
+    (watchedActions ?? []).forEach((action, index) => {
+      if (action?.attackAbility) return;
+
+      const damages = action?.damage ?? [];
+      const hasAutoAbilityBonus = damages.some((damage) => damage?.applyAbilityBonus);
+      if (!hasAutoAbilityBonus) return;
+
+      const normalizedDamages = damages.map((damage) => {
+        if (!damage?.applyAbilityBonus) return damage;
+
+        return {
+          ...damage,
+          applyAbilityBonus: false,
+          dice: stripTrailingDamageBonus(damage.dice ?? ""),
+        };
+      });
+
+      form.setValue(`${fieldArrayName}.${index}.damage`, normalizedDamages, { shouldDirty: false });
+    });
+  }, [fieldArrayName, form, watchedActions]);
+
+  const existingDamageTypes = useMemo(() => {
+    const uniqueByNormalizedType = new Map<string, string>();
+
+    (watchedActions ?? []).forEach((action) => {
+      (action?.damage ?? []).forEach((damage) => {
+        const normalizedType = (damage?.type ?? "").trim().toLowerCase();
+        if (!normalizedType) return;
+
+        if (!uniqueByNormalizedType.has(normalizedType)) {
+          uniqueByNormalizedType.set(normalizedType, (damage?.type ?? "").trim());
+        }
+      });
+    });
+
+    return Array.from(uniqueByNormalizedType.values());
+  }, [watchedActions]);
+
+  const clearAutoDamageBonusForAction = (actionIndex: number, shouldDirty: boolean) => {
+    const currentDamages = form.getValues(`${fieldArrayName}.${actionIndex}.damage`) as
+      | Array<{ dice?: string; type?: string; applyAbilityBonus?: boolean }>
+      | undefined;
+
+    if (!currentDamages?.length) return;
+
+    const hasAutoAbilityBonus = currentDamages.some((damage) => damage?.applyAbilityBonus);
+    if (!hasAutoAbilityBonus) return;
+
+    const normalizedDamages = currentDamages.map((damage) => {
+      if (!damage?.applyAbilityBonus) return damage;
+
+      return {
+        ...damage,
+        applyAbilityBonus: false,
+        dice: stripTrailingDamageBonus(damage.dice ?? ""),
+      };
+    });
+
+    form.setValue(`${fieldArrayName}.${actionIndex}.damage`, normalizedDamages, { shouldDirty });
+  };
 
   return (
     <section className="flex flex-col gap-2 w-full">
@@ -47,10 +183,11 @@ const ActionUpdateSection = ({
             onClick={() => {
               append({
                 name: "",
-                type: "",
+                usageType: "action",
+                attackAbility: undefined,
                 description: "",
                 attackBonus: 0,
-                damage: [],
+                damage: [{ dice: "", type: "", applyAbilityBonus: false }],
                 range: "",
               });
               // Attendre le prochain rendu pour que le nouvel élément soit présent
@@ -89,15 +226,21 @@ const ActionUpdateSection = ({
           className="w-full flex flex-col gap-2">
           {fields.map((field, index) => {
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
-            const actionType = form.watch(`${fieldArrayName}.${index}.type`);
+            const usageType = normalizeUsageType(form.watch(`${fieldArrayName}.${index}.usageType`));
+            const selectedAbilityKey = form.watch(`${fieldArrayName}.${index}.attackAbility`) as AbilityScoreKey | undefined;
+            const selectedAttackSuggestion = selectedAbilityKey
+              ? attackSuggestions.find((suggestion) => suggestion.key === selectedAbilityKey)
+              : undefined;
+            const selectedDamageModifier = selectedAttackSuggestion?.damageBonus ?? 0;
+            const hasSelectedAttackAbility = Boolean(selectedAttackSuggestion);
 
             // Vérifie si au moins un champ de l'action courante est invalide
             const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
-            const typeError = form.getFieldState(`${fieldArrayName}.${index}.type`).invalid;
             const attackBonusError = form.getFieldState(`${fieldArrayName}.${index}.attackBonus`).invalid;
+            const damageError = form.getFieldState(`${fieldArrayName}.${index}.damage`).invalid;
             const rangeError = form.getFieldState(`${fieldArrayName}.${index}.range`).invalid;
             const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
-            const hasError = nameError || typeError || attackBonusError || rangeError || descriptionError;
+            const hasError = nameError || attackBonusError || damageError || rangeError || descriptionError;
 
             return (
               <AccordionItem
@@ -113,7 +256,7 @@ const ActionUpdateSection = ({
                       <div className="truncate flex items-center gap-1">
                         <span className={`text-base md:text-lg font-medium text-left truncate`}>{actionName}</span>
                         <span className="text-base md:text-lg font-medium text-left">
-                          {actionType && ` (${actionType})`}
+                          {` (${t(`usageTypeOptions.${usageType}`)})`}
                         </span>
                       </div>
                     </AccordionTrigger>
@@ -146,6 +289,7 @@ const ActionUpdateSection = ({
                               className="text-sm"
                               required
                               aria-invalid={fieldState.invalid}
+                              placeholder={t("name")}
                             />
                             {fieldState.error && <FieldError errors={[fieldState.error]} />}
                           </Field>
@@ -153,45 +297,211 @@ const ActionUpdateSection = ({
                       />
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("type")}</span>
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("usageType")}</span>
                       <Controller
-                        name={`${fieldArrayName}.${index}.type`}
+                        name={`${fieldArrayName}.${index}.usageType`}
                         control={form.control}
-                        render={({ field: typeField }) => (
-                          <DamageTypeInput
-                            id={`${fieldArrayName}.${index}.type`}
-                            value={typeField.value ?? ""}
-                            onChange={typeField.onChange}
-                            placeholder="Feu, Froid..."
-                          />
+                        render={({ field: usageTypeField }) => (
+                          <Select
+                            value={normalizeUsageType(usageTypeField.value)}
+                            onValueChange={usageTypeField.onChange}>
+                            <SelectTrigger className="w-full sm:w-45">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ACTION_USAGE_OPTIONS.map((option) => (
+                                <SelectItem
+                                  key={option}
+                                  value={option}>
+                                  {t(`usageTypeOptions.${option}`)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         )}
                       />
                     </Card>
-                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
-                        {t("attackDC")}
-                      </span>
-                      <Controller
-                        name={`${fieldArrayName}.${index}.attackBonus`}
-                        control={form.control}
-                        render={({ field: attackField }) => (
-                          <Input
-                            {...attackField}
-                            onChange={(e) => attackField.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                            type="number"
-                            min={0}
+                    <Card className="sm:items-center grid grid-rows-2 sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                      <div className="flex flex-row items-center justify-between gap-2">
+                        <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                          {t("attackDC")}
+                        </span>
+                        <div className="flex flex-col gap-2 w-full sm:w-auto">
+                          <Controller
+                            name={`${fieldArrayName}.${index}.attackAbility`}
+                            control={form.control}
+                            render={({ field: attackAbilityField }) => (
+                              <input
+                                type="hidden"
+                                value={attackAbilityField.value ?? ""}
+                                onChange={attackAbilityField.onChange}
+                              />
+                            )}
                           />
-                        )}
-                      />
+                          <Controller
+                            name={`${fieldArrayName}.${index}.attackBonus`}
+                            control={form.control}
+                            render={({ field: attackField }) => (
+                              <Input
+                                {...attackField}
+                                value={attackField.value ?? ""}
+                                type="number"
+                                onChange={(event) => {
+                                  form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, { shouldDirty: true });
+
+                                  clearAutoDamageBonusForAction(index, true);
+
+                                  attackField.onChange(event);
+                                }}
+                                placeholder={tEdit("zeroPlaceholder")}
+                              />
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {attackSuggestions.map((suggestion) => {
+                          const isSelected = selectedAbilityKey === suggestion.key;
+
+                          return (
+                            <Button
+                              key={suggestion.key}
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                clearAutoDamageBonusForAction(index, true);
+                                form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, { shouldDirty: true });
+                                form.setValue(`${fieldArrayName}.${index}.attackAbility`, suggestion.key, { shouldDirty: true });
+                              }}
+                              title={`${tAbilities(suggestion.key)} ${formatSignedBonus(suggestion.attackBonus)}`}
+                              className="h-7 px-2 text-xs">
+                              {ABILITY_SCORE_SHORT_LABELS[suggestion.key]} {formatSignedBonus(suggestion.attackBonus)}
+                            </Button>
+                          );
+                        })}
+                      </div>
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                       <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                         {t("damageType")}
                       </span>
                       <Controller
+                        name={`${fieldArrayName}.${index}.damage`}
+                        control={form.control}
+                        render={({ field: damageField }) => {
+                          const damages = Array.isArray(damageField.value) ? damageField.value : [];
+
+                          const updateDamage = (damageIndex: number, key: "dice" | "type", value: string) => {
+                            const updatedDamages = [...damages];
+                            const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
+                            const normalizedValue = key === "type"
+                              ? value.trim()
+                              : currentDamage.applyAbilityBonus && hasSelectedAttackAbility
+                                ? applyAbilityModifierToDice(value, selectedDamageModifier)
+                                : value;
+
+                            if (key === "type" && normalizedValue) {
+                              const duplicatedType = updatedDamages.some((damage, indexInList) => {
+                                if (indexInList === damageIndex) return false;
+                                return (damage?.type ?? "").trim().toLowerCase() === normalizedValue.toLowerCase();
+                              });
+
+                              // Keep one damage type per entry and avoid duplicates within the same action.
+                              if (duplicatedType) return;
+                            }
+                            updatedDamages[damageIndex] = {
+                              ...currentDamage,
+                              [key]: normalizedValue,
+                            };
+                            damageField.onChange(updatedDamages);
+                          };
+
+                          return (
+                            <div className="flex flex-col gap-2 w-full sm:w-auto">
+                              {damages.map((damage, damageIndex) => (
+                                <div
+                                  key={damageIndex}
+                                  className="flex items-center gap-2 w-full">
+                                  <Input
+                                    value={damage?.dice ?? ""}
+                                    onChange={(event) => updateDamage(damageIndex, "dice", event.target.value)}
+                                    placeholder="1d6"
+                                    className="w-24"
+                                  />
+                                  <DamageTypeInput
+                                    id={`${fieldArrayName}.${index}.damage.${damageIndex}.type`}
+                                    value={damage?.type ?? ""}
+                                    onChange={(value) => updateDamage(damageIndex, "type", value)}
+                                    placeholder={tEdit("damageTypePlaceholder")}
+                                    customDamageTypes={existingDamageTypes}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant={damage?.applyAbilityBonus ? "default" : "outline"}
+                                    size="sm"
+                                    disabled={!hasSelectedAttackAbility}
+                                    onClick={() => {
+                                      const updatedDamages = [...damages];
+                                      const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
+                                      const applyAbilityBonus = !Boolean(currentDamage.applyAbilityBonus);
+                                      const nextDice = applyAbilityBonus && hasSelectedAttackAbility
+                                        ? applyAbilityModifierToDice(currentDamage.dice ?? "", selectedDamageModifier)
+                                        : stripTrailingDamageBonus(currentDamage.dice ?? "");
+
+                                      updatedDamages[damageIndex] = {
+                                        ...currentDamage,
+                                        applyAbilityBonus,
+                                        dice: nextDice,
+                                      };
+                                      damageField.onChange(updatedDamages);
+                                    }}
+                                    title={hasSelectedAttackAbility && selectedAttackSuggestion
+                                      ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
+                                      : t("attackDC")}
+                                    className="h-8 px-2 text-xs shrink-0">
+                                    AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      damageField.onChange(damages.filter((_: unknown, i: number) => i !== damageIndex));
+                                    }}
+                                    aria-label={`${tCommon("delete")} ${damageIndex + 1}`}
+                                    className="text-red-500 shrink-0">
+                                    <Trash2 className="size-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => damageField.onChange([...damages, { dice: "", type: "", applyAbilityBonus: false }])}
+                                className="w-fit flex items-center gap-2">
+                                <Plus className="size-4" />
+                                {tEdit("add")}
+                              </Button>
+                            </div>
+                          );
+                        }}
+                      />
+                    </Card>
+                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                        {t("range")}
+                      </span>
+                      <Controller
                         name={`${fieldArrayName}.${index}.range`}
                         control={form.control}
-                        render={({ field: rangeField }) => <Input {...rangeField} />}
+                        render={({ field: rangeField }) => (
+                          <Input
+                            {...rangeField}
+                            placeholder={t("range")}
+                          />
+                        )}
                       />
                     </Card>
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
@@ -203,6 +513,7 @@ const ActionUpdateSection = ({
                           <Textarea
                             {...descField}
                             value={descField.value || ""}
+                            placeholder={t("description")}
                           />
                         )}
                       />

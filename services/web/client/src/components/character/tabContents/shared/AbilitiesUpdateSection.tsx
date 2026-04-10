@@ -8,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
-import { useRef } from "react";
 
 interface AbilitiesUpdateSectionProps {
   title: string;
@@ -50,11 +49,15 @@ const AbilitiesUpdateSection = ({
             ref={undefined}
             onClick={() => {
               append({ name: "", description: "" });
-              // Attendre le prochain rendu pour que le nouvel élément soit présent
+              // Add new ability to open accordion and scroll into view
+              const newIndex = fields.length;
+              setOpenAccordionValues([...openAccordionValues, `ability-${newIndex}`]);
+
+              // Scroll to the newly created ability after next render
               setTimeout(() => {
-                const lastAbility = fields.length > 0 ? document.getElementById(`ability-${fields.length - 1}`) : null;
-                if (lastAbility) {
-                  lastAbility.scrollIntoView({ behavior: "smooth", block: "center" });
+                const newAbility = document.getElementById(`ability-${newIndex}`);
+                if (newAbility) {
+                  newAbility.scrollIntoView({ behavior: "smooth", block: "center" });
                 }
               }, 100);
             }}
@@ -134,6 +137,7 @@ const AbilitiesUpdateSection = ({
                           id={`${fieldArrayName}-name-${index}`}
                           className="text-sm"
                           aria-invalid={fieldState.invalid}
+                          placeholder={tBattle("name")}
                         />
                         {fieldState.error && <FieldError errors={[fieldState.error]} />}
                       </Field>
@@ -154,7 +158,7 @@ const AbilitiesUpdateSection = ({
                         <Textarea
                           {...descField}
                           id={`${fieldArrayName}-description-${index}`}
-                          placeholder="Description de la capacité"
+                          placeholder={tBattle("description")}
                           rows={3}
                           className="text-sm"
                         />

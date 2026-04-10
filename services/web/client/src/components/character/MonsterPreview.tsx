@@ -9,6 +9,7 @@ import CharacterBattleTabContent from "@/components/character/tabContents/battle
 import CharacterMagicTabContent from "@/components/character/tabContents/magic/CharacterMagicTabContent";
 import CharacterInventoryTabContent from "@/components/character/tabContents/inventory/CharacterInventoryTabContent";
 import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
+import { formatChallengeRating } from "@/utils/challengeRating.utils";
 
 interface MonsterPreviewProps {
     monster: Partial<NPC>;
@@ -250,7 +251,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
                     <div className="flex flex-col gap-2 text-sm sm:text-base xl:border-l xl:pl-6 border-border/60">
                         <div className="flex flex-wrap items-center gap-2">
                             <span className="font-semibold">{tPreview("challengeRatingShort")} :</span>
-                            <span>CR {normalizedMonster.challenge.challengeRating}</span>
+                            <span>CR {formatChallengeRating(normalizedMonster.challenge.challengeRating)}</span>
                             <span className="text-gray-middle-light">({normalizedMonster.challenge.experiencePoints} {tPreview("experiencePointsShort")})</span>
                         </div>
                         <p>

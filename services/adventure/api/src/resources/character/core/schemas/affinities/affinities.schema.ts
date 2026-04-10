@@ -1,6 +1,7 @@
-import { Prop } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
+@Schema({ _id: false })
 export class Affinities {
 
   @ApiProperty({ example: ['Fire', 'Water'] })
@@ -15,3 +16,5 @@ export class Affinities {
   @Prop({ type: [String], default: [] })
   vulnerabilities: string[];
 }
+
+export const AffinitiesSchema = SchemaFactory.createForClass(Affinities);

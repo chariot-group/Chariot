@@ -10,6 +10,8 @@ import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import Image from "next/image";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
+import { useToast } from "@/hooks/useToast";
 
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 interface StatisticsProps {
@@ -21,6 +23,29 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
+  const currentHitPointsValue = Number(form.watch("stats.currentHitPoints") ?? 0);
+  const maxHitPointsValue = Number(form.watch("stats.maxHitPoints") ?? 0);
+  const safeCurrentHitPoints = Number.isFinite(currentHitPointsValue) ? Math.max(0, currentHitPointsValue) : 0;
+  const safeMaxHitPoints = Number.isFinite(maxHitPointsValue) ? Math.max(0, maxHitPointsValue) : 0;
+  const currentHpConstraintWarning = tEdit("quickWarnings.currentOutOfBounds");
+  const maxHpConstraintWarning = tEdit("quickWarnings.maxBelowCurrent");
+  const { info } = useToast();
+
+  function handleCurrentHpConstraintResult(payload: { wasClamped: boolean; source: "quick-action" | "direct-input" }) {
+    if (payload.wasClamped) {
+      info(currentHpConstraintWarning);
+    }
+
+    form.clearErrors(["stats.currentHitPoints", "stats.maxHitPoints"]);
+  }
+
+  function handleMaxHpConstraintResult(payload: { wasClamped: boolean; source: "quick-action" | "direct-input" }) {
+    if (payload.wasClamped) {
+      info(maxHpConstraintWarning);
+    }
+
+    form.clearErrors(["stats.currentHitPoints", "stats.maxHitPoints"]);
+  }
 
   const { fields: classFields } = useFieldArray({
     control: form.control,
@@ -38,7 +63,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
         {t("stats")}
       </h2>
 
-      <div className="flex flex-row gap-2">
+      <div className="grid grid-cols-2 gap-4">
         {/* Classe d'Armure */}
         <Controller
           name="stats.armorClass"
@@ -49,14 +74,13 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
               orientation="vertical">
               <label
                 htmlFor="armor-class"
-                className="text-sm font-medium">
+                className="text-sm font-medium truncate">
                 {t("armorClass")}
               </label>
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                   id="armor-class"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "armor-class-error" : undefined}
@@ -100,7 +124,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <Input
                   {...field}
                   value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
                   id="initiative"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? "initiative-error" : undefined}
@@ -126,6 +149,8 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
             </Field>
           )}
         />
+      </div>
+      <div className="w-fit">
         {/* Taille */}
         <Controller
           name="stats.size"
@@ -177,11 +202,10 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
           )}
         />
       </div>
-
       {/* Vitesses */}
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-medium">{tEdit("speeds")}</h3>
-        <div className="grid sm:grid-cols-3 grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
           <Controller
             name="stats.speed.walk"
             control={form.control}
@@ -197,8 +221,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-walk"
                     type="number"
                     min={0}
@@ -230,8 +253,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-climb"
                     type="number"
                     className="text-sm"
@@ -262,8 +284,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-swim"
                     type="number"
                     min={0}
@@ -294,8 +315,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-fly"
                     type="number"
                     className="text-sm"
@@ -326,8 +346,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
                   <Input
                     {...field}
-                    value={field.value ?? 0}
-                    onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                    value={field.value ?? ""}
                     id="speed-burrow"
                     type="number"
                     className="text-sm"
@@ -359,19 +378,30 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 orientation="vertical">
                 <label
                   htmlFor="health-current"
-                  className="text-xs">
+                  className="text-xs truncate">
                   {tEdit("currentHP")}
                 </label>
-                <Input
-                  {...field}
-                  value={field.value ?? 0}
-                  onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                  id="health-current"
-                  type="number"
-                  className="text-sm"
+                <QuickNumberCalculator
+                  value={field.value ?? ""}
+                  currentValue={field.value}
                   min={0}
+                  max={safeMaxHitPoints}
+                  onValueChange={(nextValue) => field.onChange(nextValue)}
+                  onApply={(nextValue) => field.onChange(nextValue)}
+                  onConstraintResult={({ wasClamped, source }) => handleCurrentHpConstraintResult({ wasClamped, source })}
+                  triggerLabel={`${tEdit("currentHP")} quick calculator`}
+                  inputLabel={`${tEdit("currentHP")} value`}
+                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
+                  inputProps={{
+                    id: "health-current",
+                    className: "text-sm",
+                    name: field.name,
+                    onBlur: field.onBlur,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? "health-current-error" : undefined,
+                  }}
                 />
-                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                {fieldState.error && <FieldError id="health-current-error">{fieldState.error.message}</FieldError>}
               </Field>
             )}
           />
@@ -384,19 +414,29 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 orientation="vertical">
                 <label
                   htmlFor="health-max"
-                  className="text-xs">
+                  className="text-xs truncate">
                   {tEdit("maxHP")}
                 </label>
-                <Input
-                  {...field}
-                  value={field.value ?? 0}
-                  onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                  id="health-max"
-                  type="number"
-                  className="text-sm"
-                  min={0}
+                <QuickNumberCalculator
+                  value={field.value ?? ""}
+                  currentValue={field.value}
+                  min={safeCurrentHitPoints}
+                  onValueChange={(nextValue) => field.onChange(nextValue)}
+                  onApply={(nextValue) => field.onChange(nextValue)}
+                  onConstraintResult={({ wasClamped, source }) => handleMaxHpConstraintResult({ wasClamped, source })}
+                  triggerLabel={`${tEdit("maxHP")} quick calculator`}
+                  inputLabel={`${tEdit("maxHP")} value`}
+                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
+                  inputProps={{
+                    id: "health-max",
+                    className: "text-sm",
+                    name: field.name,
+                    onBlur: field.onBlur,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? "health-max-error" : undefined,
+                  }}
                 />
-                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                {fieldState.error && <FieldError id="health-max-error">{fieldState.error.message}</FieldError>}
               </Field>
             )}
           />
@@ -409,19 +449,33 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 orientation="vertical">
                 <label
                   htmlFor="health-temp"
-                  className="text-xs">
+                  className="text-xs truncate">
                   {tEdit("tempHP")}
                 </label>
-                <Input
-                  {...field}
-                  value={field.value ?? 0}
-                  onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                  id="health-temp"
-                  type="number"
-                  className="text-sm"
+                <QuickNumberCalculator
+                  value={field.value ?? ""}
+                  currentValue={field.value}
                   min={0}
+                  onValueChange={(nextValue) => field.onChange(nextValue)}
+                  onApply={(nextValue) => field.onChange(nextValue)}
+                  triggerLabel={`${tEdit("tempHP")} quick calculator`}
+                  inputLabel={`${tEdit("tempHP")} value`}
+                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
+                  inputProps={{
+                    id: "health-temp",
+                    className: "text-sm",
+                    name: field.name,
+                    onBlur: field.onBlur,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? "health-temp-error" : undefined,
+                  }}
                 />
-                {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                {fieldState.error && (
+                  <FieldError
+                    id="health-temp-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
               </Field>
             )}
           />
@@ -448,12 +502,12 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                       <label
                         htmlFor={`class-${index}-level`}
                         className="text-xs">
-                        {t("hitLevel")} ({tClass(className)})
+                        {t("hitLevel")}
+                        {className ? ` (${tClass(className)})` : ""}
                       </label>
                       <Input
                         {...field}
                         value={field.value ?? 1}
-                        onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                         id={`class-${index}-level`}
                         type="number"
                         className="text-sm"

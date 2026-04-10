@@ -28,6 +28,8 @@ export function ComboboxInput({
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const inputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
+    const isSelectingOptionRef = useRef(false);
+    const canShowSuggestionsRef = useRef(false);
 
     // Sync input value with prop value
     useEffect(() => {
@@ -51,7 +53,16 @@ export function ComboboxInput({
         ? [trimmedInput, ...filteredSuggestions]
         : filteredSuggestions;
 
+    useEffect(() => {
+        if (isSelectingOptionRef.current) return;
+        if (!canShowSuggestionsRef.current) return;
+        if (document.activeElement !== inputRef.current) return;
+        setShowSuggestions(inputValue.length > 0 && allOptions.length > 0);
+    }, [inputValue, allOptions.length]);
+
     const selectOption = (option: string) => {
+        isSelectingOptionRef.current = true;
+        canShowSuggestionsRef.current = false;
         onChange(option);
         setInputValue(option);
         setShowSuggestions(false);
@@ -85,13 +96,26 @@ export function ComboboxInput({
     const handleBlur = () => {
         // Delay to allow click on suggestion to register
         setTimeout(() => {
+            if (isSelectingOptionRef.current) {
+                isSelectingOptionRef.current = false;
+                return;
+            }
+
+            canShowSuggestionsRef.current = false;
             setShowSuggestions(false);
             setHighlightedIndex(-1);
+
+            const latestInput = inputRef.current?.value.trim() ?? inputValue.trim();
             // If input is different from value, update the value
-            if (trimmedInput && trimmedInput !== value) {
-                onChange(trimmedInput);
+            if (latestInput && latestInput !== value) {
+                onChange(latestInput);
             }
         }, 200);
+    };
+
+    const handleInputClick = () => {
+        canShowSuggestionsRef.current = true;
+        setShowSuggestions(inputValue.length > 0 && allOptions.length > 0);
     };
 
     // Scroll highlighted item into view
@@ -118,7 +142,7 @@ export function ComboboxInput({
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    onFocus={() => setShowSuggestions(allOptions.length > 0)}
+                    onClick={handleInputClick}
                     onBlur={handleBlur}
                     placeholder={placeholder}
                     aria-invalid={ariaInvalid}
@@ -153,7 +177,7 @@ export function ComboboxInput({
                                     >
                                         <span>
                                             {option}
-                                            {isCustom && <span className="mx-1">(personnalisé)</span>}
+                                            {isCustom && <span className="mx-1">(custom)</span>}
                                         </span>
                                         {isSelected && <Check size={16} className="text-blue" />}
                                     </button>

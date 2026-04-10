@@ -18,7 +18,7 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
 
   return (
     <div className="w-full flex flex-col gap-4 items-start">
-      <div className="grid grid-cols-3 max-[426px]:grid-cols-1 gap-3 md:gap-4 w-full">
+      <div className="grid grid-cols-3 md:grid-cols-2 max-[426px]:grid-cols-1 gap-3 md:gap-4 w-full">
         {/* Statistiques */}
         <NpcStatistics
           npc={npc}
@@ -62,7 +62,38 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
           title={t("abilitiesAndTraits")}
           headingId="abilities-traits-heading-npc"
         />
+
       </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+        <Card
+          className="gap-3 p-4 md:px-6 h-fit"
+          role="region"
+          aria-labelledby="battle-affinities-heading-npc">
+          <h2
+            id="battle-affinities-heading-npc"
+            className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+            {t("affinities")}
+          </h2>
+          <div className="flex flex-col gap-1">
+            {npc?.affinities?.resistances?.length > 0 && (
+              <p className="text-sm sm:text-base wrap-break-word">
+                <span className="font-semibold">{t("resistances")} :</span> {npc.affinities.resistances.join(", ")}
+              </p>
+            )}
+            {npc?.affinities?.vulnerabilities?.length > 0 && (
+              <p className="text-sm sm:text-base wrap-break-word">
+                <span className="font-semibold">{t("vulnerabilities")} :</span> {npc.affinities.vulnerabilities.join(", ")}
+              </p>
+            )}
+            {npc?.affinities?.immunities?.length > 0 && (
+              <p className="text-sm sm:text-base wrap-break-word">
+                <span className="font-semibold">{t("immunities")} :</span> {npc.affinities.immunities.join(", ")}
+              </p>
+            )}
+          </div>
+        </Card>
+      </div>
+
       {/* Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
         {/* Actions Standards */}

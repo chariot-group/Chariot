@@ -54,7 +54,8 @@ export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
       {skills.map(({ key, icon: Icon, ability }) => {
-        const skillValue = stats?.skills?.[key] || 0;
+        const abilityScore = stats.abilityScores[ability] || 10;
+        const skillValue = stats?.skills?.[key] ? stats?.skills?.[key] : Math.floor((abilityScore - 10) / 2);
 
         return (
           <Tooltip key={key}>

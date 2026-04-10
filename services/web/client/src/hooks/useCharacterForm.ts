@@ -8,6 +8,9 @@ import CharacterService from '@/services/CharacterService';
 import { Player, NPC } from '@/types/character';
 import { createPlayerSchema, createNpcSchema } from '@/schemas/character';
 import { makeZodMessages } from '@/lib/zodErrorMap';
+import { useAppDispatch } from '@/store/hooks';
+import { upsertCharacterWithoutGroup } from '@/store/slices/characterSlice';
+import { upsertCharacterInGroups } from '@/store/slices/groupSlice';
 
 /**
  * Type de personnage supporté
@@ -120,6 +123,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
     // Hooks
     const { character, loading: isLoading, error, refetch } = useCharacter(characterId);
     const toast = useToast();
+    const dispatch = useAppDispatch();
     const t = useTranslations('characterForm');
     const tZod = useTranslations('zodErrors');
 
@@ -137,10 +141,27 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
         shouldUnregister: false, // 🐛 FIX: Conserve les valeurs des champs même quand ils sont démontés
     });
 
+    // Normalise les clés numériques de spellSlotsByUses en "k{n}" pour éviter
+    // que react-hook-form les interprète comme des indices de tableau.
+    const normalizeSpellSlots = (data: any): any => {
+        if (!data?.spellcasting) return data;
+        return {
+            ...data,
+            spellcasting: data.spellcasting.map((sc: any) => {
+                if (!sc?.spellSlotsByUses) return sc;
+                const normalized: Record<string, any> = {};
+                for (const [k, v] of Object.entries(sc.spellSlotsByUses)) {
+                    normalized[/^\d+$/.test(k) ? `k${k}` : k] = v;
+                }
+                return { ...sc, spellSlotsByUses: normalized };
+            }),
+        };
+    };
+
     // Chargement des données existantes
     useEffect(() => {
         if (character && characterId) {
-            form.reset(character as any);
+            form.reset(normalizeSpellSlots(character) as any);
         }
     }, [character, characterId, form]);
 
@@ -166,7 +187,10 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
                 );
             }
 
-            const createdCharacter = await CharacterService.createCharacter(type, sanitizedData as any);
+            // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
+            const parsedData = await resolvedSchema.parseAsync(sanitizedData);
+
+            const createdCharacter = await CharacterService.createCharacter(type, parsedData as any);
 
             toast.success(t('createSuccess'));
             setSuccess(true);
@@ -218,11 +242,24 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
                 );
             }
 
+            // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
+            const parsedData = await resolvedSchema.parseAsync(sanitizedData);
+
             const updatedCharacter = await CharacterService.updateCharacter(
                 type,
                 characterId,
-                sanitizedData as any
+                parsedData as any
             );
+
+            // Keep sidebar lists synchronized after update (name/group display).
+            dispatch(upsertCharacterWithoutGroup(updatedCharacter));
+            dispatch(upsertCharacterInGroups({
+                _id: updatedCharacter._id,
+                firstname: updatedCharacter.firstname,
+                lastname: updatedCharacter.lastname,
+                surname: updatedCharacter.surname,
+                userId: (updatedCharacter as any).userId,
+            }));
 
             toast.success(t('updateSuccess'));
             setSuccess(true);

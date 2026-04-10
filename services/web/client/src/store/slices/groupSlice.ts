@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../index';
+import type { RootState } from '@/store';
 import { Group, GroupState } from '@/types/campaign';
 
 const initialState: GroupState = {
@@ -91,6 +91,37 @@ const groupSlice = createSlice({
                 },
             ];
         },
+        upsertCharacterInGroups: (
+            state,
+            action: PayloadAction<{
+                _id: string;
+                firstname: string;
+                lastname: string;
+                surname: string;
+                userId?: string;
+            }>,
+        ) => {
+            const updatedCharacter = action.payload;
+
+            const updateGroupCharacters = (groups: Group[]) => {
+                groups.forEach((group) => {
+                    group.characters = group.characters.map((existing) =>
+                        existing._id === updatedCharacter._id
+                            ? {
+                                ...existing,
+                                firstname: updatedCharacter.firstname,
+                                lastname: updatedCharacter.lastname,
+                                surname: updatedCharacter.surname,
+                                userId: updatedCharacter.userId ?? existing.userId,
+                            }
+                            : existing,
+                    );
+                });
+            };
+
+            updateGroupCharacters(state.activeGroups);
+            updateGroupCharacters(state.archivedGroups);
+        },
     },
 });
 
@@ -102,6 +133,7 @@ export const {
     clearGroups,
     invalidateCache,
     addCharacterToGroup,
+    upsertCharacterInGroups,
 } = groupSlice.actions;
 
 // Selectors

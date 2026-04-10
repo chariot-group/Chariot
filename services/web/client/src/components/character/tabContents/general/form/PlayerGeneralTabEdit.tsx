@@ -286,11 +286,10 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           <Input
                             {...field}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                             id="character-level"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-level-error" : undefined}
-                            placeholder="1"
+                            placeholder={tEdit("levelPlaceholder")}
                             type="number"
                             min="1"
                             max="20"
@@ -322,11 +321,10 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           <Input
                             {...field}
                             value={field.value || ""}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                             id="character-xp"
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "character-xp-error" : undefined}
-                            placeholder="0"
+                            placeholder={tEdit("zeroPlaceholder")}
                             type="number"
                             min="0"
                           />
@@ -488,17 +486,16 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                 orientation="vertical">
                                 <label
                                   htmlFor={`class-level-${index}`}
-                                  className="text-sm font-medium">
+                                  className="text-sm font-medium truncate">
                                   {t("classLevel")}
                                 </label>
                                 <Input
                                   {...field}
                                   value={field.value || ""}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                                   id={`class-level-${index}`}
                                   aria-invalid={fieldState.invalid}
                                   aria-describedby={fieldState.error ? `class-level-${index}-error` : undefined}
-                                  placeholder="1"
+                                  placeholder={tEdit("levelPlaceholder")}
                                   type="number"
                                   min="1"
                                   max={maxLevelForThisClass}
@@ -575,10 +572,10 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => appendClass({ name: "", subclass: "", level: 1, hitDice: 0 })}
+                      onClick={() => appendClass({ name: undefined, subclass: "", level: 1, hitDice: 0 })}
                       className="flex items-center gap-2 border-dashed">
                       <Plus className="size-4" />
-                      <span>{t("addSecondClass")}</span>
+                      <span className="truncate">{t("addSecondClass")}</span>
                     </Button>
                   )}
                 </div>
@@ -893,7 +890,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     <Input
                       {...field}
                       value={field.value || ""}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
                       id="passive-perception"
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "passive-perception-error" : undefined}
