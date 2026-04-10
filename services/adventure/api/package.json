@@ -54,6 +54,13 @@
     "stripe": "^20.4.0",
     "winston": "^3.17.0"
   },
+  "overrides": {
+    "axios": ">=1.15.0",
+    "cross-spawn": "^7.0.6",
+    "lodash": ">=4.18.1",
+    "picomatch": ">=4.0.4",
+    "path-to-regexp": "^8.4.0"
+  },
   "devDependencies": {
     "@nestjs/cli": "^11.0.18",
     "@nestjs/testing": "^11.1.17",
