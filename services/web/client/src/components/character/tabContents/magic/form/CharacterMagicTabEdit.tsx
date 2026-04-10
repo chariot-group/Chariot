@@ -972,86 +972,88 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       const hasSlots = level > 0 && selectedSpellcasting.spellSlotsByLevel?.[level] !== undefined;
 
                       return (
-                        <AccordionItem
-                          key={level}
-                          value={`level-${level}`}
-                          className="flex flex-col gap-2 w-full content-center">
-                          <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
-                            <div className="relative w-full">
-                              <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
-                                <h3 className={`text-base md:text-lg font-medium ${accentColor}`}>
-                                  {level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}
-                                </h3>
-                              </AccordionTrigger>
-                              {hasSlots && (
-                                <div
-                                  className="flex items-center gap-1 sm:gap-1.5 shrink-0 absolute right-12 sm:right-14 top-1/2 -translate-y-1/2"
-                                  onClick={(e) => e.stopPropagation()}
-                                  onKeyDown={(e) => e.stopPropagation()}>
-                                  <Controller
-                                    name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total`}
-                                    control={form.control}
-                                    render={({ field }) => (
-                                      <Input
-                                        {...field}
-                                        className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
-                                        type="number"
-                                        min={1}
-                                        onClick={(e) => e.stopPropagation()}
-                                        aria-label={tMagic("spellSlotsTotalForLevel", { level })}
-                                      />
-                                    )}
-                                  />
-                                  <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">
-                                    {tMagic("slotsLabel")}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </Card>
+                        spellIndicesByLevel[level].length > 0 && (
+                          <AccordionItem
+                            key={level}
+                            value={`level-${level}`}
+                            className="flex flex-col gap-2 w-full content-center">
+                            <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
+                              <div className="relative w-full">
+                                <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
+                                  <h3 className={`text-base md:text-lg font-medium ${accentColor}`}>
+                                    {level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}
+                                  </h3>
+                                </AccordionTrigger>
+                                {hasSlots && (
+                                  <div
+                                    className="flex items-center gap-1 sm:gap-1.5 shrink-0 absolute right-12 sm:right-14 top-1/2 -translate-y-1/2"
+                                    onClick={(e) => e.stopPropagation()}
+                                    onKeyDown={(e) => e.stopPropagation()}>
+                                    <Controller
+                                      name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total`}
+                                      control={form.control}
+                                      render={({ field }) => (
+                                        <Input
+                                          {...field}
+                                          className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
+                                          type="number"
+                                          min={1}
+                                          onClick={(e) => e.stopPropagation()}
+                                          aria-label={tMagic("spellSlotsTotalForLevel", { level })}
+                                        />
+                                      )}
+                                    />
+                                    <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">
+                                      {tMagic("slotsLabel")}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </Card>
 
-                          <AccordionContent className="pb-2">
-                            <ul className="flex flex-wrap gap-2">
-                              {indices.length === 0 ? (
-                                <li className="text-sm text-muted-foreground px-2">{tMagic("noSpellsInLevel")}</li>
-                              ) : (
-                                indices.map((spellIndex) => {
-                                  const spell = currentSpells[spellIndex];
-                                  const spellName = spell?.name;
-                                  const isSelected = selectedSpellIndex === spellIndex;
+                            <AccordionContent className="pb-2">
+                              <ul className="flex flex-wrap gap-2">
+                                {indices.length === 0 ? (
+                                  <li className="text-sm text-muted-foreground px-2">{tMagic("noSpellsInLevel")}</li>
+                                ) : (
+                                  indices.map((spellIndex) => {
+                                    const spell = currentSpells[spellIndex];
+                                    const spellName = spell?.name;
+                                    const isSelected = selectedSpellIndex === spellIndex;
 
-                                  return (
-                                    <li key={spellIndex}>
-                                      <Card
-                                        onClick={() => {
-                                          setSelectedSpellIndex(spellIndex);
-                                          setShowMobileDetails(true);
-                                        }}
-                                        onKeyDown={(e) => {
-                                          if (e.key === "Enter" || e.key === " ") {
-                                            e.preventDefault();
+                                    return (
+                                      <li key={spellIndex}>
+                                        <Card
+                                          onClick={() => {
                                             setSelectedSpellIndex(spellIndex);
                                             setShowMobileDetails(true);
-                                          }
-                                        }}
-                                        className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-selected={isSelected}
-                                        aria-label={spellName || tMagic("newSpell")}>
-                                        <span
-                                          className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
-                                          aria-hidden="true">
-                                          {spellName || tMagic("newSpell")}
-                                        </span>
-                                      </Card>
-                                    </li>
-                                  );
-                                })
-                              )}
-                            </ul>
-                          </AccordionContent>
-                        </AccordionItem>
+                                          }}
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                              e.preventDefault();
+                                              setSelectedSpellIndex(spellIndex);
+                                              setShowMobileDetails(true);
+                                            }
+                                          }}
+                                          className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
+                                          role="button"
+                                          tabIndex={0}
+                                          aria-selected={isSelected}
+                                          aria-label={spellName || tMagic("newSpell")}>
+                                          <span
+                                            className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
+                                            aria-hidden="true">
+                                            {spellName || tMagic("newSpell")}
+                                          </span>
+                                        </Card>
+                                      </li>
+                                    );
+                                  })
+                                )}
+                              </ul>
+                            </AccordionContent>
+                          </AccordionItem>
+                        )
                       );
                     })}
                   </Accordion>
