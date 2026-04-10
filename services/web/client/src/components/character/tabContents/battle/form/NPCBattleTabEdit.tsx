@@ -9,7 +9,7 @@ import SavingThrowsEdit from "@/components/character/tabContents/general/form/Sa
 import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
 import { Controller } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
-import { DamageTypeTagInput } from "../../../../ui/damage-type-tag-input";
+import { DamageTypeTagInput } from "@/components/ui/damage-type-tag-input";
 
 interface NPCBattleTabEditProps {
   npc: NPC;
