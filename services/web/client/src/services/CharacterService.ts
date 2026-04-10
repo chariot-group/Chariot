@@ -31,12 +31,10 @@ class CharacterService {
      */
     async createCharacter(type: CharacterType, data: Partial<Player> | Partial<NPC>): Promise<Player | NPC> {
         try {
-            console.log('🌐 [CharacterService] Envoi à l\'API:', type, JSON.stringify(data, null, 2));
             const response = await apiClient().post<CharacterResponse>(
                 `${this.BASE_PATH}/${type}`,
                 data
             );
-            console.log('✅ [CharacterService] Réponse de l\'API:', response.data);
             return response.data.data as Player | NPC;
         } catch (error) {
             console.error(`Error creating ${type}:`, error);
@@ -85,7 +83,7 @@ class CharacterService {
     async getPlayersWithoutGroup(page: number = 1, offset: number = 10): Promise<PaginatedCharactersResponse> {
         try {
             const response = await apiClient().get<PaginatedCharactersResponse>(
-                `${this.BASE_PATH}/players//without-group`,
+                `${this.BASE_PATH}/players/without-group`,
                 {
                     params: { page, offset }
                 }

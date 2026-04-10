@@ -2,10 +2,12 @@ import { User } from "@/types/user";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { User as UserIcon } from "lucide-react";
+import { useEffect } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { ProfileFormData } from "@/hooks/useProfileForm";
 import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 
 interface Props {
   user: User | null;
@@ -18,6 +20,29 @@ interface Props {
 export default function UpdateProfile({ user, form, isLoading, onSubmit, onCancel }: Props) {
   const t = useTranslations("ProfilePage");
   const tEdit = useTranslations("ProfilePage.editProfile");
+
+  useEffect(() => {
+    const handleGlobalShortcuts = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        onCancel();
+        return;
+      }
+
+      if (!isEnterWithoutModifiers(event) || isTypingInInputElement(event.target)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      form.handleSubmit(onSubmit)();
+    };
+
+    window.addEventListener("keydown", handleGlobalShortcuts, true);
+
+    return () => {
+      window.removeEventListener("keydown", handleGlobalShortcuts, true);
+    };
+  }, [form, onCancel, onSubmit]);
 
   return (
     <Card
@@ -45,6 +70,17 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
           id="form-update-profile"
           className="h-full"
           onSubmit={form.handleSubmit(onSubmit)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              onCancel();
+              return;
+            }
+
+            if (isEnterWithModifiers(event)) {
+              event.preventDefault();
+            }
+          }}
           aria-label={tEdit("formLabel")}>
           <FieldGroup className="h-full flex flex-col justify-between">
             <div className="flex flex-col gap-2">

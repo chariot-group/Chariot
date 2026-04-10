@@ -30,24 +30,24 @@ export const DEFAULT_PLAYER_MASTERIES = {
 // ===== Player Stats =====
 export function createPlayerMasteriesSchema(zm: ZodMessages) {
     return z.object({
-        athletics: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        acrobatics: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        sleightHand: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        stealth: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        arcana: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        history: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        investigation: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        nature: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        religion: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        animalHandling: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        insight: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        medicine: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        perception: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        survival: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        deception: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        intimidation: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        performance: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
-        persuasion: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }),
+        athletics: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        acrobatics: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        sleightHand: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        stealth: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        arcana: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        history: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        investigation: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        nature: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        religion: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        animalHandling: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        insight: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        medicine: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        perception: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        survival: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        deception: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        intimidation: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        performance: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
+        persuasion: z.coerce.number().int().min(0, { message: zm.minNumber(0) }),
     }).default(DEFAULT_PLAYER_MASTERIES);
 }
 
@@ -62,7 +62,7 @@ export const PlayerMasteriesAbilitySchema = z.object({
 
 export function createPlayerStatsSchema(zm: ZodMessages) {
     return StatsSchema.extend({
-        proficiencyBonus: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }).optional(),
+        proficiencyBonus: z.coerce.number().int().min(0, { message: zm.minNumber(0) }).optional(),
         armors: z.array(z.string({ message: zm.required() })).optional(),
         weapons: z.array(z.string({ message: zm.required() })).optional(),
         tools: z.array(z.string({ message: zm.required() })).optional(),
@@ -74,31 +74,41 @@ export function createPlayerStatsSchema(zm: ZodMessages) {
 // ===== Death Saves =====
 export function createDeathSavesSchema(zm: ZodMessages) {
     return z.object({
-        successes: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }).max(3, { message: zm.maxNumber(3) }).optional(),
-        failures: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }).max(3, { message: zm.maxNumber(3) }).optional(),
+        successes: z.coerce.number().int().min(0, { message: zm.minNumber(0) }).max(3, { message: zm.maxNumber(3) }).optional(),
+        failures: z.coerce.number().int().min(0, { message: zm.minNumber(0) }).max(3, { message: zm.maxNumber(3) }).optional(),
     });
 }
 
 // ===== Progression =====
 export const ProgressionSchema = z.object({
-    level: z.number().optional(),
-    experience: z.number().optional(),
+    level: z.coerce.number().optional(),
+    experience: z.coerce.number().optional(),
 });
 
 // ===== Class =====
-export const ClassSchema = z.object({
-    name: ClassNameEnum, // REQUIRED
-    subclass: z.string().optional(),
-    level: z.number().optional(),
-    hitDice: z.number().optional(),
-});
+export function ClassSchema(zm: ZodMessages) {
+    return z.object({
+        name: z.string().or(ClassNameEnum).superRefine((value, ctx) => {
+            if (value === "" || value === undefined || value === null) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: zm.required(),
+                });
+                return z.NEVER;
+            }
+        }),
+        subclass: z.string().optional(),
+        level: z.coerce.number().optional(),
+        hitDice: z.coerce.number().optional(),
+    })
+};
 
 // ===== Player Profile =====
 export const PlayerProfileSchema = z.object({
     alignment: AlignmentEnum, // REQUIRED
-    race: z.string().optional(),
-    subrace: z.string().optional(),
-    history: z.string().optional(),
+    race: z.preprocess((value) => (value === null ? "" : value), z.string().optional()),
+    subrace: z.preprocess((value) => (value === null ? "" : value), z.string().optional()),
+    history: z.preprocess((value) => (value === null ? "" : value), z.string().optional()),
 });
 
 /**
@@ -113,10 +123,10 @@ export function createPlayerSchema(zm: ZodMessages) {
         inspiration: z.boolean({ message: zm.required() }).optional(),
 
         progression: ProgressionSchema.optional(),
-        class: z.array(ClassSchema).optional(),
+        class: z.array(ClassSchema(zm)).optional(),
         profile: PlayerProfileSchema.optional(),
         stats: createPlayerStatsSchema(zm).optional(),
-        exhaustionLevel: z.number({ message: zm.required() }).int().min(0, { message: zm.minNumber(0) }).max(6, { message: zm.maxNumber(6) }).optional(),
+        exhaustionLevel: z.coerce.number().int().min(0, { message: zm.minNumber(0) }).max(6, { message: zm.maxNumber(6) }).optional(),
         deathSaves: createDeathSavesSchema(zm).optional(),
     });
 }

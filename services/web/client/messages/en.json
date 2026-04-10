@@ -1,5 +1,8 @@
 {
   "sidebar": {
+    "gmSpace": "Game Master Space",
+    "playerSpace": "Player Space",
+    "environmentChanged": "You are now in the {space}.",
     "mainNavigation": "Main navigation",
     "gmNavigation": "Game Master navigation",
     "playerNavigation": "Player navigation",
@@ -150,6 +153,12 @@
       "title": "Create your first <br /> character",
       "button": "Create a character",
       "button-aria": "Navigate to character creation"
+    },
+    "imageCredits": {
+      "title": "Image credits",
+      "campaign": "Campaign image:",
+      "character": "Character image:",
+      "session": "Session image:"
     }
   },
   "characterCreate": {
@@ -223,6 +232,14 @@
       "currentHP": "Current HP",
       "maxHP": "Max HP",
       "tempHP": "Temp HP",
+      "quickErrors": {
+        "currentAboveMax": "Current HP cannot exceed max HP.",
+        "maxBelowCurrent": "Max HP cannot be lower than current HP."
+      },
+      "quickWarnings": {
+        "currentOutOfBounds": "Current HP was automatically adjusted between 0 and max HP.",
+        "maxBelowCurrent": "Max HP was automatically adjusted to stay greater than or equal to current HP."
+      },
       "defense": "Defense",
       "initiative": "Initiative",
       "size": "Size",
@@ -243,6 +260,15 @@
       "bonus": "Bonus",
       "damageType": "Damage Type",
       "damageTypePlaceholder": "Fire, Cold...",
+      "quickNumberPlaceholder": "Enter a number",
+      "levelPlaceholder": "1",
+      "zeroPlaceholder": "0",
+      "proficiencyBonusPlaceholder": "+2",
+      "challengeRatingPlaceholder": "0, 1/8, 1/4, 1/2",
+      "damageDiceCountPlaceholder": "8",
+      "damageDiceTypePlaceholder": "d6",
+      "healingDiceCountPlaceholder": "4",
+      "healingDiceTypePlaceholder": "d8",
       "slotsUsed": "Used",
       "slotsTotal": "Total",
       "copperPieces": "Copper Pieces",
@@ -286,8 +312,18 @@
       "actionDetails": "Action details for",
       "attackDC": "Attack/DC:",
       "damageType": "Damage/Type:",
+      "range": "Range",
       "description": "Description:",
       "type": "Type",
+      "usageType": "Action type",
+      "usageTypeOptions": {
+        "action": "Action",
+        "bonus_action": "Bonus action",
+        "reaction": "Reaction"
+      },
+      "usageTypeUnavailableTooltip": "No {type} is available for this character.",
+      "prioritizeByUsage": "Prioritize",
+      "all": "All",
       "name": "Name",
       "details": "details",
       "descriptionPrefix": "description",
@@ -322,7 +358,14 @@
       "noValue": "No value",
       "hpAbbr": "HP",
       "feet": "feet",
-      "feetAbbr": "ft"
+      "feetAbbr": "ft",
+      "affinities": "Affinities",
+      "resistances": "Resistances",
+      "resistancesPlaceholder": "Fire, Cold...",
+      "vulnerabilities": "Vulnerabilities",
+      "vulnerabilitiesPlaceholder": "Fire, Cold...",
+      "immunities": "Immunities",
+      "immunitiesPlaceholder": "Fire, Cold..."
     },
     "history": {
       "appearance": "Appearance",
@@ -390,6 +433,8 @@
         "skills": "Skills",
         "proficiencyBonus": "Proficiency bonus",
         "abilityBonus": "Bonus",
+        "abilityScorePlaceholder": "10",
+        "abilityBonusPlaceholder": "{value}",
         "skillsList": "Character skills list",
         "passivePerception": "Passive perception",
         "passivePerceptionOverride": "Custom value",
@@ -614,6 +659,7 @@
       "spellLevel": "Level {level} spells",
       "spellSlots": "{used} / {total}",
       "spellDetails": {
+        "level": "Level",
         "school": "School",
         "castingTime": "Casting time",
         "range": "Range",
@@ -662,6 +708,18 @@
       "removeSpellWithName": "Remove spell {name}",
       "expandAllSpellLevels": "Expand all spell levels",
       "collapseAllSpellLevels": "Collapse all spell levels",
+      "npc": {
+        "atWill": "At will",
+        "usesPerDay": "{count}/day",
+        "usesPerDayLabel": "Uses / day",
+        "usedLabel": "Used out of {uses}",
+        "usedSpellLabel": "Used today"
+      },
+      "displayMode": {
+        "label": "Sort spells by",
+        "byLevel": "Level",
+        "byUses": "Uses / day"
+      },
       "codexDialog": {
         "title": "Search for a spell in Codex",
         "searchPlaceholder": "Search for a spell...",

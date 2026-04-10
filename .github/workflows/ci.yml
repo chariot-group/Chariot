@@ -9,6 +9,15 @@ on:
       - integ
       - main
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'integration'
+        type: choice
+        options:
+          - integration
+          - production
 
 permissions:
   contents: read
@@ -22,6 +31,7 @@ jobs:
   # Job CI pour le frontend web
   ci-web:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout code
@@ -50,6 +60,7 @@ jobs:
   # Job CI pour le backend adventure
   ci-adventure:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout code
@@ -82,6 +93,7 @@ jobs:
   # Job CI pour la gateway
   ci-gateway:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout code
@@ -111,11 +123,10 @@ jobs:
         working-directory: ./services/gateway/api
         run: npm run build
 
-  # Job CD pour déployer le frontend (sur PR vers integ/main, push direct, ou déclenchement manuel)
+  # Job CD pour déployer le frontend (sur push main/integ ou workflow_dispatch)
   deploy-web:
     runs-on: ubuntu-latest
-    needs: [ci-web]
-    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main')) || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -124,23 +135,34 @@ jobs:
       - name: Determine environment and set variables
         id: env
         run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            echo "env_name=production" >> $GITHUB_OUTPUT
+          # Détermine l'environnement basé sur la branche (push) ou l'input (workflow_dispatch)
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV_NAME="${{ github.event.inputs.environment }}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            ENV_NAME="production"
+          else
+            ENV_NAME="integration"
+          fi
+          
+          echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
+          
+          if [[ "${ENV_NAME}" == "production" ]]; then
             echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.PROD_CODEX_URL }}" >> $GITHUB_OUTPUT
+            echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           else
-            echo "env_name=integration" >> $GITHUB_OUTPUT
             echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.INTEG_CODEX_URL }}" >> $GITHUB_OUTPUT
+            echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -150,7 +172,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Chariot Frontend
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./services/web/client
           file: ./services/web/client/Dockerfile.prod
@@ -166,17 +188,17 @@ jobs:
             NEXT_PUBLIC_CODEX_URL=${{ steps.env.outputs.codex_url }}
             NEXT_PUBLIC_KEYCLOAK_REALM=chariot
             NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
+            NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
 
       - name: Output image tags
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:latest"
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-frontend-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
 
-  # Job CD pour déployer le service adventure (sur PR vers integ/main, push direct, ou déclenchement manuel)
+  # Job CD pour déployer le service adventure (sur push main/integ ou workflow_dispatch)
   deploy-adventure:
     runs-on: ubuntu-latest
-    needs: [ci-adventure]
-    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main')) || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -185,17 +207,22 @@ jobs:
       - name: Determine environment and set variables
         id: env
         run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            echo "env_name=production" >> $GITHUB_OUTPUT
+          # Détermine l'environnement basé sur la branche (push) ou l'input (workflow_dispatch)
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV_NAME="${{ github.event.inputs.environment }}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            ENV_NAME="production"
           else
-            echo "env_name=integration" >> $GITHUB_OUTPUT
+            ENV_NAME="integration"
           fi
+          
+          echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -205,7 +232,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Chariot Adventure
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./services/adventure/api
           file: ./services/adventure/api/Dockerfile.prod
@@ -216,17 +243,16 @@ jobs:
           platforms: linux/amd64
           build-args: |
             NODE_ENV=production
-
+            NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
       - name: Output image tags
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-adventure-${{ steps.env.outputs.env_name }}:latest"
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-adventure-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
 
-  # Job CD pour déployer la gateway (sur PR vers integ/main, push direct, ou déclenchement manuel)
+  # Job CD pour déployer la gateway (sur push main/integ ou workflow_dispatch)
   deploy-gateway:
     runs-on: ubuntu-latest
-    needs: [ci-gateway]
-    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || (github.event_name == 'pull_request' && (github.base_ref == 'integ' || github.base_ref == 'main')) || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
@@ -235,17 +261,22 @@ jobs:
       - name: Determine environment and set variables
         id: env
         run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            echo "env_name=production" >> $GITHUB_OUTPUT
+          # Détermine l'environnement basé sur la branche (push) ou l'input (workflow_dispatch)
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV_NAME="${{ github.event.inputs.environment }}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            ENV_NAME="production"
           else
-            echo "env_name=integration" >> $GITHUB_OUTPUT
+            ENV_NAME="integration"
           fi
+          
+          echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -255,7 +286,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Chariot Gateway
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./services/gateway/api
           file: ./services/gateway/api/Dockerfile.prod
@@ -266,7 +297,7 @@ jobs:
           platforms: linux/amd64
           build-args: |
             NODE_ENV=production
-
+            NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
       - name: Output image tags
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-gateway-${{ steps.env.outputs.env_name }}:latest"

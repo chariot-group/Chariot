@@ -45,7 +45,6 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
               name="treasure.pp"
               control={form.control}
               render={({ field, fieldState }) => {
-                const { value, onChange, ...restField } = field;
                 return (
                   <Field
                     className="shrink-0 w-auto"
@@ -56,17 +55,13 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                         <TooltipTrigger asChild>
                           <Input
                             className="w-24 pr-8"
-                            {...restField}
-                            value={value ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
-                            }}
+                            {...field}
+                            value={field.value ?? ""}
                             id="inventory-pp"
                             aria-label={t("platinumPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("platinumPieces")}
+                            placeholder={t("pp")}
                             min={0}
                             type="number"
                           />
@@ -90,7 +85,6 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
               name="treasure.gp"
               control={form.control}
               render={({ field, fieldState }) => {
-                const { value, onChange, ...restField } = field;
                 return (
                   <Field
                     className="shrink-0 w-auto"
@@ -101,17 +95,13 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                         <TooltipTrigger asChild>
                           <Input
                             className="w-24 pr-8"
-                            {...restField}
-                            value={value ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
-                            }}
+                            {...field}
+                            value={field.value ?? ""}
                             id="inventory-gp"
                             aria-label={t("goldPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("goldPieces")}
+                            placeholder={t("gp")}
                             min={0}
                             type="number"
                           />
@@ -135,7 +125,6 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
               name="treasure.ep"
               control={form.control}
               render={({ field, fieldState }) => {
-                const { value, onChange, ...restField } = field;
                 return (
                   <Field
                     className="shrink-0 w-auto"
@@ -146,17 +135,13 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                         <TooltipTrigger asChild>
                           <Input
                             className="w-24 pr-8"
-                            {...restField}
-                            value={value ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
-                            }}
+                            {...field}
+                            value={field.value ?? ""}
                             id="inventory-ep"
                             aria-label={t("electrumPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("electrumPieces")}
+                            placeholder={t("ep")}
                             type="number"
                             min={0}
                           />
@@ -180,7 +165,6 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
               name="treasure.sp"
               control={form.control}
               render={({ field, fieldState }) => {
-                const { value, onChange, ...restField } = field;
                 return (
                   <Field
                     className="shrink-0 w-auto"
@@ -191,17 +175,13 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                         <TooltipTrigger asChild>
                           <Input
                             className="w-24 pr-8"
-                            {...restField}
-                            value={value ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
-                            }}
+                            {...field}
+                            value={field.value ?? ""}
                             id="inventory-sp"
                             aria-label={t("silverPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("silverPieces")}
+                            placeholder={t("sp")}
                             type="number"
                             min={0}
                           />
@@ -225,7 +205,6 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
               name="treasure.cp"
               control={form.control}
               render={({ field, fieldState }) => {
-                const { value, onChange, ...restField } = field;
                 return (
                   <Field
                     className="shrink-0 w-auto"
@@ -236,17 +215,13 @@ export default function CharacterInventoryTabEdit({ character, accentColor, form
                         <TooltipTrigger asChild>
                           <Input
                             className="w-24 pr-8"
-                            {...restField}
-                            value={value ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value === "" ? undefined : Number(e.target.value);
-                              onChange(val);
-                            }}
+                            {...field}
+                            value={field.value ?? ""}
                             id="inventory-cp"
                             aria-label={t("copperPieces")}
                             aria-invalid={fieldState.invalid}
                             aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("copperPieces")}
+                            placeholder={t("cp")}
                             type="number"
                             min={0}
                           />

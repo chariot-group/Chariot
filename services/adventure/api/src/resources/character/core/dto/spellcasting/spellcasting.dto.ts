@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsNumber,
   IsOptional,
   IsString,
@@ -34,6 +35,15 @@ export class SpellcastingDto {
   @ApiProperty({ example: { 1: { total: 4, used: 1 }, 2: { total: 3, used: 0 } } })
   @IsOptional()
   spellSlotsByLevel?: Map<number, { total?: number; used?: number }>;
+
+  @ApiProperty({ description: 'NPC only — uses per day tracker', example: { 2: 3, 3: null } })
+  @IsOptional()
+  spellSlotsByUses?: Map<number, number | null>;
+
+  @ApiProperty({ example: false, description: 'Whether spells are innate (grouped by uses per day)', required: false })
+  @IsOptional()
+  @IsBoolean()
+  isInnate?: boolean;
 
   @ApiProperty({ example: 10 })
   @IsOptional()

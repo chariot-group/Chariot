@@ -36,6 +36,7 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
         </h2>
         <div className="flex justify-end shrink-0">
           <button
+            type="button"
             onClick={() => {
               if (openAccordionValues.length > 0) {
                 setOpenAccordionValues([]);
@@ -66,7 +67,7 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
               <span className="text-sm sm:text-lg font-semibold truncate">{ability.name}</span>
             </AccordionTrigger>
             <AccordionContent
-              className="text-sm sm:text-base pb-3 break-all"
+              className="text-sm sm:text-base pb-3 whitespace-pre-wrap wrap-break-word"
               role="region"
               aria-label={`${t("descriptionPrefix")} ${ability.name}`}>
               {ability.description}

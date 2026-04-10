@@ -11,7 +11,7 @@ body:
       description: Décrire au format Scrum ce qui est attendu du ticket
       value: |
         En tant que 
-        je souhaite 
+        Je souhaite 
         Afin de 
     validations:
       required: true

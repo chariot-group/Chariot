@@ -156,7 +156,7 @@ export default function CharacterInventoryView({ accentColor, character }: Chara
             className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
             {t("equipment")}
           </h2>
-          <p className="text-sm md:text-base break-all wrap-break-words">
+          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
             {character?.treasure.equipment || t("noEquipment")}
           </p>
         </Card>
@@ -167,7 +167,7 @@ export default function CharacterInventoryView({ accentColor, character }: Chara
           className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
           {t("treasure")}
         </h2>
-        <p className="text-sm md:text-base break-all wrap-break-words">
+        <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
           {character?.treasure.treasure || t("noTreasure")}
         </p>
       </Card>

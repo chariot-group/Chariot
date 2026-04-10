@@ -1,5 +1,8 @@
 {
   "sidebar": {
+    "gmSpace": "Espacio del máster",
+    "playerSpace": "Espacio de jugador",
+    "environmentChanged": "Ahora estás en el {space}.",
     "mainNavigation": "Navegación principal",
     "gmNavigation": "Navegación de director de juego",
     "playerNavigation": "Navegación de jugador",
@@ -150,8 +153,14 @@
       "title": "Crea tu primer <br /> personaje",
       "button": "Crear un personaje",
       "button-aria": "Navegar hacia la creación de personaje"
+    },
+    "imageCredits": {
+      "title": "Créditos de imágenes",
+      "campaign": "Imagen de campaña:",
+      "character": "Imagen de personaje:",
+      "session": "Imagen de sesión:"
     }
-  },  
+  },
   "characterForm": {
     "createSuccess": "Personaje creado con éxito",
     "createError": "Error al crear el personaje",
@@ -223,6 +232,14 @@
       "currentHP": "PV Actuales",
       "maxHP": "PV Máximo",
       "tempHP": "PV Temporales",
+      "quickErrors": {
+        "currentAboveMax": "Los PV actuales no pueden superar los PV máximos.",
+        "maxBelowCurrent": "Los PV máximos no pueden ser inferiores a los PV actuales."
+      },
+      "quickWarnings": {
+        "currentOutOfBounds": "El valor de PV actuales se ajustó automáticamente entre 0 y los PV máximos.",
+        "maxBelowCurrent": "El valor de PV máximos se ajustó automáticamente para mantenerse mayor o igual que los PV actuales."
+      },
       "defense": "Defensa",
       "initiative": "Iniciativa",
       "size": "Tamaño",
@@ -243,6 +260,15 @@
       "bonus": "Bonificación",
       "damageType": "Tipo de daño",
       "damageTypePlaceholder": "Fuego, Frío...",
+      "quickNumberPlaceholder": "Introduce un numero",
+      "levelPlaceholder": "1",
+      "zeroPlaceholder": "0",
+      "proficiencyBonusPlaceholder": "+2",
+      "challengeRatingPlaceholder": "0, 1/8, 1/4, 1/2",
+      "damageDiceCountPlaceholder": "8",
+      "damageDiceTypePlaceholder": "d6",
+      "healingDiceCountPlaceholder": "4",
+      "healingDiceTypePlaceholder": "d8",
       "slotsUsed": "Usados",
       "slotsTotal": "Total",
       "copperPieces": "Piezas de Cobre",
@@ -286,9 +312,19 @@
       "actionDetails": "Detalles de la acción",
       "attackDC": "Ataque/CD:",
       "damageType": "Daño/Tipo:",
+      "range": "Alcance",
       "description": "Descripción:",
       "details": "detalles",
       "type": "Tipo",
+      "usageType": "Tipo de acción",
+      "usageTypeOptions": {
+        "action": "Acción",
+        "bonus_action": "Acción adicional",
+        "reaction": "Reacción"
+      },
+      "usageTypeUnavailableTooltip": "No hay {type} disponible para este personaje.",
+      "prioritizeByUsage": "Priorizar",
+      "all": "Todo",
       "name": "Nombre",
       "descriptionPrefix": "descripción",
       "armorClass": "Clase de Armadura",
@@ -322,7 +358,14 @@
       "noValue": "Sin valor",
       "hpAbbr": "PG",
       "feet": "pies",
-      "feetAbbr": "pies"
+      "feetAbbr": "ft",
+      "affinities": "Afinidades",
+      "resistances": "Resistencias",
+      "resistancesPlaceholder": "Fuego, Frio...",
+      "vulnerabilities": "Vulnerabilidades",
+      "vulnerabilitiesPlaceholder": "Fuego, Frio...",
+      "immunities": "Inmunidades",
+      "immunitiesPlaceholder": "Fuego, Frio..."
     },
     "history": {
       "appearance": "Apariencia",
@@ -390,6 +433,8 @@
         "skills": "Habilidades",
         "proficiencyBonus": "Bonificador de competencia",
         "abilityBonus": "Bonificador",
+        "abilityScorePlaceholder": "10",
+        "abilityBonusPlaceholder": "{value}",
         "skillsList": "Lista de habilidades del personaje",
         "passivePerception": "Percepción pasiva",
         "passivePerceptionOverride": "Valor personalizado",
@@ -614,12 +659,14 @@
       "spellLevel": "Conjuros de nivel {level}",
       "spellSlots": "{used} / {total}",
       "spellDetails": {
+        "level": "Nivel",
         "school": "Escuela",
         "castingTime": "Tiempo de lanzamiento",
         "range": "Alcance",
         "components": "Componentes",
         "duration": "Duración",
-        "description": "Descripción"
+        "description": "Descripción",
+        "usesTracker": "Usos"
       },
       "damage": "Daño",
       "healing": "Curación",
@@ -664,6 +711,18 @@
       "removeSpellWithName": "Eliminar conjuro {name}",
       "expandAllSpellLevels": "Expandir todos los niveles de conjuros",
       "collapseAllSpellLevels": "Contraer todos los niveles de conjuros",
+      "npc": {
+        "atWill": "A voluntad",
+        "usesPerDay": "{count}/día",
+        "usesPerDayLabel": "Usos / día",
+        "usedLabel": "Usado de {uses}",
+        "usedSpellLabel": "Usado hoy"
+      },
+      "displayMode": {
+        "label": "Ordenar conjuros por",
+        "byLevel": "Nivel",
+        "byUses": "Usos / día"
+      },
       "codexDialog": {
         "title": "Buscar un conjuro en Codex",
         "searchPlaceholder": "Buscar un conjuro...",

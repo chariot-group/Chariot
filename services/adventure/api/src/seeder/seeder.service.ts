@@ -53,6 +53,7 @@ export class SeederService {
       await this.campaignModel.deleteMany({});
       await this.groupModel.deleteMany({});
       await this.characterModel.deleteMany({});
+      await this.userModel.deleteMany({});
 
       Logger.log('Cleaning Keycloak users...', this.SERVICE_NAME);
       await this.keycloakAdminService.deleteAllUsers();
@@ -146,7 +147,6 @@ export class SeederService {
 
           const activeGroup = await this.groupModel.create({
             label: faker.company.name(),
-            active: faker.number.int({ min: 0, max: 1 }) === 1,
             characters: activeCharacters.map((c) => c._id),
             createdBy: userId,
           });
@@ -174,7 +174,6 @@ export class SeederService {
 
           const archivedGroup = await this.groupModel.create({
             label: faker.company.name(),
-            active: faker.number.int({ min: 0, max: 1 }) === 1,
             characters: archivedCharacters.map((c) => c._id),
             createdBy: userId,
           });
