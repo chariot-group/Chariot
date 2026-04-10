@@ -169,6 +169,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
      * Fonction de création d'un nouveau personnage
      */
     const onCreate = async (data: TFormValues): Promise<void> => {
+        console.log('Creating character with data:');
         form.clearErrors();
         const isValid = await form.trigger(undefined, { shouldFocus: true });
         if (!isValid) {

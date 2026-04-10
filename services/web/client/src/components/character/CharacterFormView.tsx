@@ -16,6 +16,7 @@ import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDra
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
+import { toast } from "react-toastify";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -31,6 +32,7 @@ interface CharacterFormViewProps {
 export default function CharacterFormView({ characterType, groupId }: CharacterFormViewProps) {
   const t = useTranslations("characterDetail");
   const tCreate = useTranslations("characterCreate");
+  const tForm = useTranslations("characterForm");
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -136,32 +138,32 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       strength: Math.max(
         0,
         (codexSavingThrows.strength ?? getAbilityModifier(abilityScores.strength)) -
-        getAbilityModifier(abilityScores.strength),
+          getAbilityModifier(abilityScores.strength),
       ),
       dexterity: Math.max(
         0,
         (codexSavingThrows.dexterity ?? getAbilityModifier(abilityScores.dexterity)) -
-        getAbilityModifier(abilityScores.dexterity),
+          getAbilityModifier(abilityScores.dexterity),
       ),
       constitution: Math.max(
         0,
         (codexSavingThrows.constitution ?? getAbilityModifier(abilityScores.constitution)) -
-        getAbilityModifier(abilityScores.constitution),
+          getAbilityModifier(abilityScores.constitution),
       ),
       intelligence: Math.max(
         0,
         (codexSavingThrows.intelligence ?? getAbilityModifier(abilityScores.intelligence)) -
-        getAbilityModifier(abilityScores.intelligence),
+          getAbilityModifier(abilityScores.intelligence),
       ),
       wisdom: Math.max(
         0,
         (codexSavingThrows.wisdom ?? getAbilityModifier(abilityScores.wisdom)) -
-        getAbilityModifier(abilityScores.wisdom),
+          getAbilityModifier(abilityScores.wisdom),
       ),
       charisma: Math.max(
         0,
         (codexSavingThrows.charisma ?? getAbilityModifier(abilityScores.charisma)) -
-        getAbilityModifier(abilityScores.charisma),
+          getAbilityModifier(abilityScores.charisma),
       ),
     };
 
@@ -192,52 +194,52 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const defaultValues =
     characterType === "players"
       ? {
-        groups: resolvedGroupId ? [resolvedGroupId] : [],
-        class: [{ name: "", subclass: "", level: 1, hitDice: 0 }],
-        profile: {
-          alignment: "True Neutral",
-        },
-        stats: {
-          savingThrows: defaultSavingThrows,
-          masteries: defaultMasteries,
-          masteriesAbility: defaultMasteriesAbility,
-        },
-      }
-      : npcCodexDefaults
-        ? {
-          ...npcCodexDefaults,
-        }
-        : {
           groups: resolvedGroupId ? [resolvedGroupId] : [],
+          class: [{ name: "", subclass: "", level: 1, hitDice: 0 }],
           profile: {
             alignment: "True Neutral",
           },
           stats: {
-            size: "Medium",
-            maxHitPoints: 10,
-            currentHitPoints: 10,
-            tempHitPoints: 0,
-            armorClass: 10,
-            initiative: 0,
-            speed: { walk: 30, climb: 0, swim: 0, fly: 0, burrow: 0 },
-            abilityScores: {
-              strength: 10,
-              dexterity: 10,
-              constitution: 10,
-              intelligence: 10,
-              wisdom: 10,
-              charisma: 10,
-            },
-            languages: [],
-            passivePerception: 10,
             savingThrows: defaultSavingThrows,
-            skills: defaultNpcSkills,
-            senses: [],
+            masteries: defaultMasteries,
+            masteriesAbility: defaultMasteriesAbility,
           },
-          challenge: { challengeRating: 0, experiencePoints: 0 },
-          actions: { standard: [], legendary: [], lair: [] },
-          hitPointsRoll: "",
-        };
+        }
+      : npcCodexDefaults
+        ? {
+            ...npcCodexDefaults,
+          }
+        : {
+            groups: resolvedGroupId ? [resolvedGroupId] : [],
+            profile: {
+              alignment: "True Neutral",
+            },
+            stats: {
+              size: "Medium",
+              maxHitPoints: 10,
+              currentHitPoints: 10,
+              tempHitPoints: 0,
+              armorClass: 10,
+              initiative: 0,
+              speed: { walk: 30, climb: 0, swim: 0, fly: 0, burrow: 0 },
+              abilityScores: {
+                strength: 10,
+                dexterity: 10,
+                constitution: 10,
+                intelligence: 10,
+                wisdom: 10,
+                charisma: 10,
+              },
+              languages: [],
+              passivePerception: 10,
+              savingThrows: defaultSavingThrows,
+              skills: defaultNpcSkills,
+              senses: [],
+            },
+            challenge: { challengeRating: 0, experiencePoints: 0 },
+            actions: { standard: [], legendary: [], lair: [] },
+            hitPointsRoll: "",
+          };
 
   // Initialiser le formulaire avec useCharacterForm (characterId = null pour création)
   const { form, onCreate, onCancel, isSaving } = useCharacterForm({
@@ -286,193 +288,198 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const placeholderCharacter =
     characterType === "players"
       ? ({
-        _id: "",
-        firstname: "",
-        lastname: "",
-        surname: "",
-        avatar: "",
-        stats: {
-          size: "Medium",
-          maxHitPoints: 10,
-          currentHitPoints: 10,
-          tempHitPoints: 0,
-          armorClass: 10,
-          initiative: 0,
-          speed: { walk: 30, climb: 0, swim: 0, fly: 0, burrow: 0 },
-          abilityScores: {
-            strength: 10,
-            dexterity: 10,
-            constitution: 10,
-            intelligence: 10,
-            wisdom: 10,
-            charisma: 10,
+          _id: "",
+          firstname: "",
+          lastname: "",
+          surname: "",
+          avatar: "",
+          stats: {
+            size: "Medium",
+            maxHitPoints: 10,
+            currentHitPoints: 10,
+            tempHitPoints: 0,
+            armorClass: 10,
+            initiative: 0,
+            speed: { walk: 30, climb: 0, swim: 0, fly: 0, burrow: 0 },
+            abilityScores: {
+              strength: 10,
+              dexterity: 10,
+              constitution: 10,
+              intelligence: 10,
+              wisdom: 10,
+              charisma: 10,
+            },
+            languages: [],
+            passivePerception: 10,
+            savingThrows: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+            skills: {
+              athletics: 0,
+              acrobatics: 0,
+              sleightHand: 0,
+              stealth: 0,
+              arcana: 0,
+              history: 0,
+              investigation: 0,
+              nature: 0,
+              religion: 0,
+              animalHandling: 0,
+              insight: 0,
+              medicine: 0,
+              perception: 0,
+              survival: 0,
+              deception: 0,
+              intimidation: 0,
+              performance: 0,
+              persuasion: 0,
+            },
+            senses: [],
+            proficiencyBonus: 2,
+            armors: [],
+            weapons: [],
+            tools: [],
+            masteries: {
+              athletics: 0,
+              acrobatics: 0,
+              sleightHand: 0,
+              stealth: 0,
+              arcana: 0,
+              history: 0,
+              investigation: 0,
+              nature: 0,
+              religion: 0,
+              animalHandling: 0,
+              insight: 0,
+              medicine: 0,
+              perception: 0,
+              survival: 0,
+              deception: 0,
+              intimidation: 0,
+              performance: 0,
+              persuasion: 0,
+            },
+            masteriesAbility: {
+              strength: false,
+              dexterity: false,
+              constitution: false,
+              intelligence: false,
+              wisdom: false,
+              charisma: false,
+            },
           },
-          languages: [],
-          passivePerception: 10,
-          savingThrows: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
-          skills: {
-            athletics: 0,
-            acrobatics: 0,
-            sleightHand: 0,
-            stealth: 0,
-            arcana: 0,
-            history: 0,
-            investigation: 0,
-            nature: 0,
-            religion: 0,
-            animalHandling: 0,
-            insight: 0,
-            medicine: 0,
-            perception: 0,
-            survival: 0,
-            deception: 0,
-            intimidation: 0,
-            performance: 0,
-            persuasion: 0,
+          affinities: { resistances: [], immunities: [], vulnerabilities: [] },
+          abilities: [],
+          spellcasting: [],
+          appearance: {},
+          background: {},
+          treasure: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0, treasure: "", equipment: "" },
+          conditions: {
+            blinded: false,
+            charmed: false,
+            deafened: false,
+            frightened: false,
+            grappled: false,
+            incapacitated: false,
+            invisible: false,
+            paralyzed: false,
+            petrified: false,
+            poisoned: false,
+            prone: false,
+            restrained: false,
+            stunned: false,
+            unconscious: false,
           },
-          senses: [],
-          proficiencyBonus: 2,
-          armors: [],
-          weapons: [],
-          tools: [],
-          masteries: {
-            athletics: 0,
-            acrobatics: 0,
-            sleightHand: 0,
-            stealth: 0,
-            arcana: 0,
-            history: 0,
-            investigation: 0,
-            nature: 0,
-            religion: 0,
-            animalHandling: 0,
-            insight: 0,
-            medicine: 0,
-            perception: 0,
-            survival: 0,
-            deception: 0,
-            intimidation: 0,
-            performance: 0,
-            persuasion: 0,
-          },
-          masteriesAbility: {
-            strength: false,
-            dexterity: false,
-            constitution: false,
-            intelligence: false,
-            wisdom: false,
-            charisma: false,
-          },
-        },
-        affinities: { resistances: [], immunities: [], vulnerabilities: [] },
-        abilities: [],
-        spellcasting: [],
-        appearance: {},
-        background: {},
-        treasure: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0, treasure: "", equipment: "" },
-        conditions: {
-          blinded: false,
-          charmed: false,
-          deafened: false,
-          frightened: false,
-          grappled: false,
-          incapacitated: false,
-          invisible: false,
-          paralyzed: false,
-          petrified: false,
-          poisoned: false,
-          prone: false,
-          restrained: false,
-          stunned: false,
-          unconscious: false,
-        },
-        groups: [],
-        actions: [],
-        inspiration: false,
-        progression: { level: 1, experience: 0 },
-        class: [{ name: "Fighter", subclass: "", level: 1, hitDice: 10 }],
-        profile: { alignment: "True Neutral", race: "", subrace: "", history: "" },
-        exhaustionLevel: 0,
-        deathSaves: { successes: 0, failures: 0 },
-      } as Player)
+          groups: [],
+          actions: [],
+          inspiration: false,
+          progression: { level: 1, experience: 0 },
+          class: [{ name: "Fighter", subclass: "", level: 1, hitDice: 10 }],
+          profile: { alignment: "True Neutral", race: "", subrace: "", history: "" },
+          exhaustionLevel: 0,
+          deathSaves: { successes: 0, failures: 0 },
+        } as Player)
       : ({
-        _id: "",
-        firstname: "",
-        lastname: "",
-        surname: "",
-        avatar: "",
-        stats: {
-          size: "Medium",
-          maxHitPoints: 10,
-          currentHitPoints: 10,
-          tempHitPoints: 0,
-          armorClass: 10,
-          initiative: 0,
-          speed: { walk: 30, climb: 0, swim: 0, fly: 0, burrow: 0 },
-          abilityScores: {
-            strength: 10,
-            dexterity: 10,
-            constitution: 10,
-            intelligence: 10,
-            wisdom: 10,
-            charisma: 10,
+          _id: "",
+          firstname: "",
+          lastname: "",
+          surname: "",
+          avatar: "",
+          stats: {
+            size: "Medium",
+            maxHitPoints: 10,
+            currentHitPoints: 10,
+            tempHitPoints: 0,
+            armorClass: 10,
+            initiative: 0,
+            speed: { walk: 30, climb: 0, swim: 0, fly: 0, burrow: 0 },
+            abilityScores: {
+              strength: 10,
+              dexterity: 10,
+              constitution: 10,
+              intelligence: 10,
+              wisdom: 10,
+              charisma: 10,
+            },
+            languages: [],
+            passivePerception: 10,
+            savingThrows: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
+            skills: {
+              athletics: 0,
+              acrobatics: 0,
+              sleightHand: 0,
+              stealth: 0,
+              arcana: 0,
+              history: 0,
+              investigation: 0,
+              nature: 0,
+              religion: 0,
+              animalHandling: 0,
+              insight: 0,
+              medicine: 0,
+              perception: 0,
+              survival: 0,
+              deception: 0,
+              intimidation: 0,
+              performance: 0,
+              persuasion: 0,
+            },
+            senses: [],
           },
-          languages: [],
-          passivePerception: 10,
-          savingThrows: { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 },
-          skills: {
-            athletics: 0,
-            acrobatics: 0,
-            sleightHand: 0,
-            stealth: 0,
-            arcana: 0,
-            history: 0,
-            investigation: 0,
-            nature: 0,
-            religion: 0,
-            animalHandling: 0,
-            insight: 0,
-            medicine: 0,
-            perception: 0,
-            survival: 0,
-            deception: 0,
-            intimidation: 0,
-            performance: 0,
-            persuasion: 0,
+          affinities: { resistances: [], immunities: [], vulnerabilities: [] },
+          abilities: [],
+          spellcasting: [],
+          appearance: {},
+          background: {},
+          treasure: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0, treasure: "", equipment: "" },
+          conditions: {
+            blinded: false,
+            charmed: false,
+            deafened: false,
+            frightened: false,
+            grappled: false,
+            incapacitated: false,
+            invisible: false,
+            paralyzed: false,
+            petrified: false,
+            poisoned: false,
+            prone: false,
+            restrained: false,
+            stunned: false,
+            unconscious: false,
           },
-          senses: [],
-        },
-        affinities: { resistances: [], immunities: [], vulnerabilities: [] },
-        abilities: [],
-        spellcasting: [],
-        appearance: {},
-        background: {},
-        treasure: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0, treasure: "", equipment: "" },
-        conditions: {
-          blinded: false,
-          charmed: false,
-          deafened: false,
-          frightened: false,
-          grappled: false,
-          incapacitated: false,
-          invisible: false,
-          paralyzed: false,
-          petrified: false,
-          poisoned: false,
-          prone: false,
-          restrained: false,
-          stunned: false,
-          unconscious: false,
-        },
-        groups: [],
-        actions: { standard: [], legendary: [], lair: [] },
-        challenge: { challengeRating: 0, experiencePoints: 0 },
-        profile: { alignment: "True Neutral", type: "", subtype: "" },
-      } as NPC);
+          groups: [],
+          actions: { standard: [], legendary: [], lair: [] },
+          challenge: { challengeRating: 0, experiencePoints: 0 },
+          profile: { alignment: "True Neutral", type: "", subtype: "" },
+        } as NPC);
 
   const handleCancel = () => {
     onCancel();
     router.back();
+  };
+
+  const handleInvalid = (errors: Record<string, unknown>) => {
+    console.error("[CharacterForm] Validation errors (form blocked submission):", JSON.stringify(errors, null, 2));
+    toast.error(tForm("createError"));
   };
 
   useEffect(() => {
@@ -488,7 +495,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
 
       event.preventDefault();
       event.stopPropagation();
-      form.handleSubmit(onCreate)();
+      form.handleSubmit(onCreate, handleInvalid)();
     };
 
     window.addEventListener("keydown", handleGlobalShortcuts, true);
@@ -503,7 +510,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       <form
         id="character-create-form"
         className="flex flex-col flex-1 min-h-0"
-        onSubmit={form.handleSubmit(onCreate)}
+        onSubmit={form.handleSubmit(onCreate, handleInvalid)}
         onKeyDown={(event) => {
           if (isEnterWithModifiers(event)) {
             event.preventDefault();

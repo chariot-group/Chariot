@@ -204,7 +204,7 @@ export const SpellcastingSchema = z.object({
             return obj;
         }
         return val;
-    }, z.record(z.string(), SpellSlotSchema).optional()),
+    }, z.record(z.string(), z.number().nullable()).optional()),
     totalSlots: numericInput(true),
     spells: z.array(SpellSchema).optional(),
 });
