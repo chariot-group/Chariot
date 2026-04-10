@@ -261,8 +261,6 @@ class CodexService {
                 normalizedSlotsUse = entry.spellSlotsByUses;
             }
 
-            console.log('Normalized slots by uses:', normalizedSlotsUse);
-
             const normalizedSpells = (entry.spells || []).map((spell) => {
                 // Objet sort peuplé : { _id, translations: { en: {...} }, languages: [...] }
                 if (spell && typeof spell === 'object' && 'translations' in spell) {

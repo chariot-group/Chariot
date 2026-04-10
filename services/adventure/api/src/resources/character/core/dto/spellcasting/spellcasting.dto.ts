@@ -36,9 +36,9 @@ export class SpellcastingDto {
   @IsOptional()
   spellSlotsByLevel?: Map<number, { total?: number; used?: number }>;
 
-  @ApiProperty({ description: 'NPC only — uses per day tracker', example: { 2: { used: 1, total: 2 } } })
+  @ApiProperty({ description: 'NPC only — uses per day tracker', example: { 2: 3, 3: null } })
   @IsOptional()
-  spellSlotsByUses?: Map<number, { used?: number; total?: number }>;
+  spellSlotsByUses?: Map<number, number | null>;
 
   @ApiProperty({ example: false, description: 'Whether spells are innate (grouped by uses per day)', required: false })
   @IsOptional()
