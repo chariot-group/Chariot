@@ -17,6 +17,8 @@ jobs:
     permissions:
       contents: read
       security-events: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     outputs:
       has-critical-web: ${{ steps.check-docker-web.outputs.has-critical }}
@@ -44,7 +46,7 @@ jobs:
         continue-on-error: true
         uses: docker/build-push-action@v7
         with:
-          context: .
+          context: ./services/adventure/api
           file: ./services/adventure/api/dockerfile
           push: false
           load: true
@@ -105,6 +107,8 @@ jobs:
     permissions:
       contents: read
       security-events: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     outputs:
       has-critical-adventure: ${{ steps.check-docker-adventure.outputs.has-critical }}
@@ -132,7 +136,7 @@ jobs:
         continue-on-error: true
         uses: docker/build-push-action@v7
         with:
-          context: .
+          context: ./services/adventure/api
           file: ./services/adventure/api/dockerfile
           push: false
           load: true
