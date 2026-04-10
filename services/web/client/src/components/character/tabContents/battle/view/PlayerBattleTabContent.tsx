@@ -107,7 +107,8 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
           </div>
         </Card>
       </div>
-      <div className="grid lg:grid-cols-2 max-[376px]:grid-cols-1 gap-2 w-full">
+
+      <div className="grid lg:grid-cols-3 max-[376px]:grid-cols-1 gap-2 w-full">
         {/* Capacités et traits */}
         <div className="order-2 lg:order-1">
           <AbilitiesSection
@@ -124,6 +125,36 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
             actions={player.actions}
             accentColor={accentColor}
           />
+        </div>
+
+        <div className="order-3 lg:order-3">
+          <Card
+            className="gap-3 p-4 md:px-6 h-fit"
+            role="region"
+            aria-labelledby="battle-affinities-heading-player">
+            <h2
+              id="battle-affinities-heading-player"
+              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              {t("affinities")}
+            </h2>
+            <div className="flex flex-col gap-1">
+              {player?.affinities?.resistances?.length > 0 && (
+                <p className="text-sm sm:text-base wrap-break-word">
+                  <span className="font-semibold">{t("resistances")} :</span> {player.affinities.resistances.join(", ")}
+                </p>
+              )}
+              {player?.affinities?.vulnerabilities?.length > 0 && (
+                <p className="text-sm sm:text-base wrap-break-word">
+                  <span className="font-semibold">{t("vulnerabilities")} :</span> {player.affinities.vulnerabilities.join(", ")}
+                </p>
+              )}
+              {player?.affinities?.immunities?.length > 0 && (
+                <p className="text-sm sm:text-base wrap-break-word">
+                  <span className="font-semibold">{t("immunities")} :</span> {player.affinities.immunities.join(", ")}
+                </p>
+              )}
+            </div>
+          </Card>
         </div>
       </div>
     </div>

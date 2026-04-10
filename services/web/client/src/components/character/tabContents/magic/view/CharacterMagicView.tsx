@@ -6,7 +6,13 @@ import { Character, Spell, Spellcasting } from "@/types/character";
 import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown, WandSparkles } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { classWithSpellPrepared, getSpellByLevel, hasLevel0Spells, numberSpellsPrepare } from "@/utils/magic.utils";
+import {
+    calculateSpellAttackBonus,
+    classWithSpellPrepared,
+    getSpellByLevel,
+    hasLevel0Spells,
+    numberSpellsPrepare,
+} from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 
@@ -101,6 +107,14 @@ export default function CharacterMagicView({ character, accentColor }: Character
             </div>
         );
     }
+
+    const spellcastingAbilityScore = selectedSpellcasting?.ability
+        ? Number((character.stats?.abilityScores as Record<string, number> | undefined)?.[selectedSpellcasting.ability] ?? 10)
+        : 10;
+    const calculatedSpellAttackBonus = calculateSpellAttackBonus(
+        Number(character.stats?.proficiencyBonus ?? 2),
+        spellcastingAbilityScore,
+    );
 
     return (
         <div
@@ -225,6 +239,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
                             <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h2>
                             <div className="flex justify-end shrink-0">
                                 <button
+                                    type="button"
                                     onClick={() => {
                                         const levels: number[] = [];
                                         if (hasLevel0Spells(selectedSpellcasting)) {
@@ -366,13 +381,18 @@ export default function CharacterMagicView({ character, accentColor }: Character
                     aria-label={tMagic("spellDetailRegion")}>
                     {/* Back button for mobile */}
                     <button
+                        type="button"
                         onClick={() => setShowMobileDetails(false)}
                         className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
                         aria-label={tMagic("backToList")}>
                         <ArrowLeft className="w-4 h-4" />
                         <span>{tMagic("backToList")}</span>
                     </button>
-                    <SpellDisplay spell={selectedSpell} accentColor={accentColor} />
+                    <SpellDisplay
+                        spell={selectedSpell}
+                        accentColor={accentColor}
+                        attackBonus={calculatedSpellAttackBonus}
+                    />
                 </div>
             </div>
         </div>

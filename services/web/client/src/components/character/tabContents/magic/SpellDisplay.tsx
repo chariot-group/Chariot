@@ -4,18 +4,20 @@ import { Card } from "@/components/ui/card";
 import { Spell } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { formatDamageFormula } from "@/utils/spell-damage.utils";
+import { formatSignedBonus } from "@/utils/attack.utils";
 
 interface SpellDisplayProps {
     spell: Spell | null;
     accentColor: string;
     showTitle?: boolean;
+    attackBonus?: number | null;
 }
 
 /**
  * Composant réutilisable pour afficher les détails d'un sort
  * Utilisé dans la vue des sorts et dans le dialog de sélection Codex
  */
-export default function SpellDisplay({ spell, accentColor, showTitle = true }: SpellDisplayProps) {
+export default function SpellDisplay({ spell, accentColor, showTitle = true, attackBonus = null }: SpellDisplayProps) {
     const tMagic = useTranslations("characterDetail.magic");
 
     if (!spell) {
@@ -64,6 +66,14 @@ export default function SpellDisplay({ spell, accentColor, showTitle = true }: S
                     </span>
                     <span className="text-sm md:text-base wrap-break-word">{spell.duration}</span>
                 </Card>
+                {spell.effectType === "attack" && attackBonus !== null && (
+                    <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+                        <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                            {tMagic("attackBonus")}:
+                        </span>
+                        <span className="text-sm md:text-base wrap-break-word">{formatSignedBonus(attackBonus)}</span>
+                    </Card>
+                )}
                 {(() => {
                     const spellAny = spell as any;
                     const damageFormula = spellAny?.damageDetails

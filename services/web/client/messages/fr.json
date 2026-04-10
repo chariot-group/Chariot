@@ -58,6 +58,7 @@
   },
   "common": {
     "save": "Sauvegarder",
+    "delete": "Supprimer",
     "cancel": "Annuler",
     "errors": {
       "campaignNameRequired": "Le nom de la campagne est requis",
@@ -312,8 +313,18 @@
       "actionDetails": "Détails de l'action",
       "attackDC": "Attaque/DD :",
       "damageType": "Dégâts/Type :",
+      "range": "Portée",
       "description": "Description :",
       "type": "Type",
+      "usageType": "Type d'action",
+      "usageTypeOptions": {
+        "action": "Action",
+        "bonus_action": "Action bonus",
+        "reaction": "Réaction"
+      },
+      "usageTypeUnavailableTooltip": "Aucune {type} n'est disponible pour ce personnage.",
+      "prioritizeByUsage": "Prioriser",
+      "all": "Tout",
       "name": "Nom",
       "details": "détails",
       "descriptionPrefix": "description",
@@ -348,7 +359,14 @@
       "noValue": "Aucune valeur",
       "hpAbbr": "PV",
       "feet": "pieds",
-      "feetAbbr": "pi"
+      "feetAbbr": "pi",
+      "affinities": "Affinités",
+      "resistances": "Résistances",
+      "resistancesPlaceholder": "Feu, Froid...",
+      "vulnerabilities": "Vulnérabilités",
+      "vulnerabilitiesPlaceholder": "Feu, Froid...",
+      "immunities": "Immunités",
+      "immunitiesPlaceholder": "Feu, Froid..."
     },
     "history": {
       "appearance": "Apparence",
