@@ -658,25 +658,27 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 <h3 className={`text-sm sm:text-base md:text-lg font-semibold ${accentColor}`}>
                   {tEdit("spellcastingStats")}
                 </h3>
-                <Controller
-                  name={`spellcasting.${selectedSpellcastingIndex}.isInnate`}
-                  control={form.control}
-                  defaultValue={isInnate}
-                  render={({ field }) => (
-                    <div className="flex items-center gap-1.5">
-                      <Checkbox
-                        id={`sc-displaymode-${selectedSpellcastingIndex}`}
-                        checked={field.value ?? isInnate}
-                        onCheckedChange={(checked) => field.onChange(!!checked)}
-                      />
-                      <label
-                        htmlFor={`sc-displaymode-${selectedSpellcastingIndex}`}
-                        className="text-xs text-muted-foreground cursor-pointer select-none">
-                        {tMagic("displayMode.byUses")}
-                      </label>
-                    </div>
-                  )}
-                />
+                {!isPlayer(character) && (
+                  <Controller
+                    name={`spellcasting.${selectedSpellcastingIndex}.isInnate`}
+                    control={form.control}
+                    defaultValue={isInnate}
+                    render={({ field }) => (
+                      <div className="flex items-center gap-1.5">
+                        <Checkbox
+                          id={`sc-displaymode-${selectedSpellcastingIndex}`}
+                          checked={field.value ?? isInnate}
+                          onCheckedChange={(checked) => field.onChange(!!checked)}
+                        />
+                        <label
+                          htmlFor={`sc-displaymode-${selectedSpellcastingIndex}`}
+                          className="text-xs text-muted-foreground cursor-pointer select-none">
+                          {tMagic("displayMode.byUses")}
+                        </label>
+                      </div>
+                    )}
+                  />
+                )}
               </div>
               {spellcastingList.length > 0 && (
                 <ConfirmDialog
