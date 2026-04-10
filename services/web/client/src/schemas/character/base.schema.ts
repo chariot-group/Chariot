@@ -66,6 +66,15 @@ export const AbilityScoresSchema = z.object({
     charisma: numericInput(true),
 });
 
+export const AbilityScoreKeyEnum = z.enum([
+    'strength',
+    'dexterity',
+    'constitution',
+    'intelligence',
+    'wisdom',
+    'charisma',
+]);
+
 export const SavingThrowsSchema = z.object({
     strength: numericInput(true),
     dexterity: numericInput(true),
@@ -253,7 +262,14 @@ export const ConditionsSchema = z.object({
 // ===== Actions =====
 export const DamageSchema = z.object({
     dice: z.string().optional(),
-    type: z.string().optional(),
+    applyAbilityBonus: z.boolean().optional(),
+    type: z
+        .string()
+        .trim()
+        .optional()
+        .refine((value) => !value || !/\s/.test(value), {
+            message: "Only one damage type is allowed per damage entry.",
+        }),
 });
 
 export const DifficultyClassSchema = z.object({
@@ -262,15 +278,39 @@ export const DifficultyClassSchema = z.object({
     successType: z.string().optional(),
 });
 
+export const ActionUsageTypeEnum = z.enum(["action", "bonus_action", "reaction"]);
+
 export function ActionSchema(zm: ZodMessages) {
-    return z.object({
-        name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }).optional(),
-        type: z.string().optional(),
-        description: z.string().optional(),
-        attackBonus: numericInput(true),
-        damage: z.array(DamageSchema).optional(),
-        range: z.string().optional(),
-        dc: DifficultyClassSchema.optional().nullable(),
-        cost: numericInput(true),
-    })
+    return z
+        .object({
+            name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }).optional(),
+            type: z.string().optional(),
+            usageType: ActionUsageTypeEnum.default("action"),
+            attackAbility: AbilityScoreKeyEnum.optional(),
+            description: z.string().optional(),
+            attackBonus: numericInput(true),
+            damage: z.array(DamageSchema).optional(),
+            range: z.string().optional(),
+            dc: DifficultyClassSchema.optional().nullable(),
+            cost: numericInput(true),
+        })
+        .superRefine((action, ctx) => {
+            const seenTypes = new Set<string>();
+
+            (action.damage ?? []).forEach((damage, damageIndex) => {
+                const normalizedType = (damage.type ?? "").trim().toLowerCase();
+                if (!normalizedType) return;
+
+                if (seenTypes.has(normalizedType)) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: "Each damage type must be unique within an action.",
+                        path: ["damage", damageIndex, "type"],
+                    });
+                    return;
+                }
+
+                seenTypes.add(normalizedType);
+            });
+        });
 };

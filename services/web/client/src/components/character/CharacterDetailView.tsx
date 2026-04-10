@@ -101,7 +101,14 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       <form
         id="character-update-form"
         className="flex flex-col flex-1 min-h-0"
-        onSubmit={form.handleSubmit(onUpdate, () => toast.error(t("updateError")))}
+        onSubmit={(event) => {
+          if (!isEditing) {
+            event.preventDefault();
+            return;
+          }
+
+          form.handleSubmit(onUpdate)(event);
+        }}
         onKeyDown={(event) => {
           if (isEnterWithModifiers(event)) {
             event.preventDefault();

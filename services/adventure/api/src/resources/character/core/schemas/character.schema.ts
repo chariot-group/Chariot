@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { Affinities } from '@/resources/character/core/schemas/affinities/affinities.schema';
+import { Affinities, AffinitiesSchema } from '@/resources/character/core/schemas/affinities/affinities.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
 import { BaseSchema } from '@/common/schemas/base-schema';
 import { Ability } from '@/resources/character/core/schemas/ability/ability.schema';
@@ -42,7 +42,7 @@ export class Character extends BaseSchema {
   stats: Stats;
 
   @ApiProperty({ type: Affinities })
-  @Prop({ type: Affinities, default: {} })
+  @Prop({ type: AffinitiesSchema, default: {} })
   affinities: Affinities;
 
   @ApiProperty({ type: [Ability] })

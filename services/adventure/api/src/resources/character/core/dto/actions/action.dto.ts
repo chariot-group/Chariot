@@ -22,6 +22,16 @@ export class ActionDto {
     @IsString()
     type?: string;
 
+    @ApiProperty({ example: 'action', enum: ['action', 'bonus_action', 'reaction'] })
+    @IsOptional()
+    @IsString()
+    usageType?: string;
+
+    @ApiProperty({ example: 'strength', enum: ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'] })
+    @IsOptional()
+    @IsString()
+    attackAbility?: string;
+
     @ApiProperty({ example: 'The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute.' })
     @IsOptional()
     @IsString()

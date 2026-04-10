@@ -312,8 +312,18 @@
       "actionDetails": "Action details for",
       "attackDC": "Attack/DC:",
       "damageType": "Damage/Type:",
+      "range": "Range",
       "description": "Description:",
       "type": "Type",
+      "usageType": "Action type",
+      "usageTypeOptions": {
+        "action": "Action",
+        "bonus_action": "Bonus action",
+        "reaction": "Reaction"
+      },
+      "usageTypeUnavailableTooltip": "No {type} is available for this character.",
+      "prioritizeByUsage": "Prioritize",
+      "all": "All",
       "name": "Name",
       "details": "details",
       "descriptionPrefix": "description",
@@ -348,7 +358,14 @@
       "noValue": "No value",
       "hpAbbr": "HP",
       "feet": "feet",
-      "feetAbbr": "ft"
+      "feetAbbr": "ft",
+      "affinities": "Affinities",
+      "resistances": "Resistances",
+      "resistancesPlaceholder": "Fire, Cold...",
+      "vulnerabilities": "Vulnerabilities",
+      "vulnerabilitiesPlaceholder": "Fire, Cold...",
+      "immunities": "Immunities",
+      "immunitiesPlaceholder": "Fire, Cold..."
     },
     "history": {
       "appearance": "Appearance",

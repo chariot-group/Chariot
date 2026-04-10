@@ -7,6 +7,7 @@ import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown,
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
+  calculateSpellAttackBonus,
   classWithSpellPrepared,
   getSpellByLevel,
   hasLevel0Spells,
@@ -483,7 +484,6 @@ export default function CharacterMagicView({ character, accentColor }: Character
           <SpellDisplay
             spell={selectedSpell}
             accentColor={accentColor}
-            isNpc={!isPlayer(character)}
           />
         </div>
       </div>

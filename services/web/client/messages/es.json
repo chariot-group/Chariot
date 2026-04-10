@@ -312,9 +312,19 @@
       "actionDetails": "Detalles de la acción",
       "attackDC": "Ataque/CD:",
       "damageType": "Daño/Tipo:",
+      "range": "Alcance",
       "description": "Descripción:",
       "details": "detalles",
       "type": "Tipo",
+      "usageType": "Tipo de acción",
+      "usageTypeOptions": {
+        "action": "Acción",
+        "bonus_action": "Acción adicional",
+        "reaction": "Reacción"
+      },
+      "usageTypeUnavailableTooltip": "No hay {type} disponible para este personaje.",
+      "prioritizeByUsage": "Priorizar",
+      "all": "Todo",
       "name": "Nombre",
       "descriptionPrefix": "descripción",
       "armorClass": "Clase de Armadura",
@@ -348,7 +358,14 @@
       "noValue": "Sin valor",
       "hpAbbr": "PG",
       "feet": "pies",
-      "feetAbbr": "pies"
+      "feetAbbr": "ft",
+      "affinities": "Afinidades",
+      "resistances": "Resistencias",
+      "resistancesPlaceholder": "Fuego, Frio...",
+      "vulnerabilities": "Vulnerabilidades",
+      "vulnerabilitiesPlaceholder": "Fuego, Frio...",
+      "immunities": "Inmunidades",
+      "immunitiesPlaceholder": "Fuego, Frio..."
     },
     "history": {
       "appearance": "Apariencia",

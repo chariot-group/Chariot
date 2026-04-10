@@ -231,6 +231,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
               <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h2>
               <div className="flex justify-end shrink-0">
                 <button
+                  type="button"
                   onClick={() => {
                     let allValues: string[];
                     if (isInnate) {
@@ -444,6 +445,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
           aria-label={tMagic("spellDetailRegion")}>
           {/* Back button for mobile */}
           <button
+            type="button"
             onClick={() => setShowMobileDetails(false)}
             className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
             aria-label={tMagic("backToList")}>

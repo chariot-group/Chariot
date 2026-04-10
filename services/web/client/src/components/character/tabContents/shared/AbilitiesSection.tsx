@@ -36,6 +36,7 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
         </h2>
         <div className="flex justify-end shrink-0">
           <button
+            type="button"
             onClick={() => {
               if (openAccordionValues.length > 0) {
                 setOpenAccordionValues([]);
