@@ -1,5 +1,63 @@
 # Changelog
 
+## [2.2.0] - 10-04-2026
+
+### Added
+- Added visual environment indicators for integration on Web (for example, red logo variant)
+- Added visual environment indicators for integration on SSO (same concept as Web)
+- Added visual environment indicators for integration on Keycloak
+- Added a visual indicator to clearly show which workspace/space the user currently belongs to
+- Added a confirmation modal when switching workspace/space
+- Added reusable HP quick calculator controls for character forms(max HP, current HP, temporary HP):
+	- `+` to add HP to current value
+	- `-` to subtract HP from current value
+	- `=` to set an exact value
+- Added Challenge Rating input assistance for sub-1 values with fraction presets: `1/2`, `1/4`, `1/8`
+- Added keyboard shortcuts for NPC and character forms:
+	- `Enter` to submit
+	- `Escape` to cancel
+- Added keyboard shortcuts for delete dialogs:
+	- `Enter` to confirm
+	- `Escape` to cancel
+- Added multiline support in textarea so `Shift+Enter` and `Ctrl+Enter` create a new line
+- Added placeholders across all input fields
+- Added PR checklist items for both reviewer and developer:
+	- "I tested project responsiveness from my browser"
+	- "I tested project responsiveness from my phone"
+- Added pre-production integration checks with a target list of desktop and mobile browsers to validate releases
+- Added a follow-up track to evaluate automation options for cross-browser/cross-device integration validation
+- Added support for marking actions as "bonus action"
+- Added support for displaying and sorting `action` vs `bonus action` in action tables
+- Added support for multiple damage/healing entries per action (for example `1d6 piercing` + `1d4 poison`) as typed lists
+
+### Changed
+- Changed creation flow when no character exists in "My Characters" to allow creating a new character directly without forcing navigation through Home
+- Changed ability trait creation UX to auto-expand the newly added trait and auto-scroll into view when needed
+- Changed character page header layout to reduce top-area footprint and refocus attention on tab content (image placement/visibility/size adjusted)
+- Changed mobile character footer layout for better usability of Edit/Save/Cancel actions
+- Changed challenge rating display to use fractions instead of decimal values for sub-1 CR entries
+- Changed issue template wording from "je souhaite" to "Je souhaite"
+- Changed welcome page assets to use royalty-free images only
+- Changed and unified LP/Chariot favicons for better browser rendering and search appearance
+- Changed attack and healing bonus fields to support dynamic binding to character sheet values (similar to ability counter dynamics)
+- Changed spell action usage to consume dynamic save DC and attack bonus values
+
+### Fixed
+- Fixed numeric input behavior for non-null number fields that incorrectly auto-prefill `0` and block user typing scenarios
+- Fixed redirection bug after saving from non-General tabs (user should remain on current tab); validated across all player and NPC tabs
+- Fixed NPC skill display issue where the correct value appeared only as form placeholder but not in rendered view
+- Fixed character list filtering so characters from other workspaces/spaces are never displayed
+- Fixed NPC and character validation flow for `Enter` and cancellation flow for `Escape`
+- Fixed random behavior where clicking multi-collapse controls in read-only mode showed toast notifications instead of expanding content
+- Fixed unique combobox fields in player/NPC update forms that opened suggestions by default without user interaction
+- Fixed missing display of resistances and vulnerabilities in player and monster character sheets
+- Fixed dependency-related security vulnerabilities
+- Fixed NPC spellcasting model assumptions: NPCs do not require player-style spellcasting class
+- Fixed monster spell slot handling for creatures using per-day spell usage (for example Green Slaad: `2/day Fear`, `1/day Fireball`) instead of player-like slot-per-level model
+- Fixed Codex spellcaster monster hydration to fetch full spell list details when only spell IDs are returned by `findAll` by resolving details via `findOne`
+- Improved CI performance and reliability
+
+
 ## [2.1.1] - 18-03-2026
 
 ### Added
