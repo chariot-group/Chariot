@@ -28,7 +28,7 @@ export class SeederService {
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
     private readonly keycloakAdminService: KeycloakAdminService,
-  ) { }
+  ) {}
 
   getRandomObjects(kind?: string) {
     const filePath = path.join(__dirname, 'runner', 'characters.json');

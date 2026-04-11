@@ -27,12 +27,15 @@ export class CampaignService {
     private readonly campaignsCreatedCounter: Counter,
     @InjectMetric('chariot_active_campaigns')
     private readonly campaignsActiveCounter: Counter,
-  ) { }
+  ) {}
 
   private readonly logger: Logger = new Logger(CampaignService.name);
   private readonly SERVICE_NAME: string = CampaignService.name;
 
-  async create(createCampaignDto: CreateCampaignDto, userId: string): Promise<IResponse<Campaign>> {
+  async create(
+    createCampaignDto: CreateCampaignDto,
+    userId: string,
+  ): Promise<IResponse<Campaign>> {
     try {
       const { groups, ...campaignData } = createCampaignDto;
       const totalGroups: string[] = groups.active.concat(groups.archived);
@@ -86,12 +89,9 @@ export class CampaignService {
       }
 
       // Escape special regex characters and handle empty label
-      const escapedLabel = cleanedLabel.replace(
-        /[.*+?^${}()|[\]\\]/g,
-        '\\$&',
-      );
+      const escapedLabel = cleanedLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-      const filters: any = {
+      const filters: Record<string, unknown> = {
         deletedAt: { $eq: null },
         createdBy: userId,
       };
@@ -104,12 +104,15 @@ export class CampaignService {
       const sort: { [key: string]: 1 | -1 } = { updatedAt: -1 };
 
       if (query.sort) {
-        query.sort.startsWith('-')
-          ? (sort[query.sort.substring(1)] = -1)
-          : (sort[query.sort] = 1);
+        if (query.sort.startsWith('-')) {
+          sort[query.sort.substring(1)] = -1;
+        } else {
+          sort[query.sort] = 1;
+        }
       }
 
-      const totalItems: number = await this.campaignModel.countDocuments(filters);
+      const totalItems: number =
+        await this.campaignModel.countDocuments(filters);
 
       const start: number = Date.now();
       const campaigns: CampaignDocument[] = await this.campaignModel
@@ -133,8 +136,12 @@ export class CampaignService {
       let campaignsWithGroupsClean: Campaign[] = campaigns.map((doc) => ({
         ...doc.toObject(),
         groups: {
-          active: doc.groups.active.filter(group => group).map((group) => group._id),
-          archived: doc.groups.archived.filter(group => group).map((group) => group._id),
+          active: doc.groups.active
+            .filter((group) => group)
+            .map((group) => group._id),
+          archived: doc.groups.archived
+            .filter((group) => group)
+            .map((group) => group._id),
         },
       }));
 
@@ -179,7 +186,10 @@ export class CampaignService {
     }
   }
 
-  async update(id: Types.ObjectId, updateCampaignDto: UpdateCampaignDto): Promise<IResponse<Campaign>> {
+  async update(
+    id: Types.ObjectId,
+    updateCampaignDto: UpdateCampaignDto,
+  ): Promise<IResponse<Campaign>> {
     try {
       const start: number = Date.now();
 
@@ -265,14 +275,18 @@ export class CampaignService {
     try {
       const start: number = Date.now();
 
-      const campaign: CampaignDocument = await this.campaignModel.findById(id).exec();
+      const campaign: CampaignDocument = await this.campaignModel
+        .findById(id)
+        .exec();
 
-      const groups: string[] = ["active", "archived"];
+      const groups: string[] = ['active', 'archived'];
       groups.forEach((group) => {
         if (campaign.groups[group] && campaign.groups[group].length > 0) {
           campaign.groups[group].forEach(async (groupId) => {
-            await this.groupModel
-              .updateOne({ _id: groupId }, { $pull: { campaign: id } });
+            await this.groupModel.updateOne(
+              { _id: groupId },
+              { $pull: { campaign: id } },
+            );
           });
         }
       });

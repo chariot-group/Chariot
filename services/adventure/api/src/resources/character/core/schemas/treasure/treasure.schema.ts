@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Treasure {
-
   @ApiProperty({ example: 0 })
   @Prop({ default: 0 })
   cp: number; // Copper Pieces

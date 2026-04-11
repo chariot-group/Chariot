@@ -16,4 +16,4 @@ import { User, UserSchema } from '@/resources/user/schemas/user.schema';
     UserService,
   ],
 })
-export class UserModule { }
+export class UserModule {}

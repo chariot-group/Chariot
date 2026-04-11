@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Conditions {
-
   @ApiProperty({ example: false, description: 'Character is blinded' })
   @Prop({ default: false })
   blinded: boolean;

@@ -8,7 +8,7 @@ export class MetricsController {
   /**
    * Endpoint GET /metrics
    * Format texte compatible Prometheus
-   * 
+   *
    * Exemple de sortie:
    * # HELP chariot_http_requests_total Total number of HTTP requests
    * # TYPE chariot_http_requests_total counter

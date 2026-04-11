@@ -7,7 +7,6 @@ import { NPCProfileDto } from '@/resources/character/npc/dto/profile/npc-profile
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateNpcDto extends CreateCharacterDto {
-
   @ApiProperty({ type: ActionsDto })
   @ValidateNested({ each: true })
   @IsOptional()

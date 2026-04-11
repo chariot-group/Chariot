@@ -1,14 +1,13 @@
-import { IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
-import { Type } from "class-transformer";
-import { ApiPropertyOptional } from "@nestjs/swagger";
+import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class Pagination {
-
   @ApiPropertyOptional({
-    description: "Page number",
+    description: 'Page number',
     example: 1,
     minimum: 1,
-    default: 1
+    default: 1,
   })
   @IsOptional()
   @IsNumber()
@@ -17,7 +16,7 @@ export class Pagination {
   page?: number = 1;
 
   @ApiPropertyOptional({
-    description: "Number of items to return",
+    description: 'Number of items to return',
     example: 10,
     minimum: 1,
     maximum: 100,
@@ -32,7 +31,7 @@ export class Pagination {
 
   @ApiPropertyOptional({
     description: "Sort field (prefix with '-' for descending order)",
-    example: "-createdAt",
+    example: '-createdAt',
   })
   @IsOptional()
   @IsString()

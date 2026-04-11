@@ -56,30 +56,34 @@ describe('MetricsInterceptor', () => {
   describe('intercept - success case', () => {
     it('should record metrics on successful request', (done) => {
       mockCallHandler.handle.mockReturnValue(of(null));
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'debug')
+        .mockImplementation();
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith({
-          method: 'GET',
-          route: '/api/test',
-          status_code: '200',
-        });
-
-        expect(mockHttpRequestDuration.observe).toHaveBeenCalledWith(
-          {
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe(() => {
+          expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith({
             method: 'GET',
             route: '/api/test',
-          },
-          expect.any(Number),
-        );
+            status_code: '200',
+          });
 
-        expect(loggerSpy).toHaveBeenCalledWith(
-          expect.stringMatching(/GET \/api\/test 200 - \d+\.\d+s/),
-        );
+          expect(mockHttpRequestDuration.observe).toHaveBeenCalledWith(
+            {
+              method: 'GET',
+              route: '/api/test',
+            },
+            expect.any(Number),
+          );
 
-        loggerSpy.mockRestore();
-        done();
-      });
+          expect(loggerSpy).toHaveBeenCalledWith(
+            expect.stringMatching(/GET \/api\/test 200 - \d+\.\d+s/),
+          );
+
+          loggerSpy.mockRestore();
+          done();
+        });
     });
 
     it('should calculate request duration correctly', (done) => {
@@ -87,15 +91,17 @@ describe('MetricsInterceptor', () => {
       mockCallHandler.handle.mockReturnValue(of(null));
       jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(mockHttpRequestDuration.observe).toHaveBeenCalledWith(
-          expect.any(Object),
-          expect.any(Number),
-        );
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe(() => {
+          expect(mockHttpRequestDuration.observe).toHaveBeenCalledWith(
+            expect.any(Object),
+            expect.any(Number),
+          );
 
-        jest.useRealTimers();
-        done();
-      });
+          jest.useRealTimers();
+          done();
+        });
     });
 
     it('should handle request without route path', (done) => {
@@ -113,15 +119,17 @@ describe('MetricsInterceptor', () => {
       jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
       mockCallHandler.handle.mockReturnValue(of(null));
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith({
-          method: 'POST',
-          route: '/api/users',
-          status_code: '201',
-        });
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe(() => {
+          expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith({
+            method: 'POST',
+            route: '/api/users',
+            status_code: '201',
+          });
 
-        done();
-      });
+          done();
+        });
     });
 
     it('should handle various HTTP methods', (done) => {
@@ -143,16 +151,18 @@ describe('MetricsInterceptor', () => {
         jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
         mockCallHandler.handle.mockReturnValue(of(null));
 
-        interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-          expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith(
-            expect.objectContaining({ method }),
-          );
+        interceptor
+          .intercept(mockExecutionContext, mockCallHandler)
+          .subscribe(() => {
+            expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith(
+              expect.objectContaining({ method }),
+            );
 
-          completedTests++;
-          if (completedTests === methods.length) {
-            done();
-          }
-        });
+            completedTests++;
+            if (completedTests === methods.length) {
+              done();
+            }
+          });
       });
     });
 
@@ -173,18 +183,20 @@ describe('MetricsInterceptor', () => {
         jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
         mockCallHandler.handle.mockReturnValue(of(null));
 
-        interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-          expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith(
-            expect.objectContaining({
-              status_code: statusCode.toString(),
-            }),
-          );
+        interceptor
+          .intercept(mockExecutionContext, mockCallHandler)
+          .subscribe(() => {
+            expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith(
+              expect.objectContaining({
+                status_code: statusCode.toString(),
+              }),
+            );
 
-          completedTests++;
-          if (completedTests === statusCodes.length) {
-            done();
-          }
-        });
+            completedTests++;
+            if (completedTests === statusCodes.length) {
+              done();
+            }
+          });
       });
     });
   });
@@ -194,11 +206,11 @@ describe('MetricsInterceptor', () => {
       const error = new Error('Test error');
       (error as any).status = 500;
 
-      mockCallHandler.handle.mockReturnValue(
-        throwError(() => error),
-      );
+      mockCallHandler.handle.mockReturnValue(throwError(() => error));
 
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'error').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'error')
+        .mockImplementation();
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
         error: () => {
@@ -217,7 +229,9 @@ describe('MetricsInterceptor', () => {
           );
 
           expect(loggerSpy).toHaveBeenCalledWith(
-            expect.stringMatching(/GET \/api\/test 500 - \d+\.\d+s - Test error/),
+            expect.stringMatching(
+              /GET \/api\/test 500 - \d+\.\d+s - Test error/,
+            ),
           );
 
           loggerSpy.mockRestore();
@@ -229,9 +243,7 @@ describe('MetricsInterceptor', () => {
     it('should use default status code 500 when error has no status', (done) => {
       const error = new Error('Unknown error');
 
-      mockCallHandler.handle.mockReturnValue(
-        throwError(() => error),
-      );
+      mockCallHandler.handle.mockReturnValue(throwError(() => error));
 
       jest.spyOn(interceptor['logger'], 'error').mockImplementation();
 
@@ -256,9 +268,7 @@ describe('MetricsInterceptor', () => {
         const error = new Error(`Error ${statusCode}`);
         (error as any).status = statusCode;
 
-        mockCallHandler.handle.mockReturnValue(
-          throwError(() => error),
-        );
+        mockCallHandler.handle.mockReturnValue(throwError(() => error));
 
         jest.spyOn(interceptor['logger'], 'error').mockImplementation();
 
@@ -284,11 +294,11 @@ describe('MetricsInterceptor', () => {
       const error = new Error(errorMessage);
       (error as any).status = 500;
 
-      mockCallHandler.handle.mockReturnValue(
-        throwError(() => error),
-      );
+      mockCallHandler.handle.mockReturnValue(throwError(() => error));
 
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'error').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'error')
+        .mockImplementation();
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
         error: () => {
@@ -319,15 +329,17 @@ describe('MetricsInterceptor', () => {
       jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
       mockCallHandler.handle.mockReturnValue(of(null));
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith({
-          method: 'GET',
-          route: '/api/users/:id',
-          status_code: '200',
-        });
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe(() => {
+          expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith({
+            method: 'GET',
+            route: '/api/users/:id',
+            status_code: '200',
+          });
 
-        done();
-      });
+          done();
+        });
     });
 
     it('should fallback to url when route.path is not available', (done) => {
@@ -345,15 +357,17 @@ describe('MetricsInterceptor', () => {
       jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
       mockCallHandler.handle.mockReturnValue(of(null));
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith({
-          method: 'GET',
-          route: '/api/test',
-          status_code: '200',
-        });
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe(() => {
+          expect(mockHttpRequestsCounter.inc).toHaveBeenCalledWith({
+            method: 'GET',
+            route: '/api/test',
+            status_code: '200',
+          });
 
-        done();
-      });
+          done();
+        });
     });
   });
 
@@ -362,10 +376,12 @@ describe('MetricsInterceptor', () => {
       mockCallHandler.handle.mockReturnValue(of(null));
       jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(mockCallHandler.handle).toHaveBeenCalled();
-        done();
-      });
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe(() => {
+          expect(mockCallHandler.handle).toHaveBeenCalled();
+          done();
+        });
     });
 
     it('should pass through the response from next.handle()', (done) => {
@@ -373,45 +389,50 @@ describe('MetricsInterceptor', () => {
       mockCallHandler.handle.mockReturnValue(of(expectedResponse));
       jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((response) => {
-        expect(response).toEqual(expectedResponse);
-        done();
-      });
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe((response) => {
+          expect(response).toEqual(expectedResponse);
+          done();
+        });
     });
   });
 
   describe('intercept - performance timing', () => {
     it('should measure request duration in seconds', (done) => {
-      const startTime = Date.now();
-      mockCallHandler.handle.mockReturnValue(
-        of(null)
-      );
+      mockCallHandler.handle.mockReturnValue(of(null));
 
       jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        const observeCall = mockHttpRequestDuration.observe.mock.calls[0];
-        const duration = (observeCall as any)[1];
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe(() => {
+          const observeCall = mockHttpRequestDuration.observe.mock.calls[0];
+          const duration = (observeCall as any)[1];
 
-        expect(typeof duration).toBe('number');
-        expect(duration).toBeGreaterThanOrEqual(0);
-        expect(duration).toBeLessThan(10); // Should be very fast in test
+          expect(typeof duration).toBe('number');
+          expect(duration).toBeGreaterThanOrEqual(0);
+          expect(duration).toBeLessThan(10); // Should be very fast in test
 
-        done();
-      });
+          done();
+        });
     });
 
     it('should format duration with millisecond precision in logs', (done) => {
       mockCallHandler.handle.mockReturnValue(of(null));
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'debug').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'debug')
+        .mockImplementation();
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        const logCall = loggerSpy.mock.calls[0][0];
-        expect(logCall).toMatch(/\d+\.\d{3}s/);
+      interceptor
+        .intercept(mockExecutionContext, mockCallHandler)
+        .subscribe(() => {
+          const logCall = loggerSpy.mock.calls[0][0];
+          expect(logCall).toMatch(/\d+\.\d{3}s/);
 
-        loggerSpy.mockRestore();
-        done();
-      });
+          loggerSpy.mockRestore();
+          done();
+        });
     });
   });
 });

@@ -33,4 +33,4 @@ import { MetricsModule } from '@/metrics/metrics.module';
   controllers: [CampaignController],
   providers: [CampaignService, Logger],
 })
-export class CampaignModule { }
+export class CampaignModule {}

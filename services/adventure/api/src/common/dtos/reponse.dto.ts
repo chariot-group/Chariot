@@ -1,7 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class IResponse<T> {
-  @ApiProperty({ example: "Campaign #507f1f77bcf86cd799439011 found in 5ms" })
+  @ApiProperty({ example: 'Campaign #507f1f77bcf86cd799439011 found in 5ms' })
   message: string;
 
   @ApiProperty()

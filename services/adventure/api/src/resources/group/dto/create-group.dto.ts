@@ -12,14 +12,15 @@ import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateGroupDto {
-
   @ApiProperty({ example: 'Adventurers' })
   @IsString()
   @MinLength(1)
   @MaxLength(50)
   readonly label: string;
 
-  @ApiProperty({ example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'] })
+  @ApiProperty({
+    example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'],
+  })
   @IsArray()
   @IsOptional()
   @IsMongoId({ each: true })

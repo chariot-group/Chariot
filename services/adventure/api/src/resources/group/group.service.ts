@@ -38,7 +38,10 @@ export class GroupService {
   private readonly SERVICE_NAME = GroupService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
 
-  async create(createGroupDto: CreateGroupDto, userId: string): Promise<IResponse<Group>> {
+  async create(
+    createGroupDto: CreateGroupDto,
+    userId: string,
+  ): Promise<IResponse<Group>> {
     try {
       const { characters = [], campaigns, ...groupData } = createGroupDto;
 
@@ -64,7 +67,9 @@ export class GroupService {
       });
 
       // Incrémentation du compteur Prometheus
-      this.groupsCreatedCounter.inc({ campaign_id: campaigns.length > 0 ? campaigns[0].idCampaign : 'none' });
+      this.groupsCreatedCounter.inc({
+        campaign_id: campaigns.length > 0 ? campaigns[0].idCampaign : 'none',
+      });
 
       const end: number = Date.now();
 
@@ -88,7 +93,7 @@ export class GroupService {
       offset?: number;
       label?: string;
       sort?: string;
-      onlyWithMembers?: any;
+      onlyWithMembers?: unknown;
     },
     campaignId?: string,
     type: 'all' | 'active' | 'archived' = 'all',
@@ -103,13 +108,15 @@ export class GroupService {
       } = query;
 
       let sortCriteria: { [key: string]: SortOrder } = { updatedAt: 'asc' };
-      if (query.sort) {
-        query.sort.startsWith('-')
-          ? (sortCriteria[query.sort.substring(1)] = 'desc')
-          : (sortCriteria[query.sort] = 'asc');
+      if (sort) {
+        if (sort.startsWith('-')) {
+          sortCriteria[sort.substring(1)] = 'desc';
+        } else {
+          sortCriteria[sort] = 'asc';
+        }
       }
 
-      const filters: Record<string, any> = {
+      const filters: Record<string, unknown> = {
         label: { $regex: `${decodeURIComponent(label)}`, $options: 'i' },
         deletedAt: { $eq: null },
         createdBy: userId,
@@ -130,15 +137,15 @@ export class GroupService {
         let groupIds: string[] = [];
         if (type === 'all') {
           groupIds = [
-            ...(campaign.groups?.active || []).map((group: any) =>
+            ...(campaign.groups?.active || []).map((group: unknown) =>
               group.toString(),
             ),
-            ...(campaign.groups?.archived || []).map((group: any) =>
+            ...(campaign.groups?.archived || []).map((group: unknown) =>
               group.toString(),
             ),
           ];
         } else {
-          groupIds = (campaign.groups?.[type] || []).map((group: any) =>
+          groupIds = (campaign.groups?.[type] || []).map((group: unknown) =>
             group.toString(),
           );
         }
@@ -313,9 +320,17 @@ export class GroupService {
       const deletionDate = new Date();
       group.deletedAt = deletionDate;
 
-      const characterIds = (group.characters || []).map((character: any) =>
-        character._id ? character._id : character,
-      );
+      const characterIds = (group.characters || []).map((character) => {
+        const maybeCharacter = character as { _id?: unknown };
+        if (
+          typeof maybeCharacter === 'object' &&
+          maybeCharacter !== null &&
+          '_id' in maybeCharacter
+        ) {
+          return maybeCharacter._id ?? character;
+        }
+        return character;
+      });
 
       if (characterIds.length > 0) {
         await this.characterModel
@@ -335,7 +350,9 @@ export class GroupService {
           .lean()
           .exec();
 
-        const orphanCharacterIds = orphanCharacters.map((character) => character._id);
+        const orphanCharacterIds = orphanCharacters.map(
+          (character) => character._id,
+        );
 
         if (orphanCharacterIds.length > 0) {
           await this.characterModel

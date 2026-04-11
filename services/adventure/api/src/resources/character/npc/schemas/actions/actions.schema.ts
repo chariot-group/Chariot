@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Actions {
-
   @ApiProperty({ type: [Action] })
   @Prop({ type: [Action], default: [] })
   standard: Action[];

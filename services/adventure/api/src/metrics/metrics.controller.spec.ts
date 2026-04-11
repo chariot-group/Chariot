@@ -21,7 +21,11 @@ describe('MetricsController', () => {
     // Setup mock register
     mockRegister = {
       contentType: 'text/plain; version=0.0.4; charset=utf-8',
-      metrics: jest.fn().mockResolvedValue('# HELP chariot_http_requests_total Total HTTP requests\n'),
+      metrics: jest
+        .fn()
+        .mockResolvedValue(
+          '# HELP chariot_http_requests_total Total HTTP requests\n',
+        ),
     };
 
     (promClient.register as any) = mockRegister;
@@ -70,7 +74,10 @@ chariot_http_requests_total{method="GET",route="/api/test",status="200"} 42`;
 
       await controller.getMetrics(mockResponse);
 
-      expect(mockResponse.set).toHaveBeenCalledWith('Content-Type', mockRegister.contentType);
+      expect(mockResponse.set).toHaveBeenCalledWith(
+        'Content-Type',
+        mockRegister.contentType,
+      );
     });
 
     it('should call register.metrics to get metrics data', async () => {
@@ -203,7 +210,9 @@ chariot_http_request_duration_seconds_bucket{method="GET",le="0.01"} 50`;
 
       // The method is async but doesn't explicitly handle errors,
       // so the promise should reject
-      await expect(controller.getMetrics(mockResponse)).rejects.toThrow('Failed to collect metrics');
+      await expect(controller.getMetrics(mockResponse)).rejects.toThrow(
+        'Failed to collect metrics',
+      );
     });
 
     it('should still set content type even if sending metrics fails', async () => {
@@ -214,7 +223,7 @@ chariot_http_request_duration_seconds_bucket{method="GET",le="0.01"} 50`;
 
       try {
         await controller.getMetrics(mockResponse);
-      } catch (e) {
+      } catch {
         // Expected
       }
 

@@ -3,7 +3,6 @@ import { ProfileDto } from '@/resources/character/core/dto/profile/profile.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PlayerProfileDto extends ProfileDto {
-
   @ApiProperty({ example: 'Elf' })
   @IsOptional()
   @IsString()

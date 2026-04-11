@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Appearance {
-
   @ApiProperty({ example: 25 })
   @Prop()
   age?: number;

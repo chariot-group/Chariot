@@ -6,8 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UpdateCampaignDto extends PartialType(
   OmitType(CreateCampaignDto, ['label'] as const),
 ) {
-
-  @ApiProperty({ example: "Epic Adventure" })
+  @ApiProperty({ example: 'Epic Adventure' })
   @IsOptional()
   readonly label?: string;
 }

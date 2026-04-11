@@ -13,7 +13,6 @@ export type PlayerDocument = Player & Document;
 
 @Schema()
 export class Player extends Character {
-
   @ApiProperty({ type: [Action] })
   @Prop({ type: [Action], default: [] })
   actions: Action[];
@@ -40,9 +39,10 @@ export class Player extends Character {
 
   @ApiProperty({
     example: 0,
-    description: 'Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death',
+    description:
+      'Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death',
     minimum: 0,
-    maximum: 6
+    maximum: 6,
   })
   @Prop({ default: 0, min: 0, max: 6 })
   exhaustionLevel: number;

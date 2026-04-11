@@ -17,7 +17,6 @@ import { TreasureDto } from '@/resources/character/core/dto/treasure/treasure.dt
 import { ConditionsDto } from '@/resources/character/core/dto/conditions/conditions.dto';
 
 export class CreateCharacterDto {
-
   @ApiProperty({ example: 'Aragorn' })
   @IsString()
   firstname: string;
@@ -27,7 +26,7 @@ export class CreateCharacterDto {
   @IsString()
   lastname?: string;
 
-  @ApiProperty({ example: 'Fils d\'Arathorn' })
+  @ApiProperty({ example: "Fils d'Arathorn" })
   @IsOptional()
   @IsString()
   surname?: string;

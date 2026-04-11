@@ -17,7 +17,7 @@ export class MaillingService {
   constructor(
     @InjectMetric('chariot_emails_sent_total')
     private readonly emailsSentCounter: Counter,
-  ) { }
+  ) {}
 
   async sendOTP(username: string, email: string, otp: number, local: string) {
     try {
@@ -111,7 +111,10 @@ export class MaillingService {
         subject: infos.subjetct,
         html: html
           .replaceAll('{{username}}', username)
-          .replaceAll('{{activeLink}}', `${process.env.FRONTEND_URL}/auth/active/${activeLink}`),
+          .replaceAll(
+            '{{activeLink}}',
+            `${process.env.FRONTEND_URL}/auth/active/${activeLink}`,
+          ),
       });
 
       this.logger.verbose(

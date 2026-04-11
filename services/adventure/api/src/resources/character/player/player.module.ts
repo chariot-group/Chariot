@@ -15,7 +15,10 @@ import { MetricsModule } from '@/metrics/metrics.module';
   providers: [PlayerService, CharacterService],
   imports: [
     MetricsModule,
-    MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }, { name: Character.name, schema: CharacterSchema }]),
+    MongooseModule.forFeature([
+      { name: Group.name, schema: GroupSchema },
+      { name: Character.name, schema: CharacterSchema },
+    ]),
   ],
 })
-export class PlayerModule { }
+export class PlayerModule {}

@@ -31,4 +31,4 @@ import { MetricsModule } from '@/metrics/metrics.module';
   controllers: [GroupController],
   providers: [GroupService],
 })
-export class GroupModule { }
+export class GroupModule {}

@@ -26,12 +26,15 @@ export class PlayerService {
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
     @InjectMetric('chariot_characters_created_total')
     private readonly charactersCreatedCounter: Counter,
-  ) { }
+  ) {}
 
   private readonly SERVICE_NAME = PlayerService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
 
-  async create(createPlayerDto: CreatePlayerDto, userId: string): Promise<IResponse<Player>> {
+  async create(
+    createPlayerDto: CreatePlayerDto,
+    userId: string,
+  ): Promise<IResponse<Player>> {
     try {
       if (createPlayerDto.groups) {
         for (const groupId of createPlayerDto.groups) {
@@ -44,7 +47,9 @@ export class PlayerService {
       }
 
       const start: number = Date.now();
-      const newPlayer: PlayerDocument = new this.characterModel.discriminators['player']({
+      const newPlayer: PlayerDocument = new this.characterModel.discriminators[
+        'player'
+      ]({
         ...createPlayerDto,
         createdBy: userId,
       });
@@ -79,7 +84,10 @@ export class PlayerService {
     }
   }
 
-  async update(id: Types.ObjectId, updatePlayerDto: UpdatePlayerDto): Promise<IResponse<Character>> {
+  async update(
+    id: Types.ObjectId,
+    updatePlayerDto: UpdatePlayerDto,
+  ): Promise<IResponse<Character>> {
     try {
       let { groups, ...playerData } = updatePlayerDto;
 
@@ -87,11 +95,13 @@ export class PlayerService {
 
       //Vérification ids characters
       if (groups) {
-        const groupCheckPromises: Promise<GroupDocument | null>[] = groups.map((groupId) =>
-          this.groupModel.findById(groupId).exec(),
+        const groupCheckPromises: Promise<GroupDocument | null>[] = groups.map(
+          (groupId) => this.groupModel.findById(groupId).exec(),
         );
-        const groupCheckResults: (GroupDocument | null)[] = await Promise.all(groupCheckPromises);
-        const invalidGroups: (GroupDocument | null)[] = groupCheckResults.filter((group) => !group);
+        const groupCheckResults: (GroupDocument | null)[] =
+          await Promise.all(groupCheckPromises);
+        const invalidGroups: (GroupDocument | null)[] =
+          groupCheckResults.filter((group) => !group);
         if (invalidGroups.length > 0) {
           const invalidPlayerIds: string[] = groups.filter(
             (_, index) => !groupCheckResults[index],
@@ -101,9 +111,13 @@ export class PlayerService {
           throw new BadRequestException(message);
         }
 
-        const goneGroups: (GroupDocument | null)[] = groupCheckResults.filter((group) => group.deletedAt);
+        const goneGroups: (GroupDocument | null)[] = groupCheckResults.filter(
+          (group) => group.deletedAt,
+        );
         if (goneGroups.length > 0) {
-          const goneGroupIds: string[] = goneGroups.map((group) => group._id.toString());
+          const goneGroupIds: string[] = goneGroups.map((group) =>
+            group._id.toString(),
+          );
           const message: string = `Gone group IDs: #${goneGroupIds.join(', #')}`;
           this.logger.error(message, null, this.SERVICE_NAME);
           throw new GoneException(message);
@@ -153,9 +167,7 @@ export class PlayerService {
         data: player,
       };
     } catch (error) {
-      if (
-        error instanceof HttpException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message: string = `Error while updating #${id} Player: ${error.message}`;
@@ -167,25 +179,23 @@ export class PlayerService {
   async findPlayersWithoutGroup(
     userId: string,
     query: { page?: number; offset?: number; sort?: string },
-
   ): Promise<IPaginatedResponse<Character[]>> {
     try {
       const { page = 1, offset = 10 } = query;
       let sort: { [key: string]: SortOrder } = { updatedAt: 'asc' };
       if (query.sort) {
-        query.sort.startsWith('-')
-          ? (sort[query.sort.substring(1)] = 'desc')
-          : (sort[query.sort] = 'asc');
+        if (query.sort.startsWith('-')) {
+          sort[query.sort.substring(1)] = 'desc';
+        } else {
+          sort[query.sort] = 'asc';
+        }
       }
       const skip: number = (page - 1) * offset;
       const filters = {
         kind: 'player',
         createdBy: userId,
-        $or: [
-          { groups: { $exists: false } },
-          { groups: { $size: 0 } }
-        ],
-        deletedAt: null
+        $or: [{ groups: { $exists: false } }, { groups: { $size: 0 } }],
+        deletedAt: null,
       };
 
       const start: number = Date.now();
@@ -196,7 +206,8 @@ export class PlayerService {
         .sort(sort)
         .exec();
 
-      const totalItems: number = await this.characterModel.countDocuments(filters);
+      const totalItems: number =
+        await this.characterModel.countDocuments(filters);
 
       const end: number = Date.now();
       const message: string = `Players found in in ${end - start}ms`;

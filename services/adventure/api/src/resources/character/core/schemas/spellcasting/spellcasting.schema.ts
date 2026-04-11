@@ -6,7 +6,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Spellcasting {
-
   @ApiProperty({ example: 'Wizard' })
   @Prop()
   className?: string;
@@ -23,7 +22,9 @@ export class Spellcasting {
   @Prop()
   attackBonus: number;
 
-  @ApiProperty({ example: { 1: { total: 4, used: 1 }, 2: { total: 3, used: 0 } } })
+  @ApiProperty({
+    example: { 1: { total: 4, used: 1 }, 2: { total: 3, used: 0 } },
+  })
   @Prop({
     type: Map,
     of: new MongooseSchema(
@@ -36,14 +37,21 @@ export class Spellcasting {
   })
   spellSlotsByLevel?: Map<number, { total?: number; used?: number }>;
 
-  @ApiProperty({ description: 'NPC only — tracker of uses per day keyed by usesPerDay value', example: { 2: 3, 3: null } })
+  @ApiProperty({
+    description: 'NPC only — tracker of uses per day keyed by usesPerDay value',
+    example: { 2: 3, 3: null },
+  })
   @Prop({
     type: Map,
     of: Number,
   })
   spellSlotsByUses?: Map<number, number | null>;
 
-  @ApiProperty({ example: false, description: 'Whether spells are innate (grouped by uses per day)', required: false })
+  @ApiProperty({
+    example: false,
+    description: 'Whether spells are innate (grouped by uses per day)',
+    required: false,
+  })
   @Prop({ default: false })
   isInnate?: boolean;
 

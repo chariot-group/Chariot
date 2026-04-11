@@ -7,4 +7,4 @@ import { MetricsModule } from '@/metrics/metrics.module';
   providers: [MaillingService],
   exports: [MaillingService],
 })
-export class MaillingModule { }
+export class MaillingModule {}

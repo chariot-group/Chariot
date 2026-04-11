@@ -2,11 +2,15 @@ import { Prop, Schema } from '@nestjs/mongoose';
 import { SchemaFactory } from '@nestjs/mongoose';
 import { EffectType } from '@/resources/character/core/constants/effect-types.constant';
 import { ApiProperty } from '@nestjs/swagger';
-import { DamageDetails, DamageDetailsSchema, HealingDetails, HealingDetailsSchema } from '@/resources/character/core/schemas/spellcasting/sub/damage-details.schema';
+import {
+  DamageDetails,
+  DamageDetailsSchema,
+  HealingDetails,
+  HealingDetailsSchema,
+} from '@/resources/character/core/schemas/spellcasting/sub/damage-details.schema';
 
 @Schema({ _id: false })
 export class Spell {
-
   @ApiProperty({ example: 'Fireball' })
   @Prop()
   name?: string;
@@ -19,7 +23,10 @@ export class Spell {
   @Prop()
   school?: string;
 
-  @ApiProperty({ example: 'A bright streak flashes from your pointing finger to a point you choose within range...' })
+  @ApiProperty({
+    example:
+      'A bright streak flashes from your pointing finger to a point you choose within range...',
+  })
   @Prop()
   description?: string;
 
@@ -59,11 +66,19 @@ export class Spell {
   @Prop({ type: HealingDetailsSchema })
   healingDetails?: HealingDetails;
 
-  @ApiProperty({ example: 2, nullable: true, description: 'NPC only — number of times this spell can be cast per day. Null means at will.' })
+  @ApiProperty({
+    example: 2,
+    nullable: true,
+    description:
+      'NPC only — number of times this spell can be cast per day. Null means at will.',
+  })
   @Prop({ default: null })
   usesPerDay?: number | null;
 
-  @ApiProperty({ example: 1, description: 'NPC only — number of times this spell has been cast today.' })
+  @ApiProperty({
+    example: 1,
+    description: 'NPC only — number of times this spell has been cast today.',
+  })
   @Prop({ default: 0 })
   used?: number;
 }
