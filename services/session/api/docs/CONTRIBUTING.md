@@ -1,103 +1,102 @@
-
-# Documentation du Service de Session
+# Session Service Documentation
 
 ## Introduction
 
-Le service de **Session** est un microservice central de l'écosystème Chariot. Son rôle principal est de gérer le cycle de vie des sessions de jeu, de leur création à leur expiration. Il offre une API RESTful pour les opérations CRUD (Create, Read, Update, Delete) sur les sessions et utilise des WebSockets pour la communication en temps réel entre les participants.
+The **Session** service is a central microservice in the Chariot ecosystem. Its primary role is to manage the lifecycle of game sessions, from their creation to their expiration. It provides a RESTful API for CRUD (Create, Read, Update, Delete) operations on sessions and uses WebSockets for real-time communication among participants.
 
 ## Architecture
 
-Le service est développé en utilisant le framework [NestJS](https://nestjs.com/) et suit une architecture modulaire.
+The service is developed using the [NestJS](https://nestjs.com/) framework and follows a modular architecture.
 
--   **Langage**: TypeScript
+-   **Language**: TypeScript
 -   **Framework**: NestJS
--   **Base de données**: PostgreSQL, avec l'ORM [Prisma](https://www.prisma.io/)
--   **Communication en temps réel**: WebSockets avec [Socket.IO](https://socket.io/)
--   **Cache et Expiration**: [Redis](https://redis.io/) est utilisé pour gérer l'expiration des sessions.
--   **Authentification**: L'authentification est gérée via [Keycloak](https://www.keycloak.org/). Les tokens JWT sont validés à chaque requête HTTP et à chaque connexion WebSocket.
--   **Documentation API**: [Swagger (OpenAPI)](https://swagger.io/) est utilisé pour générer une documentation interactive de l'API.
+-   **Database**: PostgreSQL, with the [Prisma](https://www.prisma.io/) ORM
+-   **Real-time Communication**: WebSockets with [Socket.IO](https://socket.io/)
+-   **Cache and Expiration**: [Redis](https://redis.io/) is used to manage session expiration.
+-   **Authentication**: Authentication is handled via [Keycloak](https://www.keycloak.org/). JWT tokens are validated with each HTTP request and WebSocket connection.
+-   **API Documentation**: [Swagger (OpenAPI)](https://swagger.io/) is used to generate interactive API documentation.
 
-## Modèle de Données
+## Data Model
 
-La base de données contient deux tables principales : `sessions` et `session_participants`.
+The database contains two main tables: `sessions` and `session_participants`.
 
 ### `Session`
 
-Une session représente une instance de jeu.
+A session represents a game instance.
 
-| Champ | Type | Description |
+| Field | Type | Description |
 | :--- | :--- | :--- |
-| `id` | `String` | Identifiant unique de la session (UUID). |
-| `status` | `SessionStatus` | Statut de la session (`activated`, `launched`, `closed`). |
-| `expiresAt` | `DateTime?` | Date d'expiration de la session (après 8h de lancement). |
-| `deletedAt` | `DateTime?` | Date de suppression (soft delete). |
-| `createdAt` | `DateTime` | Date de création. |
-| `updatedAt` | `DateTime` | Date de dernière mise à jour. |
-| `creatorUserId` | `String` | ID de l'utilisateur créateur. |
-| `creatorCampaignId` | `String` | ID de la campagne associée. |
-| `participants` | `SessionParticipant[]` | Liste des participants à la session. |
+| `id` | `String` | Unique session identifier (UUID). |
+| `status` | `SessionStatus` | Status of the session (`activated`, `launched`, `closed`). |
+| `expiresAt` | `DateTime?` | Session expiration date (8 hours after launch). |
+| `deletedAt` | `DateTime?` | Deletion date (soft delete). |
+| `createdAt` | `DateTime` | Creation date. |
+| `updatedAt` | `DateTime` | Last update date. |
+| `creatorUserId` | `String` | ID of the creator user. |
+| `creatorCampaignId` | `String` | ID of the associated campaign. |
+| `participants` | `SessionParticipant[]` | List of session participants. |
 
 ### `SessionParticipant`
 
-Représente un utilisateur participant à une session.
+Represents a user participating in a session.
 
-| Champ | Type | Description |
+| Field | Type | Description |
 | :--- | :--- | :--- |
-| `id` | `String` | Identifiant unique du participant (UUID). |
-| `userId` | `String` | ID de l'utilisateur. |
-| `characterId` | `String` | ID du personnage joué. |
-| `joinedAt` | `DateTime` | Date à laquelle le participant a rejoint la session. |
-| `sessionId` | `String` | ID de la session à laquelle le participant est lié. |
+| `id` | `String` | Unique participant identifier (UUID). |
+| `userId` | `String` | User ID. |
+| `characterId` | `String` | ID of the character being played. |
+| `joinedAt` | `DateTime` | Date the participant joined the session. |
+| `sessionId` | `String` | ID of the session the participant is linked to. |
 
 ## API Endpoints (REST)
 
-L'API REST est préfixée par `/sessions`.
+The REST API is prefixed with `/sessions`.
 
 -   `POST /`
-    -   **Description**: Crée une nouvelle session.
+    -   **Description**: Creates a new session.
     -   **Body**: `{ "campaignId": "string" }`
-    -   **Réponse**: `SessionResponseDto`
+    -   **Response**: `SessionResponseDto`
 
 -   `GET /`
-    -   **Description**: Récupère les sessions de l'utilisateur authentifié.
-    -   **Réponse**: `SessionListResponseDto`
+    -   **Description**: Retrieves the authenticated user's sessions.
+    -   **Response**: `SessionListResponseDto`
 
 -   `GET /:id`
-    -   **Description**: Récupère une session par son ID.
-    -   **Paramètres**: `id` (UUID)
-    -   **Réponse**: `SessionResponseDto`
+    -   **Description**: Retrieves a session by its ID.
+    -   **Parameters**: `id` (UUID)
+    -   **Response**: `SessionResponseDto`
 
 -   `GET /:id/participants`
-    -   **Description**: Récupère les participants et le créateur d'une session.
-    -   **Paramètres**: `id` (UUID)
-    -   **Réponse**: `SessionParticipantsResponseDto`
+    -   **Description**: Retrieves the participants and creator of a session.
+    -   **Parameters**: `id` (UUID)
+    -   **Response**: `SessionParticipantsResponseDto`
 
 -   `POST /:id/launch`
-    -   **Description**: Lance une session, ce qui déclenche le minuteur d'expiration de 8 heures. Seul le créateur peut lancer la session.
-    -   **Paramètres**: `id` (UUID)
-    -   **Réponse**: `SessionResponseDto`
+    -   **Description**: Launches a session, which starts the 8-hour expiration timer. Only the creator can launch the session.
+    -   **Parameters**: `id` (UUID)
+    -   **Response**: `SessionResponseDto`
 
 -   `POST /:id/join`
-    -   **Description**: Permet à un utilisateur de rejoindre une session.
-    -   **Paramètres**: `id` (UUID)
+    -   **Description**: Allows a user to join a session.
+    -   **Parameters**: `id` (UUID)
     -   **Body**: `{ "characterId": "string" }`
-    -   **Réponse**: `SessionResponseDto`
+    -   **Response**: `SessionResponseDto`
 
 -   `DELETE /:id/leave`
-    -   **Description**: Permet à un utilisateur de quitter une session.
-    -   **Paramètres**: `id` (UUID)
-    -   **Réponse**: `SessionResponseDto`
+    -   **Description**: Allows a user to leave a session.
+    -   **Parameters**: `id` (UUID)
+    -   **Response**: `SessionResponseDto`
 
 -   `DELETE /:id`
-    -   **Description**: Supprime une session (soft delete). Seul le créateur peut supprimer la session.
-    -   **Paramètres**: `id` (UUID)
-    -   **Réponse**: `SessionResponseDto`
+    -   **Description**: Deletes a session (soft delete). Only the creator can delete the session.
+    -   **Parameters**: `id` (UUID)
+    -   **Response**: `SessionResponseDto`
 
-## Événements WebSocket
+## WebSocket Events
 
-Le serveur WebSocket est accessible via le namespace `/session`.
+The WebSocket server is accessible via the `/session` namespace.
 
-### Événements émis par le client
+### Events Emitted by the Client
 
 -   `session:join`
     -   **Description**: Permet à un utilisateur de rejoindre une "room" Socket.IO pour une session spécifique.

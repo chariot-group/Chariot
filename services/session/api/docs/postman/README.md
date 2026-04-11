@@ -1,57 +1,57 @@
-# Collection Postman pour le Service Session
+# Postman Collection for the Session Service
 
-Ce répertoire contient une collection Postman pour faciliter le test et l'interaction avec l'API et le serveur WebSocket du service `session`.
+This directory contains a Postman collection to facilitate testing and interaction with the API and WebSocket server of the `session` service.
 
-## Fichiers
+## Files
 
--   `chariot-session.postman_collection.json`: Le fichier de collection Postman à importer.
+-   `chariot-session.postman_collection.json`: The Postman collection file to import.
 
-## Prérequis
+## Prerequisites
 
--   [Postman](https://www.postman.com/downloads/) doit être installé sur votre machine.
--   Le service `session` doit être en cours d'exécution en local.
+-   [Postman](https://www.postman.com/downloads/) must be installed on your machine.
+-   The `session` service must be running locally.
 
-## Importation de la collection
+## Importing the Collection
 
-1.  Ouvrez Postman.
-2.  Cliquez sur le bouton **Import** en haut à gauche.
-3.  Sélectionnez le fichier `chariot-session.postman_collection.json` depuis ce répertoire.
-4.  La collection "Chariot - Service Session" apparaîtra dans votre liste de collections.
+1.  Open Postman.
+2.  Click the **Import** button in the top-left corner.
+3.  Select the `chariot-session.postman_collection.json` file from this directory.
+4.  The "Chariot - Service Session" collection will appear in your list of collections.
 
 ## Configuration
 
-La collection utilise une variable `baseUrl` pour définir l'adresse de base du service.
+The collection uses a `baseUrl` variable to define the base address of the service.
 
--   Par défaut, elle est initialisée à `http://localhost:3001`.
--   Si votre service s'exécute sur un port différent, vous pouvez modifier cette variable en sélectionnant la collection, en allant dans l'onglet **Variables**, et en modifiant la valeur de `baseUrl`.
+-   By default, it is initialized to `http://localhost:3001`.
+-   If your service runs on a different port, you can modify this variable by selecting the collection, going to the **Variables** tab, and changing the value of `baseUrl`.
 
-## Utilisation
+## Usage
 
-### Test de l'API REST
+### Testing the REST API
 
-La collection inclut une requête `GET` pour le *health check* :
+The collection includes a `GET` request for the health check:
 
-1.  Développez la collection et le dossier `API`.
-2.  Sélectionnez la requête **Health Check**.
-3.  Cliquez sur **Send**.
-4.  Vous devriez recevoir une réponse avec un statut `200 OK` et un corps de réponse confirmant que le service est en ligne. L'onglet **Tests** de la requête validera automatiquement la réponse.
+1.  Expand the collection and the `API` folder.
+2.  Select the **Health Check** request.
+3.  Click **Send**.
+4.  You should receive a response with a `200 OK` status and a response body confirming that the service is online. The **Tests** tab of the request will automatically validate the response.
 
-### Test du WebSocket
+### Testing the WebSocket
 
-Une requête WebSocket est pré-configurée pour vous connecter au service :
+A WebSocket request is pre-configured to connect you to the service:
 
-1.  Développez le dossier `WebSocket`.
-2.  Sélectionnez la requête **Connexion au service Session**.
-3.  Cliquez sur **Connect**. Une fois la connexion établie, une zone de messages s'affichera.
-4.  Allez dans l'onglet **Message** (la zone de saisie en bas).
-5.  Le corps du message est pré-rempli avec un exemple. **Vous devez l'adapter** pour correspondre aux événements (`event`) et aux données (`data`) attendus par votre `SessionGateway`.
+1.  Expand the `WebSocket` folder.
+2.  Select the **Connexion au service Session** (Session Service Connection) request.
+3.  Click **Connect**. Once the connection is established, a message area will appear.
+4.  Go to the **Message** tab (the input area at the bottom).
+5.  The message body is pre-filled with an example. **You must adapt it** to match the events (`event`) and data (`data`) expected by your `SessionGateway`.
     ```json
     {
-      "event": "votre-evenement",
+      "event": "your-event",
       "data": {
-        "cle": "valeur"
+        "key": "value"
       }
     }
     ```
-6.  Cliquez sur **Send** pour envoyer le message au serveur.
-7.  Les messages reçus du serveur apparaîtront dans la section des messages au-dessus de la zone de saisie.
+6.  Click **Send** to send the message to the server.
+7.  Messages received from the server will appear in the message section above the input area.
