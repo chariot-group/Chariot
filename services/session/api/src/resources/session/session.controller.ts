@@ -6,6 +6,8 @@ import { SessionResponseDto, SessionListResponseDto } from '@/resources/session/
 import { SessionParticipantsResponseDto } from '@/resources/session/dto/session-participants-response.dto';
 import { ParseUUIDPipe } from '@/common/pipes/parse-uuid.pipe';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
+import { GenericResponseDto } from '@/common/dto/generic-response.dto';
 
 @ApiTags('sessions')
 @Controller('sessions')
@@ -20,12 +22,12 @@ export class SessionController {
     @ApiResponse({ status: 201, type: SessionResponseDto, description: 'Session créée avec succès' })
     @ApiResponse({ status: 400, description: 'Données invalides' })
     @ApiResponse({ status: 500, description: 'Erreur interne du serveur' })
-    async create(@Body() createSessionDto: CreateSessionDto, @Req() req: any) {
-        let start: number = Date.now();
-        const session = await this.sessionService.create(createSessionDto, req.user.keycloakId);
-        let duration: number = (Date.now() - start) / 1000;
+    async create(@Body() createSessionDto: CreateSessionDto, @Req() req: any): Promise<GenericResponseDto<SessionWithParticipants>> {
+        const start: number = Date.now();
+        const session: SessionWithParticipants = await this.sessionService.create(createSessionDto, req.user.keycloakId);
+        const duration: number = (Date.now() - start) / 1000;
 
-        let message: string = `Session #${session.id} created in ${duration.toFixed(3)}s`;
+        const message: string = `Session #${session.id} created in ${duration.toFixed(3)}s`;
         this.logger.verbose(message, this.SERVICE_NAME);
         return {
             message,
@@ -37,12 +39,12 @@ export class SessionController {
     @ApiOperation({ summary: 'Récupérer les sessions de l\'utilisateur' })
     @ApiResponse({ status: 200, type: SessionListResponseDto, description: 'Liste des sessions de l\'utilisateur' })
     @ApiResponse({ status: 500, description: 'Erreur interne du serveur' })
-    async findAll(@Req() req: any) {
-        let start: number = Date.now();
-        const sessions = await this.sessionService.findAllByUser(req.user.keycloakId);
-        let duration: number = (Date.now() - start) / 1000;
+    async findAll(@Req() req: any): Promise<GenericResponseDto<SessionWithParticipants[]>> {
+        const start: number = Date.now();
+        const sessions: SessionWithParticipants[] = await this.sessionService.findAllByUser(req.user.keycloakId);
+        const duration: number = (Date.now() - start) / 1000;
 
-        let message: string = `Found ${sessions.length} session(s) for user ${req.user.username} in ${duration.toFixed(3)}s`;
+        const message: string = `Found ${sessions.length} session(s) for user ${req.user.username} in ${duration.toFixed(3)}s`;
         this.logger.verbose(message, this.SERVICE_NAME);
         return {
             message: message,
@@ -56,12 +58,12 @@ export class SessionController {
     @ApiResponse({ status: 200, type: SessionParticipantsResponseDto, description: 'Participants et auteur de la session' })
     @ApiResponse({ status: 404, description: 'Session introuvable' })
     @ApiResponse({ status: 500, description: 'Erreur interne du serveur' })
-    async findParticipants(@Param('id', ParseUUIDPipe) id: string) {
-        let start: number = Date.now();
-        const result = await this.sessionService.findParticipants(id);
-        let duration: number = (Date.now() - start) / 1000;
+    async findParticipants(@Param('id', ParseUUIDPipe) id: string): Promise<GenericResponseDto<SessionParticipantsDetails>> {
+        const start: number = Date.now();
+        const result: SessionParticipantsDetails = await this.sessionService.findParticipants(id);
+        const duration: number = (Date.now() - start) / 1000;
 
-        let message: string = `Found ${result.participants.length} participant(s) for session #${id} in ${duration.toFixed(3)}s`;
+        const message: string = `Found ${result.participants.length} participant(s) for session #${id} in ${duration.toFixed(3)}s`;
         this.logger.verbose(message, this.SERVICE_NAME);
         return {
             message,
@@ -76,12 +78,12 @@ export class SessionController {
     @ApiResponse({ status: 404, description: 'Session introuvable' })
     @ApiResponse({ status: 410, description: 'Session supprimée ou clôturée' })
     @ApiResponse({ status: 500, description: 'Erreur interne du serveur' })
-    async findOne(@Param('id', ParseUUIDPipe) id: string) {
-        let start: number = Date.now();
-        const session = await this.sessionService.findOne(id);
-        let duration: number = (Date.now() - start) / 1000;
+    async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<GenericResponseDto<SessionWithParticipants>> {
+        const start: number = Date.now();
+        const session: SessionWithParticipants = await this.sessionService.findOne(id);
+        const duration: number = (Date.now() - start) / 1000;
 
-        let message: string = `Session #${id} found in ${duration.toFixed(3)}s`;
+        const message: string = `Session #${id} found in ${duration.toFixed(3)}s`;
         this.logger.verbose(message, this.SERVICE_NAME);
         return {
             message: message,
@@ -98,12 +100,12 @@ export class SessionController {
     @ApiResponse({ status: 404, description: 'Session introuvable' })
     @ApiResponse({ status: 410, description: 'Session supprimée ou clôturée' })
     @ApiResponse({ status: 500, description: 'Erreur interne du serveur' })
-    async launch(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
-        let start: number = Date.now();
-        const session = await this.sessionService.launch(id, req.user.keycloakId);
-        let duration: number = (Date.now() - start) / 1000;
+    async launch(@Param('id', ParseUUIDPipe) id: string, @Req() req: any): Promise<GenericResponseDto<SessionWithParticipants>> {
+        const start: number = Date.now();
+        const session: SessionWithParticipants = await this.sessionService.launch(id, req.user.keycloakId);
+        const duration: number = (Date.now() - start) / 1000;
 
-        let message: string = `Session #${id} launched in ${duration.toFixed(3)}s, expires at ${session.expiresAt.toISOString()}`;
+        const message: string = `Session #${id} launched in ${duration.toFixed(3)}s, expires at ${session.expiresAt.toISOString()}`;
         this.logger.verbose(message, this.SERVICE_NAME);
         return {
             message: message,
@@ -123,12 +125,12 @@ export class SessionController {
         @Param('id', ParseUUIDPipe) id: string,
         @Body() joinSessionDto: JoinSessionDto,
         @Req() req: any,
-    ) {
-        let start: number = Date.now();
-        const session = await this.sessionService.join(id, joinSessionDto, req.user.keycloakId);
-        let duration: number = (Date.now() - start) / 1000;
+    ): Promise<GenericResponseDto<SessionWithParticipants>> {
+        const start: number = Date.now();
+        const session: SessionWithParticipants = await this.sessionService.join(id, joinSessionDto, req.user.keycloakId);
+        const duration: number = (Date.now() - start) / 1000;
 
-        let message: string = `User ${req.user.username} joined session #${id} in ${duration.toFixed(3)}s`;
+        const message: string = `User ${req.user.username} joined session #${id} in ${duration.toFixed(3)}s`;
         this.logger.verbose(message, this.SERVICE_NAME);
         return {
             message: message,
@@ -144,12 +146,12 @@ export class SessionController {
     @ApiResponse({ status: 404, description: 'Session introuvable' })
     @ApiResponse({ status: 410, description: 'Session supprimée ou clôturée' })
     @ApiResponse({ status: 500, description: 'Erreur interne du serveur' })
-    async leave(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
-        let start: number = Date.now();
-        const session = await this.sessionService.leave(id, req.user.keycloakId);
-        let duration: number = (Date.now() - start) / 1000;
+    async leave(@Param('id', ParseUUIDPipe) id: string, @Req() req: any): Promise<GenericResponseDto<SessionWithParticipants>> {
+        const start: number = Date.now();
+        const session: SessionWithParticipants = await this.sessionService.leave(id, req.user.keycloakId);
+        const duration: number = (Date.now() - start) / 1000;
 
-        let message: string = `User ${req.user.username} left session #${id} in ${duration.toFixed(3)}s`;
+        const message: string = `User ${req.user.username} left session #${id} in ${duration.toFixed(3)}s`;
         this.logger.verbose(message, this.SERVICE_NAME);
         return {
             message: message,
@@ -166,12 +168,12 @@ export class SessionController {
     @ApiResponse({ status: 404, description: 'Session introuvable' })
     @ApiResponse({ status: 410, description: 'Session supprimée ou clôturée' })
     @ApiResponse({ status: 500, description: 'Erreur interne du serveur' })
-    async close(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
-        let start: number = Date.now();
-        const session = await this.sessionService.close(id, req.user.keycloakId);
-        let duration: number = (Date.now() - start) / 1000;
+    async close(@Param('id', ParseUUIDPipe) id: string, @Req() req: any): Promise<GenericResponseDto<SessionWithParticipants>> {
+        const start: number = Date.now();
+        const session: SessionWithParticipants = await this.sessionService.close(id, req.user.keycloakId);
+        const duration: number = (Date.now() - start) / 1000;
 
-        let message: string = `Session #${id} closed by user ${req.user.username} in ${duration.toFixed(3)}s`;
+        const message: string = `Session #${id} closed by user ${req.user.username} in ${duration.toFixed(3)}s`;
         this.logger.verbose(message, this.SERVICE_NAME);
         return {
             message: message,

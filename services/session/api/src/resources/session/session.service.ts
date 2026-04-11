@@ -4,6 +4,9 @@ import { RedisService } from '@/redis/redis.service';
 import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { SessionStatus } from '@prisma/client';
+import { Session, SessionParticipant, SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
+
+
 
 @Injectable()
 export class SessionService {
@@ -18,9 +21,9 @@ export class SessionService {
         private readonly redisService: RedisService,
     ) { }
 
-    async create(createSessionDto: CreateSessionDto, userId: string) {
+    async create(createSessionDto: CreateSessionDto, userId: string): Promise<SessionWithParticipants> {
         try {
-            const session = await this.prisma.session.create({
+            const session: SessionWithParticipants = await this.prisma.session.create({
                 data: {
                     creatorUserId: userId,
                     creatorCampaignId: createSessionDto.campaignId,
@@ -31,47 +34,47 @@ export class SessionService {
 
             return session;
         } catch (error: any) {
-            let message: string = `Error creating session for user ${userId}: ${error.message}`;
+            const message: string = `Error creating session for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async findOne(id: string) {
+    async findOne(id: string): Promise<SessionWithParticipants> {
         try {
-            const session = await this.prisma.session.findFirst({
+            const session: SessionWithParticipants | null = await this.prisma.session.findFirst({
                 where: { id },
                 include: { participants: true },
             });
 
             if (!session) {
-                let message: string = `Session #${id} not found`;
+                const message: string = `Session #${id} not found`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
             if (session.deletedAt !== null) {
-                let message: string = `Session #${id} is deleted`;
+                const message: string = `Session #${id} is deleted`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new GoneException(message);
             }
 
             if (session.status === SessionStatus.closed) {
-                let message: string = `Session #${id} is closed`;
+                const message: string = `Session #${id} is closed`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new GoneException(message);
             }
 
             return session;
         } catch (error: any) {
-            let message: string = `Error retrieving session #${id}: ${error.message}`;
+            const message: string = `Error retrieving session #${id}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
 
     }
 
-    async findAllByUser(userId: string) {
+    async findAllByUser(userId: string): Promise<SessionWithParticipants[]> {
         try {
             return this.prisma.session.findMany({
                 where: {
@@ -85,15 +88,15 @@ export class SessionService {
                 orderBy: { createdAt: 'desc' },
             });
         } catch (error: any) {
-            let message: string = `Error retrieving sessions for user ${userId}: ${error.message}`;
+            const message: string = `Error retrieving sessions for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async launch(id: string, userId: string) {
+    async launch(id: string, userId: string): Promise<SessionWithParticipants> {
         try {
-            const session = await this.findOne(id);
+            const session: SessionWithParticipants = await this.findOne(id);
 
             if (session.creatorUserId !== userId) {
                 let message: string = `User ${userId} is not the creator of session #${id}`;
@@ -107,10 +110,10 @@ export class SessionService {
                 throw new BadRequestException(message);
             }
 
-            const expiresAt = new Date();
+            const expiresAt: Date = new Date();
             expiresAt.setHours(expiresAt.getHours() + SessionService.EXPIRATION_HOURS);
 
-            const updated = await this.prisma.session.update({
+            const updated: SessionWithParticipants = await this.prisma.session.update({
                 where: { id },
                 data: {
                     status: SessionStatus.launched,
@@ -124,25 +127,25 @@ export class SessionService {
 
             return updated;
         } catch (error: any) {
-            let message: string = `Error launching session #${id}: ${error.message}`;
+            const message: string = `Error launching session #${id}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async join(id: string, joinSessionDto: JoinSessionDto, userId: string) {
+    async join(id: string, joinSessionDto: JoinSessionDto, userId: string): Promise<SessionWithParticipants> {
         try {
-            const session = await this.findOne(id);
+            const session: SessionWithParticipants = await this.findOne(id);
 
             if (session.status === SessionStatus.closed) {
-                let message: string = `Session #${id} is closed, cannot join`;
+                const message: string = `Session #${id} is closed, cannot join`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
 
-            const alreadyJoined = session.participants.some(p => p.userId === userId);
+            const alreadyJoined: boolean = session.participants.some(p => p.userId === userId);
             if (alreadyJoined) {
-                let message: string = `User ${userId} is already in session #${id}`;
+                const message: string = `User ${userId} is already in session #${id}`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
@@ -157,19 +160,19 @@ export class SessionService {
 
             return await this.findOne(id);
         } catch (error: any) {
-            let message: string = `Error joining session #${id} for user ${userId}: ${error.message}`;
+            const message: string = `Error joining session #${id} for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async leave(id: string, userId: string) {
+    async leave(id: string, userId: string): Promise<SessionWithParticipants> {
         try {
-            const session = await this.findOne(id);
+            const session: SessionWithParticipants = await this.findOne(id);
 
-            const participant = session.participants.find(p => p.userId === userId);
+            const participant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
             if (!participant) {
-                let message: string = `User ${userId} is not a participant of session #${id}`;
+                const message: string = `User ${userId} is not a participant of session #${id}`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
@@ -179,32 +182,32 @@ export class SessionService {
             });
 
             // Clôturer si la session est vide et le créateur a quitté
-            const remaining = session.participants.filter(p => p.userId !== userId);
+            const remaining: SessionParticipant[] = session.participants.filter(p => p.userId !== userId);
             if (remaining.length === 0 && session.creatorUserId === userId) {
                 return this.close(id, userId);
             }
 
             return this.findOne(id);
         } catch (error: any) {
-            let message: string = `Error leaving session #${id} for user ${userId}: ${error.message}`;
+            const message: string = `Error leaving session #${id} for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
 
     }
 
-    async close(id: string, userId: string) {
+    async close(id: string, userId: string): Promise<SessionWithParticipants> {
         try {
-            const session = await this.findOne(id);
+            const session: SessionWithParticipants = await this.findOne(id);
 
             if (session.creatorUserId !== userId) {
-                let message: string = `User ${userId} is not the creator of session #${id}, cannot close`;
+                const message: string = `User ${userId} is not the creator of session #${id}, cannot close`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new ForbiddenException(message);
             }
 
             if (session.status === SessionStatus.closed) {
-                let message: string = `Session #${id} is already closed`;
+                const message: string = `Session #${id} is already closed`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
@@ -221,15 +224,19 @@ export class SessionService {
                 include: { participants: true },
             });
         } catch (error: any) {
-            let message: string = `Error closing session #${id} for user ${userId}: ${error.message}`;
+            const message: string = `Error closing session #${id} for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async findParticipants(id: string) {
+    async findParticipants(id: string): Promise<SessionParticipantsDetails> {
         try {
-            const session = await this.prisma.session.findFirst({
+            const session: {
+                creatorUserId: string;
+                creatorCampaignId: string;
+                participants: SessionParticipant[];
+            } | null = await this.prisma.session.findFirst({
                 where: { id },
                 select: {
                     creatorUserId: true,
@@ -239,7 +246,7 @@ export class SessionService {
             });
 
             if (!session) {
-                let message: string = `Session #${id} not found`;
+                const message: string = `Session #${id} not found`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
@@ -252,7 +259,7 @@ export class SessionService {
                 participants: session.participants,
             };
         } catch (error: any) {
-            let message: string = `Error retrieving participants for session #${id}: ${error.message}`;
+            const message: string = `Error retrieving participants for session #${id}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
@@ -264,26 +271,30 @@ export class SessionService {
      */
     async expireSession(id: string): Promise<string[]> {
         try {
-            const session = await this.prisma.session.findFirst({
+            const session: SessionWithParticipants | null = await this.prisma.session.findFirst({
                 where: { id, deletedAt: null },
                 include: { participants: true },
             });
 
-            if (!session || session.status === SessionStatus.closed) {
+            if (!session) {
+                this.logger.warn(`Session #${id} already processed or deleted.`, this.SERVICE_NAME);
                 return [];
             }
 
-            await this.prisma.session.update({
+            const updatedSession: SessionWithParticipants = await this.prisma.session.update({
                 where: { id },
                 data: {
                     status: SessionStatus.closed,
                     deletedAt: new Date(),
                 },
+                include: { participants: true },
             });
 
-            return session.participants.map(p => p.userId);
+            this.logger.log(`Session #${id} expired and closed.`, this.SERVICE_NAME);
+
+            return updatedSession.participants.map((p: SessionParticipant) => p.userId);
         } catch (error: any) {
-            let message: string = `Error expiring session #${id}: ${error.message}`;
+            const message: string = `Error expiring session #${id}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
