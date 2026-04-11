@@ -6,27 +6,36 @@ API Gateway built with NestJS 10, serving as centralized entry point for all Cha
 
 ## Request Flow
 
-```
-Client (Browser)
-    ↓ HTTPS
-Traefik (Prod/Integ)
-    ↓
-Gateway (8082)
-  → CORS validation
-  → Rate limiting
-  → Request logging
-  → Metrics collection
-  → Proxy to backends
-    ↓
-Adventure Service (9000)
+```mermaid
+graph TD
+    subgraph Client
+        A[Browser]
+    end
+
+    subgraph "Prod/Integ Environment"
+        B[Traefik]
+    end
+
+    subgraph "Gateway (Port 8082)"
+        C{Gateway}
+        C -- "/api/adventure/*" --> D[Adventure Service (9000)]
+        C -- "/api/session/*" --> E[Session Service (9002)]
+    end
+
+    A -- HTTPS --> B
+    B -- HTTP --> C
+
+    style D fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#ccf,stroke:#333,stroke-width:2px
 ```
 
 ## Core Features
 
 ### Routing & Proxy
-- `/api/*` → forwards to Adventure service (removes `/api` prefix)
-- All HTTP methods supported (GET, POST, PUT, PATCH, DELETE, OPTIONS)
-- Header propagation with internal headers cleanup
+- `/api/{service-name}/*` → forwards to the corresponding service (e.g., `adventure`, `session`).
+- All HTTP methods supported (GET, POST, PUT, PATCH, DELETE, OPTIONS).
+- Header propagation with internal headers cleanup.
+- Service URLs are discovered from environment variables ending in `_SERVICE_URL`.
 
 ### Rate Limiting
 Configured per environment via `@nestjs/throttler`:
@@ -89,8 +98,9 @@ Exposed on `/metrics`:
 | `GATEWAY_LOG_LEVEL` | info | Log level (debug/info/warn/error) |
 | `GATEWAY_RATE_LIMIT_MAX` | 100 | Max requests per window |
 | `GATEWAY_RATE_LIMIT_WINDOW` | 60000 | Time window (ms) |
-| `ADVENTURE_SERVICE_URL` | http://chariot-adventure:9000 | Backend URL |
-| `FRONTEND_URL` | http://localhost:3000,http://localhost:3001 | Allowed CORS origins (comma-separated) |
+| `ADVENTURE_SERVICE_URL` | `http://chariot-adventure:9000` | Adventure service URL |
+| `SESSION_SERVICE_URL` | `http://chariot-session:9002` | Session service URL |
+| `FRONTEND_URL` | `http://localhost:3000` | Allowed CORS origins (comma-separated) |
 
 ### Ports
 
@@ -98,6 +108,7 @@ Exposed on `/metrics`:
 |---------|------|----------|
 | Gateway | 8082 | External |
 | Adventure | 9000 | Internal only |
+| Session | 9002 | Internal only |
 | Frontend | 3000 | External |
 | Keycloak | 8081 | External |
 

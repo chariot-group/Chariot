@@ -1,0 +1,20 @@
+FROM node:22-alpine AS base
+
+WORKDIR /app
+
+# Update Alpine packages to patch OS-level vulnerabilities
+RUN apk upgrade --no-cache
+
+# Copy package files first for better caching
+COPY package*.json ./
+
+# Install dependencies (this layer will be cached unless package.json changes)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Generate Prisma client from current schema
+RUN npx prisma generate
+
+CMD ["npm", "run", "start:dev"]

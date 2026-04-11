@@ -41,10 +41,13 @@ export class ProxyController {
         serviceName = potentialService;
         targetPath = "/" + segments.slice(1).join("/");
       } else {
-        // Fallback to Adventure service for backward compatibility: /api/{path}
-        serviceName = "adventure";
-        targetPath = "/" + segments.join("/");
-        this.logger.debug(`No service '${potentialService}' found, falling back to adventure service`);
+        // No service specified in path, cannot route
+        this.logger.warn(`No service specified for path: ${req.originalUrl}`);
+        return res.status(404).json({
+          message: "Not Found",
+          error: `No service specified in the URL. Please use /api/{service-name}/{path}.`,
+          available_services: this.proxyService.getAvailableServices(),
+        });
       }
 
       // Preserve query string if present
@@ -83,17 +86,14 @@ export class ProxyController {
 
       res.status(response.status).send(response.data);
     } catch (error) {
-      this.logger.error(`Proxy error: ${error.message}`, error.stack);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Proxy error: ${errorMessage}`, error instanceof Error ? error.stack : undefined);
 
-      if (error.response) {
-        res.status(error.response.status).send(error.response.data);
-      } else if (error.status) {
-        // Handle NestJS exceptions (like BadRequestException)
-        res.status(error.status).json({
-          statusCode: error.status,
-          message: error.message,
-          error: error.name,
-        });
+      if (error instanceof HttpException) {
+        res.status(error.getStatus()).json(error.getResponse());
+      } else if (error && typeof error === "object" && "response" in error) {
+        const errorResponse = error.response as { status?: number; data?: any };
+        res.status(errorResponse.status || 500).send(errorResponse.data);
       } else {
         throw new HttpException("Service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE);
       }

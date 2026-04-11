@@ -1,0 +1,635 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/sessions": {
+      "post": {
+        "operationId": "SessionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session créée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "500": {
+            "description": "Erreur interne du serveur"
+          }
+        },
+        "summary": "Créer une nouvelle session",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "get": {
+        "operationId": "SessionController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Liste des sessions de l'utilisateur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionListResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur"
+          }
+        },
+        "summary": "Récupérer les sessions de l'utilisateur",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{id}/participants": {
+      "get": {
+        "operationId": "SessionController_findParticipants",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Participants et auteur de la session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionParticipantsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session introuvable"
+          },
+          "500": {
+            "description": "Erreur interne du serveur"
+          }
+        },
+        "summary": "Récupérer les participants et l'auteur d'une session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{id}": {
+      "get": {
+        "operationId": "SessionController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session trouvée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session introuvable"
+          },
+          "410": {
+            "description": "Session supprimée ou clôturée"
+          },
+          "500": {
+            "description": "Erreur interne du serveur"
+          }
+        },
+        "summary": "Récupérer une session par ID",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "delete": {
+        "operationId": "SessionController_close",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session clôturée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Session déjà clôturée"
+          },
+          "403": {
+            "description": "Seul le créateur peut clôturer la session"
+          },
+          "404": {
+            "description": "Session introuvable"
+          },
+          "410": {
+            "description": "Session supprimée ou clôturée"
+          },
+          "500": {
+            "description": "Erreur interne du serveur"
+          }
+        },
+        "summary": "Clôturer une session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{id}/launch": {
+      "post": {
+        "operationId": "SessionController_launch",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Session lancée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "La session ne peut pas être lancée depuis son statut actuel"
+          },
+          "403": {
+            "description": "Seul le créateur peut lancer la session"
+          },
+          "404": {
+            "description": "Session introuvable"
+          },
+          "410": {
+            "description": "Session supprimée ou clôturée"
+          },
+          "500": {
+            "description": "Erreur interne du serveur"
+          }
+        },
+        "summary": "Lancer une session (déclenche l'expiration de 8h)",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{id}/join": {
+      "post": {
+        "operationId": "SessionController_join",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session rejointe avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Session clôturée ou utilisateur déjà participant"
+          },
+          "404": {
+            "description": "Session introuvable"
+          },
+          "410": {
+            "description": "Session supprimée ou clôturée"
+          },
+          "500": {
+            "description": "Erreur interne du serveur"
+          }
+        },
+        "summary": "Rejoindre une session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{id}/leave": {
+      "post": {
+        "operationId": "SessionController_leave",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Session ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Session quittée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Utilisateur non participant à la session"
+          },
+          "404": {
+            "description": "Session introuvable"
+          },
+          "410": {
+            "description": "Session supprimée ou clôturée"
+          },
+          "500": {
+            "description": "Erreur interne du serveur"
+          }
+        },
+        "summary": "Quitter une session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "PrometheusController_index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Prometheus"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Session API",
+    "description": "Session API Documentation",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "http://localhost:9001"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/auth",
+            "tokenUrl": "http://localhost:8080/realms/chariot/protocol/openid-connect/token",
+            "scopes": {
+              "openid": "OpenID Connect"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "CreateSessionDto": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "ID de la campagne utilisée pour cette session",
+            "example": "camp_abc123"
+          }
+        },
+        "required": [
+          "campaignId"
+        ]
+      },
+      "SessionParticipantEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "userId": {
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440001"
+          },
+          "characterId": {
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440002"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-04-11T10:00:00.000Z"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440003"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "characterId",
+          "joinedAt",
+          "sessionId"
+        ]
+      },
+      "SessionEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "activated",
+              "launched",
+              "closed"
+            ],
+            "example": "activated"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-04-11T18:00:00.000Z",
+            "nullable": true
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-04-11T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-04-11T10:00:00.000Z"
+          },
+          "creatorUserId": {
+            "type": "string",
+            "example": "kc-user-uuid-123"
+          },
+          "creatorCampaignId": {
+            "type": "string",
+            "example": "camp_abc123"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionParticipantEntity"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "creatorUserId",
+          "creatorCampaignId",
+          "participants"
+        ]
+      },
+      "SessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Session #uuid created in 0.042s"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SessionEntity"
+          }
+        },
+        "required": [
+          "message",
+          "data"
+        ]
+      },
+      "SessionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Found 3 session(s) for user john in 0.012s"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionEntity"
+            }
+          }
+        },
+        "required": [
+          "message",
+          "data"
+        ]
+      },
+      "SessionAuthorDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "example": "kc-user-uuid-123"
+          },
+          "campaignId": {
+            "type": "string",
+            "example": "camp_abc123"
+          }
+        },
+        "required": [
+          "userId",
+          "campaignId"
+        ]
+      },
+      "SessionParticipantsDataDto": {
+        "type": "object",
+        "properties": {
+          "author": {
+            "$ref": "#/components/schemas/SessionAuthorDto"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionParticipantEntity"
+            }
+          }
+        },
+        "required": [
+          "author",
+          "participants"
+        ]
+      },
+      "SessionParticipantsResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Found 2 participant(s) for session #uuid in 0.008s"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SessionParticipantsDataDto"
+          }
+        },
+        "required": [
+          "message",
+          "data"
+        ]
+      },
+      "JoinSessionDto": {
+        "type": "object",
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "description": "ID du personnage utilisé pour rejoindre la session",
+            "example": "char_abc123"
+          }
+        },
+        "required": [
+          "characterId"
+        ]
+      },
+      "ProblemDetailsDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "https://httpstatuses.io/400"
+          },
+          "title": {
+            "type": "string",
+            "example": "Bad request"
+          },
+          "status": {
+            "type": "number",
+            "example": 400
+          },
+          "instance": {
+            "type": "string",
+            "example": "/sessions"
+          },
+          "detail": {
+            "type": "string",
+            "example": "The 'name' field is required."
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "instance"
+        ]
+      },
+      "InvalidParamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "label"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Must be at least 3 characters long"
+          }
+        },
+        "required": [
+          "name",
+          "reason"
+        ]
+      }
+    }
+  }
+}

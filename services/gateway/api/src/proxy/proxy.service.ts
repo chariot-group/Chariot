@@ -60,22 +60,10 @@ export class ProxyService {
       this.logger.debug(`Received response from ${serviceName}: ${response.status}`);
       return response;
     } catch (error) {
-      this.logger.error(`Error forwarding to ${serviceName}: ${error.message}`, error.stack);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error forwarding to ${serviceName}: ${errorMessage}`, error instanceof Error ? error.stack : undefined);
       throw error;
     }
-  }
-
-  /**
-   * Legacy method for backward compatibility
-   * @deprecated Use forward('adventure', ...) instead
-   */
-  async forwardToAdventure(
-    method: string,
-    path: string,
-    body?: any,
-    headers?: Record<string, string>,
-  ): Promise<AxiosResponse> {
-    return this.forward("adventure", method, path, body, headers);
   }
 
   /**

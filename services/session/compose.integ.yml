@@ -1,0 +1,78 @@
+name: chariot-session-integ
+
+services:
+  chariot-session-postgres:
+    image: postgres:16-alpine
+    container_name: chariot-session-postgres-integ
+    restart: unless-stopped
+    ports:
+      - "5432"
+    volumes:
+      - chariot_session_postgres_data_integ:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - chariot-network
+
+  chariot-session-redis:
+    image: redis:7-alpine
+    container_name: chariot-session-redis-integ
+    restart: unless-stopped
+    ports:
+      - "6379"
+    command: ["redis-server", "--notify-keyspace-events", "Ex"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - chariot-network
+
+  chariot-session:
+    image: ghcr.io/chariot-group/chariot-session-integration:latest
+    container_name: chariot-session-integ
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      NODE_ENV: integration
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SESSION_URL: ${SESSION_URL}
+      SESSION_VERSION: ${SESSION_VERSION}
+      FRONTEND_URL: ${FRONTEND_URL}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    depends_on:
+      chariot-session-postgres:
+        condition: service_healthy
+      chariot-session-redis:
+        condition: service_healthy
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - chariot-network
+      - chariot-group-network-integ
+
+volumes:
+  chariot_session_postgres_data_integ:
+  chariot_session_logs_integ:
+
+networks:
+  chariot-network:
+    driver: bridge
+  chariot-group-network-integ:
+    external: true
