@@ -91,4 +91,6 @@ class GroupService {
     }
 }
 
-export default new GroupService();
+const groupService = new GroupService();
+
+export default groupService;

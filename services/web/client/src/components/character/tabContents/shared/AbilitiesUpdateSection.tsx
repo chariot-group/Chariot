@@ -3,7 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove } from "react-hook-form";
+import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, FieldValues } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
@@ -11,10 +11,10 @@ import { Field, FieldError } from "@/components/ui/field";
 
 interface AbilitiesUpdateSectionProps {
   title: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   fieldArrayName: string;
-  fields: FieldArrayWithId<any, any, "id">[];
-  append: UseFieldArrayAppend<any, any>;
+  fields: FieldArrayWithId<FieldValues, string, "id">[];
+  append: UseFieldArrayAppend<FieldValues, string>;
   remove: UseFieldArrayRemove;
   accentColor: string;
 }

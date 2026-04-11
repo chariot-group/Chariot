@@ -1,5 +1,4 @@
-import { Character } from "@/types/character";
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -8,12 +7,11 @@ import { Cake, Eye, PersonStanding, Ruler, Scale, Scissors } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea";
 
 interface CharacterHistoryTabEditProps {
-  character: Character;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
-export default function CharacterHistoryTabEdit({ character, accentColor, form }: CharacterHistoryTabEditProps) {
+export default function CharacterHistoryTabEdit({ accentColor, form }: CharacterHistoryTabEditProps) {
   const t = useTranslations("characterDetail.history");
 
   return (

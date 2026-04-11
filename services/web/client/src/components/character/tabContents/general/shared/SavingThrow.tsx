@@ -9,14 +9,13 @@ import { Stats } from "@/types/character";
 import { AbilityScores } from "@/types/character";
 
 interface SavingThrowProps {
-  label: string;
   skillName: keyof AbilityScores;
   accentColor: string;
   tooltip?: string | undefined;
   stats: Stats;
 }
 
-export default function SavingThrow({ label, skillName, accentColor, tooltip, stats }: SavingThrowProps) {
+export default function SavingThrow({ skillName, accentColor, tooltip, stats }: SavingThrowProps) {
   const t = useTranslations("characterDetail.player.general");
 
   const abilityName = t(`abilities.${skillName}`);

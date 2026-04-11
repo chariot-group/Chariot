@@ -2,10 +2,10 @@ import { Card } from "@/components/ui/card";
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSkillsEdit";
 import { useTranslations } from "next-intl";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface NpcColumn2EditProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   accentColor: string;
   className?: string;
 }
@@ -32,7 +32,6 @@ export default function NpcColumn2Edit({ form, accentColor, className }: NpcColu
         <SavingThrowsEdit
           form={form}
           accentColor={accentColor}
-          isNPC={true}
         />
       </div>
 
@@ -48,10 +47,7 @@ export default function NpcColumn2Edit({ form, accentColor, className }: NpcColu
         </h2>
       </Card>
       <div className="order-4">
-        <NpcSkillsEdit
-          form={form}
-          accentColor={accentColor}
-        />
+        <NpcSkillsEdit form={form} />
       </div>
     </section>
   );

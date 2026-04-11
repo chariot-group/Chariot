@@ -67,7 +67,7 @@ export function calculateMasteryLevel(masteryLevel: number, skills: number, prof
         if (masteryLevel === 2) value = calculateAbilityBonus(masteriesAbility) + proficiencyBonus;
         result = value;
     }
-    let arroundedResult = Math.floor(result);
+    const arroundedResult = Math.floor(result);
     return arroundedResult;
 }
 

@@ -4,7 +4,7 @@ import { SquarePen, X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
@@ -29,19 +29,11 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
   const searchParams = useSearchParams();
 
   // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
-  const tabFromUrl = (searchParams.get("tab") as CharacterTab) || "general";
-  const [activeTab, setActiveTab] = useState<CharacterTab>(tabFromUrl);
-
-  // Synchroniser l'état local avec l'URL au chargement
-  useEffect(() => {
-    const currentTab = (searchParams.get("tab") as CharacterTab) || "general";
-    setActiveTab(currentTab);
-  }, [searchParams]);
+  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
 
   // Fonction pour changer d'onglet et mettre à jour l'URL
   const handleTabChange = (newTab: string) => {
     const tab = newTab as CharacterTab;
-    setActiveTab(tab);
     // Mettre à jour l'URL sans recharger la page
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
@@ -94,7 +86,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcuts, true);
     };
-  }, [form, isEditing, onCancel, onUpdate, setIsEditing]);
+  }, [form, isEditing, onCancel, onUpdate, setIsEditing, t, toast]);
 
   return (
     <main className="flex flex-col h-dvh overflow-hidden">

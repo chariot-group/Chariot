@@ -32,7 +32,7 @@ export default function Header() {
     <React.Fragment>
       {process.env.NEXT_PUBLIC_ENV_NAME === "integration" && (
         <div className="w-full bg-yellow-500 text-black text-center py-2 px-4 font-semibold text-sm">
-          ⚠️ ENVIRONNEMENT D'INTEG
+          ⚠️ ENVIRONNEMENT D&apos;INTEG
         </div>
       )}
       <header className="w-full flex flex-row justify-between items-center px-2 sm:px-4 z-10">

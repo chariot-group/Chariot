@@ -286,7 +286,11 @@ class CodexService {
                     };
                 }
                 // Forme aplatie ou ID non résolu
-                const flat = spell as any;
+                const flat = spell as Partial<Spell> & {
+                    effectType?: 'attack' | 'heal' | 'utility';
+                    usesPerDay?: number | null;
+                    used?: number;
+                };
                 return {
                     name: flat.name || '',
                     level: flat.level ?? 0,
@@ -347,7 +351,7 @@ class CodexService {
         offset: number = 10
     ): Promise<CodexSpellResponse> {
         try {
-            const params: any = {
+            const params: Record<string, string | number> = {
                 page,
                 offset,
             };
@@ -452,7 +456,7 @@ class CodexService {
         offset: number = 10
     ): Promise<CodexMonsterResponse> {
         try {
-            const params: any = {
+            const params: Record<string, string | number> = {
                 page,
                 offset,
             };
@@ -639,7 +643,7 @@ class CodexService {
                     entry.spells = entry.spells.map((spell) => {
                         const id = spell as string;
                         if (id && spellMap.has(id)) {
-                            let spellItem = spellMap.get(id)!;
+                            const spellItem = spellMap.get(id)!;
                             if (entry.spellSlotsByUses) {
                                 spellItem.translations[lang].usesPerDay = entry.spellSlotsByUses![id] ?? null;
                             }
@@ -663,4 +667,6 @@ class CodexService {
     }
 }
 
-export default new CodexService();
+const codexService = new CodexService();
+
+export default codexService;

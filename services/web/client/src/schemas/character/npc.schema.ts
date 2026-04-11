@@ -41,20 +41,4 @@ export function createNpcSchema(zm: ZodMessages) {
     });
 }
 
-// Export schéma par défaut pour rétrocompatibilité
-const DefaultNpcSchema = createNpcSchema({
-    required: () => '',
-    invalidType: () => '',
-    minString: () => '',
-    maxString: () => '',
-    minNumber: () => '',
-    maxNumber: () => '',
-    email: () => '',
-    url: () => '',
-    uuid: () => '',
-    minArray: () => '',
-    maxArray: () => '',
-    notMultipleOf: () => '',
-});
-
-export type CreateNpcInput = z.infer<typeof DefaultNpcSchema>;
+export type CreateNpcInput = z.infer<ReturnType<typeof createNpcSchema>>;

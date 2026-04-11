@@ -2,9 +2,9 @@
 
 import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { setKeycloakInstance } from "@/services/ApiService";
-import { detectBrowserLocale, saveStoredLocale, getStoredLocale } from "@/hooks/useLocalePreference";
+import { detectBrowserLocale, saveStoredLocale } from "@/hooks/useLocalePreference";
 import { purgePersistedState } from "@/store";
 import { useTranslations } from "next-intl";
 
@@ -32,7 +32,6 @@ const KeycloakContext = createContext<KeycloakContextType>({
 
 export function KeycloakProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const locale = pathname.split("/")[1] || "fr";
   const t = useTranslations("auth");
 

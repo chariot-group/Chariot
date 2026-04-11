@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import MonsterCodexDialog from "@/components/character/MonsterCodexDialog";
 import { NPC } from "@/types/character";
@@ -22,11 +22,6 @@ export default function CreateNpcFromCodexPage() {
 
   const campaignId = params.idCampaign as string;
   const groupId = params.idGroup as string;
-
-  useEffect(() => {
-    // Ouvrir automatiquement le dialog au chargement de la page
-    setIsDialogOpen(true);
-  }, []);
 
   const handleMonsterSelected = (monster: Partial<NPC>) => {
     dispatch(setNpcCodexDraft(monster));

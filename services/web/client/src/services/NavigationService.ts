@@ -24,6 +24,9 @@ interface NavigationDestination {
     characterId?: string;
 }
 
+type CampaignGroup = { _id: string; characters?: Array<{ _id: string }> };
+type GroupRef = string | { _id?: string };
+
 class NavigationService {
     /**
      * Charge les personnages sans groupe via Redux (optimisation: cache partagé avec Sidebar)
@@ -126,7 +129,7 @@ class NavigationService {
                         const campaignDetails = await CampaignService.getCampaignById(campaign._id);
 
                         if (campaignDetails.groups?.active && campaignDetails.groups.active.length > 0) {
-                            const firstGroup: any = campaignDetails.groups.active[0];
+                            const firstGroup = campaignDetails.groups.active[0] as CampaignGroup;
 
                             if (firstGroup.characters && firstGroup.characters.length > 0) {
                                 const firstCharacter = firstGroup.characters[0];
@@ -183,9 +186,9 @@ class NavigationService {
             }
 
             // Normaliser les IDs (peuvent être des strings ou des IDs à extraire d'objets)
-            const normalizeIds = (items: unknown[]): string[] =>
+            const normalizeIds = (items: GroupRef[]): string[] =>
                 items
-                    .map((item: any) => (typeof item === 'string' ? item : item?._id))
+                    .map((item) => (typeof item === 'string' ? item : item?._id))
                     .filter((id: string | undefined): id is string => Boolean(id));
 
             const activeGroupIds = normalizeIds(campaign.groups.active);
@@ -295,4 +298,6 @@ class NavigationService {
     }
 }
 
-export default new NavigationService();
+const navigationService = new NavigationService();
+
+export default navigationService;

@@ -16,7 +16,6 @@ interface Props {
 
 const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
   const t = useTranslations("characterDetail.battle");
-  const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   // Configuration des badges de statistiques
 
@@ -44,12 +43,10 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
             className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
             role="list">
             {player?.stats &&
-              Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
-                const abilityName = tAbilities(key);
+              Object.entries(player?.stats?.savingThrows).map(([key]) => {
                 return (
                   <Skill
                     key={key}
-                    label={abilityName}
                     skillName={key as keyof typeof player.stats.abilityScores}
                     accentColor={accentColor}
                     stats={player?.stats}

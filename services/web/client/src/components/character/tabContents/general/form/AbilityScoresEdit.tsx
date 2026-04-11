@@ -1,10 +1,10 @@
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 
 interface AbilityScoresEditProps {
-    form: UseFormReturn<any>;
+    form: UseFormReturn<FieldValues>;
 }
 
 export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {

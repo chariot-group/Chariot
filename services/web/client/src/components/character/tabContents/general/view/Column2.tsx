@@ -51,12 +51,10 @@ export default function Column2({ player, accentColor, className }: Column2Props
           className="grid grid-cols-2 gap-2"
           role="list">
           {player?.stats &&
-            Object.entries(player?.stats?.savingThrows).map(([key, value]) => {
-              const abilityName = t(`abilities.${key}`);
+            Object.entries(player?.stats?.savingThrows).map(([key]) => {
               return (
                 <SavingThrow
                   key={key}
-                  label={abilityName}
                   skillName={key as keyof typeof player.stats.abilityScores}
                   accentColor={accentColor}
                   stats={player?.stats}

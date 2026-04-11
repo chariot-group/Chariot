@@ -65,11 +65,18 @@ export function useGroups() {
             // Les groupes peuvent être renvoyés soit comme IDs (string[]), soit comme objets peuplés ({ _id: string, ... })
             const normalizeIds = (items: unknown[]): string[] =>
                 items
-                    .map((item: any) => (typeof item === 'string' ? item : item?._id))
+                    .map((item) => {
+                        if (typeof item === 'string') return item;
+                        if (typeof item === 'object' && item !== null && '_id' in item) {
+                            return (item as { _id?: string })._id;
+                        }
+                        return undefined;
+                    })
                     .filter((id: string | undefined): id is string => Boolean(id));
 
-            const activeGroupIds = normalizeIds((campaign as any).groups.active || []);
-            const archivedGroupIds = normalizeIds((campaign as any).groups.archived || []);
+            const campaignGroups = campaign.groups as { active?: unknown[]; archived?: unknown[] };
+            const activeGroupIds = normalizeIds(campaignGroups.active || []);
+            const archivedGroupIds = normalizeIds(campaignGroups.archived || []);
 
             // Séparer les groupes actifs et archivés à partir des IDs normalisés
             const active = allGroups.filter(group =>

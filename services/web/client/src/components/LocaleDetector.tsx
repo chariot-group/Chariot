@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { detectBrowserLocale, saveStoredLocale, getStoredLocale } from "@/hooks/useLocalePreference";
 import { Locale } from "@/i18n/request";
 
@@ -11,7 +11,6 @@ import { Locale } from "@/i18n/request";
  */
 export default function LocaleDetector() {
   const params = useParams();
-  const router = useRouter();
   const currentLocale = params.locale as Locale;
 
   useEffect(() => {

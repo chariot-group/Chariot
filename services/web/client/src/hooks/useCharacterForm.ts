@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm, UseFormReturn, FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useTranslations } from 'next-intl';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useToast } from '@/hooks/useToast';
@@ -20,7 +21,7 @@ export type CharacterType = 'players' | 'npcs';
 /**
  * Props du hook useCharacterForm
  */
-interface UseCharacterFormProps<TFormValues extends FieldValues = any> {
+interface UseCharacterFormProps<TFormValues extends FieldValues = FieldValues> {
     /** ID du personnage (null pour création) */
     characterId: string | null;
     /** Type de personnage (players ou npcs) */
@@ -34,7 +35,7 @@ interface UseCharacterFormProps<TFormValues extends FieldValues = any> {
 /**
  * Retour du hook useCharacterForm
  */
-export interface UseCharacterFormReturn<TFormValues extends FieldValues = any> {
+export interface UseCharacterFormReturn<TFormValues extends FieldValues = FieldValues> {
     /** Instance react-hook-form */
     form: UseFormReturn<TFormValues>;
     /** État de chargement initial */
@@ -108,7 +109,7 @@ export interface UseCharacterFormReturn<TFormValues extends FieldValues = any> {
  * @param props - Configuration du hook
  * @returns Objet contenant les états et fonctions de gestion du formulaire
  */
-export function useCharacterForm<TFormValues extends FieldValues = any>({
+export function useCharacterForm<TFormValues extends FieldValues = FieldValues>({
     characterId,
     type,
     defaultValues = {} as Partial<TFormValues>,
@@ -131,29 +132,46 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
     const zm = makeZodMessages(tZod);
 
     // Déduction automatique du schéma selon le type si non fourni
-    const resolvedSchema = (type === 'players' ? createPlayerSchema(zm) : createNpcSchema(zm));
+    const resolvedSchema = (type === 'players' ? createPlayerSchema(zm) : createNpcSchema(zm)) as z.ZodType<TFormValues>;
 
     // Initialisation du formulaire avec react-hook-form et zodResolver
     const form = useForm<TFormValues>({
-        resolver: zodResolver(resolvedSchema as any),
-        defaultValues: defaultValues as any,
+        resolver: zodResolver(resolvedSchema),
+        defaultValues: defaultValues as TFormValues,
         mode: 'onChange',
         shouldUnregister: false, // 🐛 FIX: Conserve les valeurs des champs même quand ils sont démontés
     });
 
     // Normalise les clés numériques de spellSlotsByUses en "k{n}" pour éviter
     // que react-hook-form les interprète comme des indices de tableau.
-    const normalizeSpellSlots = (data: any): any => {
-        if (!data?.spellcasting) return data;
+    const normalizeSpellSlots = (data: unknown): unknown => {
+        if (typeof data !== 'object' || data === null || !('spellcasting' in data)) {
+            return data;
+        }
+
+        const source = data as { spellcasting?: unknown };
+        if (!Array.isArray(source.spellcasting)) {
+            return data;
+        }
+
         return {
-            ...data,
-            spellcasting: data.spellcasting.map((sc: any) => {
-                if (!sc?.spellSlotsByUses) return sc;
-                const normalized: Record<string, any> = {};
-                for (const [k, v] of Object.entries(sc.spellSlotsByUses)) {
+            ...(data as Record<string, unknown>),
+            spellcasting: source.spellcasting.map((sc) => {
+                if (typeof sc !== 'object' || sc === null || !('spellSlotsByUses' in sc)) {
+                    return sc;
+                }
+
+                const slots = (sc as { spellSlotsByUses?: unknown }).spellSlotsByUses;
+                if (typeof slots !== 'object' || slots === null || Array.isArray(slots)) {
+                    return sc;
+                }
+
+                const normalized: Record<string, unknown> = {};
+                for (const [k, v] of Object.entries(slots as Record<string, unknown>)) {
                     normalized[/^\d+$/.test(k) ? `k${k}` : k] = v;
                 }
-                return { ...sc, spellSlotsByUses: normalized };
+
+                return { ...(sc as Record<string, unknown>), spellSlotsByUses: normalized };
             }),
         };
     };
@@ -161,7 +179,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
     // Chargement des données existantes
     useEffect(() => {
         if (character && characterId) {
-            form.reset(normalizeSpellSlots(character) as any);
+            form.reset(normalizeSpellSlots(character) as TFormValues);
         }
     }, [character, characterId, form]);
 
@@ -181,17 +199,19 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             setIsSaving(true);
             setSuccess(false);
 
-            const sanitizedData = { ...data } as any;
+            const sanitizedData = { ...data } as TFormValues & { groups?: unknown[] };
             if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {
-                sanitizedData.groups = sanitizedData.groups.map((group: any) =>
-                    typeof group === 'object' ? group._id : group
+                sanitizedData.groups = sanitizedData.groups.map((group) =>
+                    typeof group === 'object' && group !== null && '_id' in group
+                        ? (group as { _id: string })._id
+                        : group
                 );
             }
 
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
             const parsedData = await resolvedSchema.parseAsync(sanitizedData);
 
-            const createdCharacter = await CharacterService.createCharacter(type, parsedData as any);
+            const createdCharacter = await CharacterService.createCharacter(type, parsedData);
 
             toast.success(t('createSuccess'));
             setSuccess(true);
@@ -202,7 +222,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             }
 
             // Réinitialiser le formulaire avec les données créées
-            form.reset(createdCharacter as any);
+            form.reset(createdCharacter as TFormValues);
         } catch (err) {
             console.error('Error creating character:', err);
             const errorMessage = err instanceof Error ? err.message : t('createError');
@@ -236,10 +256,12 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             }
 
             // Transformer les groups en tableau d'IDs si nécessaire
-            const sanitizedData = { ...data } as any;
+            const sanitizedData = { ...data } as TFormValues & { groups?: unknown[] };
             if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {
-                sanitizedData.groups = sanitizedData.groups.map((group: any) =>
-                    typeof group === 'object' ? group._id : group
+                sanitizedData.groups = sanitizedData.groups.map((group) =>
+                    typeof group === 'object' && group !== null && '_id' in group
+                        ? (group as { _id: string })._id
+                        : group
                 );
             }
 
@@ -249,8 +271,11 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
             const updatedCharacter = await CharacterService.updateCharacter(
                 type,
                 characterId,
-                parsedData as any
+                parsedData
             );
+
+            const updatedCharacterWithUserId = updatedCharacter as Player | NPC | (Player | NPC & { userId?: string });
+            const userId = 'userId' in updatedCharacterWithUserId ? updatedCharacterWithUserId.userId : undefined;
 
             // Keep sidebar lists synchronized after update (name/group display).
             dispatch(upsertCharacterWithoutGroup(updatedCharacter));
@@ -259,7 +284,7 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
                 firstname: updatedCharacter.firstname,
                 lastname: updatedCharacter.lastname,
                 surname: updatedCharacter.surname,
-                userId: (updatedCharacter as any).userId,
+                userId,
             }));
 
             toast.success(t('updateSuccess'));
@@ -287,10 +312,10 @@ export function useCharacterForm<TFormValues extends FieldValues = any>({
      */
     const onCancel = (): void => {
         if (character && characterId) {
-            form.reset(character as any);
+            form.reset(character as TFormValues);
             toast.info(t('changesCancelled'));
         } else {
-            form.reset(defaultValues as any);
+            form.reset(defaultValues as TFormValues);
             toast.info(t('changesCancelled'));
         }
         setSuccess(false);

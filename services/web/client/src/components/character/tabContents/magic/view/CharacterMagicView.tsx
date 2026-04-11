@@ -2,12 +2,11 @@
 
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
-import { Character, Spell, Spellcasting } from "@/types/character";
+import { Character, Player, Spell, Spellcasting } from "@/types/character";
 import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown, WandSparkles } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import {
-  calculateSpellAttackBonus,
   classWithSpellPrepared,
   getSpellByLevel,
   hasLevel0Spells,
@@ -27,103 +26,102 @@ interface CharacterMagicViewProps {
 export default function CharacterMagicView({ character, accentColor }: CharacterMagicViewProps) {
   const tClass = useTranslations("classes");
   const tMagic = useTranslations("characterDetail.magic");
+  const playerCharacter = isPlayer(character) ? (character as Player) : null;
 
   const [selectedSpellcasting, setSelectedSpellcasting] = useState<Spellcasting | null>(
     character.spellcasting?.[0] || null,
   );
 
-  const [showMobileDetails, setShowMobileDetails] = useState(false);
-  const selectedSpellRef = useRef<HTMLDivElement | null>(null);
-
-  const [selectedSpell, setSelectedSpell] = useState<Spell | null>(() => {
-    if (!selectedSpellcasting || !selectedSpellcasting.spells || selectedSpellcasting.spells.length === 0) {
+  const getInitialSpellForSpellcasting = (spellcasting: Spellcasting | null): Spell | null => {
+    if (!spellcasting || !spellcasting.spells || spellcasting.spells.length === 0) {
       return null;
     }
 
-    const isInnate = selectedSpellcasting.isInnate ?? false;
+    const isInnate = spellcasting.isInnate ?? false;
     if (isInnate) {
-      const groups = getNpcUsesGroups(selectedSpellcasting);
+      const groups = getNpcUsesGroups(spellcasting);
       const firstGroup = groups[0] ?? null;
-      return getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null;
+      return getSpellsByUses(spellcasting, firstGroup)[0] ?? null;
     }
 
-    // byLevel: find the first level 0 spell
-    const level0Spells = selectedSpellcasting.spells.filter((spell) => spell.level === 0);
+    const level0Spells = spellcasting.spells.filter((spell) => spell.level === 0);
     if (level0Spells.length > 0) {
       return level0Spells[0];
     }
 
-    // Otherwise, find the lowest level and return the first spell of that level
-    const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
-    return selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
-  });
+    const minLevel = Math.min(...spellcasting.spells.map((spell) => spell.level));
+    return spellcasting.spells.find((spell) => spell.level === minLevel) || null;
+  };
 
-  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>(() => {
-    if (!selectedSpellcasting || !selectedSpellcasting.spells || selectedSpellcasting.spells.length === 0) {
+  const getInitialAccordionValuesForSpellcasting = (spellcasting: Spellcasting | null): string[] => {
+    if (!spellcasting || !spellcasting.spells || spellcasting.spells.length === 0) {
       return [];
     }
 
-    const isInnate = selectedSpellcasting.isInnate ?? false;
+    const isInnate = spellcasting.isInnate ?? false;
     if (isInnate) {
-      const groups = getNpcUsesGroups(selectedSpellcasting);
+      const groups = getNpcUsesGroups(spellcasting);
       return groups.length > 0 ? [npcUsesKey(groups[0])] : [];
     }
 
-    // byLevel: find the lowest level and open its accordion
-    const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
+    const minLevel = Math.min(...spellcasting.spells.map((spell) => spell.level));
     return [`level-${minLevel}`];
-  });
+  };
 
-  // Update selectedSpellcasting when character data changes
-  useEffect(() => {
-    if (character.spellcasting && character.spellcasting.length > 0) {
-      // Find the corresponding spellcasting by className
-      const updatedSpellcasting =
-        character.spellcasting.find((sc) => sc.className === selectedSpellcasting?.className) ||
-        character.spellcasting[0];
-      setSelectedSpellcasting(updatedSpellcasting);
+  const activeSpellcasting =
+    character.spellcasting?.find((spellcasting) => spellcasting.className === selectedSpellcasting?.className) ||
+    character.spellcasting?.[0] ||
+    null;
+
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const selectedSpellRef = useRef<HTMLDivElement | null>(null);
+
+  const [selectedSpell, setSelectedSpell] = useState<Spell | null>(() => getInitialSpellForSpellcasting(selectedSpellcasting));
+
+  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>(() =>
+    getInitialAccordionValuesForSpellcasting(selectedSpellcasting),
+  );
+
+  const handleSpellcastingChange = (spellcasting: Spellcasting) => {
+    setSelectedSpellcasting(spellcasting);
+    setSelectedSpell(getInitialSpellForSpellcasting(spellcasting));
+    setOpenAccordionValues(getInitialAccordionValuesForSpellcasting(spellcasting));
+  };
+
+  const handleSpellSelect = (spell: Spell) => {
+    setSelectedSpell(spell);
+    setShowMobileDetails(true);
+  };
+
+  const handleBackToList = () => {
+    setShowMobileDetails(false);
+
+    if (!selectedSpell) {
+      return;
     }
-  }, [character.spellcasting, character]);
 
-  useEffect(() => {
-    // When selectedSpellcasting changes, update selectedSpell and open the first spell's accordion
-    if (selectedSpellcasting && selectedSpellcasting.spells && selectedSpellcasting.spells.length > 0) {
-      const isInnate = selectedSpellcasting.isInnate ?? false;
-      if (isInnate) {
-        const groups = getNpcUsesGroups(selectedSpellcasting);
-        const firstGroup = groups[0] ?? null;
-        setSelectedSpell(getSpellsByUses(selectedSpellcasting, firstGroup)[0] ?? null);
-        setOpenAccordionValues(groups.length > 0 ? [npcUsesKey(groups[0])] : []);
-      } else {
-        const minLevel = Math.min(...selectedSpellcasting.spells.map((spell) => spell.level));
-        const firstSpell = selectedSpellcasting.spells.find((spell) => spell.level === minLevel) || null;
-        setSelectedSpell(firstSpell);
-        setOpenAccordionValues([`level-${minLevel}`]);
+    const isInnateSpellcasting = activeSpellcasting?.isInnate ?? false;
+    const accordionKey = !isInnateSpellcasting
+      ? `level-${selectedSpell.level}`
+      : npcUsesKey(selectedSpell.usesPerDay ?? null);
+
+    setOpenAccordionValues((currentValues) => {
+      if (currentValues.includes(accordionKey)) {
+        return currentValues;
       }
-    }
-  }, [selectedSpellcasting]);
 
-  useEffect(() => {
-    if (!showMobileDetails && selectedSpell && selectedSpellRef.current) {
-      // Open the accordion containing the selected spell
-      const isInnate = selectedSpellcasting?.isInnate ?? false;
-      const accordionKey = !isInnate ? `level-${selectedSpell.level}` : npcUsesKey(selectedSpell.usesPerDay ?? null);
+      return [...currentValues, accordionKey];
+    });
 
-      if (!openAccordionValues.includes(accordionKey)) {
-        setOpenAccordionValues([...openAccordionValues, accordionKey]);
-      }
+    setTimeout(() => {
+      selectedSpellRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 350);
+  };
 
-      // Wait for accordion animation to complete before scrolling
-      setTimeout(() => {
-        selectedSpellRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }, 350);
-    }
-  }, [showMobileDetails]);
-
-  if (!character.spellcasting || character.spellcasting.length === 0 || selectedSpellcasting === null) {
+  if (!character.spellcasting || character.spellcasting.length === 0 || activeSpellcasting === null) {
     return (
       <div
         className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0"
@@ -134,7 +132,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
     );
   }
 
-  const isInnate = selectedSpellcasting.isInnate ?? false;
+  const isInnate = activeSpellcasting.isInnate ?? false;
 
   return (
     <div
@@ -152,22 +150,22 @@ export default function CharacterMagicView({ character, accentColor }: Character
               {character?.spellcasting?.map((spellcasting, index) => {
                 let className = "";
                 if (isPlayer(character)) {
-                  let classObj = (character as any).class.find(
-                    (cls: any) => cls.name.toLocaleLowerCase() === spellcasting.className.toLocaleLowerCase(),
+                  const classObj = playerCharacter?.class.find(
+                    (cls) => cls.name.toLocaleLowerCase() === spellcasting.className.toLocaleLowerCase(),
                   );
                   className = `${tClass(classObj?.name || "")} ${tMagic("level")} ${classObj?.level}` || "";
                 } else {
                   className = spellcasting.className;
                 }
-                const isSelected = selectedSpellcasting?.className === spellcasting.className;
+                const isSelected = activeSpellcasting?.className === spellcasting.className;
                 return (
                   <Card
                     className={`gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected && `bg-${accentColor}`}`}
-                    onClick={() => setSelectedSpellcasting(spellcasting)}
+                    onClick={() => handleSpellcastingChange(spellcasting)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        setSelectedSpellcasting(spellcasting);
+                        handleSpellcastingChange(spellcasting);
                       }
                     }}
                     role="button"
@@ -194,13 +192,13 @@ export default function CharacterMagicView({ character, accentColor }: Character
               />
               <span
                 className="text-sm md:text-base hidden sm:inline"
-                aria-label={`${tMagic("spellcastingAbility")} : ${selectedSpellcasting?.ability}`}>
-                {tMagic("spellcastingAbility")} : <strong>{selectedSpellcasting?.ability}</strong>
+                aria-label={`${tMagic("spellcastingAbility")} : ${activeSpellcasting?.ability}`}>
+                {tMagic("spellcastingAbility")} : <strong>{activeSpellcasting?.ability}</strong>
               </span>
               <span
                 className="text-sm sm:hidden"
-                aria-label={`${tMagic("attackBonus")}: ${selectedSpellcasting?.ability}`}>
-                {tMagic("attackShort")} : <strong>{selectedSpellcasting?.ability}</strong>
+                aria-label={`${tMagic("attackBonus")}: ${activeSpellcasting?.ability}`}>
+                {tMagic("attackShort")} : <strong>{activeSpellcasting?.ability}</strong>
               </span>
             </Card>
             <Card className="gap-3 p-2 md:px-6 flex-row items-center">
@@ -210,16 +208,16 @@ export default function CharacterMagicView({ character, accentColor }: Character
               />
               <span
                 className="text-sm md:text-base hidden sm:inline"
-                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
-                {tMagic("saveDC")}: <strong>{selectedSpellcasting?.saveDC}</strong>
+                aria-label={`${tMagic("saveDC")}: ${activeSpellcasting?.saveDC}`}>
+                {tMagic("saveDC")}: <strong>{activeSpellcasting?.saveDC}</strong>
               </span>
               <span
                 className="text-sm sm:hidden"
-                aria-label={`${tMagic("saveDC")}: ${selectedSpellcasting?.saveDC}`}>
-                {tMagic("saveDCShort")}: <strong>{selectedSpellcasting?.saveDC}</strong>
+                aria-label={`${tMagic("saveDC")}: ${activeSpellcasting?.saveDC}`}>
+                {tMagic("saveDCShort")}: <strong>{activeSpellcasting?.saveDC}</strong>
               </span>
             </Card>
-            {isPlayer(character) && classWithSpellPrepared(selectedSpellcasting) && (
+            {isPlayer(character) && classWithSpellPrepared(activeSpellcasting) && (
               <Card className="gap-3 p-2 md:px-6 flex-row items-center">
                 <Book
                   className="shrink-0"
@@ -227,13 +225,13 @@ export default function CharacterMagicView({ character, accentColor }: Character
                 />
                 <span
                   className="text-sm md:text-base hidden sm:inline"
-                  aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
-                  {tMagic("preparedSpells")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
+                  aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(activeSpellcasting, character)}`}>
+                  {tMagic("preparedSpells")}: <strong>{numberSpellsPrepare(activeSpellcasting, character)}</strong>
                 </span>
                 <span
                   className="text-sm sm:hidden"
-                  aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
-                  {tMagic("preparedShort")} : <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
+                  aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(activeSpellcasting, character)}`}>
+                  {tMagic("preparedShort")} : <strong>{numberSpellsPrepare(activeSpellcasting, character)}</strong>
                 </span>
               </Card>
             )}
@@ -244,13 +242,13 @@ export default function CharacterMagicView({ character, accentColor }: Character
               />
               <span
                 className="text-sm md:text-base hidden sm:inline"
-                aria-label={`${tMagic("attackBonus")}: ${selectedSpellcasting?.attackBonus}`}>
-                {tMagic("attackBonus")}: <strong>{selectedSpellcasting?.attackBonus}</strong>
+                aria-label={`${tMagic("attackBonus")}: ${activeSpellcasting?.attackBonus}`}>
+                {tMagic("attackBonus")}: <strong>{activeSpellcasting?.attackBonus}</strong>
               </span>
               <span
                 className="text-sm sm:hidden"
-                aria-label={`${tMagic("attackBonus")}: ${selectedSpellcasting?.attackBonus}`}>
-                {tMagic("attackShort")}: <strong>{selectedSpellcasting?.attackBonus}</strong>
+                aria-label={`${tMagic("attackBonus")}: ${activeSpellcasting?.attackBonus}`}>
+                {tMagic("attackShort")}: <strong>{activeSpellcasting?.attackBonus}</strong>
               </span>
             </Card>
           </div>
@@ -263,20 +261,20 @@ export default function CharacterMagicView({ character, accentColor }: Character
                   onClick={() => {
                     let allValues: string[];
                     if (isInnate) {
-                      allValues = getNpcUsesGroups(selectedSpellcasting).map(npcUsesKey);
+                      allValues = getNpcUsesGroups(activeSpellcasting).map(npcUsesKey);
                     } else {
                       const levels: number[] = [];
-                      if (hasLevel0Spells(selectedSpellcasting)) {
+                      if (hasLevel0Spells(activeSpellcasting)) {
                         levels.push(0);
                       }
-                      if (selectedSpellcasting.spellSlotsByLevel) {
-                        Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                      if (activeSpellcasting.spellSlotsByLevel) {
+                        Object.keys(activeSpellcasting.spellSlotsByLevel).forEach((l) => {
                           const n = Number(l);
                           if (!levels.includes(n)) levels.push(n);
                         });
                       }
-                      if (selectedSpellcasting.spells) {
-                        selectedSpellcasting.spells.forEach((spell) => {
+                      if (activeSpellcasting.spells) {
+                        activeSpellcasting.spells.forEach((spell) => {
                           const n = Number(spell.level);
                           if (!levels.includes(n)) levels.push(n);
                         });
@@ -301,11 +299,11 @@ export default function CharacterMagicView({ character, accentColor }: Character
               aria-label={tMagic("spellListRegion")}
               aria-live="polite"
               aria-atomic="false">
-              {selectedSpellcasting &&
+              {activeSpellcasting &&
                 (() => {
                   if (isInnate) {
                     // ── Grouped by uses per day ──
-                    const usesGroups = getNpcUsesGroups(selectedSpellcasting);
+                    const usesGroups = getNpcUsesGroups(activeSpellcasting);
                     return (
                       <Accordion
                         type="multiple"
@@ -314,7 +312,7 @@ export default function CharacterMagicView({ character, accentColor }: Character
                         className="w-full flex flex-col gap-2">
                         {usesGroups.map((uses) => {
                           const key = npcUsesKey(uses);
-                          const spells = getSpellsByUses(selectedSpellcasting, uses);
+                          const spells = getSpellsByUses(activeSpellcasting, uses);
 
                           return (
                             <AccordionItem
@@ -338,15 +336,11 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                   {spells.map((spell, index) => (
                                     <Card
                                       ref={selectedSpell === spell ? selectedSpellRef : null}
-                                      onClick={() => {
-                                        setSelectedSpell(spell);
-                                        setShowMobileDetails(true);
-                                      }}
+                                      onClick={() => handleSpellSelect(spell)}
                                       onKeyDown={(e) => {
                                         if (e.key === "Enter" || e.key === " ") {
                                           e.preventDefault();
-                                          setSelectedSpell(spell);
-                                          setShowMobileDetails(true);
+                                          handleSpellSelect(spell);
                                         }
                                       }}
                                       key={index}
@@ -379,21 +373,21 @@ export default function CharacterMagicView({ character, accentColor }: Character
                   const levels: number[] = [];
 
                   // Add level 0 if cantrips exist
-                  if (hasLevel0Spells(selectedSpellcasting)) {
+                  if (hasLevel0Spells(activeSpellcasting)) {
                     levels.push(0);
                   }
 
                   // Add other levels from spellSlotsByLevel
-                  if (selectedSpellcasting.spellSlotsByLevel) {
-                    Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
+                  if (activeSpellcasting.spellSlotsByLevel) {
+                    Object.keys(activeSpellcasting.spellSlotsByLevel).forEach((l) => {
                       const n = Number(l);
                       if (!levels.includes(n)) levels.push(n);
                     });
                   }
 
                   // Add all levels that have spells (even without slots)
-                  if (selectedSpellcasting.spells) {
-                    selectedSpellcasting.spells.forEach((spell) => {
+                  if (activeSpellcasting.spells) {
+                    activeSpellcasting.spells.forEach((spell) => {
                       const n = Number(spell.level);
                       if (!levels.includes(n)) levels.push(n);
                     });
@@ -409,8 +403,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
                       onValueChange={setOpenAccordionValues}
                       className="w-full flex flex-col gap-2">
                       {levels.map((level) => {
-                        const spells = getSpellByLevel(selectedSpellcasting, level);
-                        const slot = selectedSpellcasting.spellSlotsByLevel?.[level];
+                        const spells = getSpellByLevel(activeSpellcasting, level);
+                        const slot = activeSpellcasting.spellSlotsByLevel?.[level];
 
                         return (
                           <AccordionItem
@@ -434,15 +428,11 @@ export default function CharacterMagicView({ character, accentColor }: Character
                                 {spells.map((spell, index) => (
                                   <Card
                                     ref={selectedSpell === spell ? selectedSpellRef : null}
-                                    onClick={() => {
-                                      setSelectedSpell(spell);
-                                      setShowMobileDetails(true);
-                                    }}
+                                    onClick={() => handleSpellSelect(spell)}
                                     onKeyDown={(e) => {
                                       if (e.key === "Enter" || e.key === " ") {
                                         e.preventDefault();
-                                        setSelectedSpell(spell);
-                                        setShowMobileDetails(true);
+                                        handleSpellSelect(spell);
                                       }
                                     }}
                                     key={index}
@@ -475,7 +465,8 @@ export default function CharacterMagicView({ character, accentColor }: Character
           aria-label={tMagic("spellDetailRegion")}>
           {/* Back button for mobile */}
           <button
-            onClick={() => setShowMobileDetails(false)}
+            type="button"
+            onClick={handleBackToList}
             className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
             aria-label={tMagic("backToList")}>
             <ArrowLeft className="w-4 h-4" />

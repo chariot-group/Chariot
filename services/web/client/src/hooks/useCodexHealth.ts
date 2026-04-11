@@ -22,7 +22,7 @@ export function useCodexHealth() {
                 if (isMounted) {
                     setIsAvailable(available);
                 }
-            } catch (error) {
+            } catch {
                 if (isMounted) {
                     setIsAvailable(false);
                 }

@@ -24,7 +24,8 @@ export function TagInput({
     "aria-describedby": ariaDescribedby,
 }: TagInputProps) {
     const [inputValue, setInputValue] = useState("");
-    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isInputFocused, setIsInputFocused] = useState(false);
+    const [isSuggestionsDismissed, setIsSuggestionsDismissed] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const inputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -46,16 +47,14 @@ export function TagInput({
     const allOptions = isCustomEntry
         ? [trimmedInput, ...filteredSuggestions]
         : filteredSuggestions;
-
-    useEffect(() => {
-        setShowSuggestions(inputValue.length > 0 && allOptions.length > 0);
-    }, [inputValue, allOptions.length]);
+    const showSuggestions = isInputFocused && !isSuggestionsDismissed && inputValue.length > 0 && allOptions.length > 0;
 
     const addTag = (tag: string) => {
         const trimmedTag = tag.trim();
         if (trimmedTag && !value.some((v) => v.toLowerCase() === trimmedTag.toLowerCase())) {
             onChange([...value, trimmedTag]);
             setInputValue("");
+            setIsSuggestionsDismissed(false);
             setHighlightedIndex(-1);
             inputRef.current?.focus();
         }
@@ -83,7 +82,7 @@ export function TagInput({
             e.preventDefault();
             setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         } else if (e.key === "Escape") {
-            setShowSuggestions(false);
+            setIsSuggestionsDismissed(true);
             setHighlightedIndex(-1);
         }
     };
@@ -132,9 +131,16 @@ export function TagInput({
                     id={id}
                     type="text"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e) => {
+                        setInputValue(e.target.value);
+                        setIsSuggestionsDismissed(false);
+                    }}
                     onKeyDown={handleKeyDown}
-                    onFocus={() => setShowSuggestions(inputValue.length > 0 && allOptions.length > 0)}
+                    onFocus={() => {
+                        setIsInputFocused(true);
+                        setIsSuggestionsDismissed(false);
+                    }}
+                    onBlur={() => setIsInputFocused(false)}
                     placeholder={placeholder}
                     aria-invalid={ariaInvalid}
                     aria-describedby={ariaDescribedby}
