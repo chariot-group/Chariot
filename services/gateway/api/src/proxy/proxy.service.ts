@@ -67,6 +67,18 @@ export class ProxyService {
   }
 
   /**
+   * @deprecated Use forward('adventure', ...) instead
+   */
+  async forwardToAdventure(
+    method: string,
+    path: string,
+    body?: any,
+    headers?: Record<string, string>,
+  ): Promise<AxiosResponse> {
+    return this.forward("adventure", method, path, body, headers);
+  }
+
+  /**
    * Check if a service is configured and available
    */
   hasService(serviceName: string): boolean {
