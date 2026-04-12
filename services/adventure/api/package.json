@@ -33,7 +33,7 @@
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.18",
-    "@nestjs/swagger": "^11.2.6",
+    "@nestjs/swagger": "^11.2.7",
     "@types/jsonwebtoken": "^9.0.9",
     "@willsoto/nestjs-prometheus": "^6.0.2",
     "class-transformer": "^0.5.1",
