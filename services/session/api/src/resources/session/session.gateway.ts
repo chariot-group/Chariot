@@ -32,6 +32,7 @@ interface AuthenticatedSocket extends Socket {
         credentials: true,
     },
     namespace: '/session',
+    allowEIO3: true,
 })
 export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
@@ -82,7 +83,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     async handleConnection(client: AuthenticatedSocket) {
         try {
             let start: number = Date.now();
-            const token = client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1];
+            const token = client.handshake.auth?.token
+                || client.handshake.headers?.authorization?.split(' ')[1]
+                || (client.handshake.query?.token as string);
 
             if (!token) {
                 let message: string = 'No token provided';
