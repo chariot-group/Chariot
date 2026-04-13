@@ -162,7 +162,7 @@ export function TagInput({
                                         aria-selected={index === highlightedIndex}
                                         onClick={() => addTag(option)}
                                         onMouseEnter={() => setHighlightedIndex(index)}
-                                        className={`w-full text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] ${index === highlightedIndex ? "font-bold" : ""
+                                        className={`w-full cursor-pointer text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] ${index === highlightedIndex ? "font-bold" : ""
                                             } ${isCustom ? "italic" : ""}`}
                                     >
                                         {option}

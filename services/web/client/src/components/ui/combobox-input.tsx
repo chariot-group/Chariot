@@ -172,7 +172,7 @@ export function ComboboxInput({
                                         aria-selected={index === highlightedIndex}
                                         onClick={() => selectOption(option)}
                                         onMouseEnter={() => setHighlightedIndex(index)}
-                                        className={`w-full text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] flex items-center justify-between ${index === highlightedIndex ? "font-bold" : ""
+                                        className={`w-full cursor-pointer text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] flex items-center justify-between ${index === highlightedIndex ? "font-bold" : ""
                                             } ${isCustom ? "italic" : ""}`}
                                     >
                                         <span>
