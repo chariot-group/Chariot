@@ -22,7 +22,7 @@ All routes (REST and Socket.IO) require a Keycloak Bearer token.
 
 ```bash
 TOKEN=$(curl -s -X POST \
-  http://localhost:8080/realms/auth/chariot/protocol/openid-connect/token \
+  http://localhost:8080/auth/realms/chariot/protocol/openid-connect/token \
   -d "grant_type=password" \
   -d "client_id=chariot-app" \
   -d "username=YOUR_USER" \
