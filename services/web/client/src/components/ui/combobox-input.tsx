@@ -139,6 +139,7 @@ export function ComboboxInput({
                     ref={inputRef}
                     id={id}
                     type="text"
+                    className="cursor-pointer"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
@@ -172,7 +173,7 @@ export function ComboboxInput({
                                         aria-selected={index === highlightedIndex}
                                         onClick={() => selectOption(option)}
                                         onMouseEnter={() => setHighlightedIndex(index)}
-                                        className={`w-full cursor-pointer text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] flex items-center justify-between ${index === highlightedIndex ? "font-bold" : ""
+                                        className={`w-full my-0.5 cursor-pointer text-left rounded-[15px] py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight,color,background-color] flex items-center justify-between ${index === highlightedIndex ? "font-bold bg-white/10 text-white" : isSelected ? "bg-white/15 text-white" : ""
                                             } ${isCustom ? "italic" : ""}`}
                                     >
                                         <span>
