@@ -77,7 +77,15 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 className="text-sm font-medium truncate">
                 {t("armorClass")}
               </label>
-              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
+                <Image
+                  src={ShieldIcon}
+                  alt=""
+                  aria-hidden="true"
+                  width={20}
+                  height={20}
+                  className="size-5"
+                />
                 <Input
                   {...field}
                   value={field.value ?? ""}
@@ -87,14 +95,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   placeholder={t("armorClass")}
                   min={0}
                   type="number"
-                />
-                <Image
-                  src={ShieldIcon}
-                  alt=""
-                  aria-hidden="true"
-                  width={20}
-                  height={20}
-                  className="size-5"
                 />
               </div>
               {fieldState.error && (
@@ -120,7 +120,15 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 className="text-sm font-medium">
                 {tEdit("initiative")}
               </label>
-              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
+                <Image
+                  src={FeatherIcon}
+                  alt=""
+                  aria-hidden="true"
+                  width={20}
+                  height={20}
+                  className="size-5"
+                />
                 <Input
                   {...field}
                   value={field.value ?? ""}
@@ -130,14 +138,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   placeholder={tEdit("initiative")}
                   type="number"
                   min={0}
-                />
-                <Image
-                  src={FeatherIcon}
-                  alt=""
-                  aria-hidden="true"
-                  width={20}
-                  height={20}
-                  className="size-5"
                 />
               </div>
               {fieldState.error && (
@@ -165,7 +165,12 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                 className="text-sm font-medium">
                 {tEdit("size")}
               </label>
-              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
+                <RulerIcon
+                  size={20}
+                  className="text-black shrink-0"
+                  aria-hidden="true"
+                />
                 <Select
                   value={field.value || "Medium"}
                   onValueChange={field.onChange}>
@@ -186,11 +191,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                     </SelectGroup>
                   </SelectContent>
                 </Select>
-                <RulerIcon
-                  size={20}
-                  className="text-black shrink-0"
-                  aria-hidden="true"
-                />
               </div>
               {fieldState.error && (
                 <FieldError
@@ -218,7 +218,13 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   className="text-xs">
                   {tEdit("walk")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
+                  <Image
+                    src={RunningIcon}
+                    alt=""
+                    aria-hidden="true"
+                    className="size-6"
+                  />
                   <Input
                     {...field}
                     value={field.value ?? ""}
@@ -226,12 +232,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                     type="number"
                     min={0}
                     className="text-sm"
-                  />
-                  <Image
-                    src={RunningIcon}
-                    alt=""
-                    aria-hidden="true"
-                    className="size-6"
                   />
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
@@ -250,7 +250,12 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   className="text-xs">
                   {tEdit("climb")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
+                  <Mountain
+                    size={24}
+                    className="text-black"
+                    aria-hidden="true"
+                  />
                   <Input
                     {...field}
                     value={field.value ?? ""}
@@ -258,11 +263,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                     type="number"
                     className="text-sm"
                     min={0}
-                  />
-                  <Mountain
-                    size={24}
-                    className="text-black"
-                    aria-hidden="true"
                   />
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
@@ -281,7 +281,12 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   className="text-xs">
                   {tEdit("swim")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
+                  <Waves
+                    size={24}
+                    className="text-black"
+                    aria-hidden="true"
+                  />
                   <Input
                     {...field}
                     value={field.value ?? ""}
@@ -289,11 +294,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                     type="number"
                     min={0}
                     className="text-sm"
-                  />
-                  <Waves
-                    size={24}
-                    className="text-black"
-                    aria-hidden="true"
                   />
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
@@ -312,7 +312,12 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   className="text-xs">
                   {tEdit("fly")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
+                  <Bird
+                    size={24}
+                    className="text-black"
+                    aria-hidden="true"
+                  />
                   <Input
                     {...field}
                     value={field.value ?? ""}
@@ -320,11 +325,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                     type="number"
                     className="text-sm"
                     min={0}
-                  />
-                  <Bird
-                    size={24}
-                    className="text-black"
-                    aria-hidden="true"
                   />
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
@@ -343,7 +343,12 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                   className="text-xs">
                   {tEdit("burrow")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pr-2">
+                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
+                  <Shovel
+                    size={24}
+                    className="text-black"
+                    aria-hidden="true"
+                  />
                   <Input
                     {...field}
                     value={field.value ?? ""}
@@ -351,11 +356,6 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                     type="number"
                     className="text-sm"
                     min={0}
-                  />
-                  <Shovel
-                    size={24}
-                    className="text-black"
-                    aria-hidden="true"
                   />
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
