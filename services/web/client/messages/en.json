@@ -703,6 +703,7 @@
       "removeSpellcastingConfirm": "Remove",
       "addSpellcasting": "Add spellcasting abilities",
       "newSpellcasting": "New spellcasting class",
+      "spellcastingClassRequiresClass": "Add at least one class to this player before choosing a spellcasting class.",
       "spellSlotsTotalForLevel": "Number of spell slots for level {level}",
       "moreSpellOptions": "More spell options",
       "removeSpellWithName": "Remove spell {name}",

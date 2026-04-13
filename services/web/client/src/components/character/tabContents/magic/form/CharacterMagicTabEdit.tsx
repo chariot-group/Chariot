@@ -108,12 +108,17 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   // Fonctions pour manipuler les spells directement
   const addSpell = useCallback(
     (spell: Partial<Spell>) => {
+      const spellWithDefaults: Partial<Spell> = {
+        ...spell,
+        effectType: spell.effectType || "utility",
+      };
+
       const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
-      form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spell], {
+      form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spellWithDefaults], {
         shouldDirty: true,
       });
 
-      const spellLevel = Number(spell.level || 0);
+      const spellLevel = Number(spellWithDefaults.level || 0);
       if (spellLevel > 0) {
         const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
         if (!currentSlots[spellLevel]) {
@@ -125,7 +130,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         }
       }
 
-      const uses = spell.usesPerDay ?? null;
+      const uses = spellWithDefaults.usesPerDay ?? null;
       if (uses !== null) {
         const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
         if (!currentByUses[`k${uses}`]) {
@@ -138,7 +143,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       }
 
       // Open the accordion for the new spell based on display mode
-      const accordionKey = !isInnate ? `level-${spell.level || 0}` : npcUsesKey((spell as any).usesPerDay ?? null);
+      const accordionKey =
+        !isInnate ? `level-${spellWithDefaults.level || 0}` : npcUsesKey((spellWithDefaults as any).usesPerDay ?? null);
       if (!openAccordionValues.includes(accordionKey)) {
         setOpenAccordionValues([...openAccordionValues, accordionKey]);
       }
@@ -205,6 +211,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const proficiencyBonus: number = useWatch({ control: form.control, name: "stats.proficiencyBonus" }) ?? 2;
   const abilityScores: Record<string, number> = useWatch({ control: form.control, name: "stats.abilityScores" }) ?? {};
   const classesList: any[] = useWatch({ control: form.control, name: "class" }) ?? [];
+  const availableSpellcastingClasses = classesList.filter((cls: any) => cls?.name?.length > 1);
+  const hasAvailableSpellcastingClasses = availableSpellcastingClasses.length > 0;
 
   const currentAbilityKey: string =
     useWatch({ control: form.control, name: `spellcasting.${selectedSpellcastingIndex}.ability` }) ?? "";
@@ -378,8 +386,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   // ── Functions to manage spellcasting ──
   const addSpellcasting = () => {
+    if (isPlayer(character) && !hasAvailableSpellcastingClasses) {
+      return;
+    }
+
+    const candidateClasses = isPlayer(character) ? availableSpellcastingClasses : classesList;
+
     // Find a class that doesn't have spellcasting yet
-    const classWithoutSpellcasting = classesList.find((cls: any) => {
+    const classWithoutSpellcasting = candidateClasses.find((cls: any) => {
       const className = cls?.name?.toLowerCase();
       if (!className) return false;
       return !spellcastingList.some((sc: any) => {
@@ -425,15 +439,27 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           {tMagic("spells")}
         </h2>
         <p className="text-center text-muted-foreground text-base">{tMagic("noMagicAbilities")}</p>
-        <Button
-          type="button"
-          onClick={addSpellcasting}
-          variant="outline"
-          size="lg"
-          className="flex items-center gap-2">
-          <Plus className="size-4" />
-          {tMagic("addSpellcasting")}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <Button
+                type="button"
+                onClick={addSpellcasting}
+                variant="outline"
+                size="lg"
+                disabled={isPlayer(character) && !hasAvailableSpellcastingClasses}
+                className="flex items-center gap-2">
+                <Plus className="size-4" />
+                {tMagic("addSpellcasting")}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {isPlayer(character) && !hasAvailableSpellcastingClasses && (
+            <TooltipContent>
+              <p>{tMagic("spellcastingClassRequiresClass")}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
       </div>
     );
   }
@@ -500,6 +526,13 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       .map(({ index }: { index: number }) => index);
     return acc;
   }, {});
+
+  const allSpellAccordionKeys = !isInnate
+    ? levels.filter((level) => (spellIndicesByLevel[level] ?? []).length > 0).map((level) => `level-${level}`)
+    : npcUsesGroups
+      .filter((uses) => (npcSpellIndicesByUses[npcUsesKey(uses)] ?? []).length > 0)
+      .map(npcUsesKey);
+  const hasSpellAccordions = allSpellAccordionKeys.length > 0;
 
   // ── Keyboard navigation for tabs ──
   const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
@@ -633,7 +666,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     </Card>
                   );
                 })}
-                {classesList.length > spellcastingList.length && (
+                {availableSpellcastingClasses.length > spellcastingList.length && (
                   <Card
                     className="gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md border-dashed"
                     onClick={addSpellcasting}
@@ -726,30 +759,38 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                         className="text-sm font-medium">
                         {tEdit("className")}
                       </label>
-                      <Select
-                        value={field.value ?? ""}
-                        onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id={`sc-classname-${selectedSpellcastingIndex}`}
-                          className="w-full">
-                          <SelectValue placeholder={tEdit("selectClass")} />
-                        </SelectTrigger>
-                        <SelectContent position="item-aligned">
-                          <SelectGroup>
-                            {classesList.map((cls: any, index: number) => (
-                              <React.Fragment key={index}>
-                                {cls.name.length > 1 && (
-                                  <SelectItem
-                                    key={cls.name}
-                                    value={cls.name}>
-                                    {tClass(cls.name)}
-                                  </SelectItem>
-                                )}
-                              </React.Fragment>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="w-full">
+                            <Select
+                              value={field.value ?? ""}
+                              onValueChange={field.onChange}
+                              disabled={!hasAvailableSpellcastingClasses}>
+                              <SelectTrigger
+                                id={`sc-classname-${selectedSpellcastingIndex}`}
+                                className="w-full">
+                                <SelectValue placeholder={tEdit("selectClass")} />
+                              </SelectTrigger>
+                              <SelectContent position="item-aligned">
+                                <SelectGroup>
+                                  {availableSpellcastingClasses.map((cls: any, index: number) => (
+                                    <SelectItem
+                                      key={`${cls.name}-${index}`}
+                                      value={cls.name}>
+                                      {tClass(cls.name)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          </span>
+                        </TooltipTrigger>
+                        {!hasAvailableSpellcastingClasses && (
+                          <TooltipContent>
+                            <p>{tMagic("spellcastingClassRequiresClass")}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                       {fieldState.error && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
@@ -946,12 +987,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 <button
                   type="button"
                   onClick={() => {
-                    const allKeys = !isInnate
-                      ? levels.map((l) => `level-${l}`)
-                      : npcUsesGroups.map((u) => npcUsesKey(u));
-                    setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allKeys);
+                    if (!hasSpellAccordions) return;
+                    setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allSpellAccordionKeys);
                   }}
-                  className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+                  disabled={!hasSpellAccordions}
+                  className={`text-sm p-2 focus:outline-none ${hasSpellAccordions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
                   aria-label={
                     openAccordionValues.length > 0 ? tMagic("collapseAllSpellLevels") : tMagic("expandAllSpellLevels")
                   }
@@ -1341,16 +1381,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           {tEdit("spellEffectType")}
                         </label>
                         <Select
-                          value={field.value ?? "utility"}
+                          value={field.value || "utility"}
                           onValueChange={field.onChange}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent position="item-aligned">
                             <SelectGroup>
+                              <SelectItem value="utility">{tMagic("effectTypes.utility")}</SelectItem>
                               <SelectItem value="attack">{tMagic("effectTypes.attack")}</SelectItem>
                               <SelectItem value="heal">{tMagic("effectTypes.heal")}</SelectItem>
-                              <SelectItem value="utility">{tMagic("effectTypes.utility")}</SelectItem>
                             </SelectGroup>
                           </SelectContent>
                         </Select>
