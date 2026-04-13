@@ -108,12 +108,17 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   // Fonctions pour manipuler les spells directement
   const addSpell = useCallback(
     (spell: Partial<Spell>) => {
+      const spellWithDefaults: Partial<Spell> = {
+        ...spell,
+        effectType: spell.effectType || "utility",
+      };
+
       const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
-      form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spell], {
+      form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spellWithDefaults], {
         shouldDirty: true,
       });
 
-      const spellLevel = Number(spell.level || 0);
+      const spellLevel = Number(spellWithDefaults.level || 0);
       if (spellLevel > 0) {
         const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
         if (!currentSlots[spellLevel]) {
@@ -125,7 +130,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         }
       }
 
-      const uses = spell.usesPerDay ?? null;
+      const uses = spellWithDefaults.usesPerDay ?? null;
       if (uses !== null) {
         const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
         if (!currentByUses[`k${uses}`]) {
@@ -138,7 +143,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       }
 
       // Open the accordion for the new spell based on display mode
-      const accordionKey = !isInnate ? `level-${spell.level || 0}` : npcUsesKey((spell as any).usesPerDay ?? null);
+      const accordionKey =
+        !isInnate ? `level-${spellWithDefaults.level || 0}` : npcUsesKey((spellWithDefaults as any).usesPerDay ?? null);
       if (!openAccordionValues.includes(accordionKey)) {
         setOpenAccordionValues([...openAccordionValues, accordionKey]);
       }
@@ -1369,16 +1375,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           {tEdit("spellEffectType")}
                         </label>
                         <Select
-                          value={field.value ?? "utility"}
+                          value={field.value || "utility"}
                           onValueChange={field.onChange}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent position="item-aligned">
                             <SelectGroup>
+                              <SelectItem value="utility">{tMagic("effectTypes.utility")}</SelectItem>
                               <SelectItem value="attack">{tMagic("effectTypes.attack")}</SelectItem>
                               <SelectItem value="heal">{tMagic("effectTypes.heal")}</SelectItem>
-                              <SelectItem value="utility">{tMagic("effectTypes.utility")}</SelectItem>
                             </SelectGroup>
                           </SelectContent>
                         </Select>
