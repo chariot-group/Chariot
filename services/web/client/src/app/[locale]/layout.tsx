@@ -19,7 +19,7 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  title: "Chariot App",
+  title: process.env.NEXT_PUBLIC_ENV_NAME === "integration" ? "Chariot Integ" : "Chariot App",
   description: "A Dungeons & Dragons character management app.",
   icons: {
     icon: [
