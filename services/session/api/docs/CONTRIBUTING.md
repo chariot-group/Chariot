@@ -99,70 +99,70 @@ The WebSocket server is accessible via the `/session` namespace.
 ### Events Emitted by the Client
 
 -   `session:join`
-    -   **Description**: Permet à un utilisateur de rejoindre une "room" Socket.IO pour une session spécifique.
+    -   **Description**: Allows a user to join a Socket.IO room for a specific session.
     -   **Payload**: `{ "sessionId": "string" }`
 
 -   `session:leave`
-    -   **Description**: Permet à un utilisateur de quitter une "room" Socket.IO.
+    -   **Description**: Allows a user to leave a Socket.IO room.
     -   **Payload**: `{ "sessionId": "string" }`
 
-### Événements émis par le serveur
+### Events emitted by the server
 
 -   `session:user-joined`
-    -   **Description**: Notifie les participants d'une session qu'un nouvel utilisateur a rejoint.
+    -   **Description**: Notifies session participants that a new user has joined.
     -   **Payload**: `{ "sessionId": "string", "userId": "string", "characterId": "string" }`
 
 -   `session:user-left`
-    -   **Description**: Notifie les participants d'une session qu'un utilisateur a quitté.
+    -   **Description**: Notifies session participants that a user has left.
     -   **Payload**: `{ "sessionId": "string", "userId": "string" }`
 
 -   `session:launched`
-    -   **Description**: Notifie les participants que la session a été lancée.
+    -   **Description**: Notifies participants that the session has been launched.
     -   **Payload**: `{ "sessionId": "string" }`
 
 -   `session:expired`
-    -   **Description**: Notifie les participants que la session a expiré.
+    -   **Description**: Notifies participants that the session has expired.
     -   **Payload**: `{ "sessionId": "string" }`
 
 -   `session:deleted`
-    -   **Description**: Notifie les participants que la session a été supprimée.
+    -   **Description**: Notifies participants that the session has been deleted.
     -   **Payload**: `{ "sessionId": "string" }`
 
-## Cycle de vie d'une session
+## Session lifecycle
 
-1.  **Création (`activated`)**: Un utilisateur crée une session. Le statut est `activated`. Les autres utilisateurs peuvent la rejoindre.
-2.  **Lancement (`launched`)**: Le créateur lance la session. Le statut passe à `launched`. Un timer de 8 heures est démarré dans Redis.
+1.  **Creation (`activated`)**: A user creates a session. The status is `activated`. Other users can join it.
+2.  **Launch (`launched`)**: The creator launches the session. The status changes to `launched`. An 8-hour timer is started in Redis.
 3.  **Expiration (`closed`)**:
-    -   Si la session est lancée, après 8 heures, Redis notifie le service que la session a expiré.
-    -   Le statut de la session passe à `closed`.
-    -   Les participants sont notifiés via WebSocket et déconnectés de la room.
-4.  **Suppression**: Le créateur peut supprimer la session à tout moment. La session est "soft-deleted" (`deletedAt` est mis à jour).
+    -   If the session is launched, after 8 hours, Redis notifies the service that the session has expired.
+    -   The session status changes to `closed`.
+    -   Participants are notified via WebSocket and disconnected from the room.
+4.  **Deletion**: The creator can delete the session at any time. The session is soft-deleted (`deletedAt` is updated).
 
-## Intégration avec d'autres services
+## Integration with other services
 
-Pour interagir avec le service de Session, les autres microservices doivent :
+To interact with the Session service, other microservices must:
 
-1.  **Obtenir un token d'accès Keycloak valide**.
-2.  **Appeler l'API REST** du service de Session en incluant le token dans le header `Authorization`.
-3.  **Pour la communication en temps réel**, se connecter au serveur WebSocket en passant le token dans la configuration de connexion.
+1.  **Obtain a valid Keycloak access token**.
+2.  **Call the REST API** of the Session service including the token in the `Authorization` header.
+3.  **For real-time communication**, connect to the WebSocket server by passing the token in the connection configuration.
 
-Exemple d'appel API avec `curl`:
+Example API call with `curl`:
 ```bash
 curl -X GET http://localhost:9002/sessions \
--H "Authorization: Bearer <VOTRE_TOKEN>"
+-H "Authorization: Bearer <YOUR_TOKEN>"
 ```
 
-### Exemple d'Intégration en Temps Réel (Client)
+### Real-Time Integration Example (Client)
 
-Voici un exemple de la manière dont un client (par exemple, une application front-end en React ou Vue) peut se connecter au service de session et interagir en temps réel.
+Here is an example of how a client (e.g., a React or Vue frontend application) can connect to the session service and interact in real time.
 
 ```javascript
 import { io } from "socket.io-client";
 
-const SESSION_ID = "votre-session-id";
-const USER_TOKEN = "votre-token-jwt"; // Le token d'accès JWT obtenu via Keycloak
+const SESSION_ID = "your-session-id";
+const USER_TOKEN = "your-jwt-token"; // JWT access token obtained via Keycloak
 
-// 1. Connexion au namespace '/session' avec le token d'authentification
+// 1. Connect to the '/session' namespace with the authentication token
 const socket = io("http://localhost:9002/session", {
   auth: {
     token: USER_TOKEN,
@@ -170,50 +170,50 @@ const socket = io("http://localhost:9002/session", {
 });
 
 socket.on("connect", () => {
-  console.log(`Connecté au serveur WebSocket avec l'id ${socket.id}`);
+  console.log(`Connected to WebSocket server with id ${socket.id}`);
 
-  // 2. Rejoindre une room de session spécifique
+  // 2. Join a specific session room
   socket.emit("session:join", { sessionId: SESSION_ID });
 });
 
-// 3. Écouter les événements du serveur
+// 3. Listen to server events
 socket.on("session:user-joined", (data) => {
-  console.log(`L'utilisateur ${data.userId} a rejoint la session ${data.sessionId}`);
+  console.log(`User ${data.userId} joined session ${data.sessionId}`);
 });
 
 socket.on("session:user-left", (data) => {
-  console.log(`L'utilisateur ${data.userId} a quitté la session ${data.sessionId}`);
+  console.log(`User ${data.userId} left session ${data.sessionId}`);
 });
 
 socket.on("session:launched", (data) => {
-  console.log(`La session ${data.sessionId} a été lancée !`);
+  console.log(`Session ${data.sessionId} has been launched!`);
 });
 
 socket.on("session:expired", (data) => {
-  console.error(`La session ${data.sessionId} a expiré.`);
-  // Ici, vous devriez gérer la déconnexion de l'utilisateur de la session
+  console.error(`Session ${data.sessionId} has expired.`);
+  // Handle user disconnection from the session here
 });
 
 socket.on("disconnect", (reason) => {
-  console.log(`Déconnecté du serveur WebSocket: ${reason}`);
+  console.log(`Disconnected from WebSocket server: ${reason}`);
 });
 
-// Fonction pour quitter une session
+// Function to leave a session
 function leaveSession() {
   socket.emit("session:leave", { sessionId: SESSION_ID });
 }
 ```
 
-## Lancement en local
+## Running locally
 
-Pour lancer le service de Session en local, suivez ces étapes :
+To run the Session service locally, follow these steps:
 
-1.  Assurez-vous que les services dépendants (PostgreSQL, Redis, Keycloak) sont en cours d'exécution. Le plus simple est d'utiliser le `docker-compose` à la racine du projet.
-2.  Naviguez vers le répertoire `services/session/api`.
-3.  Installez les dépendances : `npm install`.
-4.  Créez un fichier `.env` basé sur `.env.example` et configurez les variables d'environnement.
-5.  Appliquez les migrations de la base de données : `npm run prisma:migrate`.
-6.  Lancez le service en mode développement : `npm run start:dev`.
+1.  Make sure the dependent services (PostgreSQL, Redis, Keycloak) are running. The easiest way is to use the `docker-compose` at the root of the project.
+2.  Navigate to the `services/session/api` directory.
+3.  Install dependencies: `npm install`.
+4.  Create a `.env` file based on `.env.example` and configure the environment variables.
+5.  Apply database migrations: `npm run prisma:migrate`.
+6.  Start the service in development mode: `npm run start:dev`.
 
-Le service sera alors accessible sur `http://localhost:9002`.
-La documentation Swagger sera disponible sur `http://localhost:9002/docs`.
+The service will then be accessible at `http://localhost:9002`.
+Swagger documentation will be available at `http://localhost:9002/docs`.

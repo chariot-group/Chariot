@@ -1,17 +1,17 @@
-## 🔗 Lien vers le ticket
-<!-- Lien permettant d'accéder facilement au ticket -->
+## 🔗 Link to ticket
+<!-- Link to easily access the ticket -->
 
-## 🧑‍💻 Contrôles pour le développeur
-- [ ] J'ai testé mes changements localement  
-- [ ] J'ai ajouté/mis à jour la documentation (si nécessaire)  
-- [ ] J'ai ajouté des tests pour couvrir mes changements  
-- [ ] J'ai testé le responsive du projet depuis mon navigateur
-- [ ] J'ai testé le responsive du projet depuis mon téléphone
+## 🧑‍💻 Developer checklist
+- [ ] I tested my changes locally  
+- [ ] I added/updated the documentation (if necessary)  
+- [ ] I added tests to cover my changes  
+- [ ] I tested project responsiveness from my browser
+- [ ] I tested project responsiveness from my phone
 
-## 🔍 Contrôles pour le reviewer
-- [ ] La branche d’origine et la branche de destination sont correctes  
-- [ ] Les changements ont été résolus et les remarques ajoutées (si nécessaire)  
-- [ ] Les changements ont été testés  
+## 🔍 Reviewer checklist
+- [ ] The source branch and destination branch are correct  
+- [ ] Changes have been addressed and remarks added (if necessary)  
+- [ ] Changes have been tested  
 
-## 📝 Notes pour le reviewer
-<!-- Notes à l’attention du reviewer -->
+## 📝 Notes for the reviewer
+<!-- Notes for the reviewer -->
