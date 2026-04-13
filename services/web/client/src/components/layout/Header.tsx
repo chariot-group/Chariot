@@ -36,7 +36,7 @@ export default function Header() {
         </div>
       )}
       <header className="w-full flex flex-row justify-between items-center px-2 sm:px-4 z-10">
-        <SidebarTrigger />
+        <SidebarTrigger className="self-start mt-1" />
         <button
           onClick={handleLogoClick}
           className="cursor-pointer bg-transparent border-none p-0">
