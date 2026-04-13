@@ -67,6 +67,7 @@ const ActionUpdateSection = ({
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+  const hasActions = fields.length > 0;
 
   const watchedActions = form.watch(fieldArrayName) as Array<{
     attackAbility?: AbilityScoreKey;
@@ -205,13 +206,15 @@ const ActionUpdateSection = ({
           <button
             type="button"
             onClick={() => {
+              if (!hasActions) return;
               if (openAccordionValues.length > 0) {
                 setOpenAccordionValues([]);
               } else {
                 setOpenAccordionValues(fields.map((_, index) => `action-${index}`));
               }
             }}
-            className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+            disabled={!hasActions}
+            className={`text-sm p-2 focus:outline-none ${hasActions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
             aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             aria-expanded={openAccordionValues.length > 0}>
             {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}

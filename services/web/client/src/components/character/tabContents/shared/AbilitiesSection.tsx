@@ -22,6 +22,7 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
   const t = useTranslations("characterDetail.battle");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+  const hasAbilities = abilities.length > 0;
 
   return (
     <Card
@@ -38,13 +39,15 @@ const AbilitiesSection = ({ abilities, accentColor, title, headingId, className 
           <button
             type="button"
             onClick={() => {
+              if (!hasAbilities) return;
               if (openAccordionValues.length > 0) {
                 setOpenAccordionValues([]);
               } else {
                 setOpenAccordionValues(abilities.map((ability, index) => `${ability.name}-${index}`));
               }
             }}
-            className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+            disabled={!hasAbilities}
+            className={`text-sm pr-3 py-2 focus:outline-none ${hasAbilities ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
             aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             aria-expanded={openAccordionValues.length > 0}>
             {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}

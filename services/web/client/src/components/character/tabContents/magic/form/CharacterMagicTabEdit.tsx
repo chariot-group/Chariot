@@ -527,6 +527,13 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     return acc;
   }, {});
 
+  const allSpellAccordionKeys = !isInnate
+    ? levels.filter((level) => (spellIndicesByLevel[level] ?? []).length > 0).map((level) => `level-${level}`)
+    : npcUsesGroups
+      .filter((uses) => (npcSpellIndicesByUses[npcUsesKey(uses)] ?? []).length > 0)
+      .map(npcUsesKey);
+  const hasSpellAccordions = allSpellAccordionKeys.length > 0;
+
   // ── Keyboard navigation for tabs ──
   const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key === "ArrowRight") {
@@ -980,12 +987,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 <button
                   type="button"
                   onClick={() => {
-                    const allKeys = !isInnate
-                      ? levels.map((l) => `level-${l}`)
-                      : npcUsesGroups.map((u) => npcUsesKey(u));
-                    setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allKeys);
+                    if (!hasSpellAccordions) return;
+                    setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allSpellAccordionKeys);
                   }}
-                  className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+                  disabled={!hasSpellAccordions}
+                  className={`text-sm p-2 focus:outline-none ${hasSpellAccordions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
                   aria-label={
                     openAccordionValues.length > 0 ? tMagic("collapseAllSpellLevels") : tMagic("expandAllSpellLevels")
                   }
