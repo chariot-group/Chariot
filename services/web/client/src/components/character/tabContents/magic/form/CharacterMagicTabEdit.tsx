@@ -205,6 +205,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const proficiencyBonus: number = useWatch({ control: form.control, name: "stats.proficiencyBonus" }) ?? 2;
   const abilityScores: Record<string, number> = useWatch({ control: form.control, name: "stats.abilityScores" }) ?? {};
   const classesList: any[] = useWatch({ control: form.control, name: "class" }) ?? [];
+  const availableSpellcastingClasses = classesList.filter((cls: any) => cls?.name?.length > 1);
+  const hasAvailableSpellcastingClasses = availableSpellcastingClasses.length > 0;
 
   const currentAbilityKey: string =
     useWatch({ control: form.control, name: `spellcasting.${selectedSpellcastingIndex}.ability` }) ?? "";
@@ -378,8 +380,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   // ── Functions to manage spellcasting ──
   const addSpellcasting = () => {
+    if (isPlayer(character) && !hasAvailableSpellcastingClasses) {
+      return;
+    }
+
+    const candidateClasses = isPlayer(character) ? availableSpellcastingClasses : classesList;
+
     // Find a class that doesn't have spellcasting yet
-    const classWithoutSpellcasting = classesList.find((cls: any) => {
+    const classWithoutSpellcasting = candidateClasses.find((cls: any) => {
       const className = cls?.name?.toLowerCase();
       if (!className) return false;
       return !spellcastingList.some((sc: any) => {
@@ -425,15 +433,27 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           {tMagic("spells")}
         </h2>
         <p className="text-center text-muted-foreground text-base">{tMagic("noMagicAbilities")}</p>
-        <Button
-          type="button"
-          onClick={addSpellcasting}
-          variant="outline"
-          size="lg"
-          className="flex items-center gap-2">
-          <Plus className="size-4" />
-          {tMagic("addSpellcasting")}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <Button
+                type="button"
+                onClick={addSpellcasting}
+                variant="outline"
+                size="lg"
+                disabled={isPlayer(character) && !hasAvailableSpellcastingClasses}
+                className="flex items-center gap-2">
+                <Plus className="size-4" />
+                {tMagic("addSpellcasting")}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {isPlayer(character) && !hasAvailableSpellcastingClasses && (
+            <TooltipContent>
+              <p>{tMagic("spellcastingClassRequiresClass")}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
       </div>
     );
   }
@@ -633,7 +653,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     </Card>
                   );
                 })}
-                {classesList.length > spellcastingList.length && (
+                {availableSpellcastingClasses.length > spellcastingList.length && (
                   <Card
                     className="gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md border-dashed"
                     onClick={addSpellcasting}
@@ -726,30 +746,38 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                         className="text-sm font-medium">
                         {tEdit("className")}
                       </label>
-                      <Select
-                        value={field.value ?? ""}
-                        onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id={`sc-classname-${selectedSpellcastingIndex}`}
-                          className="w-full">
-                          <SelectValue placeholder={tEdit("selectClass")} />
-                        </SelectTrigger>
-                        <SelectContent position="item-aligned">
-                          <SelectGroup>
-                            {classesList.map((cls: any, index: number) => (
-                              <React.Fragment key={index}>
-                                {cls.name.length > 1 && (
-                                  <SelectItem
-                                    key={cls.name}
-                                    value={cls.name}>
-                                    {tClass(cls.name)}
-                                  </SelectItem>
-                                )}
-                              </React.Fragment>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="w-full">
+                            <Select
+                              value={field.value ?? ""}
+                              onValueChange={field.onChange}
+                              disabled={!hasAvailableSpellcastingClasses}>
+                              <SelectTrigger
+                                id={`sc-classname-${selectedSpellcastingIndex}`}
+                                className="w-full">
+                                <SelectValue placeholder={tEdit("selectClass")} />
+                              </SelectTrigger>
+                              <SelectContent position="item-aligned">
+                                <SelectGroup>
+                                  {availableSpellcastingClasses.map((cls: any, index: number) => (
+                                    <SelectItem
+                                      key={`${cls.name}-${index}`}
+                                      value={cls.name}>
+                                      {tClass(cls.name)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          </span>
+                        </TooltipTrigger>
+                        {!hasAvailableSpellcastingClasses && (
+                          <TooltipContent>
+                            <p>{tMagic("spellcastingClassRequiresClass")}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                       {fieldState.error && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
