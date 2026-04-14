@@ -402,7 +402,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     const candidateClasses = isPlayer(character) ? availableSpellcastingClasses : classesList;
 
     // Find a class that doesn't have spellcasting yet
-    const classWithoutSpellcasting = classesList.find((cls) => {
     const classWithoutSpellcasting = candidateClasses.find((cls) => {
       const className = cls?.name?.toLowerCase();
       if (!className) return false;
