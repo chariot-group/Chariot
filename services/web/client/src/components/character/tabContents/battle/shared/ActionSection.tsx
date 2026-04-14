@@ -46,6 +46,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
       return aIsPriority ? -1 : 1;
     })
     : actions;
+  const hasActions = displayedActions.length > 0;
 
   if (actions.length === 0) return null;
 
@@ -97,13 +98,15 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
           <button
             type="button"
             onClick={() => {
+              if (!hasActions) return;
               if (openAccordionValues.length > 0) {
                 setOpenAccordionValues([]);
               } else {
                 setOpenAccordionValues(displayedActions.map((action, index) => `${action.name}-${index}`));
               }
             }}
-            className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+            disabled={!hasActions}
+            className={`text-sm pr-3 py-2 focus:outline-none ${hasActions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
             aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             aria-expanded={openAccordionValues.length > 0}>
             {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}

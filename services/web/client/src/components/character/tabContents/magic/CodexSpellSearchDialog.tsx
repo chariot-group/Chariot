@@ -249,7 +249,7 @@ export default function CodexSpellSearchDialog({
                                                         <Card
                                                             key={`${spellItem._id}-${selectedLang}`}
                                                             onClick={() => handleSpellClick(spellItem)}
-                                                            className={`cursor-pointer p-3 hover:border-${accentColor} transition-all ${isSelected ? `border-${accentColor} border-2` : ""
+                                                            className={`cursor-pointer p-3 border border-transparent transition-all duration-200 hover:bg-muted/60 hover:border-pink/50 hover:ring-1 hover:ring-pink/20 hover:shadow-sm ${isSelected ? `border-${accentColor} border-2 bg-pink/10` : ""
                                                                 }`}
                                                         >
                                                             <div className="flex items-start justify-between gap-2">
@@ -303,7 +303,7 @@ export default function CodexSpellSearchDialog({
                                                             <Card
                                                                 key={`${spellItem._id}-${lang}`}
                                                                 onClick={() => handleSpellClick(spellItem)}
-                                                                className={`cursor-pointer p-3 hover:border-${accentColor} transition-all ${isSelected ? `border-${accentColor} border-2` : ""
+                                                                className={`cursor-pointer p-3 border border-transparent transition-all duration-200 hover:bg-white/10 hover:shadow-sm ${isSelected ? `border-${accentColor} border-2 bg-pink/10` : ""
                                                                     }`}
                                                             >
                                                                 <div className="flex items-start justify-between gap-2">

@@ -19,7 +19,7 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  title: "Chariot App",
+  title: process.env.NEXT_PUBLIC_ENV_NAME === "integration" ? "Chariot Integ" : "Chariot App",
   description: "A Dungeons & Dragons character management app.",
   icons: {
     icon: [
@@ -44,6 +44,7 @@ export default async function RootLayout({
 }>) {
   const { locale } = await params;
   const messages = await getMessages();
+  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
 
   return (
     <html lang={locale}>
@@ -55,13 +56,16 @@ export default async function RootLayout({
               <SidebarProvider>
                 <AppSidebar />
 
-                <div className="flex w-full flex-col h-screen overflow-hidden">
+                <div className="flex w-full flex-col h-screen overflow-hidden relative">
                   <PostLoginNavigator />
                   <LocaleDetector />
                   <ToastContainer />
                   <Header />
 
                   {children}
+                  {appVersion && (
+                    <p className="absolute bottom-0 left-0 lg:inset-x-0 text-center text-[10px] text-white/55 select-none">Chariot v{appVersion}</p>
+                  )}
                 </div>
               </SidebarProvider>
             </ReduxProvider>

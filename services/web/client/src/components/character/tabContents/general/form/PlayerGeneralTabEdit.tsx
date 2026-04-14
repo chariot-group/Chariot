@@ -804,7 +804,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             key={level}
                             value={level.toString()}>
                             <div className="flex flex-col gap-1">
-                              <span className="font-semibold">
+                              <span>
                                 {t("level")} {level}
                               </span>
                               <span className="text-xs text-gray-middle-light">{t(`exhaustionLevels.${level}`)}</span>

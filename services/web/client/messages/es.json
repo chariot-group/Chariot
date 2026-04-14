@@ -706,6 +706,7 @@
       "removeSpellcastingConfirm": "Eliminar",
       "addSpellcasting": "Añadir capacidades mágicas",
       "newSpellcasting": "Nueva clase mágica",
+      "spellcastingClassRequiresClass": "Añade primero al menos una clase al personaje para poder elegir una clase de lanzamiento de conjuros.",
       "spellSlotsTotalForLevel": "Número de espacios de conjuro de nivel {level}",
       "moreSpellOptions": "Más opciones de conjuros",
       "removeSpellWithName": "Eliminar conjuro {name}",

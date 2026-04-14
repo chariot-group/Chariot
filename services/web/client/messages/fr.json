@@ -710,6 +710,7 @@
       "removeSpellcastingConfirm": "Supprimer",
       "addSpellcasting": "Ajouter des capacités magiques",
       "newSpellcasting": "Nouvelle classe magique",
+      "spellcastingClassRequiresClass": "Ajoutez d'abord une classe au personnage pour définir une classe de sorts.",
       "spellSlotsTotalForLevel": "Nombre d'emplacements de sorts de niveau {level}",
       "moreSpellOptions": "Plus d'options pour les sorts",
       "removeSpellWithName": "Supprimer le sort {name}",

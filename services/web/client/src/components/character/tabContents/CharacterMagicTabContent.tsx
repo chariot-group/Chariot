@@ -127,6 +127,22 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   }
 
   const isInnate = selectedSpellcasting.isInnate ?? !isPlayer(character);
+  const allAccordionValues = isInnate
+    ? getNpcUsesGroups(selectedSpellcasting)
+      .filter((uses) => getSpellsByUses(selectedSpellcasting, uses).length > 0)
+      .map(npcUsesKey)
+    : (() => {
+      const levels: number[] = [];
+      if (selectedSpellcasting.spells) {
+        selectedSpellcasting.spells.forEach((spell) => {
+          const n = Number(spell.level);
+          if (!levels.includes(n)) levels.push(n);
+        });
+      }
+      levels.sort((a, b) => a - b);
+      return levels.map((level) => `level-${level}`);
+    })();
+  const hasAccordionItems = allAccordionValues.length > 0;
 
   return (
     <div
@@ -237,33 +253,12 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                 <button
                   type="button"
                   onClick={() => {
-                    let allValues: string[];
-                    if (isInnate) {
-                      allValues = getNpcUsesGroups(selectedSpellcasting).map(npcUsesKey);
-                    } else {
-                      const levels: number[] = [];
-                      if (hasLevel0Spells(selectedSpellcasting)) {
-                        levels.push(0);
-                      }
-                      if (selectedSpellcasting.spellSlotsByLevel) {
-                        Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
-                          const n = Number(l);
-                          if (!levels.includes(n)) levels.push(n);
-                        });
-                      }
-                      if (selectedSpellcasting.spells) {
-                        selectedSpellcasting.spells.forEach((spell) => {
-                          const n = Number(spell.level);
-                          if (!levels.includes(n)) levels.push(n);
-                        });
-                      }
-                      levels.sort((a, b) => a - b);
-                      allValues = levels.map((level) => `level-${level}`);
-                    }
+                    if (!hasAccordionItems) return;
                     const isAllOpen = openAccordionValues.length > 0;
-                    setOpenAccordionValues(isAllOpen ? [] : allValues);
+                    setOpenAccordionValues(isAllOpen ? [] : allAccordionValues);
                   }}
-                  className={`cursor-pointer text-sm pr-3 py-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+                  disabled={!hasAccordionItems}
+                  className={`text-sm pr-3 py-2 focus:outline-none ${hasAccordionItems ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
                   aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
                   aria-expanded={openAccordionValues.length > 0}>
                   {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
