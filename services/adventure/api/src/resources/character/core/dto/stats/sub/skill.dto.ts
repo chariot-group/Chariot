@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional } from 'class-validator';
 
 export class SkillDto {
-
   @ApiProperty({ example: 5 })
   @IsOptional()
   @IsNumber()

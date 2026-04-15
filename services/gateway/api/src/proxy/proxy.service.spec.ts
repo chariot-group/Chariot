@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ProxyService } from "@/proxy/proxy.service";
+import { ProxyService } from "./proxy.service";
 import { HttpService } from "@nestjs/axios";
 import { of, throwError } from "rxjs";
 import { AxiosResponse } from "axios";
@@ -48,7 +48,7 @@ describe("ProxyService", () => {
         status: 200,
         statusText: "OK",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       jest.spyOn(httpService, "request").mockReturnValue(of(mockResponse));
@@ -93,7 +93,7 @@ describe("ProxyService", () => {
         status: 201,
         statusText: "Created",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       const body = { name: "test" };
@@ -127,7 +127,7 @@ describe("ProxyService", () => {
         status: 200,
         statusText: "OK",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       const requestSpy = jest.spyOn(httpService, "request").mockReturnValue(of(mockResponse));
@@ -161,7 +161,7 @@ describe("ProxyService", () => {
         status: 200,
         statusText: "OK",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       jest.spyOn(httpService, "request").mockReturnValue(of(mockResponse));

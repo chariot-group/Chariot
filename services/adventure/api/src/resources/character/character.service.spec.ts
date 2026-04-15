@@ -6,7 +6,7 @@ import { Group } from '@/resources/group/schemas/group.schema';
 import {
   InternalServerErrorException,
   NotFoundException,
-  GoneException
+  GoneException,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 
@@ -50,7 +50,9 @@ describe('CharacterService - findAllByUser', () => {
     characterModel.skip.mockResolvedValue([mockCharacter]);
     characterModel.countDocuments.mockResolvedValue(1);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'verbose')
+      .mockImplementation(() => {});
 
     const result = await service.findAllByUser(userId, {
       page: 1,
@@ -98,7 +100,11 @@ describe('CharacterService - findAllByUser', () => {
     characterModel.countDocuments.mockResolvedValue(1);
 
     const groupId = 'group1';
-    const result = await service.findAllByUser(userId, { page: 1, offset: 10 }, groupId);
+    const result = await service.findAllByUser(
+      userId,
+      { page: 1, offset: 10 },
+      groupId,
+    );
 
     expect(characterModel.find).toHaveBeenCalledWith({
       firstname: { $regex: '', $options: 'i' },
@@ -128,13 +134,18 @@ describe('CharacterService - findAllByUser', () => {
 
     await service.findAllByUser(userId, { sort: 'name' });
 
-    expect(characterModel.sort).toHaveBeenCalledWith({ name: 'asc', updatedAt: 'asc' });
+    expect(characterModel.sort).toHaveBeenCalledWith({
+      name: 'asc',
+      updatedAt: 'asc',
+    });
   });
 
   it('should throw InternalServerErrorException if query fails', async () => {
     characterModel.skip.mockRejectedValue(new Error('DB Fail'));
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.findAllByUser(userId, {})).rejects.toThrow(
       InternalServerErrorException,
@@ -182,7 +193,9 @@ describe('CharacterService - findOne', () => {
   it('should return a character with populated groups and log success message', async () => {
     characterModel.exec.mockResolvedValue(mockCharacter);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'verbose')
+      .mockImplementation(() => {});
 
     const result = await service.findOne(characterId);
 
@@ -206,7 +219,9 @@ describe('CharacterService - findOne', () => {
   it('should throw InternalServerErrorException and log error if query fails', async () => {
     characterModel.exec.mockRejectedValue(new Error('DB Error'));
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.findOne(characterId)).rejects.toThrow(
       InternalServerErrorException,
@@ -264,7 +279,9 @@ describe('CharacterService - remove', () => {
     groupModel.exec.mockResolvedValue({});
     mockCharacter.save.mockResolvedValue(mockCharacter);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'verbose')
+      .mockImplementation(() => {});
 
     const result = await service.remove(characterId);
 
@@ -300,7 +317,9 @@ describe('CharacterService - remove', () => {
   it('should throw NotFoundException if character not found', async () => {
     characterModel.exec.mockResolvedValue(null);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.remove(characterId)).rejects.toThrow(
       NotFoundException,
@@ -322,11 +341,11 @@ describe('CharacterService - remove', () => {
     const deletedCharacter = { ...mockCharacter, deletedAt: new Date() };
     characterModel.exec.mockResolvedValue(deletedCharacter);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
-    await expect(service.remove(characterId)).rejects.toThrow(
-      GoneException,
-    );
+    await expect(service.remove(characterId)).rejects.toThrow(GoneException);
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/Character #.* already deleted/),
@@ -343,7 +362,9 @@ describe('CharacterService - remove', () => {
   it('should throw InternalServerErrorException on unexpected error', async () => {
     characterModel.exec.mockRejectedValue(new Error('DB fail'));
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.remove(characterId)).rejects.toThrow(
       InternalServerErrorException,
@@ -369,8 +390,6 @@ describe('CharacterService - remove', () => {
     const goneError = new GoneException('Character already deleted');
     characterModel.exec.mockRejectedValue(goneError);
 
-    await expect(service.remove(characterId)).rejects.toThrow(
-      GoneException,
-    );
+    await expect(service.remove(characterId)).rejects.toThrow(GoneException);
   });
 });

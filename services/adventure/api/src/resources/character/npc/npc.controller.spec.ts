@@ -156,17 +156,17 @@ describe('NpcController - validateResource', () => {
   it('should throw NotFoundException if NPC is not found', async () => {
     characterModel.exec.mockResolvedValue(null);
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(NotFoundException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw GoneException if NPC is soft-deleted', async () => {
     characterModel.exec.mockResolvedValue({ deletedAt: new Date() });
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(GoneException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      GoneException,
+    );
   });
 
   it('should pass silently if NPC exists and is not deleted', async () => {

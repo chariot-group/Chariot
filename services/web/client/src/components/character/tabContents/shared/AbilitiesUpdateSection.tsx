@@ -3,7 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove } from "react-hook-form";
+import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, FieldValues } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
@@ -11,10 +11,10 @@ import { Field, FieldError } from "@/components/ui/field";
 
 interface AbilitiesUpdateSectionProps {
   title: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   fieldArrayName: string;
-  fields: FieldArrayWithId<any, any, "id">[];
-  append: UseFieldArrayAppend<any, any>;
+  fields: FieldArrayWithId<FieldValues, string, "id">[];
+  append: UseFieldArrayAppend<FieldValues, string>;
   remove: UseFieldArrayRemove;
   accentColor: string;
 }
@@ -33,6 +33,7 @@ const AbilitiesUpdateSection = ({
   const tBattle = useTranslations("characterDetail.battle");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+  const hasAbilities = fields.length > 0;
 
   return (
     <Card
@@ -68,13 +69,15 @@ const AbilitiesUpdateSection = ({
           <button
             type="button"
             onClick={() => {
+              if (!hasAbilities) return;
               if (openAccordionValues.length > 0) {
                 setOpenAccordionValues([]);
               } else {
                 setOpenAccordionValues(fields.map((_, index) => `ability-${index}`));
               }
             }}
-            className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+            disabled={!hasAbilities}
+            className={`text-sm p-2 focus:outline-none ${hasAbilities ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
             aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             aria-expanded={openAccordionValues.length > 0}>
             {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}

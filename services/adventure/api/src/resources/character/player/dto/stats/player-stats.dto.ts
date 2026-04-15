@@ -1,4 +1,9 @@
-import { IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { StatsDto } from '@/resources/character/core/dto/stats/stats.dto';
 import { Type } from 'class-transformer';
 import { MasteryDto } from '@/resources/character/player/dto/stats/player-masteries.dto';
@@ -6,7 +11,6 @@ import { MasteriesAbilityDto } from '@/resources/character/player/dto/stats/play
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PlayerStatsDto extends StatsDto {
-
   @ApiProperty({ example: 2 })
   @IsOptional()
   @IsNumber()
@@ -17,7 +21,7 @@ export class PlayerStatsDto extends StatsDto {
   @IsString({ each: true })
   armors?: string[];
 
-  @ApiProperty({ example: ['Thieves\' Tools', 'Smith\'s Tools'] })
+  @ApiProperty({ example: ["Thieves' Tools", "Smith's Tools"] })
   @IsOptional()
   @IsString({ each: true })
   tools?: string[];

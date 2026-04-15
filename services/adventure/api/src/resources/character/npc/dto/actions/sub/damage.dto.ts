@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class DamageDto {
-
   @ApiProperty({ example: '2d6+3' })
   @IsOptional()
   @IsString()
@@ -13,7 +12,11 @@ export class DamageDto {
   @IsString()
   type?: string;
 
-  @ApiProperty({ example: true, description: 'Automatically applies ability modifier to this damage dice expression.' })
+  @ApiProperty({
+    example: true,
+    description:
+      'Automatically applies ability modifier to this damage dice expression.',
+  })
   @IsOptional()
   @IsBoolean()
   applyAbilityBonus?: boolean;

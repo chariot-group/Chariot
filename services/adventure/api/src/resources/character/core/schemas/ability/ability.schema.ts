@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Ability {
-
   @ApiProperty({ example: 'Stealth' })
   @Prop()
   name: string;

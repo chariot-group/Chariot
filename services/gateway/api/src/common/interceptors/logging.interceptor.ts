@@ -7,7 +7,7 @@ import { Request, Response } from "express";
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const { method, url, ip, headers } = request;
@@ -36,9 +36,14 @@ export class LoggingInterceptor implements NestInterceptor {
             ip,
           });
         },
-        error: (error) => {
+        error: (error: unknown) => {
           const duration = Date.now() - startTime;
-          const statusCode = error.status || 500;
+          const statusCode =
+            typeof error === "object" && error !== null && "status" in error
+              ? Number((error as { status?: number }).status ?? 500)
+              : 500;
+          const errorMessage = error instanceof Error ? error.message : "Unknown error";
+          const errorStack = error instanceof Error ? error.stack : undefined;
 
           this.logger.error(`Error ${method} ${url} - ${statusCode} - ${duration}ms`, {
             method,
@@ -46,8 +51,8 @@ export class LoggingInterceptor implements NestInterceptor {
             statusCode,
             duration,
             ip,
-            error: error.message,
-            stack: error.stack,
+            error: errorMessage,
+            stack: errorStack,
           });
         },
       }),

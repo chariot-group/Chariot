@@ -13,8 +13,10 @@ describe('StripeService', () => {
   let userService: UserService;
 
   beforeEach(async () => {
-    process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || 'sk_test_mock';
-    process.env.STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test';
+    process.env.STRIPE_SECRET_KEY =
+      process.env.STRIPE_SECRET_KEY || 'sk_test_mock';
+    process.env.STRIPE_WEBHOOK_SECRET =
+      process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test';
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -50,9 +52,11 @@ describe('StripeService', () => {
       },
     } as any);
 
-    jest.spyOn(stripeClient.checkout.sessions, 'listLineItems').mockResolvedValue({
-      data: [{ quantity: 3 }],
-    } as any);
+    jest
+      .spyOn(stripeClient.checkout.sessions, 'listLineItems')
+      .mockResolvedValue({
+        data: [{ quantity: 3 }],
+      } as any);
 
     await service.handleWebhook(Buffer.from('payload'), 'sig_test');
 

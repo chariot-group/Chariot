@@ -9,13 +9,13 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatCompactNumber, formatNumberWithSpaces } from "@/utils/inventory.utils";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, FieldValues } from "react-hook-form";
 import CharacterInventoryTabEdit from "@/components/character/tabContents/inventory/form/CharacterInventoryTabEdit";
 
 interface Props {
   accentColor: string;
   character: Player | NPC;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   isEditing: boolean;
 }
 
@@ -24,7 +24,7 @@ const CharacterInventoryTabContent = ({ accentColor, character, form, isEditing 
 
   // Mode édition
   if (isEditing) {
-    return <CharacterInventoryTabEdit character={character} accentColor={accentColor} form={form} />;
+    return <CharacterInventoryTabEdit accentColor={accentColor} form={form} />;
   }
 
   // Mode lecture

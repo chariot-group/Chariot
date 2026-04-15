@@ -3,7 +3,10 @@ import { CampaignService } from './campaign.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Campaign } from './schemas/campaign.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
-import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { MetricsModule } from '@/metrics/metrics.module';
 
@@ -52,7 +55,9 @@ describe('CampaignService - create', () => {
     campaignModel.create.mockResolvedValue(mockCreatedCampaign);
     groupModel.updateMany.mockResolvedValue({});
 
-    const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'verbose')
+      .mockImplementation(() => {});
 
     const result = await service.create(mockCampaignDto, userId);
 
@@ -81,7 +86,9 @@ describe('CampaignService - create', () => {
 
   it('should handle errors and log them', async () => {
     campaignModel.create.mockRejectedValue(new Error('DB failure'));
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.create(mockCampaignDto, userId)).rejects.toThrow(
       InternalServerErrorException,
@@ -348,7 +355,7 @@ describe('CampaignService - remove', () => {
   beforeEach(async () => {
     campaignModel = {
       findById: jest.fn().mockReturnThis(),
-      exec: jest.fn()
+      exec: jest.fn(),
     };
     groupModel = {
       updateOne: jest.fn(),

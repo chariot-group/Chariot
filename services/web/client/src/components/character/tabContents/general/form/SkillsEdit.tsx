@@ -1,4 +1,4 @@
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 interface SkillsEditProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   accentColor: string;
   enableHalfProficiency: boolean;
   enableExpertise: boolean;
@@ -122,7 +122,7 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
   /**
    * Toggle le niveau de maîtrise d'une compétence
    */
-  const toggleSkillProficiency = (skillKey: string, abilityKey: AbilityKey) => {
+  const toggleSkillProficiency = (skillKey: string) => {
     const currentMasteryLevel = form.watch(`stats.masteries.${skillKey}`) || 0;
     const nextMasteryLevel = getNextMasteryLevel(currentMasteryLevel);
 
@@ -147,7 +147,7 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
             render={() => (
               <button
                 type="button"
-                onClick={() => toggleSkillProficiency(key, abilityKey)}
+                onClick={() => toggleSkillProficiency(key)}
                 className="text-left">
                 <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
                   <div className="text-sm flex items-center justify-between gap-2">

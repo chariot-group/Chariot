@@ -6,9 +6,9 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
-import { Eye, EyeOff, ShoppingCart, SquarePen, User } from "lucide-react";
+import { Eye, EyeOff, ShoppingCart, SquarePen } from "lucide-react";
 import Image from "next/image";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";
@@ -54,7 +54,7 @@ export default function ProfilePage() {
 
       return () => clearTimeout(timer);
     }
-  }, [user, loading, locale]);
+  }, [user, loading, locale, router]);
 
   useEffect(() => {
     if (loading || !user || hasRefreshedOnOpenRef.current) return;

@@ -35,7 +35,7 @@ interface UseCampaignsOptions {
  * Gère le cache automatiquement pour éviter les requêtes inutiles
  */
 export function useCampaigns(options: UseCampaignsOptions = {}) {
-    const { autoFetch = true, forceRefresh = false, pageSize = 5, autoSelectFirst = true } = options;
+    const { autoFetch = true, pageSize = 5, autoSelectFirst = true } = options;
 
     const dispatch = useAppDispatch();
     const campaigns = useAppSelector(selectCampaigns);

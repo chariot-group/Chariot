@@ -24,20 +24,28 @@ import { CharacterService } from '@/resources/character/character.service';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
-import { Campaign, CampaignDocument } from '@/resources/campaign/schemas/campaign.schema';
-import { Character, CharacterDocument } from '@/resources/character/core/schemas/character.schema';
+import {
+  Campaign,
+  CampaignDocument,
+} from '@/resources/campaign/schemas/campaign.schema';
+import {
+  Character,
+  CharacterDocument,
+} from '@/resources/character/core/schemas/character.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
-import { ApiExtraModels, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 
 @UseGuards(IsCreatorGuard)
-@ApiExtraModels(
-  IResponse,
-  IPaginatedResponse,
-  Character,
-  Group
-)
+@ApiExtraModels(IResponse, IPaginatedResponse, Character, Group)
 @Controller('groups')
 export class GroupController {
   constructor(
@@ -47,7 +55,7 @@ export class GroupController {
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
-  ) { }
+  ) {}
 
   private readonly CONTROLLER_NAME = GroupService.name;
   private readonly logger = new Logger(this.CONTROLLER_NAME);
@@ -126,7 +134,7 @@ export class GroupController {
         { $ref: getSchemaPath(IResponse) },
         {
           properties: {
-            data: { $ref: getSchemaPath(Group) }
+            data: { $ref: getSchemaPath(Group) },
           },
         },
       ],
@@ -134,10 +142,13 @@ export class GroupController {
   })
   @ApiResponse({
     status: 400,
-    description: "Validation error",
+    description: 'Validation error',
     type: ProblemDetailsDto,
   })
-  async create(@Req() request, @Body() createGroupDto: CreateGroupDto): Promise<IResponse<Group>> {
+  async create(
+    @Req() request,
+    @Body() createGroupDto: CreateGroupDto,
+  ): Promise<IResponse<Group>> {
     await this.validateCharacterRelations(createGroupDto.characters);
     await this.validatecampaignRelations(
       createGroupDto.campaigns.map((campaign) => campaign.idCampaign),
@@ -150,18 +161,18 @@ export class GroupController {
 
   @Get()
   @ApiOperation({
-    summary: "Get a collection of paginated groups",
+    summary: 'Get a collection of paginated groups',
     security: [],
   })
   @ApiOkResponse({
-    description: "Groups found successfully",
+    description: 'Groups found successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IPaginatedResponse) },
         {
           properties: {
             data: {
-              type: "array",
+              type: 'array',
               items: { $ref: getSchemaPath(Group) },
             },
           },
@@ -193,14 +204,14 @@ export class GroupController {
     security: [],
   })
   @ApiOkResponse({
-    description: "Characters found successfully",
+    description: 'Characters found successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IPaginatedResponse) },
         {
           properties: {
             data: {
-              type: "array",
+              type: 'array',
               items: { $ref: getSchemaPath(Character) },
             },
           },
@@ -226,16 +237,16 @@ export class GroupController {
     );
   }
 
-  @ApiOperation({ summary: "Get a group by ID" })
+  @ApiOperation({ summary: 'Get a group by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the group to get",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the group to get',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Group found successfully",
+    description: 'Group found successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -247,31 +258,42 @@ export class GroupController {
       ],
     },
   })
-  @ApiResponse({ status: 404, description: "Group #ID not found", type: ProblemDetailsDto })
   @ApiResponse({
-    status: 400,
-    description: "Error while fetching group #ID: Id is not a valid mongoose id",
+    status: 404,
+    description: 'Group #ID not found',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 410, description: "Group #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Error while fetching group #ID: Id is not a valid mongoose id',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Group #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
   @IsCreator(GroupService)
   @Get(':id')
-  async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId): Promise<IResponse<Group>> {
+  async findOne(
+    @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+  ): Promise<IResponse<Group>> {
     await this.validateResource(id);
 
     return this.groupService.findOne(id);
   }
 
-  @ApiOperation({ summary: "Update a group by ID" })
+  @ApiOperation({ summary: 'Update a group by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the group to update",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the group to update',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Group updated successfully",
+    description: 'Group updated successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -285,14 +307,25 @@ export class GroupController {
   })
   @ApiResponse({
     status: 400,
-    description: "Validation error",
+    description: 'Validation error',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 404, description: "Group #ID not found", type: ProblemDetailsDto })
-  @ApiResponse({ status: 410, description: "Group #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 404,
+    description: 'Group #ID not found',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Group #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
   @IsCreator(GroupService)
   @Patch(':id')
-  async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updateGroupDto: UpdateGroupDto): Promise<IResponse<Group>> {
+  async update(
+    @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+    @Body() updateGroupDto: UpdateGroupDto,
+  ): Promise<IResponse<Group>> {
     await this.validateResource(id);
 
     const { characters, campaigns } = updateGroupDto;
@@ -311,16 +344,16 @@ export class GroupController {
   }
 
   @IsCreator(GroupService)
-  @ApiOperation({ summary: "Delete a group by ID" })
+  @ApiOperation({ summary: 'Delete a group by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the group to delete",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the group to delete',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Group #ID deleted",
+    description: 'Group #ID deleted',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -332,15 +365,26 @@ export class GroupController {
       ],
     },
   })
-  @ApiResponse({ status: 404, description: "Group #ID not found", type: ProblemDetailsDto })
   @ApiResponse({
-    status: 400,
-    description: "Error while fetching group #ID: Id is not a valid mongoose id",
+    status: 404,
+    description: 'Group #ID not found',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 410, description: "Group #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Error while fetching group #ID: Id is not a valid mongoose id',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Group #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
   @Delete(':id')
-  async remove(@Param('id', ParseMongoIdPipe) id: Types.ObjectId): Promise<IResponse<Group>> {
+  async remove(
+    @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+  ): Promise<IResponse<Group>> {
     await this.validateResource(id);
 
     return this.groupService.remove(id);

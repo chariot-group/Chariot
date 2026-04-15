@@ -12,7 +12,10 @@ jest.mock('@/resources/user/user.service', () => ({
 
 describe('StripeController', () => {
   let controller: StripeController;
-  let stripeService: { createCheckoutSession: jest.Mock; handleWebhook: jest.Mock };
+  let stripeService: {
+    createCheckoutSession: jest.Mock;
+    handleWebhook: jest.Mock;
+  };
 
   beforeEach(async () => {
     stripeService = {
@@ -43,13 +46,19 @@ describe('StripeController', () => {
       displayName: 'Starter Pack',
     };
     const request = { user: { keycloakId: 'kc-user-1' } };
-    const expectedResponse = { message: 'ok', data: 'https://stripe.test/session' };
+    const expectedResponse = {
+      message: 'ok',
+      data: 'https://stripe.test/session',
+    };
 
     stripeService.createCheckoutSession.mockResolvedValue(expectedResponse);
 
     const result = await controller.createCheckout(request, dto);
 
-    expect(stripeService.createCheckoutSession).toHaveBeenCalledWith(dto, 'kc-user-1');
+    expect(stripeService.createCheckoutSession).toHaveBeenCalledWith(
+      dto,
+      'kc-user-1',
+    );
     expect(result).toEqual(expectedResponse);
   });
 
@@ -64,7 +73,10 @@ describe('StripeController', () => {
   });
 
   it('should mark webhook route as public', () => {
-    const isPublic = Reflect.getMetadata(IS_PUBLIC_KEY, controller.handleWebhook);
+    const isPublic = Reflect.getMetadata(
+      IS_PUBLIC_KEY,
+      controller.handleWebhook,
+    );
 
     expect(isPublic).toBe(true);
   });

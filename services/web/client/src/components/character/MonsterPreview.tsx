@@ -10,10 +10,19 @@ import CharacterMagicTabContent from "@/components/character/tabContents/magic/C
 import CharacterInventoryTabContent from "@/components/character/tabContents/inventory/CharacterInventoryTabContent";
 import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
+import { FieldValues, UseFormReturn } from "react-hook-form";
 
 interface MonsterPreviewProps {
     monster: Partial<NPC>;
 }
+
+type ActionPreview = {
+    name?: string;
+    type?: string;
+    description?: string;
+    attackBonus?: number;
+    dc?: { dcType?: string; dcValue?: number; successType?: string };
+};
 
 export default function MonsterPreview({ monster }: MonsterPreviewProps) {
     const tGeneral = useTranslations("characterDetail.player.general");
@@ -108,7 +117,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
         charisma: Math.max(0, (monster.stats?.savingThrows?.charisma ?? abilityModifier(rawAbilityScores.charisma)) - abilityModifier(rawAbilityScores.charisma)),
     };
 
-    const enrichAction = (action: any) => ({
+    const enrichAction = (action: ActionPreview) => ({
         ...action,
         attackBonus: action.attackBonus ?? parseAttackBonusFromDescription(action.description),
         dc: action.dc ?? parseDcFromDescription(action.description),
@@ -161,10 +170,13 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
                 persuasion: monster.stats?.skills?.persuasion ?? 0,
             },
             senses: monster.stats?.senses
-                ? monster.stats.senses.map((sense: any) => ({
-                    name: sense.name || sense.type || "",
-                    value: typeof sense.value === "number" ? sense.value : 0,
-                }))
+                ? monster.stats.senses.map((sense) => {
+                    const normalizedSense = sense as { name?: string; type?: string; value?: number | string };
+                    return {
+                        name: normalizedSense.name || normalizedSense.type || "",
+                        value: typeof normalizedSense.value === "number" ? normalizedSense.value : 0,
+                    };
+                })
                 : [],
         },
         affinities: {
@@ -211,7 +223,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
         hitPointsRoll: monster.hitPointsRoll || computedHitPointsRoll,
     };
 
-    const readOnlyForm = {} as any;
+    const readOnlyForm = {} as unknown as UseFormReturn<FieldValues>;
 
     return (
         <div className="w-full flex flex-col gap-2 md:gap-4 px-1 min-h-0 h-full overflow-y-auto lg:overflow-hidden">

@@ -21,11 +21,11 @@ export class MetricsInterceptor implements NestInterceptor {
     private readonly httpRequestDuration: Histogram,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const startTime = Date.now();
     const request = context.switchToHttp().getRequest();
     const { method, url, route } = request;
-    
+
     // Le chemin de la route (ex: /campaigns/:id)
     const routePath = route?.path || url;
 

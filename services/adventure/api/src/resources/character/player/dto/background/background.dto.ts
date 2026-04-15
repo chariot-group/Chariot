@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
 export class BackgroundDto {
-
   @ApiProperty({ example: 'Brave and cunning.' })
   @IsOptional()
   @IsString()
@@ -18,7 +17,9 @@ export class BackgroundDto {
   @IsString()
   bonds?: string;
 
-  @ApiProperty({ example: 'I have a quick temper and a tendency to act before thinking.' })
+  @ApiProperty({
+    example: 'I have a quick temper and a tendency to act before thinking.',
+  })
   @IsOptional()
   @IsString()
   flaws?: string;
@@ -28,7 +29,10 @@ export class BackgroundDto {
   @IsString()
   alliesAndOrgs?: string;
 
-  @ApiProperty({ example: 'Born in a small village, I was trained as a warrior from a young age...' })
+  @ApiProperty({
+    example:
+      'Born in a small village, I was trained as a warrior from a young age...',
+  })
   @IsOptional()
   @IsString()
   backstory?: string;

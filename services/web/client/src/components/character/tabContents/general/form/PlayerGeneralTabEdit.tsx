@@ -1,5 +1,5 @@
 import { Player } from "@/types/character";
-import { Controller, UseFormReturn, useFieldArray } from "react-hook-form";
+import { Controller, UseFormReturn, useFieldArray, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGr
 import { ClassNameEnum, AlignmentEnum } from "@/schemas/character";
 import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeft, Bird, Mountain, Plus, Shovel, Trash2, Waves } from "lucide-react";
+import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
@@ -21,14 +21,17 @@ import StatisticsUpdate from "@/components/character/tabContents/shared/Statisti
 interface PlayerGeneralTabEditProps {
   player: Player;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
 export default function PlayerGeneralTabEdit({ player, accentColor, form }: PlayerGeneralTabEditProps) {
+  type PlayerClassEntry = { name?: string; level?: number | string };
+
   const t = useTranslations("characterDetail.player.general");
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
+  void player; // Silence unused player prop warning
 
   const {
     fields: abilitiesFields,
@@ -395,9 +398,9 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 <div className="flex flex-col gap-3">
                   {classFields.map((field, index) => {
                     const globalLevel = form.watch("progression.level") || 1;
-                    const classLevels = form.watch("class") || [];
+                    const classLevels = (form.watch("class") || []) as PlayerClassEntry[];
                     const totalClassLevels = classLevels.reduce(
-                      (sum: number, c: any) => sum + (parseInt(c?.level) || 0),
+                      (sum: number, c) => sum + (parseInt(String(c?.level ?? 0), 10) || 0),
                       0,
                     );
                     const currentClassLevel = parseInt(form.watch(`class.${index}.level`)) || 1;
@@ -406,7 +409,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
                     // Récupérer les classes déjà sélectionnées dans les autres champs
                     const selectedClasses = classLevels
-                      .map((c: any, i: number) => (i !== index ? c?.name : null))
+                      .map((c, i: number) => (i !== index ? c?.name : null))
                       .filter(Boolean);
 
                     return (
@@ -585,7 +588,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
           {/* Section Points de Vie */}
           <StatisticsUpdate
-            player={player}
             accentColor={accentColor}
             form={form}
           />
@@ -802,7 +804,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             key={level}
                             value={level.toString()}>
                             <div className="flex flex-col gap-1">
-                              <span className="font-semibold">
+                              <span>
                                 {t("level")} {level}
                               </span>
                               <span className="text-xs text-gray-middle-light">{t(`exhaustionLevels.${level}`)}</span>
@@ -852,7 +854,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           <SelectItem
                             key={alignment}
                             value={alignment}>
-                            {tAlignment(alignment as any)}
+                            {tAlignment(alignment as Parameters<typeof tAlignment>[0])}
                           </SelectItem>
                         ))}
                       </SelectGroup>

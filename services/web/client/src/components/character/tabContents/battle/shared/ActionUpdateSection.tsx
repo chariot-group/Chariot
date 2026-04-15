@@ -3,7 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove } from "react-hook-form";
+import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, FieldValues } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
@@ -21,10 +21,10 @@ import {
 
 interface ActionUpdateSectionProps {
   title: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   fieldArrayName: string;
-  fields: FieldArrayWithId<any, any, "id">[];
-  append: UseFieldArrayAppend<any, any>;
+  fields: FieldArrayWithId<FieldValues, string, "id">[];
+  append: UseFieldArrayAppend<FieldValues, string>;
   remove: UseFieldArrayRemove;
   accentColor: string;
 }
@@ -67,6 +67,7 @@ const ActionUpdateSection = ({
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+  const hasActions = fields.length > 0;
 
   const watchedActions = form.watch(fieldArrayName) as Array<{
     attackAbility?: AbilityScoreKey;
@@ -205,13 +206,15 @@ const ActionUpdateSection = ({
           <button
             type="button"
             onClick={() => {
+              if (!hasActions) return;
               if (openAccordionValues.length > 0) {
                 setOpenAccordionValues([]);
               } else {
                 setOpenAccordionValues(fields.map((_, index) => `action-${index}`));
               }
             }}
-            className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+            disabled={!hasActions}
+            className={`text-sm p-2 focus:outline-none ${hasActions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
             aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             aria-expanded={openAccordionValues.length > 0}>
             {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}

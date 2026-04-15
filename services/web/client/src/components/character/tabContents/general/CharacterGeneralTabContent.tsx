@@ -3,12 +3,12 @@ import PlayerGeneralTabContent from "@/components/character/tabContents/general/
 import NpcGeneralTabContent from "@/components/character/tabContents/general/view/NpcGeneralTabContent";
 import PlayerGeneralTabEdit from "@/components/character/tabContents/general/form/PlayerGeneralTabEdit";
 import NpcGeneralTabEdit from "@/components/character/tabContents/general/form/NpcGeneralTabEdit";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterGeneralTabContentProps {
   character: Player | NPC;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   isEditing: boolean;
 }
 

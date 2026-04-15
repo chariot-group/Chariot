@@ -18,4 +18,4 @@ import { MetricsModule } from '@/metrics/metrics.module';
     MetricsModule,
   ],
 })
-export class NpcModule { }
+export class NpcModule {}

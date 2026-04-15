@@ -1,6 +1,8 @@
 import { Controller, All, Req, Res, Logger, HttpException, HttpStatus } from "@nestjs/common";
 import { Request, Response } from "express";
-import { ProxyService } from "@/proxy/proxy.service";
+import { ProxyService } from "./proxy.service";
+
+type RawBodyRequest = Request & { rawBody?: Buffer };
 
 @Controller("api")
 export class ProxyController {
@@ -56,7 +58,7 @@ export class ProxyController {
 
       this.logger.debug(`Proxying request to ${serviceName} service: ${req.method} ${fullTargetPath}`);
 
-      const requestBody = (req as any).rawBody ?? req.body;
+      const requestBody = (req as RawBodyRequest).rawBody ?? req.body;
 
       const response = await this.proxyService.forward(
         serviceName,
@@ -85,15 +87,27 @@ export class ProxyController {
       });
 
       res.status(response.status).send(response.data);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Proxy error: ${errorMessage}`, error instanceof Error ? error.stack : undefined);
+    } catch (error: unknown) {
+      const proxiedError = error as {
+        response?: { status: number; data: unknown };
+        status?: number;
+        message?: string;
+        name?: string;
+      };
+      const errorMessage = error instanceof Error ? error.message : proxiedError.message || "Unknown proxy error";
+      const errorStack = error instanceof Error ? error.stack : undefined;
 
-      if (error instanceof HttpException) {
-        res.status(error.getStatus()).json(error.getResponse());
-      } else if (error && typeof error === "object" && "response" in error) {
-        const errorResponse = error.response as { status?: number; data?: any };
-        res.status(errorResponse.status || 500).send(errorResponse.data);
+      this.logger.error(`Proxy error: ${errorMessage}`, errorStack);
+
+      if (proxiedError.response) {
+        res.status(proxiedError.response.status).send(proxiedError.response.data);
+      } else if (typeof proxiedError.status === "number") {
+        // Handle NestJS exceptions (like BadRequestException)
+        res.status(proxiedError.status).json({
+          statusCode: proxiedError.status,
+          message: errorMessage,
+          error: proxiedError.name || "Error",
+        });
       } else {
         throw new HttpException("Service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE);
       }

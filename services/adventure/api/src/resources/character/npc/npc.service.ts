@@ -29,7 +29,7 @@ export class NpcService {
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
     @InjectMetric('chariot_characters_created_total')
     private readonly charactersCreatedCounter: Counter,
-  ) { }
+  ) {}
 
   private readonly SERVICE_NAME = NpcService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
@@ -53,7 +53,10 @@ export class NpcService {
     }
   }
 
-  async create(createNpcDto: CreateNpcDto, userId: string): Promise<IResponse<NPC>> {
+  async create(
+    createNpcDto: CreateNpcDto,
+    userId: string,
+  ): Promise<IResponse<NPC>> {
     try {
       if (createNpcDto.groups) {
         for (const groupId of createNpcDto.groups) {
@@ -67,10 +70,12 @@ export class NpcService {
       }
 
       const start: number = Date.now();
-      const newNpc: NPCDocument = new this.characterModel.discriminators['npc']({
-        ...createNpcDto,
-        createdBy: userId,
-      });
+      const newNpc: NPCDocument = new this.characterModel.discriminators['npc'](
+        {
+          ...createNpcDto,
+          createdBy: userId,
+        },
+      );
       const savedNpc: NPC = await newNpc.save();
       if (createNpcDto.groups && createNpcDto.groups.length > 0) {
         await this.groupModel.updateMany(
@@ -92,9 +97,7 @@ export class NpcService {
         data: savedNpc,
       };
     } catch (error) {
-      if (
-        error instanceof HttpException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       let message: string = `Error creating NPC: ${error.message}`;
@@ -103,7 +106,10 @@ export class NpcService {
     }
   }
 
-  async update(id: Types.ObjectId, updateNpcDto: UpdateNpcDto): Promise<IResponse<Character>> {
+  async update(
+    id: Types.ObjectId,
+    updateNpcDto: UpdateNpcDto,
+  ): Promise<IResponse<Character>> {
     try {
       let { groups, ...npcData } = updateNpcDto;
 
@@ -111,11 +117,13 @@ export class NpcService {
 
       //Vérification ids characters
       if (groups) {
-        const groupCheckPromises: Promise<GroupDocument | null>[] = groups.map((groupId) =>
-          this.groupModel.findById(groupId).exec(),
+        const groupCheckPromises: Promise<GroupDocument | null>[] = groups.map(
+          (groupId) => this.groupModel.findById(groupId).exec(),
         );
-        const groupCheckResults: (GroupDocument | null)[] = await Promise.all(groupCheckPromises);
-        const invalidGroups: (GroupDocument | null)[] = groupCheckResults.filter((group) => !group);
+        const groupCheckResults: (GroupDocument | null)[] =
+          await Promise.all(groupCheckPromises);
+        const invalidGroups: (GroupDocument | null)[] =
+          groupCheckResults.filter((group) => !group);
         if (invalidGroups.length > 0) {
           const invalidNpcIds: string[] = groups.filter(
             (_, index) => !groupCheckResults[index],
@@ -125,9 +133,13 @@ export class NpcService {
           throw new BadRequestException(message);
         }
 
-        const goneGroups: (GroupDocument | null)[] = groupCheckResults.filter((group) => group.deletedAt);
+        const goneGroups: (GroupDocument | null)[] = groupCheckResults.filter(
+          (group) => group.deletedAt,
+        );
         if (goneGroups.length > 0) {
-          const goneGroupIds: string[] = goneGroups.map((group) => group._id.toString());
+          const goneGroupIds: string[] = goneGroups.map((group) =>
+            group._id.toString(),
+          );
           const message: string = `Gone group IDs: ${goneGroupIds.join(', ')}`;
           this.logger.error(message, null, this.SERVICE_NAME);
           throw new GoneException(message);
@@ -177,9 +189,7 @@ export class NpcService {
         data: npc,
       };
     } catch (error) {
-      if (
-        error instanceof HttpException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       const message = `Error while updating #${id} NPC: ${error.message}`;

@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional } from 'class-validator';
 
 export class SpeedDto {
-
   @ApiProperty({ example: 30 })
   @IsOptional()
   @IsNumber()

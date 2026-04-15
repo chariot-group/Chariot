@@ -20,6 +20,11 @@ interface CodexSpellSearchDialogProps {
     accentColor: string;
 }
 
+type SpellSearchResult = {
+    _id: string;
+    languages: string[];
+} & Record<string, unknown>;
+
 export default function CodexSpellSearchDialog({
     open,
     onOpenChange,
@@ -31,7 +36,7 @@ export default function CodexSpellSearchDialog({
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedLang, setSelectedLang] = useState<string | null>(null);
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searchResults, setSearchResults] = useState<SpellSearchResult[]>([]);
     const [selectedSpell, setSelectedSpell] = useState<Partial<Spell> | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -131,7 +136,7 @@ export default function CodexSpellSearchDialog({
         }
     };
 
-    const handleSpellClick = (codexSpellItem: any) => {
+    const handleSpellClick = (codexSpellItem: SpellSearchResult) => {
         // Si une langue est sélectionnée, utiliser cette langue, sinon utiliser la première disponible
         const langToUse = selectedLang || codexSpellItem.languages[0];
         const convertedSpell = CodexService.convertToChariotSpell(codexSpellItem, langToUse);
@@ -244,7 +249,7 @@ export default function CodexSpellSearchDialog({
                                                         <Card
                                                             key={`${spellItem._id}-${selectedLang}`}
                                                             onClick={() => handleSpellClick(spellItem)}
-                                                            className={`cursor-pointer p-3 hover:border-${accentColor} transition-all ${isSelected ? `border-${accentColor} border-2` : ""
+                                                            className={`cursor-pointer p-3 border border-transparent transition-all duration-200 hover:bg-muted/60 hover:border-pink/50 hover:ring-1 hover:ring-pink/20 hover:shadow-sm ${isSelected ? `border-${accentColor} border-2 bg-pink/10` : ""
                                                                 }`}
                                                         >
                                                             <div className="flex items-start justify-between gap-2">
@@ -298,7 +303,7 @@ export default function CodexSpellSearchDialog({
                                                             <Card
                                                                 key={`${spellItem._id}-${lang}`}
                                                                 onClick={() => handleSpellClick(spellItem)}
-                                                                className={`cursor-pointer p-3 hover:border-${accentColor} transition-all ${isSelected ? `border-${accentColor} border-2` : ""
+                                                                className={`cursor-pointer p-3 border border-transparent transition-all duration-200 hover:bg-white/10 hover:shadow-sm ${isSelected ? `border-${accentColor} border-2 bg-pink/10` : ""
                                                                     }`}
                                                             >
                                                                 <div className="flex items-start justify-between gap-2">

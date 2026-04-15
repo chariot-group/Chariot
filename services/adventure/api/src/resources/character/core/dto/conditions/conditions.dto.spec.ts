@@ -36,9 +36,9 @@ describe('ConditionsDto - FR-003: D&D Conditions Management', () => {
       const errors = validateSync(dto, { whitelist: true });
       expect(errors.length).toBeGreaterThan(0);
 
-      const blindedError = errors.find(e => e.property === 'blinded');
-      const charmedError = errors.find(e => e.property === 'charmed');
-      const frightenedError = errors.find(e => e.property === 'frightened');
+      const blindedError = errors.find((e) => e.property === 'blinded');
+      const charmedError = errors.find((e) => e.property === 'charmed');
+      const frightenedError = errors.find((e) => e.property === 'frightened');
 
       expect(blindedError).toBeDefined();
       expect(charmedError).toBeDefined();

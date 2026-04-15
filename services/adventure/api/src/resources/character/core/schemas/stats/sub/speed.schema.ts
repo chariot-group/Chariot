@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Speed {
-
   @ApiProperty({ example: 30 })
   @Prop()
   walk?: number;

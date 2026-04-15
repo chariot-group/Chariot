@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { DamageDetailsDto, HealingDetailsDto } from '@/resources/character/core/dto/spellcasting/sub/damage-details.dto';
+import {
+  DamageDetailsDto,
+  HealingDetailsDto,
+} from '@/resources/character/core/dto/spellcasting/sub/damage-details.dto';
 
 export class SpellDto {
-
   @ApiProperty({ example: 'Fireball' })
   @IsOptional()
   @IsString()
@@ -20,7 +22,10 @@ export class SpellDto {
   @IsString()
   school?: string;
 
-  @ApiProperty({ example: 'A bright streak flashes from your pointing finger to a point you choose within range...' })
+  @ApiProperty({
+    example:
+      'A bright streak flashes from your pointing finger to a point you choose within range...',
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -70,12 +75,19 @@ export class SpellDto {
   @Type(() => HealingDetailsDto)
   healingDetails?: HealingDetailsDto;
 
-  @ApiProperty({ example: 2, nullable: true, description: 'NPC only — uses per day. Null means at will.' })
+  @ApiProperty({
+    example: 2,
+    nullable: true,
+    description: 'NPC only — uses per day. Null means at will.',
+  })
   @IsOptional()
   @IsNumber()
   usesPerDay?: number | null;
 
-  @ApiProperty({ example: 1, description: 'NPC only — number of times this spell has been cast today.' })
+  @ApiProperty({
+    example: 1,
+    description: 'NPC only — number of times this spell has been cast today.',
+  })
   @IsOptional()
   @IsNumber()
   used?: number;

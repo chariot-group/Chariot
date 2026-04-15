@@ -6,7 +6,11 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Group } from '../group/schemas/group.schema';
 import { Campaign } from './schemas/campaign.schema';
 import { GroupService } from '../group/group.service';
-import { BadRequestException, GoneException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  GoneException,
+  NotFoundException,
+} from '@nestjs/common';
 
 describe('CampaignController - create', () => {
   let controller: CampaignController;
@@ -67,21 +71,30 @@ describe('CampaignController - create', () => {
   });
 
   it('should throw BadRequestException if group ID is invalid', async () => {
-    const invalidDto = { ...createDto, groups: { ...createDto.groups, active: ['invalid-id'] } };
+    const invalidDto = {
+      ...createDto,
+      groups: { ...createDto.groups, active: ['invalid-id'] },
+    };
 
-    await expect(controller.create(requestMock, invalidDto)).rejects.toThrow(BadRequestException);
+    await expect(controller.create(requestMock, invalidDto)).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it('should throw GoneException if group is deleted', async () => {
     groupModel.exec.mockResolvedValue({ deletedAt: new Date() });
 
-    await expect(controller.create(requestMock, createDto)).rejects.toThrow(GoneException);
+    await expect(controller.create(requestMock, createDto)).rejects.toThrow(
+      GoneException,
+    );
   });
 
   it('should throw NotFoundException if group not found', async () => {
     groupModel.exec.mockResolvedValue(null);
 
-    await expect(controller.create(requestMock, createDto)).rejects.toThrow(NotFoundException);
+    await expect(controller.create(requestMock, createDto)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });
 
@@ -125,7 +138,7 @@ describe('CampaignController - findAll', () => {
       1,
       20,
       '-updatedAt',
-      'My Campaign'
+      'My Campaign',
     );
 
     expect(campaignService.findAllByUser).toHaveBeenCalledWith(userId, {
@@ -321,17 +334,22 @@ describe('CampaignController - findAllGroups', () => {
       '-createdAt',
       'test',
       'active',
-      true
+      true,
     );
 
     expect(campaignService.findOne).toHaveBeenCalledWith(campaignId);
-    expect(groupService.findAllByUser).toHaveBeenCalledWith(userId, {
-      page: 1,
-      offset: 10,
-      sort: '-createdAt',
-      label: 'test',
-      onlyWithMembers: true,
-    }, campaignId.toHexString(), 'active');
+    expect(groupService.findAllByUser).toHaveBeenCalledWith(
+      userId,
+      {
+        page: 1,
+        offset: 10,
+        sort: '-createdAt',
+        label: 'test',
+        onlyWithMembers: true,
+      },
+      campaignId.toHexString(),
+      'active',
+    );
 
     expect(result).toEqual(['group1']);
   });
@@ -381,17 +399,17 @@ describe('CampaignController - validateResource', () => {
   it('should throw NotFoundException if campaign is not found', async () => {
     campaignModel.exec.mockResolvedValue(null);
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(NotFoundException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw GoneException if campaign is soft-deleted', async () => {
     campaignModel.exec.mockResolvedValue({ deletedAt: new Date() });
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(GoneException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      GoneException,
+    );
   });
 
   it('should pass silently if campaign exists and is not deleted', async () => {

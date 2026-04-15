@@ -49,6 +49,10 @@ jobs:
           cd services/web/client
           npm ci
 
+      - name: Run lint for web
+        working-directory: ./services/web/client
+        run: npm run lint
+
       - name: Format check for web
         working-directory: ./services/web/client
         run: npm run format
@@ -77,6 +81,10 @@ jobs:
         run: |
           cd services/adventure/api
           npm ci
+
+      - name: Run lint for adventure
+        working-directory: ./services/adventure/api
+        run: npm run lint
 
       - name: Format check for adventure
         working-directory: ./services/adventure/api
@@ -110,6 +118,10 @@ jobs:
         run: |
           cd services/gateway/api
           npm ci
+
+      - name: Run lint for gateway
+        working-directory: ./services/gateway/api
+        run: npm run lint
 
       - name: Format check for gateway
         working-directory: ./services/gateway/api

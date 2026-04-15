@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Skills {
-
   @ApiProperty({ example: 0 })
   @Prop({ default: 0 })
   athletics: number;

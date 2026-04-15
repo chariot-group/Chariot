@@ -20,13 +20,18 @@ interface MonsterCodexDialogProps {
   onMonsterSelected: (monster: Partial<NPC>) => void;
 }
 
+type MonsterSearchResult = {
+  _id: string;
+  languages: string[];
+} & Record<string, unknown>;
+
 export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelected }: MonsterCodexDialogProps) {
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
   const tMagic = useTranslations("characterDetail.magic");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<MonsterSearchResult[]>([]);
   const [selectedMonster, setSelectedMonster] = useState<Partial<NPC> | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -130,7 +135,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     }
   };
 
-  const handleMonsterClick = (codexMonsterItem: any) => {
+  const handleMonsterClick = (codexMonsterItem: MonsterSearchResult) => {
     // Si une langue est sélectionnée, utiliser cette langue, sinon utiliser la première disponible
     const langToUse = selectedLang || codexMonsterItem.languages[0];
     const convertedMonster = CodexService.convertToChariotNPC(codexMonsterItem, langToUse);
@@ -239,9 +244,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                               <Card
                                 key={`${monsterItem._id}-${selectedLang}`}
                                 onClick={() => handleMonsterClick(monsterItem)}
-                                className={`cursor-pointer p-3 hover:border-purple transition-all ${
-                                  isSelected ? "border-purple border-2" : ""
-                                }`}>
+                                className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${isSelected ? "border-purple border-2 bg-purple/10" : ""
+                                  }`}>
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex-1">
                                     <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
@@ -294,9 +298,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                                 <Card
                                   key={`${monsterItem._id}-${lang}`}
                                   onClick={() => handleMonsterClick(monsterItem)}
-                                  className={`cursor-pointer p-3 hover:border-purple transition-all ${
-                                    isSelected ? "border-purple border-2" : ""
-                                  }`}>
+                                  className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-white/10 hover:shadow-sm ${isSelected ? "border-purple border-2 bg-purple/10" : ""
+                                    }`}>
                                   <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2">

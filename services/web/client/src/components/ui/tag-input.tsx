@@ -24,7 +24,8 @@ export function TagInput({
     "aria-describedby": ariaDescribedby,
 }: TagInputProps) {
     const [inputValue, setInputValue] = useState("");
-    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isInputFocused, setIsInputFocused] = useState(false);
+    const [isSuggestionsDismissed, setIsSuggestionsDismissed] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const inputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -46,16 +47,14 @@ export function TagInput({
     const allOptions = isCustomEntry
         ? [trimmedInput, ...filteredSuggestions]
         : filteredSuggestions;
-
-    useEffect(() => {
-        setShowSuggestions(inputValue.length > 0 && allOptions.length > 0);
-    }, [inputValue, allOptions.length]);
+    const showSuggestions = isInputFocused && !isSuggestionsDismissed && inputValue.length > 0 && allOptions.length > 0;
 
     const addTag = (tag: string) => {
         const trimmedTag = tag.trim();
         if (trimmedTag && !value.some((v) => v.toLowerCase() === trimmedTag.toLowerCase())) {
             onChange([...value, trimmedTag]);
             setInputValue("");
+            setIsSuggestionsDismissed(false);
             setHighlightedIndex(-1);
             inputRef.current?.focus();
         }
@@ -83,7 +82,7 @@ export function TagInput({
             e.preventDefault();
             setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         } else if (e.key === "Escape") {
-            setShowSuggestions(false);
+            setIsSuggestionsDismissed(true);
             setHighlightedIndex(-1);
         }
     };
@@ -109,13 +108,13 @@ export function TagInput({
                     {value.map((tag, index) => (
                         <span
                             key={index}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-blue/20 text-blue rounded-md text-sm"
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-blue/20 text-blue rounded-[15px] text-sm"
                         >
                             {tag}
                             <button
                                 type="button"
                                 onClick={() => removeTag(index)}
-                                className="hover:bg-blue/30 rounded-sm p-0.5 transition-colors cursor-pointer"
+                                className="hover:bg-blue/30 rounded-[15px] p-0.5 transition-colors cursor-pointer"
                                 aria-label={`Remove ${tag}`}
                             >
                                 <X size={14} />
@@ -131,10 +130,18 @@ export function TagInput({
                     ref={inputRef}
                     id={id}
                     type="text"
+                    className="cursor-pointer"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e) => {
+                        setInputValue(e.target.value);
+                        setIsSuggestionsDismissed(false);
+                    }}
                     onKeyDown={handleKeyDown}
-                    onFocus={() => setShowSuggestions(inputValue.length > 0 && allOptions.length > 0)}
+                    onFocus={() => {
+                        setIsInputFocused(true);
+                        setIsSuggestionsDismissed(false);
+                    }}
+                    onBlur={() => setIsInputFocused(false)}
                     placeholder={placeholder}
                     aria-invalid={ariaInvalid}
                     aria-describedby={ariaDescribedby}
@@ -162,7 +169,7 @@ export function TagInput({
                                         aria-selected={index === highlightedIndex}
                                         onClick={() => addTag(option)}
                                         onMouseEnter={() => setHighlightedIndex(index)}
-                                        className={`w-full text-left rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight] ${index === highlightedIndex ? "font-bold" : ""
+                                        className={`w-full my-0.5 cursor-pointer text-left rounded-[15px] py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight,color,background-color] ${index === highlightedIndex ? "font-bold bg-white/10 text-white" : ""
                                             } ${isCustom ? "italic" : ""}`}
                                     >
                                         {option}

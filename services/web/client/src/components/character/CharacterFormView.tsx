@@ -1,10 +1,10 @@
 "use client";
 
-import { User, X, Save } from "lucide-react";
+import { X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { Button } from "@/components/ui/button";
@@ -25,12 +25,50 @@ interface CharacterFormViewProps {
   groupId?: string;
 }
 
+const DEFAULT_SAVING_THROWS = {
+  strength: 0,
+  dexterity: 0,
+  constitution: 0,
+  intelligence: 0,
+  wisdom: 0,
+  charisma: 0,
+};
+
+const DEFAULT_MASTERIES = {
+  athletics: 0,
+  acrobatics: 0,
+  sleightHand: 0,
+  stealth: 0,
+  arcana: 0,
+  history: 0,
+  investigation: 0,
+  nature: 0,
+  religion: 0,
+  animalHandling: 0,
+  insight: 0,
+  medicine: 0,
+  perception: 0,
+  survival: 0,
+  deception: 0,
+  intimidation: 0,
+  performance: 0,
+  persuasion: 0,
+};
+
+const DEFAULT_MASTERIES_ABILITY = {
+  strength: false,
+  dexterity: false,
+  constitution: false,
+  intelligence: false,
+  wisdom: false,
+  charisma: false,
+};
+
 /**
  * Reusable character form view for creation
  * Displays tabs with empty form fields for creating a new character
  */
 export default function CharacterFormView({ characterType, groupId }: CharacterFormViewProps) {
-  const t = useTranslations("characterDetail");
   const tCreate = useTranslations("characterCreate");
   const tForm = useTranslations("characterForm");
   const router = useRouter();
@@ -43,8 +81,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const resolvedGroupId = groupId || (params.idGroup as string);
 
   // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
-  const tabFromUrl = (searchParams.get("tab") as CharacterTab) || "general";
-  const [activeTab, setActiveTab] = useState<CharacterTab>(tabFromUrl);
+  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
 
   // Lire les données pré-remplies depuis l'URL (pour NPC depuis codex)
   const codexDataParam = searchParams.get("codexData");
@@ -59,62 +96,19 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     }
   }, [reduxCodexDraft, codexDataParam]);
 
-  // Synchroniser l'état local avec l'URL au chargement
-  useEffect(() => {
-    const currentTab = (searchParams.get("tab") as CharacterTab) || "general";
-    setActiveTab(currentTab);
-  }, [searchParams]);
-
   // Fonction pour changer d'onglet et mettre à jour l'URL
   const handleTabChange = (newTab: string) => {
     const tab = newTab as CharacterTab;
-    setActiveTab(tab);
     // Mettre à jour l'URL sans recharger la page
     const currentParams = new URLSearchParams(searchParams.toString());
     currentParams.set("tab", tab);
     router.replace(`?${currentParams.toString()}`, { scroll: false });
   };
 
-  const defaultSavingThrows = {
-    strength: 0,
-    dexterity: 0,
-    constitution: 0,
-    intelligence: 0,
-    wisdom: 0,
-    charisma: 0,
-  };
-
-  const defaultMasteries = {
-    athletics: 0,
-    acrobatics: 0,
-    sleightHand: 0,
-    stealth: 0,
-    arcana: 0,
-    history: 0,
-    investigation: 0,
-    nature: 0,
-    religion: 0,
-    animalHandling: 0,
-    insight: 0,
-    medicine: 0,
-    perception: 0,
-    survival: 0,
-    deception: 0,
-    intimidation: 0,
-    performance: 0,
-    persuasion: 0,
-  };
-
-  const defaultMasteriesAbility = {
-    strength: false,
-    dexterity: false,
-    constitution: false,
-    intelligence: false,
-    wisdom: false,
-    charisma: false,
-  };
-
-  const defaultNpcSkills = { ...defaultMasteries };
+  const defaultSavingThrows = DEFAULT_SAVING_THROWS;
+  const defaultMasteries = DEFAULT_MASTERIES;
+  const defaultMasteriesAbility = DEFAULT_MASTERIES_ABILITY;
+  const defaultNpcSkills = DEFAULT_MASTERIES;
 
   const getAbilityModifier = (value?: number): number => Math.floor(((value ?? 10) - 10) / 2);
 
@@ -188,7 +182,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         },
       },
     };
-  }, [codexData, resolvedGroupId]);
+  }, [codexData, defaultNpcSkills, resolvedGroupId]);
 
   // Default values for a new character with the group pre-assigned
   const defaultValues =
@@ -257,7 +251,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
               firstname: createdCharacter.firstname,
               lastname: createdCharacter.lastname,
               surname: createdCharacter.surname,
-              userId: (createdCharacter as any).userId,
+              userId: "userId" in createdCharacter ? createdCharacter.userId : undefined,
             },
           }),
         );
@@ -277,7 +271,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     if (hasAppliedCodexDefaultsRef.current) return;
 
     hasAppliedCodexDefaultsRef.current = true;
-    form.reset(npcCodexDefaults as any);
+    form.reset(npcCodexDefaults);
     if (reduxCodexDraft) {
       dispatch(clearNpcCodexDraft());
     }
@@ -472,15 +466,15 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           profile: { alignment: "True Neutral", type: "", subtype: "" },
         } as NPC);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     onCancel();
     router.back();
-  };
+  }, [onCancel, router]);
 
-  const handleInvalid = (errors: Record<string, unknown>) => {
+  const handleInvalid = useCallback((errors: Record<string, unknown>) => {
     console.error("[CharacterForm] Validation errors (form blocked submission):", JSON.stringify(errors, null, 2));
     toast.error(tForm("createError"));
-  };
+  }, [tForm]);
 
   useEffect(() => {
     const handleGlobalShortcuts = (event: KeyboardEvent) => {
@@ -503,7 +497,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcuts, true);
     };
-  }, [form, handleCancel, onCreate]);
+  }, [form, handleCancel, handleInvalid, onCreate]);
 
   return (
     <main className="flex flex-col h-dvh overflow-hidden overflow-x-hidden">
