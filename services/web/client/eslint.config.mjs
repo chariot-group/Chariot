@@ -6,6 +6,13 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    settings: {
+      react: {
+        version: "19.0.0",
+      },
+    },
+  },
+  {
     files: ["**/*.{js,jsx,ts,tsx}"],
     rules: {
       "@typescript-eslint/no-empty-object-type": "warn",
