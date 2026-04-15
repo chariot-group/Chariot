@@ -71,7 +71,7 @@ describe("ProxyService", () => {
         status: 200,
         statusText: "OK",
         headers: {},
-        config: {} as any,
+        config: {} as AxiosResponse["config"],
       };
 
       jest.spyOn(httpService, "request").mockReturnValue(of(mockResponse));
