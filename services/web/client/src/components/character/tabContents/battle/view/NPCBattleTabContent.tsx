@@ -14,8 +14,6 @@ interface Props {
 const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
   const t = useTranslations("characterDetail.battle");
 
-  const tAbilities = useTranslations("characterDetail.player.general.abilities");
-
   return (
     <div className="w-full flex flex-col gap-4 items-start">
       <div className="grid grid-cols-3 md:grid-cols-2 max-[426px]:grid-cols-1 gap-3 md:gap-4 w-full">
@@ -41,12 +39,10 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
             className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
             role="list">
             {npc?.stats &&
-              Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
-                const abilityName = tAbilities(key as any);
+              Object.entries(npc?.stats?.savingThrows).map(([key]) => {
                 return (
                   <SavingThrow
                     key={key}
-                    label={abilityName}
                     skillName={key as keyof typeof npc.stats.abilityScores}
                     accentColor={accentColor}
                     stats={npc.stats}

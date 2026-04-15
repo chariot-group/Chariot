@@ -4,7 +4,6 @@ import { Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 @Schema({ _id: false })
 export class SavingThrows {
-
   @ApiProperty({ example: 0 })
   @Prop({ default: 0 })
   strength: number;

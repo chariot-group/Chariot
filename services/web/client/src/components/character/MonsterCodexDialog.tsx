@@ -20,13 +20,18 @@ interface MonsterCodexDialogProps {
   onMonsterSelected: (monster: Partial<NPC>) => void;
 }
 
+type MonsterSearchResult = {
+  _id: string;
+  languages: string[];
+} & Record<string, unknown>;
+
 export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelected }: MonsterCodexDialogProps) {
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
   const tMagic = useTranslations("characterDetail.magic");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<MonsterSearchResult[]>([]);
   const [selectedMonster, setSelectedMonster] = useState<Partial<NPC> | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -130,7 +135,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     }
   };
 
-  const handleMonsterClick = (codexMonsterItem: any) => {
+  const handleMonsterClick = (codexMonsterItem: MonsterSearchResult) => {
     // Si une langue est sélectionnée, utiliser cette langue, sinon utiliser la première disponible
     const langToUse = selectedLang || codexMonsterItem.languages[0];
     const convertedMonster = CodexService.convertToChariotNPC(codexMonsterItem, langToUse);

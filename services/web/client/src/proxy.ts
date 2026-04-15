@@ -27,7 +27,7 @@ function getPreferredLocale(request: NextRequest): Locale | null {
     return null;
 }
 
-const intlMiddleware = createMiddleware({
+const intlProxy = createMiddleware({
     // Supported locales
     locales,
 
@@ -41,7 +41,7 @@ const intlMiddleware = createMiddleware({
     localeDetection: true,
 });
 
-export default function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     // Get user's preferred locale
     const preferredLocale = getPreferredLocale(request);
 
@@ -52,8 +52,8 @@ export default function middleware(request: NextRequest) {
         return Response.redirect(url);
     }
 
-    // Call the standard next-intl middleware
-    return intlMiddleware(request);
+    // Call the standard next-intl proxy
+    return intlProxy(request);
 }
 
 export const config = {

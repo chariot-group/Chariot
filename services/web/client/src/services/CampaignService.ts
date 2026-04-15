@@ -79,4 +79,6 @@ class CampaignService {
     }
 }
 
-export default new CampaignService();
+const campaignService = new CampaignService();
+
+export default campaignService;

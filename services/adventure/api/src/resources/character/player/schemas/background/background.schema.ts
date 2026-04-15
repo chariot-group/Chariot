@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Background {
-
   @ApiProperty({ example: 'Born in a small village, raised by farmers.' })
   @Prop()
   personalityTraits?: string;
@@ -17,7 +16,9 @@ export class Background {
   @Prop()
   bonds?: string;
 
-  @ApiProperty({ example: 'I have a quick temper and a tendency to act before thinking.' })
+  @ApiProperty({
+    example: 'I have a quick temper and a tendency to act before thinking.',
+  })
   @Prop()
   flaws?: string;
 
@@ -25,7 +26,10 @@ export class Background {
   @Prop()
   alliesAndOrgs?: string;
 
-  @ApiProperty({ example: 'Born in a small village, I was trained as a warrior from a young age...' })
+  @ApiProperty({
+    example:
+      'Born in a small village, I was trained as a warrior from a young age...',
+  })
   @Prop()
   backstory?: string;
 }

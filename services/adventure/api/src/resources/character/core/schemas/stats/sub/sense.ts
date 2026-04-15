@@ -4,7 +4,6 @@ import { IsOptional } from 'class-validator';
 
 @Schema({ _id: false })
 export class Sense {
-
   @ApiProperty({ example: 'Darkvision' })
   @IsOptional()
   @Prop({ type: String, default: '' })

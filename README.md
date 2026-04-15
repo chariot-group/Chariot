@@ -98,4 +98,20 @@ Chariot/
 ```bash
 # Show all commands
 make help
+
+# Lint all application services and get per-service status
+make lint
+
+# Explicit lint status report across services
+make lint-status
+
+# Lint one service only
+make lint SERVICE=adventure
+make lint SERVICE=gateway
+make lint SERVICE=web
+
+# Auto-fix lint on one service
+make lint-fix SERVICE=adventure
+make lint-fix SERVICE=gateway
+make lint-fix SERVICE=web
 ```

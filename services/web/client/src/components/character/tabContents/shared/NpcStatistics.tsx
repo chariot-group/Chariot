@@ -140,18 +140,18 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
               className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
               tabIndex={0}
               role="img"
-              aria-label={`${t("sizeTooltip")} ${t(`sizes.${npc.stats.size}` as any)}`}>
+              aria-label={`${t("sizeTooltip")} ${t(`sizes.${npc.stats.size}` as Parameters<typeof t>[0])}`}>
               <RulerIcon
                 size={24}
                 className="text-black"
                 aria-hidden="true"
               />
               <span aria-hidden="true">
-                {t(`sizesAbbr.${npc.stats.size}` as any)}
+                {t(`sizesAbbr.${npc.stats.size}` as Parameters<typeof t>[0])}
               </span>
             </div>
           </TooltipTrigger>
-          <TooltipContent>{t(`sizes.${npc.stats.size}` as any)}</TooltipContent>
+          <TooltipContent>{t(`sizes.${npc.stats.size}` as Parameters<typeof t>[0])}</TooltipContent>
         </Tooltip>
         {speedBadges.map(
           (badge) =>
@@ -162,7 +162,7 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
                     className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
                     tabIndex={0}
                     role="img"
-                    aria-label={`${t(badge.tooltipKey as any)} ${badge.value} ${t("feet")}`}>
+                    aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${badge.value} ${t("feet")}`}>
                     {badge.icon}
                     <span aria-hidden="true">
                       {badge.value}
@@ -170,7 +170,7 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
                     </span>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>{t(badge.tooltipKey as any)}</TooltipContent>
+                <TooltipContent>{t(badge.tooltipKey as Parameters<typeof t>[0])}</TooltipContent>
               </Tooltip>
             ),
         )}

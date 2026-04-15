@@ -1,12 +1,12 @@
 import { Character } from "@/types/character";
 import CharacterMagicView from "@/components/character/tabContents/magic/view/CharacterMagicView";
 import CharacterMagicTabEdit from "@/components/character/tabContents/magic/form/CharacterMagicTabEdit";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterMagicTabContentProps {
   character: Character;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   isEditing: boolean;
 }
 

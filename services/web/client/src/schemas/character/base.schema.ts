@@ -190,15 +190,15 @@ export const SpellcastingSchema = z.object({
         if (val === null || val === undefined) return val;
         // RHF peut avoir converti un objet à clés numériques en tableau
         if (Array.isArray(val)) {
-            const obj: Record<string, any> = {};
-            (val as any[]).forEach((item, i) => {
+            const obj: Record<string, unknown> = {};
+            (val as unknown[]).forEach((item, i) => {
                 if (item != null) obj[`k${i}`] = item;
             });
             return obj;
         }
         if (typeof val === 'object') {
-            const obj: Record<string, any> = {};
-            for (const [k, v] of Object.entries(val as Record<string, any>)) {
+            const obj: Record<string, unknown> = {};
+            for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
                 obj[/^\d+$/.test(k) ? `k${k}` : k] = v;
             }
             return obj;

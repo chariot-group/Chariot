@@ -5,7 +5,10 @@ import { Group } from '@/resources/group/schemas/group.schema';
 import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Types } from 'mongoose';
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import type { CreateGroupDto } from '@/resources/group/dto/create-group.dto';
 import type { UpdateGroupDto } from '@/resources/group/dto/update-group.dto';
 import { MetricsModule } from '@/metrics/metrics.module';
@@ -21,13 +24,17 @@ describe('GroupService', () => {
   const createDto: CreateGroupDto = {
     label: 'Test Group',
     characters: [new Types.ObjectId().toHexString()],
-    campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'active' }],
+    campaigns: [
+      { idCampaign: new Types.ObjectId().toHexString(), type: 'active' },
+    ],
   };
 
   const updateDto: UpdateGroupDto = {
     label: 'Updated Group',
     characters: [new Types.ObjectId().toHexString()],
-    campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'active' }],
+    campaigns: [
+      { idCampaign: new Types.ObjectId().toHexString(), type: 'active' },
+    ],
   };
 
   beforeEach(async () => {
@@ -67,7 +74,10 @@ describe('GroupService', () => {
         { provide: getModelToken(Group.name), useValue: groupModel },
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
         { provide: getModelToken(Character.name), useValue: characterModel },
-        { provide: 'chariot_groups_created_total', useValue: mockGroupsCreatedCounter },
+        {
+          provide: 'chariot_groups_created_total',
+          useValue: mockGroupsCreatedCounter,
+        },
       ],
     }).compile();
 
@@ -79,23 +89,28 @@ describe('GroupService', () => {
       groupModel.create.mockResolvedValue({ _id: 'groupId', ...createDto });
       characterModel.updateMany.mockResolvedValue({});
       campaignModel.updateMany.mockResolvedValue({});
-      const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'verbose')
+        .mockImplementation(() => {});
 
       const result = await service.create(createDto, userId);
 
       expect(groupModel.create).toHaveBeenCalledWith({
         label: createDto.label,
         characters: createDto.characters,
-        campaigns: createDto.campaigns.map(c => c.idCampaign),
+        campaigns: createDto.campaigns.map((c) => c.idCampaign),
         createdBy: userId,
       });
       expect(characterModel.updateMany).toHaveBeenCalledWith(
         { _id: { $in: createDto.characters } },
-        { $addToSet: { groups: 'groupId' } }
+        { $addToSet: { groups: 'groupId' } },
       );
       expect(campaignModel.updateMany).toHaveBeenCalled();
 
-      expect(loggerSpy).toHaveBeenCalledWith(expect.stringMatching(/Group created in \d+ms/), service['SERVICE_NAME']);
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/Group created in \d+ms/),
+        service['SERVICE_NAME'],
+      );
 
       expect(result).toEqual({
         message: expect.stringMatching(/Group created in \d+ms/),
@@ -108,22 +123,34 @@ describe('GroupService', () => {
     it('should handle create when characters is undefined', async () => {
       const dtoWithoutCharacters = {
         label: 'No Characters Group',
-        campaigns: [{ idCampaign: new Types.ObjectId().toHexString(), type: 'active' as const }],
+        campaigns: [
+          {
+            idCampaign: new Types.ObjectId().toHexString(),
+            type: 'active' as const,
+          },
+        ],
       };
 
-      groupModel.create.mockResolvedValue({ _id: 'groupId', ...dtoWithoutCharacters });
+      groupModel.create.mockResolvedValue({
+        _id: 'groupId',
+        ...dtoWithoutCharacters,
+      });
       characterModel.updateMany.mockResolvedValue({});
       campaignModel.updateMany.mockResolvedValue({});
-      const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'verbose')
+        .mockImplementation(() => {});
 
       const result = await service.create(dtoWithoutCharacters as any, userId);
 
-      expect(groupModel.create).toHaveBeenCalledWith(expect.objectContaining({
-        label: dtoWithoutCharacters.label,
-        characters: [],
-        campaigns: dtoWithoutCharacters.campaigns.map(c => c.idCampaign),
-        createdBy: userId,
-      }));
+      expect(groupModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          label: dtoWithoutCharacters.label,
+          characters: [],
+          campaigns: dtoWithoutCharacters.campaigns.map((c) => c.idCampaign),
+          createdBy: userId,
+        }),
+      );
 
       expect(result).toHaveProperty('data');
       loggerSpy.mockRestore();
@@ -131,20 +158,33 @@ describe('GroupService', () => {
 
     it('create should extract characters and campaigns', async () => {
       // Arrange
-      const groupCreateSpy = jest.fn().mockResolvedValue({ _id: 'groupId', ...createDto });
+      const groupCreateSpy = jest
+        .fn()
+        .mockResolvedValue({ _id: 'groupId', ...createDto });
       groupModel.create = groupCreateSpy;
       characterModel.updateMany.mockResolvedValue({});
       campaignModel.updateMany.mockResolvedValue({});
       const customCreateDto = {
         label: 'Group test',
-        characters: [new Types.ObjectId().toHexString(), new Types.ObjectId().toHexString()],
+        characters: [
+          new Types.ObjectId().toHexString(),
+          new Types.ObjectId().toHexString(),
+        ],
         campaigns: [
-          { idCampaign: new Types.ObjectId().toHexString(), type: 'active' as const },
-          { idCampaign: new Types.ObjectId().toHexString(), type: 'archived' as const }
-        ]
+          {
+            idCampaign: new Types.ObjectId().toHexString(),
+            type: 'active' as const,
+          },
+          {
+            idCampaign: new Types.ObjectId().toHexString(),
+            type: 'archived' as const,
+          },
+        ],
       };
       const expectedCharacters = customCreateDto.characters;
-      const expectedCampaigns = customCreateDto.campaigns.map(c => c.idCampaign);
+      const expectedCampaigns = customCreateDto.campaigns.map(
+        (c) => c.idCampaign,
+      );
       // Act
       await service.create(customCreateDto, userId);
       // Assert
@@ -154,16 +194,24 @@ describe('GroupService', () => {
           characters: expectedCharacters,
           campaigns: expectedCampaigns,
           createdBy: userId,
-        })
+        }),
       );
     });
 
     it('should throw InternalServerErrorException on error', async () => {
       groupModel.create.mockRejectedValue(new Error('DB error'));
-      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'error')
+        .mockImplementation(() => {});
 
-      await expect(service.create(createDto, userId)).rejects.toThrow(InternalServerErrorException);
-      expect(loggerSpy).toHaveBeenCalledWith(expect.stringMatching(/Error while creating group: DB error/), null, service['SERVICE_NAME']);
+      await expect(service.create(createDto, userId)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/Error while creating group: DB error/),
+        null,
+        service['SERVICE_NAME'],
+      );
 
       loggerSpy.mockRestore();
     });
@@ -202,13 +250,12 @@ describe('GroupService', () => {
         userId,
         { page: 1, offset: 10 },
         campaignId,
-        'all'
+        'all',
       );
 
-      const expectedGroupIds = [
-        ...activeGroups,
-        ...archivedGroups,
-      ].map(id => id.toString());
+      const expectedGroupIds = [...activeGroups, ...archivedGroups].map((id) =>
+        id.toString(),
+      );
 
       expect(filtersArg).toHaveProperty('_id');
       expect(filtersArg._id).toEqual({ $in: expectedGroupIds });
@@ -216,7 +263,7 @@ describe('GroupService', () => {
     it('should find groups with filters and pagination', async () => {
       campaignModel.findById.mockReturnValue({
         lean: jest.fn().mockResolvedValue({
-          groups: { active: [new Types.ObjectId()], archived: [] }
+          groups: { active: [new Types.ObjectId()], archived: [] },
         }),
       });
       groupModel.find.mockReturnThis();
@@ -227,13 +274,21 @@ describe('GroupService', () => {
 
       groupModel.countDocuments.mockResolvedValue(1);
 
-      const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'verbose')
+        .mockImplementation(() => {});
 
       const result = await service.findAllByUser(
         userId,
-        { page: 1, offset: 10, label: '', sort: 'updatedAt', onlyWithMembers: 'false' },
+        {
+          page: 1,
+          offset: 10,
+          label: '',
+          sort: 'updatedAt',
+          onlyWithMembers: 'false',
+        },
         undefined,
-        'all'
+        'all',
       );
 
       expect(groupModel.find).toHaveBeenCalled();
@@ -242,12 +297,14 @@ describe('GroupService', () => {
       expect(groupModel.skip).toHaveBeenCalledWith(0);
       expect(groupModel.countDocuments).toHaveBeenCalled();
 
-      expect(loggerSpy).toHaveBeenCalledWith(expect.stringMatching(/Groups found in \d+ms/));
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/Groups found in \d+ms/),
+      );
 
       expect(result).toEqual({
         message: expect.stringMatching(/Groups found in \d+ms/),
         data: expect.any(Array),
-        pagination: { page: 1, offset: 10, totalItems: 1 }
+        pagination: { page: 1, offset: 10, totalItems: 1 },
       });
 
       loggerSpy.mockRestore();
@@ -266,10 +323,11 @@ describe('GroupService', () => {
         filtersArg = filters;
         return groupModel;
       });
-      await service.findAllByUser(
-        userId,
-        { page: 1, offset: 10, onlyWithMembers: 'true' }
-      );
+      await service.findAllByUser(userId, {
+        page: 1,
+        offset: 10,
+        onlyWithMembers: 'true',
+      });
       expect(filtersArg).toBeDefined();
       expect(filtersArg).toHaveProperty('characters');
       expect(filtersArg.characters).toEqual({ $ne: [] });
@@ -277,7 +335,7 @@ describe('GroupService', () => {
 
     it('should extract groupIds by type when campaignId and type are provided', async () => {
       const activeGroups = [new Types.ObjectId(), new Types.ObjectId()];
-      const expectedActiveGroupIds = activeGroups.map(id => id.toString());
+      const expectedActiveGroupIds = activeGroups.map((id) => id.toString());
       const archivedGroups = [new Types.ObjectId()];
       const campaignId = new Types.ObjectId().toHexString();
       // Mock campaignModel.findById().lean()
@@ -287,7 +345,7 @@ describe('GroupService', () => {
           groups: {
             active: activeGroups,
             archived: archivedGroups,
-          }
+          },
         }),
       });
       groupModel.find.mockReturnThis();
@@ -305,12 +363,14 @@ describe('GroupService', () => {
         userId,
         { page: 1, offset: 10 },
         campaignId,
-        'active'
+        'active',
       );
       expect(filtersArg).toBeDefined();
       expect(filtersArg).toHaveProperty('_id');
       expect(filtersArg._id).toEqual({ $in: expectedActiveGroupIds });
-      expect(filtersArg._id.$in.every(id => typeof id === 'string')).toBe(true);
+      expect(filtersArg._id.$in.every((id) => typeof id === 'string')).toBe(
+        true,
+      );
     });
 
     it('should handle sort with descending order', async () => {
@@ -322,24 +382,31 @@ describe('GroupService', () => {
       groupModel.countDocuments.mockResolvedValue(1);
       // Spy on sort
       const sortSpy = jest.spyOn(groupModel, 'sort');
-      await service.findAllByUser(
-        userId,
-        { page: 1, offset: 10, sort: '-createdAt' }
+      await service.findAllByUser(userId, {
+        page: 1,
+        offset: 10,
+        sort: '-createdAt',
+      });
+      expect(sortSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ createdAt: 'desc' }),
       );
-      expect(sortSpy).toHaveBeenCalledWith(expect.objectContaining({ createdAt: 'desc' }));
     });
 
     it('should throw NotFoundException if campaign not found', async () => {
       campaignModel.findById.mockReturnValue({
         lean: jest.fn().mockResolvedValue(null),
       });
-      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'error')
+        .mockImplementation(() => {});
 
-      await expect(service.findAllByUser(
-        userId,
-        { page: 1, offset: 10 },
-        'nonexistentCampaignId'
-      )).rejects.toThrow(NotFoundException);
+      await expect(
+        service.findAllByUser(
+          userId,
+          { page: 1, offset: 10 },
+          'nonexistentCampaignId',
+        ),
+      ).rejects.toThrow(NotFoundException);
 
       expect(loggerSpy).toHaveBeenCalled();
 
@@ -354,12 +421,13 @@ describe('GroupService', () => {
       groupModel.skip.mockReturnThis();
       groupModel.exec = jest.fn().mockRejectedValue(new Error('DB fail'));
       groupModel.countDocuments.mockResolvedValue(0);
-      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'error')
+        .mockImplementation(() => {});
 
-      await expect(service.findAllByUser(
-        userId,
-        { page: 1, offset: 10 }
-      )).rejects.toThrow(InternalServerErrorException);
+      await expect(
+        service.findAllByUser(userId, { page: 1, offset: 10 }),
+      ).rejects.toThrow(InternalServerErrorException);
 
       expect(loggerSpy).toHaveBeenCalled();
 
@@ -374,9 +442,13 @@ describe('GroupService', () => {
         exec: jest.fn().mockResolvedValue({ _id: 'groupId' }),
       });
 
-      const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'verbose')
+        .mockImplementation(() => {});
 
-      const result = await service.findOne(new Types.ObjectId('507f1f77bcf86cd799439011'));
+      const result = await service.findOne(
+        new Types.ObjectId('507f1f77bcf86cd799439011'),
+      );
 
       expect(groupModel.findById).toHaveBeenCalled();
       expect(result).toEqual({
@@ -393,9 +465,13 @@ describe('GroupService', () => {
         exec: jest.fn().mockRejectedValue(new Error('DB fail')),
       });
 
-      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'error')
+        .mockImplementation(() => {});
 
-      await expect(service.findOne(new Types.ObjectId('507f1f77bcf86cd799439011'))).rejects.toThrow(InternalServerErrorException);
+      await expect(
+        service.findOne(new Types.ObjectId('507f1f77bcf86cd799439011')),
+      ).rejects.toThrow(InternalServerErrorException);
 
       expect(loggerSpy).toHaveBeenCalled();
 
@@ -419,10 +495,14 @@ describe('GroupService', () => {
           ...existingGroup,
         }),
       });
-      groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+      groupModel.updateOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+      });
       characterModel.updateMany.mockResolvedValue({});
       campaignModel.updateMany.mockResolvedValue({});
-      const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'verbose')
+        .mockImplementation(() => {});
 
       const result = await service.update(id, updateDto);
 
@@ -444,10 +524,16 @@ describe('GroupService', () => {
           characters: [],
         }),
       });
-      groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 0 }) });
-      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+      groupModel.updateOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ modifiedCount: 0 }),
+      });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'error')
+        .mockImplementation(() => {});
 
-      await expect(service.update(id, updateDto)).rejects.toThrow(NotFoundException);
+      await expect(service.update(id, updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
 
       expect(loggerSpy).toHaveBeenCalled();
 
@@ -460,9 +546,13 @@ describe('GroupService', () => {
         populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockRejectedValue(new Error('DB error')),
       });
-      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'error')
+        .mockImplementation(() => {});
 
-      await expect(service.update(id, updateDto)).rejects.toThrow(InternalServerErrorException);
+      await expect(service.update(id, updateDto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
 
       expect(loggerSpy).toHaveBeenCalled();
 
@@ -482,13 +572,17 @@ describe('GroupService', () => {
       groupModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockGroup),
       });
-      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      characterModel.updateMany.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
       characterModel.find.mockReturnThis();
       characterModel.select.mockReturnThis();
       characterModel.lean.mockReturnThis();
       characterModel.exec.mockResolvedValue([]);
       campaignModel.updateMany.mockResolvedValue({});
-      const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'verbose')
+        .mockImplementation(() => {});
 
       const result = await service.remove(id);
 
@@ -515,9 +609,13 @@ describe('GroupService', () => {
       groupModel.findById.mockReturnValue({
         exec: jest.fn().mockRejectedValue(new Error('DB fail')),
       });
-      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'error')
+        .mockImplementation(() => {});
 
-      await expect(service.remove(id)).rejects.toThrow(InternalServerErrorException);
+      await expect(service.remove(id)).rejects.toThrow(
+        InternalServerErrorException,
+      );
 
       expect(loggerSpy).toHaveBeenCalled();
 
@@ -537,7 +635,9 @@ describe('GroupService', () => {
       groupModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockGroup),
       });
-      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      characterModel.updateMany.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
       jest.spyOn(service['logger'], 'verbose').mockImplementation();
 
       await service.remove(id);
@@ -560,7 +660,9 @@ describe('GroupService', () => {
       groupModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockGroup),
       });
-      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      characterModel.updateMany.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
       characterModel.find.mockReturnThis();
       characterModel.select.mockReturnThis();
       characterModel.lean.mockReturnThis();
@@ -585,7 +687,9 @@ describe('GroupService', () => {
       groupModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockGroup),
       });
-      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
+      characterModel.updateMany.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
       characterModel.find.mockReturnThis();
       characterModel.select.mockReturnThis();
       characterModel.lean.mockReturnThis();
@@ -612,8 +716,12 @@ describe('GroupService', () => {
       groupModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockGroup),
       });
-      characterModel.updateMany.mockReturnValue({ exec: jest.fn().mockResolvedValue({}) });
-      const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation();
+      characterModel.updateMany.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'verbose')
+        .mockImplementation();
 
       const result = await service.remove(id);
 
@@ -668,12 +776,21 @@ describe('GroupService', () => {
 
     it('should use first campaign ID for metrics', async () => {
       const campaigns = [
-        { idCampaign: new Types.ObjectId().toHexString(), type: 'active' as const },
-        { idCampaign: new Types.ObjectId().toHexString(), type: 'archived' as const },
+        {
+          idCampaign: new Types.ObjectId().toHexString(),
+          type: 'active' as const,
+        },
+        {
+          idCampaign: new Types.ObjectId().toHexString(),
+          type: 'archived' as const,
+        },
       ];
       const dtoWithMultipleCampaigns = { ...createDto, campaigns };
 
-      groupModel.create.mockResolvedValue({ _id: 'groupId', ...dtoWithMultipleCampaigns });
+      groupModel.create.mockResolvedValue({
+        _id: 'groupId',
+        ...dtoWithMultipleCampaigns,
+      });
       characterModel.updateMany.mockResolvedValue({});
       campaignModel.updateMany.mockResolvedValue({});
       jest.spyOn(service['logger'], 'verbose').mockImplementation();
@@ -690,7 +807,10 @@ describe('GroupService', () => {
         campaigns: [],
       };
 
-      groupModel.create.mockResolvedValue({ _id: 'groupId', ...dtoNoCampaigns });
+      groupModel.create.mockResolvedValue({
+        _id: 'groupId',
+        ...dtoNoCampaigns,
+      });
       characterModel.updateMany.mockResolvedValue({});
       campaignModel.updateMany.mockResolvedValue({});
       jest.spyOn(service['logger'], 'verbose').mockImplementation();
@@ -717,10 +837,7 @@ describe('GroupService', () => {
           return groupModel;
         });
 
-        await service.findAllByUser(
-          userId,
-          { label: '' }
-        );
+        await service.findAllByUser(userId, { label: '' });
 
         expect(filtersArg.label.$regex).toBe('');
       });
@@ -739,10 +856,7 @@ describe('GroupService', () => {
           return groupModel;
         });
 
-        await service.findAllByUser(
-          userId,
-          { label: 'Test%20Group' }
-        );
+        await service.findAllByUser(userId, { label: 'Test%20Group' });
 
         expect(filtersArg.label.$regex).toBe('Test Group');
       });
@@ -757,10 +871,7 @@ describe('GroupService', () => {
 
         const skipSpy = jest.spyOn(groupModel, 'skip');
 
-        await service.findAllByUser(
-          userId,
-          { page: 1, offset: 10 }
-        );
+        await service.findAllByUser(userId, { page: 1, offset: 10 });
 
         expect(skipSpy).toHaveBeenCalledWith(0);
       });
@@ -775,10 +886,7 @@ describe('GroupService', () => {
 
         const skipSpy = jest.spyOn(groupModel, 'skip');
 
-        await service.findAllByUser(
-          userId,
-          { page: 2, offset: 10 }
-        );
+        await service.findAllByUser(userId, { page: 2, offset: 10 });
 
         expect(skipSpy).toHaveBeenCalledWith(10);
       });
@@ -793,12 +901,11 @@ describe('GroupService', () => {
 
         const sortSpy = jest.spyOn(groupModel, 'sort');
 
-        await service.findAllByUser(
-          userId,
-          { sort: 'createdAt' }
-        );
+        await service.findAllByUser(userId, { sort: 'createdAt' });
 
-        expect(sortSpy).toHaveBeenCalledWith(expect.objectContaining({ createdAt: 'asc' }));
+        expect(sortSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ createdAt: 'asc' }),
+        );
       });
 
       it('should handle special characters in label filter', async () => {
@@ -815,10 +922,7 @@ describe('GroupService', () => {
           return groupModel;
         });
 
-        await service.findAllByUser(
-          userId,
-          { label: 'Test.*+?[](){}' }
-        );
+        await service.findAllByUser(userId, { label: 'Test.*+?[](){}' });
 
         expect(filtersArg.label).toBeDefined();
         expect(filtersArg.label.$options).toBe('i');
@@ -839,7 +943,9 @@ describe('GroupService', () => {
             characters: [],
           }),
         });
-        groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+        groupModel.updateOne.mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+        });
         jest.spyOn(service['logger'], 'verbose').mockImplementation();
 
         await service.update(id, updateDtoNoCharacters);
@@ -861,14 +967,17 @@ describe('GroupService', () => {
             characters: [],
           }),
         });
-        groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+        groupModel.updateOne.mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+        });
         jest.spyOn(service['logger'], 'verbose').mockImplementation();
 
         await service.update(id, updateDtoNoCampaigns);
 
         // campaignModel.updateMany should not be called when campaigns is undefined
-        const callsForUpdate = campaignModel.updateMany.mock.calls.filter(call =>
-          call[0]?._id === id || call[1]?.['$addToSet'] || call[1]?.['$pull']
+        const callsForUpdate = campaignModel.updateMany.mock.calls.filter(
+          (call) =>
+            call[0]?._id === id || call[1]?.['$addToSet'] || call[1]?.['$pull'],
         );
         expect(callsForUpdate.length).toBe(0);
       });
@@ -886,15 +995,20 @@ describe('GroupService', () => {
 
         groupModel.findById.mockReturnValue({
           populate: jest.fn().mockReturnThis(),
-          exec: jest.fn().mockResolvedValueOnce({
-            campaigns: [],
-            characters: [{ _id: oldCharacterId }],
-          }).mockResolvedValueOnce({
-            campaigns: [],
-            characters: [{ _id: newCharacterId }],
-          }),
+          exec: jest
+            .fn()
+            .mockResolvedValueOnce({
+              campaigns: [],
+              characters: [{ _id: oldCharacterId }],
+            })
+            .mockResolvedValueOnce({
+              campaigns: [],
+              characters: [{ _id: newCharacterId }],
+            }),
         });
-        groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+        groupModel.updateOne.mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+        });
         characterModel.updateMany.mockResolvedValue({});
         jest.spyOn(service['logger'], 'verbose').mockImplementation();
 
@@ -916,7 +1030,9 @@ describe('GroupService', () => {
             characters: [],
           }),
         });
-        groupModel.updateOne.mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }) });
+        groupModel.updateOne.mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+        });
         jest.spyOn(service['logger'], 'verbose').mockImplementation();
 
         await expect(service.update(id, updateDto)).rejects.toThrow();
@@ -945,7 +1061,7 @@ describe('GroupService', () => {
           userId,
           { page: 1, offset: 10 },
           campaignId,
-          'all'
+          'all',
         );
 
         expect(result).toHaveProperty('data');
@@ -955,14 +1071,19 @@ describe('GroupService', () => {
 
     describe('Large data sets', () => {
       it('should handle large number of characters in group', async () => {
-        const characterIds = Array.from({ length: 100 }, () => new Types.ObjectId().toHexString());
+        const characterIds = Array.from({ length: 100 }, () =>
+          new Types.ObjectId().toHexString(),
+        );
 
         groupModel.create.mockResolvedValue({ _id: 'groupId', ...createDto });
         characterModel.updateMany.mockResolvedValue({});
         campaignModel.updateMany.mockResolvedValue({});
         jest.spyOn(service['logger'], 'verbose').mockImplementation();
 
-        const dtoWithManyCharacters = { ...createDto, characters: characterIds };
+        const dtoWithManyCharacters = {
+          ...createDto,
+          characters: characterIds,
+        };
 
         await service.create(dtoWithManyCharacters, userId);
 
@@ -982,10 +1103,7 @@ describe('GroupService', () => {
 
         const skipSpy = jest.spyOn(groupModel, 'skip');
 
-        await service.findAllByUser(
-          userId,
-          { page: 1000, offset: 100 }
-        );
+        await service.findAllByUser(userId, { page: 1000, offset: 100 });
 
         expect(skipSpy).toHaveBeenCalledWith(99900);
       });

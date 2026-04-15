@@ -3,10 +3,15 @@ import { getModelToken } from '@nestjs/mongoose';
 import { PlayerService } from './player.service';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
-import { Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { CreatePlayerDto } from '@/resources/character/player/dto/create-player.dto';
 import { UpdatePlayerDto } from '@/resources/character/player/dto/update-player.dto';
-import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  GoneException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('PlayerService', () => {
@@ -31,7 +36,7 @@ describe('PlayerService', () => {
             updateOne: jest.fn().mockReturnValue({
               exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
             }),
-          }
+          },
         ),
       },
       findById: jest.fn().mockReturnValue({
@@ -43,7 +48,9 @@ describe('PlayerService', () => {
     const groupMock = {
       updateMany: jest.fn(),
       findById: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: new Types.ObjectId(), deletedAt: null }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: new Types.ObjectId(), deletedAt: null }),
       }),
     };
 
@@ -94,7 +101,10 @@ describe('PlayerService', () => {
         },
       };
 
-      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      const result = await service.create(
+        dto,
+        new Types.ObjectId().toHexString(),
+      );
       expect(result.data._id).toBe('playerId');
       expect(result.message).toContain('Player created in');
     });
@@ -121,7 +131,9 @@ describe('PlayerService', () => {
         },
       };
 
-      await expect(service.create(dto, new Types.ObjectId().toHexString())).rejects.toThrow(BadRequestException);
+      await expect(
+        service.create(dto, new Types.ObjectId().toHexString()),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw InternalServerErrorException on unexpected error', async () => {
@@ -151,11 +163,16 @@ describe('PlayerService', () => {
         throw new Error('unexpected failure');
       });
 
-      await expect(service.create(dto, new Types.ObjectId().toHexString())).rejects.toThrow(InternalServerErrorException);
+      await expect(
+        service.create(dto, new Types.ObjectId().toHexString()),
+      ).rejects.toThrow(InternalServerErrorException);
     });
 
     it('should call updateMany with provided group IDs', async () => {
-      const groupIds = [new Types.ObjectId().toHexString(), new Types.ObjectId().toHexString()];
+      const groupIds = [
+        new Types.ObjectId().toHexString(),
+        new Types.ObjectId().toHexString(),
+      ];
       const dto: CreatePlayerDto = {
         firstname: 'Test with groups',
         groups: groupIds,
@@ -177,12 +194,15 @@ describe('PlayerService', () => {
         },
       };
 
-      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      const result = await service.create(
+        dto,
+        new Types.ObjectId().toHexString(),
+      );
 
       expect(result.data._id).toBeDefined();
       expect(groupModel.updateMany).toHaveBeenCalledWith(
         { _id: { $in: groupIds } },
-        { $addToSet: { characters: 'playerId' } }
+        { $addToSet: { characters: 'playerId' } },
       );
     });
   });
@@ -196,7 +216,9 @@ describe('PlayerService', () => {
       };
 
       groupModel.findById.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue({ _id: new Types.ObjectId(), deletedAt: null }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: new Types.ObjectId(), deletedAt: null }),
       });
 
       const result = await service.update(playerId, dto);
@@ -212,10 +234,14 @@ describe('PlayerService', () => {
       };
 
       groupModel.findById
-        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue({ _id: 'validId' }) })
+        .mockReturnValueOnce({
+          exec: jest.fn().mockResolvedValue({ _id: 'validId' }),
+        })
         .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
 
-      await expect(service.update(playerId, dto)).rejects.toThrow(BadRequestException);
+      await expect(service.update(playerId, dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw GoneException if a group is marked as deleted', async () => {
@@ -226,13 +252,17 @@ describe('PlayerService', () => {
       };
 
       groupModel.findById.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue({ _id: new Types.ObjectId(), deletedAt: new Date() }),
+        exec: jest.fn().mockResolvedValue({
+          _id: new Types.ObjectId(),
+          deletedAt: new Date(),
+        }),
       });
 
       // GoneException may not be imported by default, so we use a dynamic require if needed.
       // If GoneException is not present, this test will fail and the developer should add the import.
-      const { GoneException } = require('@nestjs/common');
-      await expect(service.update(playerId, dto)).rejects.toThrow(GoneException);
+      await expect(service.update(playerId, dto)).rejects.toThrow(
+        GoneException,
+      );
     });
 
     it('should use existing player groups if groups not provided', async () => {
@@ -274,8 +304,9 @@ describe('PlayerService', () => {
       });
 
       // NotFoundException may not be imported by default, so we use a dynamic require if needed.
-      const { NotFoundException } = require('@nestjs/common');
-      await expect(service.update(playerId, dto)).rejects.toThrow(NotFoundException);
+      await expect(service.update(playerId, dto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw InternalServerErrorException on unexpected failure', async () => {
@@ -286,7 +317,9 @@ describe('PlayerService', () => {
         throw new Error('Unexpected DB Error');
       });
 
-      await expect(service.update(playerId, dto)).rejects.toThrow(InternalServerErrorException);
+      await expect(service.update(playerId, dto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
     });
   });
 
@@ -318,7 +351,10 @@ describe('PlayerService', () => {
         },
       };
 
-      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      const result = await service.create(
+        dto,
+        new Types.ObjectId().toHexString(),
+      );
       expect(result.data._id).toBe('playerId');
       expect(result.message).toContain('Player created in');
     });
@@ -346,7 +382,10 @@ describe('PlayerService', () => {
         exhaustionLevel: 2,
       };
 
-      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      const result = await service.create(
+        dto,
+        new Types.ObjectId().toHexString(),
+      );
       expect(result.data._id).toBe('playerId');
       expect(result.message).toContain('Player created in');
     });
@@ -390,7 +429,10 @@ describe('PlayerService', () => {
         exhaustionLevel: 5,
       };
 
-      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      const result = await service.create(
+        dto,
+        new Types.ObjectId().toHexString(),
+      );
       expect(result.data._id).toBe('playerId');
       expect(result.message).toContain('Player created in');
     });
@@ -418,7 +460,10 @@ describe('PlayerService', () => {
         // conditions not provided - defaults should be applied by schema
       };
 
-      const result = await service.create(dto, new Types.ObjectId().toHexString());
+      const result = await service.create(
+        dto,
+        new Types.ObjectId().toHexString(),
+      );
       expect(result.data._id).toBe('playerId');
       expect(result.message).toContain('Player created in');
     });
@@ -500,8 +545,22 @@ describe('PlayerService', () => {
 
     it('should return paginated players with empty groups array for authenticated user', async () => {
       const mockPlayers = [
-        { _id: 'player1', name: 'Orphan Hero', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
-        { _id: 'player2', name: 'Solo Warrior', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+        {
+          _id: 'player1',
+          name: 'Orphan Hero',
+          kind: 'player',
+          groups: [],
+          createdBy: userId,
+          deletedAt: null,
+        },
+        {
+          _id: 'player2',
+          name: 'Solo Warrior',
+          kind: 'player',
+          groups: [],
+          createdBy: userId,
+          deletedAt: null,
+        },
       ];
 
       characterModel.find = jest.fn().mockReturnValue({
@@ -512,16 +571,16 @@ describe('PlayerService', () => {
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(2);
 
-      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+      const result = await service.findPlayersWithoutGroup(userId, {
+        page: 1,
+        offset: 10,
+      });
 
       expect(characterModel.find).toHaveBeenCalledWith({
         kind: 'player',
         createdBy: userId,
-        $or: [
-          { groups: { $exists: false } },
-          { groups: { $size: 0 } }
-        ],
-        deletedAt: null
+        $or: [{ groups: { $exists: false } }, { groups: { $size: 0 } }],
+        deletedAt: null,
       });
       expect(result.data).toEqual(mockPlayers);
       expect(result.data).toHaveLength(2);
@@ -538,7 +597,10 @@ describe('PlayerService', () => {
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(0);
 
-      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+      const result = await service.findPlayersWithoutGroup(userId, {
+        page: 1,
+        offset: 10,
+      });
 
       expect(result.data).toEqual([]);
       expect(result.data).toHaveLength(0);
@@ -562,7 +624,14 @@ describe('PlayerService', () => {
 
     it('should handle page 2 with correct skip calculation', async () => {
       const mockPlayers = [
-        { _id: 'player3', name: 'Another Hero', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+        {
+          _id: 'player3',
+          name: 'Another Hero',
+          kind: 'player',
+          groups: [],
+          createdBy: userId,
+          deletedAt: null,
+        },
       ];
 
       const mockFind = {
@@ -582,7 +651,14 @@ describe('PlayerService', () => {
 
     it('should exclude deleted players', async () => {
       const mockPlayers = [
-        { _id: 'player1', name: 'Active Hero', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+        {
+          _id: 'player1',
+          name: 'Active Hero',
+          kind: 'player',
+          groups: [],
+          createdBy: userId,
+          deletedAt: null,
+        },
       ];
 
       characterModel.find = jest.fn().mockReturnValue({
@@ -593,17 +669,27 @@ describe('PlayerService', () => {
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(1);
 
-      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+      const result = await service.findPlayersWithoutGroup(userId, {
+        page: 1,
+        offset: 10,
+      });
 
       expect(characterModel.find).toHaveBeenCalledWith(
-        expect.objectContaining({ deletedAt: null })
+        expect.objectContaining({ deletedAt: null }),
       );
       expect(result.data).toHaveLength(1);
     });
 
     it('should only return player kind characters for the authenticated user', async () => {
       const mockPlayers = [
-        { _id: 'player1', name: 'Player Only', kind: 'player', groups: [], createdBy: userId, deletedAt: null },
+        {
+          _id: 'player1',
+          name: 'Player Only',
+          kind: 'player',
+          groups: [],
+          createdBy: userId,
+          deletedAt: null,
+        },
       ];
 
       characterModel.find = jest.fn().mockReturnValue({
@@ -614,20 +700,21 @@ describe('PlayerService', () => {
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(1);
 
-      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+      const result = await service.findPlayersWithoutGroup(userId, {
+        page: 1,
+        offset: 10,
+      });
 
       expect(characterModel.find).toHaveBeenCalledWith(
         expect.objectContaining({
           kind: 'player',
-          createdBy: userId
-        })
+          createdBy: userId,
+        }),
       );
       expect(result.data).toHaveLength(1);
     });
 
     it('should exclude players created by other users', async () => {
-      const otherUserId = new Types.ObjectId().toHexString();
-
       characterModel.find = jest.fn().mockReturnValue({
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
@@ -636,10 +723,13 @@ describe('PlayerService', () => {
       });
       characterModel.countDocuments = jest.fn().mockResolvedValue(0);
 
-      const result = await service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 });
+      const result = await service.findPlayersWithoutGroup(userId, {
+        page: 1,
+        offset: 10,
+      });
 
       expect(characterModel.find).toHaveBeenCalledWith(
-        expect.objectContaining({ createdBy: userId })
+        expect.objectContaining({ createdBy: userId }),
       );
       expect(result.data).toHaveLength(0);
     });
@@ -649,11 +739,17 @@ describe('PlayerService', () => {
         limit: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockRejectedValue(new Error('Database connection lost')),
+        exec: jest
+          .fn()
+          .mockRejectedValue(new Error('Database connection lost')),
       });
 
-      await expect(service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 })).rejects.toThrow(InternalServerErrorException);
-      await expect(service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 })).rejects.toThrow('Error retrieving players without group');
+      await expect(
+        service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 }),
+      ).rejects.toThrow(InternalServerErrorException);
+      await expect(
+        service.findPlayersWithoutGroup(userId, { page: 1, offset: 10 }),
+      ).rejects.toThrow('Error retrieving players without group');
     });
   });
 });

@@ -6,7 +6,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class PlayerStats extends Stats {
-
   @ApiProperty({ example: 0 })
   @Prop({ default: 2 })
   proficiencyBonus: number;
@@ -15,7 +14,7 @@ export class PlayerStats extends Stats {
   @Prop({ type: [String], default: [] })
   armors: string[];
 
-  @ApiProperty({ example: ['Thieves\' Tools', 'Smith\'s Tools'] })
+  @ApiProperty({ example: ["Thieves' Tools", "Smith's Tools"] })
   @Prop({ type: [String], default: [] })
   tools: string[];
 

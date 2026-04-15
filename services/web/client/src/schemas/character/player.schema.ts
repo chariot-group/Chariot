@@ -131,20 +131,4 @@ export function createPlayerSchema(zm: ZodMessages) {
     });
 }
 
-// Export type basé sur un schéma par défaut (pour typing statique)
-const DefaultPlayerSchema = createPlayerSchema({
-    required: () => '',
-    invalidType: () => '',
-    minString: () => '',
-    maxString: () => '',
-    minNumber: () => '',
-    maxNumber: () => '',
-    email: () => '',
-    url: () => '',
-    uuid: () => '',
-    minArray: () => '',
-    maxArray: () => '',
-    notMultipleOf: () => '',
-});
-
-export type CreatePlayerInput = z.infer<typeof DefaultPlayerSchema>;
+export type CreatePlayerInput = z.infer<ReturnType<typeof createPlayerSchema>>;

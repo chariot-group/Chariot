@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class TreasureDto {
-
   @ApiProperty({ example: 150 })
   @IsOptional()
   @IsNumber()

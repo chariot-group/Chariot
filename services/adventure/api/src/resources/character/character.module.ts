@@ -24,7 +24,7 @@ import { MetricsModule } from '@/metrics/metrics.module';
           { name: 'npc', schema: NPCSchema },
         ],
       },
-      { name: Group.name, schema: GroupSchema }
+      { name: Group.name, schema: GroupSchema },
     ]),
     MetricsModule,
     NpcModule,
@@ -34,4 +34,4 @@ import { MetricsModule } from '@/metrics/metrics.module';
   controllers: [CharacterController],
   providers: [CharacterService],
 })
-export class CharacterModule { }
+export class CharacterModule {}

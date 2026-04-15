@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { HealthService } from "@/health/health.service";
+import { HealthService } from "./health.service";
 import { HttpService } from "@nestjs/axios";
 import { of, throwError } from "rxjs";
 import { AxiosResponse } from "axios";
@@ -47,7 +47,7 @@ describe("HealthService", () => {
         status: 200,
         statusText: "OK",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       jest.spyOn(httpService, "get").mockReturnValue(of(mockResponse));

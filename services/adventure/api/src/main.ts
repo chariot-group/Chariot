@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
-import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { WinstonModule } from 'nest-winston';
 import { instance } from '@/logger/winston.logger';
 import { ValidationPipe } from '@nestjs/common';
 import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
@@ -9,6 +9,8 @@ import * as express from 'express';
 import { ErrorDetailsFilter } from '@/common/filters/errors.filter';
 import { setupSwagger } from '@/config/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
+
+type RawBodyRequest = express.Request & { rawBody?: Buffer };
 
 async function bootstrap() {
   let AppModuleToUse = AppModule;
@@ -30,17 +32,21 @@ async function bootstrap() {
     exposedHeaders: ['Authorization'],
   });
 
-  app.use(express.json({
-    verify: (req: any, _res, buf) => {
-      req.rawBody = buf;
-    },
-  }));
-  app.use(express.urlencoded({
-    extended: true,
-    verify: (req: any, _res, buf) => {
-      req.rawBody = buf;
-    },
-  }));
+  app.use(
+    express.json({
+      verify: (req: RawBodyRequest, _res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
+  app.use(
+    express.urlencoded({
+      extended: true,
+      verify: (req: RawBodyRequest, _res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
   app.use(cookieParser());
 
   app.useGlobalFilters(new ErrorDetailsFilter());
@@ -51,13 +57,13 @@ async function bootstrap() {
   app.useGlobalInterceptors(metricsInterceptor);
 
   const document = setupSwagger(app);
-  SwaggerModule.setup("/docs", app, document, {
+  SwaggerModule.setup('/docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
       oauth2RedirectUrl: `${process.env.ADVENTURE_URL}/oauth2-redirect.html`,
       initOAuth: {
         clientId: process.env.KEYCLOAK_CLIENT_ID,
-        scopes: ["openid", "profile", "email"],
+        scopes: ['openid', 'profile', 'email'],
         usePkceWithAuthorizationCodeGrant: true,
       },
     },

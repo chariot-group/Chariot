@@ -7,8 +7,7 @@ import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { NPC } from "@/types/character";
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
@@ -17,12 +16,11 @@ import { useToast } from "@/hooks/useToast";
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 
 interface NpcStatisticsUpdateProps {
-  npc: NPC;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
-export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStatisticsUpdateProps) {
+export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatisticsUpdateProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const currentHitPointsValue = Number(form.watch("stats.currentHitPoints") ?? 0);
@@ -198,7 +196,7 @@ export default function NpcStatisticsUpdate({ npc, accentColor, form }: NpcStati
                         <SelectItem
                           key={size}
                           value={size}>
-                          {t(`sizes.${size}` as any)}
+                          {t(`sizes.${size}` as Parameters<typeof t>[0])}
                         </SelectItem>
                       ))}
                     </SelectGroup>

@@ -1,13 +1,15 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '@/app.module';
-import { WinstonModule } from 'nest-winston';
-import { instance } from '@/logger/winston.logger';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import * as cookieParser from 'cookie-parser';
-import * as express from 'express';
-import helmet from 'helmet';
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { WinstonModule } from "nest-winston";
+import { instance } from "./logger/winston.logger";
+import { ValidationPipe, Logger } from "@nestjs/common";
+import * as cookieParser from "cookie-parser";
+import * as express from "express";
+import helmet from "helmet";
 
-const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, '');
+type RawBodyRequest = express.Request & { rawBody?: Buffer };
+
+const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, "");
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
@@ -21,16 +23,14 @@ async function bootstrap() {
   // Security headers
   app.use(
     helmet({
-      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      crossOriginResourcePolicy: { policy: "cross-origin" },
     }),
   );
 
   // CORS Configuration - Gateway handles all CORS like Keycloak does
-  const allowedOrigins = normalizeOrigin(
-    process.env.FRONTEND_URL || 'http://localhost:3000,http://localhost:3001',
-  )
-    .split(',')
-    .map(origin => normalizeOrigin(origin))
+  const allowedOrigins = normalizeOrigin(process.env.FRONTEND_URL || "http://localhost:3000,http://localhost:3001")
+    .split(",")
+    .map((origin) => normalizeOrigin(origin))
     .filter(Boolean);
 
   app.enableCors({
@@ -56,13 +56,13 @@ async function bootstrap() {
 
   app.use(
     express.json({
-      limit: '10mb',
-      verify: (req: any, _res, buf) => {
+      limit: "10mb",
+      verify: (req: RawBodyRequest, _res, buf) => {
         req.rawBody = buf;
       },
     }),
   );
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: "10mb" }));
   app.use(cookieParser());
 
   app.useGlobalPipes(

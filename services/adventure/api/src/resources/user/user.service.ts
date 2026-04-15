@@ -1,4 +1,10 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException, HttpException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+  HttpException,
+} from '@nestjs/common';
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { IResponse } from '@/common/dtos/reponse.dto';
@@ -14,13 +20,14 @@ export class UserService {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    private readonly keycloakService: KeycloakService
-  ) { }
+    private readonly keycloakService: KeycloakService,
+  ) {}
 
   async findOne(id: string): Promise<IResponse<UserInfoDto>> {
     try {
       const start: number = Date.now();
-      const keycloakUser: UserRepresentation = await this.keycloakService.getUserById(id);
+      const keycloakUser: UserRepresentation =
+        await this.keycloakService.getUserById(id);
       if (!keycloakUser) {
         const message: string = `User #${id} not found in Keycloak`;
         this.logger.error(message, null, this.SERVICE_NAME);
@@ -29,8 +36,15 @@ export class UserService {
 
       let user = await this.userModel.findOne({ keycloakId: id }).exec();
       if (!user) {
-        this.logger.debug(`User #${id} not found in database, creating new user`, this.SERVICE_NAME);
-        user = await this.userModel.create({ keycloakId: id, balance: 1, history: [] });
+        this.logger.debug(
+          `User #${id} not found in database, creating new user`,
+          this.SERVICE_NAME,
+        );
+        user = await this.userModel.create({
+          keycloakId: id,
+          balance: 1,
+          history: [],
+        });
       }
       const end: number = Date.now();
 
@@ -83,7 +97,8 @@ export class UserService {
       const start: number = Date.now();
 
       // Retrieve user to get username
-      const keycloakUser: UserRepresentation = await this.keycloakService.getUserById(keycloakId);
+      const keycloakUser: UserRepresentation =
+        await this.keycloakService.getUserById(keycloakId);
       if (!keycloakUser) {
         const message: string = `User #${keycloakId} not found in Keycloak`;
         this.logger.error(message, null, this.SERVICE_NAME);
@@ -108,7 +123,10 @@ export class UserService {
     }
   }
 
-  async updateUser(keycloakId: string, updateData: { firstName?: string; lastName?: string; email?: string }): Promise<IResponse<UserInfoDto>> {
+  async updateUser(
+    keycloakId: string,
+    updateData: { firstName?: string; lastName?: string; email?: string },
+  ): Promise<IResponse<UserInfoDto>> {
     try {
       const start: number = Date.now();
 
@@ -116,7 +134,8 @@ export class UserService {
       await this.keycloakService.updateUser(keycloakId, updateData);
 
       // Fetch updated user data from Keycloak
-      const keycloakUser: UserRepresentation = await this.keycloakService.getUserById(keycloakId);
+      const keycloakUser: UserRepresentation =
+        await this.keycloakService.getUserById(keycloakId);
       if (!keycloakUser) {
         const message: string = `User #${keycloakId} not found in Keycloak after update`;
         this.logger.error(message, null, this.SERVICE_NAME);
@@ -126,8 +145,15 @@ export class UserService {
       // Get user from database (for balance and history)
       let user = await this.userModel.findOne({ keycloakId }).exec();
       if (!user) {
-        this.logger.debug(`User #${keycloakId} not found in database, creating new user`, this.SERVICE_NAME);
-        user = await this.userModel.create({ keycloakId, balance: 1, history: [] });
+        this.logger.debug(
+          `User #${keycloakId} not found in database, creating new user`,
+          this.SERVICE_NAME,
+        );
+        user = await this.userModel.create({
+          keycloakId,
+          balance: 1,
+          history: [],
+        });
       }
 
       const end: number = Date.now();

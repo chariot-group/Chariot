@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, HttpStatus } from "@nestjs/common";
 import * as request from "supertest";
-import { AppModule } from "@/app.module";
+import { AppModule } from "../src/app.module";
 
 describe("Rate Limiting (e2e)", () => {
   let app: INestApplication;

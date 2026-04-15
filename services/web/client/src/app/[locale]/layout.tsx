@@ -9,7 +9,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
 import PostLoginNavigator from "@/components/PostLoginNavigator";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 

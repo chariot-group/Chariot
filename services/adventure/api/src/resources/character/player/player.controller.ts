@@ -1,4 +1,18 @@
-import { Controller, Post, Body, Patch, Param, Req, Logger, BadRequestException, GoneException, NotFoundException, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Req,
+  Logger,
+  BadRequestException,
+  GoneException,
+  NotFoundException,
+  Get,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { PlayerService } from '@/resources/character/player/player.service';
 import { CreatePlayerDto } from '@/resources/character/player/dto/create-player.dto';
 import { UpdatePlayerDto } from '@/resources/character/player/dto/update-player.dto';
@@ -6,21 +20,27 @@ import { IsCreator } from '@/common/decorators/is-creator.decorator';
 import { CharacterService } from '@/resources/character/character.service';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Character, CharacterDocument } from '@/resources/character/core/schemas/character.schema';
+import {
+  Character,
+  CharacterDocument,
+} from '@/resources/character/core/schemas/character.schema';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
 import { ParseNullableIntPipe } from '@/common/pipes/parse-nullable-int.pipe';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 import { Player } from '@/resources/character/player/schemas/player.schema';
-import { ApiExtraModels, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 import { IsCreatorGuard } from '@/common/guards/is-creator.guard';
 
-@ApiExtraModels(
-  IResponse,
-  IPaginatedResponse,
-  Player
-)
+@ApiExtraModels(IResponse, IPaginatedResponse, Player)
 @Controller('characters/players')
 @UseGuards(IsCreatorGuard)
 export class PlayerController {
@@ -30,7 +50,7 @@ export class PlayerController {
     private characterModel: Model<CharacterDocument>,
     @InjectModel(Group.name)
     private groupModel: Model<GroupDocument>,
-  ) { }
+  ) {}
 
   private readonly CONTROLLER_NAME = PlayerController.name;
   private readonly logger = new Logger(this.CONTROLLER_NAME);
@@ -78,7 +98,7 @@ export class PlayerController {
         { $ref: getSchemaPath(IResponse) },
         {
           properties: {
-            data: { $ref: getSchemaPath(Player) }
+            data: { $ref: getSchemaPath(Player) },
           },
         },
       ],
@@ -86,14 +106,16 @@ export class PlayerController {
   })
   @ApiResponse({
     status: 400,
-    description: "Validation error",
+    description: 'Validation error',
     type: ProblemDetailsDto,
   })
   @Post()
-  async createPlayer(@Req() request, @Body() createPlayerDto: CreatePlayerDto): Promise<IResponse<Player>> {
+  async createPlayer(
+    @Req() request,
+    @Body() createPlayerDto: CreatePlayerDto,
+  ): Promise<IResponse<Player>> {
     await this.validateGroupRelations(createPlayerDto.groups);
     const userId = request.user.keycloakId;
-
 
     return this.playerService.create(createPlayerDto, userId);
   }
@@ -108,8 +130,8 @@ export class PlayerController {
           properties: {
             data: {
               type: 'array',
-              items: { $ref: getSchemaPath(Player) }
-            }
+              items: { $ref: getSchemaPath(Player) },
+            },
           },
         },
       ],
@@ -123,20 +145,24 @@ export class PlayerController {
     @Query('sort') sort?: string,
   ): Promise<IPaginatedResponse<Character[]>> {
     const userId = request.user.keycloakId;
-    return this.playerService.findPlayersWithoutGroup(userId, { page, offset, sort });
+    return this.playerService.findPlayersWithoutGroup(userId, {
+      page,
+      offset,
+      sort,
+    });
   }
 
   @IsCreator(CharacterService)
-  @ApiOperation({ summary: "Update a player by ID" })
+  @ApiOperation({ summary: 'Update a player by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the player to update",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the player to update',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Player updated successfully",
+    description: 'Player updated successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -150,13 +176,24 @@ export class PlayerController {
   })
   @ApiResponse({
     status: 400,
-    description: "Validation error",
+    description: 'Validation error',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 404, description: "Player #ID not found", type: ProblemDetailsDto })
-  @ApiResponse({ status: 410, description: "Player #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 404,
+    description: 'Player #ID not found',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Player #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
   @Patch(':id')
-  async update(@Param('id', ParseMongoIdPipe) id: Types.ObjectId, @Body() updatePlayerDto: UpdatePlayerDto): Promise<IResponse<Character>> {
+  async update(
+    @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+    @Body() updatePlayerDto: UpdatePlayerDto,
+  ): Promise<IResponse<Character>> {
     await this.validateResource(id);
     await this.validateGroupRelations(updatePlayerDto.groups);
 

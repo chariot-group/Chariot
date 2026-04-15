@@ -1,9 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Player } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { Controller, useFieldArray, UseFormReturn } from "react-hook-form";
+import { Controller, useFieldArray, UseFormReturn, FieldValues } from "react-hook-form";
 import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
@@ -15,11 +14,10 @@ import { useToast } from "@/hooks/useToast";
 
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 interface StatisticsProps {
-  player: Player;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
-export default function StatisticsUpdate({ player, accentColor, form }: StatisticsProps) {
+export default function StatisticsUpdate({ accentColor, form }: StatisticsProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
@@ -185,7 +183,7 @@ export default function StatisticsUpdate({ player, accentColor, form }: Statisti
                         <SelectItem
                           key={size}
                           value={size}>
-                          {t(`sizes.${size}` as any)}
+                          {t(`sizes.${size}` as Parameters<typeof t>[0])}
                         </SelectItem>
                       ))}
                     </SelectGroup>

@@ -14,7 +14,8 @@ export class DeathSaves {
 
   @ApiProperty({
     example: 0,
-    description: 'Number of failed death saving throws (0-3). Three failures means death.',
+    description:
+      'Number of failed death saving throws (0-3). Three failures means death.',
     minimum: 0,
     maximum: 3,
   })

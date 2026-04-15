@@ -45,20 +45,4 @@ export function createCharacterSchema(zm: ZodMessages) {
     });
 }
 
-// Export schéma par défaut pour rétrocompatibilité
-const DefaultCharacterSchema = createCharacterSchema({
-    required: () => '',
-    invalidType: () => '',
-    minString: () => '',
-    maxString: () => '',
-    minNumber: () => '',
-    maxNumber: () => '',
-    email: () => '',
-    url: () => '',
-    uuid: () => '',
-    minArray: () => '',
-    maxArray: () => '',
-    notMultipleOf: () => '',
-});
-
-export type CreateCharacterInput = z.infer<typeof DefaultCharacterSchema>;
+export type CreateCharacterInput = z.infer<ReturnType<typeof createCharacterSchema>>;

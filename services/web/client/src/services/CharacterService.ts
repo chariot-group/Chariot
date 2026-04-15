@@ -96,4 +96,6 @@ class CharacterService {
     }
 }
 
-export default new CharacterService();
+const characterService = new CharacterService();
+
+export default characterService;

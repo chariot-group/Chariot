@@ -1,5 +1,5 @@
 import { NPC } from "@/types/character";
-import { Controller, UseFormReturn, useFieldArray } from "react-hook-form";
+import { Controller, UseFormReturn, useFieldArray, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -8,8 +8,6 @@ import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGr
 import { AlignmentEnum } from "@/schemas/character";
 import { TagInput } from "@/components/ui/tag-input";
 import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
-import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
-import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSkillsEdit";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import NpcColumn2Edit from "@/components/character/tabContents/general/form/NpcColumn2Edit";
 import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
@@ -19,10 +17,11 @@ import { useEffect, useState } from "react";
 interface NpcGeneralTabEditProps {
   npc: NPC;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
 export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneralTabEditProps) {
+  void npc;
   const t = useTranslations("characterDetail.player.general");
   const tNpc = useTranslations("characterDetail.npc");
   const tEdit = useTranslations("characterDetail.edit");
@@ -342,7 +341,6 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
           </Card>
 
           <NpcStatisticsUpdate
-            npc={npc}
             accentColor={accentColor}
             form={form}
           />
@@ -458,7 +456,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                           <SelectItem
                             key={alignment}
                             value={alignment}>
-                            {tAlignment(alignment as any)}
+                            {tAlignment(alignment as Parameters<typeof tAlignment>[0])}
                           </SelectItem>
                         ))}
                       </SelectGroup>

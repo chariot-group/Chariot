@@ -31,7 +31,7 @@ import { StripeModule } from '@/resources/stripe/stripe.module';
     SeederModule,
     PrometheusModule.register(),
     UserModule,
-    StripeModule
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [
@@ -44,4 +44,4 @@ import { StripeModule } from '@/resources/stripe/stripe.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

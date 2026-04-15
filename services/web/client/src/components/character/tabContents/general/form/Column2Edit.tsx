@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { getProficiencyBonusFromLevel, isLevelProficiencyBonusSynced } from "@/utils/global.utils";
 import { ArrowRightLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
 import { Label } from "@/components/ui/label";
 import SkillsEdit from "@/components/character/tabContents/general/form/SkillsEdit";
@@ -13,7 +13,7 @@ import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface Column2EditProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   accentColor: string;
   className?: string;
 }

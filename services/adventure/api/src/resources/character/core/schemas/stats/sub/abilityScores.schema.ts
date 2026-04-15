@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class AbilityScores {
-
   @ApiProperty({ example: 10 })
   @Prop({ default: 10 })
   strength: number;

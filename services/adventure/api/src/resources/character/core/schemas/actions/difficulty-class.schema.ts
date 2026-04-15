@@ -3,8 +3,10 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class DifficultyClass {
-
-  @ApiProperty({ example: 'wis', description: 'Ability score type for the saving throw' })
+  @ApiProperty({
+    example: 'wis',
+    description: 'Ability score type for the saving throw',
+  })
   @Prop()
   dcType?: string;
 
@@ -17,4 +19,5 @@ export class DifficultyClass {
   successType?: string;
 }
 
-export const DifficultyClassSchema = SchemaFactory.createForClass(DifficultyClass);
+export const DifficultyClassSchema =
+  SchemaFactory.createForClass(DifficultyClass);

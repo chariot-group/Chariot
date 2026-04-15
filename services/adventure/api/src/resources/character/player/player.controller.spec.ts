@@ -6,7 +6,11 @@ import { Types } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
-import { GoneException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  GoneException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 
 describe('PlayerController - createPlayer', () => {
   let controller: PlayerController;
@@ -74,7 +78,9 @@ describe('PlayerController - createPlayer', () => {
 
     groupModel = {
       findById: jest.fn().mockReturnThis(),
-      exec: jest.fn().mockResolvedValue({ _id: new Types.ObjectId(), deletedAt: null }),
+      exec: jest
+        .fn()
+        .mockResolvedValue({ _id: new Types.ObjectId(), deletedAt: null }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -107,10 +113,16 @@ describe('PlayerController - createPlayer', () => {
     const createDtoWithoutGroups = { ...createDto, groups: [] };
     playerService.create.mockResolvedValue({ data: 'createdPlayer' });
 
-    const result = await controller.createPlayer(requestMock, createDtoWithoutGroups);
+    const result = await controller.createPlayer(
+      requestMock,
+      createDtoWithoutGroups,
+    );
 
     expect(groupModel.findById).not.toHaveBeenCalled();
-    expect(playerService.create).toHaveBeenCalledWith(createDtoWithoutGroups, userId);
+    expect(playerService.create).toHaveBeenCalledWith(
+      createDtoWithoutGroups,
+      userId,
+    );
     expect(result).toEqual({ data: 'createdPlayer' });
   });
 
@@ -202,32 +214,35 @@ describe('PlayerController - update', () => {
 
     expect(characterModel.findById).toHaveBeenCalledWith(playerId);
     expect(groupModel.findById).not.toHaveBeenCalled();
-    expect(playerService.update).toHaveBeenCalledWith(playerId, updateDtoWithoutGroups);
+    expect(playerService.update).toHaveBeenCalledWith(
+      playerId,
+      updateDtoWithoutGroups,
+    );
     expect(result).toEqual({ data: 'updated' });
   });
 
   it('should throw BadRequestException for invalid group ID during update', async () => {
     const invalidUpdateDto = { ...updateDto, groups: ['invalid-id'] };
 
-    await expect(
-      controller.update(playerId, invalidUpdateDto),
-    ).rejects.toThrow(BadRequestException);
+    await expect(controller.update(playerId, invalidUpdateDto)).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it('should throw NotFoundException if group is not found during update', async () => {
     groupModel.exec.mockResolvedValue(null);
 
-    await expect(
-      controller.update(playerId, updateDto),
-    ).rejects.toThrow(NotFoundException);
+    await expect(controller.update(playerId, updateDto)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw GoneException if group is soft-deleted during update', async () => {
     groupModel.exec.mockResolvedValue({ deletedAt: new Date() });
 
-    await expect(
-      controller.update(playerId, updateDto),
-    ).rejects.toThrow(GoneException);
+    await expect(controller.update(playerId, updateDto)).rejects.toThrow(
+      GoneException,
+    );
   });
 });
 
@@ -259,17 +274,17 @@ describe('PlayerController - validateResource', () => {
   it('should throw NotFoundException if player is not found', async () => {
     characterModel.exec.mockResolvedValue(null);
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(NotFoundException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw GoneException if player is soft-deleted', async () => {
     characterModel.exec.mockResolvedValue({ deletedAt: new Date() });
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(GoneException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      GoneException,
+    );
   });
 
   it('should pass silently if player exists and is not deleted', async () => {

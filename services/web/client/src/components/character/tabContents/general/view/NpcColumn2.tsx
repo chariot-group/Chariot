@@ -35,12 +35,10 @@ export default function NpcColumn2({ npc, accentColor, className }: NpcColumn2Pr
           className="grid grid-cols-2 gap-2"
           role="list">
           {npc?.stats &&
-            Object.entries(npc?.stats?.savingThrows).map(([key, value]) => {
-              const abilityName = t(`abilities.${key}`);
+            Object.entries(npc?.stats?.savingThrows).map(([key]) => {
               return (
                 <SavingThrow
                   key={key}
-                  label={abilityName}
                   skillName={key as keyof typeof npc.stats.abilityScores}
                   accentColor={accentColor}
                   stats={npc?.stats}

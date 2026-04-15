@@ -8,4 +8,4 @@ import { UserModule } from '@/resources/user/user.module';
   controllers: [StripeController],
   providers: [StripeService],
 })
-export class StripeModule { }
+export class StripeModule {}

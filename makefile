@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-web lint-fix lint-fix-adventure lint-fix-gateway lint-fix-web
 
 # Configuration
 SERVICES_DIR := services
@@ -34,6 +34,10 @@ help: ## Affiche cette aide
 	@echo "  make restart SERVICE=web ENV=integ"
 	@echo "  make test SERVICE=adventure"
 	@echo "  make test-cov SERVICE=gateway"
+	@echo "  make lint"
+	@echo "  make lint SERVICE=web"
+	@echo "  make lint-status"
+	@echo "  make lint-fix SERVICE=gateway"
 
 network: ## Crée le réseau Docker si nécessaire
 	@docker network inspect $(NETWORK_NAME) >/dev/null 2>&1 || \
@@ -175,6 +179,81 @@ else
 	done
 	@echo "$(GREEN)✓ Build terminé$(NC)"
 endif
+
+# Lint
+lint: ## Lance le lint d'un service (SERVICE=adventure|gateway|web) ou de tous les services applicatifs
+ifdef SERVICE
+	@if [ "$(SERVICE)" = "adventure" ]; then \
+		$(MAKE) --no-print-directory lint-adventure; \
+	elif [ "$(SERVICE)" = "gateway" ]; then \
+		$(MAKE) --no-print-directory lint-gateway; \
+	elif [ "$(SERVICE)" = "web" ]; then \
+		$(MAKE) --no-print-directory lint-web; \
+	else \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|web$(NC)"; \
+		exit 1; \
+	fi
+else
+	@$(MAKE) --no-print-directory lint-status
+endif
+
+lint-status: ## Affiche l'état du lint de chaque service (adventure, gateway, web)
+	@status=0; \
+	echo "$(BLUE)=== Lint status: adventure ===$(NC)"; \
+	$(MAKE) --no-print-directory lint-adventure || status=1; \
+	echo ""; \
+	echo "$(BLUE)=== Lint status: gateway ===$(NC)"; \
+	$(MAKE) --no-print-directory lint-gateway || status=1; \
+	echo ""; \
+	echo "$(BLUE)=== Lint status: web ===$(NC)"; \
+	$(MAKE) --no-print-directory lint-web || status=1; \
+	echo ""; \
+	if [ $$status -ne 0 ]; then \
+		echo "$(RED)✗ Au moins un service a des erreurs lint$(NC)"; \
+		exit 1; \
+	fi; \
+	echo "$(GREEN)✓ Tous les services sont lint-clean$(NC)"
+
+lint-adventure: ## Lance le lint du service adventure
+	@echo "$(YELLOW)Lint adventure/api...$(NC)"
+	@cd $(SERVICES_DIR)/adventure/api && npm run lint
+
+lint-gateway: ## Lance le lint du service gateway
+	@echo "$(YELLOW)Lint gateway/api...$(NC)"
+	@cd $(SERVICES_DIR)/gateway/api && npm run lint
+
+lint-web: ## Lance le lint du service web
+	@echo "$(YELLOW)Lint web/client...$(NC)"
+	@cd $(SERVICES_DIR)/web/client && npm run lint
+
+lint-fix: ## Lance l'auto-fix lint (SERVICE requis: adventure|gateway|web)
+ifndef SERVICE
+	@echo "$(RED)Veuillez spécifier un SERVICE: make lint-fix SERVICE=web$(NC)"
+	@exit 1
+else
+	@if [ "$(SERVICE)" = "adventure" ]; then \
+		$(MAKE) --no-print-directory lint-fix-adventure; \
+	elif [ "$(SERVICE)" = "gateway" ]; then \
+		$(MAKE) --no-print-directory lint-fix-gateway; \
+	elif [ "$(SERVICE)" = "web" ]; then \
+		$(MAKE) --no-print-directory lint-fix-web; \
+	else \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|web$(NC)"; \
+		exit 1; \
+	fi
+endif
+
+lint-fix-adventure: ## Lance le lint --fix du service adventure
+	@echo "$(YELLOW)Lint fix adventure/api...$(NC)"
+	@cd $(SERVICES_DIR)/adventure/api && npm run lint:fix
+
+lint-fix-gateway: ## Lance le lint --fix du service gateway
+	@echo "$(YELLOW)Lint fix gateway/api...$(NC)"
+	@cd $(SERVICES_DIR)/gateway/api && npm run lint:fix
+
+lint-fix-web: ## Lance le lint --fix du service web
+	@echo "$(YELLOW)Lint fix web/client...$(NC)"
+	@cd $(SERVICES_DIR)/web/client && npm run lint:fix
 
 clean: down-volumes ## Nettoie tout (conteneurs, volumes, images)
 	@echo "$(YELLOW)Nettoyage des images non utilisées...$(NC)"
