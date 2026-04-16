@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-web lint-fix lint-fix-adventure lint-fix-gateway lint-fix-web
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-web lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-web
 
 # Configuration
 SERVICES_DIR := services
@@ -187,23 +187,28 @@ ifdef SERVICE
 		$(MAKE) --no-print-directory lint-adventure; \
 	elif [ "$(SERVICE)" = "gateway" ]; then \
 		$(MAKE) --no-print-directory lint-gateway; \
+	elif [ "$(SERVICE)" = "session" ]; then \
+		$(MAKE) --no-print-directory lint-session; \
 	elif [ "$(SERVICE)" = "web" ]; then \
 		$(MAKE) --no-print-directory lint-web; \
 	else \
-		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|web$(NC)"; \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|web$(NC)"; \
 		exit 1; \
 	fi
 else
 	@$(MAKE) --no-print-directory lint-status
 endif
 
-lint-status: ## Affiche l'état du lint de chaque service (adventure, gateway, web)
+lint-status: ## Affiche l'état du lint de chaque service (adventure, gateway, session, web)
 	@status=0; \
 	echo "$(BLUE)=== Lint status: adventure ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-adventure || status=1; \
 	echo ""; \
 	echo "$(BLUE)=== Lint status: gateway ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-gateway || status=1; \
+	echo ""; \
+	echo "$(BLUE)=== Lint status: session ===$(NC)"; \
+	$(MAKE) --no-print-directory lint-session || status=1; \
 	echo ""; \
 	echo "$(BLUE)=== Lint status: web ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-web || status=1; \
@@ -222,6 +227,10 @@ lint-gateway: ## Lance le lint du service gateway
 	@echo "$(YELLOW)Lint gateway/api...$(NC)"
 	@cd $(SERVICES_DIR)/gateway/api && npm run lint
 
+lint-session: ## Lance le lint du service session
+	@echo "$(YELLOW)Lint session/api...$(NC)"
+	@cd $(SERVICES_DIR)/session/api && npm run lint
+
 lint-web: ## Lance le lint du service web
 	@echo "$(YELLOW)Lint web/client...$(NC)"
 	@cd $(SERVICES_DIR)/web/client && npm run lint
@@ -235,10 +244,12 @@ else
 		$(MAKE) --no-print-directory lint-fix-adventure; \
 	elif [ "$(SERVICE)" = "gateway" ]; then \
 		$(MAKE) --no-print-directory lint-fix-gateway; \
+	elif [ "$(SERVICE)" = "session" ]; then \
+		$(MAKE) --no-print-directory lint-fix-session; \
 	elif [ "$(SERVICE)" = "web" ]; then \
 		$(MAKE) --no-print-directory lint-fix-web; \
 	else \
-		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|web$(NC)"; \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|web$(NC)"; \
 		exit 1; \
 	fi
 endif
@@ -250,6 +261,10 @@ lint-fix-adventure: ## Lance le lint --fix du service adventure
 lint-fix-gateway: ## Lance le lint --fix du service gateway
 	@echo "$(YELLOW)Lint fix gateway/api...$(NC)"
 	@cd $(SERVICES_DIR)/gateway/api && npm run lint:fix
+
+lint-fix-session: ## Lance le lint --fix du service session
+	@echo "$(YELLOW)Lint fix session/api...$(NC)"
+	@cd $(SERVICES_DIR)/session/api && npm run lint:fix
 
 lint-fix-web: ## Lance le lint --fix du service web
 	@echo "$(YELLOW)Lint fix web/client...$(NC)"

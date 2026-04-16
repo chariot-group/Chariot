@@ -7,6 +7,7 @@ alertmanager.yml
 
 # Logs
 adventure/logger/logs/*.log
+session/logger/logs/*.log
 client/logs/*.log
 mongo/logs/*.log
 /var/log/promtail/

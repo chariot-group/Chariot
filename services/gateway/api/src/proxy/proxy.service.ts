@@ -68,7 +68,6 @@ export class ProxyService {
   }
 
   /**
-   * Legacy method for backward compatibility
    * @deprecated Use forward('adventure', ...) instead
    */
   async forwardToAdventure(

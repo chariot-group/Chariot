@@ -1,0 +1,60 @@
+# Étape 1 : Installation de TOUTES les dépendances (dev + prod) pour le build
+FROM node:22-alpine AS deps
+RUN apk upgrade --no-cache && apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+# Install toutes les dépendances (TypeScript, etc. sont nécessaires pour le build)
+RUN npm ci --no-audit --no-fund
+
+# Étape 2 : Build de l'application
+FROM node:22-alpine AS builder
+RUN apk upgrade --no-cache
+WORKDIR /app
+
+# Copie les node_modules avec les devDependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Déclaration des ARG si tu as des variables d'environnement au build
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+# Build de l'application NestJS
+RUN npm run build && \
+    # Vérifie que le build a bien créé le fichier
+    test -f dist/main.js && \
+    echo "✅ Build successful: dist/main.js created"
+
+# Étape 3 : Installation des dépendances de production uniquement
+FROM node:22-alpine AS prod-deps
+RUN apk upgrade --no-cache
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+# Install uniquement les dépendances de production
+RUN npm ci --only=production --no-audit --no-fund
+
+# Étape 4 : Image finale de production (ultra légère)
+FROM node:22-alpine AS runner
+RUN apk upgrade --no-cache
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Création d'un utilisateur non-root pour la sécurité
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
+
+# Copie uniquement ce qui est nécessaire en production
+COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/package.json ./package.json
+
+RUN mkdir -p /app/logger/logs \
+ && chown -R nestjs:nodejs /app/logger
+
+USER nestjs
+
+# Utilise node directement (plus performant que npm start)
+CMD ["node", "dist/main.js"]

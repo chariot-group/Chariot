@@ -27,13 +27,9 @@ export class ServicesConfig {
    * Expected format: {SERVICE_NAME}_SERVICE_URL
    */
   private loadServicesFromEnv(): void {
-    // Load Adventure service (legacy)
-    const adventureUrl = process.env.ADVENTURE_SERVICE_URL || "http://chariot-adventure:9000";
-    this.registerService("adventure", adventureUrl);
-
-    // Scan for additional services with pattern {NAME}_SERVICE_URL
+    // Scan for services with pattern {NAME}_SERVICE_URL
     Object.keys(process.env).forEach((key) => {
-      if (key.endsWith("_SERVICE_URL") && key !== "ADVENTURE_SERVICE_URL") {
+      if (key.endsWith("_SERVICE_URL")) {
         const serviceName = key.replace("_SERVICE_URL", "").toLowerCase().replace(/_/g, "-");
         const serviceUrl = process.env[key];
         if (serviceUrl) {

@@ -30,8 +30,6 @@ services:
     container_name: chariot-adventure-integ
     restart: unless-stopped
     working_dir: /app
-    ports:
-      - "9000"
     environment:
       NODE_ENV: integration
       CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}
