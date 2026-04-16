@@ -124,12 +124,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.create(data, client.user.keycloakId);
-            if (!session) {
-                let message: string = 'Failed to create session';
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new InternalServerErrorException(message);
-            }
+            const { data: session } = await this.sessionService.create(data, client.user.keycloakId);
 
             client.join(session.id);
             client.emit('session:created', { session });
@@ -150,7 +145,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.join(data.sessionCode, data, client.user.keycloakId);
+            const { data: session } = await this.sessionService.join(data.sessionCode, data, client.user.keycloakId);
 
             client.join(session.id);
 
@@ -179,7 +174,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.leave(data.sessionCode, client.user.keycloakId);
+            const { data: session } = await this.sessionService.leave(data.sessionCode, client.user.keycloakId);
             const roomId = session.id;
 
             client.leave(roomId);
@@ -213,7 +208,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.launch(data.sessionCode, client.user.keycloakId);
+            const { data: session } = await this.sessionService.launch(data.sessionCode, client.user.keycloakId);
             const roomId = session.id;
 
             this.server.to(roomId).emit('session:launched', {
@@ -237,7 +232,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.close(data.sessionCode, client.user.keycloakId);
+            const { data: session } = await this.sessionService.close(data.sessionCode, client.user.keycloakId);
             const roomId = session.id;
 
             this.server.to(roomId).emit('session:closed', { sessionCode: data.sessionCode });

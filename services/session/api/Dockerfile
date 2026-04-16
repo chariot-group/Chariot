@@ -5,16 +5,15 @@ WORKDIR /app
 # Update Alpine packages to patch OS-level vulnerabilities
 RUN apk upgrade --no-cache
 
-# Copy package files first for better caching
+# Copy package files and Prisma schema before npm ci
+# so that @prisma/client postinstall generates the correct client
 COPY package*.json ./
+COPY prisma ./prisma
 
-# Install dependencies (this layer will be cached unless package.json changes)
+# Install dependencies (this layer will be cached unless package.json or schema changes)
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Generate Prisma client from current schema
-RUN npx prisma generate
-
-CMD ["npm", "run", "start:dev"]
+CMD ["sh", "-c", "npx prisma generate && npm run start:dev"]

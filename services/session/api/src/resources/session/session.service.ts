@@ -1,13 +1,21 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException, BadRequestException, GoneException, InternalServerErrorException } from '@nestjs/common';
+import {
+    Injectable,
+    Logger,
+    NotFoundException,
+    ForbiddenException,
+    BadRequestException,
+    GoneException,
+    InternalServerErrorException,
+    HttpException,
+} from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
 import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { SessionStatus } from '@prisma/client';
-import { Session, SessionParticipant, SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
-
-
+import { SessionParticipant, SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
+import { IResponse } from '@/common/dtos/response.dto';
 
 @Injectable()
 export class SessionService {
@@ -43,8 +51,36 @@ export class SessionService {
         private readonly redisService: RedisService,
     ) { }
 
-    async create(createSessionDto: CreateSessionDto, userId: string): Promise<SessionWithParticipants> {
+    private async _findSession(code: string): Promise<SessionWithParticipants> {
+        const session: SessionWithParticipants | null = await this.prisma.session.findFirst({
+            where: { code },
+            include: { participants: true },
+        });
+
+        if (!session) {
+            const message: string = `Session with code ${code} not found`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new NotFoundException(message);
+        }
+
+        if (session.deletedAt !== null) {
+            const message: string = `Session with code ${code} is deleted`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new GoneException(message);
+        }
+
+        if (session.status === SessionStatus.closed) {
+            const message: string = `Session with code ${code} is closed`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new GoneException(message);
+        }
+
+        return session;
+    }
+
+    async create(createSessionDto: CreateSessionDto, userId: string): Promise<IResponse<SessionWithParticipants>> {
         try {
+            const start: number = Date.now();
             const code = await this.generateUniqueCode();
 
             const session: SessionWithParticipants = await this.prisma.session.create({
@@ -57,51 +93,37 @@ export class SessionService {
                 include: { participants: true },
             });
 
-            return session;
+            const message: string = `Session #${session.id} created in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: session };
         } catch (error: any) {
+            if (error instanceof HttpException) throw error;
             const message: string = `Error creating session for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async findOne(code: string): Promise<SessionWithParticipants> {
+    async findOne(code: string): Promise<IResponse<SessionWithParticipants>> {
         try {
-            const session: SessionWithParticipants | null = await this.prisma.session.findFirst({
-                where: { code },
-                include: { participants: true },
-            });
+            const start: number = Date.now();
+            const session: SessionWithParticipants = await this._findSession(code);
 
-            if (!session) {
-                const message: string = `Session with code ${code} not found`;
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new NotFoundException(message);
-            }
-
-            if (session.deletedAt !== null) {
-                const message: string = `Session with code ${code} is deleted`;
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new GoneException(message);
-            }
-
-            if (session.status === SessionStatus.closed) {
-                const message: string = `Session with code ${code} is closed`;
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new GoneException(message);
-            }
-
-            return session;
+            const message: string = `Session with code ${code} found in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: session };
         } catch (error: any) {
+            if (error instanceof HttpException) throw error;
             const message: string = `Error retrieving session with code ${code}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
-
     }
 
-    async findAllByUser(userId: string): Promise<SessionWithParticipants[]> {
+    async findAllByUser(userId: string): Promise<IResponse<SessionWithParticipants[]>> {
         try {
-            return this.prisma.session.findMany({
+            const start: number = Date.now();
+            const sessions: SessionWithParticipants[] = await this.prisma.session.findMany({
                 where: {
                     deletedAt: null,
                     OR: [
@@ -112,25 +134,31 @@ export class SessionService {
                 include: { participants: true },
                 orderBy: { createdAt: 'desc' },
             });
+
+            const message: string = `Found ${sessions.length} session(s) for user ${userId} in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: sessions };
         } catch (error: any) {
+            if (error instanceof HttpException) throw error;
             const message: string = `Error retrieving sessions for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async launch(code: string, userId: string): Promise<SessionWithParticipants> {
+    async launch(code: string, userId: string): Promise<IResponse<SessionWithParticipants>> {
         try {
-            const session: SessionWithParticipants = await this.findOne(code);
+            const start: number = Date.now();
+            const session: SessionWithParticipants = await this._findSession(code);
 
             if (session.creatorUserId !== userId) {
-                let message: string = `User ${userId} is not the creator of session with code ${code}`;
+                const message: string = `User ${userId} is not the creator of session with code ${code}`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new ForbiddenException(message);
             }
 
             if (session.status !== SessionStatus.activated) {
-                let message: string = `Session with code ${code} cannot be launched from status "${session.status}"`;
+                const message: string = `Session with code ${code} cannot be launched from status "${session.status}"`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
@@ -147,26 +175,23 @@ export class SessionService {
                 include: { participants: true },
             });
 
-            // Set Redis TTL pour l'expiration automatique
             await this.redisService.setSessionExpiration(session.id, SessionService.EXPIRATION_SECONDS);
 
-            return updated;
+            const message: string = `Session with code ${code} launched in ${Date.now() - start}ms, expires at ${updated.expiresAt.toISOString()}`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: updated };
         } catch (error: any) {
+            if (error instanceof HttpException) throw error;
             const message: string = `Error launching session with code ${code}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async join(code: string, joinSessionDto: JoinSessionDto, userId: string): Promise<SessionWithParticipants> {
+    async join(code: string, joinSessionDto: JoinSessionDto, userId: string): Promise<IResponse<SessionWithParticipants>> {
         try {
-            const session: SessionWithParticipants = await this.findOne(code);
-
-            if (session.status === SessionStatus.closed) {
-                const message: string = `Session with code ${code} is closed, cannot join`;
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new BadRequestException(message);
-            }
+            const start: number = Date.now();
+            const session: SessionWithParticipants = await this._findSession(code);
 
             const alreadyJoined: boolean = session.participants.some(p => p.userId === userId);
             if (alreadyJoined) {
@@ -183,47 +208,66 @@ export class SessionService {
                 },
             });
 
-            return await this.findOne(code);
+            const updated: SessionWithParticipants = await this._findSession(code);
+            const message: string = `User ${userId} joined session with code ${code} in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: updated };
         } catch (error: any) {
+            if (error instanceof HttpException) throw error;
             const message: string = `Error joining session with code ${code} for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async leave(code: string, userId: string): Promise<SessionWithParticipants> {
+    async leave(code: string, userId: string): Promise<IResponse<SessionWithParticipants>> {
         try {
-            const session: SessionWithParticipants = await this.findOne(code);
+            const start: number = Date.now();
+            const session: SessionWithParticipants = await this._findSession(code);
 
             const participant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
-            if (!participant) {
+            const isCreator: boolean = session.creatorUserId === userId;
+
+            if (!participant && !isCreator) {
                 const message: string = `User ${userId} is not a participant of session with code ${code}`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
 
-            await this.prisma.sessionParticipant.delete({
-                where: { id: participant.id },
-            });
-
-            // Clôturer si la session est vide et le créateur a quitté
-            const remaining: SessionParticipant[] = session.participants.filter(p => p.userId !== userId);
-            if (remaining.length === 0 && session.creatorUserId === userId) {
-                return this.close(code, userId);
+            if (participant) {
+                await this.prisma.sessionParticipant.delete({
+                    where: { id: participant.id },
+                });
             }
 
-            return this.findOne(code);
+            // Clôturer si le créateur quitte la session
+            if (isCreator) {
+                const closed: SessionWithParticipants = await this.prisma.session.update({
+                    where: { id: session.id },
+                    data: { status: SessionStatus.closed, deletedAt: new Date() },
+                    include: { participants: true },
+                });
+                const message: string = `User ${userId} left and closed session with code ${code} in ${Date.now() - start}ms`;
+                this.logger.verbose(message, this.SERVICE_NAME);
+                return { message, data: closed };
+            }
+
+            const updated: SessionWithParticipants = await this._findSession(code);
+            const message: string = `User ${userId} left session with code ${code} in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: updated };
         } catch (error: any) {
+            if (error instanceof HttpException) throw error;
             const message: string = `Error leaving session with code ${code} for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
-
     }
 
-    async close(code: string, userId: string): Promise<SessionWithParticipants> {
+    async close(code: string, userId: string): Promise<IResponse<SessionWithParticipants>> {
         try {
-            const session: SessionWithParticipants = await this.findOne(code);
+            const start: number = Date.now();
+            const session: SessionWithParticipants = await this._findSession(code);
 
             if (session.creatorUserId !== userId) {
                 const message: string = `User ${userId} is not the creator of session with code ${code}, cannot close`;
@@ -231,43 +275,31 @@ export class SessionService {
                 throw new ForbiddenException(message);
             }
 
-            if (session.status === SessionStatus.closed) {
-                const message: string = `Session with code ${code} is already closed`;
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new BadRequestException(message);
-            }
-
-            // Supprimer le timer Redis
             await this.redisService.clearSessionExpiration(session.id);
 
-            return await this.prisma.session.update({
+            const updated: SessionWithParticipants = await this.prisma.session.update({
                 where: { id: session.id },
-                data: {
-                    status: SessionStatus.closed,
-                    deletedAt: new Date(),
-                },
+                data: { status: SessionStatus.closed, deletedAt: new Date() },
                 include: { participants: true },
             });
+
+            const message: string = `Session with code ${code} closed in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: updated };
         } catch (error: any) {
+            if (error instanceof HttpException) throw error;
             const message: string = `Error closing session with code ${code} for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
 
-    async findParticipants(code: string): Promise<SessionParticipantsDetails> {
+    async findParticipants(code: string): Promise<IResponse<SessionParticipantsDetails>> {
         try {
-            const session: {
-                creatorUserId: string;
-                creatorCampaignId: string;
-                participants: SessionParticipant[];
-            } | null = await this.prisma.session.findFirst({
+            const start: number = Date.now();
+            const session = await this.prisma.session.findFirst({
                 where: { code },
-                select: {
-                    creatorUserId: true,
-                    creatorCampaignId: true,
-                    participants: true,
-                },
+                include: { participants: true },
             });
 
             if (!session) {
@@ -276,14 +308,19 @@ export class SessionService {
                 throw new NotFoundException(message);
             }
 
-            return {
+            const result: SessionParticipantsDetails = {
                 author: {
                     userId: session.creatorUserId,
                     campaignId: session.creatorCampaignId,
                 },
                 participants: session.participants,
             };
+
+            const message: string = `Found ${result.participants.length} participant(s) for session with code ${code} in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: result };
         } catch (error: any) {
+            if (error instanceof HttpException) throw error;
             const message: string = `Error retrieving participants for session with code ${code}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);

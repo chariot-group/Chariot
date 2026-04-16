@@ -6,6 +6,7 @@ import HalfMastery from "@public/assets/mastery/half-mastery.svg";
 import BlueCircle from "@public/assets/icons/blue-circle.svg";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import Expert from "@public/assets/mastery/expert.svg";
+import { toast } from "react-toastify";
 
 /**
  * Vérifie si un joueur a maîtrisé une compétence spécifique

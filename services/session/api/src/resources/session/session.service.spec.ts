@@ -1,5 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { InternalServerErrorException } from '@nestjs/common';
+import {
+    InternalServerErrorException,
+    NotFoundException,
+    GoneException,
+    ForbiddenException,
+    BadRequestException,
+} from '@nestjs/common';
 import { SessionStatus } from '@prisma/client';
 import { SessionService } from '@/resources/session/session.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -84,24 +90,29 @@ describe('SessionService', () => {
     // ── create ────────────────────────────────────────────────────────────────
 
     describe('create', () => {
-        it('should create and return a session', async () => {
+        it('should create and return a wrapped session response', async () => {
             const session = makeSession();
+            mockPrismaSession.findFirst.mockResolvedValueOnce(null); // unique code check
             mockPrismaSession.create.mockResolvedValue(session);
 
             const result = await service.create({ campaignId: 'camp-uuid-1' }, 'user-uuid-1');
 
-            expect(result).toBe(session);
-            expect(mockPrismaSession.create).toHaveBeenCalledWith({
-                data: {
-                    creatorUserId: 'user-uuid-1',
-                    creatorCampaignId: 'camp-uuid-1',
-                    status: SessionStatus.activated,
-                },
-                include: { participants: true },
-            });
+            expect(result.data).toBe(session);
+            expect(result.message).toContain('Session #sess-uuid-1 created');
+            expect(mockPrismaSession.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        creatorUserId: 'user-uuid-1',
+                        creatorCampaignId: 'camp-uuid-1',
+                        status: SessionStatus.activated,
+                    }),
+                    include: { participants: true },
+                }),
+            );
         });
 
         it('should throw InternalServerErrorException when prisma fails', async () => {
+            mockPrismaSession.findFirst.mockResolvedValueOnce(null);
             mockPrismaSession.create.mockRejectedValue(new Error('DB error'));
 
             await expect(service.create({ campaignId: 'camp-1' }, 'user-1')).rejects.toThrow(
@@ -113,56 +124,58 @@ describe('SessionService', () => {
     // ── findOne ───────────────────────────────────────────────────────────────
 
     describe('findOne', () => {
-        it('should return the session when found and active', async () => {
+        it('should return a wrapped session response when found and active', async () => {
             const session = makeSession();
             mockPrismaSession.findFirst.mockResolvedValue(session);
 
-            const result = await service.findOne('sess-uuid-1');
+            const result = await service.findOne('CODE123');
 
-            expect(result).toBe(session);
+            expect(result.data).toBe(session);
+            expect(result.message).toContain('CODE123 found');
             expect(mockPrismaSession.findFirst).toHaveBeenCalledWith({
-                where: { id: 'sess-uuid-1' },
+                where: { code: 'CODE123' },
                 include: { participants: true },
             });
         });
 
-        it('should throw InternalServerErrorException when session is null', async () => {
+        it('should throw NotFoundException when session is null', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(null);
 
-            await expect(service.findOne('sess-uuid-1')).rejects.toThrow(InternalServerErrorException);
+            await expect(service.findOne('CODE123')).rejects.toThrow(NotFoundException);
         });
 
-        it('should throw InternalServerErrorException when session is deleted', async () => {
+        it('should throw GoneException when session is deleted', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(makeSession({ deletedAt: new Date() }));
 
-            await expect(service.findOne('sess-uuid-1')).rejects.toThrow(InternalServerErrorException);
+            await expect(service.findOne('CODE123')).rejects.toThrow(GoneException);
         });
 
-        it('should throw InternalServerErrorException when session is closed', async () => {
+        it('should throw GoneException when session is closed', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(
                 makeSession({ status: SessionStatus.closed }),
             );
 
-            await expect(service.findOne('sess-uuid-1')).rejects.toThrow(InternalServerErrorException);
+            await expect(service.findOne('CODE123')).rejects.toThrow(GoneException);
         });
 
         it('should throw InternalServerErrorException on prisma error', async () => {
             mockPrismaSession.findFirst.mockRejectedValue(new Error('DB error'));
 
-            await expect(service.findOne('sess-uuid-1')).rejects.toThrow(InternalServerErrorException);
+            await expect(service.findOne('CODE123')).rejects.toThrow(InternalServerErrorException);
         });
     });
 
     // ── findAllByUser ─────────────────────────────────────────────────────────
 
     describe('findAllByUser', () => {
-        it('should return all sessions for a user', async () => {
+        it('should return a wrapped sessions list response', async () => {
             const sessions = [makeSession()];
             mockPrismaSession.findMany.mockResolvedValue(sessions);
 
             const result = await service.findAllByUser('user-uuid-1');
 
-            expect(result).toBe(sessions);
+            expect(result.data).toBe(sessions);
+            expect(result.message).toContain('Found 1 session(s)');
             expect(mockPrismaSession.findMany).toHaveBeenCalledWith({
                 where: {
                     deletedAt: null,
@@ -177,8 +190,6 @@ describe('SessionService', () => {
         });
 
         it('should throw InternalServerErrorException on synchronous prisma error', async () => {
-            // `return promise` (no await) bypasses try-catch for rejections;
-            // a synchronous throw from findMany IS caught by the catch block.
             mockPrismaSession.findMany.mockImplementation(() => {
                 throw new Error('sync DB error');
             });
@@ -197,9 +208,10 @@ describe('SessionService', () => {
             mockPrismaSession.update.mockResolvedValue(launched);
             mockRedis.setSessionExpiration.mockResolvedValue(undefined);
 
-            const result = await service.launch('sess-uuid-1', 'user-uuid-1');
+            const result = await service.launch('CODE123', 'user-uuid-1');
 
-            expect(result).toBe(launched);
+            expect(result.data).toBe(launched);
+            expect(result.message).toContain('CODE123 launched');
             expect(mockPrismaSession.update).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: { id: 'sess-uuid-1' },
@@ -209,32 +221,26 @@ describe('SessionService', () => {
             expect(mockRedis.setSessionExpiration).toHaveBeenCalledWith('sess-uuid-1', 28800);
         });
 
-        it('should throw InternalServerErrorException when findOne fails', async () => {
+        it('should throw NotFoundException when session does not exist', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(null);
 
-            await expect(service.launch('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.launch('CODE123', 'user-uuid-1')).rejects.toThrow(NotFoundException);
         });
 
-        it('should throw InternalServerErrorException when user is not the creator', async () => {
+        it('should throw ForbiddenException when user is not the creator', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(
                 makeSession({ creatorUserId: 'other-user' }),
             );
 
-            await expect(service.launch('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.launch('CODE123', 'user-uuid-1')).rejects.toThrow(ForbiddenException);
         });
 
-        it('should throw InternalServerErrorException when session is not activated', async () => {
+        it('should throw BadRequestException when session is not activated', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(
                 makeSession({ creatorUserId: 'user-uuid-1', status: SessionStatus.launched }),
             );
 
-            await expect(service.launch('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.launch('CODE123', 'user-uuid-1')).rejects.toThrow(BadRequestException);
         });
 
         it('should throw InternalServerErrorException when prisma update fails', async () => {
@@ -243,7 +249,7 @@ describe('SessionService', () => {
             );
             mockPrismaSession.update.mockRejectedValue(new Error('DB error'));
 
-            await expect(service.launch('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
+            await expect(service.launch('CODE123', 'user-uuid-1')).rejects.toThrow(
                 InternalServerErrorException,
             );
         });
@@ -252,7 +258,7 @@ describe('SessionService', () => {
     // ── join ──────────────────────────────────────────────────────────────────
 
     describe('join', () => {
-        it('should add the user to the session and return updated session', async () => {
+        it('should add the user to the session and return a wrapped response', async () => {
             const session = makeSession({ participants: [] });
             const updated = makeSession({ participants: [makeParticipant({ userId: 'user-uuid-2' })] });
             mockPrismaSession.findFirst
@@ -260,9 +266,10 @@ describe('SessionService', () => {
                 .mockResolvedValueOnce(updated);
             mockPrismaParticipant.create.mockResolvedValue({});
 
-            const result = await service.join('sess-uuid-1', { characterId: 'char-1' }, 'user-uuid-2');
+            const result = await service.join('CODE123', { characterId: 'char-1' }, 'user-uuid-2');
 
-            expect(result).toBe(updated);
+            expect(result.data).toBe(updated);
+            expect(result.message).toContain('user-uuid-2 joined');
             expect(mockPrismaParticipant.create).toHaveBeenCalledWith({
                 data: {
                     sessionId: 'sess-uuid-1',
@@ -272,33 +279,31 @@ describe('SessionService', () => {
             });
         });
 
-        it('should throw InternalServerErrorException when findOne fails', async () => {
+        it('should throw NotFoundException when session does not exist', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(null);
 
-            await expect(service.join('sess-uuid-1', { characterId: 'char-1' }, 'user-1')).rejects.toThrow(
-                InternalServerErrorException,
+            await expect(service.join('CODE123', { characterId: 'char-1' }, 'user-1')).rejects.toThrow(
+                NotFoundException,
             );
         });
 
-        it('should throw InternalServerErrorException when session is closed (bypassing findOne)', async () => {
-            jest.spyOn(service, 'findOne').mockResolvedValueOnce(
-                makeSession({ status: SessionStatus.closed }) as any,
-            );
+        it('should throw GoneException when session is deleted', async () => {
+            mockPrismaSession.findFirst.mockResolvedValue(makeSession({ deletedAt: new Date() }));
 
-            await expect(service.join('sess-uuid-1', { characterId: 'char-1' }, 'user-1')).rejects.toThrow(
-                InternalServerErrorException,
+            await expect(service.join('CODE123', { characterId: 'char-1' }, 'user-1')).rejects.toThrow(
+                GoneException,
             );
         });
 
-        it('should throw InternalServerErrorException when user is already in session', async () => {
+        it('should throw BadRequestException when user is already in session', async () => {
             const session = makeSession({
                 participants: [makeParticipant({ userId: 'user-uuid-2' })],
             });
             mockPrismaSession.findFirst.mockResolvedValue(session);
 
             await expect(
-                service.join('sess-uuid-1', { characterId: 'char-1' }, 'user-uuid-2'),
-            ).rejects.toThrow(InternalServerErrorException);
+                service.join('CODE123', { characterId: 'char-1' }, 'user-uuid-2'),
+            ).rejects.toThrow(BadRequestException);
         });
 
         it('should throw InternalServerErrorException when participant create fails', async () => {
@@ -306,7 +311,7 @@ describe('SessionService', () => {
             mockPrismaParticipant.create.mockRejectedValue(new Error('DB error'));
 
             await expect(
-                service.join('sess-uuid-1', { characterId: 'char-1' }, 'user-uuid-2'),
+                service.join('CODE123', { characterId: 'char-1' }, 'user-uuid-2'),
             ).rejects.toThrow(InternalServerErrorException);
         });
     });
@@ -314,7 +319,7 @@ describe('SessionService', () => {
     // ── leave ─────────────────────────────────────────────────────────────────
 
     describe('leave', () => {
-        it('should remove participant and return updated session (others remain)', async () => {
+        it('should remove participant and return a wrapped response (others remain)', async () => {
             const participant1 = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
             const participant2 = makeParticipant({ id: 'part-2', userId: 'user-uuid-2' });
             const session = makeSession({ participants: [participant1, participant2] });
@@ -325,9 +330,10 @@ describe('SessionService', () => {
                 .mockResolvedValueOnce(updated);
             mockPrismaParticipant.delete.mockResolvedValue({});
 
-            const result = await service.leave('sess-uuid-1', 'user-uuid-1');
+            const result = await service.leave('CODE123', 'user-uuid-1');
 
-            expect(result).toBe(updated);
+            expect(result.data).toBe(updated);
+            expect(result.message).toContain('user-uuid-1 left');
             expect(mockPrismaParticipant.delete).toHaveBeenCalledWith({
                 where: { id: 'part-1' },
             });
@@ -345,37 +351,31 @@ describe('SessionService', () => {
                 deletedAt: new Date(),
             });
 
-            // findOne in leave + findOne in close
-            mockPrismaSession.findFirst
-                .mockResolvedValueOnce(session)
-                .mockResolvedValueOnce(session);
+            mockPrismaSession.findFirst.mockResolvedValueOnce(session);
             mockPrismaParticipant.delete.mockResolvedValue({});
             mockRedis.clearSessionExpiration.mockResolvedValue(undefined);
             mockPrismaSession.update.mockResolvedValue(closed);
 
-            const result = await service.leave('sess-uuid-1', 'user-uuid-1');
+            const result = await service.leave('CODE123', 'user-uuid-1');
 
-            expect(result).toBe(closed);
+            expect(result.data).toBe(closed);
+            expect(result.message).toContain('left and closed');
             expect(mockRedis.clearSessionExpiration).toHaveBeenCalledWith('sess-uuid-1');
         });
 
-        it('should throw InternalServerErrorException when findOne fails', async () => {
+        it('should throw NotFoundException when session does not exist', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(null);
 
-            await expect(service.leave('sess-uuid-1', 'user-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.leave('CODE123', 'user-1')).rejects.toThrow(NotFoundException);
         });
 
-        it('should throw InternalServerErrorException when user is not a participant', async () => {
+        it('should throw BadRequestException when user is not a participant', async () => {
             const session = makeSession({
                 participants: [makeParticipant({ userId: 'other-user' })],
             });
             mockPrismaSession.findFirst.mockResolvedValue(session);
 
-            await expect(service.leave('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.leave('CODE123', 'user-uuid-1')).rejects.toThrow(BadRequestException);
         });
 
         it('should throw InternalServerErrorException when participant delete fails', async () => {
@@ -384,7 +384,7 @@ describe('SessionService', () => {
             mockPrismaSession.findFirst.mockResolvedValue(session);
             mockPrismaParticipant.delete.mockRejectedValue(new Error('DB error'));
 
-            await expect(service.leave('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
+            await expect(service.leave('CODE123', 'user-uuid-1')).rejects.toThrow(
                 InternalServerErrorException,
             );
         });
@@ -393,7 +393,7 @@ describe('SessionService', () => {
     // ── close ─────────────────────────────────────────────────────────────────
 
     describe('close', () => {
-        it('should close the session and clear Redis expiration', async () => {
+        it('should close the session and return a wrapped response', async () => {
             const session = makeSession({ creatorUserId: 'user-uuid-1' });
             const closed = makeSession({
                 creatorUserId: 'user-uuid-1',
@@ -404,9 +404,10 @@ describe('SessionService', () => {
             mockRedis.clearSessionExpiration.mockResolvedValue(undefined);
             mockPrismaSession.update.mockResolvedValue(closed);
 
-            const result = await service.close('sess-uuid-1', 'user-uuid-1');
+            const result = await service.close('CODE123', 'user-uuid-1');
 
-            expect(result).toBe(closed);
+            expect(result.data).toBe(closed);
+            expect(result.message).toContain('CODE123 closed');
             expect(mockRedis.clearSessionExpiration).toHaveBeenCalledWith('sess-uuid-1');
             expect(mockPrismaSession.update).toHaveBeenCalledWith({
                 where: { id: 'sess-uuid-1' },
@@ -418,32 +419,26 @@ describe('SessionService', () => {
             });
         });
 
-        it('should throw InternalServerErrorException when findOne fails', async () => {
+        it('should throw NotFoundException when session does not exist', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(null);
 
-            await expect(service.close('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.close('CODE123', 'user-uuid-1')).rejects.toThrow(NotFoundException);
         });
 
-        it('should throw InternalServerErrorException when user is not the creator', async () => {
+        it('should throw ForbiddenException when user is not the creator', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(
                 makeSession({ creatorUserId: 'other-user' }),
             );
 
-            await expect(service.close('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.close('CODE123', 'user-uuid-1')).rejects.toThrow(ForbiddenException);
         });
 
-        it('should throw InternalServerErrorException when session is already closed (bypassing findOne)', async () => {
-            jest.spyOn(service, 'findOne').mockResolvedValueOnce(
-                makeSession({ creatorUserId: 'user-uuid-1', status: SessionStatus.closed }) as any,
+        it('should throw GoneException when session is already closed', async () => {
+            mockPrismaSession.findFirst.mockResolvedValue(
+                makeSession({ creatorUserId: 'user-uuid-1', status: SessionStatus.closed }),
             );
 
-            await expect(service.close('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.close('CODE123', 'user-uuid-1')).rejects.toThrow(GoneException);
         });
 
         it('should throw InternalServerErrorException when prisma update fails', async () => {
@@ -453,7 +448,7 @@ describe('SessionService', () => {
             mockRedis.clearSessionExpiration.mockResolvedValue(undefined);
             mockPrismaSession.update.mockRejectedValue(new Error('DB error'));
 
-            await expect(service.close('sess-uuid-1', 'user-uuid-1')).rejects.toThrow(
+            await expect(service.close('CODE123', 'user-uuid-1')).rejects.toThrow(
                 InternalServerErrorException,
             );
         });
@@ -462,7 +457,7 @@ describe('SessionService', () => {
     // ── findParticipants ──────────────────────────────────────────────────────
 
     describe('findParticipants', () => {
-        it('should return participants details when session found', async () => {
+        it('should return a wrapped participants details response', async () => {
             const participants = [makeParticipant()];
             mockPrismaSession.findFirst.mockResolvedValue({
                 creatorUserId: 'user-uuid-1',
@@ -470,34 +465,29 @@ describe('SessionService', () => {
                 participants,
             });
 
-            const result = await service.findParticipants('sess-uuid-1');
+            const result = await service.findParticipants('CODE123');
 
-            expect(result).toEqual({
+            expect(result.data).toEqual({
                 author: { userId: 'user-uuid-1', campaignId: 'camp-uuid-1' },
                 participants,
             });
+            expect(result.message).toContain('Found 1 participant(s)');
             expect(mockPrismaSession.findFirst).toHaveBeenCalledWith({
-                where: { id: 'sess-uuid-1' },
-                select: {
-                    creatorUserId: true,
-                    creatorCampaignId: true,
-                    participants: true,
-                },
+                where: { code: 'CODE123' },
+                include: { participants: true },
             });
         });
 
-        it('should throw InternalServerErrorException when session not found', async () => {
+        it('should throw NotFoundException when session is not found', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(null);
 
-            await expect(service.findParticipants('sess-uuid-1')).rejects.toThrow(
-                InternalServerErrorException,
-            );
+            await expect(service.findParticipants('CODE123')).rejects.toThrow(NotFoundException);
         });
 
         it('should throw InternalServerErrorException on prisma error', async () => {
             mockPrismaSession.findFirst.mockRejectedValue(new Error('DB error'));
 
-            await expect(service.findParticipants('sess-uuid-1')).rejects.toThrow(
+            await expect(service.findParticipants('CODE123')).rejects.toThrow(
                 InternalServerErrorException,
             );
         });
