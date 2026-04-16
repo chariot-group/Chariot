@@ -226,22 +226,23 @@ export class SessionService {
             const session: SessionWithParticipants = await this._findSession(code);
 
             const participant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
-            const isCreator: boolean = session.creatorUserId === userId;
 
-            if (!participant && !isCreator) {
+            if (!participant) {
                 const message: string = `User ${userId} is not a participant of session with code ${code}`;
                 this.logger.error(message, null, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
 
-            if (participant) {
-                await this.prisma.sessionParticipant.delete({
-                    where: { id: participant.id },
-                });
-            }
+            await this.prisma.sessionParticipant.delete({
+                where: { id: participant.id },
+            });
 
-            // Clôturer si le créateur quitte la session
-            if (isCreator) {
+            const remainingCount: number = session.participants.length - 1;
+            const isCreator: boolean = session.creatorUserId === userId;
+
+            // Clôturer si le créateur quitte et qu'il n'y a plus de participants
+            if (isCreator && remainingCount === 0) {
+                await this.redisService.clearSessionExpiration(session.id);
                 const closed: SessionWithParticipants = await this.prisma.session.update({
                     where: { id: session.id },
                     data: { status: SessionStatus.closed, deletedAt: new Date() },
