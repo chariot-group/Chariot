@@ -146,11 +146,11 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @SubscribeMessage('session:join')
     async handleJoinSession(
         @ConnectedSocket() client: AuthenticatedSocket,
-        @MessageBody() data: { sessionId: string } & JoinSessionDto,
+        @MessageBody() data: { sessionCode: string } & JoinSessionDto,
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.join(data.sessionId, data, client.user.keycloakId);
+            const session = await this.sessionService.join(data.sessionCode, data, client.user.keycloakId);
 
             client.join(session.id);
 
@@ -175,12 +175,12 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @SubscribeMessage('session:leave')
     async handleLeaveSession(
         @ConnectedSocket() client: AuthenticatedSocket,
-        @MessageBody() data: { sessionId: string },
+        @MessageBody() data: { sessionCode: string },
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.leave(data.sessionId, client.user.keycloakId);
-            const roomId = data.sessionId;
+            const session = await this.sessionService.leave(data.sessionCode, client.user.keycloakId);
+            const roomId = session.id;
 
             client.leave(roomId);
 
@@ -190,11 +190,11 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 username: client.user.username,
             });
 
-            client.emit('session:left', { sessionId: roomId });
+            client.emit('session:left', { sessionCode: data.sessionCode });
 
             // Si la session est close, notifier tout le monde
             if (session.status === 'closed') {
-                this.server.to(roomId).emit('session:closed', { sessionId: roomId });
+                this.server.to(roomId).emit('session:closed', { sessionCode: data.sessionCode });
             }
             let duration: number = (Date.now() - start) / 1000;
 
@@ -209,12 +209,12 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @SubscribeMessage('session:launch')
     async handleLaunchSession(
         @ConnectedSocket() client: AuthenticatedSocket,
-        @MessageBody() data: { sessionId: string },
+        @MessageBody() data: { sessionCode: string },
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.launch(data.sessionId, client.user.keycloakId);
-            const roomId = data.sessionId;
+            const session = await this.sessionService.launch(data.sessionCode, client.user.keycloakId);
+            const roomId = session.id;
 
             this.server.to(roomId).emit('session:launched', {
                 session,
@@ -233,14 +233,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @SubscribeMessage('session:close')
     async handleCloseSession(
         @ConnectedSocket() client: AuthenticatedSocket,
-        @MessageBody() data: { sessionId: string },
+        @MessageBody() data: { sessionCode: string },
     ) {
         try {
             let start: number = Date.now();
-            await this.sessionService.close(data.sessionId, client.user.keycloakId);
-            const roomId = data.sessionId;
+            const session = await this.sessionService.close(data.sessionCode, client.user.keycloakId);
+            const roomId = session.id;
 
-            this.server.to(roomId).emit('session:closed', { sessionId: roomId });
+            this.server.to(roomId).emit('session:closed', { sessionCode: data.sessionCode });
 
             let duration: number = (Date.now() - start) / 1000;
             this.logger.verbose(`Session ${roomId} closed by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);

@@ -41,6 +41,20 @@ export default function CharactersWithoutGroupList() {
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Refs to keep stable handleObserver without recreating the IntersectionObserver on every state change
+  const hasMoreRef = useRef(hasMore);
+  const loadingMoreRef = useRef(loadingMore);
+  const loadMoreCharactersRef = useRef(loadMoreCharacters);
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+  useEffect(() => {
+    loadingMoreRef.current = loadingMore;
+  }, [loadingMore]);
+  useEffect(() => {
+    loadMoreCharactersRef.current = loadMoreCharacters;
+  }, [loadMoreCharacters]);
+
   const pathname = usePathname();
 
   const selectedCharacterId = pathname?.includes("/characters/")
@@ -80,11 +94,11 @@ export default function CharactersWithoutGroupList() {
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
-      if (target.isIntersecting && hasMore && !loadingMore) {
-        loadMoreCharacters();
+      if (target.isIntersecting && hasMoreRef.current && !loadingMoreRef.current) {
+        loadMoreCharactersRef.current();
       }
     },
-    [hasMore, loadingMore, loadMoreCharacters],
+    [], // stable — reads live values via refs
   );
 
   // Setup Intersection Observer for infinite scroll

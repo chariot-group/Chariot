@@ -15,6 +15,7 @@ enum SessionStatus {
 
 model Session {
   id        String        @id @default(uuid())
+  code      String        @unique @map("code")
   status    SessionStatus @default(activated)
   expiresAt DateTime?     @map("expires_at")
   deletedAt DateTime?     @map("deleted_at")
