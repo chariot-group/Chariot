@@ -18,6 +18,7 @@ services:
       NODE_ENV: development
       NEXT_PUBLIC_ENV_NAME: development
       NEXT_PUBLIC_API_URL: ${GATEWAY_URL:-http://localhost:8082}
+      NEXT_PUBLIC_SESSION_WS_URL: ${SESSION_WS_URL:-http://localhost:9002}
       NEXT_PUBLIC_CODEX_URL: ${CODEX_URL:-http://localhost:9001}
       NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
       NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}

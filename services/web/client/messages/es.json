@@ -34,8 +34,12 @@
     "reset": "Reiniciar",
     "returnToBattle": "Volver a la batalla",
     "joinSession": "Unirse a la sesión",
+    "joinSessionDialogTitle": "Unirse a una sesión",
+    "joinSessionErrorNotFound": "No se encontró ninguna sesión para este código.",
+    "joinSessionErrorClosed": "Esta sesión está cerrada.",
+    "joinSessionSelectCharacterPlaceholder": "Seleccionar un personaje",
     "comingSoon": "Próximamente",
-    "alreadyInSession": "No se puede iniciar una sesión: ya estás en una sesión",
+    "alreadyInSession": "No es posible realizar esta acción, ya estás conectado.",
     "returnToSheet": "Volver a la hoja de personaje",
     "selectCampaign": "Seleccionar campaña",
     "selectedCampaign": "Campaña seleccionada",
@@ -822,7 +826,10 @@
       "masterGame": "Maestro de juego",
       "leaveButton": "Abandonar la sesión",
       "addTokenButton": "Agregar un token: 0/{count}",
-      "addTokenAriaLabel": "Agregar un token (0 de {count} disponibles)"
+      "addTokenAriaLabel": "Agregar un token (0 de {count} disponibles)",
+      "noCharacter": "Sin personaje",
+      "selectCharacterPlaceholder": "Cambiar personaje",
+      "loadingCharacters": "Cargando..."
     },
     "sessionCode": {
       "heading": "Código de sesión",
@@ -837,6 +844,8 @@
       "participantsError": "No se pueden obtener los participantes",
       "leaveSuccess": "Has abandonado la sesión",
       "leaveError": "No se puede abandonar la sesión",
+      "characterChanged": "Personaje cambiado con éxito",
+      "characterChangeError": "No se puede cambiar el personaje",
       "copySuccess": "Código copiado al portapapeles",
       "copyError": "No se puede copiar el código",
       "copyNotSupported": "La copia no está soportada por este navegador"

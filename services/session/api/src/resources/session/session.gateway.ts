@@ -181,11 +181,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             client.join(session.id);
 
+            const joinedParticipant = session.participants.find((p) => p.userId === client.user.keycloakId);
+
             // Notifier les autres participants
             client.to(session.id).emit('session:participant-joined', {
                 userId: client.user.keycloakId,
                 username: client.user.username,
                 characterId: data.characterId,
+                status: joinedParticipant?.status ?? 'connected',
             });
 
             client.emit('session:joined', { session });
@@ -252,6 +255,30 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             this.logger.verbose(`Session ${roomId} launched by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
             let message: string = `Failed to launch session: ${error.message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            client.emit('session:error', { message });
+        }
+    }
+
+    @SubscribeMessage('session:change-character')
+    async handleChangeCharacter(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string; characterId: string },
+    ) {
+        try {
+            let start: number = Date.now();
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.changeCharacter(data.sessionId, data.characterId, client.user.keycloakId));
+            const roomId = session.id;
+
+            this.server.to(roomId).emit('session:participant-character-changed', {
+                userId: client.user.keycloakId,
+                characterId: data.characterId,
+            });
+
+            let duration: number = (Date.now() - start) / 1000;
+            this.logger.verbose(`${client.user.username} changed character in session ${roomId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+        } catch (error: any) {
+            let message: string = `Failed to change character: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             client.emit('session:error', { message });
         }

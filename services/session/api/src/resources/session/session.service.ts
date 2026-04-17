@@ -373,6 +373,36 @@ export class SessionService {
         }
     }
 
+    async changeCharacter(code: string, characterId: string, userId: string): Promise<IResponse<SessionWithParticipants>> {
+        try {
+            const start: number = Date.now();
+            const session: SessionWithParticipants = await this._findSession(code);
+
+            const participant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
+
+            if (!participant) {
+                const message: string = `User ${userId} is not a participant of session with code ${code}`;
+                this.logger.error(message, null, this.SERVICE_NAME);
+                throw new NotFoundException(message);
+            }
+
+            await this.prisma.sessionParticipant.update({
+                where: { id: participant.id },
+                data: { characterId },
+            });
+
+            const updated: SessionWithParticipants = await this._findSession(code);
+            const message: string = `User ${userId} changed character to ${characterId} in session with code ${code} in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: updated };
+        } catch (error: any) {
+            if (error instanceof HttpException) throw error;
+            const message: string = `Error changing character in session with code ${code} for user ${userId}: ${error.message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
     async findParticipants(code: string): Promise<IResponse<SessionParticipantsDetails>> {
         try {
             const start: number = Date.now();

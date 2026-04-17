@@ -34,8 +34,12 @@
     "reset": "Reset",
     "returnToBattle": "Return to Battle",
     "joinSession": "Join Session",
+    "joinSessionDialogTitle": "Join a Session",
+    "joinSessionErrorNotFound": "No session found for this code.",
+    "joinSessionErrorClosed": "This session is closed.",
+    "joinSessionSelectCharacterPlaceholder": "Select a character",
     "comingSoon": "Coming soon",
-    "alreadyInSession": "Cannot launch a session: you are already in a session",
+    "alreadyInSession": "Action cannot be performed; you are already logged in.",
     "returnToSheet": "Return to Character Sheet",
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
@@ -821,7 +825,10 @@
       "masterGame": "Game Master",
       "leaveButton": "Leave session",
       "addTokenButton": "Add a token: 0/{count}",
-      "addTokenAriaLabel": "Add a token (0 of {count} available)"
+      "addTokenAriaLabel": "Add a token (0 of {count} available)",
+      "noCharacter": "No character",
+      "selectCharacterPlaceholder": "Change character",
+      "loadingCharacters": "Loading..."
     },
     "sessionCode": {
       "heading": "Session code",
@@ -836,6 +843,8 @@
       "participantsError": "Unable to fetch participants",
       "leaveSuccess": "You have left the session",
       "leaveError": "Unable to leave the session",
+      "characterChanged": "Character changed successfully",
+      "characterChangeError": "Unable to change character",
       "copySuccess": "Code copied to clipboard",
       "copyError": "Unable to copy the code",
       "copyNotSupported": "Copy is not supported by this browser"

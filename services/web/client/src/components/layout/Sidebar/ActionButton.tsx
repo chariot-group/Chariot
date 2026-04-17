@@ -15,6 +15,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { is } from "zod/v4/locales";
 
 interface ActionButtonConfig {
   label: string;
@@ -119,11 +121,11 @@ export function ActionButton() {
           label: t("joinSession"),
           state: "joinSession",
           action: () => {},
-          disabled: true,
+          disabled: isInSession,
           icon: <Users className="size-6" />,
           backgroundColor: "bg-green",
           textColor: "text-black",
-          tooltip: t("comingSoon"),
+          tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
         };
       }
 
@@ -163,6 +165,10 @@ export function ActionButton() {
       <span className="text-lg">{button.label}</span>
     </Button>
   );
+
+  if (button.state === "joinSession" && !button.disabled) {
+    return <JoinSessionDialog>{buttonContent}</JoinSessionDialog>;
+  }
 
   return button.disabled && button.tooltip ? (
     <Tooltip>

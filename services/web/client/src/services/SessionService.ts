@@ -1,5 +1,7 @@
 import apiClient from '@/services/ApiService';
 
+export type SessionStatus = 'activated' | 'launched' | 'closed';
+
 export type ParticipantStatus = 'connected' | 'disconnected' | 'MasterGame';
 
 export type SessionParticipant = {
@@ -16,6 +18,18 @@ export type SessionParticipantsDetails = {
         userId: string;
         campaignId: string;
     };
+    participants: SessionParticipant[];
+};
+
+export type SessionEntity = {
+    id: string;
+    status: SessionStatus;
+    creatorUserId: string;
+    creatorCampaignId: string;
+    expiresAt: string | null;
+    deletedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
     participants: SessionParticipant[];
 };
 
@@ -36,14 +50,28 @@ class SessionService {
         window.location.href = `/campaigns/${campaignId}/session/${code}`;
     }
 
-    async getSession(code: string): Promise<void> {
+    async getSession(code: string): Promise<SessionEntity> {
         const gatewayUrl = process.env.NEXT_PUBLIC_API_URL;
 
         if (!gatewayUrl) {
             throw new Error('API URL is not defined. Set NEXT_PUBLIC_API_URL in your environment.');
         }
 
-        await apiClient().get(`${gatewayUrl}/session/sessions/${code}`);
+        const response = await apiClient().get<{ data: SessionEntity }>(
+            `${gatewayUrl}/session/sessions/${code}`,
+        );
+
+        return response.data.data;
+    }
+
+    async joinSession(code: string, characterId: string): Promise<void> {
+        const gatewayUrl = process.env.NEXT_PUBLIC_API_URL;
+
+        if (!gatewayUrl) {
+            throw new Error('API URL is not defined. Set NEXT_PUBLIC_API_URL in your environment.');
+        }
+
+        await apiClient().post(`${gatewayUrl}/session/sessions/${code}/join`, { characterId });
     }
 
     async getParticipants(code: string): Promise<SessionParticipantsDetails> {
