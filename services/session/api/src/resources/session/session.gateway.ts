@@ -79,6 +79,19 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             this.logger.verbose(`Evicted ${evictedUserIds.length} participants from session ${sessionId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         });
+
+        // Écouter le timer d'inactivité (tous les joueurs déconnectés pendant 5 min)
+        this.redisService.onEmptySessionExpired('gateway', async (sessionId: string) => {
+            this.logger.verbose(`Session ${sessionId} empty timer expired, closing session`, this.SERVICE_NAME);
+            let start: number = Date.now();
+            const evictedUserIds: string[] = await this.sessionService.expireSession(sessionId);
+
+            this.server.to(sessionId).emit('session:closed', { sessionId });
+            this.server.in(sessionId).socketsLeave(sessionId);
+            let duration: number = (Date.now() - start) / 1000;
+
+            this.logger.verbose(`Closed empty session ${sessionId}, evicted ${evictedUserIds.length} participant(s) in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+        });
     }
 
     async handleConnection(client: AuthenticatedSocket) {
@@ -115,6 +128,19 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     handleDisconnect(client: AuthenticatedSocket) {
         if (client.user) {
             this.logger.verbose(`Client disconnected: ${client.user.username} (${client.id})`, this.SERVICE_NAME);
+
+            // Marquer le participant comme déconnecté dans toutes les sessions qu'il occupait
+            const sessionRooms = [...client.rooms].filter(r => r !== client.id);
+            for (const sessionId of sessionRooms) {
+                this.sessionService.disconnectParticipant(sessionId, client.user.keycloakId).then(() => {
+                    client.to(sessionId).emit('session:participant-disconnected', {
+                        userId: client.user.keycloakId,
+                        username: client.user.username,
+                    });
+                }).catch((err: any) => {
+                    this.logger.error(`Error handling disconnect for session ${sessionId}: ${err.message}`, null, this.SERVICE_NAME);
+                });
+            }
         }
     }
 

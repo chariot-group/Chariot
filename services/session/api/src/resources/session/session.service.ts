@@ -13,7 +13,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
 import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
-import { SessionStatus } from '@prisma/client';
+import { ParticipantStatus, SessionStatus } from '@prisma/client';
 import { SessionParticipant, SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
 import { IResponse } from '@/common/dtos/response.dto';
 
@@ -24,6 +24,7 @@ export class SessionService {
 
     private static readonly EXPIRATION_HOURS: number = 8;
     private static readonly EXPIRATION_SECONDS: number = (SessionService.EXPIRATION_HOURS) * 60 * 60;
+    private static readonly EMPTY_SESSION_SECONDS: number = 5 * 60;
 
     private static readonly CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     private static readonly CODE_LENGTH = 6;
@@ -50,6 +51,13 @@ export class SessionService {
         private readonly prisma: PrismaService,
         private readonly redisService: RedisService,
     ) { }
+
+    private async _findSessionById(id: string): Promise<SessionWithParticipants | null> {
+        return this.prisma.session.findFirst({
+            where: { id, deletedAt: null, status: { not: SessionStatus.closed } },
+            include: { participants: true },
+        });
+    }
 
     private async _findSession(code: string): Promise<SessionWithParticipants> {
         const session: SessionWithParticipants | null = await this.prisma.session.findFirst({
@@ -81,14 +89,56 @@ export class SessionService {
     async create(createSessionDto: CreateSessionDto, userId: string): Promise<IResponse<SessionWithParticipants>> {
         try {
             const start: number = Date.now();
-            const code = await this.generateUniqueCode();
 
+            // Si une session active existe déjà pour cette campagne, le créateur la rejoint
+            const existingSession = await this.prisma.session.findFirst({
+                where: {
+                    creatorUserId: userId,
+                    creatorCampaignId: createSessionDto.campaignId,
+                    status: { not: SessionStatus.closed },
+                    deletedAt: null,
+                },
+                include: { participants: true },
+            });
+
+            if (existingSession) {
+                const existingParticipant = existingSession.participants.find(p => p.userId === userId);
+                if (existingParticipant) {
+                    await this.prisma.sessionParticipant.update({
+                        where: { id: existingParticipant.id },
+                        data: { status: ParticipantStatus.MasterGame },
+                    });
+                } else {
+                    await this.prisma.sessionParticipant.create({
+                        data: {
+                            sessionId: existingSession.id,
+                            userId,
+                            characterId: null,
+                            status: ParticipantStatus.MasterGame,
+                        },
+                    });
+                }
+                await this.redisService.clearEmptySessionTimer(existingSession.id);
+                const updated: SessionWithParticipants = await this._findSessionById(existingSession.id);
+                const message: string = `User ${userId} rejoined existing session #${existingSession.id} for campaign ${createSessionDto.campaignId} in ${Date.now() - start}ms`;
+                this.logger.verbose(message, this.SERVICE_NAME);
+                return { message, data: updated };
+            }
+
+            const code = await this.generateUniqueCode();
             const session: SessionWithParticipants = await this.prisma.session.create({
                 data: {
                     code,
                     creatorUserId: userId,
                     creatorCampaignId: createSessionDto.campaignId,
                     status: SessionStatus.activated,
+                    participants: {
+                        create: {
+                            userId,
+                            characterId: null,
+                            status: ParticipantStatus.MasterGame,
+                        },
+                    },
                 },
                 include: { participants: true },
             });
@@ -193,20 +243,31 @@ export class SessionService {
             const start: number = Date.now();
             const session: SessionWithParticipants = await this._findSession(code);
 
-            const alreadyJoined: boolean = session.participants.some(p => p.userId === userId);
-            if (alreadyJoined) {
-                const message: string = `User ${userId} is already in session with code ${code}`;
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new BadRequestException(message);
+            const existingParticipant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
+            const newStatus: ParticipantStatus = session.creatorUserId === userId ? ParticipantStatus.MasterGame : ParticipantStatus.connected;
+
+            if (existingParticipant) {
+                // Reconnexion : mettre à jour le statut
+                await this.prisma.sessionParticipant.update({
+                    where: { id: existingParticipant.id },
+                    data: {
+                        status: newStatus,
+                        characterId: joinSessionDto.characterId ?? existingParticipant.characterId,
+                    },
+                });
+            } else {
+                await this.prisma.sessionParticipant.create({
+                    data: {
+                        sessionId: session.id,
+                        userId,
+                        characterId: joinSessionDto.characterId,
+                        status: newStatus,
+                    },
+                });
             }
 
-            await this.prisma.sessionParticipant.create({
-                data: {
-                    sessionId: session.id,
-                    userId,
-                    characterId: joinSessionDto.characterId,
-                },
-            });
+            // Annuler le timer d'inactivité si quelqu'un vient de rejoindre
+            await this.redisService.clearEmptySessionTimer(session.id);
 
             const updated: SessionWithParticipants = await this._findSession(code);
             const message: string = `User ${userId} joined session with code ${code} in ${Date.now() - start}ms`;
@@ -237,20 +298,12 @@ export class SessionService {
                 where: { id: participant.id },
             });
 
-            const remainingCount: number = session.participants.length - 1;
-            const isCreator: boolean = session.creatorUserId === userId;
-
-            // Clôturer si le créateur quitte et qu'il n'y a plus de participants
-            if (isCreator && remainingCount === 0) {
-                await this.redisService.clearSessionExpiration(session.id);
-                const closed: SessionWithParticipants = await this.prisma.session.update({
-                    where: { id: session.id },
-                    data: { status: SessionStatus.closed, deletedAt: new Date() },
-                    include: { participants: true },
-                });
-                const message: string = `User ${userId} left and closed session with code ${code} in ${Date.now() - start}ms`;
-                this.logger.verbose(message, this.SERVICE_NAME);
-                return { message, data: closed };
+            // Vérifier si tous les participants restants sont déconnectés
+            const remaining = session.participants.filter(p => p.userId !== userId);
+            const allDisconnected: boolean = remaining.length > 0 && remaining.every(p => p.status === ParticipantStatus.disconnected);
+            if (allDisconnected || remaining.length === 0) {
+                await this.redisService.setEmptySessionTimer(session.id, SessionService.EMPTY_SESSION_SECONDS);
+                this.logger.verbose(`All participants disconnected after leave in session ${session.id}, empty timer started`, this.SERVICE_NAME);
             }
 
             const updated: SessionWithParticipants = await this._findSession(code);
@@ -292,6 +345,31 @@ export class SessionService {
             const message: string = `Error closing session with code ${code} for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
+        }
+    }
+
+    async disconnectParticipant(sessionId: string, userId: string): Promise<void> {
+        try {
+            const session = await this._findSessionById(sessionId);
+            if (!session) return;
+
+            const participant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
+            if (!participant) return;
+
+            await this.prisma.sessionParticipant.update({
+                where: { id: participant.id },
+                data: { status: ParticipantStatus.disconnected },
+            });
+
+            const allDisconnected: boolean = session.participants.every(
+                p => p.userId === userId || p.status === ParticipantStatus.disconnected,
+            );
+            if (allDisconnected) {
+                await this.redisService.setEmptySessionTimer(sessionId, SessionService.EMPTY_SESSION_SECONDS);
+                this.logger.verbose(`All participants disconnected from session ${sessionId}, empty timer started`, this.SERVICE_NAME);
+            }
+        } catch (error: any) {
+            this.logger.error(`Error disconnecting participant ${userId} from session ${sessionId}: ${error.message}`, null, this.SERVICE_NAME);
         }
     }
 

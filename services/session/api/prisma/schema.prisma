@@ -13,6 +13,12 @@ enum SessionStatus {
   closed
 }
 
+enum ParticipantStatus {
+  connected
+  disconnected
+  MasterGame
+}
+
 model Session {
   id        String        @id @default(uuid())
   code      String        @unique @map("code")
@@ -33,10 +39,11 @@ model Session {
 }
 
 model SessionParticipant {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  characterId String   @map("character_id")
-  joinedAt    DateTime @default(now()) @map("joined_at")
+  id          String            @id @default(uuid())
+  userId      String            @map("user_id")
+  characterId String?           @map("character_id")
+  status      ParticipantStatus @default(connected)
+  joinedAt    DateTime          @default(now()) @map("joined_at")
 
   session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sessionId String  @map("session_id")
