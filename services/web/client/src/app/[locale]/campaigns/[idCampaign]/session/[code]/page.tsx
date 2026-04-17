@@ -7,7 +7,7 @@ import sessionService, { SessionParticipant } from "@/services/SessionService";
 import { useAppSelector } from "@/store/hooks";
 import { selectCampaigns } from "@/store/slices/campaignSlice";
 import Token from "@public/assets/token.svg";
-import { Copy } from "lucide-react";
+import { Check, Copy, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useParams, usePathname, useRouter } from "next/navigation";
@@ -24,6 +24,7 @@ export default function SessionPage() {
   const toast = useToast();
   const [participants, setParticipants] = useState<SessionParticipant[]>([]);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "loading" | "success">("idle");
 
   useEffect(() => {
     const init = async () => {
@@ -62,16 +63,21 @@ export default function SessionPage() {
   };
 
   const copy = (text: string): void => {
+    if (copyState !== "idle") return;
+    setCopyState("loading");
     if (navigator.clipboard) {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          toast.success(t("toast.copySuccess"));
+          setCopyState("success");
+          setTimeout(() => setCopyState("idle"), 1000);
         })
         .catch(() => {
+          setCopyState("idle");
           toast.error(t("toast.copyError"));
         });
     } else {
+      setCopyState("idle");
       toast.error(t("toast.copyNotSupported"));
     }
   };
@@ -153,10 +159,20 @@ export default function SessionPage() {
             <div className="gap-3 items-center">
               <Button
                 variant="outline"
-                className="mt-4 w-full"
+                className={`mt-4 w-full transition-colors ${
+                  copyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                }`}
                 aria-label={t("sessionCode.copyAriaLabel")}
+                disabled={copyState !== "idle"}
                 onClick={() => copy(code)}>
-                <Copy /> {t("sessionCode.copyButton")}
+                {copyState === "loading" && <Loader2 className="animate-spin" />}
+                {copyState === "success" && <Check />}
+                {copyState === "idle" && <Copy />}
+                {copyState === "loading"
+                  ? t("sessionCode.copyButton")
+                  : copyState === "success"
+                    ? t("sessionCode.copySuccess")
+                    : t("sessionCode.copyButton")}
               </Button>
             </div>
           </Card>

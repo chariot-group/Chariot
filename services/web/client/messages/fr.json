@@ -831,6 +831,7 @@
       "heading": "Code de la session",
       "ariaLabel": "Code de session : {code}",
       "copyButton": "Copier le code",
+      "copySuccess": "Copié !",
       "copyAriaLabel": "Copier le code de la session dans le presse-papier"
     },
     "toast": {

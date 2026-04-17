@@ -826,6 +826,7 @@
       "heading": "Session code",
       "ariaLabel": "Session code: {code}",
       "copyButton": "Copy code",
+      "copySuccess": "Copied!",
       "copyAriaLabel": "Copy session code to clipboard"
     },
     "toast": {

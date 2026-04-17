@@ -827,6 +827,7 @@
       "heading": "Código de sesión",
       "ariaLabel": "Código de sesión: {code}",
       "copyButton": "Copiar código",
+      "copySuccess": "¡Copiado!",
       "copyAriaLabel": "Copiar el código de sesión al portapapeles"
     },
     "toast": {
