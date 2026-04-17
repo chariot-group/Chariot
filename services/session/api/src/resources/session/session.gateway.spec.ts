@@ -48,6 +48,7 @@ function makeSocket(overrides: Record<string, any> = {}) {
             email: 'user@test.com',
             username: 'testuser',
         },
+        rooms: new Set<string>(),
         emit: jest.fn(),
         join: jest.fn(),
         leave: jest.fn(),
@@ -66,12 +67,14 @@ const mockSessionService = {
     launch: jest.fn(),
     close: jest.fn(),
     expireSession: jest.fn(),
+    disconnectParticipant: jest.fn(),
 };
 
 const mockRedisService = {
     setSessionExpiration: jest.fn(),
     clearSessionExpiration: jest.fn(),
     onSessionExpired: jest.fn(),
+    onEmptySessionExpired: jest.fn(),
 };
 
 const mockConfigService = {
