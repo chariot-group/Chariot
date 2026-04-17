@@ -38,7 +38,7 @@ export class CharacterController {
     private readonly characterService: CharacterService,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
-  ) { }
+  ) {}
 
   private readonly CONTROLLER_NAME = CharacterService.name;
   private readonly logger = new Logger(this.CONTROLLER_NAME);

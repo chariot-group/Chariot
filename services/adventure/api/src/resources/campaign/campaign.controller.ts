@@ -49,7 +49,7 @@ export class CampaignController {
     private readonly groupService: GroupService,
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
-  ) { }
+  ) {}
 
   private readonly CONTROLLER_NAME = CampaignController.name;
   private readonly logger = new Logger(this.CONTROLLER_NAME);
@@ -271,10 +271,27 @@ export class CampaignController {
     description: 'Campaign #ID has been deleted',
     type: ProblemDetailsDto,
   })
-  @ApiOperation({ summary: 'Get campaign label by ID (accessible to any session participant)' })
-  @ApiParam({ name: 'id', type: String, required: true, description: 'Campaign ID', example: '507f1f77bcf86cd799439011' })
-  @ApiOkResponse({ description: 'Campaign label found', schema: { properties: { data: { properties: { label: { type: 'string' } } } } } })
-  @ApiResponse({ status: 404, description: 'Campaign not found', type: ProblemDetailsDto })
+  @ApiOperation({
+    summary: 'Get campaign label by ID (accessible to any session participant)',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+    description: 'Campaign ID',
+    example: '507f1f77bcf86cd799439011',
+  })
+  @ApiOkResponse({
+    description: 'Campaign label found',
+    schema: {
+      properties: { data: { properties: { label: { type: 'string' } } } },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Campaign not found',
+    type: ProblemDetailsDto,
+  })
   @Get(':id/label')
   async findLabel(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
     const result = await this.campaignService.findOne(id);

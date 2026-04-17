@@ -16,7 +16,6 @@ import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
-import { is } from "zod/v4/locales";
 
 interface ActionButtonConfig {
   label: string;
