@@ -836,7 +836,8 @@
       "ariaLabel": "Código de sesión: {code}",
       "copyButton": "Copiar código",
       "copySuccess": "¡Copiado!",
-      "copyAriaLabel": "Copiar el código de sesión al portapapeles"
+      "copyAriaLabel": "Copiar el código de sesión al portapapeles",
+      "copyLinkAriaLabel": "Copiar el enlace de la sesión al portapapeles"
     },
     "toast": {
       "sessionNotFound": "Sesión no encontrada",

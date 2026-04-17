@@ -840,7 +840,8 @@
       "ariaLabel": "Code de session : {code}",
       "copyButton": "Copier le code",
       "copySuccess": "Copié !",
-      "copyAriaLabel": "Copier le code de la session dans le presse-papier"
+      "copyAriaLabel": "Copier le code de la session dans le presse-papier",
+      "copyLinkAriaLabel": "Copier le lien de la session dans le presse-papier"
     },
     "toast": {
       "sessionNotFound": "Session inexistante",

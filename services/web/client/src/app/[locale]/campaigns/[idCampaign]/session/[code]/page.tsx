@@ -16,11 +16,11 @@ import { setCurrentSession, clearCurrentSession } from "@/store/slices/sessionSl
 import { selectUser } from "@/store/slices/userSlice";
 import { Character } from "@/types/character";
 import Token from "@public/assets/token.svg";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy, Link, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
 import { io, Socket } from "socket.io-client";
 
@@ -43,7 +43,8 @@ export default function SessionPage() {
   const [characterDetails, setCharacterDetails] = useState<Record<string, Character>>({});
   const [myCharacters, setMyCharacters] = useState<Character[]>([]);
   const [isLeaving, setIsLeaving] = useState(false);
-  const [copyState, setCopyState] = useState<"idle" | "loading" | "success">("idle");
+  const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
+  const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [isChangingCharacter, setIsChangingCharacter] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
@@ -72,6 +73,12 @@ export default function SessionPage() {
         toast.info(t("toast.sessionNotFound"));
         router.back();
         return;
+      }
+
+      try {
+        await sessionService.joinSession(code);
+      } catch {
+        // Session déjà rejointe ou erreur non bloquante
       }
 
       if (!campaign?.label) {
@@ -262,22 +269,21 @@ export default function SessionPage() {
     }
   };
 
-  const copy = (text: string): void => {
-    if (copyState !== "idle") return;
-    setCopyState("loading");
+  const copy = (text: string, setState: Dispatch<SetStateAction<"idle" | "loading" | "success">>): void => {
+    setState("loading");
     if (navigator.clipboard) {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          setCopyState("success");
-          setTimeout(() => setCopyState("idle"), 1000);
+          setState("success");
+          setTimeout(() => setState("idle"), 1000);
         })
         .catch(() => {
-          setCopyState("idle");
+          setState("idle");
           toast.error(t("toast.copyError"));
         });
     } else {
-      setCopyState("idle");
+      setState("idle");
       toast.error(t("toast.copyNotSupported"));
     }
   };
@@ -397,23 +403,28 @@ export default function SessionPage() {
               aria-label={t("sessionCode.ariaLabel", { code })}>
               {code}
             </p>
-            <div className="gap-3 items-center">
+            <div className="gap-3 items-center grid grid-cols-5">
               <Button
                 variant="outline"
-                className={`mt-4 w-full transition-colors ${
-                  copyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                className={`mt-4 w-full transition-colors col-span-4 ${
+                  codeCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
                 }`}
                 aria-label={t("sessionCode.copyAriaLabel")}
-                disabled={copyState !== "idle"}
-                onClick={() => copy(code)}>
-                {copyState === "loading" && <Loader2 className="animate-spin" />}
-                {copyState === "success" && <Check />}
-                {copyState === "idle" && <Copy />}
-                {copyState === "loading"
-                  ? t("sessionCode.copyButton")
-                  : copyState === "success"
-                    ? t("sessionCode.copySuccess")
-                    : t("sessionCode.copyButton")}
+                disabled={codeCopyState !== "idle"}
+                onClick={() => copy(code, setCodeCopyState)}>
+                {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
+                {codeCopyState === "success" && <Check />}
+                {codeCopyState === "idle" && <Copy />}
+                {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
+              </Button>
+              <Button
+                aria-label={t("sessionCode.copyLinkAriaLabel")}
+                className={`mt-4 transition-colors ${
+                  linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                }`}
+                disabled={linkCopyState !== "idle"}
+                onClick={() => copy(window.location.href, setLinkCopyState)}>
+                {linkCopyState === "success" ? <Check /> : <Link />}
               </Button>
             </div>
           </Card>

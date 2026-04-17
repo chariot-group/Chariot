@@ -64,14 +64,14 @@ class SessionService {
         return response.data.data;
     }
 
-    async joinSession(code: string, characterId: string): Promise<void> {
+    async joinSession(code: string, characterId?: string | null): Promise<void> {
         const gatewayUrl = process.env.NEXT_PUBLIC_API_URL;
 
         if (!gatewayUrl) {
             throw new Error('API URL is not defined. Set NEXT_PUBLIC_API_URL in your environment.');
         }
 
-        await apiClient().post(`${gatewayUrl}/session/sessions/${code}/join`, { characterId });
+        await apiClient().post(`${gatewayUrl}/session/sessions/${code}/join`, { characterId: characterId ?? null });
     }
 
     async getParticipants(code: string): Promise<SessionParticipantsDetails> {

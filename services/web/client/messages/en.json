@@ -835,7 +835,8 @@
       "ariaLabel": "Session code: {code}",
       "copyButton": "Copy code",
       "copySuccess": "Copied!",
-      "copyAriaLabel": "Copy session code to clipboard"
+      "copyAriaLabel": "Copy session code to clipboard",
+      "copyLinkAriaLabel": "Copy session link to clipboard"
     },
     "toast": {
       "sessionNotFound": "Session not found",
