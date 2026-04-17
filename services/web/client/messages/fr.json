@@ -821,8 +821,8 @@
     "mainAriaLabel": "Session - {label}",
     "players": {
       "ariaLabel": "Liste des joueurs",
-      "player": "Joueur {index}",
-      "noPlayers": "Aucun joueur n'a rejoint la session pour le moment.",
+      "player": "Joueur",
+      "masterGame": "Maître du jeu",
       "leaveButton": "Quitter la session",
       "addTokenButton": "Ajouter un token : 0/{count}",
       "addTokenAriaLabel": "Ajouter un token (0 sur {count} disponibles)"
