@@ -35,6 +35,7 @@
     "returnToBattle": "Retour au combat",
     "joinSession": "Rejoindre la session",
     "comingSoon": "Bientôt disponible",
+    "alreadyInSession": "Impossible de lancer une session : vous êtes déjà dans une session",
     "returnToSheet": "Retour à la fiche personnage",
     "selectCampaign": "Sélectionner la campagne",
     "selectedCampaign": "Campagne sélectionnée",

@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
 
 interface ActionButtonConfig {
   label: string;
@@ -34,6 +35,7 @@ export function ActionButton() {
   const battleStarted = useAppSelector(selectBattleStarted);
   const currentPage = usePathname() || "/";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
+  const isInSession = useAppSelector(selectIsInSession);
 
   /**
    * Determine button state based on context and workflow state
@@ -51,11 +53,11 @@ export function ActionButton() {
             if (!selectedCampaignId) return;
             sessionService.createSession(selectedCampaignId);
           },
-          disabled: !selectedCampaignId,
+          disabled: !selectedCampaignId || isInSession,
           icon: <PlayCircle className="size-6" />,
           backgroundColor: "bg-yellow",
           textColor: "text-black",
-          tooltip: t("comingSoon"),
+          tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
         };
       }
 

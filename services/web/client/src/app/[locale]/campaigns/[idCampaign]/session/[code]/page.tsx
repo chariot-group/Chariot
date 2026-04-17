@@ -6,7 +6,9 @@ import { useToast } from "@/hooks/useToast";
 import sessionService, { SessionParticipant } from "@/services/SessionService";
 import UserService from "@/services/UserService";
 import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch } from "@/store/hooks";
 import { selectCampaigns } from "@/store/slices/campaignSlice";
+import { setCurrentSession, clearCurrentSession } from "@/store/slices/sessionSlice";
 import Token from "@public/assets/token.svg";
 import { Check, Copy, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -20,6 +22,7 @@ export default function SessionPage() {
   const { idCampaign, code } = useParams<{ idCampaign: string; code: string }>();
   const campaigns = useAppSelector(selectCampaigns);
   const campaign = campaigns.find((c) => c._id === idCampaign);
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const pathname = usePathname();
   const locale = pathname.split("/")[1] || "fr";
@@ -33,6 +36,7 @@ export default function SessionPage() {
     const init = async () => {
       try {
         await sessionService.getSession(code);
+        dispatch(setCurrentSession({ code, campaignId: idCampaign }));
       } catch {
         toast.info(t("toast.sessionNotFound"));
         router.back();
@@ -69,6 +73,7 @@ export default function SessionPage() {
     setIsLeaving(true);
     try {
       await sessionService.leaveSession(code);
+      dispatch(clearCurrentSession());
       toast.info(t("toast.leaveSuccess"));
       router.push(`/${locale}/welcome`);
     } catch {
@@ -130,9 +135,6 @@ export default function SessionPage() {
                     {participant.status === "connected" && <Badge variant={"secondary"}>{t("players.player")}</Badge>}
                   </Card>
                 ))}
-              {participants.length === 0 && (
-                <p className="text-sm text-muted-foreground col-span-full text-center">{t("players.noPlayers")}</p>
-              )}
             </div>
 
             <div className="flex flex-wrap justify-end gap-2">

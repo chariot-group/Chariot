@@ -35,6 +35,7 @@
     "returnToBattle": "Return to Battle",
     "joinSession": "Join Session",
     "comingSoon": "Coming soon",
+    "alreadyInSession": "Cannot launch a session: you are already in a session",
     "returnToSheet": "Return to Character Sheet",
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",

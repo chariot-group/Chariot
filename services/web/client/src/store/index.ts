@@ -10,6 +10,7 @@ import sidebarReducer from '@/store/slices/sidebarSlice';
 import characterReducer from '@/store/slices/characterSlice';
 import userReducer from '@/store/slices/userSlice';
 import codexDraftReducer from '@/store/slices/codexDraftSlice';
+import sessionReducer from '@/store/slices/sessionSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
 import { UserState } from '@/types/user';
 
@@ -100,7 +101,7 @@ function makePersistConfig(userId: string | null) {
     return {
         key: storageKey,
         storage,
-        whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character', 'user'],
+        whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character', 'user', 'session'],
         transforms: [campaignTransform, groupTransform, characterTransform, userTransform],
     };
 }
@@ -116,6 +117,7 @@ const rootReducer = combineReducers({
     character: characterReducer,
     user: userReducer,
     codexDraft: codexDraftReducer,
+    session: sessionReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
