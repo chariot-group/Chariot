@@ -1,4 +1,4 @@
-import apiClient from './ApiService';
+import apiClient from '@/services/ApiService';
 
 export type SessionParticipant = {
     id: string;
