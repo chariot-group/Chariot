@@ -824,8 +824,10 @@
       "player": "Player",
       "masterGame": "Game Master",
       "leaveButton": "Leave session",
-      "addTokenButton": "Add a token: 0/{count}",
-      "addTokenAriaLabel": "Add a token (0 of {count} available)",
+      "addTokenButton": "Add a token: {total}/{count}",
+      "addTokenAriaLabel": "Add a token ({total} of {count} deposited)",
+      "removeTokenButton": "Remove a token",
+      "removeTokenAriaLabel": "Remove one of your tokens ({myTokens} deposited)",
       "noCharacter": "No character",
       "selectCharacterPlaceholder": "Change character",
       "loadingCharacters": "Loading..."

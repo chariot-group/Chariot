@@ -829,8 +829,10 @@
       "player": "Joueur",
       "masterGame": "Maître du jeu",
       "leaveButton": "Quitter la session",
-      "addTokenButton": "Ajouter un token : 0/{count}",
-      "addTokenAriaLabel": "Ajouter un token (0 sur {count} disponibles)",
+      "addTokenButton": "Ajouter un token : {total}/{count}",
+      "addTokenAriaLabel": "Ajouter un token ({total} sur {count} déposé(s))",
+      "removeTokenButton": "Retirer un token",
+      "removeTokenAriaLabel": "Retirer un de vos tokens ({myTokens} déposé(s))",
       "noCharacter": "Aucun personnage",
       "selectCharacterPlaceholder": "Changer de personnage",
       "loadingCharacters": "Chargement..."

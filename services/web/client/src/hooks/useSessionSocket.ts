@@ -18,6 +18,8 @@ interface UseSessionSocketOptions {
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
     setParticipantNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
+    tokensByUser: Record<string, number>;
+    setTokensByUser: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 export function useSessionSocket({
@@ -28,6 +30,8 @@ export function useSessionSocket({
     setParticipants,
     setParticipantNames,
     fetchCharacterDetails,
+    tokensByUser,
+    setTokensByUser,
 }: UseSessionSocketOptions) {
     const dispatch = useAppDispatch();
     const router = useRouter();
@@ -38,13 +42,18 @@ export function useSessionSocket({
 
     const socketRef = useRef<Socket | null>(null);
     const participantsRef = useRef(participants);
+    const tokensByUserRef = useRef(tokensByUser);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
 
-    // Keep ref in sync so the connect handler always sees the latest participants
+    // Keep refs in sync so handlers always see the latest values
     useEffect(() => {
         participantsRef.current = participants;
     }, [participants]);
+
+    useEffect(() => {
+        tokensByUserRef.current = tokensByUser;
+    }, [tokensByUser]);
 
     useEffect(() => {
         if (!token) return;
@@ -142,6 +151,10 @@ export function useSessionSocket({
             router.push(`/${locale}/welcome`);
         });
 
+        socket.on("session:token-updated", ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
+            setTokensByUser(updatedTokens);
+        });
+
         return () => {
             socket.disconnect();
             socketRef.current = null;
@@ -194,5 +207,22 @@ export function useSessionSocket({
         }
     };
 
-    return { handleCharacterChange, handleLeave, isChangingCharacter, isLeaving };
+    const handleAddToken = () => {
+        const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        if (!userId || !socket?.connected) return;
+        const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
+        if (totalTokens >= participantsRef.current.length) return;
+        socket.emit("session:add-token", { sessionId: code });
+    };
+
+    const handleRemoveToken = () => {
+        const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        if (!userId || !socket?.connected) return;
+        if ((tokensByUserRef.current[userId] ?? 0) <= 0) return;
+        socket.emit("session:remove-token", { sessionId: code });
+    };
+
+    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, isChangingCharacter, isLeaving };
 }

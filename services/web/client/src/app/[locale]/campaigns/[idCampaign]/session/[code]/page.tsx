@@ -11,7 +11,7 @@ import { useAppSelector } from "@/store/hooks";
 import { selectCampaigns } from "@/store/slices/campaignSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import Token from "@public/assets/token.svg";
-import { Check, Copy, Link, Loader2 } from "lucide-react";
+import { Check, Copy, Link, Loader2, Minus } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
@@ -29,6 +29,7 @@ export default function SessionPage() {
 
   const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
+  const [tokensByUser, setTokensByUser] = useState<Record<string, number>>({});
 
   const {
     campaignLabel,
@@ -41,15 +42,22 @@ export default function SessionPage() {
     getCharacterLabel,
   } = useSessionData({ code, idCampaign, campaign });
 
-  const { handleCharacterChange, handleLeave, isChangingCharacter, isLeaving } = useSessionSocket({
-    token,
-    code,
-    currentUser,
-    participants,
-    setParticipants,
-    setParticipantNames,
-    fetchCharacterDetails,
-  });
+  const totalTokens = Object.values(tokensByUser).reduce((a, b) => a + b, 0);
+  const myTokens = currentUser ? (tokensByUser[currentUser.keycloakId] ?? 0) : 0;
+  const maxTokens = participants.length;
+
+  const { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, isChangingCharacter, isLeaving } =
+    useSessionSocket({
+      token,
+      code,
+      currentUser,
+      participants,
+      setParticipants,
+      setParticipantNames,
+      fetchCharacterDetails,
+      tokensByUser,
+      setTokensByUser,
+    });
 
   const copy = (text: string, setState: Dispatch<SetStateAction<"idle" | "loading" | "success">>): void => {
     setState("loading");
@@ -148,9 +156,20 @@ export default function SessionPage() {
                 disabled={isLeaving}>
                 {t("players.leaveButton")}
               </Button>
-              <Button aria-label={t("players.addTokenAriaLabel", { count: participants.length })}>
+              {myTokens > 0 && (
+                <Button
+                  variant="destructive"
+                  aria-label={t("players.removeTokenAriaLabel", { myTokens })}
+                  onClick={handleRemoveToken}>
+                  <Minus /> {t("players.removeTokenButton")}
+                </Button>
+              )}
+              <Button
+                aria-label={t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })}
+                disabled={totalTokens >= maxTokens}
+                onClick={handleAddToken}>
                 <span className="flex items-center gap-1.5">
-                  {t("players.addTokenButton", { count: participants.length })}
+                  {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
                   <Image
                     src={Token}
                     alt=""
