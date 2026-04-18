@@ -31,7 +31,7 @@
     "@nestjs/core": "^11.1.17",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.1.17",
-    "@nestjs/platform-socket.io": "^11.1.17",
+    "@nestjs/platform-socket.io": "^11.1.19",
     "@nestjs/swagger": "^11.2.6",
     "@nestjs/websockets": "^11.1.17",
     "@prisma/adapter-pg": "^6.19.3",
