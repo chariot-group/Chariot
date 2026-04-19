@@ -20,12 +20,13 @@ import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
 import { UpdateUserProfileDto } from '@/resources/user/dto/update-user-profile.dto';
 import { IResponse } from '@/common/dtos/reponse.dto';
 import { ChangePasswordDto } from '@/resources/user/dto/change-password.dto';
+import { AddHistoryDto } from '@/resources/user/dto/add-history.dto';
 
-@ApiExtraModels(IResponse, UserInfoDto, ChangePasswordDto, UpdateUserProfileDto)
+@ApiExtraModels(IResponse, UserInfoDto, ChangePasswordDto, UpdateUserProfileDto, AddHistoryDto)
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('me')
   @ApiOperation({ summary: 'Get current authenticated user information' })
@@ -121,6 +122,37 @@ export class UserController {
     return {
       message: 'Password changed successfully',
     };
+  }
+
+  @Put('me/history')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Add a history entry for the current authenticated user' })
+  @ApiResponse({
+    status: 200,
+    description: 'History entry added successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(UserInfoDto) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'User not authenticated' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async addHistory(
+    @Req() request,
+    @Body() addHistoryDto: AddHistoryDto,
+  ) {
+    return this.userService.addHistory(
+      request.user.keycloakId,
+      addHistoryDto,
+    );
   }
 
   @Put('me')
