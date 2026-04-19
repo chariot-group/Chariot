@@ -14,7 +14,7 @@ interface UseSessionSocketOptions {
     token: string | null | undefined;
     code: string;
     campaignName: string;
-    currentUser: { keycloakId: string } | null | undefined;
+    currentUser: { keycloakId: string; balance: number } | null | undefined;
     participants: SessionParticipant[];
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
     setParticipantNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
@@ -238,6 +238,8 @@ export function useSessionSocket({
         if (!userId || !socket?.connected) return;
         const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
         if (totalTokens >= participantsRef.current.length) return;
+        const myDeposited = tokensByUserRef.current[userId] ?? 0;
+        if (myDeposited >= (currentUser?.balance ?? 0)) return;
         socket.emit("session:add-token", { sessionId: code });
     };
 
