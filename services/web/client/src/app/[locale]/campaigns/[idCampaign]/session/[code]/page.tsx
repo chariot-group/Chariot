@@ -45,19 +45,29 @@ export default function SessionPage() {
   const totalTokens = Object.values(tokensByUser).reduce((a, b) => a + b, 0);
   const myTokens = currentUser ? (tokensByUser[currentUser.keycloakId] ?? 0) : 0;
   const maxTokens = participants.length;
+  const isMJ = participants.find((p) => p.userId === currentUser?.keycloakId)?.status === "MasterGame";
 
-  const { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, isChangingCharacter, isLeaving } =
-    useSessionSocket({
-      token,
-      code,
-      currentUser,
-      participants,
-      setParticipants,
-      setParticipantNames,
-      fetchCharacterDetails,
-      tokensByUser,
-      setTokensByUser,
-    });
+  const {
+    handleCharacterChange,
+    handleLeave,
+    handleAddToken,
+    handleRemoveToken,
+    handleLaunchSession,
+    isChangingCharacter,
+    isLeaving,
+    isLaunching,
+  } = useSessionSocket({
+    token,
+    code,
+    campaignName: campaign?.label ?? campaignLabel ?? "",
+    currentUser,
+    participants,
+    setParticipants,
+    setParticipantNames,
+    fetchCharacterDetails,
+    tokensByUser,
+    setTokensByUser,
+  });
 
   const copy = (text: string, setState: Dispatch<SetStateAction<"idle" | "loading" | "success">>): void => {
     setState("loading");
@@ -178,6 +188,15 @@ export default function SessionPage() {
                   />
                 </span>
               </Button>
+              {isMJ && totalTokens >= maxTokens && (
+                <Button
+                  aria-label={t("players.launchSessionAriaLabel")}
+                  disabled={totalTokens < maxTokens || isLaunching}
+                  onClick={handleLaunchSession}>
+                  {isLaunching ? <Loader2 className="animate-spin" /> : null}
+                  {t("players.launchSessionButton")}
+                </Button>
+              )}
             </div>
           </Card>
         </section>

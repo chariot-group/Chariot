@@ -828,6 +828,8 @@
       "addTokenAriaLabel": "Add a token ({total} of {count} deposited)",
       "removeTokenButton": "Remove a token",
       "removeTokenAriaLabel": "Remove one of your tokens ({myTokens} deposited)",
+      "launchSessionButton": "Launch session",
+      "launchSessionAriaLabel": "Launch the session (all tokens have been deposited)",
       "noCharacter": "No character",
       "selectCharacterPlaceholder": "Change character",
       "loadingCharacters": "Loading..."
@@ -848,6 +850,8 @@
       "leaveError": "Unable to leave the session",
       "characterChanged": "Character changed successfully",
       "characterChangeError": "Unable to change character",
+      "sessionLaunched": "The session has been launched!",
+      "sessionLaunchError": "Unable to launch the session",
       "copySuccess": "Code copied to clipboard",
       "copyError": "Unable to copy the code",
       "copyNotSupported": "Copy is not supported by this browser"

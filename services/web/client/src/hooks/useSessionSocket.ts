@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/useToast";
 interface UseSessionSocketOptions {
     token: string | null | undefined;
     code: string;
+    campaignName: string;
     currentUser: { keycloakId: string } | null | undefined;
     participants: SessionParticipant[];
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
@@ -25,6 +26,7 @@ interface UseSessionSocketOptions {
 export function useSessionSocket({
     token,
     code,
+    campaignName,
     currentUser,
     participants,
     setParticipants,
@@ -43,8 +45,10 @@ export function useSessionSocket({
     const socketRef = useRef<Socket | null>(null);
     const participantsRef = useRef(participants);
     const tokensByUserRef = useRef(tokensByUser);
+    const campaignNameRef = useRef(campaignName);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
+    const [isLaunching, setIsLaunching] = useState(false);
 
     // Keep refs in sync so handlers always see the latest values
     useEffect(() => {
@@ -54,6 +58,10 @@ export function useSessionSocket({
     useEffect(() => {
         tokensByUserRef.current = tokensByUser;
     }, [tokensByUser]);
+
+    useEffect(() => {
+        campaignNameRef.current = campaignName;
+    }, [campaignName]);
 
     useEffect(() => {
         if (!token) return;
@@ -155,6 +163,23 @@ export function useSessionSocket({
             setTokensByUser(updatedTokens);
         });
 
+        socket.on("session:launched", async () => {
+            toast.success(t("toast.sessionLaunched"));
+            const userId = currentUser?.keycloakId;
+            const myTokens = userId ? (tokensByUserRef.current[userId] ?? 0) : 0;
+            if (userId && myTokens >= 1) {
+                try {
+                    await UserService.addHistory(campaignNameRef.current, myTokens);
+                } catch {
+                    // history update failure should not block navigation
+                }
+            }
+            const myParticipant = participantsRef.current.find((p) => p.userId === userId);
+            if (myParticipant?.characterId) {
+                router.push(`/${locale}/characters/${myParticipant.characterId}`);
+            }
+        });
+
         return () => {
             socket.disconnect();
             socketRef.current = null;
@@ -224,5 +249,19 @@ export function useSessionSocket({
         socket.emit("session:remove-token", { sessionId: code });
     };
 
-    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, isChangingCharacter, isLeaving };
+    const handleLaunchSession = () => {
+        const socket = socketRef.current;
+        if (!socket?.connected || isLaunching) return;
+        setIsLaunching(true);
+        socket.emit("session:launch", { sessionId: code });
+        socket.once("session:launched", () => {
+            setIsLaunching(false);
+        });
+        socket.once("session:error", () => {
+            toast.error(t("toast.sessionLaunchError"));
+            setIsLaunching(false);
+        });
+    };
+
+    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, handleLaunchSession, isChangingCharacter, isLeaving, isLaunching };
 }

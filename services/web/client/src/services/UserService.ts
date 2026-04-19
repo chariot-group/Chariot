@@ -66,6 +66,15 @@ class UserService {
         }
     }
 
+    async addHistory(campaignName: string, value: number): Promise<void> {
+        try {
+            await apiClient().post(`${this.BASE_PATH}/me/history`, { campaignName, value });
+        } catch (error) {
+            console.error('Error adding history:', error);
+            throw new Error('Failed to add history entry');
+        }
+    }
+
     async getUserById(id: string): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username'>> {
         try {
             const response = await apiClient().get<IResponse<User>>(`${this.BASE_PATH}/${id}`);

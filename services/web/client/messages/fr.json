@@ -833,6 +833,8 @@
       "addTokenAriaLabel": "Ajouter un token ({total} sur {count} déposé(s))",
       "removeTokenButton": "Retirer un token",
       "removeTokenAriaLabel": "Retirer un de vos tokens ({myTokens} déposé(s))",
+      "launchSessionButton": "Lancer la session",
+      "launchSessionAriaLabel": "Lancer la session (tous les tokens ont été déposés)",
       "noCharacter": "Aucun personnage",
       "selectCharacterPlaceholder": "Changer de personnage",
       "loadingCharacters": "Chargement..."
@@ -853,6 +855,8 @@
       "leaveError": "Impossible de quitter la session",
       "characterChanged": "Personnage changé avec succès",
       "characterChangeError": "Impossible de changer le personnage",
+      "sessionLaunched": "La session a été lancée !",
+      "sessionLaunchError": "Impossible de lancer la session",
       "copySuccess": "Code copié dans le presse-papier",
       "copyError": "Impossible de copier le code",
       "copyNotSupported": "La copie n'est pas supportée par ce navigateur"
