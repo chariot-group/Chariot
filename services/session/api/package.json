@@ -26,7 +26,7 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.18",
+    "@nestjs/common": "^11.1.19",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.19",
     "@nestjs/mapped-types": "*",
