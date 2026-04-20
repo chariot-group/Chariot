@@ -16,7 +16,7 @@ enum SessionStatus {
 enum ParticipantStatus {
   connected
   disconnected
-  MasterGame
+  gameMaster
 }
 
 model Session {

@@ -131,7 +131,7 @@ export default function SessionPage() {
                     role="listitem"
                     className="border bg-gray border-none flex-row justify-between gap-3 p-3">
                     <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
-                    {participant.status === "MasterGame" && <Badge>{t("players.masterGame")}</Badge>}
+                    {participant.status === "gameMaster" && <Badge>{t("players.masterGame")}</Badge>}
                     {participant.status === "connected" && <Badge variant={"secondary"}>{t("players.player")}</Badge>}
                   </Card>
                 ))}

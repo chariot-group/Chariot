@@ -106,7 +106,7 @@ export class SessionService {
                 if (existingParticipant) {
                     await this.prisma.sessionParticipant.update({
                         where: { id: existingParticipant.id },
-                        data: { status: ParticipantStatus.MasterGame },
+                        data: { status: ParticipantStatus.gameMaster },
                     });
                 } else {
                     await this.prisma.sessionParticipant.create({
@@ -114,7 +114,7 @@ export class SessionService {
                             sessionId: existingSession.id,
                             userId,
                             characterId: null,
-                            status: ParticipantStatus.MasterGame,
+                            status: ParticipantStatus.gameMaster,
                         },
                     });
                 }
@@ -136,7 +136,7 @@ export class SessionService {
                         create: {
                             userId,
                             characterId: null,
-                            status: ParticipantStatus.MasterGame,
+                            status: ParticipantStatus.gameMaster,
                         },
                     },
                 },
@@ -244,7 +244,7 @@ export class SessionService {
             const session: SessionWithParticipants = await this._findSession(code);
 
             const existingParticipant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
-            const newStatus: ParticipantStatus = session.creatorUserId === userId ? ParticipantStatus.MasterGame : ParticipantStatus.connected;
+            const newStatus: ParticipantStatus = session.creatorUserId === userId ? ParticipantStatus.gameMaster : ParticipantStatus.connected;
 
             if (existingParticipant) {
                 // Reconnexion : mettre à jour le statut

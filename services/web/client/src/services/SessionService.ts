@@ -1,6 +1,6 @@
 import apiClient from '@/services/ApiService';
 
-export type ParticipantStatus = 'connected' | 'disconnected' | 'MasterGame';
+export type ParticipantStatus = 'connected' | 'disconnected' | 'gameMaster';
 
 export type SessionParticipant = {
     id: string;
