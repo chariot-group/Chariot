@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
 import { useSessionData } from "@/hooks/useSessionData";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
@@ -112,28 +112,18 @@ export default function SessionPage() {
                       </div>
 
                       {isMe && isPlayer ? (
-                        <Select
+                        <CharacterSelect
+                          characters={myCharacters}
                           value={participant.characterId ?? ""}
                           onValueChange={handleCharacterChange}
-                          disabled={isChangingCharacter}>
-                          <SelectTrigger className="w-full text-xs">
-                            <SelectValue placeholder={t("players.selectCharacterPlaceholder")}>
-                              {characterLabel || t("players.selectCharacterPlaceholder")}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {myCharacters.map((char) => (
-                              <SelectItem
-                                key={char._id}
-                                value={char._id}>
-                                {`${char.firstname} ${char.lastname}`.trim() || char.surname || char._id}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          placeholder={t("players.selectCharacterPlaceholder")}
+                          disabled={isChangingCharacter}
+                          selectedLabel={characterLabel || undefined}
+                          triggerClassName="w-full text-xs"
+                        />
                       ) : (
                         participant.characterId && (
-                          <span className="text-xs text-muted-foreground">{characterLabel}</span>
+                          <span className="text-xs text-muted-foreground truncate">{characterLabel}</span>
                         )
                       )}
                     </Card>
@@ -176,7 +166,7 @@ export default function SessionPage() {
             <p
               className="w-full text-xl text-center"
               aria-label={t("sessionCode.ariaLabel", { code })}>
-              {code}
+              {code.split("").slice(0, 3).join("")} - {code.split("").slice(3).join("")}
             </p>
             <div className="gap-3 items-center grid grid-cols-5">
               <Button
