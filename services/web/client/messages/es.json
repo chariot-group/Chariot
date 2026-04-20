@@ -837,7 +837,8 @@
       "copyButton": "Copiar código",
       "copySuccess": "¡Copiado!",
       "copyAriaLabel": "Copiar el código de sesión al portapapeles",
-      "copyLinkAriaLabel": "Copiar el enlace de la sesión al portapapeles"
+      "copyLinkAriaLabel": "Copiar el enlace de la sesión al portapapeles",
+      "copyLink": "Copiar enlace"
     },
     "toast": {
       "sessionNotFound": "Sesión no encontrada",

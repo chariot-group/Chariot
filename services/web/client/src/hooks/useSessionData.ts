@@ -107,9 +107,11 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 
     const getCharacterLabel = (characterId: string | null): string => {
         if (!characterId) return "";
-        const char = characterDetails[characterId];
-        if (!char) return characterId;
-        return `${char.firstname} ${char.lastname}`.trim() || char.surname || characterId;
+        const character = characterDetails[characterId];
+        if (!character) return characterId;
+        let label = character.firstname.trim();
+        if (character.lastname) label += ` ${character.lastname.trim()}`;
+        return label;
     };
 
     return {

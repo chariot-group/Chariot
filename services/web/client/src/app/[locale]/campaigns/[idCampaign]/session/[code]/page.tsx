@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
@@ -182,15 +183,22 @@ export default function SessionPage() {
                 {codeCopyState === "idle" && <Copy />}
                 {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
               </Button>
-              <Button
-                aria-label={t("sessionCode.copyLinkAriaLabel")}
-                className={`mt-4 transition-colors ${
-                  linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
-                }`}
-                disabled={linkCopyState !== "idle"}
-                onClick={() => copy(window.location.href, setLinkCopyState)}>
-                {linkCopyState === "success" ? <Check /> : <Link />}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    aria-label={t("sessionCode.copyLinkAriaLabel")}
+                    className={`mt-4 transition-colors ${
+                      linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                    }`}
+                    disabled={linkCopyState !== "idle"}
+                    onClick={() => copy(window.location.href, setLinkCopyState)}>
+                    {linkCopyState === "success" ? <Check /> : <Link />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </Card>
         </aside>
