@@ -75,11 +75,11 @@ export default function SessionPage() {
     <main
       className="flex-1 flex flex-col overflow-y-auto"
       aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
-      <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
+      <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 xl:grid-cols-4 gap-4 items-start">
         {/* Players section */}
         <section
           aria-labelledby="players-heading"
-          className="lg:col-span-3 flex flex-col gap-4">
+          className="xl:col-span-3 flex flex-col gap-4">
           <Card className="flex flex-col gap-4 p-4 sm:p-6">
             <h1
               id="players-heading"
@@ -91,7 +91,7 @@ export default function SessionPage() {
             <div
               role="list"
               aria-label={t("players.ariaLabel")}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-start gap-3 max-h-[35vh] lg:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               tabIndex={0}>
               {participants.length > 0 &&
                 participants.map((participant) => {
@@ -157,7 +157,7 @@ export default function SessionPage() {
         {/* Session code section */}
         <aside
           aria-labelledby="session-code-heading"
-          className="order-first lg:order-last lg:col-span-1">
+          className="order-first xl:order-last xl:col-span-1">
           <Card className="flex flex-col gap-0 p-4 sm:p-6">
             <h2
               id="session-code-heading"
