@@ -156,7 +156,6 @@ export function useSessionSocket({
         socket.emit("session:change-character", { sessionId: code, characterId });
         socket.once("session:participant-character-changed", () => {
             setIsChangingCharacter(false);
-            toast.success(t("toast.characterChanged"));
         });
         socket.once("session:error", () => {
             setIsChangingCharacter(false);
