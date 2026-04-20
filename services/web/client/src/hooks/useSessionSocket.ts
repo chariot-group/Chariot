@@ -85,7 +85,7 @@ export function useSessionSocket({
                 userId: string;
                 username: string;
                 characterId: string;
-                status: "connected" | "MasterGame" | "disconnected";
+                status: "connected" | "gameMaster" | "disconnected";
             }) => {
                 setParticipants((prev) => {
                     const exists = prev.some((p) => p.userId === userId);

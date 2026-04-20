@@ -822,7 +822,7 @@
     "players": {
       "ariaLabel": "Players list",
       "player": "Player",
-      "masterGame": "Game Master",
+      "gameMaster": "Game Master",
       "leaveButton": "Leave session",
       "addTokenButton": "Add a token: 0/{count}",
       "addTokenAriaLabel": "Add a token (0 of {count} available)",

@@ -105,7 +105,7 @@ export default function SessionPage() {
                       className="border bg-gray border-none flex flex-col gap-2 p-3">
                       <div className="flex flex-row justify-between items-center gap-3">
                         <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
-                        {participant.status === "MasterGame" && <Badge>{t("players.masterGame")}</Badge>}
+                        {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
                         {participant.status === "connected" && (
                           <Badge variant={"secondary"}>{t("players.player")}</Badge>
                         )}

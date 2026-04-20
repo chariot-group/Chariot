@@ -827,7 +827,7 @@
     "players": {
       "ariaLabel": "Liste des joueurs",
       "player": "Joueur",
-      "masterGame": "Maître du jeu",
+      "gameMaster": "Maître du jeu",
       "leaveButton": "Quitter la session",
       "addTokenButton": "Ajouter un token : 0/{count}",
       "addTokenAriaLabel": "Ajouter un token (0 sur {count} disponibles)",
