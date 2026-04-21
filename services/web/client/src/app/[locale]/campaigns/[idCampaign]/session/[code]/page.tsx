@@ -46,7 +46,7 @@ export default function SessionPage() {
   const totalTokens = Object.values(tokensByUser).reduce((a, b) => a + b, 0);
   const myTokens = currentUser ? (tokensByUser[currentUser.keycloakId] ?? 0) : 0;
   const maxTokens = participants.length;
-  const isMJ = participants.find((p) => p.userId === currentUser?.keycloakId)?.status === "MasterGame";
+  const isMJ = participants.find((p) => p.userId === currentUser?.keycloakId)?.status === "gameMaster";
 
   const {
     handleCharacterChange,
@@ -222,7 +222,7 @@ export default function SessionPage() {
                 {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
               </Button>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Button
                     aria-label={t("sessionCode.copyLinkAriaLabel")}
                     className={`mt-4 transition-colors ${
