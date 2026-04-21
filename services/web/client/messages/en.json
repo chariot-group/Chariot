@@ -857,6 +857,14 @@
       "copyError": "Unable to copy the code",
       "copyNotSupported": "Copy is not supported by this browser"
     },
-    "title": "Session"
+    "title": "Session",
+    "sessionEnded": {
+      "title": "Session ended",
+      "description": {
+        "closed": "The game master has ended the session. Thank you for playing!",
+        "expired": "The session has expired because the time limit was reached. Thank you for playing!"
+      },
+      "confirm": "Back to home"
+    }
   }
 }

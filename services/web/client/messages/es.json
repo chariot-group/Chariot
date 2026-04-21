@@ -858,6 +858,14 @@
       "copyError": "No se puede copiar el código",
       "copyNotSupported": "La copia no está soportada por este navegador"
     },
-    "title": "Sesión"
+    "title": "Sesión",
+    "sessionEnded": {
+      "title": "La sesión ha terminado",
+      "description": {
+        "closed": "El maestro del juego ha puesto fin a la sesión. ¡Gracias por jugar!",
+        "expired": "La sesión ha expirado porque se agotó el tiempo. ¡Gracias por jugar!"
+      },
+      "confirm": "Volver al inicio"
+    }
   }
 }

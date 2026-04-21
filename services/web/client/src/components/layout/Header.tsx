@@ -1,6 +1,7 @@
 "use client";
 
 import Profile from "@/components/layout/Profile";
+import SessionTimer from "@/components/layout/SessionTimer";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import NavigationService from "@/services/NavigationService";
@@ -50,7 +51,10 @@ export default function Header() {
             priority
           />
         </button>
-        <Profile />
+        <div className="flex items-center gap-3">
+          <SessionTimer />
+          <Profile />
+        </div>
       </header>
     </React.Fragment>
   );

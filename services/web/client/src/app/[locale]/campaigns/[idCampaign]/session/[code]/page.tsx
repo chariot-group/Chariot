@@ -18,6 +18,7 @@ import { useParams } from "next/navigation";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
@@ -54,9 +55,11 @@ export default function SessionPage() {
     handleAddToken,
     handleRemoveToken,
     handleLaunchSession,
+    handleDismissSessionEnd,
     isChangingCharacter,
     isLeaving,
     isLaunching,
+    sessionEndReason,
   } = useSessionSocket({
     token,
     code,
@@ -90,157 +93,163 @@ export default function SessionPage() {
   };
 
   return (
-    <main
-      className="flex-1 flex flex-col overflow-y-auto"
-      aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
-      <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 xl:grid-cols-4 gap-4 items-start">
-        {/* Players section */}
-        <section
-          aria-labelledby="players-heading"
-          className="xl:col-span-3 flex flex-col gap-4">
-          <Card className="flex flex-col gap-4 p-4 sm:p-6">
-            <h1
-              id="players-heading"
-              className="text-xl sm:text-2xl font-bold">
-              {t("title")}
-              <span className="font-normal"> - {campaign?.label ?? campaignLabel}</span>
-            </h1>
+    <>
+      <SessionEndedDialog
+        reason={sessionEndReason}
+        onConfirm={handleDismissSessionEnd}
+      />
+      <main
+        className="flex-1 flex flex-col overflow-y-auto"
+        aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
+        <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 xl:grid-cols-4 gap-4 items-start">
+          {/* Players section */}
+          <section
+            aria-labelledby="players-heading"
+            className="xl:col-span-3 flex flex-col gap-4">
+            <Card className="flex flex-col gap-4 p-4 sm:p-6">
+              <h1
+                id="players-heading"
+                className="text-xl sm:text-2xl font-bold">
+                {t("title")}
+                <span className="font-normal"> - {campaign?.label ?? campaignLabel}</span>
+              </h1>
 
-            <div
-              role="list"
-              aria-label={t("players.ariaLabel")}
-              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
-              tabIndex={0}>
-              {participants.length > 0 &&
-                participants.map((participant) => {
-                  const isMe = participant.userId === currentUser?.keycloakId;
-                  const isPlayer = participant.status === "connected";
-                  const characterLabel = getCharacterLabel(participant.characterId);
+              <div
+                role="list"
+                aria-label={t("players.ariaLabel")}
+                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+                tabIndex={0}>
+                {participants.length > 0 &&
+                  participants.map((participant) => {
+                    const isMe = participant.userId === currentUser?.keycloakId;
+                    const isPlayer = participant.status === "connected";
+                    const characterLabel = getCharacterLabel(participant.characterId);
 
-                  return (
-                    <Card
-                      key={participant.id}
-                      role="listitem"
-                      className="border bg-gray border-none flex flex-col gap-2 p-3">
-                      <div className="flex flex-row justify-between items-center gap-3">
-                        <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
-                        {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
-                        {participant.status === "connected" && (
-                          <Badge variant={"secondary"}>{t("players.player")}</Badge>
+                    return (
+                      <Card
+                        key={participant.id}
+                        role="listitem"
+                        className="border bg-gray border-none flex flex-col gap-2 p-3">
+                        <div className="flex flex-row justify-between items-center gap-3">
+                          <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
+                          {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
+                          {participant.status === "connected" && (
+                            <Badge variant={"secondary"}>{t("players.player")}</Badge>
+                          )}
+                        </div>
+
+                        {isMe && isPlayer ? (
+                          <CharacterSelect
+                            characters={myCharacters}
+                            value={participant.characterId ?? ""}
+                            onValueChange={handleCharacterChange}
+                            placeholder={t("players.selectCharacterPlaceholder")}
+                            disabled={isChangingCharacter}
+                            selectedLabel={characterLabel || undefined}
+                            triggerClassName="w-full text-xs"
+                          />
+                        ) : (
+                          participant.characterId && (
+                            <span className="text-xs text-muted-foreground truncate">{characterLabel}</span>
+                          )
                         )}
-                      </div>
+                      </Card>
+                    );
+                  })}
+              </div>
 
-                      {isMe && isPlayer ? (
-                        <CharacterSelect
-                          characters={myCharacters}
-                          value={participant.characterId ?? ""}
-                          onValueChange={handleCharacterChange}
-                          placeholder={t("players.selectCharacterPlaceholder")}
-                          disabled={isChangingCharacter}
-                          selectedLabel={characterLabel || undefined}
-                          triggerClassName="w-full text-xs"
-                        />
-                      ) : (
-                        participant.characterId && (
-                          <span className="text-xs text-muted-foreground truncate">{characterLabel}</span>
-                        )
-                      )}
-                    </Card>
-                  );
-                })}
-            </div>
-
-            <div className="flex flex-wrap justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={handleLeave}
-                disabled={isLeaving}>
-                {t("players.leaveButton")}
-              </Button>
-              {myTokens > 0 && (
+              <div className="flex flex-wrap justify-end gap-2">
                 <Button
-                  variant="destructive"
-                  aria-label={t("players.removeTokenAriaLabel", { myTokens })}
-                  onClick={handleRemoveToken}>
-                  <Minus /> {t("players.removeTokenButton")}
+                  variant="outline"
+                  onClick={handleLeave}
+                  disabled={isLeaving}>
+                  {t("players.leaveButton")}
                 </Button>
-              )}
-              <Button
-                aria-label={t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })}
-                disabled={totalTokens >= maxTokens}
-                onClick={handleAddToken}>
-                <span className="flex items-center gap-1.5">
-                  {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
-                  <Image
-                    src={Token}
-                    alt=""
-                    aria-hidden="true"
-                    className="w-3 h-3 sm:w-4 sm:h-4"
-                  />
-                </span>
-              </Button>
-              {isMJ && totalTokens >= maxTokens && (
-                <Button
-                  aria-label={t("players.launchSessionAriaLabel")}
-                  disabled={totalTokens < maxTokens || isLaunching}
-                  onClick={handleLaunchSession}>
-                  {isLaunching ? <Loader2 className="animate-spin" /> : null}
-                  {t("players.launchSessionButton")}
-                </Button>
-              )}
-            </div>
-          </Card>
-        </section>
-
-        {/* Session code section */}
-        <aside
-          aria-labelledby="session-code-heading"
-          className="order-first xl:order-last xl:col-span-1">
-          <Card className="flex flex-col gap-0 p-4 sm:p-6">
-            <h2
-              id="session-code-heading"
-              className="text-base sm:text-lg font-bold mb-4">
-              {t("sessionCode.heading")}
-            </h2>
-            <p
-              className="w-full text-xl text-center"
-              aria-label={t("sessionCode.ariaLabel", { code })}>
-              {code.split("").slice(0, 3).join("")} - {code.split("").slice(3).join("")}
-            </p>
-            <div className="gap-3 items-center grid grid-cols-5">
-              <Button
-                variant="outline"
-                className={`mt-4 w-full transition-colors col-span-4 ${
-                  codeCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
-                }`}
-                aria-label={t("sessionCode.copyAriaLabel")}
-                disabled={codeCopyState !== "idle"}
-                onClick={() => copy(code, setCodeCopyState)}>
-                {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
-                {codeCopyState === "success" && <Check />}
-                {codeCopyState === "idle" && <Copy />}
-                {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
-              </Button>
-              <Tooltip>
-                <TooltipTrigger asChild>
+                {myTokens > 0 && (
                   <Button
-                    aria-label={t("sessionCode.copyLinkAriaLabel")}
-                    className={`mt-4 transition-colors ${
-                      linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
-                    }`}
-                    disabled={linkCopyState !== "idle"}
-                    onClick={() => copy(window.location.href, setLinkCopyState)}>
-                    {linkCopyState === "success" ? <Check /> : <Link />}
+                    variant="destructive"
+                    aria-label={t("players.removeTokenAriaLabel", { myTokens })}
+                    onClick={handleRemoveToken}>
+                    <Minus /> {t("players.removeTokenButton")}
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </Card>
-        </aside>
-      </div>
-    </main>
+                )}
+                <Button
+                  aria-label={t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })}
+                  disabled={totalTokens >= maxTokens}
+                  onClick={handleAddToken}>
+                  <span className="flex items-center gap-1.5">
+                    {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
+                    <Image
+                      src={Token}
+                      alt=""
+                      aria-hidden="true"
+                      className="w-3 h-3 sm:w-4 sm:h-4"
+                    />
+                  </span>
+                </Button>
+                {isMJ && totalTokens >= maxTokens && (
+                  <Button
+                    aria-label={t("players.launchSessionAriaLabel")}
+                    disabled={totalTokens < maxTokens || isLaunching}
+                    onClick={handleLaunchSession}>
+                    {isLaunching ? <Loader2 className="animate-spin" /> : null}
+                    {t("players.launchSessionButton")}
+                  </Button>
+                )}
+              </div>
+            </Card>
+          </section>
+
+          {/* Session code section */}
+          <aside
+            aria-labelledby="session-code-heading"
+            className="order-first xl:order-last xl:col-span-1">
+            <Card className="flex flex-col gap-0 p-4 sm:p-6">
+              <h2
+                id="session-code-heading"
+                className="text-base sm:text-lg font-bold mb-4">
+                {t("sessionCode.heading")}
+              </h2>
+              <p
+                className="w-full text-xl text-center"
+                aria-label={t("sessionCode.ariaLabel", { code })}>
+                {code.split("").slice(0, 3).join("")} - {code.split("").slice(3).join("")}
+              </p>
+              <div className="gap-3 items-center grid grid-cols-5">
+                <Button
+                  variant="outline"
+                  className={`mt-4 w-full transition-colors col-span-4 ${
+                    codeCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                  }`}
+                  aria-label={t("sessionCode.copyAriaLabel")}
+                  disabled={codeCopyState !== "idle"}
+                  onClick={() => copy(code, setCodeCopyState)}>
+                  {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
+                  {codeCopyState === "success" && <Check />}
+                  {codeCopyState === "idle" && <Copy />}
+                  {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
+                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      aria-label={t("sessionCode.copyLinkAriaLabel")}
+                      className={`mt-4 transition-colors ${
+                        linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                      }`}
+                      disabled={linkCopyState !== "idle"}
+                      onClick={() => copy(window.location.href, setLinkCopyState)}>
+                      {linkCopyState === "success" ? <Check /> : <Link />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </Card>
+          </aside>
+        </div>
+      </main>
+    </>
   );
 }

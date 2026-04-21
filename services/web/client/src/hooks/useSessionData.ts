@@ -8,7 +8,7 @@ import characterService from "@/services/CharacterService";
 import sessionService, { type SessionParticipant } from "@/services/SessionService";
 import UserService from "@/services/UserService";
 import { useAppDispatch } from "@/store/hooks";
-import { setCurrentSession } from "@/store/slices/sessionSlice";
+import { setCurrentSession, setSessionStatus, setSessionExpiresAt } from "@/store/slices/sessionSlice";
 import { useToast } from "@/hooks/useToast";
 import type { Character } from "@/types/character";
 import type { Campaign } from "@/types/campaign";
@@ -51,8 +51,10 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     useEffect(() => {
         const init = async () => {
             try {
-                await sessionService.getSession(code);
+                const session = await sessionService.getSession(code);
                 dispatch(setCurrentSession({ code, campaignId: idCampaign }));
+                dispatch(setSessionStatus(session.status));
+                dispatch(setSessionExpiresAt(session.expiresAt));
             } catch {
                 toast.info(t("toast.sessionNotFound"));
                 router.back();
