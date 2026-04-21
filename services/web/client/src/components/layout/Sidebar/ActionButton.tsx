@@ -16,7 +16,6 @@ import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { selectCurrentSession, selectIsInSession } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
-import { use } from "react";
 
 interface ActionButtonConfig {
   label: string;
@@ -53,10 +52,14 @@ export function ActionButton() {
           label: t("launchSession"),
           state: "launchSession",
           action: () => {
+            if (isInSession) {
+              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+              return;
+            }
             if (!selectedCampaignId) return;
             sessionService.createSession(selectedCampaignId);
           },
-          disabled: !selectedCampaignId || isInSession,
+          disabled: !selectedCampaignId,
           icon: <PlayCircle className="size-6" />,
           backgroundColor: "bg-yellow",
           textColor: "text-black",
