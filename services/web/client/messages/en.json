@@ -822,7 +822,7 @@
     "players": {
       "ariaLabel": "Players list",
       "player": "Player",
-      "masterGame": "Game Master",
+      "gameMaster": "Game Master",
       "leaveButton": "Leave session",
       "addTokenButton": "Add a token: {total}/{count}",
       "addTokenAriaLabel": "Add a token ({total} of {count} deposited)",
@@ -840,7 +840,8 @@
       "copyButton": "Copy code",
       "copySuccess": "Copied!",
       "copyAriaLabel": "Copy session code to clipboard",
-      "copyLinkAriaLabel": "Copy session link to clipboard"
+      "copyLinkAriaLabel": "Copy session link to clipboard",
+      "copyLink": "Copy link"
     },
     "toast": {
       "sessionNotFound": "Session not found",

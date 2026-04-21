@@ -827,7 +827,7 @@
     "players": {
       "ariaLabel": "Liste des joueurs",
       "player": "Joueur",
-      "masterGame": "Maître du jeu",
+      "gameMaster": "Maître du jeu",
       "leaveButton": "Quitter la session",
       "addTokenButton": "Ajouter un token : {total}/{count}",
       "addTokenAriaLabel": "Ajouter un token ({total} sur {count} déposé(s))",
@@ -845,7 +845,8 @@
       "copyButton": "Copier le code",
       "copySuccess": "Copié !",
       "copyAriaLabel": "Copier le code de la session dans le presse-papier",
-      "copyLinkAriaLabel": "Copier le lien de la session dans le presse-papier"
+      "copyLinkAriaLabel": "Copier le lien de la session dans le presse-papier",
+      "copyLink": "Copier le lien"
     },
     "toast": {
       "sessionNotFound": "Session inexistante",

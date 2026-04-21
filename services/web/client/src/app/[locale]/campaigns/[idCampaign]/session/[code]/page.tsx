@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
 import { useSessionData } from "@/hooks/useSessionData";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
@@ -90,13 +91,13 @@ export default function SessionPage() {
 
   return (
     <main
-      className="flex flex-col min-h-dvh"
+      className="flex-1 flex flex-col overflow-y-auto"
       aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
-      <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
+      <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 xl:grid-cols-4 gap-4 items-start">
         {/* Players section */}
         <section
           aria-labelledby="players-heading"
-          className="lg:col-span-3 flex flex-col gap-4">
+          className="xl:col-span-3 flex flex-col gap-4">
           <Card className="flex flex-col gap-4 p-4 sm:p-6">
             <h1
               id="players-heading"
@@ -108,7 +109,7 @@ export default function SessionPage() {
             <div
               role="list"
               aria-label={t("players.ariaLabel")}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 items-start gap-3 h-[50vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               tabIndex={0}>
               {participants.length > 0 &&
                 participants.map((participant) => {
@@ -123,35 +124,25 @@ export default function SessionPage() {
                       className="border bg-gray border-none flex flex-col gap-2 p-3">
                       <div className="flex flex-row justify-between items-center gap-3">
                         <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
-                        {participant.status === "MasterGame" && <Badge>{t("players.masterGame")}</Badge>}
+                        {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
                         {participant.status === "connected" && (
                           <Badge variant={"secondary"}>{t("players.player")}</Badge>
                         )}
                       </div>
 
                       {isMe && isPlayer ? (
-                        <Select
+                        <CharacterSelect
+                          characters={myCharacters}
                           value={participant.characterId ?? ""}
                           onValueChange={handleCharacterChange}
-                          disabled={isChangingCharacter}>
-                          <SelectTrigger className="w-full text-xs">
-                            <SelectValue placeholder={t("players.selectCharacterPlaceholder")}>
-                              {characterLabel || t("players.selectCharacterPlaceholder")}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {myCharacters.map((char) => (
-                              <SelectItem
-                                key={char._id}
-                                value={char._id}>
-                                {`${char.firstname} ${char.lastname}`.trim() || char.surname || char._id}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          placeholder={t("players.selectCharacterPlaceholder")}
+                          disabled={isChangingCharacter}
+                          selectedLabel={characterLabel || undefined}
+                          triggerClassName="w-full text-xs"
+                        />
                       ) : (
                         participant.characterId && (
-                          <span className="text-xs text-muted-foreground">{characterLabel}</span>
+                          <span className="text-xs text-muted-foreground truncate">{characterLabel}</span>
                         )
                       )}
                     </Card>
@@ -204,7 +195,7 @@ export default function SessionPage() {
         {/* Session code section */}
         <aside
           aria-labelledby="session-code-heading"
-          className="lg:col-span-1">
+          className="order-first xl:order-last xl:col-span-1">
           <Card className="flex flex-col gap-0 p-4 sm:p-6">
             <h2
               id="session-code-heading"
@@ -214,7 +205,7 @@ export default function SessionPage() {
             <p
               className="w-full text-xl text-center"
               aria-label={t("sessionCode.ariaLabel", { code })}>
-              {code}
+              {code.split("").slice(0, 3).join("")} - {code.split("").slice(3).join("")}
             </p>
             <div className="gap-3 items-center grid grid-cols-5">
               <Button
@@ -230,15 +221,22 @@ export default function SessionPage() {
                 {codeCopyState === "idle" && <Copy />}
                 {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
               </Button>
-              <Button
-                aria-label={t("sessionCode.copyLinkAriaLabel")}
-                className={`mt-4 transition-colors ${
-                  linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
-                }`}
-                disabled={linkCopyState !== "idle"}
-                onClick={() => copy(window.location.href, setLinkCopyState)}>
-                {linkCopyState === "success" ? <Check /> : <Link />}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    aria-label={t("sessionCode.copyLinkAriaLabel")}
+                    className={`mt-4 transition-colors ${
+                      linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                    }`}
+                    disabled={linkCopyState !== "idle"}
+                    onClick={() => copy(window.location.href, setLinkCopyState)}>
+                    {linkCopyState === "success" ? <Check /> : <Link />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </Card>
         </aside>

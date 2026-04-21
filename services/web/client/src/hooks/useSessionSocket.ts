@@ -102,7 +102,7 @@ export function useSessionSocket({
                 userId: string;
                 username: string;
                 characterId: string;
-                status: "connected" | "MasterGame" | "disconnected";
+                status: "connected" | "gameMaster" | "disconnected";
             }) => {
                 setParticipants((prev) => {
                     const exists = prev.some((p) => p.userId === userId);
@@ -194,7 +194,6 @@ export function useSessionSocket({
         socket.emit("session:change-character", { sessionId: code, characterId });
         socket.once("session:participant-character-changed", () => {
             setIsChangingCharacter(false);
-            toast.success(t("toast.characterChanged"));
         });
         socket.once("session:error", () => {
             setIsChangingCharacter(false);

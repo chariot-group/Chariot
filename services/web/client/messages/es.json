@@ -823,7 +823,7 @@
     "players": {
       "ariaLabel": "Lista de jugadores",
       "player": "Jugador",
-      "masterGame": "Maestro de juego",
+      "gameMaster": "Maestro de juego",
       "leaveButton": "Abandonar la sesión",
       "addTokenButton": "Agregar un token: {total}/{count}",
       "addTokenAriaLabel": "Agregar un token ({total} de {count} depositado(s))",
@@ -841,7 +841,8 @@
       "copyButton": "Copiar código",
       "copySuccess": "¡Copiado!",
       "copyAriaLabel": "Copiar el código de sesión al portapapeles",
-      "copyLinkAriaLabel": "Copiar el enlace de la sesión al portapapeles"
+      "copyLinkAriaLabel": "Copiar el enlace de la sesión al portapapeles",
+      "copyLink": "Copiar enlace"
     },
     "toast": {
       "sessionNotFound": "Sesión no encontrada",

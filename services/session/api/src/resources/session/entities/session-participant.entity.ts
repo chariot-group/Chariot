@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export enum ParticipantStatus {
     connected = 'connected',
     disconnected = 'disconnected',
-    MasterGame = 'MasterGame',
+    gameMaster = 'gameMaster',
 }
 
 export class SessionParticipantEntity {

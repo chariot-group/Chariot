@@ -14,7 +14,7 @@ import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectCurrentSession, selectIsInSession } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 
 interface ActionButtonConfig {
@@ -37,6 +37,7 @@ export function ActionButton() {
   const currentPage = usePathname() || "/";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const isInSession = useAppSelector(selectIsInSession);
+  const session = useAppSelector(selectCurrentSession);
 
   /**
    * Determine button state based on context and workflow state
@@ -51,10 +52,14 @@ export function ActionButton() {
           label: t("launchSession"),
           state: "launchSession",
           action: () => {
+            if (isInSession) {
+              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+              return;
+            }
             if (!selectedCampaignId) return;
             sessionService.createSession(selectedCampaignId);
           },
-          disabled: !selectedCampaignId || isInSession,
+          disabled: !selectedCampaignId,
           icon: <PlayCircle className="size-6" />,
           backgroundColor: "bg-yellow",
           textColor: "text-black",
@@ -119,12 +124,15 @@ export function ActionButton() {
         return {
           label: t("joinSession"),
           state: "joinSession",
-          action: () => {},
-          disabled: isInSession,
+          action: () => {
+            if (isInSession) {
+              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+            }
+          },
           icon: <Users className="size-6" />,
+          disabled: false,
           backgroundColor: "bg-green",
           textColor: "text-black",
-          tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
         };
       }
 

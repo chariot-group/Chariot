@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import sessionService from "@/services/SessionService";
@@ -101,7 +101,7 @@ export function JoinSessionDialog({ children }: JoinSessionDialogProps) {
         <DialogHeader>
           <DialogTitle>{t("joinSessionDialogTitle")}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4">
+        <div className="flex flex-col items-center gap-4 py-4 w-full overflow-hidden">
           <InputOTP
             maxLength={6}
             value={code}
@@ -123,24 +123,14 @@ export function JoinSessionDialog({ children }: JoinSessionDialogProps) {
               <InputOTPSlot index={5} />
             </InputOTPGroup>
           </InputOTP>
-          <Select
+          <CharacterSelect
+            characters={characters}
             value={characterId}
             onValueChange={setCharacterId}
-            disabled={isJoining || loadingCharacters}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("joinSessionSelectCharacterPlaceholder")} />
-            </SelectTrigger>
-            <SelectContent>
-              {characters.map((c) => (
-                <SelectItem
-                  key={c._id}
-                  value={c._id}>
-                  {c.firstname} {c.lastname}
-                  {c.surname ? ` "${c.surname}"` : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder={t("joinSessionSelectCharacterPlaceholder")}
+            disabled={isJoining || loadingCharacters}
+            triggerClassName="w-full text-xs"
+          />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>
