@@ -24,18 +24,30 @@ import { setCurrentSession } from "@/store/slices/sessionSlice";
 import { usePathname, useRouter } from "next/navigation";
 
 interface JoinSessionDialogProps {
-  /** The element that opens the dialog (e.g. a Button). */
-  children: React.ReactNode;
+  /** The element that opens the dialog (e.g. a Button). Optional when using controlled mode. */
+  children?: React.ReactNode;
+  /** Controlled open state. If provided, the dialog is fully controlled externally. */
+  open?: boolean;
+  /** Controlled open state handler. Required when `open` is provided. */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function JoinSessionDialog({ children }: JoinSessionDialogProps) {
+export function JoinSessionDialog({
+  children,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
+}: JoinSessionDialogProps) {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
   const dispatch = useAppDispatch();
   const router = useRouter();
   const pathname = usePathname();
 
-  const [open, setOpen] = useState(false);
+  const isControlled = openProp !== undefined;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isControlled ? openProp : internalOpen;
+  const setOpen = isControlled ? (val: boolean) => onOpenChangeProp?.(val) : setInternalOpen;
+
   const [code, setCode] = useState("");
   const [characterId, setCharacterId] = useState("");
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -96,7 +108,7 @@ export function JoinSessionDialog({ children }: JoinSessionDialogProps) {
     <Dialog
       open={open}
       onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>{t("joinSessionDialogTitle")}</DialogTitle>

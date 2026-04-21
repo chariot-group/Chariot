@@ -14,7 +14,7 @@ import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectCurrentSession, selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectCurrentSession, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 
 interface ActionButtonConfig {
@@ -31,13 +31,15 @@ interface ActionButtonConfig {
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const contextMode = useAppSelector((state) => state.environment.contextMode);
-  const sessionStarted = useAppSelector(selectSessionStarted);
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const battleStarted = useAppSelector(selectBattleStarted);
   const currentPage = usePathname() || "/";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
+  const sessionStatus = useAppSelector(selectSessionStatus);
+
+  const sessionStarted = sessionStatus && sessionStatus === "launched";
 
   /**
    * Determine button state based on context and workflow state
