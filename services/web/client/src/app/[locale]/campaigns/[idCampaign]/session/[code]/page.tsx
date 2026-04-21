@@ -184,7 +184,7 @@ export default function SessionPage() {
                 {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
               </Button>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Button
                     aria-label={t("sessionCode.copyLinkAriaLabel")}
                     className={`mt-4 transition-colors ${
