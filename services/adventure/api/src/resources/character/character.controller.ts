@@ -96,7 +96,6 @@ export class CharacterController {
     });
   }
 
-  @IsCreator(CharacterService)
   @ApiOperation({ summary: 'Get a character by ID' })
   @ApiParam({
     name: 'id',

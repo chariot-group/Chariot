@@ -28,6 +28,18 @@ class CampaignService {
     }
 
     /**
+     * Récupère uniquement le label d'une campagne (accessible aux joueurs de session)
+     */
+    async getCampaignLabel(id: string): Promise<string | null> {
+        try {
+            const response = await apiClient().get<{ data: { label: string | null } }>(`${this.BASE_PATH}/${id}/label`);
+            return response.data.data.label;
+        } catch {
+            return null;
+        }
+    }
+
+    /**
      * Récupère une campagne spécifique par son ID
      */
     async getCampaignById(id: string): Promise<Campaign> {

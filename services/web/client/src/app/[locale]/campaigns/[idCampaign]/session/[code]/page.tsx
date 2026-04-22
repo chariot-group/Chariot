@@ -2,139 +2,134 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
-import sessionService, { SessionParticipant } from "@/services/SessionService";
-import UserService from "@/services/UserService";
+import { useSessionData } from "@/hooks/useSessionData";
+import { useSessionSocket } from "@/hooks/useSessionSocket";
+import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useAppSelector } from "@/store/hooks";
-import { useAppDispatch } from "@/store/hooks";
 import { selectCampaigns } from "@/store/slices/campaignSlice";
-import { setCurrentSession, clearCurrentSession } from "@/store/slices/sessionSlice";
+import { selectUser } from "@/store/slices/userSlice";
 import Token from "@public/assets/token.svg";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy, Link, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
   const { idCampaign, code } = useParams<{ idCampaign: string; code: string }>();
   const campaigns = useAppSelector(selectCampaigns);
   const campaign = campaigns.find((c) => c._id === idCampaign);
-  const dispatch = useAppDispatch();
-  const router = useRouter();
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "fr";
+  const { token } = useKeycloak();
+  const currentUser = useAppSelector(selectUser);
   const toast = useToast();
-  const [participants, setParticipants] = useState<SessionParticipant[]>([]);
-  const [participantNames, setParticipantNames] = useState<Record<string, string>>({});
-  const [isLeaving, setIsLeaving] = useState(false);
-  const [copyState, setCopyState] = useState<"idle" | "loading" | "success">("idle");
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        await sessionService.getSession(code);
-        dispatch(setCurrentSession({ code, campaignId: idCampaign }));
-      } catch {
-        toast.info(t("toast.sessionNotFound"));
-        router.back();
-        return;
-      }
+  const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
+  const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
 
-      try {
-        const data = await sessionService.getParticipants(code);
-        setParticipants(data.participants);
-        toast.success(t("toast.connectionSuccess"));
+  const {
+    campaignLabel,
+    participants,
+    setParticipants,
+    participantNames,
+    setParticipantNames,
+    myCharacters,
+    fetchCharacterDetails,
+    getCharacterLabel,
+  } = useSessionData({ code, idCampaign, campaign });
 
-        const names = await Promise.all(
-          data.participants.map(async (p) => {
-            try {
-              const user = await UserService.getUserById(p.userId);
-              return [p.userId, `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.username] as const;
-            } catch {
-              return [p.userId, p.userId] as const;
-            }
-          }),
-        );
-        setParticipantNames(Object.fromEntries(names));
-      } catch {
-        toast.error(t("toast.participantsError"));
-      }
-    };
+  const { handleCharacterChange, handleLeave, isChangingCharacter, isLeaving } = useSessionSocket({
+    token,
+    code,
+    currentUser,
+    participants,
+    setParticipants,
+    setParticipantNames,
+    fetchCharacterDetails,
+  });
 
-    init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code]);
-
-  const handleLeave = async () => {
-    if (isLeaving) return;
-    setIsLeaving(true);
-    try {
-      await sessionService.leaveSession(code);
-      dispatch(clearCurrentSession());
-      toast.info(t("toast.leaveSuccess"));
-      router.push(`/${locale}/welcome`);
-    } catch {
-      toast.error(t("toast.leaveError"));
-      setIsLeaving(false);
-    }
-  };
-
-  const copy = (text: string): void => {
-    if (copyState !== "idle") return;
-    setCopyState("loading");
+  const copy = (text: string, setState: Dispatch<SetStateAction<"idle" | "loading" | "success">>): void => {
+    setState("loading");
     if (navigator.clipboard) {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          setCopyState("success");
-          setTimeout(() => setCopyState("idle"), 1000);
+          setState("success");
+          setTimeout(() => setState("idle"), 1000);
         })
         .catch(() => {
-          setCopyState("idle");
+          setState("idle");
           toast.error(t("toast.copyError"));
         });
     } else {
-      setCopyState("idle");
+      setState("idle");
       toast.error(t("toast.copyNotSupported"));
     }
   };
 
   return (
     <main
-      className="flex flex-col min-h-dvh"
-      aria-label={t("mainAriaLabel", { label: campaign?.label ?? t("campaignFallback") })}>
-      <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
+      className="flex-1 flex flex-col overflow-y-auto"
+      aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
+      <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 xl:grid-cols-4 gap-4 items-start">
         {/* Players section */}
         <section
           aria-labelledby="players-heading"
-          className="lg:col-span-3 flex flex-col gap-4">
+          className="xl:col-span-3 flex flex-col gap-4">
           <Card className="flex flex-col gap-4 p-4 sm:p-6">
             <h1
               id="players-heading"
               className="text-xl sm:text-2xl font-bold">
               {t("title")}
-              <span className="font-normal"> - {campaign?.label}</span>
+              <span className="font-normal"> - {campaign?.label ?? campaignLabel}</span>
             </h1>
 
             <div
               role="list"
               aria-label={t("players.ariaLabel")}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 items-start gap-3 h-[50vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               tabIndex={0}>
               {participants.length > 0 &&
-                participants.map((participant) => (
-                  <Card
-                    key={participant.id}
-                    role="listitem"
-                    className="border bg-gray border-none flex-row justify-between gap-3 p-3">
-                    <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
-                    {participant.status === "gameMaster" && <Badge>{t("players.masterGame")}</Badge>}
-                    {participant.status === "connected" && <Badge variant={"secondary"}>{t("players.player")}</Badge>}
-                  </Card>
-                ))}
+                participants.map((participant) => {
+                  const isMe = participant.userId === currentUser?.keycloakId;
+                  const isPlayer = participant.status === "connected";
+                  const characterLabel = getCharacterLabel(participant.characterId);
+
+                  return (
+                    <Card
+                      key={participant.id}
+                      role="listitem"
+                      className="border bg-gray border-none flex flex-col gap-2 p-3">
+                      <div className="flex flex-row justify-between items-center gap-3">
+                        <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
+                        {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
+                        {participant.status === "connected" && (
+                          <Badge variant={"secondary"}>{t("players.player")}</Badge>
+                        )}
+                      </div>
+
+                      {isMe && isPlayer ? (
+                        <CharacterSelect
+                          characters={myCharacters}
+                          value={participant.characterId ?? ""}
+                          onValueChange={handleCharacterChange}
+                          placeholder={t("players.selectCharacterPlaceholder")}
+                          disabled={isChangingCharacter}
+                          selectedLabel={characterLabel || undefined}
+                          triggerClassName="w-full text-xs"
+                        />
+                      ) : (
+                        participant.characterId && (
+                          <span className="text-xs text-muted-foreground truncate">{characterLabel}</span>
+                        )
+                      )}
+                    </Card>
+                  );
+                })}
             </div>
 
             <div className="flex flex-wrap justify-end gap-2">
@@ -162,7 +157,7 @@ export default function SessionPage() {
         {/* Session code section */}
         <aside
           aria-labelledby="session-code-heading"
-          className="lg:col-span-1">
+          className="order-first xl:order-last xl:col-span-1">
           <Card className="flex flex-col gap-0 p-4 sm:p-6">
             <h2
               id="session-code-heading"
@@ -172,26 +167,38 @@ export default function SessionPage() {
             <p
               className="w-full text-xl text-center"
               aria-label={t("sessionCode.ariaLabel", { code })}>
-              {code}
+              {code.split("").slice(0, 3).join("")} - {code.split("").slice(3).join("")}
             </p>
-            <div className="gap-3 items-center">
+            <div className="gap-3 items-center grid grid-cols-5">
               <Button
                 variant="outline"
-                className={`mt-4 w-full transition-colors ${
-                  copyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                className={`mt-4 w-full transition-colors col-span-4 ${
+                  codeCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
                 }`}
                 aria-label={t("sessionCode.copyAriaLabel")}
-                disabled={copyState !== "idle"}
-                onClick={() => copy(code)}>
-                {copyState === "loading" && <Loader2 className="animate-spin" />}
-                {copyState === "success" && <Check />}
-                {copyState === "idle" && <Copy />}
-                {copyState === "loading"
-                  ? t("sessionCode.copyButton")
-                  : copyState === "success"
-                    ? t("sessionCode.copySuccess")
-                    : t("sessionCode.copyButton")}
+                disabled={codeCopyState !== "idle"}
+                onClick={() => copy(code, setCodeCopyState)}>
+                {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
+                {codeCopyState === "success" && <Check />}
+                {codeCopyState === "idle" && <Copy />}
+                {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
               </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label={t("sessionCode.copyLinkAriaLabel")}
+                    className={`mt-4 transition-colors ${
+                      linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                    }`}
+                    disabled={linkCopyState !== "idle"}
+                    onClick={() => copy(window.location.href, setLinkCopyState)}>
+                    {linkCopyState === "success" ? <Check /> : <Link />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </Card>
         </aside>

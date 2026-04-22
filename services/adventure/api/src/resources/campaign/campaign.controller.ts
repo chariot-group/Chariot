@@ -271,6 +271,33 @@ export class CampaignController {
     description: 'Campaign #ID has been deleted',
     type: ProblemDetailsDto,
   })
+  @ApiOperation({
+    summary: 'Get campaign label by ID (accessible to any session participant)',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+    description: 'Campaign ID',
+    example: '507f1f77bcf86cd799439011',
+  })
+  @ApiOkResponse({
+    description: 'Campaign label found',
+    schema: {
+      properties: { data: { properties: { label: { type: 'string' } } } },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Campaign not found',
+    type: ProblemDetailsDto,
+  })
+  @Get(':id/label')
+  async findLabel(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
+    const result = await this.campaignService.findOne(id);
+    return { data: { label: result?.data?.label ?? null } };
+  }
+
   @IsCreator(CampaignService)
   @Get(':id')
   async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {

@@ -1,12 +1,13 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class JoinSessionDto {
-    @ApiProperty({
-        description: 'ID du personnage utilisé pour rejoindre la session',
+    @ApiPropertyOptional({
+        description: 'ID du personnage utilisé pour rejoindre la session (null pour le Maître du Jeu)',
         example: 'char_abc123',
+        nullable: true,
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    characterId: string;
+    characterId?: string | null;
 }
