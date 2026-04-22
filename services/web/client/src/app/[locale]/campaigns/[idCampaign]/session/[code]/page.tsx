@@ -15,7 +15,7 @@ import { Check, ChevronDown, Copy, Link, Loader2, Minus, Plus, Trash2 } from "lu
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
-import React, { useState, type Dispatch, type SetStateAction } from "react";
+import React, { use, useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
@@ -26,6 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { selectSessionStatus } from "@/store/slices/sessionSlice";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
@@ -35,6 +36,9 @@ export default function SessionPage() {
   const { token } = useKeycloak();
   const currentUser = useAppSelector(selectUser);
   const toast = useToast();
+
+  const sessionStatus = useAppSelector(selectSessionStatus);
+  const sessionIsActive = sessionStatus == "activated";
 
   const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
@@ -105,7 +109,7 @@ export default function SessionPage() {
   };
 
   return (
-    <>
+    <React.Fragment>
       <SessionEndedDialog
         reason={sessionEndReason}
         onConfirm={handleDismissSessionEnd}
@@ -150,7 +154,7 @@ export default function SessionPage() {
                           )}
                         </div>
 
-                        {isMe && isPlayer ? (
+                        {isMe && isPlayer && sessionIsActive ? (
                           <CharacterSelect
                             characters={myCharacters}
                             value={participant.characterId ?? ""}
@@ -186,13 +190,13 @@ export default function SessionPage() {
                         ? t("players.launchSessionAriaLabel")
                         : t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })
                     }
-                    disabled={totalTokens >= maxTokens ? !isMJ || isLaunching : maxAddable <= 0}
+                    disabled={!sessionIsActive || (totalTokens >= maxTokens ? !isMJ || isLaunching : maxAddable <= 0)}
                     onClick={totalTokens >= maxTokens ? handleLaunchSession : handleAddToken}>
                     {totalTokens >= maxTokens ? (
-                      <>
+                      <React.Fragment>
                         {isLaunching ? <Loader2 className="animate-spin" /> : null}
                         {t("players.launchSessionButton")}
-                      </>
+                      </React.Fragment>
                     ) : (
                       <span className="flex items-center gap-1.5">
                         {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
@@ -208,6 +212,7 @@ export default function SessionPage() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
+                        disabled={!sessionIsActive}
                         className="rounded-l-none px-2 pl-1"
                         aria-label={t("players.tokenMenuAriaLabel")}>
                         <ChevronDown className="w-4 h-4" />
@@ -324,6 +329,6 @@ export default function SessionPage() {
           </aside>
         </div>
       </main>
-    </>
+    </React.Fragment>
   );
 }
