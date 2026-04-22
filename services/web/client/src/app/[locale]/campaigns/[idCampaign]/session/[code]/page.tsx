@@ -57,7 +57,7 @@ export default function SessionPage() {
   const maxTokens = participants.length;
   const isMJ = participants.find((p) => p.userId === currentUser?.keycloakId)?.status === "gameMaster";
   const maxAddable = Math.min((currentUser?.balance ?? 0) - myTokens, maxTokens - totalTokens);
-  const maxCustomAmount = Math.max(1, Math.min(currentUser?.balance ?? 0, maxTokens));
+  const maxCustomAmount = Math.max(1, Math.max(maxAddable, myTokens));
 
   const {
     handleCharacterChange,
@@ -181,18 +181,29 @@ export default function SessionPage() {
                 <div className="flex items-center">
                   <Button
                     className="rounded-r-none border-r-0 pr-1"
-                    aria-label={t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })}
-                    disabled={totalTokens >= maxTokens || maxAddable <= 0}
-                    onClick={handleAddToken}>
-                    <span className="flex items-center gap-1.5">
-                      {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
-                      <Image
-                        src={Token}
-                        alt=""
-                        aria-hidden="true"
-                        className="w-3 h-3 sm:w-4 sm:h-4"
-                      />
-                    </span>
+                    aria-label={
+                      totalTokens >= maxTokens
+                        ? t("players.launchSessionAriaLabel")
+                        : t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })
+                    }
+                    disabled={totalTokens >= maxTokens ? !isMJ || isLaunching : maxAddable <= 0}
+                    onClick={totalTokens >= maxTokens ? handleLaunchSession : handleAddToken}>
+                    {totalTokens >= maxTokens ? (
+                      <>
+                        {isLaunching ? <Loader2 className="animate-spin" /> : null}
+                        {t("players.launchSessionButton")}
+                      </>
+                    ) : (
+                      <span className="flex items-center gap-1.5">
+                        {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
+                        <Image
+                          src={Token}
+                          alt=""
+                          aria-hidden="true"
+                          className="w-3 h-3 sm:w-4 sm:h-4"
+                        />
+                      </span>
+                    )}
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -259,15 +270,6 @@ export default function SessionPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                {isMJ && totalTokens >= maxTokens && (
-                  <Button
-                    aria-label={t("players.launchSessionAriaLabel")}
-                    disabled={totalTokens < maxTokens || isLaunching}
-                    onClick={handleLaunchSession}>
-                    {isLaunching ? <Loader2 className="animate-spin" /> : null}
-                    {t("players.launchSessionButton")}
-                  </Button>
-                )}
               </div>
             </Card>
           </section>
