@@ -15,7 +15,7 @@ import { Check, ChevronDown, Copy, Link, Loader2, Minus, Plus, Trash2 } from "lu
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
-import React, { use, useState, type Dispatch, type SetStateAction } from "react";
+import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
@@ -67,7 +67,6 @@ export default function SessionPage() {
     handleCharacterChange,
     handleLeave,
     handleAddToken,
-    handleRemoveToken,
     handleAddTokenAmount,
     handleRemoveTokenAmount,
     handleLaunchSession,

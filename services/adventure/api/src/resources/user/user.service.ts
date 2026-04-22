@@ -22,7 +22,7 @@ export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly keycloakService: KeycloakService,
-  ) { }
+  ) {}
 
   async findOne(id: string): Promise<IResponse<UserInfoDto>> {
     try {
@@ -204,7 +204,11 @@ export class UserService {
         throw new NotFoundException(message);
       }
 
-      user.history.push({ date: new Date(), campaignName: addHistoryDto.campaignName, value: addHistoryDto.value });
+      user.history.push({
+        date: new Date(),
+        campaignName: addHistoryDto.campaignName,
+        value: addHistoryDto.value,
+      });
       await user.save();
 
       const keycloakUser: UserRepresentation =

@@ -22,11 +22,17 @@ import { IResponse } from '@/common/dtos/reponse.dto';
 import { ChangePasswordDto } from '@/resources/user/dto/change-password.dto';
 import { AddHistoryDto } from '@/resources/user/dto/add-history.dto';
 
-@ApiExtraModels(IResponse, UserInfoDto, ChangePasswordDto, UpdateUserProfileDto, AddHistoryDto)
+@ApiExtraModels(
+  IResponse,
+  UserInfoDto,
+  ChangePasswordDto,
+  UpdateUserProfileDto,
+  AddHistoryDto,
+)
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Get current authenticated user information' })
@@ -126,7 +132,9 @@ export class UserController {
 
   @Put('me/history')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Add a history entry for the current authenticated user' })
+  @ApiOperation({
+    summary: 'Add a history entry for the current authenticated user',
+  })
   @ApiResponse({
     status: 200,
     description: 'History entry added successfully',
@@ -145,14 +153,8 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'User not authenticated' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async addHistory(
-    @Req() request,
-    @Body() addHistoryDto: AddHistoryDto,
-  ) {
-    return this.userService.addHistory(
-      request.user.keycloakId,
-      addHistoryDto,
-    );
+  async addHistory(@Req() request, @Body() addHistoryDto: AddHistoryDto) {
+    return this.userService.addHistory(request.user.keycloakId, addHistoryDto);
   }
 
   @Put('me')

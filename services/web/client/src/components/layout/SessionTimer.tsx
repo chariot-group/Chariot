@@ -19,10 +19,7 @@ export default function SessionTimer() {
   const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
-    if (status !== "launched" || !expiresAt) {
-      setRemaining(null);
-      return;
-    }
+    if (status !== "launched" || !expiresAt) return;
 
     const compute = () => {
       const diff = Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000);
@@ -34,7 +31,7 @@ export default function SessionTimer() {
     return () => clearInterval(interval);
   }, [status, expiresAt]);
 
-  if (remaining === null) return null;
+  if (status !== "launched" || !expiresAt || remaining === null) return null;
 
   const isLow = remaining <= 300;
 

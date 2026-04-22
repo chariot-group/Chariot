@@ -2,12 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
-import {
-  ActionButtonState,
-  selectBattleInitialized,
-  selectBattleStarted,
-  selectSessionStarted,
-} from "@/store/slices/actionButtonSlice";
+import { ActionButtonState, selectBattleInitialized, selectBattleStarted } from "@/store/slices/actionButtonSlice";
 import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
