@@ -21,12 +21,6 @@ interface MonsterCodexDialogProps {
   onMonsterSelected: (monster: Partial<NPC>) => void;
 }
 
-const langToFlag: { [key: string]: string } = {
-  fr: "🇫🇷",
-  en: "🇬🇧",
-  es: "🇪🇸",
-};
-
 function MonsterResultItem({
   monsterItem,
   selectedLang,
@@ -38,20 +32,13 @@ function MonsterResultItem({
   selectedLang: string | null;
   isSelected: boolean;
   onMonsterClick: (monster: CodexMonsterItem, lang: string) => void;
-  tDialog: (key: string, values?: any) => string;
+  tDialog: (key: string, values?: Record<string, unknown>) => string;
 }) {
-  const [displayLang, setDisplayLang] = useState(() => {
-    if (selectedLang && monsterItem.languages.includes(selectedLang)) {
-      return selectedLang;
-    }
-    return monsterItem.languages[0] || "en";
-  });
+  const [overrideLang, setOverrideLang] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (selectedLang && monsterItem.languages.includes(selectedLang)) {
-      setDisplayLang(selectedLang);
-    }
-  }, [selectedLang, monsterItem.languages]);
+  const displayLang =
+    overrideLang ||
+    (selectedLang && monsterItem.languages.includes(selectedLang) ? selectedLang : monsterItem.languages[0] || "en");
 
   const translation = monsterItem.translations[displayLang];
   if (!translation) return null;
@@ -61,8 +48,7 @@ function MonsterResultItem({
   };
 
   const handleLangChange = (lang: string) => {
-    setDisplayLang(lang);
-    // Toujours mettre à jour l'aperçu pour refléter le changement de langue
+    setOverrideLang(lang);
     onMonsterClick(monsterItem, lang);
   };
 
@@ -358,7 +344,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
 
                           return (
                             <MonsterResultItem
-                              key={monsterItem._id}
+                              key={`${monsterItem._id}-${selectedLang}`}
                               monsterItem={monsterItem}
                               selectedLang={selectedLang}
                               isSelected={isSelected}

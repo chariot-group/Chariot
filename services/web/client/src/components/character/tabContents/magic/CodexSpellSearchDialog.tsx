@@ -33,20 +33,13 @@ function SpellResultItem({
   isSelected: boolean;
   onSpellClick: (spell: CodexSpellItem, lang: string) => void;
   tDialog: (key: string) => string;
-  tMagic: (key: string, values?: any) => string;
+  tMagic: (key: string, values?: Record<string, unknown>) => string;
 }) {
-  const [displayLang, setDisplayLang] = useState(() => {
-    if (selectedLang && spellItem.languages.includes(selectedLang)) {
-      return selectedLang;
-    }
-    return spellItem.languages[0] || "en";
-  });
+  const [overrideLang, setOverrideLang] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (selectedLang && spellItem.languages.includes(selectedLang)) {
-      setDisplayLang(selectedLang);
-    }
-  }, [selectedLang, spellItem.languages]);
+  const displayLang =
+    overrideLang ||
+    (selectedLang && spellItem.languages.includes(selectedLang) ? selectedLang : spellItem.languages[0] || "en");
 
   const translation = spellItem.translations[displayLang];
   if (!translation) return null;
@@ -56,7 +49,7 @@ function SpellResultItem({
   };
 
   const handleLangChange = (lang: string) => {
-    setDisplayLang(lang);
+    setOverrideLang(lang);
     onSpellClick(spellItem, lang);
   };
 
@@ -351,7 +344,7 @@ export default function CodexSpellSearchDialog({
 
                           return (
                             <SpellResultItem
-                              key={spellItem._id}
+                              key={`${spellItem._id}-${selectedLang}`}
                               spellItem={spellItem}
                               selectedLang={selectedLang}
                               isSelected={isSelected}
