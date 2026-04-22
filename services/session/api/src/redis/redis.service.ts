@@ -11,6 +11,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     private subscriber: Redis;
 
     private readonly expirationHandlers: Map<string, (sessionId: string) => void> = new Map();
+    private readonly emptyHandlers: Map<string, (sessionId: string) => void> = new Map();
 
     constructor(private readonly configService: ConfigService) { }
 
@@ -37,6 +38,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
                         handler(sessionId);
                     } catch (error: any) {
                         this.logger.error(`Error in expiration handler: ${error.message}`, error.stack, this.SERVICE_NAME);
+                    }
+                });
+            }
+
+            // Format de clé: session:empty:{sessionId}
+            if (key.startsWith('session:empty:')) {
+                const sessionId = key.replace('session:empty:', '');
+                this.logger.verbose(`Session ${sessionId} empty timer expired via Redis TTL`, this.SERVICE_NAME);
+
+                this.emptyHandlers.forEach((handler) => {
+                    try {
+                        handler(sessionId);
+                    } catch (error: any) {
+                        this.logger.error(`Error in empty session handler: ${error.message}`, error.stack, this.SERVICE_NAME);
                     }
                 });
             }
@@ -85,5 +100,31 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         const ttl = await this.client.ttl(`session:expire:${sessionId}`);
         this.logger.verbose(`TTL for session ${sessionId}: ${ttl}s`, this.SERVICE_NAME);
         return ttl;
+    }
+
+    /**
+     * Démarre le timer de fermeture par inactivité (tous déconnectés).
+     */
+    async setEmptySessionTimer(sessionId: string, ttlSeconds: number): Promise<void> {
+        const key = `session:empty:${sessionId}`;
+        await this.client.set(key, sessionId, 'EX', ttlSeconds);
+        this.logger.verbose(`Empty session timer set for session ${sessionId}: ${ttlSeconds}s`, this.SERVICE_NAME);
+    }
+
+    /**
+     * Annule le timer de fermeture par inactivité.
+     */
+    async clearEmptySessionTimer(sessionId: string): Promise<void> {
+        const key = `session:empty:${sessionId}`;
+        await this.client.del(key);
+        this.logger.verbose(`Empty session timer cleared for session ${sessionId}`, this.SERVICE_NAME);
+    }
+
+    /**
+     * Enregistre un callback appelé quand le timer d'inactivité d'une session expire.
+     */
+    onEmptySessionExpired(handlerId: string, handler: (sessionId: string) => void): void {
+        this.emptyHandlers.set(handlerId, handler);
+        this.logger.verbose(`Empty session handler registered: ${handlerId}`, this.SERVICE_NAME);
     }
 }

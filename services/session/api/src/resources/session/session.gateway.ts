@@ -14,6 +14,7 @@ import { SessionService } from '@/resources/session/session.service';
 import { RedisService } from '@/redis/redis.service';
 import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
+import { SessionWithParticipants } from '@/resources/session/entities/session.model';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import jwksRsa from 'jwks-rsa';
@@ -78,6 +79,19 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             this.logger.verbose(`Evicted ${evictedUserIds.length} participants from session ${sessionId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         });
+
+        // Écouter le timer d'inactivité (tous les joueurs déconnectés pendant 5 min)
+        this.redisService.onEmptySessionExpired('gateway', async (sessionId: string) => {
+            this.logger.verbose(`Session ${sessionId} empty timer expired, closing session`, this.SERVICE_NAME);
+            let start: number = Date.now();
+            const evictedUserIds: string[] = await this.sessionService.expireSession(sessionId);
+
+            this.server.to(sessionId).emit('session:closed', { sessionId });
+            this.server.in(sessionId).socketsLeave(sessionId);
+            let duration: number = (Date.now() - start) / 1000;
+
+            this.logger.verbose(`Closed empty session ${sessionId}, evicted ${evictedUserIds.length} participant(s) in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+        });
     }
 
     async handleConnection(client: AuthenticatedSocket) {
@@ -114,7 +128,25 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     handleDisconnect(client: AuthenticatedSocket) {
         if (client.user) {
             this.logger.verbose(`Client disconnected: ${client.user.username} (${client.id})`, this.SERVICE_NAME);
+
+            // Marquer le participant comme déconnecté dans toutes les sessions qu'il occupait
+            const sessionRooms = [...client.rooms].filter(r => r !== client.id);
+            for (const sessionId of sessionRooms) {
+                this.sessionService.disconnectParticipant(sessionId, client.user.keycloakId).then(() => {
+                    client.to(sessionId).emit('session:participant-disconnected', {
+                        userId: client.user.keycloakId,
+                        username: client.user.username,
+                    });
+                }).catch((err: any) => {
+                    this.logger.error(`Error handling disconnect for session ${sessionId}: ${err.message}`, null, this.SERVICE_NAME);
+                });
+            }
         }
+    }
+
+    /** Extracts SessionWithParticipants from either a raw session or an IResponse wrapper. */
+    private extractSession(result: any): SessionWithParticipants {
+        return result?.data ?? result;
     }
 
     @SubscribeMessage('session:create')
@@ -124,12 +156,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.create(data, client.user.keycloakId);
-            if (!session) {
-                let message: string = 'Failed to create session';
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new InternalServerErrorException(message);
-            }
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.create(data, client.user.keycloakId));
 
             client.join(session.id);
             client.emit('session:created', { session });
@@ -150,7 +177,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.join(data.sessionId, data, client.user.keycloakId);
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.join(data.sessionId, data, client.user.keycloakId));
 
             client.join(session.id);
 
@@ -179,8 +206,8 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.leave(data.sessionId, client.user.keycloakId);
-            const roomId = data.sessionId;
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.leave(data.sessionId, client.user.keycloakId));
+            const roomId = session.id;
 
             client.leave(roomId);
 
@@ -190,11 +217,11 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 username: client.user.username,
             });
 
-            client.emit('session:left', { sessionId: roomId });
+            client.emit('session:left', { sessionId: data.sessionId });
 
             // Si la session est close, notifier tout le monde
             if (session.status === 'closed') {
-                this.server.to(roomId).emit('session:closed', { sessionId: roomId });
+                this.server.to(roomId).emit('session:closed', { sessionId: data.sessionId });
             }
             let duration: number = (Date.now() - start) / 1000;
 
@@ -213,8 +240,8 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            const session = await this.sessionService.launch(data.sessionId, client.user.keycloakId);
-            const roomId = data.sessionId;
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.launch(data.sessionId, client.user.keycloakId));
+            const roomId = session.id;
 
             this.server.to(roomId).emit('session:launched', {
                 session,
@@ -237,10 +264,10 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
-            await this.sessionService.close(data.sessionId, client.user.keycloakId);
-            const roomId = data.sessionId;
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.close(data.sessionId, client.user.keycloakId));
+            const roomId = session.id;
 
-            this.server.to(roomId).emit('session:closed', { sessionId: roomId });
+            this.server.to(roomId).emit('session:closed', { sessionId: data.sessionId });
 
             let duration: number = (Date.now() - start) / 1000;
             this.logger.verbose(`Session ${roomId} closed by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);

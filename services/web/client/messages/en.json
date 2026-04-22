@@ -35,6 +35,7 @@
     "returnToBattle": "Return to Battle",
     "joinSession": "Join Session",
     "comingSoon": "Coming soon",
+    "alreadyInSession": "Cannot launch a session: you are already in a session",
     "returnToSheet": "Return to Character Sheet",
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
@@ -666,8 +667,10 @@
         "components": "Components",
         "duration": "Duration",
         "description": "Description"
-      },      "damage": "Damage",
-      "healing": "Healing",      "mainRegion": "Magic section",
+      },
+      "damage": "Damage",
+      "healing": "Healing",
+      "mainRegion": "Magic section",
       "spellListRegion": "Spell list",
       "spellDetailRegion": "Spell details",
       "selectSpellcasting": "Select spellcasting class {className}",
@@ -698,7 +701,9 @@
       "slotsLabel": "slots",
       "removeSpellTitle": "Remove spell",
       "removeSpellDescription": "Are you sure you want to remove \"{name}\"?",
-      "removeSpellConfirm": "Remove",      "removeSpellcasting": "Remove spellcasting abilities",      "removeSpellcastingTitle": "Remove spellcasting abilities",
+      "removeSpellConfirm": "Remove",
+      "removeSpellcasting": "Remove spellcasting abilities",
+      "removeSpellcastingTitle": "Remove spellcasting abilities",
       "removeSpellcastingDescription": "Are you sure you want to remove the spellcasting abilities for {className}? All associated spells will also be removed.",
       "removeSpellcastingConfirm": "Remove",
       "addSpellcasting": "Add spellcasting abilities",
@@ -806,5 +811,35 @@
     "Any Evil Alignment": "Any Evil Alignment",
     "Any Lawful Alignment": "Any Lawful Alignment",
     "Any Chaotic Alignment": "Any Chaotic Alignment"
+  },
+  "sessionPage": {
+    "campaignFallback": "Campaign",
+    "mainAriaLabel": "Session - {label}",
+    "players": {
+      "ariaLabel": "Players list",
+      "player": "Player",
+      "masterGame": "Game Master",
+      "leaveButton": "Leave session",
+      "addTokenButton": "Add a token: 0/{count}",
+      "addTokenAriaLabel": "Add a token (0 of {count} available)"
+    },
+    "sessionCode": {
+      "heading": "Session code",
+      "ariaLabel": "Session code: {code}",
+      "copyButton": "Copy code",
+      "copySuccess": "Copied!",
+      "copyAriaLabel": "Copy session code to clipboard"
+    },
+    "toast": {
+      "sessionNotFound": "Session not found",
+      "connectionSuccess": "Connection successful",
+      "participantsError": "Unable to fetch participants",
+      "leaveSuccess": "You have left the session",
+      "leaveError": "Unable to leave the session",
+      "copySuccess": "Code copied to clipboard",
+      "copyError": "Unable to copy the code",
+      "copyNotSupported": "Copy is not supported by this browser"
+    },
+    "title": "Session"
   }
 }

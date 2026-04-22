@@ -35,6 +35,7 @@
     "returnToBattle": "Volver a la batalla",
     "joinSession": "Unirse a la sesión",
     "comingSoon": "Próximamente",
+    "alreadyInSession": "No se puede iniciar una sesión: ya estás en una sesión",
     "returnToSheet": "Volver a la hoja de personaje",
     "selectCampaign": "Seleccionar campaña",
     "selectedCampaign": "Campaña seleccionada",
@@ -176,7 +177,7 @@
     "cancel": "Cancelar",
     "create": "Crear",
     "saving": "Creando..."
-  },  
+  },
   "zodErrors": {
     "invalidTypeReceived": "Entrada inválida",
     "required": "Requerido",
@@ -208,7 +209,7 @@
       "uuid": "UUID inválido"
     },
     "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}"
-  },  
+  },
   "characterDetail": {
     "editCharacter": "Modificar personaje",
     "saveChanges": "Guardar cambios",
@@ -701,7 +702,9 @@
       "slotsLabel": "ranuras",
       "removeSpellTitle": "Eliminar conjuro",
       "removeSpellDescription": "¿Estás seguro de que quieres eliminar \"{name}\"?",
-      "removeSpellConfirm": "Eliminar",      "removeSpellcasting": "Eliminar capacidades mágicas",      "removeSpellcastingTitle": "Eliminar capacidades mágicas",
+      "removeSpellConfirm": "Eliminar",
+      "removeSpellcasting": "Eliminar capacidades mágicas",
+      "removeSpellcastingTitle": "Eliminar capacidades mágicas",
       "removeSpellcastingDescription": "¿Estás seguro de que quieres eliminar las capacidades mágicas de {className}? Todos los conjuros asociados también serán eliminados.",
       "removeSpellcastingConfirm": "Eliminar",
       "addSpellcasting": "Añadir capacidades mágicas",
@@ -808,6 +811,36 @@
     "Any Good Alignment": "Cualquier alineación buena",
     "Any Evil Alignment": "Cualquier alineación malvada",
     "Any Lawful Alignment": "Cualquier alineación legal",
-    "Any Chaotic Alignment": "Cualquier alineación caótica"  
+    "Any Chaotic Alignment": "Cualquier alineación caótica"
+  },
+  "sessionPage": {
+    "campaignFallback": "Campaña",
+    "mainAriaLabel": "Sesión - {label}",
+    "players": {
+      "ariaLabel": "Lista de jugadores",
+      "player": "Jugador",
+      "masterGame": "Maestro de juego",
+      "leaveButton": "Abandonar la sesión",
+      "addTokenButton": "Agregar un token: 0/{count}",
+      "addTokenAriaLabel": "Agregar un token (0 de {count} disponibles)"
+    },
+    "sessionCode": {
+      "heading": "Código de sesión",
+      "ariaLabel": "Código de sesión: {code}",
+      "copyButton": "Copiar código",
+      "copySuccess": "¡Copiado!",
+      "copyAriaLabel": "Copiar el código de sesión al portapapeles"
+    },
+    "toast": {
+      "sessionNotFound": "Sesión no encontrada",
+      "connectionSuccess": "Conexión exitosa",
+      "participantsError": "No se pueden obtener los participantes",
+      "leaveSuccess": "Has abandonado la sesión",
+      "leaveError": "No se puede abandonar la sesión",
+      "copySuccess": "Código copiado al portapapeles",
+      "copyError": "No se puede copiar el código",
+      "copyNotSupported": "La copia no está soportada por este navegador"
+    },
+    "title": "Sesión"
   }
 }

@@ -35,6 +35,7 @@
     "returnToBattle": "Retour au combat",
     "joinSession": "Rejoindre la session",
     "comingSoon": "Bientôt disponible",
+    "alreadyInSession": "Impossible de lancer une session : vous êtes déjà dans une session",
     "returnToSheet": "Retour à la fiche personnage",
     "selectCampaign": "Sélectionner la campagne",
     "selectedCampaign": "Campagne sélectionnée",
@@ -209,7 +210,7 @@
       "uuid": "UUID invalide"
     },
     "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}"
-  },  
+  },
   "characterDetail": {
     "editCharacter": "Modifier le personnage",
     "saveChanges": "Sauvegarder",
@@ -276,8 +277,8 @@
       "silverPieces": "Pièces d'Argent",
       "electrumPieces": "Pièces d'Électrum",
       "goldPieces": "Pièces d'Or",
-      "platinumPieces": "Pièces de Platine",      
-      "reset": "Réinitialiser",      
+      "platinumPieces": "Pièces de Platine",
+      "reset": "Réinitialiser",
       "speeds": "Vitesses",
       "walk": "Marche",
       "climb": "Escalade",
@@ -705,7 +706,9 @@
       "slotsLabel": "empl.",
       "removeSpellTitle": "Supprimer le sort",
       "removeSpellDescription": "Êtes-vous sûr de vouloir supprimer « {name} » ?",
-      "removeSpellConfirm": "Supprimer",      "removeSpellcasting": "Supprimer les capacités magiques",      "removeSpellcastingTitle": "Supprimer les capacités magiques",
+      "removeSpellConfirm": "Supprimer",
+      "removeSpellcasting": "Supprimer les capacités magiques",
+      "removeSpellcastingTitle": "Supprimer les capacités magiques",
       "removeSpellcastingDescription": "Êtes-vous sûr de vouloir supprimer les capacités magiques de {className} ? Tous les sorts associés seront également supprimés.",
       "removeSpellcastingConfirm": "Supprimer",
       "addSpellcasting": "Ajouter des capacités magiques",
@@ -812,6 +815,36 @@
     "Any Good Alignment": "N'importe quel alignement bon",
     "Any Evil Alignment": "N'importe quel alignement mauvais",
     "Any Lawful Alignment": "N'importe quel alignement loyal",
-    "Any Chaotic Alignment": "N'importe quel alignement chaotique"  
+    "Any Chaotic Alignment": "N'importe quel alignement chaotique"
+  },
+  "sessionPage": {
+    "campaignFallback": "Campagne",
+    "mainAriaLabel": "Session - {label}",
+    "players": {
+      "ariaLabel": "Liste des joueurs",
+      "player": "Joueur",
+      "masterGame": "Maître du jeu",
+      "leaveButton": "Quitter la session",
+      "addTokenButton": "Ajouter un token : 0/{count}",
+      "addTokenAriaLabel": "Ajouter un token (0 sur {count} disponibles)"
+    },
+    "sessionCode": {
+      "heading": "Code de la session",
+      "ariaLabel": "Code de session : {code}",
+      "copyButton": "Copier le code",
+      "copySuccess": "Copié !",
+      "copyAriaLabel": "Copier le code de la session dans le presse-papier"
+    },
+    "toast": {
+      "sessionNotFound": "Session inexistante",
+      "connectionSuccess": "Connexion réussie",
+      "participantsError": "Impossible de récupérer les participants",
+      "leaveSuccess": "Vous avez quitté la session",
+      "leaveError": "Impossible de quitter la session",
+      "copySuccess": "Code copié dans le presse-papier",
+      "copyError": "Impossible de copier le code",
+      "copyNotSupported": "La copie n'est pas supportée par ce navigateur"
+    },
+    "title": "Session"
   }
 }

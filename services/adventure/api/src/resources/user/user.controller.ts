@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Put,
   Req,
 } from '@nestjs/common';
@@ -49,6 +50,26 @@ export class UserController {
   })
   async findOne(@Req() request) {
     return this.userService.findOne(request.user.keycloakId);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user information by Keycloak ID' })
+  @ApiResponse({
+    description: 'User information retrieved successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(UserInfoDto) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async findById(@Param('id') id: string) {
+    return this.userService.findOne(id);
   }
 
   @Put('me/password')

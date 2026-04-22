@@ -12,6 +12,9 @@ import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } fro
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import sessionService from "@/services/SessionService";
+import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
+import { selectCurrentSession, selectIsInSession } from "@/store/slices/sessionSlice";
 
 interface ActionButtonConfig {
   label: string;
@@ -31,6 +34,9 @@ export function ActionButton() {
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const battleStarted = useAppSelector(selectBattleStarted);
   const currentPage = usePathname() || "/";
+  const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
+  const isInSession = useAppSelector(selectIsInSession);
+  const session = useAppSelector(selectCurrentSession);
 
   /**
    * Determine button state based on context and workflow state
@@ -44,12 +50,19 @@ export function ActionButton() {
         return {
           label: t("launchSession"),
           state: "launchSession",
-          action: () => { },
-          disabled: true,
+          action: () => {
+            if (isInSession) {
+              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+              return;
+            }
+            if (!selectedCampaignId) return;
+            sessionService.createSession(selectedCampaignId);
+          },
+          disabled: !selectedCampaignId,
           icon: <PlayCircle className="size-6" />,
           backgroundColor: "bg-yellow",
           textColor: "text-black",
-          tooltip: t("comingSoon"),
+          tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
         };
       }
 
@@ -58,7 +71,7 @@ export function ActionButton() {
         return {
           label: t("initBattle"),
           state: "initBattle",
-          action: () => { },
+          action: () => {},
           disabled: false,
           icon: <LucideSwords className="size-6" />,
           backgroundColor: "bg-red",
@@ -71,7 +84,7 @@ export function ActionButton() {
         return {
           label: t("startBattle"),
           state: "startBattle",
-          action: () => { },
+          action: () => {},
           disabled: false,
           icon: <LucideSwords className="size-6" />,
           backgroundColor: "bg-pink",
@@ -84,7 +97,7 @@ export function ActionButton() {
         return {
           label: t("reset"),
           state: "reset",
-          action: () => { },
+          action: () => {},
           disabled: false,
           icon: <RotateCcw className="size-6" />,
           backgroundColor: "bg-gray-600",
@@ -97,7 +110,7 @@ export function ActionButton() {
         return {
           label: t("returnToBattle"),
           state: "returnToBattle",
-          action: () => { },
+          action: () => {},
           disabled: false,
           icon: <ArrowLeft className="size-6" />,
           backgroundColor: "bg-yellow",
@@ -110,12 +123,15 @@ export function ActionButton() {
         return {
           label: t("joinSession"),
           state: "joinSession",
-          action: () => { },
-          disabled: true,
+          action: () => {
+            if (isInSession) {
+              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+            }
+          },
           icon: <Users className="size-6" />,
+          disabled: false,
           backgroundColor: "bg-green",
           textColor: "text-black",
-          tooltip: t("comingSoon"),
         };
       }
 
@@ -124,7 +140,7 @@ export function ActionButton() {
         return {
           label: t("returnToSheet"),
           state: "returnToSheet",
-          action: () => { },
+          action: () => {},
           disabled: false,
           icon: <UserCircle className="size-6" />,
           backgroundColor: "bg-yellow",
@@ -137,7 +153,7 @@ export function ActionButton() {
     return {
       label: t("launchSession"),
       state: "launchSession",
-      action: () => { },
+      action: () => {},
       disabled: false,
       icon: <PlayCircle className="size-6" />,
       backgroundColor: "bg-yellow",
@@ -156,16 +172,14 @@ export function ActionButton() {
     </Button>
   );
 
-  return (
-    button.disabled && button.tooltip ? (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="w-full inline-flex">{buttonContent}</span>
-        </TooltipTrigger>
-        <TooltipContent side="top">{button.tooltip}</TooltipContent>
-      </Tooltip>
-    ) : (
-      buttonContent
-    )
+  return button.disabled && button.tooltip ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="w-full inline-flex">{buttonContent}</span>
+      </TooltipTrigger>
+      <TooltipContent side="top">{button.tooltip}</TooltipContent>
+    </Tooltip>
+  ) : (
+    buttonContent
   );
 }

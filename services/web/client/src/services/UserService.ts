@@ -65,6 +65,16 @@ class UserService {
             throw new Error('Failed to update profile');
         }
     }
+
+    async getUserById(id: string): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username'>> {
+        try {
+            const response = await apiClient().get<IResponse<User>>(`${this.BASE_PATH}/${id}`);
+            return response.data.data;
+        } catch (error) {
+            console.error(`Error fetching user ${id}:`, error);
+            throw error;
+        }
+    }
 }
 
 const userService = new UserService();

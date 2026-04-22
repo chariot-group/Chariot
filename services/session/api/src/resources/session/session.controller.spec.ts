@@ -41,6 +41,10 @@ function makeReq(overrides: Record<string, any> = {}) {
     };
 }
 
+function makeResponse<T>(data: T, message = 'ok') {
+    return { message, data };
+}
+
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
 const mockSessionService = {
@@ -78,9 +82,10 @@ describe('SessionController', () => {
     // ── create ────────────────────────────────────────────────────────────────
 
     describe('create', () => {
-        it('should create a session and return a generic response', async () => {
+        it('should delegate to service and return its response', async () => {
             const session = makeSession();
-            mockSessionService.create.mockResolvedValue(session);
+            const serviceResponse = makeResponse(session, `Session #${session.id} created in 5ms`);
+            mockSessionService.create.mockResolvedValue(serviceResponse);
 
             const dto = { campaignId: 'camp-uuid-1' };
             const req = makeReq();
@@ -88,131 +93,128 @@ describe('SessionController', () => {
             const result = await controller.create(dto, req);
 
             expect(mockSessionService.create).toHaveBeenCalledWith(dto, 'user-uuid-1');
-            expect(result.data).toBe(session);
-            expect(result.message).toContain(`Session #${session.id} created`);
+            expect(result).toBe(serviceResponse);
         });
     });
 
     // ── findAll ───────────────────────────────────────────────────────────────
 
     describe('findAll', () => {
-        it('should return all sessions for the authenticated user', async () => {
+        it('should delegate to service and return its response', async () => {
             const sessions = [makeSession(), makeSession({ id: 'sess-uuid-2' })];
-            mockSessionService.findAllByUser.mockResolvedValue(sessions);
+            const serviceResponse = makeResponse(sessions, `Found 2 session(s) for user user-uuid-1 in 5ms`);
+            mockSessionService.findAllByUser.mockResolvedValue(serviceResponse);
 
             const req = makeReq();
             const result = await controller.findAll(req);
 
             expect(mockSessionService.findAllByUser).toHaveBeenCalledWith('user-uuid-1');
-            expect(result.data).toBe(sessions);
-            expect(result.message).toContain(`Found ${sessions.length} session(s)`);
+            expect(result).toBe(serviceResponse);
         });
     });
 
     // ── findParticipants ──────────────────────────────────────────────────────
 
     describe('findParticipants', () => {
-        it('should return participants details for a session', async () => {
+        it('should delegate to service and return its response', async () => {
             const participants = [makeParticipant()];
             const participantsDetails = {
                 author: { userId: 'user-uuid-1', campaignId: 'camp-uuid-1' },
                 participants,
             };
-            mockSessionService.findParticipants.mockResolvedValue(participantsDetails);
+            const serviceResponse = makeResponse(participantsDetails, 'Found 1 participant(s) for session in 5ms');
+            mockSessionService.findParticipants.mockResolvedValue(serviceResponse);
 
-            const result = await controller.findParticipants('sess-uuid-1');
+            const result = await controller.findParticipants('CODE123');
 
-            expect(mockSessionService.findParticipants).toHaveBeenCalledWith('sess-uuid-1');
-            expect(result.data).toBe(participantsDetails);
-            expect(result.message).toContain(`Found ${participants.length} participant(s)`);
+            expect(mockSessionService.findParticipants).toHaveBeenCalledWith('CODE123');
+            expect(result).toBe(serviceResponse);
         });
     });
 
     // ── findOne ───────────────────────────────────────────────────────────────
 
     describe('findOne', () => {
-        it('should return a session by ID', async () => {
+        it('should delegate to service and return its response', async () => {
             const session = makeSession();
-            mockSessionService.findOne.mockResolvedValue(session);
+            const serviceResponse = makeResponse(session, 'Session with code CODE123 found in 5ms');
+            mockSessionService.findOne.mockResolvedValue(serviceResponse);
 
-            const result = await controller.findOne('sess-uuid-1');
+            const result = await controller.findOne('CODE123');
 
-            expect(mockSessionService.findOne).toHaveBeenCalledWith('sess-uuid-1');
-            expect(result.data).toBe(session);
-            expect(result.message).toContain('Session #sess-uuid-1 found');
+            expect(mockSessionService.findOne).toHaveBeenCalledWith('CODE123');
+            expect(result).toBe(serviceResponse);
         });
     });
 
     // ── launch ────────────────────────────────────────────────────────────────
 
     describe('launch', () => {
-        it('should launch a session and return its updated state', async () => {
-            const session = makeSession({
-                status: SessionStatus.launched,
-                expiresAt: new Date('2024-01-01T18:00:00Z'),
-            });
-            mockSessionService.launch.mockResolvedValue(session);
+        it('should delegate to service and return its response', async () => {
+            const session = makeSession({ status: SessionStatus.launched });
+            const serviceResponse = makeResponse(session, 'Session with code CODE123 launched in 5ms');
+            mockSessionService.launch.mockResolvedValue(serviceResponse);
 
             const req = makeReq();
-            const result = await controller.launch('sess-uuid-1', req);
+            const result = await controller.launch('CODE123', req);
 
-            expect(mockSessionService.launch).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1');
-            expect(result.data).toBe(session);
-            expect(result.message).toContain('Session #sess-uuid-1 launched');
+            expect(mockSessionService.launch).toHaveBeenCalledWith('CODE123', 'user-uuid-1');
+            expect(result).toBe(serviceResponse);
         });
     });
 
     // ── join ──────────────────────────────────────────────────────────────────
 
     describe('join', () => {
-        it('should join a session and return the updated session', async () => {
+        it('should delegate to service and return its response', async () => {
             const session = makeSession({
                 participants: [makeParticipant({ userId: 'user-uuid-1' })],
             });
-            mockSessionService.join.mockResolvedValue(session);
+            const serviceResponse = makeResponse(session, 'User user-uuid-1 joined session in 5ms');
+            mockSessionService.join.mockResolvedValue(serviceResponse);
 
             const dto = { characterId: 'char-uuid-1' };
             const req = makeReq();
-            const result = await controller.join('sess-uuid-1', dto, req);
+            const result = await controller.join('CODE123', dto, req);
 
-            expect(mockSessionService.join).toHaveBeenCalledWith('sess-uuid-1', dto, 'user-uuid-1');
-            expect(result.data).toBe(session);
-            expect(result.message).toContain('testuser');
+            expect(mockSessionService.join).toHaveBeenCalledWith('CODE123', dto, 'user-uuid-1');
+            expect(result).toBe(serviceResponse);
         });
     });
 
     // ── leave ─────────────────────────────────────────────────────────────────
 
     describe('leave', () => {
-        it('should leave a session and return the updated session', async () => {
+        it('should delegate to service and return its response', async () => {
             const session = makeSession();
-            mockSessionService.leave.mockResolvedValue(session);
+            const serviceResponse = makeResponse(session, 'User user-uuid-1 left session in 5ms');
+            mockSessionService.leave.mockResolvedValue(serviceResponse);
 
             const req = makeReq();
-            const result = await controller.leave('sess-uuid-1', req);
+            const result = await controller.leave('CODE123', req);
 
-            expect(mockSessionService.leave).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1');
-            expect(result.data).toBe(session);
-            expect(result.message).toContain('testuser');
+            expect(mockSessionService.leave).toHaveBeenCalledWith('CODE123', 'user-uuid-1');
+            expect(result).toBe(serviceResponse);
         });
     });
 
     // ── close ─────────────────────────────────────────────────────────────────
 
     describe('close', () => {
-        it('should close a session and return it', async () => {
+        it('should delegate to service and return its response', async () => {
             const session = makeSession({
                 status: SessionStatus.closed,
                 deletedAt: new Date(),
             });
-            mockSessionService.close.mockResolvedValue(session);
+            const serviceResponse = makeResponse(session, 'Session with code CODE123 closed in 5ms');
+            mockSessionService.close.mockResolvedValue(serviceResponse);
 
             const req = makeReq();
-            const result = await controller.close('sess-uuid-1', req);
+            const result = await controller.close('CODE123', req);
 
-            expect(mockSessionService.close).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1');
-            expect(result.data).toBe(session);
-            expect(result.message).toContain('Session #sess-uuid-1 closed');
+            expect(mockSessionService.close).toHaveBeenCalledWith('CODE123', 'user-uuid-1');
+            expect(result).toBe(serviceResponse);
         });
     });
 });
+
