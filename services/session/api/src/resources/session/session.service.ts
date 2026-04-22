@@ -253,21 +253,24 @@ export class SessionService {
 
             const newStatus: ParticipantStatus = session.creatorUserId === userId ? ParticipantStatus.gameMaster : ParticipantStatus.connected;
 
-            // Use upsert to handle the race condition where the HTTP join and WebSocket join
-            // arrive concurrently and both attempt to create the participant record.
-            await this.prisma.sessionParticipant.upsert({
-                where: { sessionId_userId: { sessionId: session.id, userId } },
-                create: {
-                    sessionId: session.id,
-                    userId,
-                    characterId: joinSessionDto.characterId,
-                    status: newStatus,
-                },
-                update: {
-                    status: newStatus,
-                    characterId: joinSessionDto.characterId ?? existingParticipant?.characterId,
-                },
-            });
+            if (existingParticipant) {
+                await this.prisma.sessionParticipant.update({
+                    where: { id: existingParticipant.id },
+                    data: {
+                        status: newStatus,
+                        characterId: joinSessionDto.characterId ?? existingParticipant.characterId,
+                    },
+                });
+            } else {
+                await this.prisma.sessionParticipant.create({
+                    data: {
+                        sessionId: session.id,
+                        userId,
+                        characterId: joinSessionDto.characterId,
+                        status: newStatus,
+                    },
+                });
+            }
 
             // Annuler le timer d'inactivité si quelqu'un vient de rejoindre
             await this.redisService.clearEmptySessionTimer(session.id);
