@@ -173,10 +173,6 @@ export function ActionButton() {
     </Button>
   );
 
-  if (button.state === "joinSession" && !button.disabled) {
-    return <JoinSessionDialog>{buttonContent}</JoinSessionDialog>;
-  }
-
   return button.disabled && button.tooltip ? (
     <Tooltip>
       <TooltipTrigger asChild>
