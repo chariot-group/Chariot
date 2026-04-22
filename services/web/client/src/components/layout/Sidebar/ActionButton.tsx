@@ -164,9 +164,9 @@ export function ActionButton() {
     <Button
       onClick={button.action}
       disabled={button.disabled}
-      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} rounded-2xl flex items-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} rounded-2xl flex items-center justify-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
       {button.icon}
-      <span className="text-lg">{button.label}</span>
+      <span className="text-lg truncate">{button.label}</span>
     </Button>
   );
 
