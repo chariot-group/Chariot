@@ -350,6 +350,45 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         }
     }
 
+    @SubscribeMessage('session:add-tokens')
+    async handleAddTokens(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string; amount: number },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const maxTokens = session.participants.length;
+            const result = await this.redisService.addTokens(data.sessionId, client.user.keycloakId, maxTokens, data.amount);
+            if (result === null) {
+                client.emit('session:error', { message: 'Token limit reached' });
+                return;
+            }
+            this.server.to(session.id).emit('session:token-updated', { tokensByUser: result.tokens });
+        } catch (error: any) {
+            this.logger.error(`Failed to add tokens: ${error.message}`, null, this.SERVICE_NAME);
+            client.emit('session:error', { message: `Failed to add tokens: ${error.message}` });
+        }
+    }
+
+    @SubscribeMessage('session:remove-tokens')
+    async handleRemoveTokens(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string; amount: number },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const result = await this.redisService.removeTokens(data.sessionId, client.user.keycloakId, data.amount);
+            if (result === null) {
+                client.emit('session:error', { message: 'No token to remove' });
+                return;
+            }
+            this.server.to(session.id).emit('session:token-updated', { tokensByUser: result.tokens });
+        } catch (error: any) {
+            this.logger.error(`Failed to remove tokens: ${error.message}`, null, this.SERVICE_NAME);
+            client.emit('session:error', { message: `Failed to remove tokens: ${error.message}` });
+        }
+    }
+
     private async verifyToken(token: string): Promise<any> {
         return new Promise((resolve, reject) => {
             const decodedHeader = jwt.decode(token, { complete: true });

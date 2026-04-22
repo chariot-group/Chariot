@@ -265,6 +265,31 @@ export function useSessionSocket({
         socket.emit("session:remove-token", { sessionId: code });
     };
 
+    const handleAddTokenAmount = (amount: number) => {
+        const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        if (!userId || !socket?.connected) return;
+        const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
+        const myDeposited = tokensByUserRef.current[userId] ?? 0;
+        const maxAdd = Math.min(
+            participantsRef.current.length - totalTokens,
+            (currentUser?.balance ?? 0) - myDeposited,
+        );
+        const actualAmount = Math.min(amount, maxAdd);
+        if (actualAmount <= 0) return;
+        socket.emit("session:add-tokens", { sessionId: code, amount: actualAmount });
+    };
+
+    const handleRemoveTokenAmount = (amount: number) => {
+        const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        if (!userId || !socket?.connected) return;
+        const myDeposited = tokensByUserRef.current[userId] ?? 0;
+        const actualAmount = Math.min(amount, myDeposited);
+        if (actualAmount <= 0) return;
+        socket.emit("session:remove-tokens", { sessionId: code, amount: actualAmount });
+    };
+
     const handleLaunchSession = () => {
         const socket = socketRef.current;
         if (!socket?.connected || isLaunching) return;
@@ -288,5 +313,5 @@ export function useSessionSocket({
         router.push(`/${locale}/welcome`);
     };
 
-    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, handleLaunchSession, handleDismissSessionEnd, isChangingCharacter, isLeaving, isLaunching, sessionEndReason };
+    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, handleAddTokenAmount, handleRemoveTokenAmount, handleLaunchSession, handleDismissSessionEnd, isChangingCharacter, isLeaving, isLaunching, sessionEndReason };
 }

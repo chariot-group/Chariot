@@ -178,6 +178,41 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
+     * Ajoute N tokens pour un utilisateur, dans la limite de maxTokens total.
+     * Retourne la map mise à jour avec le nombre réellement ajouté, ou null si aucun token ne peut être ajouté.
+     */
+    async addTokens(sessionId: string, userId: string, maxTokens: number, amount: number): Promise<{ tokens: Record<string, number>; added: number } | null> {
+        const key = this.tokenKey(sessionId);
+        const raw = await this.client.hgetall(key);
+        const tokens: Record<string, number> = raw
+            ? Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, parseInt(v, 10)]))
+            : {};
+        const total = Object.values(tokens).reduce((a, b) => a + b, 0);
+        const canAdd = Math.min(amount, maxTokens - total);
+        if (canAdd <= 0) return null;
+        await this.client.hincrby(key, userId, canAdd);
+        tokens[userId] = (tokens[userId] ?? 0) + canAdd;
+        return { tokens, added: canAdd };
+    }
+
+    /**
+     * Retire N tokens pour un utilisateur.
+     * Retourne la map mise à jour avec le nombre réellement retiré, ou null si l'utilisateur n'a pas de token.
+     */
+    async removeTokens(sessionId: string, userId: string, amount: number): Promise<{ tokens: Record<string, number>; removed: number } | null> {
+        const key = this.tokenKey(sessionId);
+        const current = parseInt((await this.client.hget(key, userId)) ?? '0', 10);
+        if (current <= 0) return null;
+        const canRemove = Math.min(amount, current);
+        await this.client.hincrby(key, userId, -canRemove);
+        const raw = await this.client.hgetall(key);
+        const tokens = raw
+            ? Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, parseInt(v, 10)]))
+            : {};
+        return { tokens, removed: canRemove };
+    }
+
+    /**
      * Supprime toutes les données de tokens pour une session.
      */
     async clearTokens(sessionId: string): Promise<void> {
