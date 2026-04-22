@@ -133,7 +133,7 @@ export default function CharactersWithoutGroupList() {
 
   return (
     <nav
-      className="flex gap-3 flex-col overflow-y-auto px-3 py-4"
+      className="flex gap-3 flex-col overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full px-3 py-4"
       aria-label={t("playerNavigation")}>
       <h2 className="text-lg text-white">{t("yourCharacters")}</h2>
 
