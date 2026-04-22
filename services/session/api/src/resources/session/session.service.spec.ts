@@ -52,6 +52,7 @@ const mockPrismaParticipant = {
     create: jest.fn(),
     delete: jest.fn(),
     update: jest.fn(),
+    upsert: jest.fn(),
 };
 
 const mockRedis = {
@@ -297,6 +298,29 @@ describe('SessionService', () => {
             await expect(service.join('CODE123', { characterId: 'char-1' }, 'user-1')).rejects.toThrow(
                 GoneException,
             );
+        });
+
+        it('should throw ForbiddenException when session is launched and user is not a participant', async () => {
+            mockPrismaSession.findFirst.mockResolvedValue(makeSession({ status: SessionStatus.launched, participants: [] }));
+
+            await expect(service.join('CODE123', { characterId: 'char-1' }, 'user-uuid-2')).rejects.toThrow(
+                ForbiddenException,
+            );
+        });
+
+        it('should allow reconnection when session is launched and user is already a participant', async () => {
+            const existingParticipant = makeParticipant({ userId: 'user-uuid-2' });
+            const session = makeSession({ status: SessionStatus.launched, participants: [existingParticipant] });
+            const updated = makeSession({ status: SessionStatus.launched, participants: [existingParticipant] });
+            mockPrismaSession.findFirst
+                .mockResolvedValueOnce(session)
+                .mockResolvedValueOnce(updated);
+            mockPrismaParticipant.upsert.mockResolvedValue({});
+            mockRedis.clearEmptySessionTimer.mockResolvedValue(undefined);
+
+            const result = await service.join('CODE123', { characterId: 'char-1' }, 'user-uuid-2');
+
+            expect(result.data).toBe(updated);
         });
 
         it('should reconnect user and return updated session when user is already in session', async () => {

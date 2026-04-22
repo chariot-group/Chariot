@@ -244,6 +244,13 @@ export class SessionService {
             const session: SessionWithParticipants = await this._findSession(code);
 
             const existingParticipant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
+
+            if (session.status === SessionStatus.launched && !existingParticipant) {
+                const message: string = `Session with code ${code} is already launched and user ${userId} is not a participant`;
+                this.logger.warn(message, this.SERVICE_NAME);
+                throw new ForbiddenException(message);
+            }
+
             const newStatus: ParticipantStatus = session.creatorUserId === userId ? ParticipantStatus.gameMaster : ParticipantStatus.connected;
 
             // Use upsert to handle the race condition where the HTTP join and WebSocket join
