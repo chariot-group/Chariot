@@ -824,8 +824,15 @@
       "player": "Player",
       "gameMaster": "Game Master",
       "leaveButton": "Leave session",
-      "addTokenButton": "Add a token: 0/{count}",
-      "addTokenAriaLabel": "Add a token (0 of {count} available)",
+      "addTokenButton": "Add a token: {total}/{count}",
+      "addTokenAriaLabel": "Add a token ({total} of {count} deposited)",
+      "tokenMenuAriaLabel": "Token options",
+      "customAmount": "Custom amount",
+      "addCustomButton": "Add",
+      "removeCustomButton": "Remove",
+      "removeAllButton": "Remove all ({myTokens})",
+      "launchSessionButton": "Launch session",
+      "launchSessionAriaLabel": "Launch the session (all tokens have been deposited)",
       "noCharacter": "No character",
       "selectCharacterPlaceholder": "Change character",
       "loadingCharacters": "Loading..."
@@ -847,10 +854,20 @@
       "leaveError": "Unable to leave the session",
       "characterChanged": "Character changed successfully",
       "characterChangeError": "Unable to change character",
+      "sessionLaunched": "The session has been launched!",
+      "sessionLaunchError": "Unable to launch the session",
       "copySuccess": "Code copied to clipboard",
       "copyError": "Unable to copy the code",
       "copyNotSupported": "Copy is not supported by this browser"
     },
-    "title": "Session"
+    "title": "Session",
+    "sessionEnded": {
+      "title": "Session ended",
+      "description": {
+        "closed": "The game master has ended the session. Thank you for playing!",
+        "expired": "The session has expired because the time limit was reached. Thank you for playing!"
+      },
+      "confirm": "Back to home"
+    }
   }
 }

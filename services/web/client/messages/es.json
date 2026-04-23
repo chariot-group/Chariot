@@ -825,8 +825,15 @@
       "player": "Jugador",
       "gameMaster": "Maestro de juego",
       "leaveButton": "Abandonar la sesión",
-      "addTokenButton": "Agregar un token: 0/{count}",
-      "addTokenAriaLabel": "Agregar un token (0 de {count} disponibles)",
+      "addTokenButton": "Agregar un token: {total}/{count}",
+      "addTokenAriaLabel": "Agregar un token ({total} de {count} depositado(s))",
+      "tokenMenuAriaLabel": "Opciones de tokens",
+      "customAmount": "Cantidad personalizada",
+      "addCustomButton": "Agregar",
+      "removeCustomButton": "Retirar",
+      "removeAllButton": "Retirar todo ({myTokens})",
+      "launchSessionButton": "Lanzar la sesión",
+      "launchSessionAriaLabel": "Lanzar la sesión (todos los tokens han sido depositados)",
       "noCharacter": "Sin personaje",
       "selectCharacterPlaceholder": "Cambiar personaje",
       "loadingCharacters": "Cargando..."
@@ -848,10 +855,20 @@
       "leaveError": "No se puede abandonar la sesión",
       "characterChanged": "Personaje cambiado con éxito",
       "characterChangeError": "No se puede cambiar el personaje",
+      "sessionLaunched": "¡La sesión ha sido lanzada!",
+      "sessionLaunchError": "No se puede lanzar la sesión",
       "copySuccess": "Código copiado al portapapeles",
       "copyError": "No se puede copiar el código",
       "copyNotSupported": "La copia no está soportada por este navegador"
     },
-    "title": "Sesión"
+    "title": "Sesión",
+    "sessionEnded": {
+      "title": "La sesión ha terminado",
+      "description": {
+        "closed": "El maestro del juego ha puesto fin a la sesión. ¡Gracias por jugar!",
+        "expired": "La sesión ha expirado porque se agotó el tiempo. ¡Gracias por jugar!"
+      },
+      "confirm": "Volver al inicio"
+    }
   }
 }

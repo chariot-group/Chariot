@@ -72,6 +72,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             let start: number = Date.now();
             const evictedUserIds: string[] = await this.sessionService.expireSession(sessionId);
 
+            await this.redisService.clearTokens(sessionId);
             // Notifier tous les clients dans la room et les déconnecter de la room
             this.server.to(sessionId).emit('session:expired', { sessionId });
             this.server.in(sessionId).socketsLeave(sessionId);
@@ -86,6 +87,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             let start: number = Date.now();
             const evictedUserIds: string[] = await this.sessionService.expireSession(sessionId);
 
+            await this.redisService.clearTokens(sessionId);
             this.server.to(sessionId).emit('session:closed', { sessionId });
             this.server.in(sessionId).socketsLeave(sessionId);
             let duration: number = (Date.now() - start) / 1000;
@@ -192,8 +194,11 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             });
 
             client.emit('session:joined', { session });
-            let duration: number = (Date.now() - start) / 1000;
 
+            const currentTokens = await this.redisService.getTokens(data.sessionId);
+            client.emit('session:token-updated', { tokensByUser: currentTokens });
+
+            let duration: number = (Date.now() - start) / 1000;
             this.logger.verbose(`${client.user.username} joined session ${session.id} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
             let message: string = `Failed to join session: ${error.message}`;
@@ -294,6 +299,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.close(data.sessionId, client.user.keycloakId));
             const roomId = session.id;
 
+            await this.redisService.clearTokens(data.sessionId);
             this.server.to(roomId).emit('session:closed', { sessionId: data.sessionId });
 
             let duration: number = (Date.now() - start) / 1000;
@@ -302,6 +308,84 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             let message: string = `Failed to close session: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             client.emit('session:error', { message });
+        }
+    }
+
+    @SubscribeMessage('session:add-token')
+    async handleAddToken(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const maxTokens = session.participants.length;
+            const updated = await this.redisService.addToken(data.sessionId, client.user.keycloakId, maxTokens);
+            if (updated === null) {
+                client.emit('session:error', { message: 'Token limit reached' });
+                return;
+            }
+            this.server.to(session.id).emit('session:token-updated', { tokensByUser: updated });
+        } catch (error: any) {
+            this.logger.error(`Failed to add token: ${error.message}`, null, this.SERVICE_NAME);
+            client.emit('session:error', { message: `Failed to add token: ${error.message}` });
+        }
+    }
+
+    @SubscribeMessage('session:remove-token')
+    async handleRemoveToken(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const updated = await this.redisService.removeToken(data.sessionId, client.user.keycloakId);
+            if (updated === null) {
+                client.emit('session:error', { message: 'No token to remove' });
+                return;
+            }
+            this.server.to(session.id).emit('session:token-updated', { tokensByUser: updated });
+        } catch (error: any) {
+            this.logger.error(`Failed to remove token: ${error.message}`, null, this.SERVICE_NAME);
+            client.emit('session:error', { message: `Failed to remove token: ${error.message}` });
+        }
+    }
+
+    @SubscribeMessage('session:add-tokens')
+    async handleAddTokens(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string; amount: number },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const maxTokens = session.participants.length;
+            const result = await this.redisService.addTokens(data.sessionId, client.user.keycloakId, maxTokens, data.amount);
+            if (result === null) {
+                client.emit('session:error', { message: 'Token limit reached' });
+                return;
+            }
+            this.server.to(session.id).emit('session:token-updated', { tokensByUser: result.tokens });
+        } catch (error: any) {
+            this.logger.error(`Failed to add tokens: ${error.message}`, null, this.SERVICE_NAME);
+            client.emit('session:error', { message: `Failed to add tokens: ${error.message}` });
+        }
+    }
+
+    @SubscribeMessage('session:remove-tokens')
+    async handleRemoveTokens(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string; amount: number },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const result = await this.redisService.removeTokens(data.sessionId, client.user.keycloakId, data.amount);
+            if (result === null) {
+                client.emit('session:error', { message: 'No token to remove' });
+                return;
+            }
+            this.server.to(session.id).emit('session:token-updated', { tokensByUser: result.tokens });
+        } catch (error: any) {
+            this.logger.error(`Failed to remove tokens: ${error.message}`, null, this.SERVICE_NAME);
+            client.emit('session:error', { message: `Failed to remove tokens: ${error.message}` });
         }
     }
 

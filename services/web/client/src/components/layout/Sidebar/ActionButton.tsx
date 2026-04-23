@@ -2,20 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
-import {
-  ActionButtonState,
-  selectBattleInitialized,
-  selectBattleStarted,
-  selectSessionStarted,
-} from "@/store/slices/actionButtonSlice";
+import { ActionButtonState, selectBattleInitialized, selectBattleStarted } from "@/store/slices/actionButtonSlice";
 import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectCurrentSession, selectIsInSession } from "@/store/slices/sessionSlice";
-import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { selectCurrentSession, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 
 interface ActionButtonConfig {
   label: string;
@@ -31,13 +25,15 @@ interface ActionButtonConfig {
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const contextMode = useAppSelector((state) => state.environment.contextMode);
-  const sessionStarted = useAppSelector(selectSessionStarted);
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const battleStarted = useAppSelector(selectBattleStarted);
   const currentPage = usePathname() || "/";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
+  const sessionStatus = useAppSelector(selectSessionStatus);
+
+  const sessionStarted = sessionStatus && sessionStatus === "launched";
 
   /**
    * Determine button state based on context and workflow state
@@ -167,9 +163,9 @@ export function ActionButton() {
     <Button
       onClick={button.action}
       disabled={button.disabled}
-      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} rounded-2xl flex items-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} rounded-2xl flex items-center justify-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
       {button.icon}
-      <span className="text-lg">{button.label}</span>
+      <span className="text-lg truncate">{button.label}</span>
     </Button>
   );
 

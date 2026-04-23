@@ -7,27 +7,33 @@ import { io, type Socket } from "socket.io-client";
 import sessionService, { type SessionParticipant } from "@/services/SessionService";
 import UserService from "@/services/UserService";
 import { useAppDispatch } from "@/store/hooks";
-import { clearCurrentSession } from "@/store/slices/sessionSlice";
+import { clearCurrentSession, setSessionParticipants, setSessionStatus, setSessionExpiresAt, setSessionTokensByUser } from "@/store/slices/sessionSlice";
 import { useToast } from "@/hooks/useToast";
 
 interface UseSessionSocketOptions {
     token: string | null | undefined;
     code: string;
-    currentUser: { keycloakId: string } | null | undefined;
+    campaignName: string;
+    currentUser: { keycloakId: string; balance: number } | null | undefined;
     participants: SessionParticipant[];
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
     setParticipantNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
+    tokensByUser: Record<string, number>;
+    setTokensByUser: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 export function useSessionSocket({
     token,
     code,
+    campaignName,
     currentUser,
     participants,
     setParticipants,
     setParticipantNames,
     fetchCharacterDetails,
+    tokensByUser,
+    setTokensByUser,
 }: UseSessionSocketOptions) {
     const dispatch = useAppDispatch();
     const router = useRouter();
@@ -38,13 +44,34 @@ export function useSessionSocket({
 
     const socketRef = useRef<Socket | null>(null);
     const participantsRef = useRef(participants);
+    const tokensByUserRef = useRef(tokensByUser);
+    const campaignNameRef = useRef(campaignName);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
+    const [isLaunching, setIsLaunching] = useState(false);
+    const [sessionEndReason, setSessionEndReason] = useState<'closed' | 'expired' | null>(null);
 
-    // Keep ref in sync so the connect handler always sees the latest participants
+    // Keep refs in sync so handlers always see the latest values
     useEffect(() => {
         participantsRef.current = participants;
     }, [participants]);
+
+    useEffect(() => {
+        tokensByUserRef.current = tokensByUser;
+    }, [tokensByUser]);
+
+    useEffect(() => {
+        campaignNameRef.current = campaignName;
+    }, [campaignName]);
+
+    // Sync session state to Redux store so it's accessible from any page
+    useEffect(() => {
+        dispatch(setSessionParticipants(participants));
+    }, [participants, dispatch]);
+
+    useEffect(() => {
+        dispatch(setSessionTokensByUser(tokensByUser));
+    }, [tokensByUser, dispatch]);
 
     useEffect(() => {
         if (!token) return;
@@ -133,13 +160,39 @@ export function useSessionSocket({
         });
 
         socket.on("session:expired", () => {
-            dispatch(clearCurrentSession());
-            router.push(`/${locale}/welcome`);
+            setSessionEndReason('expired');
         });
 
         socket.on("session:closed", () => {
-            dispatch(clearCurrentSession());
-            router.push(`/${locale}/welcome`);
+            setSessionEndReason('closed');
+        });
+
+        socket.on("session:token-updated", ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
+            setTokensByUser(updatedTokens);
+        });
+
+        socket.on("session:launched", async () => {
+            dispatch(setSessionStatus("launched"));
+            toast.success(t("toast.sessionLaunched"));
+            try {
+                const session = await sessionService.getSession(code);
+                dispatch(setSessionExpiresAt(session.expiresAt));
+            } catch {
+                // Non-blocking: timer won't display if fetch fails
+            }
+            const userId = currentUser?.keycloakId;
+            const myTokens = userId ? (tokensByUserRef.current[userId] ?? 0) : 0;
+            if (userId && myTokens >= 1) {
+                try {
+                    await UserService.addHistory(campaignNameRef.current, myTokens);
+                } catch {
+                    // history update failure should not block navigation
+                }
+            }
+            const myParticipant = participantsRef.current.find((p) => p.userId === userId);
+            if (myParticipant?.characterId) {
+                router.push(`/${locale}/characters/${myParticipant.characterId}`);
+            }
         });
 
         return () => {
@@ -193,5 +246,72 @@ export function useSessionSocket({
         }
     };
 
-    return { handleCharacterChange, handleLeave, isChangingCharacter, isLeaving };
+    const handleAddToken = () => {
+        const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        if (!userId || !socket?.connected) return;
+        const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
+        if (totalTokens >= participantsRef.current.length) return;
+        const myDeposited = tokensByUserRef.current[userId] ?? 0;
+        if (myDeposited >= (currentUser?.balance ?? 0)) return;
+        socket.emit("session:add-token", { sessionId: code });
+    };
+
+    const handleRemoveToken = () => {
+        const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        if (!userId || !socket?.connected) return;
+        if ((tokensByUserRef.current[userId] ?? 0) <= 0) return;
+        socket.emit("session:remove-token", { sessionId: code });
+    };
+
+    const handleAddTokenAmount = (amount: number) => {
+        const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        if (!userId || !socket?.connected) return;
+        const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
+        const myDeposited = tokensByUserRef.current[userId] ?? 0;
+        const maxAdd = Math.min(
+            participantsRef.current.length - totalTokens,
+            (currentUser?.balance ?? 0) - myDeposited,
+        );
+        const actualAmount = Math.min(amount, maxAdd);
+        if (actualAmount <= 0) return;
+        socket.emit("session:add-tokens", { sessionId: code, amount: actualAmount });
+    };
+
+    const handleRemoveTokenAmount = (amount: number) => {
+        const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        if (!userId || !socket?.connected) return;
+        const myDeposited = tokensByUserRef.current[userId] ?? 0;
+        const actualAmount = Math.min(amount, myDeposited);
+        if (actualAmount <= 0) return;
+        socket.emit("session:remove-tokens", { sessionId: code, amount: actualAmount });
+    };
+
+    const handleLaunchSession = () => {
+        const socket = socketRef.current;
+        if (!socket?.connected || isLaunching) return;
+        setIsLaunching(true);
+
+
+
+        socket.emit("session:launch", { sessionId: code });
+        socket.once("session:launched", () => {
+            setIsLaunching(false);
+        });
+        socket.once("session:error", (error) => {
+            console.log("Session launch error:", error);
+            toast.error(t("toast.sessionLaunchError"));
+            setIsLaunching(false);
+        });
+    };
+
+    const handleDismissSessionEnd = () => {
+        dispatch(clearCurrentSession());
+        router.push(`/${locale}/welcome`);
+    };
+
+    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, handleAddTokenAmount, handleRemoveTokenAmount, handleLaunchSession, handleDismissSessionEnd, isChangingCharacter, isLeaving, isLaunching, sessionEndReason };
 }

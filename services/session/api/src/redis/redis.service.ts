@@ -127,4 +127,95 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         this.emptyHandlers.set(handlerId, handler);
         this.logger.verbose(`Empty session handler registered: ${handlerId}`, this.SERVICE_NAME);
     }
+
+    // -------------------------------------------------------------------------
+    // Token management
+    // -------------------------------------------------------------------------
+
+    private tokenKey(sessionId: string): string {
+        return `session:tokens:${sessionId}`;
+    }
+
+    /**
+     * Retourne la map {userId: tokenCount} pour une session.
+     */
+    async getTokens(sessionId: string): Promise<Record<string, number>> {
+        const raw = await this.client.hgetall(this.tokenKey(sessionId));
+        if (!raw) return {};
+        return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, parseInt(v, 10)]));
+    }
+
+    /**
+     * Ajoute un token pour un utilisateur, si le total < maxTokens.
+     * Retourne la map mise à jour, ou null si le maximum est atteint.
+     */
+    async addToken(sessionId: string, userId: string, maxTokens: number): Promise<Record<string, number> | null> {
+        const key = this.tokenKey(sessionId);
+        const raw = await this.client.hgetall(key);
+        const tokens: Record<string, number> = raw
+            ? Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, parseInt(v, 10)]))
+            : {};
+        const total = Object.values(tokens).reduce((a, b) => a + b, 0);
+        if (total >= maxTokens) return null;
+        await this.client.hincrby(key, userId, 1);
+        tokens[userId] = (tokens[userId] ?? 0) + 1;
+        return tokens;
+    }
+
+    /**
+     * Retire un token pour un utilisateur.
+     * Retourne la map mise à jour, ou null si l'utilisateur n'a pas de token.
+     */
+    async removeToken(sessionId: string, userId: string): Promise<Record<string, number> | null> {
+        const key = this.tokenKey(sessionId);
+        const current = parseInt((await this.client.hget(key, userId)) ?? '0', 10);
+        if (current <= 0) return null;
+        await this.client.hincrby(key, userId, -1);
+        const raw = await this.client.hgetall(key);
+        return raw
+            ? Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, parseInt(v, 10)]))
+            : {};
+    }
+
+    /**
+     * Ajoute N tokens pour un utilisateur, dans la limite de maxTokens total.
+     * Retourne la map mise à jour avec le nombre réellement ajouté, ou null si aucun token ne peut être ajouté.
+     */
+    async addTokens(sessionId: string, userId: string, maxTokens: number, amount: number): Promise<{ tokens: Record<string, number>; added: number } | null> {
+        const key = this.tokenKey(sessionId);
+        const raw = await this.client.hgetall(key);
+        const tokens: Record<string, number> = raw
+            ? Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, parseInt(v, 10)]))
+            : {};
+        const total = Object.values(tokens).reduce((a, b) => a + b, 0);
+        const canAdd = Math.min(amount, maxTokens - total);
+        if (canAdd <= 0) return null;
+        await this.client.hincrby(key, userId, canAdd);
+        tokens[userId] = (tokens[userId] ?? 0) + canAdd;
+        return { tokens, added: canAdd };
+    }
+
+    /**
+     * Retire N tokens pour un utilisateur.
+     * Retourne la map mise à jour avec le nombre réellement retiré, ou null si l'utilisateur n'a pas de token.
+     */
+    async removeTokens(sessionId: string, userId: string, amount: number): Promise<{ tokens: Record<string, number>; removed: number } | null> {
+        const key = this.tokenKey(sessionId);
+        const current = parseInt((await this.client.hget(key, userId)) ?? '0', 10);
+        if (current <= 0) return null;
+        const canRemove = Math.min(amount, current);
+        await this.client.hincrby(key, userId, -canRemove);
+        const raw = await this.client.hgetall(key);
+        const tokens = raw
+            ? Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, parseInt(v, 10)]))
+            : {};
+        return { tokens, removed: canRemove };
+    }
+
+    /**
+     * Supprime toutes les données de tokens pour une session.
+     */
+    async clearTokens(sessionId: string): Promise<void> {
+        await this.client.del(this.tokenKey(sessionId));
+    }
 }
