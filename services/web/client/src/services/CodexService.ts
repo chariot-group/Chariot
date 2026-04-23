@@ -22,6 +22,7 @@ export interface CodexSpellItem {
     _id: string;
     tag: number;
     languages: string[];
+    classes: string[];
     translations: {
         [key: string]: CodexSpellTranslation;
     };
@@ -410,6 +411,7 @@ class CodexService {
             range: translation.range,
             usesPerDay: translation.usesPerDay,
             used: 0,
+            classes: codexSpellItem.classes,
             effectType: effectTypeMap[translation.effectType] || 'utility',
             damage: translation.damage || undefined,
         };

@@ -27,6 +27,7 @@ function SpellResultItem({
   onSpellClick,
   tDialog,
   tMagic,
+  t,
 }: {
   spellItem: CodexSpellItem;
   selectedLang: string | null;
@@ -34,8 +35,11 @@ function SpellResultItem({
   onSpellClick: (spell: CodexSpellItem, lang: string) => void;
   tDialog: (key: string) => string;
   tMagic: (key: string, values?: Record<string, unknown>) => string;
+  t: (key: string) => string;
 }) {
   const [overrideLang, setOverrideLang] = useState<string | null>(null);
+
+  const tGeneral = useTranslations("characterDetail.player");
 
   const displayLang =
     overrideLang ||
@@ -65,6 +69,12 @@ function SpellResultItem({
           <div className="text-xs text-muted-foreground mt-1">
             {tMagic("spellLevel", { level: translation.level })} • {translation.school}
           </div>
+          {spellItem.classes && spellItem.classes.length > 0 && (
+            <div className="text-xs text-muted-foreground mt-1">
+              <strong>{tGeneral("general.classes")}:</strong>{" "}
+              {spellItem.classes.map((c) => t(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
+            </div>
+          )}
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
           <div className="flex gap-1.5">
@@ -133,6 +143,7 @@ export default function CodexSpellSearchDialog({
 }: CodexSpellSearchDialogProps) {
   const tMagic = useTranslations("characterDetail.magic");
   const tDialog = useTranslations("characterDetail.magic.codexDialog");
+  const tClasses = useTranslations("classes");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
@@ -351,6 +362,7 @@ export default function CodexSpellSearchDialog({
                               onSpellClick={handleSpellClick}
                               tDialog={tDialog}
                               tMagic={tMagic}
+                              t={tClasses}
                             />
                           );
                         })}

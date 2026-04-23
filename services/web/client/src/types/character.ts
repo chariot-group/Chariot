@@ -171,6 +171,7 @@ export interface Spell {
     castingTime: string;
     duration: string;
     range: string;
+    classes?: string[];
     effectType: 'attack' | 'heal' | 'utility';
     damage?: string;
     healing?: string;
