@@ -43,8 +43,10 @@ function MonsterResultItem({
   const translation = monsterItem.translations[displayLang];
   if (!translation) return null;
 
-  const handleCardClick = () => {
-    onMonsterClick(monsterItem, displayLang);
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!(e.target as HTMLElement).hasAttribute("data-lang-selector")) {
+      onMonsterClick(monsterItem, displayLang);
+    }
   };
 
   const handleLangChange = (lang: string) => {
@@ -99,7 +101,9 @@ function MonsterResultItem({
             <Select
               value={displayLang}
               onValueChange={handleLangChange}>
-              <SelectTrigger className="w-auto h-7 text-xs px-2 py-1 border-none bg-transparent focus:ring-0 focus:ring-offset-0">
+              <SelectTrigger
+                className="lang-selector-trigger w-auto h-7 text-xs px-2 py-1 border-none bg-transparent focus:ring-0 focus:ring-offset-0"
+                data-lang-selector>
                 <SelectValue>
                   <span className="text-base flex items-center gap-2">
                     <span>{tDialog(`languageFilter.${displayLang}`)}</span>
