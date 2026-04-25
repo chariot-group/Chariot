@@ -87,12 +87,12 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
           {/* NPC from Codex Option */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <span>
+              <span className="w-full">
                 <Button
                   variant="outline"
                   disabled={!isCodexAvailable}
                   onClick={() => handleSelectType("npcs-codex")}
-                  className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-purple hover:text-white hover:border-purple hover:scale-105 transition-all duration-200 shadow-md hover:shadow-purple/50">
+                  className="w-full flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-purple hover:text-white hover:border-purple hover:scale-105 transition-all duration-200 shadow-md hover:shadow-purple/50">
                   <div className="p-3 rounded-full bg-purple/10">
                     <BookOpen
                       className="w-12 h-12 text-purple"

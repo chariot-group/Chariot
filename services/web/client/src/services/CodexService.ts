@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { Spell, NPC } from '@/types/character';
 
-interface CodexSpellTranslation {
+export interface CodexSpellTranslation {
     name: string;
     level: number;
     school: string;
@@ -18,10 +18,11 @@ interface CodexSpellTranslation {
     updatedAt: string;
 }
 
-interface CodexSpellItem {
+export interface CodexSpellItem {
     _id: string;
     tag: number;
     languages: string[];
+    classes: string[];
     translations: {
         [key: string]: CodexSpellTranslation;
     };
@@ -40,7 +41,7 @@ interface CodexSpellResponse {
     };
 }
 
-interface CodexMonsterTranslation {
+export interface CodexMonsterTranslation {
     firstname: string;
     lastname: string;
     surname: string;
@@ -166,7 +167,7 @@ interface CodexMonsterTranslation {
     updatedAt: string;
 }
 
-interface CodexMonsterItem {
+export interface CodexMonsterItem {
     _id: string;
     tag: number;
     languages: string[];
@@ -410,6 +411,7 @@ class CodexService {
             range: translation.range,
             usesPerDay: translation.usesPerDay,
             used: 0,
+            classes: codexSpellItem.classes,
             effectType: effectTypeMap[translation.effectType] || 'utility',
             damage: translation.damage || undefined,
         };
@@ -499,87 +501,67 @@ class CodexService {
 
         // Normaliser la vitesse pour s'assurer que tous les champs existent
         const normalizedSpeed = {
-            walk: translation.stats.speed.walk || 0,
-            climb: translation.stats.speed.climb || 0,
-            swim: translation.stats.speed.swim || 0,
-            fly: translation.stats.speed.fly || 0,
-            burrow: translation.stats.speed.burrow || 0,
+            walk: translation.stats?.speed?.walk ?? 0,
+            fly: translation.stats?.speed?.fly ?? 0,
+            swim: translation.stats?.speed?.swim ?? 0,
+            climb: translation.stats?.speed?.climb ?? 0,
+            burrow: translation.stats?.speed?.burrow ?? 0,
         };
-
-        const normalizedSenses = (translation.stats.senses || []).map((sense) => ({
-            name: sense.type || '',
-            value: typeof sense.value === 'number' ? sense.value : parseInt(sense.value, 10) || 0,
-        }));
-
-        const normalizeAction = (action: {
-            name: string;
-            type: string;
-            description?: string;
-            attackBonus?: number;
-            damage?: Array<{ dice: string; type: string }>;
-            range?: string;
-            dc?: { dcType: string; dcValue: number; successType: string };
-            cost?: number;
-        }) => ({
-            name: action.name,
-            type: action.type,
-            description: action.description,
-            attackBonus: action.attackBonus ?? 0,
-            damage: action.damage,
-            range: action.range ?? '',
-            dc: action.dc,
-            cost: action.cost,
-        });
-
-        const dexterityScore = translation.stats.abilityScores?.dexterity ?? 10;
-        const dexterityModifier = Math.floor((dexterityScore - 10) / 2);
-        const baseArmorClass = translation.stats.armorClass ?? 0;
-        const computedArmorClass = Math.max(baseArmorClass, 10 + dexterityModifier);
 
         return {
             firstname: translation.firstname,
-            lastname: translation.lastname || "",
-            surname: translation.surname || "",
-            avatar: translation.avatar || "",
+            lastname: translation.lastname,
+            surname: translation.surname,
             stats: {
-                ...translation.stats,
-                armorClass: computedArmorClass,
+                ...(translation.stats || {}),
                 speed: normalizedSpeed,
-                senses: normalizedSenses,
+                abilityScores: translation.stats?.abilityScores ?? {
+                    strength: 10,
+                    dexterity: 10,
+                    constitution: 10,
+                    intelligence: 10,
+                    wisdom: 10,
+                    charisma: 10,
+                },
+                savingThrows: translation.stats?.savingThrows ?? {
+                    strength: 0,
+                    dexterity: 0,
+                    constitution: 0,
+                    intelligence: 0,
+                    wisdom: 0,
+                    charisma: 0,
+                },
+                skills: translation.stats?.skills ?? {},
+                senses: (translation.stats?.senses ?? []).map(sense => ({
+                    name: sense.type,
+                    value: parseInt(sense.value, 10) || 0,
+                })),
+                languages: translation.stats?.languages ?? [],
             },
             affinities: translation.affinities,
             abilities: translation.abilities,
             spellcasting: this.normalizeSpellcasting(translation.spellcasting, lang),
             actions: {
-                standard: (translation.actions?.standard || []).map((action) => normalizeAction(action)),
-                legendary: (translation.actions?.legendary || []).map((action) => normalizeAction(action)),
-                lair: (translation.actions?.lair || []).map((action) => normalizeAction(action)),
+                standard: (translation.actions?.standard ?? []).map(action => ({
+                    ...action,
+                    attackBonus: action.attackBonus ?? 0,
+                    range: action.range ?? "",
+                })),
+                legendary: (translation.actions?.legendary ?? []).map(action => ({
+                    ...action,
+                    attackBonus: 0,
+                    range: "",
+                })),
+                lair: (translation.actions?.lair ?? []).map(action => ({
+                    ...action,
+                    attackBonus: 0,
+                    range: "",
+                })),
             },
             challenge: translation.challenge,
             profile: {
-                alignment: this.normalizeAlignment(translation.profile.alignment),
-                type: translation.profile.type,
-                subtype: translation.profile.subtype,
-            },
-            hitPointsRoll: translation.hitPointsRoll,
-            appearance: {},
-            background: {},
-            treasure: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0, treasure: "", equipment: "" },
-            conditions: {
-                blinded: false,
-                charmed: false,
-                deafened: false,
-                frightened: false,
-                grappled: false,
-                incapacitated: false,
-                invisible: false,
-                paralyzed: false,
-                petrified: false,
-                poisoned: false,
-                prone: false,
-                restrained: false,
-                stunned: false,
-                unconscious: false,
+                ...(translation.profile || {}),
+                alignment: this.normalizeAlignment(translation.profile?.alignment),
             },
         };
     }

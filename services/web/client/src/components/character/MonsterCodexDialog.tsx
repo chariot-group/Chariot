@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
-import CodexService from "@/services/CodexService";
+import CodexService, { CodexMonsterItem } from "@/services/CodexService";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
+import React from "react";
 
 interface MonsterCodexDialogProps {
   open: boolean;
@@ -20,10 +21,117 @@ interface MonsterCodexDialogProps {
   onMonsterSelected: (monster: Partial<NPC>) => void;
 }
 
-type MonsterSearchResult = {
-  _id: string;
-  languages: string[];
-} & Record<string, unknown>;
+function MonsterResultItem({
+  monsterItem,
+  selectedLang,
+  isSelected,
+  onMonsterClick,
+  tDialog,
+}: {
+  monsterItem: CodexMonsterItem;
+  selectedLang: string | null;
+  isSelected: boolean;
+  onMonsterClick: (monster: CodexMonsterItem, lang: string) => void;
+  tDialog: (key: string, values?: Record<string, unknown>) => string;
+}) {
+  const [overrideLang, setOverrideLang] = useState<string | null>(null);
+
+  const displayLang =
+    overrideLang ||
+    (selectedLang && monsterItem.languages.includes(selectedLang) ? selectedLang : monsterItem.languages[0] || "en");
+
+  const translation = monsterItem.translations[displayLang];
+  if (!translation) return null;
+
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!(e.target as HTMLElement).hasAttribute("data-lang-selector")) {
+      onMonsterClick(monsterItem, displayLang);
+    }
+  };
+
+  const handleLangChange = (lang: string) => {
+    setOverrideLang(lang);
+    onMonsterClick(monsterItem, lang);
+  };
+
+  return (
+    <Card
+      onClick={handleCardClick}
+      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
+        isSelected ? "border-purple border-2 bg-purple/10" : ""
+      }`}>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {tDialog("monsterInfo", {
+                cr: formatChallengeRating(translation.challenge?.challengeRating),
+                type: translation.profile?.type,
+              })}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <div className="flex gap-1.5">
+              {monsterItem.tag === 1 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <BadgeCheck className="size-5 text-green-600" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tDialog("validatedByChariot")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {translation.srd && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <FileBadge className="size-5" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tDialog("srdContent")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          </div>
+        </div>
+        {monsterItem.languages.length > 1 && (
+          <Select
+            value={displayLang}
+            onValueChange={handleLangChange}>
+            <SelectTrigger
+              className="lang-selector-trigger w-auto h-7 text-xs px-2 py-1 border-none bg-transparent focus:ring-0 focus:ring-offset-0"
+              data-lang-selector>
+              <SelectValue>
+                <span className="text-base flex items-center gap-2">
+                  <span>{tDialog(`languageFilter.${displayLang}`)}</span>
+                </span>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {monsterItem.languages
+                .sort((a) => (a === selectedLang ? -1 : 1))
+                .map((lang) => (
+                  <SelectItem
+                    key={lang}
+                    value={lang}>
+                    <span className="text-base flex items-center gap-2">
+                      <span>{tDialog(`languageFilter.${lang}`)}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+    </Card>
+  );
+}
 
 export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelected }: MonsterCodexDialogProps) {
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
@@ -31,8 +139,9 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<MonsterSearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<CodexMonsterItem[]>([]);
   const [selectedMonster, setSelectedMonster] = useState<Partial<NPC> | null>(null);
+  const [selectedMonsterId, setSelectedMonsterId] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +225,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setSelectedLang(null);
       setSearchResults([]);
       setSelectedMonster(null);
+      setSelectedMonsterId(null);
       setShowMobileDetails(false);
       setError(null);
       setCurrentPage(1);
@@ -135,11 +245,10 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     }
   };
 
-  const handleMonsterClick = (codexMonsterItem: MonsterSearchResult) => {
-    // Si une langue est sélectionnée, utiliser cette langue, sinon utiliser la première disponible
-    const langToUse = selectedLang || codexMonsterItem.languages[0];
-    const convertedMonster = CodexService.convertToChariotNPC(codexMonsterItem, langToUse);
+  const handleMonsterClick = (codexMonsterItem: CodexMonsterItem, lang: string) => {
+    const convertedMonster = CodexService.convertToChariotNPC(codexMonsterItem, lang);
     setSelectedMonster(convertedMonster);
+    setSelectedMonsterId(codexMonsterItem._id);
     setShowMobileDetails(true);
   };
 
@@ -230,122 +339,25 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                   }
 
                   return (
-                    <>
+                    <React.Fragment>
                       <div className="flex flex-col gap-2">
                         {searchResults.map((monsterItem) => {
-                          // Si une langue est sélectionnée, afficher cette langue uniquement
-                          if (selectedLang) {
-                            const translation = CodexService.getMonsterTranslation(monsterItem, selectedLang);
-                            if (!translation) return null;
-
-                            const isSelected = selectedMonster?.firstname === translation.firstname;
-
-                            return (
-                              <Card
-                                key={`${monsterItem._id}-${selectedLang}`}
-                                onClick={() => handleMonsterClick(monsterItem)}
-                                className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${isSelected ? "border-purple border-2 bg-purple/10" : ""
-                                  }`}>
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="flex-1">
-                                    <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      {tDialog("monsterInfo", {
-                                        cr: formatChallengeRating(translation.challenge.challengeRating),
-                                        type: translation.profile.type,
-                                      })}
-                                    </div>
-                                  </div>
-                                  <div className="flex gap-1.5 shrink-0">
-                                    {monsterItem.tag === 1 && (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <div className="cursor-help">
-                                            <BadgeCheck className="size-5 text-green-600" />
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p>{tDialog("validatedByChariot")}</p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    )}
-                                    {translation.srd && (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <div className="cursor-help">
-                                            <FileBadge className="size-5" />
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p>{tDialog("srdContent")}</p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    )}
-                                  </div>
-                                </div>
-                              </Card>
-                            );
-                          } else {
-                            // Aucune langue sélectionnée : afficher toutes les traductions disponibles
-                            return monsterItem.languages.map((lang: string) => {
-                              const translation = monsterItem.translations[lang];
-                              if (!translation) return null;
-
-                              const isSelected = selectedMonster?.firstname === translation.firstname;
-                              const langEmoji = lang === "fr" ? "🇫🇷" : lang === "en" ? "🇬🇧" : "🇪🇸";
-
-                              return (
-                                <Card
-                                  key={`${monsterItem._id}-${lang}`}
-                                  onClick={() => handleMonsterClick(monsterItem)}
-                                  className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-white/10 hover:shadow-sm ${isSelected ? "border-purple border-2 bg-purple/10" : ""
-                                    }`}>
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-base">{langEmoji}</span>
-                                        <div className="font-semibold text-sm md:text-base">
-                                          {translation.firstname}
-                                        </div>
-                                      </div>
-                                      <div className="text-xs text-muted-foreground mt-1">
-                                        {tDialog("monsterInfo", {
-                                          cr: formatChallengeRating(translation.challenge.challengeRating),
-                                          type: translation.profile.type,
-                                        })}
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-1.5 shrink-0">
-                                      {monsterItem.tag === 1 && (
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <div className="cursor-help">
-                                              <BadgeCheck className="size-5 text-green-600" />
-                                            </div>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <p>{tDialog("validatedByChariot")}</p>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      )}
-                                      {translation.srd && (
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <div className="cursor-help">
-                                              <FileBadge className="size-5" />
-                                            </div>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <p>{tDialog("srdContent")}</p>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      )}
-                                    </div>
-                                  </div>
-                                </Card>
-                              );
-                            });
+                          if (selectedLang && !monsterItem.languages.includes(selectedLang)) {
+                            return null;
                           }
+
+                          const isSelected = selectedMonsterId === monsterItem._id;
+
+                          return (
+                            <MonsterResultItem
+                              key={`${monsterItem._id}-${selectedLang}`}
+                              monsterItem={monsterItem}
+                              selectedLang={selectedLang}
+                              isSelected={isSelected}
+                              onMonsterClick={handleMonsterClick}
+                              tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                            />
+                          );
                         })}
                       </div>
                       {/* Bouton Charger plus */}
@@ -378,7 +390,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                           })}
                         </div>
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })()
               )}

@@ -26,6 +26,8 @@ export default function SpellDisplay({
   isNpc = false,
 }: SpellDisplayProps) {
   const tMagic = useTranslations("characterDetail.magic");
+  const tClasses = useTranslations("classes");
+  const tGeneral = useTranslations("characterDetail.player");
 
   if (!spell) {
     return null;
@@ -95,6 +97,16 @@ export default function SpellDisplay({
           </span>
           <span className="text-sm md:text-base wrap-break-word">{spell.duration}</span>
         </Card>
+        {spell.classes && spell.classes.length > 0 && (
+          <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+            <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+              {tGeneral("general.classes")}:
+            </span>
+            <span className="text-sm md:text-base wrap-break-word">
+              {spell.classes.map((c) => tClasses(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
+            </span>
+          </Card>
+        )}
         {spell.effectType === "attack" && attackBonus !== null && (
           <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
             <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
