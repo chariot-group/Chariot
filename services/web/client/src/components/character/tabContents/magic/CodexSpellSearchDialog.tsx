@@ -48,8 +48,10 @@ function SpellResultItem({
   const translation = spellItem.translations[displayLang];
   if (!translation) return null;
 
-  const handleCardClick = () => {
-    onSpellClick(spellItem, displayLang);
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!(e.target as HTMLElement).hasAttribute("data-lang-selector")) {
+      onSpellClick(spellItem, displayLang);
+    }
   };
 
   const handleLangChange = (lang: string) => {
@@ -63,73 +65,77 @@ function SpellResultItem({
       className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
         isSelected ? "border-purple border-2 bg-purple/10" : ""
       }`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
-          <div className="font-semibold text-sm md:text-base">{translation.name}</div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {tMagic("spellLevel", { level: translation.level })} • {translation.school}
-          </div>
-          {spellItem.classes && spellItem.classes.length > 0 && (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <div className="font-semibold text-sm md:text-base">{translation.name}</div>
             <div className="text-xs text-muted-foreground mt-1">
-              <strong>{tGeneral("general.classes")}:</strong>{" "}
-              {spellItem.classes.map((c) => t(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
+              {tMagic("spellLevel", { level: translation.level })} • {translation.school}
             </div>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <div className="flex gap-1.5">
-            {spellItem.tag === 1 && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="cursor-help">
-                    <BadgeCheck className="size-5 text-green-600" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tDialog("validatedByChariot")}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-            {translation.srd && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="cursor-help">
-                    <FileBadge className="size-5" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tDialog("srdContent")}</p>
-                </TooltipContent>
-              </Tooltip>
+            {spellItem.classes && spellItem.classes.length > 0 && (
+              <div className="text-xs text-muted-foreground mt-1">
+                <strong>{tGeneral("general.classes")}:</strong>{" "}
+                {spellItem.classes.map((c) => t(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
+              </div>
             )}
           </div>
-          {spellItem.languages.length > 1 && (
-            <Select
-              value={displayLang}
-              onValueChange={handleLangChange}>
-              <SelectTrigger className="w-auto h-7 text-xs px-2 py-1 border-none bg-transparent focus:ring-0 focus:ring-offset-0">
-                <SelectValue>
-                  <span className="text-base flex items-center gap-2">
-                    <span>{tDialog(`languageFilter.${displayLang}`)}</span>
-                  </span>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {spellItem.languages
-                  .sort((a) => (a === selectedLang ? -1 : 1))
-                  .map((lang) => (
-                    <SelectItem
-                      key={lang}
-                      value={lang}>
-                      <span className="text-base flex items-center gap-2">
-                        <span>{tDialog(`languageFilter.${lang}`)}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          )}
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <div className="flex gap-1.5">
+              {spellItem.tag === 1 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <BadgeCheck className="size-5 text-green-600" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tDialog("validatedByChariot")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {translation.srd && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help">
+                      <FileBadge className="size-5" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tDialog("srdContent")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          </div>
         </div>
+        {spellItem.languages.length > 1 && (
+          <Select
+            value={displayLang}
+            onValueChange={handleLangChange}>
+            <SelectTrigger
+              className="w-auto h-7 text-xs px-2 py-1 border-none bg-transparent focus:ring-0 focus:ring-offset-0"
+              data-lang-selector>
+              <SelectValue>
+                <span className="text-base flex items-center gap-2">
+                  <span>{tDialog(`languageFilter.${displayLang}`)}</span>
+                </span>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {spellItem.languages
+                .sort((a) => (a === selectedLang ? -1 : 1))
+                .map((lang) => (
+                  <SelectItem
+                    key={lang}
+                    value={lang}>
+                    <span className="text-base flex items-center gap-2">
+                      <span>{tDialog(`languageFilter.${lang}`)}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
     </Card>
   );
@@ -361,7 +367,7 @@ export default function CodexSpellSearchDialog({
                               isSelected={isSelected}
                               onSpellClick={handleSpellClick}
                               tDialog={tDialog}
-                              tMagic={tMagic}
+                              tMagic={tMagic as (key: string, values?: Record<string, unknown>) => string}
                               t={tClasses}
                             />
                           );
