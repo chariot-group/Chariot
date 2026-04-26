@@ -43,6 +43,7 @@ services:
     container_name: chariot-session-integ
     restart: unless-stopped
     working_dir: /app
+    command: sh -c "npx prisma migrate deploy --schema=./dist/prisma/schema.prisma && node dist/src/main"
     environment:
       NODE_ENV: integration
       DATABASE_URL: ${DATABASE_URL}
