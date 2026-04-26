@@ -10,6 +10,7 @@
 
 - Fix a bug in the session service that caused the service to crash when deployed in production mode due to a bad path for the build output file
 
+
 ## [2.3.1] - 26-04-2026
 
 ### Added
