@@ -4,7 +4,6 @@ RUN apk upgrade --no-cache && apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-# Install toutes les dépendances (TypeScript, etc. sont nécessaires pour le build)
 RUN npm ci --no-audit --no-fund
 
 # Étape 2 : Build de l'application
@@ -12,17 +11,16 @@ FROM node:22-alpine AS builder
 RUN apk upgrade --no-cache
 WORKDIR /app
 
-# Copie les node_modules avec les devDependencies
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Déclaration des ARG si tu as des variables d'environnement au build
 ARG NODE_ENV=production
 ARG DATABASE_URL
 ENV NODE_ENV=${NODE_ENV}
 ENV DATABASE_URL=${DATABASE_URL:-postgresql://fake:fake@localhost:5432/fake}
 
-# Build de l'application NestJS
+RUN npx prisma generate
+
 RUN npm run build && \
     find dist -type f && \
     test -f dist/src/main.js && \
@@ -34,7 +32,6 @@ RUN apk upgrade --no-cache
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-# Install uniquement les dépendances de production
 RUN npm ci --only=production --no-audit --no-fund
 
 # Étape 4 : Image finale de production (ultra légère)
@@ -44,14 +41,13 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Création d'un utilisateur non-root pour la sécurité
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
-# Copie uniquement ce qui est nécessaire en production
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 
 RUN mkdir -p /app/logger/logs \
  && chown -R nestjs:nodejs /app/logger
