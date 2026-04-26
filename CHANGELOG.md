@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.3.5] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix CI to use the correct environment variables for the session service
+
+
 ## [2.3.4] - 26-04-2026
 
 ### Added
