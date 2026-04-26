@@ -342,6 +342,7 @@ jobs:
           build-args: |
             NODE_ENV=production
             NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
+            DATABASE_URL=postgresql://fake:fake@localhost:5432/fake
       - name: Output image tags
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-session-${{ steps.env.outputs.env_name }}:latest"
