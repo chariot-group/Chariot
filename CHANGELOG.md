@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.3] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix a deploy bug about the prisma generate in the session service that caused the service to crash when start
+
 ## [2.3.2] - 26-04-2026
 
 ### Added
