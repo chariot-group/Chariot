@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.1] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix a deploy bug about the prisma client in the session service that caused the service to crash when deployed in production mode
+
 ## [2.3.0] - 26-04-2026
 
 ### Added

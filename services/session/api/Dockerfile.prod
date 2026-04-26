@@ -18,11 +18,14 @@ COPY . .
 
 # Déclaration des ARG si tu as des variables d'environnement au build
 ARG NODE_ENV=production
+ARG DATABASE_URL
 ENV NODE_ENV=${NODE_ENV}
+ENV DATABASE_URL=${DATABASE_URL:-postgresql://fake:fake@localhost:5432/fake}
 
 # Build de l'application NestJS
 RUN npm run build && \
     # Vérifie que le build a bien créé le fichier
+    find dist -type f && \
     test -f dist/main.js && \
     echo "✅ Build successful: dist/main.js created"
 
