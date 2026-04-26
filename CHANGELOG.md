@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.4] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix prisma migration in session service
+
 ## [2.3.3] - 26-04-2026
 
 ### Added
