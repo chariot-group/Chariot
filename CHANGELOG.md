@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.3.0] - 26-04-2026
+
+### Added
+- Addition of an automated deployment tool (Watch Tower)
+- Add a tooltip to the spellcaster class
+- Hover effects and modify the pointers
+- Add the app version to the footer
+- Adding a development tool (Linter)
+- Session service
+- Be able to access all translations via Codex
+
+### Changed
+- Make sure the exhaustion level titles are no longer bold
+- Make the checkmarks in the app's dropdown menus white
+- Place the icons for speed, size, initiative, AC, etc., to the left of the value
+- Change the appearance of the button that expands/collapses the list of abilities and traits if that list is empty; also change the tooltip so that the button does not appear clickable (disabled)
+- Ensure that when a custom spell is added, the effect type defaults to "utility" to match the first value in the list
+- Resize the sidebar collapse button to fit the full width of the page
+- 
+
+### Fixed
+
 ## [2.2.2] - 10-04-2026
 
 ### Added
