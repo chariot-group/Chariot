@@ -82,6 +82,7 @@ export function useSessionSocket({
 
         const socket = io(`${wsUrl}/session`, {
             auth: { token },
+            path: "/ws",
             transports: ["websocket"],
         });
 
