@@ -14,7 +14,8 @@ export class Ability {
   @ApiProperty({
     example: true,
     required: false,
-    description: "Active l'affichage et le suivi d'un compteur d'utilisations (optionnel, rétrocompatible)",
+    description:
+      'Enable display and tracking of a usage counter (optional, backward compatible)',
   })
   @Prop({ required: false })
   hasCounter?: boolean;
@@ -22,7 +23,7 @@ export class Ability {
   @ApiProperty({
     example: 3,
     required: false,
-    description: "Nombre d'utilisations maximum (si hasCounter)",
+    description: 'Maximum number of uses (if hasCounter)',
   })
   @Prop({ required: false })
   counterMax?: number;
@@ -30,7 +31,7 @@ export class Ability {
   @ApiProperty({
     example: 1,
     required: false,
-    description: "Utilisations consommées (si hasCounter)",
+    description: 'Consumed uses (if hasCounter)',
   })
   @Prop({ required: false })
   counterCurrent?: number;
@@ -38,7 +39,7 @@ export class Ability {
   @ApiProperty({
     required: false,
     description:
-      'Indique si le compteur se réinitialise après un repos court (métadonnée ; logique de repos non implémentée)',
+      'Indicates whether the counter resets after a short rest (metadata; rest logic not implemented)',
   })
   @Prop({ required: false })
   counterResetsOnShortRest?: boolean;
@@ -46,7 +47,7 @@ export class Ability {
   @ApiProperty({
     required: false,
     description:
-      'Indique si le compteur se réinitialise après un repos long (métadonnée ; logique de repos non implémentée)',
+      'Indicates whether the counter resets after a long rest (metadata; rest logic not implemented)',
   })
   @Prop({ required: false })
   counterResetsOnLongRest?: boolean;
