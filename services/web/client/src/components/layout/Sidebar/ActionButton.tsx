@@ -10,6 +10,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { selectCurrentSession, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { useSessionValidation } from "@/hooks/useSessionValidation";
 
 interface ActionButtonConfig {
   label: string;
@@ -32,6 +34,8 @@ export function ActionButton() {
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
+
+  useSessionValidation();
 
   const sessionStarted = sessionStatus && sessionStatus === "launched";
 
@@ -168,6 +172,10 @@ export function ActionButton() {
       <span className="text-lg truncate">{button.label}</span>
     </Button>
   );
+
+  if (button.state === "joinSession" && !button.disabled) {
+    return <JoinSessionDialog>{buttonContent}</JoinSessionDialog>;
+  }
 
   return button.disabled && button.tooltip ? (
     <Tooltip>
