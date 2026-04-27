@@ -18,6 +18,7 @@ import { SessionWithParticipants } from '@/resources/session/entities/session.mo
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import jwksRsa from 'jwks-rsa';
+import path from 'path';
 
 interface AuthenticatedSocket extends Socket {
     user?: {
@@ -33,6 +34,7 @@ interface AuthenticatedSocket extends Socket {
         credentials: true,
     },
     namespace: '/session',
+    path: '/ws',
     allowEIO3: true,
 })
 export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
