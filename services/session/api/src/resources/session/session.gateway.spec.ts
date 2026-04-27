@@ -131,7 +131,10 @@ describe('SessionGateway', () => {
 
         // Replace the jwksClient with a controllable mock
         mockGetSigningKey = jest.fn();
-        (gateway as any).jwksClient = { getSigningKey: mockGetSigningKey };
+        (gateway as any).jwksClient = {
+            getSigningKey: mockGetSigningKey,
+            getKeys: jest.fn().mockResolvedValue([{ kid: 'test-kid' }]), // Ajouté pour éviter l'erreur
+        };
     });
 
     // ── afterInit ─────────────────────────────────────────────────────────────

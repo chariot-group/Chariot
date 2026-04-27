@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import sessionService from "@/services/SessionService";
+import sessionService, { SessionEntity } from "@/services/SessionService";
 import { clearCurrentSession, selectSessionCode } from "@/store/slices/sessionSlice";
 
 /**
@@ -15,8 +15,8 @@ export function useSessionValidation() {
         let isMounted = true;
         sessionService
             .getSession(sessionCode)
-            .then((response: any) => {
-                if (response.status !== 200) {
+            .then((response: SessionEntity) => {
+                if (response.expiresAt && new Date(response.expiresAt).getTime() < Date.now()) {
                     if (isMounted) {
                         dispatch(clearCurrentSession());
                     }

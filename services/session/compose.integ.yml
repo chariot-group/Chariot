@@ -65,10 +65,18 @@ services:
       chariot-session-redis:
         condition: service_healthy
     labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-session-integ.rule=Host(`${SESSION_HOST}`)"
+      - "traefik.http.routers.chariot-session-integ.entrypoints=websecure"
+      - "traefik.http.routers.chariot-session-integ.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-session-integ.loadbalancer.server.port=9002"
+      - "traefik.http.routers.chariot-session-integ.service=chariot-session-integ"
+      - "traefik.docker.network=traefik-public"
       - "com.centurylinklabs.watchtower.enable=true"
     networks:
       - chariot-network
       - chariot-group-network-integ
+      - traefik-public
 
 volumes:
   chariot_session_postgres_data_integ:
@@ -78,4 +86,6 @@ networks:
   chariot-network:
     driver: bridge
   chariot-group-network-integ:
+    external: true
+  traefik-public:
     external: true
