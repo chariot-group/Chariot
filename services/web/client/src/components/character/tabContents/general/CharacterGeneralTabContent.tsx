@@ -10,9 +10,16 @@ interface CharacterGeneralTabContentProps {
   accentColor: string;
   form: UseFormReturn<FieldValues>;
   isEditing: boolean;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
-export default function CharacterGeneralTabContent({ character, accentColor, form, isEditing }: CharacterGeneralTabContentProps) {
+export default function CharacterGeneralTabContent({
+  character,
+  accentColor,
+  form,
+  isEditing,
+  onCharacterUpdate,
+}: CharacterGeneralTabContentProps) {
   // Mode édition
   if (isEditing) {
     if ("progression" in character) {
@@ -40,6 +47,7 @@ export default function CharacterGeneralTabContent({ character, accentColor, for
       <PlayerGeneralTabContent
         player={character as Player}
         accentColor={accentColor}
+        onCharacterUpdate={onCharacterUpdate}
       />
     );
   } else {
@@ -47,6 +55,7 @@ export default function CharacterGeneralTabContent({ character, accentColor, for
       <NpcGeneralTabContent
         npc={character as NPC}
         accentColor={accentColor}
+        onCharacterUpdate={onCharacterUpdate}
       />
     );
   }

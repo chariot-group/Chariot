@@ -9,9 +9,10 @@ import NpcStatistics from "@/components/character/tabContents/shared/NpcStatisti
 interface Props {
   npc: NPC;
   accentColor: string;
+  onCharacterUpdate?: (updated?: NPC) => void;
 }
 
-const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
+const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => {
   const t = useTranslations("characterDetail.battle");
 
   return (
@@ -57,6 +58,9 @@ const NPCBattleTabContent = ({ npc, accentColor }: Props) => {
           accentColor={accentColor}
           title={t("abilitiesAndTraits")}
           headingId="abilities-traits-heading-npc"
+          characterId={npc._id}
+          characterKind="npcs"
+          onAfterAbilityUse={onCharacterUpdate}
         />
 
       </div>

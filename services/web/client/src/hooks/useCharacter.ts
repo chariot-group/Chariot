@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } from 'react';
 import CharacterService from '@/services/CharacterService';
 import { Character } from '@/types/character';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -23,6 +23,7 @@ interface UseCharacterReturn {
     loading: boolean;
     error: string | null;
     refetch: () => Promise<void>;
+    setCharacter: Dispatch<SetStateAction<Character | null>>;
 }
 
 interface UsePlayersWithoutGroupReturn {
@@ -72,6 +73,7 @@ export function useCharacter(characterId: string | null): UseCharacterReturn {
         loading,
         error,
         refetch: fetchCharacter,
+        setCharacter,
     };
 }
 

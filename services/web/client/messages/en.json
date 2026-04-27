@@ -212,7 +212,8 @@
       "url": "Invalid url",
       "uuid": "Invalid uuid"
     },
-    "notMultipleOf": "Number must be a multiple of {multipleOf}"
+    "notMultipleOf": "Number must be a multiple of {multipleOf}",
+    "abilityCounterOrder": "Current uses cannot exceed the maximum."
   },
   "characterDetail": {
     "editCharacter": "Edit character",
@@ -310,6 +311,16 @@
       "failures": "Failures:",
       "performedThrow": "Performed Throw",
       "unperformedThrow": "Unperformed Throw",
+      "abilityHasCounter": "Use counter",
+      "abilityCounterMax": "Maximum",
+      "abilityCounterCurrent": "Current uses",
+      "abilityCounterShort": "{current} / {max}",
+      "abilityUse": "Use",
+      "abilityUseAria": "Use {name}, {current} out of {max} uses",
+      "abilityUseLimitReached": "Maximum uses reached",
+      "abilityUseError": "Could not save use",
+      "abilityRemove": "Remove this ability",
+      "abilityCounterPlayerSessionNote": "While not in a session, current uses cannot be edited here.",
       "abilitiesAndTraits": "Abilities and Traits",
       "actions": "Actions",
       "legendaryActions": "Legendary Actions",

@@ -10,6 +10,30 @@ export class Ability {
   @ApiProperty({ example: 'Allows the character to move unseen and unheard' })
   @Prop()
   description: string;
+
+  @ApiProperty({
+    example: true,
+    required: false,
+    description: "Active l'affichage et le suivi d'un compteur d'utilisations (optionnel, rétrocompatible)",
+  })
+  @Prop({ required: false })
+  hasCounter?: boolean;
+
+  @ApiProperty({
+    example: 3,
+    required: false,
+    description: "Nombre d'utilisations maximum (si hasCounter)",
+  })
+  @Prop({ required: false })
+  counterMax?: number;
+
+  @ApiProperty({
+    example: 1,
+    required: false,
+    description: "Utilisations consommées (si hasCounter)",
+  })
+  @Prop({ required: false })
+  counterCurrent?: number;
 }
 
 export const AbilitySchema = SchemaFactory.createForClass(Ability);

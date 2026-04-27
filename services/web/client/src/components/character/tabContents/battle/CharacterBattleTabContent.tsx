@@ -10,6 +10,7 @@ interface Props {
     accentColor: string;
     form: UseFormReturn<FieldValues>;
     isEditing: boolean;
+    onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 const isPlayer = (character: Character): character is Player => {
@@ -20,7 +21,7 @@ const isNPC = (character: Character): character is NPC => {
     return 'actions' in character && 'challenge' in character && 'profile' in character;
 }
 
-const CharacterBattleTabContent = ({ character, accentColor, form, isEditing }: Props) => {
+const CharacterBattleTabContent = ({ character, accentColor, form, isEditing, onCharacterUpdate }: Props) => {
 
     // Mode édition
     if (isEditing) {
@@ -33,9 +34,21 @@ const CharacterBattleTabContent = ({ character, accentColor, form, isEditing }: 
 
     // Mode lecture
     if (isPlayer(character)) {
-        return <PlayerBattleTabContent player={character} accentColor={accentColor} />;
+        return (
+            <PlayerBattleTabContent
+                player={character}
+                accentColor={accentColor}
+                onCharacterUpdate={onCharacterUpdate}
+            />
+        );
     } else if (isNPC(character)) {
-        return <NPCBattleTabContent npc={character} accentColor={accentColor} />;
+        return (
+            <NPCBattleTabContent
+                npc={character}
+                accentColor={accentColor}
+                onCharacterUpdate={onCharacterUpdate}
+            />
+        );
     }
 
 }

@@ -213,7 +213,8 @@
       "url": "URL invalide",
       "uuid": "UUID invalide"
     },
-    "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}"
+    "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}",
+    "abilityCounterOrder": "L'utilisation actuelle ne peut pas dépasser le plafond."
   },
   "characterDetail": {
     "editCharacter": "Modifier le personnage",
@@ -311,6 +312,16 @@
       "failures": "Échecs :",
       "performedThrow": "Jet effectué",
       "unperformedThrow": "Jet non effectué",
+      "abilityHasCounter": "Compteur d'utilisations",
+      "abilityCounterMax": "Plafond",
+      "abilityCounterCurrent": "Utilisations actuelles",
+      "abilityCounterShort": "{current} / {max}",
+      "abilityUse": "Utiliser",
+      "abilityUseAria": "Utiliser {name}, {current} sur {max}",
+      "abilityUseLimitReached": "Plafond d'utilisations atteint",
+      "abilityUseError": "Impossible d'enregistrer l'utilisation",
+      "abilityRemove": "Supprimer cette capacité",
+      "abilityCounterPlayerSessionNote": "Hors session, l’utilisation actuelle n’est pas modifiable ici.",
       "abilitiesAndTraits": "Capacités et traits",
       "actions": "Actions",
       "legendaryActions": "Actions Légendaires",

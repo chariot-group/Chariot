@@ -135,12 +135,71 @@ export const AffinitiesSchema = z.object({
 });
 
 // ===== Ability =====
+function toOptionalInt(v: unknown): number | undefined {
+    if (v === '' || v === null || v === undefined) return undefined;
+    if (typeof v === 'number') {
+        return Number.isFinite(v) ? v : undefined;
+    }
+    const n = Number(v);
+    return Number.isFinite(n) ? n : undefined;
+}
+
 export function AbilitySchema(zm: ZodMessages) {
-    return z.object({
-        name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }),
-        description: z.string().optional(),
-    })
-};
+    return z
+        .preprocess(
+            (val) => {
+                if (typeof val !== 'object' || val === null) return val;
+                const o = { ...(val as Record<string, unknown>) };
+
+                if (o.hasCounter === 'true' || o.hasCounter === true) o.hasCounter = true;
+                else if (o.hasCounter === 'false' || o.hasCounter === false) o.hasCounter = false;
+
+                if (o.hasCounter !== true) {
+                    delete o.counterMax;
+                    delete o.counterCurrent;
+                }
+
+                if (o.description === null) o.description = undefined;
+
+                return o;
+            },
+            z
+                .object({
+                    name: z.preprocess(
+                        (v) => (v === null || v === undefined ? '' : v),
+                        z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }),
+                    ),
+                    description: z.preprocess(
+                        (v) => (v === null || v === undefined ? undefined : v),
+                        z.string().optional(),
+                    ),
+                    hasCounter: z.boolean().optional(),
+                    counterMax: z
+                        .preprocess(toOptionalInt, z.number().int().min(0, { message: zm.minNumber(0) }).optional()),
+                    counterCurrent: z
+                        .preprocess(toOptionalInt, z.number().int().min(0, { message: zm.minNumber(0) }).optional()),
+                })
+                .superRefine((a, ctx) => {
+                    if (!a.hasCounter) return;
+                    if (a.counterMax === undefined) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: zm.required(),
+                            path: ['counterMax'],
+                        });
+                        return;
+                    }
+                    const current = a.counterCurrent ?? 0;
+                    if (current > a.counterMax) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: zm.abilityCounterOrder(),
+                            path: ['counterMax'],
+                        });
+                    }
+                }),
+        );
+}
 
 // ===== Spellcasting =====
 const DamageDetailsSchema = z.object({

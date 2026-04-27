@@ -14,9 +14,10 @@ interface CharacterTabPanelsProps {
     character: Player | NPC;
     form: UseCharacterFormReturn["form"];
     isEditing: boolean;
+    onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
-export default function CharacterTabPanels({ character, form, isEditing }: CharacterTabPanelsProps) {
+export default function CharacterTabPanels({ character, form, isEditing, onCharacterUpdate }: CharacterTabPanelsProps) {
     return (
         <>
             {CHARACTER_TABS.map((tab) => (
@@ -37,6 +38,7 @@ export default function CharacterTabPanels({ character, form, isEditing }: Chara
                                         accentColor={TAB_COLORS[tab]}
                                         form={form}
                                         isEditing={isEditing}
+                                        onCharacterUpdate={onCharacterUpdate}
                                     />
                                 );
                             case "battle":
@@ -46,6 +48,7 @@ export default function CharacterTabPanels({ character, form, isEditing }: Chara
                                         accentColor={TAB_COLORS[tab]}
                                         form={form}
                                         isEditing={isEditing}
+                                        onCharacterUpdate={onCharacterUpdate}
                                     />
                                 );
                             case "magic":

@@ -212,7 +212,8 @@
       "url": "URL inválida",
       "uuid": "UUID inválido"
     },
-    "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}"
+    "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}",
+    "abilityCounterOrder": "El uso actual no puede superar el máximo."
   },
   "characterDetail": {
     "editCharacter": "Modificar personaje",
@@ -310,6 +311,16 @@
       "failures": "Fallos:",
       "performedThrow": "Tirada realizada",
       "unperformedThrow": "Tirada no realizada",
+      "abilityHasCounter": "Contador de usos",
+      "abilityCounterMax": "Máximo",
+      "abilityCounterCurrent": "Usos actuales",
+      "abilityCounterShort": "{current} / {max}",
+      "abilityUse": "Usar",
+      "abilityUseAria": "Usar {name}, {current} de {max}",
+      "abilityUseLimitReached": "Límite de usos alcanzado",
+      "abilityUseError": "No se pudo guardar el uso",
+      "abilityRemove": "Quitar esta habilidad",
+      "abilityCounterPlayerSessionNote": "Fuera de sesión no puedes ajustar los usos actuales aquí.",
       "abilitiesAndTraits": "Habilidades y rasgos",
       "actions": "Acciones",
       "legendaryActions": "Acciones Legendarias",

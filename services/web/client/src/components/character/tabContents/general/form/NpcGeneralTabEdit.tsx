@@ -538,6 +538,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
               append={appendAbility}
               remove={removeAbility}
               accentColor={accentColor}
+              abilityCounterMode="npc"
             />
           </div>
         </section>
