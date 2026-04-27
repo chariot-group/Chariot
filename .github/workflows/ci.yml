@@ -203,6 +203,7 @@ jobs:
             NEXT_PUBLIC_KEYCLOAK_REALM=chariot
             NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
             NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
+            NEXT_PUBLIC_SESSION_WS_URL=${{ steps.env.outputs.session_ws_url }}
 
       - name: Output image tags
         run: |

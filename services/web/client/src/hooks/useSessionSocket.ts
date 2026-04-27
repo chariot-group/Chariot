@@ -78,6 +78,8 @@ export function useSessionSocket({
 
         const wsUrl = process.env.NEXT_PUBLIC_SESSION_WS_URL ?? "http://localhost:9002";
 
+        console.info(`Connecting to session WebSocket at [${wsUrl}]}`);
+
         const socket = io(`${wsUrl}/session`, {
             auth: { token },
             transports: ["websocket"],

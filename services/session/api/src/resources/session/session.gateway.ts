@@ -56,10 +56,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         this.keycloakExternalUrl = this.configService.get<string>('KEYCLOAK_URL');
         this.realm = this.configService.get<string>('KEYCLOAK_REALM');
 
-        const jwksUri = `${this.keycloakExternalUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
-
-        this.logger.verbose(`JWKS URI: [${jwksUri}]`, this.SERVICE_NAME); // crochets pour voir les espaces/slashs
-
+        const jwksUri = `${this.keycloakInternalUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
 
         this.jwksClient = jwksRsa({
             jwksUri,
