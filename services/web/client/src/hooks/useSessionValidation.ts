@@ -11,7 +11,6 @@ export function useSessionValidation() {
     const sessionCode = useAppSelector(selectSessionCode);
 
     useEffect(() => {
-        console.debug("Validating session with code:", sessionCode);
         if (!sessionCode) return;
         let isMounted = true;
         sessionService

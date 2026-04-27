@@ -54,7 +54,7 @@ export class SessionService {
 
     private async _findSessionById(id: string): Promise<SessionWithParticipants | null> {
         return this.prisma.session.findFirst({
-            where: { id, deletedAt: null, status: { not: SessionStatus.closed } },
+            where: { id, deletedAt: null },
             include: { participants: true },
         });
     }
@@ -77,6 +77,12 @@ export class SessionService {
             throw new GoneException(message);
         }
 
+        if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
+            const message: string = `Session with code ${code} is expired since ${session.expiresAt}`;
+            this.logger.warn(message, this.SERVICE_NAME);
+            throw new ForbiddenException(message);
+        }
+
         if (session.status === SessionStatus.closed) {
             const message: string = `Session with code ${code} is closed`;
             this.logger.error(message, null, this.SERVICE_NAME);
@@ -96,6 +102,7 @@ export class SessionService {
                     creatorUserId: userId,
                     creatorCampaignId: createSessionDto.campaignId,
                     status: { not: SessionStatus.closed },
+                    expiresAt: { gt: new Date() },
                     deletedAt: null,
                 },
                 include: { participants: true },
@@ -106,7 +113,7 @@ export class SessionService {
                 if (existingParticipant) {
                     await this.prisma.sessionParticipant.update({
                         where: { id: existingParticipant.id },
-                        data: { status: ParticipantStatus.gameMaster },
+                        data: { status: ParticipantStatus.gameMaster, characterId: null },
                     });
                 } else {
                     await this.prisma.sessionParticipant.create({
