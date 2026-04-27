@@ -9,7 +9,7 @@ import CharacterDetailView from "@/components/character/CharacterDetailView";
 export default function Character() {
   const params = useParams();
   const characterId = params.idCharacters as string;
-  const { character, loading, error, refetch } = useCharacter(characterId);
+  const { character, loading, error, refetch, setCharacter } = useCharacter(characterId);
   const router = useRouter();
 
   if (loading) {
@@ -39,7 +39,13 @@ export default function Character() {
   return (
     <CharacterDetailView
       character={character as Player | NPC}
-      onCharacterUpdate={refetch}
+      onCharacterUpdate={(updated) => {
+        if (updated) {
+          setCharacter(updated);
+        } else {
+          void refetch();
+        }
+      }}
     />
   );
 }

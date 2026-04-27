@@ -68,5 +68,10 @@ export function makeZodMessages(t: TranslationFunction) {
          * Message pour .multipleOf()
          */
         notMultipleOf: (multipleOf: number) => t('notMultipleOf', { multipleOf }),
+
+        /**
+         * Compteur capacité : actuel &gt; max
+         */
+        abilityCounterOrder: () => t('abilityCounterOrder'),
     };
 }

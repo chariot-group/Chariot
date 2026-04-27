@@ -1009,6 +1009,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               append={appendAbility}
               remove={removeAbility}
               accentColor={accentColor}
+              abilityCounterMode="player"
             />
           </div>
         </section>

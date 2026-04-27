@@ -15,10 +15,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
+import { useFormState } from "react-hook-form";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
-  onCharacterUpdate?: () => void; // Callback pour rafraîchir les données du parent
+  /** Sans argument : rechargement complet (ex. après sauvegarde). Avec personnage : mise à jour locale sans recharger toute la page. */
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 export default function CharacterDetailView({ character, onCharacterUpdate }: CharacterDetailViewProps) {
@@ -55,6 +57,9 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     },
   });
 
+  // Abonnement explicite (sinon isDirty ne met pas à jour le footer quand seuls des champs imbriqués changent, ex. abilities)
+  const { isDirty } = useFormState({ control: form.control });
+
   // Si on arrive avec mode=edit (création depuis la sidebar, ou autre lien), ouvrir directement en édition
   useEffect(() => {
     const mode = searchParams.get("mode");
@@ -74,7 +79,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       }
 
       if (!isEditing || !isEnterWithoutModifiers(event) || isTypingInInputElement(event.target)) return;
-      if (!form.formState.isDirty) return;
+      if (!isDirty) return;
 
       event.preventDefault();
       event.stopPropagation();
@@ -86,7 +91,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcuts, true);
     };
-  }, [form, isEditing, onCancel, onUpdate, setIsEditing, t, toast]);
+  }, [form, isDirty, isEditing, onCancel, onUpdate, setIsEditing, t, toast]);
 
   return (
     <main className="flex flex-col h-dvh overflow-hidden">
@@ -188,6 +193,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
               character={character}
               form={form}
               isEditing={isEditing}
+              onCharacterUpdate={onCharacterUpdate}
             />
           </div>
         </Tabs>
@@ -201,7 +207,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 <Button
                   type="submit"
                   form="character-update-form"
-                  disabled={isSaving || !form.formState.isDirty}
+                  disabled={isSaving || !isDirty}
                   tabIndex={0}
                   className={`
                   lg:text-sm text-xs font-semibold

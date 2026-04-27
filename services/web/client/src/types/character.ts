@@ -147,6 +147,16 @@ export interface Affinities {
 export interface Ability {
     name: string;
     description: string;
+    /** Compteur d'utilisations — absent ou false : données héritées inchangées */
+    hasCounter?: boolean;
+    /** Plafond d'utilisations (inclus) lorsque le compteur est actif */
+    counterMax?: number;
+    /** Utilisations consommées ; défaut 0 */
+    counterCurrent?: number;
+    /** Réinitialisation du compteur après un repos court (métadonnée) */
+    counterResetsOnShortRest?: boolean;
+    /** Réinitialisation du compteur après un repos long (métadonnée) */
+    counterResetsOnLongRest?: boolean;
 }
 
 export interface DamageDetails {

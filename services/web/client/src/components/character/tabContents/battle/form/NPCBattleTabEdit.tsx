@@ -95,6 +95,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
             append={appendAbility}
             remove={removeAbility}
             accentColor={accentColor}
+            abilityCounterMode="npc"
           />
         </div>
       </div>
