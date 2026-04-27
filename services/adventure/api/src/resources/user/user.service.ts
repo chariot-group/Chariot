@@ -22,7 +22,7 @@ export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly keycloakService: KeycloakService,
-  ) { }
+  ) {}
 
   async findOne(id: string): Promise<IResponse<UserInfoDto>> {
     try {
