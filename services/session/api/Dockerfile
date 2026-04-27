@@ -13,7 +13,9 @@ COPY prisma ./prisma
 # Install dependencies (this layer will be cached unless package.json or schema changes)
 RUN npm ci
 
+RUN npx prisma generate
+
 # Copy source code
 COPY . .
 
-CMD ["sh", "-c", "npx prisma generate && npm run start:dev"]
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate dev && npm run start:dev"]
