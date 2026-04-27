@@ -153,6 +153,10 @@ export interface Ability {
     counterMax?: number;
     /** Utilisations consommées ; défaut 0 */
     counterCurrent?: number;
+    /** Réinitialisation du compteur après un repos court (métadonnée) */
+    counterResetsOnShortRest?: boolean;
+    /** Réinitialisation du compteur après un repos long (métadonnée) */
+    counterResetsOnLongRest?: boolean;
 }
 
 export interface DamageDetails {

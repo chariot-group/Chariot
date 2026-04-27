@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, FieldValues } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown, Moon, Clock } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
@@ -116,12 +116,14 @@ const AbilitiesUpdateSection = ({
                 className="border-b border-gray">
                 <div className="relative">
                   <AccordionTrigger
-                    className={`text-left w-full hover:no-underline pr-10 gap-2 ${hasError ? "ring-destructive ring" : ""}`}
+                    className={`min-w-0 w-full items-center text-left hover:no-underline pr-10 gap-2 ${hasError ? "ring-destructive ring" : ""}`}
                     aria-label={`Détails de la capacité ${index + 1}`}>
-                    <span className="font-medium truncate min-w-0 flex-1">{abilityName || "—"}</span>
+                    <span className="min-w-0 min-h-0 flex-1 overflow-hidden truncate font-medium">
+                      {abilityName || "—"}
+                    </span>
                     {hasCounter && counterMaxVal !== undefined && counterMaxVal !== null && (
                       <span
-                        className="text-xs sm:text-sm font-normal text-muted-foreground tabular-nums shrink-0"
+                        className="text-xs sm:text-sm font-normal text-muted-foreground tabular-nums shrink-0 whitespace-nowrap"
                         aria-label={tBattle("abilityCounterShort", { current: counterCurrentVal, max: counterMaxVal })}>
                         {tBattle("abilityCounterShort", { current: counterCurrentVal, max: counterMaxVal })}
                       </span>
@@ -219,6 +221,12 @@ const AbilitiesUpdateSection = ({
                                 } else {
                                   form.setValue(`${fieldArrayName}.${index}.counterMax`, undefined, { shouldDirty: true });
                                   form.setValue(`${fieldArrayName}.${index}.counterCurrent`, undefined, { shouldDirty: true });
+                                  form.setValue(`${fieldArrayName}.${index}.counterResetsOnShortRest`, undefined, {
+                                    shouldDirty: true,
+                                  });
+                                  form.setValue(`${fieldArrayName}.${index}.counterResetsOnLongRest`, undefined, {
+                                    shouldDirty: true,
+                                  });
                                 }
                                 form.clearErrors(`${fieldArrayName}.${index}.counterMax`);
                                 form.clearErrors(`${fieldArrayName}.${index}.counterCurrent`);
@@ -328,6 +336,59 @@ const AbilitiesUpdateSection = ({
                             )}
                           />
                         )}
+                        <fieldset className="min-w-0 border-0 p-0 m-0 sm:col-span-2">
+                          <legend className="sr-only">{tBattle("abilityCounterResetLegend")}</legend>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                            <Controller
+                              name={`${fieldArrayName}.${index}.counterResetsOnShortRest`}
+                              control={form.control}
+                              render={({ field: srField }) => (
+                                <div className="flex w-full min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                                  <Clock
+                                    size={24}
+                                    className="shrink-0 text-white"
+                                    aria-hidden
+                                  />
+                                  <Checkbox
+                                    id={`${fieldArrayName}-counterResetShort-${index}`}
+                                    checked={srField.value === true}
+                                    onCheckedChange={(c) => srField.onChange(c === true)}
+                                    className="shrink-0"
+                                  />
+                                  <Label
+                                    htmlFor={`${fieldArrayName}-counterResetShort-${index}`}
+                                    className="min-w-0 flex-1 cursor-pointer text-sm font-normal leading-snug">
+                                    {tBattle("abilityCounterResetShortRest")}
+                                  </Label>
+                                </div>
+                              )}
+                            />
+                            <Controller
+                              name={`${fieldArrayName}.${index}.counterResetsOnLongRest`}
+                              control={form.control}
+                              render={({ field: lrField }) => (
+                                <div className="flex w-full min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                                  <Moon
+                                    size={24}
+                                    className="shrink-0 text-white"
+                                    aria-hidden
+                                  />
+                                  <Checkbox
+                                    id={`${fieldArrayName}-counterResetLong-${index}`}
+                                    checked={lrField.value === true}
+                                    onCheckedChange={(c) => lrField.onChange(c === true)}
+                                    className="shrink-0"
+                                  />
+                                  <Label
+                                    htmlFor={`${fieldArrayName}-counterResetLong-${index}`}
+                                    className="min-w-0 flex-1 cursor-pointer text-sm font-normal leading-snug">
+                                    {tBattle("abilityCounterResetLongRest")}
+                                  </Label>
+                                </div>
+                              )}
+                            />
+                          </div>
+                        </fieldset>
                       </div>
                     )}
                     {abilityCounterMode === "player" && hasCounter && !isInSession && (

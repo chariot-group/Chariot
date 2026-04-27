@@ -157,6 +157,20 @@ export function AbilitySchema(zm: ZodMessages) {
                 if (o.hasCounter !== true) {
                     delete o.counterMax;
                     delete o.counterCurrent;
+                    delete o.counterResetsOnShortRest;
+                    delete o.counterResetsOnLongRest;
+                }
+
+                if (o.counterResetsOnShortRest === 'true' || o.counterResetsOnShortRest === true) {
+                    o.counterResetsOnShortRest = true;
+                } else if (o.counterResetsOnShortRest === 'false' || o.counterResetsOnShortRest === false) {
+                    o.counterResetsOnShortRest = false;
+                }
+
+                if (o.counterResetsOnLongRest === 'true' || o.counterResetsOnLongRest === true) {
+                    o.counterResetsOnLongRest = true;
+                } else if (o.counterResetsOnLongRest === 'false' || o.counterResetsOnLongRest === false) {
+                    o.counterResetsOnLongRest = false;
                 }
 
                 if (o.description === null) o.description = undefined;
@@ -178,6 +192,8 @@ export function AbilitySchema(zm: ZodMessages) {
                         .preprocess(toOptionalInt, z.number().int().min(0, { message: zm.minNumber(0) }).optional()),
                     counterCurrent: z
                         .preprocess(toOptionalInt, z.number().int().min(0, { message: zm.minNumber(0) }).optional()),
+                    counterResetsOnShortRest: z.boolean().optional(),
+                    counterResetsOnLongRest: z.boolean().optional(),
                 })
                 .superRefine((a, ctx) => {
                     if (!a.hasCounter) return;

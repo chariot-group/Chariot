@@ -59,4 +59,24 @@ export class AbilityDto {
   @IsInt()
   @Min(0)
   counterCurrent?: number;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Si vrai, le compteur se réinitialise après un repos court (donnée descriptive ; pas de logique métier côté API)',
+  })
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  counterResetsOnShortRest?: boolean;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Si vrai, le compteur se réinitialise après un repos long (donnée descriptive ; pas de logique métier côté API)',
+  })
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  counterResetsOnLongRest?: boolean;
 }
