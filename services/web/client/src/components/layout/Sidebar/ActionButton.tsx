@@ -12,6 +12,8 @@ import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { selectCurrentSession, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
+import { useRouter } from "next/router";
+import { useUser } from "@/hooks/useUser";
 
 interface ActionButtonConfig {
   label: string;
@@ -34,6 +36,8 @@ export function ActionButton() {
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
+  const router = useRouter();
+  const user = useUser();
 
   useSessionValidation();
 
@@ -53,7 +57,7 @@ export function ActionButton() {
           state: "launchSession",
           action: () => {
             if (isInSession) {
-              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+              router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
               return;
             }
             if (!selectedCampaignId) return;
@@ -73,8 +77,9 @@ export function ActionButton() {
           label: t("initBattle"),
           state: "initBattle",
           action: () => {},
-          disabled: false,
+          disabled: true,
           icon: <LucideSwords className="size-6" />,
+          tooltip: t("comingSoon"),
           backgroundColor: "bg-red",
           textColor: "text-white",
         };
@@ -86,8 +91,9 @@ export function ActionButton() {
           label: t("startBattle"),
           state: "startBattle",
           action: () => {},
-          disabled: false,
+          disabled: true,
           icon: <LucideSwords className="size-6" />,
+          tooltip: t("comingSoon"),
           backgroundColor: "bg-pink",
           textColor: "text-black",
         };
@@ -99,7 +105,8 @@ export function ActionButton() {
           label: t("reset"),
           state: "reset",
           action: () => {},
-          disabled: false,
+          disabled: true,
+          tooltip: t("comingSoon"),
           icon: <RotateCcw className="size-6" />,
           backgroundColor: "bg-gray-600",
           textColor: "text-white",
@@ -112,7 +119,8 @@ export function ActionButton() {
           label: t("returnToBattle"),
           state: "returnToBattle",
           action: () => {},
-          disabled: false,
+          disabled: true,
+          tooltip: t("comingSoon"),
           icon: <ArrowLeft className="size-6" />,
           backgroundColor: "bg-yellow",
           textColor: "text-black",
@@ -126,7 +134,7 @@ export function ActionButton() {
           state: "joinSession",
           action: () => {
             if (isInSession) {
-              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+              router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
             }
           },
           icon: <Users className="size-6" />,
@@ -141,7 +149,13 @@ export function ActionButton() {
         return {
           label: t("returnToSheet"),
           state: "returnToSheet",
-          action: () => {},
+          action: () => {
+            const currentParticipant = session?.participants.find((p) => p.userId === user.user?.keycloakId);
+            const characterId = currentParticipant?.characterId;
+            if (isInSession && characterId) {
+              router.push(`/characters/${characterId}`);
+            }
+          },
           disabled: false,
           icon: <UserCircle className="size-6" />,
           backgroundColor: "bg-yellow",
@@ -154,11 +168,19 @@ export function ActionButton() {
     return {
       label: t("launchSession"),
       state: "launchSession",
-      action: () => {},
-      disabled: false,
+      action: () => {
+        if (isInSession) {
+          router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
+          return;
+        }
+        if (!selectedCampaignId) return;
+        sessionService.createSession(selectedCampaignId);
+      },
+      disabled: !selectedCampaignId,
       icon: <PlayCircle className="size-6" />,
       backgroundColor: "bg-yellow",
       textColor: "text-black",
+      tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
     };
   };
 
