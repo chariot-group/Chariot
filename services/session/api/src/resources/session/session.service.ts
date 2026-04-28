@@ -311,12 +311,13 @@ export class SessionService {
                 where: { id: participant.id },
             });
 
-            // Vérifier si tous les participants restants sont déconnectés
+            // Vérifier s'il reste un MJ connecté
             const remaining = session.participants.filter(p => p.userId !== userId);
-            const allDisconnected: boolean = remaining.length > 0 && remaining.every(p => p.status === ParticipantStatus.disconnected);
-            if (allDisconnected || remaining.length === 0) {
+            const hasConnectedMJ = remaining.some(p => p.status === ParticipantStatus.gameMaster);
+            const allDisconnected = remaining.length > 0 && remaining.every(p => p.status === ParticipantStatus.disconnected);
+            if ((!hasConnectedMJ && allDisconnected) || remaining.length === 0) {
                 await this.redisService.setEmptySessionTimer(session.id, SessionService.EMPTY_SESSION_SECONDS);
-                this.logger.verbose(`All participants disconnected after leave in session ${session.id}, empty timer started`, this.SERVICE_NAME);
+                this.logger.verbose(`All participants disconnected and no MJ left after leave in session ${session.id}, empty timer started`, this.SERVICE_NAME);
             }
 
             const updated: SessionWithParticipants = await this._findSession(code);
@@ -374,12 +375,13 @@ export class SessionService {
                 data: { status: ParticipantStatus.disconnected },
             });
 
-            const allDisconnected: boolean = session.participants.every(
-                p => p.userId === userId || p.status === ParticipantStatus.disconnected,
-            );
-            if (allDisconnected) {
+            // Vérifier s'il reste un MJ connecté
+            const remaining = session.participants.filter(p => p.userId !== userId);
+            const hasConnectedMJ = remaining.some(p => p.status === ParticipantStatus.gameMaster);
+            const allDisconnected = remaining.length > 0 && remaining.every(p => p.status === ParticipantStatus.disconnected);
+            if ((!hasConnectedMJ && allDisconnected) || remaining.length === 0) {
                 await this.redisService.setEmptySessionTimer(sessionId, SessionService.EMPTY_SESSION_SECONDS);
-                this.logger.verbose(`All participants disconnected from session ${sessionId}, empty timer started`, this.SERVICE_NAME);
+                this.logger.verbose(`All participants disconnected and no MJ left from session ${sessionId}, empty timer started`, this.SERVICE_NAME);
             }
         } catch (error: any) {
             this.logger.error(`Error disconnecting participant ${userId} from session ${sessionId}: ${error.message}`, null, this.SERVICE_NAME);
