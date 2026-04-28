@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { Timer } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { selectSessionStatus, selectSessionExpiresAt } from "@/store/slices/sessionSlice";
+import { selectSessionStatus, selectSessionExpiresAt, selectCurrentSession } from "@/store/slices/sessionSlice";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import React from "react";
+import Link from "next/link";
+import { useSessionData } from "@/hooks/useSessionData";
 
 function formatDuration(seconds: number): string {
   if (seconds <= 0) return "00:00:00";
@@ -19,6 +20,7 @@ export default function SessionTimer() {
   const status = useAppSelector(selectSessionStatus);
   const expiresAt = useAppSelector(selectSessionExpiresAt);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const session = useAppSelector(selectCurrentSession);
 
   useEffect(() => {
     if (status !== "launched" || !expiresAt) return;
@@ -40,11 +42,12 @@ export default function SessionTimer() {
   return (
     <Tooltip>
       <TooltipTrigger className="flex items-center gap-1.5">
-        <div
+        <Link
+          href={`/campaign/${session.campaignId}/session/${session.code}`}
           className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
           <Timer className="w-4 h-4 shrink-0" />
           <span>{formatDuration(remaining)}</span>
-        </div>
+        </Link>
       </TooltipTrigger>
       <TooltipContent>
         Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à
