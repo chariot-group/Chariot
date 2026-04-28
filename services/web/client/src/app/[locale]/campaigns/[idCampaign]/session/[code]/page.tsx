@@ -75,6 +75,7 @@ export default function SessionPage() {
     isLeaving,
     isLaunching,
     sessionEndReason,
+    handleCloseSession,
   } = useSessionSocket({
     token,
     code,
@@ -177,8 +178,7 @@ export default function SessionPage() {
                 {isMJ && !sessionIsActive && (
                   <Button
                     variant="destructive"
-                    onClick={handleLaunchSession}
-                    disabled={!isMJ || !sessionIsActive || isLaunching}>
+                    onClick={handleCloseSession}>
                     Clôturer la session
                   </Button>
                 )}

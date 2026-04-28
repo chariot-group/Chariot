@@ -36,7 +36,8 @@ type ActionButtonState =
   | "startBattle"
   | "reset"
   | "returnToBattle"
-  | "returnToSheet";
+  | "returnToSheet"
+  | "returnToSession";
 
 export function ActionButton() {
   const t = useTranslations("sidebar");
@@ -66,17 +67,12 @@ export function ActionButton() {
    * Player workflow: joinSession → returnToSheet
    */
   const getButtonState = (): ActionButtonConfig => {
-    if (currentParticipant?.status === "gameMaster") {
-      // GM: Launch session (initial state)
-      if (!sessionStarted) {
+    if (currentParticipant === null || isInSession === null || session === null) {
+      if (contextMode === "gm") {
         return {
           label: t("launchSession"),
           state: "launchSession",
           action: () => {
-            if (isInSession) {
-              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
-              return;
-            }
             if (!selectedCampaignId) return;
             sessionService.createSession(selectedCampaignId);
           },
@@ -85,6 +81,36 @@ export function ActionButton() {
           backgroundColor: "bg-yellow",
           textColor: "text-black",
           tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
+        };
+      } else {
+        return {
+          label: t("joinSession"),
+          state: "joinSession",
+          action: () => {
+            if (isInSession) {
+              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+            }
+          },
+          icon: <Users className="size-6" />,
+          disabled: false,
+          backgroundColor: "bg-green",
+          textColor: "text-black",
+        };
+      }
+    }
+
+    if (currentParticipant?.status === "gameMaster") {
+      if (!sessionStarted) {
+        return {
+          label: "Retourner à la session",
+          state: "returnToSession",
+          action: () => {
+            window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+          },
+          disabled: false,
+          icon: <PlayCircle className="size-6" />,
+          backgroundColor: "bg-yellow",
+          textColor: "text-black",
         };
       }
 
@@ -147,16 +173,14 @@ export function ActionButton() {
       // Player: Join session (initial state)
       if (!sessionStarted) {
         return {
-          label: t("joinSession"),
-          state: "joinSession",
+          label: "Retourner à la session",
+          state: "returnToSession",
           action: () => {
-            if (isInSession) {
-              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
-            }
+            window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
           },
-          icon: <Users className="size-6" />,
           disabled: false,
-          backgroundColor: "bg-green",
+          icon: <PlayCircle className="size-6" />,
+          backgroundColor: "bg-yellow",
           textColor: "text-black",
         };
       }
