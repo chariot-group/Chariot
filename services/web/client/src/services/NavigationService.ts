@@ -16,6 +16,7 @@ import {
     selectCampaigns,
     selectCampaignsLoading
 } from '@/store/slices/campaignSlice';
+import { useAppSelector } from '@/store/hooks';
 
 interface NavigationDestination {
     path: string;
@@ -31,10 +32,9 @@ class NavigationService {
     /**
      * Charge les personnages sans groupe via Redux (optimisation: cache partagé avec Sidebar)
      */
-    private async loadCharactersWithoutGroup(dispatch: AppDispatch, getState: () => RootState): Promise<void> {
-        const state = getState();
-        const isLoading = selectCharactersWithoutGroupLoading(state);
-        const characters = selectCharactersWithoutGroup(state);
+    private async loadCharactersWithoutGroup(dispatch: AppDispatch): Promise<void> {
+        const isLoading = useAppSelector(selectCharactersWithoutGroupLoading);
+        const characters = useAppSelector(selectCharactersWithoutGroup);
 
         // Si déjà chargé ou en cours de chargement, ne rien faire
         if (isLoading || characters.length > 0) {
@@ -59,10 +59,9 @@ class NavigationService {
      * Charge les campagnes via Redux (optimisation: cache partagé avec Sidebar)
      * Note: Les délais et le debouncing sont gérés par useCampaigns hook avec cooldown de 3s
      */
-    private async loadCampaigns(dispatch: AppDispatch, getState: () => RootState): Promise<void> {
-        const state = getState();
-        const isLoading = selectCampaignsLoading(state);
-        const campaigns = selectCampaigns(state);
+    private async loadCampaigns(dispatch: AppDispatch): Promise<void> {
+        const isLoading = useAppSelector(selectCampaignsLoading);
+        const campaigns = useAppSelector(selectCampaigns);
 
         // Si déjà chargé ou en cours de chargement, ne rien faire
         if (isLoading || campaigns.length > 0) {
@@ -101,13 +100,11 @@ class NavigationService {
     async determinePostLoginDestination(
         locale: string,
         dispatch: AppDispatch,
-        getState: () => RootState
     ): Promise<NavigationDestination> {
         try {
             // Priorité 1: Charger et vérifier les personnages sans groupe via Redux
-            await this.loadCharactersWithoutGroup(dispatch, getState);
-            const state = getState();
-            const charactersWithoutGroup = selectCharactersWithoutGroup(state);
+            await this.loadCharactersWithoutGroup(dispatch);
+            const charactersWithoutGroup = useAppSelector(selectCharactersWithoutGroup);
 
             if (charactersWithoutGroup.length > 0) {
                 const firstCharacter = charactersWithoutGroup[0];
@@ -118,7 +115,7 @@ class NavigationService {
             }
 
             // Priorité 2: Vérifier les personnages dans les campagnes
-            const campaigns = selectCampaigns(getState());
+            const campaigns = useAppSelector(selectCampaigns);
 
             if (campaigns.length > 0) {
                 // Parcourir les campagnes pour trouver le premier personnage
@@ -129,7 +126,7 @@ class NavigationService {
                         const campaignDetails = await CampaignService.getCampaignById(campaign._id);
 
                         if (campaignDetails.groups?.active && campaignDetails.groups.active.length > 0) {
-                            const firstGroup = campaignDetails.groups.active[0] as CampaignGroup;
+                            const firstGroup = campaignDetails.groups.active[0] as unknown as CampaignGroup;
 
                             if (firstGroup.characters && firstGroup.characters.length > 0) {
                                 const firstCharacter = firstGroup.characters[0];
@@ -250,13 +247,11 @@ class NavigationService {
     async determinePlayerSpaceDestination(
         locale: string,
         dispatch: AppDispatch,
-        getState: () => RootState
     ): Promise<NavigationDestination> {
         try {
             // Charger les personnages sans groupe
-            await this.loadCharactersWithoutGroup(dispatch, getState);
-            const state = getState();
-            const charactersWithoutGroup = selectCharactersWithoutGroup(state);
+            await this.loadCharactersWithoutGroup(dispatch);
+            const charactersWithoutGroup = useAppSelector(selectCharactersWithoutGroup);
 
             if (charactersWithoutGroup.length > 0) {
                 const firstCharacter = charactersWithoutGroup[0];

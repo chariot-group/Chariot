@@ -17,7 +17,6 @@ export default function Home() {
   const searchParams = useSearchParams();
   const { user, refreshUser, isAuthenticated } = useUser({ autoFetch: true });
   const dispatch = useAppDispatch();
-  const getState = useAppSelector((state) => state);
   const handledPaymentRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -51,7 +50,7 @@ export default function Home() {
       } finally {
         await new Promise((resolve) => setTimeout(resolve, 1500));
         try {
-          const destination = await NavigationService.determinePostLoginDestination(locale, dispatch, () => getState);
+          const destination = await NavigationService.determinePostLoginDestination(locale, dispatch);
           router.push(destination.path);
         } catch {
           router.push(`/${locale}/welcome`);
@@ -60,7 +59,7 @@ export default function Home() {
     };
 
     handlePaymentSuccess();
-  }, [dispatch, getState, isAuthenticated, locale, refreshUser, router, searchParams, t, toast, user?.balance]);
+  }, [dispatch, isAuthenticated, locale, refreshUser, router, searchParams, t, toast, user?.balance]);
 
   return <div></div>;
 }

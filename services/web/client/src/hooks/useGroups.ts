@@ -28,7 +28,6 @@ export function useGroups() {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const pathname = usePathname();
-    const getState = useAppSelector((state) => state);
     const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
     const activeGroups = useAppSelector(selectActiveGroups);
     const archivedGroups = useAppSelector(selectArchivedGroups);
@@ -248,7 +247,6 @@ export function useGroups() {
                         const destination = await NavigationService.determinePostLoginDestination(
                             localeFromPath,
                             dispatch,
-                            () => getState,
                         );
 
                         dispatch(setOpenGroup(null));
@@ -267,7 +265,7 @@ export function useGroups() {
                 throw e;
             }
         },
-        [activeGroups, archivedGroups, dispatch, getState, pathname, router, success, toastError],
+        [activeGroups, archivedGroups, dispatch, pathname, router, success, toastError],
     );
 
     /**

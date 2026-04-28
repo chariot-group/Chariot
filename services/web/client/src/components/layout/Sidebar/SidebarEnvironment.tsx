@@ -25,7 +25,6 @@ export default function SidebarEnvironment() {
   const pathname = usePathname();
   const locale = pathname?.split("/")[1] || "fr";
   const dispatch = useAppDispatch();
-  const getState = useAppSelector((state) => state);
   const open = useAppSelector(selectOpenEnvironment);
   const isGmMode = useAppSelector(selectIsGmMode);
 
@@ -41,7 +40,7 @@ export default function SidebarEnvironment() {
       dispatch(setSelectedCampaign(null));
 
       // Redirect to first player character
-      const destination = await NavigationService.determinePlayerSpaceDestination(locale, dispatch, () => getState);
+      const destination = await NavigationService.determinePlayerSpaceDestination(locale, dispatch);
       router.push(destination.path);
     }
   };

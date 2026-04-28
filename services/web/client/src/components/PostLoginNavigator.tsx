@@ -17,7 +17,6 @@ export default function PostLoginNavigator() {
   const locale = pathname.split("/")[1] || "fr";
   const { authenticated, loading } = useKeycloak();
   const dispatch = useAppDispatch();
-  const getState = useAppSelector((state) => state);
 
   // Ref to track if we've already handled initial auth redirect
   const hasHandledAuthRef = useRef(false);
@@ -34,7 +33,7 @@ export default function PostLoginNavigator() {
           hasHandledAuthRef.current = true;
 
           try {
-            const destination = await NavigationService.determinePostLoginDestination(locale, dispatch, () => getState);
+            const destination = await NavigationService.determinePostLoginDestination(locale, dispatch);
             router.push(destination.path);
           } catch (error) {
             console.error("Failed to determine post-login destination:", error);
@@ -46,7 +45,7 @@ export default function PostLoginNavigator() {
     };
 
     handlePostLoginNavigation();
-  }, [authenticated, loading, pathname, locale, router, dispatch, getState]);
+  }, [authenticated, loading, pathname, locale, router, dispatch]);
 
   // Ce composant ne rend rien, il gère uniquement la navigation
   return null;

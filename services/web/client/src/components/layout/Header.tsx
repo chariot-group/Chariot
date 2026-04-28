@@ -16,12 +16,11 @@ export default function Header() {
   const router = useRouter();
   const locale = pathname.split("/")[1] || "fr";
   const dispatch = useAppDispatch();
-  const getState = useAppSelector((state) => state);
   const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
 
   const handleLogoClick = async () => {
     try {
-      const destination = await NavigationService.determinePostLoginDestination(locale, dispatch, () => getState);
+      const destination = await NavigationService.determinePostLoginDestination(locale, dispatch);
       router.push(destination.path);
     } catch (error) {
       console.error("Failed to determine post-login destination:", error);

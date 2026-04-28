@@ -56,6 +56,7 @@ export default function Choice({ image, realm, link, onClick, disabled = false, 
       <Image
         src={image}
         alt=""
+        loading={"eager"}
         aria-hidden="true"
         className="w-full h-auto rounded-t-lg"
       />
