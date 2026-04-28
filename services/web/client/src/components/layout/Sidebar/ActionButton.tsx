@@ -6,7 +6,7 @@ import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } fro
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import sessionService from "@/services/SessionService";
+import sessionService, { SessionParticipant } from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { selectCurrentSession, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
@@ -160,7 +160,9 @@ export function ActionButton() {
           label: t("returnToSheet"),
           state: "returnToSheet",
           action: () => {
-            const currentParticipant = session?.participants.find((p) => p.userId === user.user?.keycloakId);
+            const currentParticipant = session?.participants.find(
+              (p: SessionParticipant) => p.userId === user.user?.keycloakId,
+            );
             const characterId = currentParticipant?.characterId;
             if (isInSession && characterId) {
               router.push(`/characters/${characterId}`);
