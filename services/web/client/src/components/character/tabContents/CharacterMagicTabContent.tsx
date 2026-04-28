@@ -149,6 +149,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
       className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0 max-h-[calc(100vh-20rem)] relative"
       role="region"
       aria-label={tMagic("mainRegion")}>
+      <h1>TEST TEST</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 h-full overflow-hidden">
         {/* Left column: Spell list (hidden on mobile when showing details) */}
         <div

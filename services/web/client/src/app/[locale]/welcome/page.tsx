@@ -48,6 +48,21 @@ export default function WelcomePage() {
     },
   ];
 
+  const imageAttributions = [
+    {
+      key: "campaign",
+      text: "designed by liuzishan - Freepik.com",
+    },
+    {
+      key: "character",
+      text: "designed by Freepik",
+    },
+    {
+      key: "session",
+      text: "designed by upklyak - Freepik.com",
+    },
+  ] as const;
+
   return (
     <main className="flex flex-col items-center pt-8 md:pt-16 lg:pt-25 h-full px-4 sm:px-6 md:px-8 pb-6 md:pb-8">
       <h1 className="text-base sm:text-lg md:text-xl">{t("title")}</h1>
