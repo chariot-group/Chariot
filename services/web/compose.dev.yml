@@ -12,6 +12,7 @@ services:
       - ./client:/app
       - /app/node_modules
       - /var/log/web.log:/var/log/web.log
+      - /app/.next
     ports:
       - "3000:3000"
     environment:
