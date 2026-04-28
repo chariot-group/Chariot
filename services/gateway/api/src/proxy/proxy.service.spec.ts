@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ProxyService } from "@/proxy/proxy.service";
+import { ProxyService } from "./proxy.service";
 import { HttpService } from "@nestjs/axios";
 import { of, throwError } from "rxjs";
 import { AxiosResponse } from "axios";
@@ -13,6 +13,7 @@ describe("ProxyService", () => {
     // Set up environment for tests
     process.env.ADVENTURE_SERVICE_URL = "http://test-adventure:9000";
     process.env.USERS_SERVICE_URL = "http://test-users:9001";
+    process.env.SESSION_SERVICE_URL = "http://test-session:9002";
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -31,7 +32,9 @@ describe("ProxyService", () => {
   });
 
   afterEach(() => {
+    delete process.env.ADVENTURE_SERVICE_URL;
     delete process.env.USERS_SERVICE_URL;
+    delete process.env.SESSION_SERVICE_URL;
   });
 
   it("should be defined", () => {
@@ -45,7 +48,7 @@ describe("ProxyService", () => {
         status: 200,
         statusText: "OK",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       jest.spyOn(httpService, "request").mockReturnValue(of(mockResponse));
@@ -62,13 +65,35 @@ describe("ProxyService", () => {
       );
     });
 
+    it("should forward POST request with body to session service", async () => {
+      const mockResponse: AxiosResponse = {
+        data: { token: "abc" },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as AxiosResponse["config"],
+      };
+
+      jest.spyOn(httpService, "request").mockReturnValue(of(mockResponse));
+
+      const result = await service.forward("session", "GET", "/sessions", null, {});
+
+      expect(result.status).toBe(200);
+      expect(httpService.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: "http://test-session:9002/sessions",
+          method: "get",
+        }),
+      );
+    });
+
     it("should forward POST request with body to users service", async () => {
       const mockResponse: AxiosResponse = {
         data: { id: "123" },
         status: 201,
         statusText: "Created",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       const body = { name: "test" };
@@ -102,7 +127,7 @@ describe("ProxyService", () => {
         status: 200,
         statusText: "OK",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       const requestSpy = jest.spyOn(httpService, "request").mockReturnValue(of(mockResponse));
@@ -136,7 +161,7 @@ describe("ProxyService", () => {
         status: 200,
         statusText: "OK",
         headers: {},
-        config: {} as any,
+        config: { headers: {} } as AxiosResponse["config"],
       };
 
       jest.spyOn(httpService, "request").mockReturnValue(of(mockResponse));
@@ -158,7 +183,8 @@ describe("ProxyService", () => {
 
       expect(services).toContain("adventure");
       expect(services).toContain("users");
-      expect(services.length).toBeGreaterThanOrEqual(2);
+      expect(services).toContain("session");
+      expect(services.length).toBeGreaterThanOrEqual(3);
     });
   });
 });

@@ -19,10 +19,10 @@ import { User, UserSchema } from '@/resources/user/schemas/user.schema';
       { name: Campaign.name, schema: CampaignSchema },
       { name: Character.name, schema: CharacterSchema },
       { name: Group.name, schema: GroupSchema },
-      { name: User.name, schema: UserSchema }
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   providers: [SeederService, KeycloakAdminService],
   exports: [SeederService],
 })
-export class SeederModule { }
+export class SeederModule {}

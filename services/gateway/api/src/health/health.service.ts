@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { firstValueFrom } from "rxjs";
-import { ServicesConfig } from "@/proxy/services.config";
+import { ServicesConfig } from "../proxy/services.config";
 
 @Injectable()
 export class HealthService {

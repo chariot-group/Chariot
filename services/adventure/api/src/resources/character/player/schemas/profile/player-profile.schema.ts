@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class PlayerProfile extends Profile {
-
   @ApiProperty({ example: 'Elf' })
   @Prop()
   race?: string;

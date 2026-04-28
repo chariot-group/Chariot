@@ -8,24 +8,21 @@ const LOCALE_STORAGE_KEY = "user-preferred-locale";
  * Saves to localStorage and cookie for middleware
  */
 export function useLocalePreference() {
-    const [preferredLocale, setPreferredLocale] = useState<Locale | null>(null);
+    const [preferredLocale, setPreferredLocale] = useState<Locale>(() => {
+        if (typeof window === "undefined") return defaultLocale;
+
+        const savedLocale = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
+        if (savedLocale && locales.includes(savedLocale)) {
+            return savedLocale;
+        }
+
+        return detectBrowserLocale();
+    });
 
     useEffect(() => {
-        // Get saved locale or detect from browser
-        const savedLocale = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
-
-        if (savedLocale && locales.includes(savedLocale)) {
-            setPreferredLocale(savedLocale);
-            // Synchronize with cookie
-            setCookie(LOCALE_STORAGE_KEY, savedLocale);
-        } else {
-            // Detect browser locale
-            const browserLocale = detectBrowserLocale();
-            setPreferredLocale(browserLocale);
-            localStorage.setItem(LOCALE_STORAGE_KEY, browserLocale);
-            setCookie(LOCALE_STORAGE_KEY, browserLocale);
-        }
-    }, []);
+        localStorage.setItem(LOCALE_STORAGE_KEY, preferredLocale);
+        setCookie(LOCALE_STORAGE_KEY, preferredLocale);
+    }, [preferredLocale]);
 
     const saveLocalePreference = (locale: Locale) => {
         localStorage.setItem(LOCALE_STORAGE_KEY, locale);

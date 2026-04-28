@@ -4,7 +4,6 @@ import { ActionDto } from '@/resources/character/npc/dto/actions/sub/action.dto'
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ActionsDto {
-
   @ApiProperty({ type: [ActionDto] })
   @ValidateNested({ each: true })
   @IsArray()

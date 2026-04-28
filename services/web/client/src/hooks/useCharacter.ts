@@ -43,7 +43,7 @@ export function useCharacter(characterId: string | null): UseCharacterReturn {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchCharacter = async () => {
+    const fetchCharacter = useCallback(async () => {
         if (!characterId) {
             setLoading(false);
             return;
@@ -61,11 +61,11 @@ export function useCharacter(characterId: string | null): UseCharacterReturn {
         } finally {
             setLoading(false);
         }
-    };
+    }, [characterId]);
 
     useEffect(() => {
         fetchCharacter();
-    }, [characterId]);
+    }, [fetchCharacter]);
 
     return {
         character,

@@ -3,7 +3,12 @@ import { NpcService } from './npc.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
-import { BadRequestException, GoneException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  GoneException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { MetricsModule } from '@/metrics/metrics.module';
 
@@ -36,28 +41,48 @@ describe('NpcService - validateGroupRelations', () => {
   });
 
   it('should throw BadRequestException for invalid group IDs', async () => {
-    await expect(service['validateGroupRelations'](['invalid-id'])).rejects.toThrow(BadRequestException);
+    await expect(
+      service['validateGroupRelations'](['invalid-id']),
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('should throw NotFoundException when group not found', async () => {
-    groupModel.findById.mockReturnValueOnce({ exec: () => Promise.resolve(null) });
-    await expect(service['validateGroupRelations'](['64a1b2c3d4e5f6789012345a'])).rejects.toThrow(NotFoundException);
+    groupModel.findById.mockReturnValueOnce({
+      exec: () => Promise.resolve(null),
+    });
+    await expect(
+      service['validateGroupRelations'](['64a1b2c3d4e5f6789012345a']),
+    ).rejects.toThrow(NotFoundException);
   });
 
   it('should throw GoneException when group is deleted', async () => {
-    groupModel.findById.mockReturnValueOnce({ exec: () => Promise.resolve({ deletedAt: new Date() }) });
-    await expect(service['validateGroupRelations'](['64a1b2c3d4e5f6789012345a'])).rejects.toThrow(GoneException);
+    groupModel.findById.mockReturnValueOnce({
+      exec: () => Promise.resolve({ deletedAt: new Date() }),
+    });
+    await expect(
+      service['validateGroupRelations'](['64a1b2c3d4e5f6789012345a']),
+    ).rejects.toThrow(GoneException);
   });
 
   it('should resolve successfully for valid groups', async () => {
-    groupModel.findById.mockReturnValueOnce({ exec: () => Promise.resolve({ deletedAt: null }) });
-    await expect(service['validateGroupRelations'](['64a1b2c3d4e5f6789012345a'])).resolves.toBeUndefined();
+    groupModel.findById.mockReturnValueOnce({
+      exec: () => Promise.resolve({ deletedAt: null }),
+    });
+    await expect(
+      service['validateGroupRelations'](['64a1b2c3d4e5f6789012345a']),
+    ).resolves.toBeUndefined();
   });
 
   it('should resolve immediately if groupIds is null or empty', async () => {
-    await expect(service['validateGroupRelations'](null)).resolves.toBeUndefined();
-    await expect(service['validateGroupRelations'](undefined)).resolves.toBeUndefined();
-    await expect(service['validateGroupRelations']([])).resolves.toBeUndefined();
+    await expect(
+      service['validateGroupRelations'](null),
+    ).resolves.toBeUndefined();
+    await expect(
+      service['validateGroupRelations'](undefined),
+    ).resolves.toBeUndefined();
+    await expect(
+      service['validateGroupRelations']([]),
+    ).resolves.toBeUndefined();
   });
 });
 
@@ -277,7 +302,9 @@ describe('NpcService - create', () => {
       NotFoundException,
     );
 
-    expect(groupModel.findById).toHaveBeenCalledWith(mockCreateNpcDto.groups[0]);
+    expect(groupModel.findById).toHaveBeenCalledWith(
+      mockCreateNpcDto.groups[0],
+    );
   });
 
   it('should throw GoneException when group is deleted', async () => {
@@ -298,7 +325,9 @@ describe('NpcService - create', () => {
       throw new Error('DB failure');
     });
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.create(mockCreateNpcDto, userId)).rejects.toThrow(
       InternalServerErrorException,
@@ -402,7 +431,9 @@ describe('NpcService - update', () => {
     const result = await service.update(npcId, mockUpdateNpcDto);
 
     expect(characterModel.findById).toHaveBeenCalledWith(npcId);
-    expect(groupModel.findById).toHaveBeenCalledWith('64a1b2c3d4e5f6789012345c');
+    expect(groupModel.findById).toHaveBeenCalledWith(
+      '64a1b2c3d4e5f6789012345c',
+    );
     expect(characterModel.discriminators.npc.updateOne).toHaveBeenCalledWith(
       { _id: npcId },
       {
@@ -446,7 +477,9 @@ describe('NpcService - update', () => {
     characterModel.exec.mockResolvedValueOnce(existingNpc);
     groupModel.exec.mockResolvedValue(null);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.update(npcId, mockUpdateNpcDto)).rejects.toThrow(
       BadRequestException,
@@ -470,7 +503,9 @@ describe('NpcService - update', () => {
     };
     groupModel.exec.mockResolvedValue(deletedGroup);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.update(npcId, mockUpdateNpcDto)).rejects.toThrow(
       GoneException,
@@ -486,8 +521,7 @@ describe('NpcService - update', () => {
   });
 
   it('should throw NotFoundException when NPC is not found', async () => {
-    characterModel.exec
-      .mockResolvedValueOnce(existingNpc);
+    characterModel.exec.mockResolvedValueOnce(existingNpc);
     // Mock updateOne().exec() to return { modifiedCount: 0 }
     characterModel.discriminators.npc.updateOne.mockReturnValueOnce({
       exec: jest.fn().mockResolvedValue({ modifiedCount: 0 }),
@@ -495,7 +529,9 @@ describe('NpcService - update', () => {
 
     groupModel.exec.mockResolvedValue(mockGroup);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.update(npcId, mockUpdateNpcDto)).rejects.toThrow(
       NotFoundException,
@@ -513,7 +549,9 @@ describe('NpcService - update', () => {
   it('should throw InternalServerErrorException on unexpected error', async () => {
     characterModel.exec.mockRejectedValue(new Error('DB fail'));
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
     await expect(service.update(npcId, mockUpdateNpcDto)).rejects.toThrow(
       InternalServerErrorException,
@@ -530,14 +568,22 @@ describe('NpcService - update', () => {
 
   it('should not throw and skip group validation if groups is empty or undefined', async () => {
     // Cas avec groups = []
-    const updateDtoEmptyGroups = { firstname: 'NPC without groups', groups: [] };
+    const updateDtoEmptyGroups = {
+      firstname: 'NPC without groups',
+      groups: [],
+    };
     characterModel.discriminators.npc.updateOne.mockReturnValueOnce({
       exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     });
     characterModel.exec.mockResolvedValueOnce(existingNpc);
-    characterModel.exec.mockResolvedValueOnce({ ...existingNpc, ...updateDtoEmptyGroups });
+    characterModel.exec.mockResolvedValueOnce({
+      ...existingNpc,
+      ...updateDtoEmptyGroups,
+    });
 
-    await expect(service.update(npcId, updateDtoEmptyGroups)).resolves.not.toThrow();
+    await expect(
+      service.update(npcId, updateDtoEmptyGroups),
+    ).resolves.not.toThrow();
 
     // Cas avec groups = undefined
     const updateDtoNoGroups = { firstname: 'NPC no groups field' };
@@ -545,20 +591,32 @@ describe('NpcService - update', () => {
       exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     });
     characterModel.exec.mockResolvedValueOnce(existingNpc);
-    characterModel.exec.mockResolvedValueOnce({ ...existingNpc, ...updateDtoNoGroups });
+    characterModel.exec.mockResolvedValueOnce({
+      ...existingNpc,
+      ...updateDtoNoGroups,
+    });
 
-    await expect(service.update(npcId, updateDtoNoGroups)).resolves.not.toThrow();
+    await expect(
+      service.update(npcId, updateDtoNoGroups),
+    ).resolves.not.toThrow();
   });
 
   it('should throw BadRequestException for invalid group ID format in update', async () => {
-    const invalidGroupsDto = { firstname: 'NPC with invalid group', groups: ['invalid-id'] };
+    const invalidGroupsDto = {
+      firstname: 'NPC with invalid group',
+      groups: ['invalid-id'],
+    };
 
     characterModel.exec.mockResolvedValueOnce(existingNpc);
     groupModel.exec.mockResolvedValue(null);
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'error')
+      .mockImplementation(() => {});
 
-    await expect(service.update(npcId, invalidGroupsDto)).rejects.toThrow(BadRequestException);
+    await expect(service.update(npcId, invalidGroupsDto)).rejects.toThrow(
+      BadRequestException,
+    );
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/Invalid group IDs?: invalid-id/),
@@ -578,9 +636,11 @@ describe('NpcService - update', () => {
     groupModel.exec.mockResolvedValue(mockGroup);
     groupModel.updateMany.mockResolvedValue({});
 
-    const verboseSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation(() => { });
+    const verboseSpy = jest
+      .spyOn(service['logger'], 'verbose')
+      .mockImplementation(() => {});
 
-    const result = await service.update(npcId, mockUpdateNpcDto);
+    await service.update(npcId, mockUpdateNpcDto);
 
     expect(verboseSpy).toHaveBeenCalledWith(
       expect.stringMatching(/NPC #.* update in \d+ms/),

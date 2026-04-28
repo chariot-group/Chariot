@@ -31,15 +31,16 @@ class UserService {
     async changePassword(passwordData: PasswordChangeDto): Promise<void> {
         try {
             await apiClient().put(`${this.BASE_PATH}/me/password`, passwordData);
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const apiError = error as { response?: { data?: { detail?: string }; status?: number } };
             // Extract error message from API response (RFC 9457 format)
-            if (error.response?.data?.detail) {
-                throw new Error(error.response.data.detail);
+            if (apiError.response?.data?.detail) {
+                throw new Error(apiError.response.data.detail);
             }
-            if (error.response?.status === 401) {
+            if (apiError.response?.status === 401) {
                 throw new Error('Current password is incorrect');
             }
-            if (error.response?.status === 403) {
+            if (apiError.response?.status === 403) {
                 throw new Error('New password does not meet complexity requirements');
             }
             console.error('Error changing password:', error);
@@ -54,15 +55,37 @@ class UserService {
         try {
             const response = await apiClient().put<IResponse<User>>(`${this.BASE_PATH}/me`, userData);
             return response.data.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const apiError = error as { response?: { data?: { detail?: string } } };
             // Extract error message from API response (RFC 9457 format)
-            if (error.response?.data?.detail) {
-                throw new Error(error.response.data.detail);
+            if (apiError.response?.data?.detail) {
+                throw new Error(apiError.response.data.detail);
             }
             console.error('Error updating current user:', error);
             throw new Error('Failed to update profile');
         }
     }
+
+    async addHistory(campaignName: string, value: number): Promise<void> {
+        try {
+            await apiClient().put(`${this.BASE_PATH}/me/history`, { campaignName, value });
+        } catch (error) {
+            console.error('Error adding history:', error);
+            throw new Error('Failed to add history entry');
+        }
+    }
+
+    async getUserById(id: string): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username'>> {
+        try {
+            const response = await apiClient().get<IResponse<User>>(`${this.BASE_PATH}/${id}`);
+            return response.data.data;
+        } catch (error) {
+            console.error(`Error fetching user ${id}:`, error);
+            throw error;
+        }
+    }
 }
 
-export default new UserService();
+const userService = new UserService();
+
+export default userService;

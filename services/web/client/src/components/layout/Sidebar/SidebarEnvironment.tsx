@@ -53,7 +53,7 @@ export default function SidebarEnvironment() {
   useEffect(() => {
     const spaceName = isGmMode ? t("gmSpace") : t("playerSpace");
     toast.info(t("environmentChanged", { space: spaceName.toLocaleLowerCase() }));
-  }, [isGmMode]);
+  }, [isGmMode, t]);
 
   return (
     <Collapsible

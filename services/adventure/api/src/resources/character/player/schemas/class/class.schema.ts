@@ -4,7 +4,6 @@ import { CLASS } from '@/resources/character/player/constants/class.constant';
 
 @Schema({ _id: false })
 export class Class {
-
   @ApiProperty({ example: 'Warrior' })
   @Prop({
     type: String,

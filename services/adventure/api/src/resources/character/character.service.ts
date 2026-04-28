@@ -21,7 +21,7 @@ export class CharacterService {
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
-  ) { }
+  ) {}
 
   private readonly SERVICE_NAME = CharacterService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
@@ -35,11 +35,13 @@ export class CharacterService {
       let { name = '', page = 1, offset = 10 } = query;
       let sort: { [key: string]: SortOrder } = { updatedAt: 'asc' };
       if (query.sort) {
-        query.sort.startsWith('-')
-          ? (sort[query.sort.substring(1)] = 'desc')
-          : (sort[query.sort] = 'asc');
+        if (query.sort.startsWith('-')) {
+          sort[query.sort.substring(1)] = 'desc';
+        } else {
+          sort[query.sort] = 'asc';
+        }
       }
-      const filters: Record<string, any> = {
+      const filters: Record<string, unknown> = {
         firstname: { $regex: `${decodeURIComponent(name)}`, $options: 'i' },
         deletedAt: { $eq: null },
         createdBy: userId,
@@ -53,7 +55,8 @@ export class CharacterService {
         .sort(sort)
         .limit(offset)
         .skip((page - 1) * offset);
-      const nbCharacters: number = await this.characterModel.countDocuments(filters);
+      const nbCharacters: number =
+        await this.characterModel.countDocuments(filters);
       const end: number = Date.now();
 
       let message: string = `Characters found in ${end - start}ms`;
@@ -100,7 +103,9 @@ export class CharacterService {
     try {
       const start: number = Date.now();
 
-      const character: CharacterDocument = await this.characterModel.findById(id).exec();
+      const character: CharacterDocument = await this.characterModel
+        .findById(id)
+        .exec();
       if (!character) {
         const message: string = `Character #${id} not found`;
         this.logger.error(message, null, this.SERVICE_NAME);

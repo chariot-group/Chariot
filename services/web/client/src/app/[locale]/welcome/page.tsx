@@ -3,6 +3,7 @@ import Choice, { ChoiceProps } from "@/components/layout/Welcome/Choice";
 import { useTranslations } from "use-intl/react";
 import { useState } from "react";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
+import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
@@ -15,6 +16,7 @@ import Character from "@public/welcome/character.webp";
 export default function WelcomePage() {
   const t = useTranslations("welcome");
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
+  const [isJoinSessionOpen, setIsJoinSessionOpen] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -37,8 +39,7 @@ export default function WelcomePage() {
     {
       image: Session,
       realm: "session",
-      disabled: true,
-      tooltip: t("session.comingSoon"),
+      onClick: () => setIsJoinSessionOpen(true),
     },
     {
       image: Character,
@@ -46,21 +47,6 @@ export default function WelcomePage() {
       onClick: handleCharacterClick,
     },
   ];
-
-  const imageAttributions = [
-    {
-      key: "campaign",
-      text: "designed by liuzishan - Freepik.com",
-    },
-    {
-      key: "character",
-      text: "designed by Freepik",
-    },
-    {
-      key: "session",
-      text: "designed by upklyak - Freepik.com",
-    },
-  ] as const;
 
   return (
     <main className="flex flex-col items-center pt-8 md:pt-16 lg:pt-25 h-full px-4 sm:px-6 md:px-8 pb-6 md:pb-8">
@@ -87,6 +73,10 @@ export default function WelcomePage() {
       <CreateCampaignDialog
         open={isCreateCampaignOpen}
         onOpenChange={setIsCreateCampaignOpen}
+      />
+      <JoinSessionDialog
+        open={isJoinSessionOpen}
+        onOpenChange={setIsJoinSessionOpen}
       />
     </main>
   );

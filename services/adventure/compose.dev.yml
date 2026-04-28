@@ -37,8 +37,6 @@ services:
       # Mount source code for hot reload
       - ./api:/app
       - /app/node_modules
-    ports:
-      - "9000:9000"
     environment:
       NODE_ENV: development
       CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}

@@ -41,7 +41,7 @@ describe('CharacterController - findAll', () => {
       1,
       20,
       'John Doe',
-      '-updatedAt'
+      '-updatedAt',
     );
 
     expect(characterService.findAllByUser).toHaveBeenCalledWith(userId, {
@@ -159,17 +159,17 @@ describe('CharacterController - validateResource', () => {
   it('should throw NotFoundException if character is not found', async () => {
     characterModel.exec.mockResolvedValue(null);
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(NotFoundException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw GoneException if character is soft-deleted', async () => {
     characterModel.exec.mockResolvedValue({ deletedAt: new Date() });
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(GoneException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      GoneException,
+    );
   });
 
   it('should pass silently if character exists and is not deleted', async () => {

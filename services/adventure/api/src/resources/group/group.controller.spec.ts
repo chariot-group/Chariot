@@ -7,7 +7,11 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Group } from '@/resources/group/schemas/group.schema';
 import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import { Character } from '@/resources/character/core/schemas/character.schema';
-import { BadRequestException, NotFoundException, GoneException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  GoneException,
+} from '@nestjs/common';
 import type { CreateGroupDto } from '@/resources/group/dto/create-group.dto';
 import type { UpdateGroupDto } from '@/resources/group/dto/update-group.dto';
 
@@ -77,36 +81,51 @@ describe('GroupController - create', () => {
   });
 
   it('should throw BadRequestException if a character ID is invalid', async () => {
-    const invalidDto: CreateGroupDto = { ...createDto, characters: ['invalid-id'] };
-    await expect(controller.create(requestMock, invalidDto)).rejects.toThrow(BadRequestException);
+    const invalidDto: CreateGroupDto = {
+      ...createDto,
+      characters: ['invalid-id'],
+    };
+    await expect(controller.create(requestMock, invalidDto)).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it('should throw NotFoundException if a character is not found', async () => {
     characterModel.exec.mockResolvedValue(null);
-    await expect(controller.create(requestMock, createDto)).rejects.toThrow(NotFoundException);
+    await expect(controller.create(requestMock, createDto)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw GoneException if a character is deleted', async () => {
     characterModel.exec.mockResolvedValue({ deletedAt: new Date() });
-    await expect(controller.create(requestMock, createDto)).rejects.toThrow(GoneException);
+    await expect(controller.create(requestMock, createDto)).rejects.toThrow(
+      GoneException,
+    );
   });
 
   it('should throw BadRequestException if a campaign ID is invalid', async () => {
     const invalidDto: CreateGroupDto = {
       ...createDto,
-      campaigns: [{ idCampaign: 'invalid-id', type: 'active' }]
+      campaigns: [{ idCampaign: 'invalid-id', type: 'active' }],
     };
-    await expect(controller.create(requestMock, invalidDto)).rejects.toThrow(BadRequestException);
+    await expect(controller.create(requestMock, invalidDto)).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it('should throw NotFoundException if a campaign is not found', async () => {
     campaignModel.exec.mockResolvedValue(null);
-    await expect(controller.create(requestMock, createDto)).rejects.toThrow(NotFoundException);
+    await expect(controller.create(requestMock, createDto)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw GoneException if a campaign is deleted', async () => {
     campaignModel.exec.mockResolvedValue({ deletedAt: new Date() });
-    await expect(controller.create(requestMock, createDto)).rejects.toThrow(GoneException);
+    await expect(controller.create(requestMock, createDto)).rejects.toThrow(
+      GoneException,
+    );
   });
 });
 
@@ -347,12 +366,16 @@ describe('GroupController - findAllCharacters', () => {
       '-createdAt',
     );
 
-    expect(characterService.findAllByUser).toHaveBeenCalledWith(userId, {
-      page: 1,
-      offset: 10,
-      name: 'nameTest',
-      sort: '-createdAt',
-    }, groupId.toHexString());
+    expect(characterService.findAllByUser).toHaveBeenCalledWith(
+      userId,
+      {
+        page: 1,
+        offset: 10,
+        name: 'nameTest',
+        sort: '-createdAt',
+      },
+      groupId.toHexString(),
+    );
 
     expect(result).toEqual(['character1']);
   });
@@ -394,17 +417,17 @@ describe('GroupController - validateResource', () => {
   it('should throw NotFoundException if group is not found', async () => {
     groupModel.exec.mockResolvedValue(null);
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(NotFoundException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw GoneException if group is soft-deleted', async () => {
     groupModel.exec.mockResolvedValue({ deletedAt: new Date() });
 
-    await expect(
-      (controller as any).validateResource(validId),
-    ).rejects.toThrow(GoneException);
+    await expect((controller as any).validateResource(validId)).rejects.toThrow(
+      GoneException,
+    );
   });
 
   it('should pass silently if group exists and is not deleted', async () => {

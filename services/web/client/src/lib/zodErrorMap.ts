@@ -5,7 +5,7 @@
  * traduits aux validations Zod courantes via next-intl.
  * 
  */
-type TranslationFunction = (key: string, values?: Record<string, any>) => string;
+type TranslationFunction = (key: string, values?: Record<string, unknown>) => string;
 
 export function makeZodMessages(t: TranslationFunction) {
     return {

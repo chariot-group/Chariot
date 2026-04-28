@@ -3,12 +3,12 @@ import PlayerBattleTabContent from "@/components/character/tabContents/battle/vi
 import NPCBattleTabContent from "@/components/character/tabContents/battle/view/NPCBattleTabContent";
 import PlayerBattleTabEdit from "@/components/character/tabContents/battle/form/PlayerBattleTabEdit";
 import NPCBattleTabEdit from "@/components/character/tabContents/battle/form/NPCBattleTabEdit";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface Props {
     character: Character;
     accentColor: string;
-    form: UseFormReturn<any>;
+    form: UseFormReturn<FieldValues>;
     isEditing: boolean;
 }
 

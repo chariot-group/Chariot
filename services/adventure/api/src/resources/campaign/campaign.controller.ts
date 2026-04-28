@@ -24,18 +24,23 @@ import { IsCreator } from '@/common/decorators/is-creator.decorator';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
-import { Campaign, CampaignDocument } from '@/resources/campaign/schemas/campaign.schema';
+import {
+  Campaign,
+  CampaignDocument,
+} from '@/resources/campaign/schemas/campaign.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
-import { ApiExtraModels, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 
-@ApiExtraModels(
-  IResponse,
-  IPaginatedResponse,
-  Campaign,
-  Group
-)
+@ApiExtraModels(IResponse, IPaginatedResponse, Campaign, Group)
 @UseGuards(IsCreatorGuard)
 @Controller('campaigns')
 export class CampaignController {
@@ -44,7 +49,7 @@ export class CampaignController {
     private readonly groupService: GroupService,
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
-  ) { }
+  ) {}
 
   private readonly CONTROLLER_NAME = CampaignController.name;
   private readonly logger = new Logger(this.CONTROLLER_NAME);
@@ -102,7 +107,7 @@ export class CampaignController {
         { $ref: getSchemaPath(IResponse) },
         {
           properties: {
-            data: { $ref: getSchemaPath(Campaign) }
+            data: { $ref: getSchemaPath(Campaign) },
           },
         },
       ],
@@ -110,23 +115,36 @@ export class CampaignController {
   })
   @ApiResponse({
     status: 400,
-    description: "Validation error",
+    description: 'Validation error',
     type: ProblemDetailsDto,
   })
-  async create(@Req() request, @Body() createCampaignDto: CreateCampaignDto): Promise<IResponse<Campaign>> {
-    await this.validateGroupRelations(createCampaignDto.groups.active, 'Active');
+  async create(
+    @Req() request,
+    @Body() createCampaignDto: CreateCampaignDto,
+  ): Promise<IResponse<Campaign>> {
+    await this.validateGroupRelations(
+      createCampaignDto.groups.active,
+      'Active',
+    );
     await this.validateGroupRelations(
       createCampaignDto.groups.archived,
       'Archived',
     );
 
     // Debug logging
-    this.logger.debug(`Request user object: ${JSON.stringify(request.user)}`, this.CONTROLLER_NAME);
+    this.logger.debug(
+      `Request user object: ${JSON.stringify(request.user)}`,
+      this.CONTROLLER_NAME,
+    );
 
     const userId = request.user?.keycloakId;
 
     if (!userId) {
-      this.logger.error(`User authentication failed - user object: ${JSON.stringify(request.user)}`, null, this.CONTROLLER_NAME);
+      this.logger.error(
+        `User authentication failed - user object: ${JSON.stringify(request.user)}`,
+        null,
+        this.CONTROLLER_NAME,
+      );
       throw new BadRequestException('User authentication required');
     }
 
@@ -135,18 +153,18 @@ export class CampaignController {
 
   @Get()
   @ApiOperation({
-    summary: "Get a collection of paginated campaigns",
+    summary: 'Get a collection of paginated campaigns',
     security: [],
   })
   @ApiOkResponse({
-    description: "Campaigns found successfully",
+    description: 'Campaigns found successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IPaginatedResponse) },
         {
           properties: {
             data: {
-              type: "array",
+              type: 'array',
               items: { $ref: getSchemaPath(Campaign) },
             },
           },
@@ -178,14 +196,14 @@ export class CampaignController {
     security: [],
   })
   @ApiOkResponse({
-    description: "Groups found successfully",
+    description: 'Groups found successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IPaginatedResponse) },
         {
           properties: {
             data: {
-              type: "array",
+              type: 'array',
               items: { $ref: getSchemaPath(Group) },
             },
           },
@@ -216,16 +234,16 @@ export class CampaignController {
     }
   }
 
-  @ApiOperation({ summary: "Get a campaign by ID" })
+  @ApiOperation({ summary: 'Get a campaign by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the campaign to get",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the campaign to get',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Campaign found successfully",
+    description: 'Campaign found successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -237,13 +255,49 @@ export class CampaignController {
       ],
     },
   })
-  @ApiResponse({ status: 404, description: "Campaign #ID not found", type: ProblemDetailsDto })
   @ApiResponse({
-    status: 400,
-    description: "Error while fetching campaign #ID: Id is not a valid mongoose id",
+    status: 404,
+    description: 'Campaign #ID not found',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 410, description: "Campaign #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Error while fetching campaign #ID: Id is not a valid mongoose id',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Campaign #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
+  @ApiOperation({
+    summary: 'Get campaign label by ID (accessible to any session participant)',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+    description: 'Campaign ID',
+    example: '507f1f77bcf86cd799439011',
+  })
+  @ApiOkResponse({
+    description: 'Campaign label found',
+    schema: {
+      properties: { data: { properties: { label: { type: 'string' } } } },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Campaign not found',
+    type: ProblemDetailsDto,
+  })
+  @Get(':id/label')
+  async findLabel(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
+    const result = await this.campaignService.findOne(id);
+    return { data: { label: result?.data?.label ?? null } };
+  }
+
   @IsCreator(CampaignService)
   @Get(':id')
   async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
@@ -253,16 +307,16 @@ export class CampaignController {
   }
 
   @IsCreator(CampaignService)
-  @ApiOperation({ summary: "Update a campaign by ID" })
+  @ApiOperation({ summary: 'Update a campaign by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the campaign to update",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the campaign to update',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Campaign updated successfully",
+    description: 'Campaign updated successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -276,11 +330,19 @@ export class CampaignController {
   })
   @ApiResponse({
     status: 400,
-    description: "Validation error",
+    description: 'Validation error',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 404, description: "Campaign #ID not found", type: ProblemDetailsDto })
-  @ApiResponse({ status: 410, description: "Campaign #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 404,
+    description: 'Campaign #ID not found',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Campaign #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
   @Patch(':id')
   async update(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
@@ -303,16 +365,16 @@ export class CampaignController {
   }
 
   @IsCreator(CampaignService)
-  @ApiOperation({ summary: "Delete a campaign by ID" })
+  @ApiOperation({ summary: 'Delete a campaign by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the campaign to delete",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the campaign to delete',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Campaign #ID deleted",
+    description: 'Campaign #ID deleted',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -324,13 +386,22 @@ export class CampaignController {
       ],
     },
   })
-  @ApiResponse({ status: 404, description: "Campaign #ID not found", type: ProblemDetailsDto })
   @ApiResponse({
-    status: 400,
-    description: "Error while fetching campaign #ID: Id is not a valid mongoose id",
+    status: 404,
+    description: 'Campaign #ID not found',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 410, description: "Campaign #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Error while fetching campaign #ID: Id is not a valid mongoose id',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Campaign #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
   @Delete(':id')
   async remove(@Param('id', ParseMongoIdPipe) id: Types.ObjectId) {
     await this.validateResource(id);

@@ -23,13 +23,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { calculateAbilityBonus, isPlayer } from "@/utils/global.utils";
 import {
-  calculatePreparedSpells,
   calculateSpellAttackBonus,
   calculateSpellSaveDC,
   DICE_TYPES,
   SPELL_SCHOOLS,
-  getNpcUsesGroups,
-  getSpellsByUses,
   npcUsesKey,
 } from "@/utils/magic.utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -41,17 +38,63 @@ import { parseDamageFormula } from "@/utils/spell-damage.utils";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatSignedBonus } from "@/utils/attack.utils";
-import type { Spell } from "@/types/character";
+import type { Player, Spell, Spellcasting } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
 import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
 import React from "react";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
+const EMPTY_SPELLS: Spell[] = [];
 
 interface CharacterMagicTabEditProps {
   character: Character;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<Character>;
+}
+
+type CharacterClassInfo = { name?: string; level?: number };
+type SpellcastingFormEntry = Spellcasting & {
+  spellSlotsByUses?: Record<string, { used: number; total: number }>;
+};
+
+function SyncRow({
+  synced,
+  syncedLabel,
+  mismatchLabel,
+  onSync,
+  syncButtonLabel,
+}: {
+  synced: boolean;
+  syncedLabel: string;
+  mismatchLabel: string;
+  onSync: () => void;
+  syncButtonLabel: string;
+}) {
+  if (synced) {
+    return (
+      <div className="flex items-center gap-2 p-2 bg-green/20 rounded text-xs text-green-600 dark:text-green-400">
+        <span>✓ {syncedLabel}</span>
+      </div>
+    );
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onSync}
+          className="text-xs self-start">
+          <ArrowRightLeft className="size-3 mr-1" />
+          {syncButtonLabel}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{mismatchLabel}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 export default function CharacterMagicTabEdit({ character, accentColor, form }: CharacterMagicTabEditProps) {
@@ -70,11 +113,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   const { isAvailable: isCodexAvailable } = useCodexHealth();
 
-  // Reset selected spell when switching spellcasting class
-  useEffect(() => {
+  const selectSpellcasting = useCallback((index: number) => {
+    setSelectedSpellcastingIndex(index);
     setSelectedSpellIndex(null);
     setShowMobileDetails(false);
-  }, [selectedSpellcastingIndex]);
+  }, []);
 
   // Manage focus when showing mobile details
   useEffect(() => {
@@ -96,24 +139,35 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     name: "spellcasting",
   });
 
-  const spellcastingList = spellcastingFields as any[];
+  const spellcastingList = spellcastingFields as SpellcastingFormEntry[];
 
   // Observer les spells du spellcasting sélectionné avec useWatch
-  const currentSpells: any[] =
+  const watchedSpells = useWatch({
+    control: form.control,
+    name: `spellcasting.${selectedSpellcastingIndex}.spells`,
+  });
+  const currentSpells: Spell[] = watchedSpells ?? EMPTY_SPELLS;
+
+  const isInnate: boolean =
     useWatch({
       control: form.control,
-      name: `spellcasting.${selectedSpellcastingIndex}.spells`,
-    }) ?? [];
+      name: `spellcasting.${selectedSpellcastingIndex}.isInnate`,
+    }) ?? false;
 
   // Fonctions pour manipuler les spells directement
   const addSpell = useCallback(
     (spell: Partial<Spell>) => {
+      const spellWithDefaults: Partial<Spell> = {
+        ...spell,
+        effectType: spell.effectType || "utility",
+      };
+
       const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
-      form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spell], {
+      form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spellWithDefaults], {
         shouldDirty: true,
       });
 
-      const spellLevel = Number(spell.level || 0);
+      const spellLevel = Number(spellWithDefaults.level || 0);
       if (spellLevel > 0) {
         const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
         if (!currentSlots[spellLevel]) {
@@ -125,7 +179,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         }
       }
 
-      const uses = spell.usesPerDay ?? null;
+      const uses = spellWithDefaults.usesPerDay ?? null;
       if (uses !== null) {
         const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
         if (!currentByUses[`k${uses}`]) {
@@ -138,20 +192,22 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       }
 
       // Open the accordion for the new spell based on display mode
-      const accordionKey = !isInnate ? `level-${spell.level || 0}` : npcUsesKey((spell as any).usesPerDay ?? null);
+      const accordionKey = !isInnate
+        ? `level-${spellWithDefaults.level || 0}`
+        : npcUsesKey(spellWithDefaults.usesPerDay ?? null);
       if (!openAccordionValues.includes(accordionKey)) {
         setOpenAccordionValues([...openAccordionValues, accordionKey]);
       }
 
       setSelectedSpellIndex(currentSpells.length);
     },
-    [form, selectedSpellcastingIndex, openAccordionValues, character],
+    [form, selectedSpellcastingIndex, openAccordionValues, isInnate],
   );
 
   const removeSpell = useCallback(
     (index: number) => {
       const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
-      const newSpells = currentSpells.filter((_: any, i: number) => i !== index);
+      const newSpells = currentSpells.filter((_, i: number) => i !== index);
       form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, newSpells, { shouldDirty: true });
       if (selectedSpellIndex === index) {
         setSelectedSpellIndex(null);
@@ -165,7 +221,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   const appendSpellHelper = useCallback(() => {
     const levels: number[] = [];
-    if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
+    if (currentSpells.some((s) => Number(s.level) === 0)) levels.push(0);
     const selectedSpellcasting = spellcastingList[selectedSpellcastingIndex];
     if (selectedSpellcasting?.spellSlotsByLevel) {
       Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
@@ -173,7 +229,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         if (!levels.includes(n)) levels.push(n);
       });
     }
-    currentSpells.forEach((spell: any) => {
+    currentSpells.forEach((spell) => {
       const n = Number(spell.level);
       if (!levels.includes(n)) levels.push(n);
     });
@@ -192,7 +248,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       effectType: "utility",
       usesPerDay: null,
     });
-  }, [currentSpells, spellcastingList, selectedSpellcastingIndex, addSpell, character]);
+  }, [currentSpells, spellcastingList, selectedSpellcastingIndex, addSpell]);
 
   const addSpellFromCodex = useCallback(
     (spell: Partial<Spell>) => {
@@ -204,7 +260,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   // ── Reactive watches (must be at top level) ──
   const proficiencyBonus: number = useWatch({ control: form.control, name: "stats.proficiencyBonus" }) ?? 2;
   const abilityScores: Record<string, number> = useWatch({ control: form.control, name: "stats.abilityScores" }) ?? {};
-  const classesList: any[] = useWatch({ control: form.control, name: "class" }) ?? [];
+  const classesList: CharacterClassInfo[] = useWatch({ control: form.control, name: "class" }) ?? [];
+  const availableSpellcastingClasses = classesList.filter(
+    (cls): cls is CharacterClassInfo & { name: string } => (cls?.name?.length ?? 0) > 1,
+  );
+  const hasAvailableSpellcastingClasses = availableSpellcastingClasses.length > 0;
 
   const currentAbilityKey: string =
     useWatch({ control: form.control, name: `spellcasting.${selectedSpellcastingIndex}.ability` }) ?? "";
@@ -217,12 +277,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     name: `spellcasting.${selectedSpellcastingIndex}.attackBonus`,
   });
 
-  const isInnate: boolean =
-    useWatch({
-      control: form.control,
-      name: `spellcasting.${selectedSpellcastingIndex}.isInnate`,
-    }) ?? false;
-
   // Watch current spell damage and healing details
   const watchPath =
     selectedSpellIndex !== null
@@ -231,27 +285,27 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   const currentDamageDetails = useWatch({
     control: form.control,
-    name: `${watchPath}.damageDetails` as any,
+    name: `${watchPath}.damageDetails`,
   });
   const currentHealingDetails = useWatch({
     control: form.control,
-    name: `${watchPath}.healingDetails` as any,
+    name: `${watchPath}.healingDetails`,
   });
   const currentDamage = useWatch({
     control: form.control,
-    name: `${watchPath}.damage` as any,
+    name: `${watchPath}.damage`,
   });
   const currentHealing = useWatch({
     control: form.control,
-    name: `${watchPath}.healing` as any,
+    name: `${watchPath}.healing`,
   });
   const currentEffectType = useWatch({
     control: form.control,
-    name: `${watchPath}.effectType` as any,
+    name: `${watchPath}.effectType`,
   });
   const currentUsesPerDay = useWatch({
     control: form.control,
-    name: `${watchPath}.usesPerDay` as any,
+    name: `${watchPath}.usesPerDay`,
   });
 
   // NPC: sync spellSlotsByUses when usesPerDay changes on the selected spell
@@ -267,7 +321,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         { shouldDirty: true },
       );
     }
-  }, [currentUsesPerDay, selectedSpellIndex, selectedSpellcastingIndex, form, character]);
+  }, [currentUsesPerDay, selectedSpellIndex, selectedSpellcastingIndex, form, isInnate]);
 
   // Auto-parse old damage/healing formulas when spell is selected
   useEffect(() => {
@@ -334,43 +388,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     selectedSpellcastingIndex,
   ]);
 
-  // Auto-open damage/healing accordions if they have values
-  useEffect(() => {
-    if (selectedSpellIndex === null) {
-      setOpenSpellDetailsAccordion([]);
-      return;
-    }
-
-    const newOpenAccordions: string[] = [];
-
-    // Check damage
-    const hasDamageDetails =
-      currentDamageDetails &&
-      (currentDamageDetails.diceCount ||
-        currentDamageDetails.diceType ||
-        (currentDamageDetails.bonus !== null && currentDamageDetails.bonus !== undefined) ||
-        currentDamageDetails.damageType);
-    const hasOldDamage = currentDamage && currentDamage.trim() !== "";
-
-    if (hasDamageDetails || hasOldDamage) {
-      newOpenAccordions.push("damage");
-    }
-
-    // Check healing
-    const hasHealingDetails =
-      currentHealingDetails &&
-      (currentHealingDetails.diceCount ||
-        currentHealingDetails.diceType ||
-        (currentHealingDetails.bonus !== null && currentHealingDetails.bonus !== undefined));
-    const hasOldHealing = currentHealing && currentHealing.trim() !== "";
-
-    if (hasHealingDetails || hasOldHealing) {
-      newOpenAccordions.push("healing");
-    }
-
-    setOpenSpellDetailsAccordion(newOpenAccordions);
-  }, [selectedSpellIndex, currentDamageDetails, currentHealingDetails, currentDamage, currentHealing]);
-
   const abilityScore: number = currentAbilityKey ? (abilityScores[currentAbilityKey] ?? 10) : 10;
   const abilityMod: number = calculateAbilityBonus(abilityScore);
   const calculatedSaveDC: number = calculateSpellSaveDC(proficiencyBonus, abilityScore);
@@ -378,11 +395,17 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   // ── Functions to manage spellcasting ──
   const addSpellcasting = () => {
+    if (isPlayer(character) && !hasAvailableSpellcastingClasses) {
+      return;
+    }
+
+    const candidateClasses = isPlayer(character) ? availableSpellcastingClasses : classesList;
+
     // Find a class that doesn't have spellcasting yet
-    const classWithoutSpellcasting = classesList.find((cls: any) => {
+    const classWithoutSpellcasting = candidateClasses.find((cls) => {
       const className = cls?.name?.toLowerCase();
       if (!className) return false;
-      return !spellcastingList.some((sc: any) => {
+      return !spellcastingList.some((sc) => {
         const scClassName = sc?.className?.toLowerCase();
         return scClassName === className;
       });
@@ -400,7 +423,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     };
 
     appendSpellcasting(newSpellcasting);
-    setSelectedSpellcastingIndex(spellcastingList.length);
+    selectSpellcasting(spellcastingList.length);
   };
 
   const removeCurrentSpellcasting = () => {
@@ -408,6 +431,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       removeSpellcasting(selectedSpellcastingIndex);
       if (selectedSpellcastingIndex >= spellcastingList.length - 1) {
         setSelectedSpellcastingIndex(Math.max(0, spellcastingList.length - 2));
+        setSelectedSpellIndex(null);
+        setShowMobileDetails(false);
       }
     }
   };
@@ -425,15 +450,27 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           {tMagic("spells")}
         </h2>
         <p className="text-center text-muted-foreground text-base">{tMagic("noMagicAbilities")}</p>
-        <Button
-          type="button"
-          onClick={addSpellcasting}
-          variant="outline"
-          size="lg"
-          className="flex items-center gap-2">
-          <Plus className="size-4" />
-          {tMagic("addSpellcasting")}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <Button
+                type="button"
+                onClick={addSpellcasting}
+                variant="outline"
+                size="lg"
+                disabled={isPlayer(character) && !hasAvailableSpellcastingClasses}
+                className="flex items-center gap-2">
+                <Plus className="size-4" />
+                {tMagic("addSpellcasting")}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {isPlayer(character) && !hasAvailableSpellcastingClasses && (
+            <TooltipContent>
+              <p>{tMagic("spellcastingClassRequiresClass")}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
       </div>
     );
   }
@@ -441,11 +478,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const selectedSpellcasting = spellcastingList[selectedSpellcastingIndex];
 
   // ── Prepared spells (calculated) ──
-  const selectedClassName = selectedSpellcasting?.className?.toLowerCase() ?? "";
-  const classObj = classesList.find((cls: any) => cls?.name?.toLowerCase() === selectedClassName);
-  const classLevel: number = classObj?.level ?? 0;
-  const calculatedPrepared: number = calculatePreparedSpells(selectedClassName, classLevel, abilityScores);
   const modSign = abilityMod >= 0 ? `+${abilityMod}` : `${abilityMod}`;
+  const playerCharacter = isPlayer(character) ? (character as Player) : null;
 
   const saveDCSynced = isPlayer(character) && currentSaveDC === calculatedSaveDC;
   const attackBonusSynced = isPlayer(character) && currentAttackBonus === calculatedAttackBonus;
@@ -455,14 +489,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const npcUsesGroups: Array<number | null> = [];
 
   if (!isInnate) {
-    if (currentSpells.some((s: any) => Number(s.level) === 0)) levels.push(0);
+    if (currentSpells.some((s) => Number(s.level) === 0)) levels.push(0);
     if (selectedSpellcasting?.spellSlotsByLevel) {
       Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
         const n = Number(l);
         if (!levels.includes(n)) levels.push(n);
       });
     }
-    currentSpells.forEach((spell: any) => {
+    currentSpells.forEach((spell) => {
       const n = Number(spell.level);
       if (!levels.includes(n)) levels.push(n);
     });
@@ -470,7 +504,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   } else {
     // byUses: group by usesPerDay
     const seen = new Set<number | null>();
-    currentSpells.forEach((spell: any) => {
+    currentSpells.forEach((spell) => {
       seen.add(spell.usesPerDay ?? null);
     });
     const groups = Array.from(seen);
@@ -494,19 +528,26 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const npcSpellIndicesByUses = npcUsesGroups.reduce<Record<string, number[]>>((acc, uses) => {
     const key = npcUsesKey(uses);
     acc[key] = currentSpells
-      .map((spell: any, index: number) => ({ spell, index }))
-      .filter(({ spell }: { spell: any }) => (spell.usesPerDay ?? null) === uses)
-      .sort(({ spell: a }: { spell: any }, { spell: b }: { spell: any }) => (a.name || "").localeCompare(b.name || ""))
+      .map((spell, index: number) => ({ spell, index }))
+      .filter(({ spell }) => (spell.usesPerDay ?? null) === uses)
+      .sort(({ spell: a }, { spell: b }) => (a.name || "").localeCompare(b.name || ""))
       .map(({ index }: { index: number }) => index);
     return acc;
   }, {});
+
+  const allSpellAccordionKeys = !isInnate
+    ? levels.filter((level) => (spellIndicesByLevel[level] ?? []).length > 0).map((level) => `level-${level}`)
+    : npcUsesGroups
+      .filter((uses) => (npcSpellIndicesByUses[npcUsesKey(uses)] ?? []).length > 0)
+      .map(npcUsesKey);
+  const hasSpellAccordions = allSpellAccordionKeys.length > 0;
 
   // ── Keyboard navigation for tabs ──
   const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key === "ArrowRight") {
       e.preventDefault();
       const nextIndex = (index + 1) % spellcastingList.length;
-      setSelectedSpellcastingIndex(nextIndex);
+      selectSpellcasting(nextIndex);
       // Focus next tab
       setTimeout(() => {
         document.getElementById(`spellcasting-tab-${nextIndex}`)?.focus();
@@ -514,67 +555,27 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     } else if (e.key === "ArrowLeft") {
       e.preventDefault();
       const prevIndex = (index - 1 + spellcastingList.length) % spellcastingList.length;
-      setSelectedSpellcastingIndex(prevIndex);
+      selectSpellcasting(prevIndex);
       // Focus previous tab
       setTimeout(() => {
         document.getElementById(`spellcasting-tab-${prevIndex}`)?.focus();
       }, 0);
     } else if (e.key === "Home") {
       e.preventDefault();
-      setSelectedSpellcastingIndex(0);
+      selectSpellcasting(0);
       setTimeout(() => {
         document.getElementById(`spellcasting-tab-0`)?.focus();
       }, 0);
     } else if (e.key === "End") {
       e.preventDefault();
       const lastIndex = spellcastingList.length - 1;
-      setSelectedSpellcastingIndex(lastIndex);
+      selectSpellcasting(lastIndex);
       setTimeout(() => {
         document.getElementById(`spellcasting-tab-${lastIndex}`)?.focus();
       }, 0);
     }
   };
 
-  // ── Auto-calc sync widget ──
-  const SyncRow = ({
-    synced,
-    syncedLabel,
-    mismatchLabel,
-    onSync,
-    syncButtonLabel,
-  }: {
-    synced: boolean;
-    syncedLabel: string;
-    mismatchLabel: string;
-    onSync: () => void;
-    syncButtonLabel: string;
-  }) => {
-    if (synced) {
-      return (
-        <div className="flex items-center gap-2 p-2 bg-green/20 rounded text-xs text-green-600 dark:text-green-400">
-          <span>✓ {syncedLabel}</span>
-        </div>
-      );
-    }
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onSync}
-            className="text-xs self-start">
-            <ArrowRightLeft className="size-3 mr-1" />
-            {syncButtonLabel}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{mismatchLabel}</p>
-        </TooltipContent>
-      </Tooltip>
-    );
-  };
   return (
     <div
       className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-0 max-h-[calc(100vh-20rem)] relative"
@@ -600,9 +601,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 {spellcastingList.map((sc, index) => {
                   let label = sc?.className || tMagic("newSpellcasting");
                   if (isPlayer(character) && sc?.className) {
-                    const cls = (character as any).class?.find(
-                      (c: any) => c?.name?.toLowerCase() === sc.className?.toLowerCase(),
-                    );
+                    const cls = playerCharacter?.class?.find((c) => c?.name?.toLowerCase() === sc.className?.toLowerCase());
                     label = cls ? `${tClass(cls.name)} ${tMagic("level")} ${cls.level}` : sc.className;
                   }
                   const isSelected = selectedSpellcastingIndex === index;
@@ -611,12 +610,12 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       key={sc.id || index}
                       className={`gap-3 p-3 sm:p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? `bg-${accentColor}` : ""}`}
                       onClick={() => {
-                        setSelectedSpellcastingIndex(index);
+                        selectSpellcasting(index);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          setSelectedSpellcastingIndex(index);
+                          selectSpellcasting(index);
                         } else {
                           handleTabKeyDown(e, index);
                         }
@@ -633,7 +632,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     </Card>
                   );
                 })}
-                {classesList.length > spellcastingList.length && (
+                {availableSpellcastingClasses.length > spellcastingList.length && (
                   <Card
                     className="gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md border-dashed"
                     onClick={addSpellcasting}
@@ -726,30 +725,38 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                         className="text-sm font-medium">
                         {tEdit("className")}
                       </label>
-                      <Select
-                        value={field.value ?? ""}
-                        onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id={`sc-classname-${selectedSpellcastingIndex}`}
-                          className="w-full">
-                          <SelectValue placeholder={tEdit("selectClass")} />
-                        </SelectTrigger>
-                        <SelectContent position="item-aligned">
-                          <SelectGroup>
-                            {classesList.map((cls: any, index: number) => (
-                              <React.Fragment key={index}>
-                                {cls.name.length > 1 && (
-                                  <SelectItem
-                                    key={cls.name}
-                                    value={cls.name}>
-                                    {tClass(cls.name)}
-                                  </SelectItem>
-                                )}
-                              </React.Fragment>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="w-full">
+                            <Select
+                              value={field.value ?? ""}
+                              onValueChange={field.onChange}
+                              disabled={!hasAvailableSpellcastingClasses}>
+                              <SelectTrigger
+                                id={`sc-classname-${selectedSpellcastingIndex}`}
+                                className="w-full">
+                                <SelectValue placeholder={tEdit("selectClass")} />
+                              </SelectTrigger>
+                              <SelectContent position="item-aligned">
+                                <SelectGroup>
+                                  {availableSpellcastingClasses.map((cls, index: number) => (
+                                    <SelectItem
+                                      key={`${cls.name}-${index}`}
+                                      value={cls.name}>
+                                      {tClass(cls.name)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                          </span>
+                        </TooltipTrigger>
+                        {!hasAvailableSpellcastingClasses && (
+                          <TooltipContent>
+                            <p>{tMagic("spellcastingClassRequiresClass")}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                       {fieldState.error && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
@@ -946,12 +953,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 <button
                   type="button"
                   onClick={() => {
-                    const allKeys = !isInnate
-                      ? levels.map((l) => `level-${l}`)
-                      : npcUsesGroups.map((u) => npcUsesKey(u));
-                    setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allKeys);
+                    if (!hasSpellAccordions) return;
+                    setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allSpellAccordionKeys);
                   }}
-                  className={`cursor-pointer text-sm p-2 hover:underline focus:outline-none focus:underline ${accentColor}`}
+                  disabled={!hasSpellAccordions}
+                  className={`text-sm p-2 focus:outline-none ${hasSpellAccordions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
                   aria-label={
                     openAccordionValues.length > 0 ? tMagic("collapseAllSpellLevels") : tMagic("expandAllSpellLevels")
                   }
@@ -1043,7 +1049,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                           className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
                                           role="button"
                                           tabIndex={0}
-                                          aria-selected={isSelected}
                                           aria-label={spellName || tMagic("newSpell")}>
                                           <span
                                             className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
@@ -1118,7 +1123,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                       className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
                                       role="button"
                                       tabIndex={0}
-                                      aria-selected={isSelected}
                                       aria-label={spellName || tMagic("newSpell")}>
                                       <span
                                         className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
@@ -1341,16 +1345,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           {tEdit("spellEffectType")}
                         </label>
                         <Select
-                          value={field.value ?? "utility"}
+                          value={field.value || "utility"}
                           onValueChange={field.onChange}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent position="item-aligned">
                             <SelectGroup>
+                              <SelectItem value="utility">{tMagic("effectTypes.utility")}</SelectItem>
                               <SelectItem value="attack">{tMagic("effectTypes.attack")}</SelectItem>
                               <SelectItem value="heal">{tMagic("effectTypes.heal")}</SelectItem>
-                              <SelectItem value="utility">{tMagic("effectTypes.utility")}</SelectItem>
                             </SelectGroup>
                           </SelectContent>
                         </Select>

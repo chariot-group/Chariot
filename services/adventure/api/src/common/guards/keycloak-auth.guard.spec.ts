@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { KeycloakAuthGuard } from './keycloak-auth.guard';
@@ -17,7 +21,7 @@ describe('KeycloakAuthGuard', () => {
       }),
       getHandler: jest.fn(),
       getClass: jest.fn(),
-    } as unknown as ExecutionContext;
+    } as any as ExecutionContext;
   };
 
   beforeEach(async () => {

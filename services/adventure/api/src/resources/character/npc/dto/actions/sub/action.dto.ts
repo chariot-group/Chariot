@@ -11,7 +11,6 @@ import { DifficultyClassDto } from '@/resources/character/npc/dto/actions/sub/di
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ActionDto {
-
   @ApiProperty({ example: 'Fireball' })
   @IsOptional()
   @IsString()
@@ -22,17 +21,33 @@ export class ActionDto {
   @IsString()
   type?: string;
 
-  @ApiProperty({ example: 'action', enum: ['action', 'bonus_action', 'reaction'] })
+  @ApiProperty({
+    example: 'action',
+    enum: ['action', 'bonus_action', 'reaction'],
+  })
   @IsOptional()
   @IsString()
   usageType?: string;
 
-  @ApiProperty({ example: 'strength', enum: ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'] })
+  @ApiProperty({
+    example: 'strength',
+    enum: [
+      'strength',
+      'dexterity',
+      'constitution',
+      'intelligence',
+      'wisdom',
+      'charisma',
+    ],
+  })
   @IsOptional()
   @IsString()
   attackAbility?: string;
 
-  @ApiProperty({ example: 'The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute.' })
+  @ApiProperty({
+    example:
+      'The target must succeed on a DC 18 Constitution saving throw or be paralyzed for 1 minute.',
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -60,7 +75,10 @@ export class ActionDto {
   @Type(() => DifficultyClassDto)
   dc?: DifficultyClassDto;
 
-  @ApiProperty({ example: 2, description: 'Cost of the action (for legendary actions)' })
+  @ApiProperty({
+    example: 2,
+    description: 'Cost of the action (for legendary actions)',
+  })
   @IsOptional()
   @IsNumber()
   cost?: number;

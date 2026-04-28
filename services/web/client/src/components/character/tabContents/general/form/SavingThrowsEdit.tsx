@@ -1,16 +1,15 @@
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getIconForValue } from "@/utils/global.utils";
 
 interface SavingThrowsEditProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   accentColor: string;
-  isNPC?: boolean;
 }
 
-export default function SavingThrowsEdit({ form, accentColor, isNPC = false }: SavingThrowsEditProps) {
+export default function SavingThrowsEdit({ form, accentColor }: SavingThrowsEditProps) {
   const t = useTranslations("characterDetail.player.general");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 

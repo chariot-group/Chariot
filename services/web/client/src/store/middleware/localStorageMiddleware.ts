@@ -14,7 +14,7 @@ const PERSISTED_KEYS = [
 /**
  * Load persisted state from localStorage
  */
-export const loadState = (): Record<string, any> | undefined => {
+export const loadState = (): Record<string, unknown> | undefined => {
     try {
         if (typeof window === 'undefined') return undefined;
 
@@ -32,7 +32,7 @@ export const loadState = (): Record<string, any> | undefined => {
 /**
  * Save state to localStorage
  */
-export const saveStateToLocalStorage = (state: any) => {
+export const saveStateToLocalStorage = (state: Record<string, unknown>) => {
     try {
         if (typeof window === 'undefined') return;
 

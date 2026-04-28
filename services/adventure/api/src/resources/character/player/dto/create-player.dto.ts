@@ -18,7 +18,6 @@ import { ActionDto } from '@/resources/character/core/dto/actions/action.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePlayerDto extends CreateCharacterDto {
-
   @ApiProperty({ type: [ActionDto] })
   @ValidateNested({ each: true })
   @IsArray()
@@ -58,10 +57,11 @@ export class CreatePlayerDto extends CreateCharacterDto {
 
   @ApiProperty({
     example: 0,
-    description: 'Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death',
+    description:
+      'Exhaustion level (0-6): 0=None, 1=Disadvantage on ability checks, 2=Speed halved, 3=Disadvantage on attack rolls and saving throws, 4=Hit point maximum halved, 5=Speed reduced to 0, 6=Death',
     minimum: 0,
     maximum: 6,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsInt()

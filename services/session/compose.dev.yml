@@ -1,0 +1,84 @@
+services:
+  chariot-session-postgres:
+    image: postgres:16-alpine
+    container_name: chariot-session-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    volumes:
+      - chariot_session_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - session-network
+
+  chariot-session-redis:
+    image: redis:7-alpine
+    container_name: chariot-session-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    command: ["redis-server", "--notify-keyspace-events", "Ex"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - session-network
+
+  chariot-session:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: chariot-session
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "9002:9002"
+    volumes:
+      # Mount source code for hot reload
+      - ./api:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SESSION_URL: ${SESSION_URL}
+      SESSION_VERSION: ${SESSION_VERSION}
+      FRONTEND_URL: ${FRONTEND_URL}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-chariot-app}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+    depends_on:
+      chariot-session-postgres:
+        condition: service_healthy
+      chariot-session-redis:
+        condition: service_healthy
+    networks:
+      - session-network
+      - chariot-group-network
+    extra_hosts:
+      - "localhost:host-gateway"
+
+volumes:
+  chariot_session_postgres_data:
+  chariot_session_logs:
+
+networks:
+  session-network:
+    driver: bridge
+  chariot-group-network:
+    external: true

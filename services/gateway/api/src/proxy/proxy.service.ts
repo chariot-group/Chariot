@@ -2,7 +2,7 @@ import { Injectable, Logger, BadRequestException } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { AxiosResponse } from "axios";
 import { firstValueFrom } from "rxjs";
-import { ServicesConfig } from "@/proxy/services.config";
+import { ServicesConfig } from "./services.config";
 
 @Injectable()
 export class ProxyService {
@@ -26,7 +26,7 @@ export class ProxyService {
     serviceName: string,
     method: string,
     path: string,
-    body?: any,
+    body?: unknown,
     headers?: Record<string, string>,
   ): Promise<AxiosResponse> {
     // Validate service exists
@@ -59,20 +59,21 @@ export class ProxyService {
 
       this.logger.debug(`Received response from ${serviceName}: ${response.status}`);
       return response;
-    } catch (error) {
-      this.logger.error(`Error forwarding to ${serviceName}: ${error.message}`, error.stack);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown forwarding error";
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Error forwarding to ${serviceName}: ${errorMessage}`, errorStack);
       throw error;
     }
   }
 
   /**
-   * Legacy method for backward compatibility
    * @deprecated Use forward('adventure', ...) instead
    */
   async forwardToAdventure(
     method: string,
     path: string,
-    body?: any,
+    body?: unknown,
     headers?: Record<string, string>,
   ): Promise<AxiosResponse> {
     return this.forward("adventure", method, path, body, headers);

@@ -8,7 +8,11 @@ export class DamageDetails {
   @Prop()
   diceCount?: number;
 
-  @ApiProperty({ example: 'd6', description: 'Type de dé', enum: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'] })
+  @ApiProperty({
+    example: 'd6',
+    description: 'Type de dé',
+    enum: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'],
+  })
   @Prop()
   diceType?: string;
 
@@ -29,7 +33,11 @@ export class HealingDetails {
   @Prop()
   diceCount?: number;
 
-  @ApiProperty({ example: 'd8', description: 'Type de dé', enum: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'] })
+  @ApiProperty({
+    example: 'd8',
+    description: 'Type de dé',
+    enum: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'],
+  })
   @Prop()
   diceType?: string;
 
@@ -38,4 +46,5 @@ export class HealingDetails {
   bonus?: number;
 }
 
-export const HealingDetailsSchema = SchemaFactory.createForClass(HealingDetails);
+export const HealingDetailsSchema =
+  SchemaFactory.createForClass(HealingDetails);

@@ -30,8 +30,6 @@ services:
     container_name: chariot-adventure-prod
     restart: unless-stopped
     working_dir: /app
-    ports:
-      - "9000"
     environment:
       NODE_ENV: production
       CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}
@@ -60,6 +58,8 @@ services:
     networks:
       - chariot-network
       - chariot-group-network-prod
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
 volumes:
   chariot_mongodb_data_prod:

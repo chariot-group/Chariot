@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Affinities {
-
   @ApiProperty({ example: ['Fire', 'Water'] })
   @Prop({ type: [String], default: [] })
   resistances: string[];

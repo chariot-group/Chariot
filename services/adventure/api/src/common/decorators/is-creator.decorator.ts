@@ -4,7 +4,7 @@ import { IsCreatorGuard } from '@/common/guards/is-creator.guard';
 
 export const IS_CREATOR_KEY = 'isCreatorService';
 
-export function IsCreator(serviceClass: Type<any>) {
+export function IsCreator(serviceClass: Type<unknown>) {
   return applyDecorators(
     SetMetadata('service', serviceClass),
     UseGuards(IsCreatorGuard),

@@ -1,5 +1,5 @@
 import { Player } from "@/types/character";
-import { useFieldArray, UseFormReturn } from "react-hook-form";
+import { useFieldArray, UseFormReturn, FieldValues } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
@@ -18,7 +18,7 @@ import { DamageTypeTagInput } from "@/components/ui/damage-type-tag-input";
 interface PlayerBattleTabEditProps {
   player: Player;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
 export default function PlayerBattleTabEdit({ player, accentColor, form }: PlayerBattleTabEditProps) {
@@ -48,7 +48,6 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
       <div className="grid grid-cols-4 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
         {/* Section Points de Vie */}
         <StatisticsUpdate
-          player={player}
           accentColor={accentColor}
           form={form}
         />

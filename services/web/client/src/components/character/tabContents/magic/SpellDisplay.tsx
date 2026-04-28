@@ -26,6 +26,8 @@ export default function SpellDisplay({
   isNpc = false,
 }: SpellDisplayProps) {
   const tMagic = useTranslations("characterDetail.magic");
+  const tClasses = useTranslations("classes");
+  const tGeneral = useTranslations("characterDetail.player");
 
   if (!spell) {
     return null;
@@ -95,6 +97,16 @@ export default function SpellDisplay({
           </span>
           <span className="text-sm md:text-base wrap-break-word">{spell.duration}</span>
         </Card>
+        {spell.classes && spell.classes.length > 0 && (
+          <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
+            <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+              {tGeneral("general.classes")}:
+            </span>
+            <span className="text-sm md:text-base wrap-break-word">
+              {spell.classes.map((c) => tClasses(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
+            </span>
+          </Card>
+        )}
         {spell.effectType === "attack" && attackBonus !== null && (
           <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
             <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
@@ -104,15 +116,14 @@ export default function SpellDisplay({
           </Card>
         )}
         {(() => {
-          const spellAny = spell as any;
-          const damageFormula = spellAny?.damageDetails
+          const damageFormula = spell.damageDetails
             ? formatDamageFormula(
-                spellAny.damageDetails.diceCount,
-                spellAny.damageDetails.diceType,
-                spellAny.damageDetails.bonus,
-                spellAny.damageDetails.damageType,
+                spell.damageDetails.diceCount,
+                spell.damageDetails.diceType,
+                spell.damageDetails.bonus,
+                spell.damageDetails.damageType,
               )
-            : spellAny?.damage || null;
+            : spell.damage || null;
 
           return damageFormula ? (
             <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
@@ -122,14 +133,13 @@ export default function SpellDisplay({
           ) : null;
         })()}
         {(() => {
-          const spellAny = spell as any;
-          const healingFormula = spellAny?.healingDetails
+          const healingFormula = spell.healingDetails
             ? formatDamageFormula(
-                spellAny.healingDetails.diceCount,
-                spellAny.healingDetails.diceType,
-                spellAny.healingDetails.bonus,
+                spell.healingDetails.diceCount,
+                spell.healingDetails.diceType,
+                spell.healingDetails.bonus,
               )
-            : spellAny?.healing || null;
+            : spell.healing || null;
 
           return healingFormula ? (
             <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">

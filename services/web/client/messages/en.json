@@ -34,7 +34,12 @@
     "reset": "Reset",
     "returnToBattle": "Return to Battle",
     "joinSession": "Join Session",
+    "joinSessionDialogTitle": "Join a Session",
+    "joinSessionErrorNotFound": "No session found for this code.",
+    "joinSessionErrorClosed": "This session is closed.",
+    "joinSessionSelectCharacterPlaceholder": "Select a character",
     "comingSoon": "Coming soon",
+    "alreadyInSession": "Action cannot be performed; you are already logged in.",
     "returnToSheet": "Return to Character Sheet",
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
@@ -666,8 +671,10 @@
         "components": "Components",
         "duration": "Duration",
         "description": "Description"
-      },      "damage": "Damage",
-      "healing": "Healing",      "mainRegion": "Magic section",
+      },
+      "damage": "Damage",
+      "healing": "Healing",
+      "mainRegion": "Magic section",
       "spellListRegion": "Spell list",
       "spellDetailRegion": "Spell details",
       "selectSpellcasting": "Select spellcasting class {className}",
@@ -698,11 +705,14 @@
       "slotsLabel": "slots",
       "removeSpellTitle": "Remove spell",
       "removeSpellDescription": "Are you sure you want to remove \"{name}\"?",
-      "removeSpellConfirm": "Remove",      "removeSpellcasting": "Remove spellcasting abilities",      "removeSpellcastingTitle": "Remove spellcasting abilities",
+      "removeSpellConfirm": "Remove",
+      "removeSpellcasting": "Remove spellcasting abilities",
+      "removeSpellcastingTitle": "Remove spellcasting abilities",
       "removeSpellcastingDescription": "Are you sure you want to remove the spellcasting abilities for {className}? All associated spells will also be removed.",
       "removeSpellcastingConfirm": "Remove",
       "addSpellcasting": "Add spellcasting abilities",
       "newSpellcasting": "New spellcasting class",
+      "spellcastingClassRequiresClass": "Add at least one class to this player before choosing a spellcasting class.",
       "spellSlotsTotalForLevel": "Number of spell slots for level {level}",
       "moreSpellOptions": "More spell options",
       "removeSpellWithName": "Remove spell {name}",
@@ -805,5 +815,59 @@
     "Any Evil Alignment": "Any Evil Alignment",
     "Any Lawful Alignment": "Any Lawful Alignment",
     "Any Chaotic Alignment": "Any Chaotic Alignment"
+  },
+  "sessionPage": {
+    "campaignFallback": "Campaign",
+    "mainAriaLabel": "Session - {label}",
+    "players": {
+      "ariaLabel": "Players list",
+      "player": "Player",
+      "gameMaster": "Game Master",
+      "leaveButton": "Leave session",
+      "addTokenButton": "Add a token: {total}/{count}",
+      "addTokenAriaLabel": "Add a token ({total} of {count} deposited)",
+      "tokenMenuAriaLabel": "Token options",
+      "customAmount": "Custom amount",
+      "addCustomButton": "Add",
+      "removeCustomButton": "Remove",
+      "removeAllButton": "Remove all ({myTokens})",
+      "launchSessionButton": "Launch session",
+      "launchSessionAriaLabel": "Launch the session (all tokens have been deposited)",
+      "noCharacter": "No character",
+      "selectCharacterPlaceholder": "Change character",
+      "loadingCharacters": "Loading..."
+    },
+    "sessionCode": {
+      "heading": "Session code",
+      "ariaLabel": "Session code: {code}",
+      "copyButton": "Copy code",
+      "copySuccess": "Copied!",
+      "copyAriaLabel": "Copy session code to clipboard",
+      "copyLinkAriaLabel": "Copy session link to clipboard",
+      "copyLink": "Copy link"
+    },
+    "toast": {
+      "sessionNotFound": "Session not found",
+      "connectionSuccess": "Connection successful",
+      "participantsError": "Unable to fetch participants",
+      "leaveSuccess": "You have left the session",
+      "leaveError": "Unable to leave the session",
+      "characterChanged": "Character changed successfully",
+      "characterChangeError": "Unable to change character",
+      "sessionLaunched": "The session has been launched!",
+      "sessionLaunchError": "Unable to launch the session",
+      "copySuccess": "Code copied to clipboard",
+      "copyError": "Unable to copy the code",
+      "copyNotSupported": "Copy is not supported by this browser"
+    },
+    "title": "Session",
+    "sessionEnded": {
+      "title": "Session ended",
+      "description": {
+        "closed": "The game master has ended the session. Thank you for playing!",
+        "expired": "The session has expired because the time limit was reached. Thank you for playing!"
+      },
+      "confirm": "Back to home"
+    }
   }
 }

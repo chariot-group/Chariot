@@ -15,7 +15,6 @@ import { SenseDto } from '@/resources/character/core/dto/stats/sub/sense.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class StatsDto {
-
   @ApiProperty({ example: 'Medium' })
   @IsOptional()
   @IsString()

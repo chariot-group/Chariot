@@ -1,4 +1,4 @@
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
@@ -23,11 +23,10 @@ import {
 } from "lucide-react";
 
 interface NpcSkillsEditProps {
-  form: UseFormReturn<any>;
-  accentColor: string;
+  form: UseFormReturn<FieldValues>;
 }
 
-export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps) {
+export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
   const t = useTranslations("characterDetail.player.general");
 
   // Configuration des compétences avec leur icône et caractéristique associée
@@ -63,7 +62,7 @@ export default function NpcSkillsEdit({ form, accentColor }: NpcSkillsEditProps)
             key={key}
             name={`stats.skills.${key}`}
             control={form.control}
-            render={({ field, fieldState }) => (
+            render={({ field }) => (
               <Card className="p-2">
                 <div className="flex flex-row items-center gap-2">
                   <Icon

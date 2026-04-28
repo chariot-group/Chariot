@@ -16,10 +16,19 @@ import { IsCreatorGuard } from '@/common/guards/is-creator.guard';
 import { ParseNullableIntPipe } from '@/common/pipes/parse-nullable-int.pipe';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Character, CharacterDocument } from '@/resources/character/core/schemas/character.schema';
+import {
+  Character,
+  CharacterDocument,
+} from '@/resources/character/core/schemas/character.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
-import { ApiOkResponse, ApiOperation, ApiParam, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 
 @UseGuards(IsCreatorGuard)
@@ -29,7 +38,7 @@ export class CharacterController {
     private readonly characterService: CharacterService,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
-  ) { }
+  ) {}
 
   private readonly CONTROLLER_NAME = CharacterService.name;
   private readonly logger = new Logger(this.CONTROLLER_NAME);
@@ -52,18 +61,18 @@ export class CharacterController {
 
   @Get()
   @ApiOperation({
-    summary: "Get a collection of paginated characters",
+    summary: 'Get a collection of paginated characters',
     security: [],
   })
   @ApiOkResponse({
-    description: "Characters found successfully",
+    description: 'Characters found successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IPaginatedResponse) },
         {
           properties: {
             data: {
-              type: "array",
+              type: 'array',
               items: { $ref: getSchemaPath(Character) },
             },
           },
@@ -87,17 +96,16 @@ export class CharacterController {
     });
   }
 
-  @IsCreator(CharacterService)
-  @ApiOperation({ summary: "Get a character by ID" })
+  @ApiOperation({ summary: 'Get a character by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the character to get",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the character to get',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Character found successfully",
+    description: 'Character found successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -109,31 +117,42 @@ export class CharacterController {
       ],
     },
   })
-  @ApiResponse({ status: 404, description: "Character #ID not found", type: ProblemDetailsDto })
   @ApiResponse({
-    status: 400,
-    description: "Error while fetching character #ID: Id is not a valid mongoose id",
+    status: 404,
+    description: 'Character #ID not found',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 410, description: "Character #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Error while fetching character #ID: Id is not a valid mongoose id',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Character #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
   @Get(':id')
-  async findOne(@Param('id', ParseMongoIdPipe) id: Types.ObjectId): Promise<IResponse<Character>> {
+  async findOne(
+    @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+  ): Promise<IResponse<Character>> {
     await this.validateResource(id);
 
     return this.characterService.findOne(id);
   }
 
   @IsCreator(CharacterService)
-  @ApiOperation({ summary: "Delete a character by ID" })
+  @ApiOperation({ summary: 'Delete a character by ID' })
   @ApiParam({
-    name: "id",
+    name: 'id',
     type: String,
     required: true,
-    description: "The ID of the character to delete",
-    example: "507f1f77bcf86cd799439011",
+    description: 'The ID of the character to delete',
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiOkResponse({
-    description: "Character #ID deleted",
+    description: 'Character #ID deleted',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
@@ -145,15 +164,26 @@ export class CharacterController {
       ],
     },
   })
-  @ApiResponse({ status: 404, description: "Character #ID not found", type: ProblemDetailsDto })
   @ApiResponse({
-    status: 400,
-    description: "Error while fetching character #ID: Id is not a valid mongoose id",
+    status: 404,
+    description: 'Character #ID not found',
     type: ProblemDetailsDto,
   })
-  @ApiResponse({ status: 410, description: "Character #ID has been deleted", type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Error while fetching character #ID: Id is not a valid mongoose id',
+    type: ProblemDetailsDto,
+  })
+  @ApiResponse({
+    status: 410,
+    description: 'Character #ID has been deleted',
+    type: ProblemDetailsDto,
+  })
   @Delete(':id')
-  async remove(@Param('id', ParseMongoIdPipe) id: Types.ObjectId): Promise<IResponse<Character>> {
+  async remove(
+    @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+  ): Promise<IResponse<Character>> {
     await this.validateResource(id);
 
     return this.characterService.remove(id);

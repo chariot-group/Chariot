@@ -1,5 +1,5 @@
 import { NPC } from "@/types/character";
-import { UseFormReturn, useFieldArray } from "react-hook-form";
+import { UseFormReturn, useFieldArray, FieldValues } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
@@ -14,10 +14,11 @@ import { DamageTypeTagInput } from "@/components/ui/damage-type-tag-input";
 interface NPCBattleTabEditProps {
   npc: NPC;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
 export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTabEditProps) {
+  void npc;
   const t = useTranslations("characterDetail.battle");
 
   // Field arrays pour les listes dynamiques
@@ -62,7 +63,6 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
       <div className="grid grid-cols-5 max-[426px]:grid-cols-1 gap-3 md:gap-4 w-full">
         {/* Statistiques */}
         <NpcStatisticsUpdate
-          npc={npc}
           accentColor={accentColor}
           form={form}
         />

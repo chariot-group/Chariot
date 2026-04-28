@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { PlayerStats, Stats } from "@/types/character";
+import { PlayerStats } from "@/types/character";
 import { calculateSkillBonus, getIconForValue } from "@/utils/global.utils";
 import {
   User2Icon,

@@ -34,7 +34,12 @@
     "reset": "Reiniciar",
     "returnToBattle": "Volver a la batalla",
     "joinSession": "Unirse a la sesión",
+    "joinSessionDialogTitle": "Unirse a una sesión",
+    "joinSessionErrorNotFound": "No se encontró ninguna sesión para este código.",
+    "joinSessionErrorClosed": "Esta sesión está cerrada.",
+    "joinSessionSelectCharacterPlaceholder": "Seleccionar un personaje",
     "comingSoon": "Próximamente",
+    "alreadyInSession": "No es posible realizar esta acción, ya estás conectado.",
     "returnToSheet": "Volver a la hoja de personaje",
     "selectCampaign": "Seleccionar campaña",
     "selectedCampaign": "Campaña seleccionada",
@@ -176,7 +181,7 @@
     "cancel": "Cancelar",
     "create": "Crear",
     "saving": "Creando..."
-  },  
+  },
   "zodErrors": {
     "invalidTypeReceived": "Entrada inválida",
     "required": "Requerido",
@@ -208,7 +213,7 @@
       "uuid": "UUID inválido"
     },
     "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}"
-  },  
+  },
   "characterDetail": {
     "editCharacter": "Modificar personaje",
     "saveChanges": "Guardar cambios",
@@ -701,11 +706,14 @@
       "slotsLabel": "ranuras",
       "removeSpellTitle": "Eliminar conjuro",
       "removeSpellDescription": "¿Estás seguro de que quieres eliminar \"{name}\"?",
-      "removeSpellConfirm": "Eliminar",      "removeSpellcasting": "Eliminar capacidades mágicas",      "removeSpellcastingTitle": "Eliminar capacidades mágicas",
+      "removeSpellConfirm": "Eliminar",
+      "removeSpellcasting": "Eliminar capacidades mágicas",
+      "removeSpellcastingTitle": "Eliminar capacidades mágicas",
       "removeSpellcastingDescription": "¿Estás seguro de que quieres eliminar las capacidades mágicas de {className}? Todos los conjuros asociados también serán eliminados.",
       "removeSpellcastingConfirm": "Eliminar",
       "addSpellcasting": "Añadir capacidades mágicas",
       "newSpellcasting": "Nueva clase mágica",
+      "spellcastingClassRequiresClass": "Añade primero al menos una clase al personaje para poder elegir una clase de lanzamiento de conjuros.",
       "spellSlotsTotalForLevel": "Número de espacios de conjuro de nivel {level}",
       "moreSpellOptions": "Más opciones de conjuros",
       "removeSpellWithName": "Eliminar conjuro {name}",
@@ -807,6 +815,60 @@
     "Any Good Alignment": "Cualquier alineación buena",
     "Any Evil Alignment": "Cualquier alineación malvada",
     "Any Lawful Alignment": "Cualquier alineación legal",
-    "Any Chaotic Alignment": "Cualquier alineación caótica"  
+    "Any Chaotic Alignment": "Cualquier alineación caótica"
+  },
+  "sessionPage": {
+    "campaignFallback": "Campaña",
+    "mainAriaLabel": "Sesión - {label}",
+    "players": {
+      "ariaLabel": "Lista de jugadores",
+      "player": "Jugador",
+      "gameMaster": "Maestro de juego",
+      "leaveButton": "Abandonar la sesión",
+      "addTokenButton": "Agregar un token: {total}/{count}",
+      "addTokenAriaLabel": "Agregar un token ({total} de {count} depositado(s))",
+      "tokenMenuAriaLabel": "Opciones de tokens",
+      "customAmount": "Cantidad personalizada",
+      "addCustomButton": "Agregar",
+      "removeCustomButton": "Retirar",
+      "removeAllButton": "Retirar todo ({myTokens})",
+      "launchSessionButton": "Lanzar la sesión",
+      "launchSessionAriaLabel": "Lanzar la sesión (todos los tokens han sido depositados)",
+      "noCharacter": "Sin personaje",
+      "selectCharacterPlaceholder": "Cambiar personaje",
+      "loadingCharacters": "Cargando..."
+    },
+    "sessionCode": {
+      "heading": "Código de sesión",
+      "ariaLabel": "Código de sesión: {code}",
+      "copyButton": "Copiar código",
+      "copySuccess": "¡Copiado!",
+      "copyAriaLabel": "Copiar el código de sesión al portapapeles",
+      "copyLinkAriaLabel": "Copiar el enlace de la sesión al portapapeles",
+      "copyLink": "Copiar enlace"
+    },
+    "toast": {
+      "sessionNotFound": "Sesión no encontrada",
+      "connectionSuccess": "Conexión exitosa",
+      "participantsError": "No se pueden obtener los participantes",
+      "leaveSuccess": "Has abandonado la sesión",
+      "leaveError": "No se puede abandonar la sesión",
+      "characterChanged": "Personaje cambiado con éxito",
+      "characterChangeError": "No se puede cambiar el personaje",
+      "sessionLaunched": "¡La sesión ha sido lanzada!",
+      "sessionLaunchError": "No se puede lanzar la sesión",
+      "copySuccess": "Código copiado al portapapeles",
+      "copyError": "No se puede copiar el código",
+      "copyNotSupported": "La copia no está soportada por este navegador"
+    },
+    "title": "Sesión",
+    "sessionEnded": {
+      "title": "La sesión ha terminado",
+      "description": {
+        "closed": "El maestro del juego ha puesto fin a la sesión. ¡Gracias por jugar!",
+        "expired": "La sesión ha expirado porque se agotó el tiempo. ¡Gracias por jugar!"
+      },
+      "confirm": "Volver al inicio"
+    }
   }
 }

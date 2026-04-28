@@ -1,6 +1,7 @@
 "use client";
 
 import Profile from "@/components/layout/Profile";
+import SessionTimer from "@/components/layout/SessionTimer";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import NavigationService from "@/services/NavigationService";
@@ -16,6 +17,7 @@ export default function Header() {
   const locale = pathname.split("/")[1] || "fr";
   const dispatch = useAppDispatch();
   const getState = useAppSelector((state) => state);
+  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
 
   const handleLogoClick = async () => {
     try {
@@ -32,11 +34,11 @@ export default function Header() {
     <React.Fragment>
       {process.env.NEXT_PUBLIC_ENV_NAME === "integration" && (
         <div className="w-full bg-yellow-500 text-black text-center py-2 px-4 font-semibold text-sm">
-          ⚠️ ENVIRONNEMENT D'INTEG
+          ⚠️ ENVIRONNEMENT D&apos;INTEG v{appVersion}
         </div>
       )}
       <header className="w-full flex flex-row justify-between items-center px-2 sm:px-4 z-10">
-        <SidebarTrigger />
+        <SidebarTrigger className="self-start mt-1" />
         <button
           onClick={handleLogoClick}
           className="cursor-pointer bg-transparent border-none p-0">
@@ -49,7 +51,10 @@ export default function Header() {
             priority
           />
         </button>
-        <Profile />
+        <div className="flex items-center gap-3">
+          <SessionTimer />
+          <Profile />
+        </div>
       </header>
     </React.Fragment>
   );

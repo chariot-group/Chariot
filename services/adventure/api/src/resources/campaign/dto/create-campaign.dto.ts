@@ -4,8 +4,7 @@ import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCampaignDto {
-
-  @ApiProperty({ example: "Epic Adventure" })
+  @ApiProperty({ example: 'Epic Adventure' })
   @IsString()
   @MaxLength(50)
   readonly label: string;

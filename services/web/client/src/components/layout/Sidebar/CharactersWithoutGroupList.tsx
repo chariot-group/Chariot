@@ -41,6 +41,20 @@ export default function CharactersWithoutGroupList() {
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Refs to keep stable handleObserver without recreating the IntersectionObserver on every state change
+  const hasMoreRef = useRef(hasMore);
+  const loadingMoreRef = useRef(loadingMore);
+  const loadMoreCharactersRef = useRef(loadMoreCharacters);
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+  useEffect(() => {
+    loadingMoreRef.current = loadingMore;
+  }, [loadingMore]);
+  useEffect(() => {
+    loadMoreCharactersRef.current = loadMoreCharacters;
+  }, [loadMoreCharacters]);
+
   const pathname = usePathname();
 
   const selectedCharacterId = pathname?.includes("/characters/")
@@ -80,11 +94,11 @@ export default function CharactersWithoutGroupList() {
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
-      if (target.isIntersecting && hasMore && !loadingMore) {
-        loadMoreCharacters();
+      if (target.isIntersecting && hasMoreRef.current && !loadingMoreRef.current) {
+        loadMoreCharactersRef.current();
       }
     },
-    [hasMore, loadingMore, loadMoreCharacters],
+    [], // stable — reads live values via refs
   );
 
   // Setup Intersection Observer for infinite scroll
@@ -119,7 +133,7 @@ export default function CharactersWithoutGroupList() {
 
   return (
     <nav
-      className="flex gap-3 flex-col overflow-y-auto px-3 py-4"
+      className="flex gap-3 flex-col overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full px-3 py-4"
       aria-label={t("playerNavigation")}>
       <h2 className="text-lg text-white">{t("yourCharacters")}</h2>
 

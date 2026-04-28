@@ -1,5 +1,4 @@
-import { Character } from "@/types/character";
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -15,15 +14,16 @@ import CP from "@public/assets/pieces/copper-piece.svg";
 import { Textarea } from "@/components/ui/textarea";
 
 interface CharacterInventoryTabEditProps {
-  character: Character;
   accentColor: string;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
-export default function CharacterInventoryTabEdit({ character, accentColor, form }: CharacterInventoryTabEditProps) {
+export default function CharacterInventoryTabEdit({ accentColor, form }: CharacterInventoryTabEditProps) {
   const t = useTranslations("characterDetail.inventory");
 
-  const treasureErrors = form.formState.errors.treasure as any;
+  const treasureErrors = form.formState.errors.treasure as
+    | Partial<Record<"pp" | "gp" | "ep" | "sp" | "cp", { message?: string }>>
+    | undefined;
 
   return (
     <div className="w-full flex flex-col lg:flex-row gap-2 md:gap-4 items-start">

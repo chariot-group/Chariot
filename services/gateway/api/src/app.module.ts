@@ -4,12 +4,12 @@ import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { HttpModule } from "@nestjs/axios";
 import { PrometheusModule } from "@willsoto/nestjs-prometheus";
-import { AppController } from "@/app.controller";
-import { AppService } from "@/app.service";
-import { ProxyModule } from "@/proxy/proxy.module";
-import { HealthModule } from "@/health/health.module";
-import { LoggingInterceptor } from "@/common/interceptors/logging.interceptor";
-import { MetricsModule } from "@/metrics/metrics.module";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { ProxyModule } from "./proxy/proxy.module";
+import { HealthModule } from "./health/health.module";
+import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
+import { MetricsModule } from "./metrics/metrics.module";
 
 @Module({
   imports: [

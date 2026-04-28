@@ -49,6 +49,10 @@ jobs:
           cd services/web/client
           npm ci
 
+      - name: Run lint for web
+        working-directory: ./services/web/client
+        run: npm run lint
+
       - name: Format check for web
         working-directory: ./services/web/client
         run: npm run format
@@ -77,6 +81,10 @@ jobs:
         run: |
           cd services/adventure/api
           npm ci
+
+      - name: Run lint for adventure
+        working-directory: ./services/adventure/api
+        run: npm run lint
 
       - name: Format check for adventure
         working-directory: ./services/adventure/api
@@ -110,6 +118,10 @@ jobs:
         run: |
           cd services/gateway/api
           npm ci
+
+      - name: Run lint for gateway
+        working-directory: ./services/gateway/api
+        run: npm run lint
 
       - name: Format check for gateway
         working-directory: ./services/gateway/api
@@ -149,11 +161,13 @@ jobs:
           if [[ "${ENV_NAME}" == "production" ]]; then
             echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+            echo "session_ws_url=${{ secrets.PROD_SESSION_WS_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.PROD_CODEX_URL }}" >> $GITHUB_OUTPUT
             echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           else
             echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+            echo "session_ws_url=${{ secrets.INTEG_SESSION_WS_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.INTEG_CODEX_URL }}" >> $GITHUB_OUTPUT
             echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           fi
@@ -189,6 +203,7 @@ jobs:
             NEXT_PUBLIC_KEYCLOAK_REALM=chariot
             NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
             NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
+            NEXT_PUBLIC_SESSION_WS_URL=${{ steps.env.outputs.session_ws_url }}
 
       - name: Output image tags
         run: |
@@ -248,6 +263,93 @@ jobs:
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-adventure-${{ steps.env.outputs.env_name }}:latest"
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-adventure-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
+
+  # Job CI pour le backend session
+  ci-session:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js for session
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/session/api/package-lock.json
+
+      - name: Install dependencies for session
+        run: |
+          cd services/session/api
+          npm ci
+
+      - name: Format check for session
+        working-directory: ./services/session/api
+        run: npm run format
+
+      - name: Run unit tests for session
+        working-directory: ./services/session/api
+        run: npm test
+
+      - name: Build session
+        working-directory: ./services/session/api
+        run: npm run build
+
+  # Job CD pour déployer le service session (sur push main/integ ou workflow_dispatch)
+  deploy-session:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/integ' || github.ref == 'refs/heads/main')) || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine environment and set variables
+        id: env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV_NAME="${{ github.event.inputs.environment }}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            ENV_NAME="production"
+          else
+            ENV_NAME="integration"
+          fi
+          
+          echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Chariot Session
+        uses: docker/build-push-action@v7
+        with:
+          context: ./services/session/api
+          file: ./services/session/api/Dockerfile.prod
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-session-${{ steps.env.outputs.env_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-session-${{ steps.env.outputs.env_name }}:${{ github.sha }}
+          platforms: linux/amd64
+          build-args: |
+            NODE_ENV=production
+            NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
+            DATABASE_URL=postgresql://fake:fake@localhost:5432/fake
+      - name: Output image tags
+        run: |
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-session-${{ steps.env.outputs.env_name }}:latest"
+          echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-session-${{ steps.env.outputs.env_name }}:${{ github.sha }}"
 
   # Job CD pour déployer la gateway (sur push main/integ ou workflow_dispatch)
   deploy-gateway:

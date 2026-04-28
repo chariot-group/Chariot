@@ -1,4 +1,3 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { MaillingService } from '@/mailling/mailling.service';
 import { InternalServerErrorException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
@@ -56,9 +55,11 @@ describe('MaillingService', () => {
         mockReadFile.mockResolvedValue(htmlTemplate);
         mockSendMail.mockResolvedValue({});
 
-        const result = await service.sendOTP('testuser', 'test@example.com', 123456, 'fr');
+        await service.sendOTP('testuser', 'test@example.com', 123456, 'fr');
 
-        expect(mockResolve).toHaveBeenCalledWith('src/mailling/templates/otp/otpFr.html');
+        expect(mockResolve).toHaveBeenCalledWith(
+          'src/mailling/templates/otp/otpFr.html',
+        );
         expect(mockReadFile).toHaveBeenCalledWith(
           'src/mailling/templates/otp/otpFr.html',
           'utf8',
@@ -74,7 +75,10 @@ describe('MaillingService', () => {
         const mailCall = mockSendMail.mock.calls[0][0];
         expect(mailCall.html).toContain('123456');
 
-        expect(mockCounter.inc).toHaveBeenCalledWith({ type: 'otp', status: 'success' });
+        expect(mockCounter.inc).toHaveBeenCalledWith({
+          type: 'otp',
+          status: 'success',
+        });
       });
     });
 
@@ -86,7 +90,9 @@ describe('MaillingService', () => {
 
         await service.sendOTP('testuser', 'test@example.com', 123456, 'es');
 
-        expect(mockResolve).toHaveBeenCalledWith('src/mailling/templates/otp/otpEs.html');
+        expect(mockResolve).toHaveBeenCalledWith(
+          'src/mailling/templates/otp/otpEs.html',
+        );
 
         expect(mockSendMail).toHaveBeenCalledWith({
           to: 'test@example.com',
@@ -98,7 +104,10 @@ describe('MaillingService', () => {
         const mailCall = mockSendMail.mock.calls[0][0];
         expect(mailCall.html).toContain('123456');
 
-        expect(mockCounter.inc).toHaveBeenCalledWith({ type: 'otp', status: 'success' });
+        expect(mockCounter.inc).toHaveBeenCalledWith({
+          type: 'otp',
+          status: 'success',
+        });
       });
     });
 
@@ -110,7 +119,9 @@ describe('MaillingService', () => {
 
         await service.sendOTP('testuser', 'test@example.com', 123456, 'en');
 
-        expect(mockResolve).toHaveBeenCalledWith('src/mailling/templates/otp/otpEn.html');
+        expect(mockResolve).toHaveBeenCalledWith(
+          'src/mailling/templates/otp/otpEn.html',
+        );
 
         expect(mockSendMail).toHaveBeenCalledWith({
           to: 'test@example.com',
@@ -122,7 +133,10 @@ describe('MaillingService', () => {
         const mailCall = mockSendMail.mock.calls[0][0];
         expect(mailCall.html).toContain('123456');
 
-        expect(mockCounter.inc).toHaveBeenCalledWith({ type: 'otp', status: 'success' });
+        expect(mockCounter.inc).toHaveBeenCalledWith({
+          type: 'otp',
+          status: 'success',
+        });
       });
 
       it('should send OTP email in English for unknown locale', async () => {
@@ -132,7 +146,9 @@ describe('MaillingService', () => {
 
         await service.sendOTP('testuser', 'test@example.com', 123456, 'de');
 
-        expect(mockResolve).toHaveBeenCalledWith('src/mailling/templates/otp/otpEn.html');
+        expect(mockResolve).toHaveBeenCalledWith(
+          'src/mailling/templates/otp/otpEn.html',
+        );
 
         expect(mockSendMail).toHaveBeenCalledWith({
           to: 'test@example.com',
@@ -148,7 +164,8 @@ describe('MaillingService', () => {
 
     describe('OTP template replacement', () => {
       it('should replace all placeholders in OTP email', async () => {
-        const htmlTemplate = '<html><p>Hello {{username}}</p><p>Code: {{otp}}</p></html>';
+        const htmlTemplate =
+          '<html><p>Hello {{username}}</p><p>Code: {{otp}}</p></html>';
         mockReadFile.mockResolvedValue(htmlTemplate);
         mockSendMail.mockResolvedValue({});
 
@@ -162,7 +179,8 @@ describe('MaillingService', () => {
       });
 
       it('should handle multiple placeholder occurrences', async () => {
-        const htmlTemplate = '<html>{{username}} {{username}} {{otp}} {{otp}}</html>';
+        const htmlTemplate =
+          '<html>{{username}} {{username}} {{otp}} {{otp}}</html>';
         mockReadFile.mockResolvedValue(htmlTemplate);
         mockSendMail.mockResolvedValue({});
 
@@ -184,7 +202,10 @@ describe('MaillingService', () => {
           service.sendOTP('testuser', 'test@example.com', 123456, 'en'),
         ).rejects.toThrow(InternalServerErrorException);
 
-        expect(mockCounter.inc).toHaveBeenCalledWith({ type: 'otp', status: 'failure' });
+        expect(mockCounter.inc).toHaveBeenCalledWith({
+          type: 'otp',
+          status: 'failure',
+        });
       });
 
       it('should throw InternalServerErrorException on sendMail error', async () => {
@@ -195,7 +216,10 @@ describe('MaillingService', () => {
           service.sendOTP('testuser', 'test@example.com', 123456, 'en'),
         ).rejects.toThrow(InternalServerErrorException);
 
-        expect(mockCounter.inc).toHaveBeenCalledWith({ type: 'otp', status: 'failure' });
+        expect(mockCounter.inc).toHaveBeenCalledWith({
+          type: 'otp',
+          status: 'failure',
+        });
       });
 
       it('should include email address in error message', async () => {
@@ -215,7 +239,9 @@ describe('MaillingService', () => {
       it('should log verbose message on successful send', async () => {
         mockReadFile.mockResolvedValue('<html>{{username}} {{otp}}</html>');
         mockSendMail.mockResolvedValue({});
-        const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation();
+        const loggerSpy = jest
+          .spyOn(service['logger'], 'verbose')
+          .mockImplementation();
 
         await service.sendOTP('testuser', 'test@example.com', 123456, 'en');
 
@@ -229,7 +255,9 @@ describe('MaillingService', () => {
 
       it('should log error message on failure', async () => {
         mockReadFile.mockRejectedValue(new Error('Template error'));
-        const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation();
+        const loggerSpy = jest
+          .spyOn(service['logger'], 'error')
+          .mockImplementation();
 
         await expect(
           service.sendOTP('testuser', 'test@example.com', 123456, 'en'),
@@ -274,12 +302,17 @@ describe('MaillingService', () => {
   describe('sendWelcomeEmail', () => {
     describe('Welcome email sending', () => {
       it('should send welcome email', async () => {
-        const htmlTemplate = '<html>Welcome {{username}}, click here: {{activeLink}}</html>';
+        const htmlTemplate =
+          '<html>Welcome {{username}}, click here: {{activeLink}}</html>';
         mockReadFile.mockResolvedValue(htmlTemplate);
         mockSendMail.mockResolvedValue({});
         process.env.FRONTEND_URL = 'https://app.example.com';
 
-        await service.sendWelcomeEmail('testuser', 'test@example.com', 'activation_token_123');
+        await service.sendWelcomeEmail(
+          'testuser',
+          'test@example.com',
+          'activation_token_123',
+        );
 
         expect(mockResolve).toHaveBeenCalledWith(
           'src/mailling/templates/welcome/welcomeEn.html',
@@ -293,7 +326,9 @@ describe('MaillingService', () => {
         });
 
         const mailCall = mockSendMail.mock.calls[0][0];
-        expect(mailCall.html).toContain('https://app.example.com/auth/active/activation_token_123');
+        expect(mailCall.html).toContain(
+          'https://app.example.com/auth/active/activation_token_123',
+        );
 
         expect(mockCounter.inc).toHaveBeenCalledWith({
           type: 'welcome',
@@ -304,16 +339,23 @@ describe('MaillingService', () => {
 
     describe('Welcome email template replacement', () => {
       it('should replace username and activeLink placeholders', async () => {
-        const htmlTemplate = '<html>Hi {{username}}, go to {{activeLink}}</html>';
+        const htmlTemplate =
+          '<html>Hi {{username}}, go to {{activeLink}}</html>';
         mockReadFile.mockResolvedValue(htmlTemplate);
         mockSendMail.mockResolvedValue({});
         process.env.FRONTEND_URL = 'https://app.example.com';
 
-        await service.sendWelcomeEmail('alice', 'alice@example.com', 'token_abc');
+        await service.sendWelcomeEmail(
+          'alice',
+          'alice@example.com',
+          'token_abc',
+        );
 
         const mailCall = mockSendMail.mock.calls[0][0];
         expect(mailCall.html).toContain('alice');
-        expect(mailCall.html).toContain('https://app.example.com/auth/active/token_abc');
+        expect(mailCall.html).toContain(
+          'https://app.example.com/auth/active/token_abc',
+        );
         expect(mailCall.html).not.toContain('{{username}}');
         expect(mailCall.html).not.toContain('{{activeLink}}');
       });
@@ -364,7 +406,9 @@ describe('MaillingService', () => {
       it('should log verbose message on successful send', async () => {
         mockReadFile.mockResolvedValue('<html>Welcome {{username}}</html>');
         mockSendMail.mockResolvedValue({});
-        const loggerSpy = jest.spyOn(service['logger'], 'verbose').mockImplementation();
+        const loggerSpy = jest
+          .spyOn(service['logger'], 'verbose')
+          .mockImplementation();
 
         await service.sendWelcomeEmail('testuser', 'test@example.com', 'token');
 
@@ -378,7 +422,9 @@ describe('MaillingService', () => {
 
       it('should log error message on failure', async () => {
         mockReadFile.mockRejectedValue(new Error('Error'));
-        const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation();
+        const loggerSpy = jest
+          .spyOn(service['logger'], 'error')
+          .mockImplementation();
 
         await expect(
           service.sendWelcomeEmail('testuser', 'test@example.com', 'token'),
@@ -430,7 +476,9 @@ describe('MaillingService', () => {
         await service.sendWelcomeEmail('user', 'test@example.com', 'my_token');
 
         const mailCall = mockSendMail.mock.calls[0][0];
-        expect(mailCall.html).toContain('https://example.com/auth/active/my_token');
+        expect(mailCall.html).toContain(
+          'https://example.com/auth/active/my_token',
+        );
       });
     });
   });

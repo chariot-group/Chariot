@@ -10,6 +10,7 @@ import sidebarReducer from '@/store/slices/sidebarSlice';
 import characterReducer from '@/store/slices/characterSlice';
 import userReducer from '@/store/slices/userSlice';
 import codexDraftReducer from '@/store/slices/codexDraftSlice';
+import sessionReducer from '@/store/slices/sessionSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
 import { UserState } from '@/types/user';
 
@@ -21,6 +22,9 @@ function getCurrentUserId(): string | null {
 const campaignTransform = createTransform(
     (inboundState: CampaignState) => {
         const { loading, loadingMore, error, ...rest } = inboundState;
+        void loading;
+        void loadingMore;
+        void error;
         return rest;
     },
     (outboundState: Partial<CampaignState>) => {
@@ -37,6 +41,8 @@ const campaignTransform = createTransform(
 const groupTransform = createTransform(
     (inboundState: GroupState) => {
         const { loading, error, ...rest } = inboundState;
+        void loading;
+        void error;
         return rest;
     },
     (outboundState: Partial<GroupState>) => {
@@ -52,6 +58,11 @@ const groupTransform = createTransform(
 const characterTransform = createTransform(
     (inboundState: Record<string, unknown>) => {
         const { loadingWithoutGroup, loadingMoreWithoutGroup, errorWithoutGroup, loadingAll, errorAll, ...rest } = inboundState;
+        void loadingWithoutGroup;
+        void loadingMoreWithoutGroup;
+        void errorWithoutGroup;
+        void loadingAll;
+        void errorAll;
         return rest;
     },
     (outboundState: Record<string, unknown>) => {
@@ -70,6 +81,8 @@ const characterTransform = createTransform(
 const userTransform = createTransform(
     (inboundState: UserState) => {
         const { loading, error, ...rest } = inboundState;
+        void loading;
+        void error;
         return rest;
     },
     (outboundState: Partial<UserState>) => {
@@ -88,7 +101,7 @@ function makePersistConfig(userId: string | null) {
     return {
         key: storageKey,
         storage,
-        whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character', 'user'],
+        whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'actionButton', 'campaign', 'character', 'user', 'session'],
         transforms: [campaignTransform, groupTransform, characterTransform, userTransform],
     };
 }
@@ -104,6 +117,7 @@ const rootReducer = combineReducers({
     character: characterReducer,
     user: userReducer,
     codexDraft: codexDraftReducer,
+    session: sessionReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class NPCProfile extends Profile {
-
   @ApiProperty({ example: 'Goblin' })
   @Prop()
   type?: string;

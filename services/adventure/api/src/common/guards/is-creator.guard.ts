@@ -13,6 +13,10 @@ import { Reflector } from '@nestjs/core';
 import { ModuleRef } from '@nestjs/core';
 import { Types } from 'mongoose';
 
+type ResourcePayload = { createdBy: string };
+type ResourceResponse = { data?: ResourcePayload };
+type ResourceService = { findOne: (id: string) => Promise<ResourceResponse> };
+
 @Injectable()
 export class IsCreatorGuard implements CanActivate {
   private readonly logger = new Logger(IsCreatorGuard.name);
@@ -20,11 +24,11 @@ export class IsCreatorGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private moduleRef: ModuleRef,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const handler = context.getHandler();
-    const serviceClass = this.reflector.get<Type<any>>('service', handler);
+    const serviceClass = this.reflector.get<Type<unknown>>('service', handler);
 
     if (!serviceClass) return true; // No service specified
 
@@ -40,7 +44,9 @@ export class IsCreatorGuard implements CanActivate {
     }
     try {
       // Dynamically resolve the service using ModuleRef
-      const service = await this.moduleRef.resolve(serviceClass);
+      const service = (await this.moduleRef.resolve(
+        serviceClass,
+      )) as ResourceService;
 
       if (!service) {
         throw new ForbiddenException(`Service ${serviceClass} not found`);
@@ -49,9 +55,11 @@ export class IsCreatorGuard implements CanActivate {
       const resource = await service.findOne(resourceId);
 
       if (!resource.data) throw new NotFoundException('Resource not found');
-      
-      this.logger.debug(`Checking creator: resource.createdBy="${resource.data.createdBy}" vs user.keycloakId="${keycloakId}"`);
-      
+
+      this.logger.debug(
+        `Checking creator: resource.createdBy="${resource.data.createdBy}" vs user.keycloakId="${keycloakId}"`,
+      );
+
       if (resource.data.createdBy !== keycloakId) {
         throw new ForbiddenException('Forbidden: not the creator');
       }

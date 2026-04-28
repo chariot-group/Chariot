@@ -2,7 +2,7 @@
 
 import { useCharacter } from "@/hooks/useCharacter";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import CharacterDetailView from "@/components/character/CharacterDetailView";
@@ -21,7 +21,7 @@ export default function Character() {
 
   const { character, loading, error, refetch } = useCharacter(characterId);
 
-  const getFallbackRoute = (): string => {
+  const getFallbackRoute = useCallback((): string => {
     const remainingActive = activeGroups.filter((group) => group._id !== groupId);
     const remainingArchived = archivedGroups.filter((group) => group._id !== groupId);
 
@@ -42,7 +42,7 @@ export default function Character() {
     }
 
     return `/${locale}`;
-  };
+  }, [activeGroups, archivedGroups, campaignId, groupId, locale]);
 
   useEffect(() => {
     if (loading || !character || !groupId || !campaignId) {
@@ -50,13 +50,19 @@ export default function Character() {
     }
 
     const groupIds = (character.groups || [])
-      .map((group: any) => (typeof group === "string" ? group : group?._id))
+      .map((group) => {
+        if (typeof group === "string") return group;
+        if (typeof group === "object" && group !== null && "_id" in group) {
+          return (group as { _id?: string })._id;
+        }
+        return undefined;
+      })
       .filter((id: string | undefined): id is string => Boolean(id));
 
     if (!groupIds.includes(groupId)) {
       router.replace(getFallbackRoute());
     }
-  }, [campaignId, character, groupId, loading, router, activeGroups, archivedGroups]);
+  }, [campaignId, character, getFallbackRoute, groupId, loading, router]);
 
   useEffect(() => {
     if (loading) {
@@ -66,7 +72,7 @@ export default function Character() {
     if (error || !character) {
       router.replace(getFallbackRoute());
     }
-  }, [loading, error, character, router, activeGroups, archivedGroups]);
+  }, [loading, error, character, router, getFallbackRoute]);
 
   if (loading) {
     return (

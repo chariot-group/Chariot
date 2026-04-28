@@ -7,7 +7,11 @@ export class DamageDetailsDto {
   @IsNumber()
   diceCount?: number;
 
-  @ApiProperty({ example: 'd6', description: 'Type de dé', enum: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'] })
+  @ApiProperty({
+    example: 'd6',
+    description: 'Type de dé',
+    enum: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'],
+  })
   @IsOptional()
   @IsString()
   diceType?: string;
@@ -29,7 +33,11 @@ export class HealingDetailsDto {
   @IsNumber()
   diceCount?: number;
 
-  @ApiProperty({ example: 'd8', description: 'Type de dé', enum: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'] })
+  @ApiProperty({
+    example: 'd8',
+    description: 'Type de dé',
+    enum: ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'],
+  })
   @IsOptional()
   @IsString()
   diceType?: string;

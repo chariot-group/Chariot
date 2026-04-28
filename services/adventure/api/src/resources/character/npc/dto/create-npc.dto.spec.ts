@@ -10,7 +10,7 @@ describe('CreateNpcDto - FR-003: NPC Conditions (No Exhaustion)', () => {
         conditions: {
           frightened: true,
           poisoned: false,
-        }
+        },
       });
 
       const errors = validateSync(dto, { whitelist: true });
@@ -31,7 +31,7 @@ describe('CreateNpcDto - FR-003: NPC Conditions (No Exhaustion)', () => {
         firstname: 'Orc',
         conditions: {
           blinded: true,
-        }
+        },
       });
 
       const errors = validateSync(dto, { whitelist: true });

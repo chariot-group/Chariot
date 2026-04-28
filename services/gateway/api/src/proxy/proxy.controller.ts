@@ -1,102 +1,101 @@
 import { Controller, All, Req, Res, Logger, HttpException, HttpStatus } from "@nestjs/common";
 import { Request, Response } from "express";
-import { ProxyService } from "@/proxy/proxy.service";
+import { ProxyService } from "./proxy.service";
+
+type RawBodyRequest = Request & { rawBody?: Buffer };
+
+const CORS_HEADERS = [
+  "access-control-allow-origin",
+  "access-control-allow-credentials",
+  "access-control-allow-methods",
+  "access-control-allow-headers",
+  "access-control-expose-headers",
+  "access-control-max-age",
+];
+
+async function handleProxy(
+  req: Request,
+  res: Response,
+  serviceName: string,
+  urlPrefix: RegExp,
+  proxyService: ProxyService,
+  logger: Logger,
+): Promise<void> {
+  try {
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+
+    const strippedPath = req.originalUrl.replace(urlPrefix, "") || "/";
+    const fullTargetPath = strippedPath.startsWith("/") ? strippedPath : `/${strippedPath}`;
+
+    logger.debug(`Proxying ${req.method} ${req.originalUrl} → ${serviceName}:${fullTargetPath}`);
+
+    const requestBody = (req as RawBodyRequest).rawBody ?? req.body;
+
+    const response = await proxyService.forward(
+      serviceName,
+      req.method,
+      fullTargetPath,
+      requestBody,
+      req.headers as Record<string, string>,
+    );
+
+    Object.entries(response.headers).forEach(([key, value]) => {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey !== "transfer-encoding" && !CORS_HEADERS.includes(lowerKey)) {
+        res.setHeader(key, value as string);
+      }
+    });
+
+    res.status(response.status).send(response.data);
+  } catch (error: unknown) {
+    const proxiedError = error as {
+      response?: { status: number; data: unknown };
+      status?: number;
+      message?: string;
+      name?: string;
+    };
+    const errorMessage = error instanceof Error ? error.message : proxiedError.message || "Unknown proxy error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    logger.error(`Proxy error: ${errorMessage}`, errorStack);
+
+    if (proxiedError.response) {
+      res.status(proxiedError.response.status).send(proxiedError.response.data);
+    } else if (typeof proxiedError.status === "number") {
+      res.status(proxiedError.status).json({
+        statusCode: proxiedError.status,
+        message: errorMessage,
+        error: proxiedError.name || "Error",
+      });
+    } else {
+      throw new HttpException("Service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+}
 
 @Controller("api")
 export class ProxyController {
   private readonly logger = new Logger(ProxyController.name);
 
-  constructor(private readonly proxyService: ProxyService) { }
+  constructor(private readonly proxyService: ProxyService) {}
 
   @All("*")
-  async proxyRequest(@Req() req: Request, @Res() res: Response) {
-    try {
-      // Handle OPTIONS preflight requests locally (CORS)
-      // Do not forward to backend services
-      if (req.method === "OPTIONS") {
-        return res.status(204).end();
-      }
+  async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
+    await handleProxy(req, res, "adventure", /^\/api/, this.proxyService, this.logger);
+  }
+}
 
-      // Extract service name and path from URL
-      // Expected format: /api/{service}/{path}
-      const urlWithoutPrefix = req.originalUrl.replace(/^\/api/, "");
-      const segments = urlWithoutPrefix.split("/").filter(Boolean);
+@Controller("session")
+export class SessionProxyController {
+  private readonly logger = new Logger(SessionProxyController.name);
 
-      if (segments.length === 0) {
-        // No service specified - return available services
-        const services = this.proxyService.getAvailableServices();
-        return res.status(200).json({
-          message: "API Gateway",
-          available_services: services,
-        });
-      }
+  constructor(private readonly proxyService: ProxyService) {}
 
-      // Check if first segment is a configured service
-      const potentialService = segments[0];
-      let serviceName: string;
-      let targetPath: string;
-
-      if (this.proxyService.hasService(potentialService)) {
-        // First segment is a service name: /api/{service}/{path}
-        serviceName = potentialService;
-        targetPath = "/" + segments.slice(1).join("/");
-      } else {
-        // Fallback to Adventure service for backward compatibility: /api/{path}
-        serviceName = "adventure";
-        targetPath = "/" + segments.join("/");
-        this.logger.debug(`No service '${potentialService}' found, falling back to adventure service`);
-      }
-
-      // Preserve query string if present
-      const queryString = req.originalUrl.includes("?") ? "?" + req.originalUrl.split("?")[1] : "";
-      const fullTargetPath = targetPath + queryString;
-
-      this.logger.debug(`Proxying request to ${serviceName} service: ${req.method} ${fullTargetPath}`);
-
-      const requestBody = (req as any).rawBody ?? req.body;
-
-      const response = await this.proxyService.forward(
-        serviceName,
-        req.method,
-        fullTargetPath,
-        requestBody,
-        req.headers as Record<string, string>,
-      );
-
-      // Forward response headers but filter out CORS headers
-      // CORS is managed at gateway level only
-      const corsHeaders = [
-        "access-control-allow-origin",
-        "access-control-allow-credentials",
-        "access-control-allow-methods",
-        "access-control-allow-headers",
-        "access-control-expose-headers",
-        "access-control-max-age",
-      ];
-
-      Object.entries(response.headers).forEach(([key, value]) => {
-        const lowerKey = key.toLowerCase();
-        if (lowerKey !== "transfer-encoding" && !corsHeaders.includes(lowerKey)) {
-          res.setHeader(key, value as string);
-        }
-      });
-
-      res.status(response.status).send(response.data);
-    } catch (error) {
-      this.logger.error(`Proxy error: ${error.message}`, error.stack);
-
-      if (error.response) {
-        res.status(error.response.status).send(error.response.data);
-      } else if (error.status) {
-        // Handle NestJS exceptions (like BadRequestException)
-        res.status(error.status).json({
-          statusCode: error.status,
-          message: error.message,
-          error: error.name,
-        });
-      } else {
-        throw new HttpException("Service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE);
-      }
-    }
+  @All("*")
+  async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
+    await handleProxy(req, res, "session", /^\/session/, this.proxyService, this.logger);
   }
 }

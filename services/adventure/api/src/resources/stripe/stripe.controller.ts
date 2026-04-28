@@ -1,6 +1,23 @@
-import { BadRequestException, Body, Controller, Get, Headers, HttpCode, Logger, Post, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  Logger,
+  Post,
+  Req,
+} from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiHeader,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { StripeService } from '@/resources/stripe/stripe.service';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
 import { Public } from '@/common/decorators/public.decorator';
@@ -10,21 +27,29 @@ import type { StripeProductWithPrices } from '@/resources/stripe/types/stripe.ty
 @ApiTags('Stripe')
 @Controller('stripe')
 export class StripeController {
-  constructor(private readonly stripeService: StripeService) { }
+  constructor(private readonly stripeService: StripeService) {}
 
   private readonly CONTROLLER_NAME = StripeController.name;
   private readonly logger = new Logger(this.CONTROLLER_NAME);
 
   @Post('checkout')
-  @ApiOperation({ summary: 'Create a Stripe checkout session for the authenticated user' })
+  @ApiOperation({
+    summary: 'Create a Stripe checkout session for the authenticated user',
+  })
   @ApiBody({ type: CheckoutDto })
   @ApiResponse({
     status: 201,
     description: 'Checkout session created successfully',
     schema: {
       properties: {
-        message: { type: 'string', example: 'Stripe checkout session created in 120 ms' },
-        data: { type: 'string', example: 'https://checkout.stripe.com/c/pay/cs_test_123' },
+        message: {
+          type: 'string',
+          example: 'Stripe checkout session created in 120 ms',
+        },
+        data: {
+          type: 'string',
+          example: 'https://checkout.stripe.com/c/pay/cs_test_123',
+        },
       },
     },
   })
@@ -41,13 +66,18 @@ export class StripeController {
     description: 'Internal error while creating Stripe session',
   })
   async createCheckout(@Req() request, @Body() dto: CheckoutDto) {
-    return this.stripeService.createCheckoutSession(dto, request.user.keycloakId);
+    return this.stripeService.createCheckoutSession(
+      dto,
+      request.user.keycloakId,
+    );
   }
 
   @Post('webhook')
   @Public()
   @HttpCode(200)
-  @ApiOperation({ summary: 'Stripe webhook endpoint (public, verified by Stripe signature)' })
+  @ApiOperation({
+    summary: 'Stripe webhook endpoint (public, verified by Stripe signature)',
+  })
   @ApiHeader({
     name: 'stripe-signature',
     required: true,
@@ -87,9 +117,7 @@ export class StripeController {
     status: 200,
     description: 'Products fetched successfully',
     schema: {
-      allOf: [
-        { $ref: getSchemaPath(IResponse) },
-      ],
+      allOf: [{ $ref: getSchemaPath(IResponse) }],
     },
   })
   async getProducts(): Promise<IResponse<StripeProductWithPrices[]>> {

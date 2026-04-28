@@ -16,6 +16,7 @@ services:
       GATEWAY_RATE_LIMIT_WINDOW: ${GATEWAY_RATE_LIMIT_WINDOW:-60000}
       # Backend services - add more as needed with pattern {SERVICE_NAME}_SERVICE_URL
       ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL}
+      SESSION_SERVICE_URL: ${SESSION_SERVICE_URL}
       FRONTEND_URL: ${FRONTEND_URL}
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
@@ -31,6 +32,7 @@ services:
       - "traefik.http.services.chariot-gateway-prod.loadbalancer.server.port=8082"
       - "traefik.http.routers.chariot-gateway-prod.service=chariot-gateway-prod"
       - "traefik.docker.network=traefik-public"
+      - "com.centurylinklabs.watchtower.enable=true"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
       interval: 30s

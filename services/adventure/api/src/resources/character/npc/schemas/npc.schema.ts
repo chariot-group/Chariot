@@ -10,7 +10,6 @@ export type NPCDocument = NPC & Document;
 
 @Schema()
 export class NPC extends Character {
-
   @ApiProperty({ type: Actions })
   @Prop({ type: Actions, default: {} })
   actions: Actions;
