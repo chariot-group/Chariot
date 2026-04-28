@@ -42,7 +42,6 @@ export function ActionButton() {
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
-  const router = useRouter();
   const user = useUser();
 
   useSessionValidation();
@@ -67,7 +66,7 @@ export function ActionButton() {
           state: "launchSession",
           action: () => {
             if (isInSession) {
-              router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
+              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
               return;
             }
             if (!selectedCampaignId) return;
@@ -144,7 +143,7 @@ export function ActionButton() {
           state: "joinSession",
           action: () => {
             if (isInSession) {
-              router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
+              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
             }
           },
           icon: <Users className="size-6" />,
@@ -165,7 +164,7 @@ export function ActionButton() {
             );
             const characterId = currentParticipant?.characterId;
             if (isInSession && characterId) {
-              router.push(`/characters/${characterId}`);
+              window.location.href = `/characters/${characterId}`;
             }
           },
           disabled: false,
@@ -182,7 +181,7 @@ export function ActionButton() {
       state: "launchSession",
       action: () => {
         if (isInSession) {
-          router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
+          window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
           return;
         }
         if (!selectedCampaignId) return;
