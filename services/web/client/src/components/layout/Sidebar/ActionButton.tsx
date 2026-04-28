@@ -102,7 +102,7 @@ export function ActionButton() {
     if (currentParticipant?.status === "gameMaster") {
       if (!sessionStarted) {
         return {
-          label: "Retourner à la session",
+          label: t("returnToSession"),
           state: "returnToSession",
           action: () => {
             window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
@@ -173,7 +173,7 @@ export function ActionButton() {
       // Player: Join session (initial state)
       if (!sessionStarted) {
         return {
-          label: "Retourner à la session",
+          label: t("returnToSession"),
           state: "returnToSession",
           action: () => {
             window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;

@@ -41,6 +41,7 @@
     "comingSoon": "Próximamente",
     "alreadyInSession": "No es posible realizar esta acción, ya estás conectado.",
     "returnToSheet": "Volver a la hoja de personaje",
+    "returnToSession": "Volver a la sesión",
     "selectCampaign": "Seleccionar campaña",
     "selectedCampaign": "Campaña seleccionada",
     "selected": "seleccionado",
@@ -883,6 +884,9 @@
         "expired": "La sesión ha expirado porque se agotó el tiempo. ¡Gracias por jugar!"
       },
       "confirm": "Volver al inicio"
+    },
+    "sessionTime": {
+      "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
     }
   }
 }

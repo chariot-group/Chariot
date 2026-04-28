@@ -41,6 +41,7 @@
     "comingSoon": "Coming soon",
     "alreadyInSession": "Action cannot be performed; you are already logged in.",
     "returnToSheet": "Return to Character Sheet",
+    "returnToSession": "Return to Session",
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
     "selected": "selected",
@@ -882,6 +883,9 @@
         "expired": "The session has expired because the time limit was reached. Thank you for playing!"
       },
       "confirm": "Back to home"
+    },
+    "sessionTime": {
+      "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left."
     }
   }
 }

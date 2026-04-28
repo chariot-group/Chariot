@@ -6,7 +6,6 @@ import { useAppSelector } from "@/store/hooks";
 import { selectSessionStatus, selectSessionExpiresAt, selectCurrentSession } from "@/store/slices/sessionSlice";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
-import { useSessionData } from "@/hooks/useSessionData";
 
 function formatDuration(seconds: number): string {
   if (seconds <= 0) return "00:00:00";
