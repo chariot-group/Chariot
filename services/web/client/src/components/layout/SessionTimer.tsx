@@ -38,20 +38,18 @@ export default function SessionTimer() {
   const isLow = remaining <= 300;
 
   return (
-    <div
-      className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
-      <Tooltip>
-        <TooltipTrigger>
-          <React.Fragment>
-            <Timer className="w-4 h-4 shrink-0" />
-            <span>{formatDuration(remaining)}</span>
-          </React.Fragment>
-        </TooltipTrigger>
-        <TooltipContent>
-          Une session est actuellement en cours. Elle à une validité de 8 heures. Il se clôt automatiquement à
-          l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée.
-        </TooltipContent>
-      </Tooltip>
-    </div>
+    <Tooltip>
+      <TooltipTrigger className="flex items-center gap-1.5">
+        <div
+          className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
+          <Timer className="w-4 h-4 shrink-0" />
+          <span>{formatDuration(remaining)}</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à
+        l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée.
+      </TooltipContent>
+    </Tooltip>
   );
 }
