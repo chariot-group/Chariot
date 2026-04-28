@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
-import { ActionButtonState, selectBattleInitialized, selectBattleStarted } from "@/store/slices/actionButtonSlice";
 import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -26,11 +25,18 @@ interface ActionButtonConfig {
   tooltip?: string;
 }
 
+type ActionButtonState =
+  | "initBattle"
+  | "launchSession"
+  | "joinSession"
+  | "startBattle"
+  | "reset"
+  | "returnToBattle"
+  | "returnToSheet";
+
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const contextMode = useAppSelector((state) => state.environment.contextMode);
-  const battleInitialized = useAppSelector(selectBattleInitialized);
-  const battleStarted = useAppSelector(selectBattleStarted);
   const currentPage = usePathname() || "/";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const isInSession = useAppSelector(selectIsInSession);
@@ -42,6 +48,10 @@ export function ActionButton() {
   useSessionValidation();
 
   const sessionStarted = sessionStatus && sessionStatus === "launched";
+
+  // TODO
+  const battleInitialized: boolean = false;
+  const battleStarted: boolean = false;
 
   /**
    * Determine button state based on context and workflow state
