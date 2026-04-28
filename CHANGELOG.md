@@ -1,5 +1,57 @@
 # Changelog
 
+## [2.3.5] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix CI to use the correct environment variables for the session service
+
+
+## [2.3.4] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix prisma migration in session service
+
+## [2.3.3] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix a deploy bug about the prisma generate in the session service that caused the service to crash when start
+
+## [2.3.2] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix a bug in the session service that caused the service to crash when deployed in production mode due to a bad path for the build output file
+
+
+## [2.3.1] - 26-04-2026
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fix a deploy bug about the prisma client in the session service that caused the service to crash when deployed in production mode
+
 ## [2.3.0] - 26-04-2026
 
 ### Added

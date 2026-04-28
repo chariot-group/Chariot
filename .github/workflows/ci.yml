@@ -161,11 +161,13 @@ jobs:
           if [[ "${ENV_NAME}" == "production" ]]; then
             echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+            echo "session_ws_url=${{ secrets.PROD_SESSION_WS_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.PROD_CODEX_URL }}" >> $GITHUB_OUTPUT
             echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           else
             echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
+            echo "session_ws_url=${{ secrets.INTEG_SESSION_WS_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.INTEG_CODEX_URL }}" >> $GITHUB_OUTPUT
             echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           fi
@@ -201,6 +203,7 @@ jobs:
             NEXT_PUBLIC_KEYCLOAK_REALM=chariot
             NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
             NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
+            NEXT_PUBLIC_SESSION_WS_URL=${{ steps.env.outputs.session_ws_url }}
 
       - name: Output image tags
         run: |
@@ -342,6 +345,7 @@ jobs:
           build-args: |
             NODE_ENV=production
             NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
+            DATABASE_URL=postgresql://fake:fake@localhost:5432/fake
       - name: Output image tags
         run: |
           echo "Pushed: ${{ env.REGISTRY }}/${{ env.OWNER }}/chariot-session-${{ steps.env.outputs.env_name }}:latest"

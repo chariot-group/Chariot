@@ -209,6 +209,7 @@ export class UserService {
         campaignName: addHistoryDto.campaignName,
         value: addHistoryDto.value,
       });
+      user.balance -= addHistoryDto.value;
       await user.save();
 
       const keycloakUser: UserRepresentation =

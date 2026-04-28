@@ -209,7 +209,9 @@ export default function SessionPage() {
                     )}
                   </Button>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger
+                      disabled={!sessionIsActive}
+                      asChild>
                       <Button
                         disabled={!sessionIsActive}
                         className="rounded-l-none px-2 pl-1"

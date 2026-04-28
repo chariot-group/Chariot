@@ -18,6 +18,7 @@ import { SessionWithParticipants } from '@/resources/session/entities/session.mo
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import jwksRsa from 'jwks-rsa';
+import path from 'path';
 
 interface AuthenticatedSocket extends Socket {
     user?: {
@@ -33,6 +34,7 @@ interface AuthenticatedSocket extends Socket {
         credentials: true,
     },
     namespace: '/session',
+    path: '/ws',
     allowEIO3: true,
 })
 export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -406,6 +408,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 this.logger.error(message, null, this.SERVICE_NAME);
                 return reject(new InternalServerErrorException(message));
             }
+
+
+            // Ajoute ça temporairement
+            this.jwksClient.getKeys().then(keys => {
+                this.logger.debug(`Available keys from JWKS endpoint: ${(keys as any).map(k => k.kid).join(', ')}`, this.SERVICE_NAME);
+            }).catch(err => {
+                this.logger.error(`Error fetching keys from JWKS endpoint: ${err.message}`, err.stack, this.SERVICE_NAME);
+            });
 
             this.jwksClient.getSigningKey(kid, (err, key) => {
                 if (err) {
