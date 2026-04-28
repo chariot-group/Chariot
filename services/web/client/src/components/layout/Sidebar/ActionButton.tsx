@@ -8,10 +8,14 @@ import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService, { SessionParticipant } from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectCurrentSession, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import {
+  selectCurrentSession,
+  selectCurrentUserParticipant,
+  selectIsInSession,
+  selectSessionStatus,
+} from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
-import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
 
 interface ActionButtonConfig {
@@ -44,6 +48,10 @@ export function ActionButton() {
   const sessionStatus = useAppSelector(selectSessionStatus);
   const user = useUser();
 
+  const currentParticipant = useAppSelector((state) =>
+    selectCurrentUserParticipant(state, user.user?.keycloakId || ""),
+  );
+
   useSessionValidation();
 
   const sessionStarted = sessionStatus && sessionStatus === "launched";
@@ -58,7 +66,7 @@ export function ActionButton() {
    * Player workflow: joinSession → returnToSheet
    */
   const getButtonState = (): ActionButtonConfig => {
-    if (contextMode === "gm") {
+    if (currentParticipant?.status === "gameMaster") {
       // GM: Launch session (initial state)
       if (!sessionStarted) {
         return {

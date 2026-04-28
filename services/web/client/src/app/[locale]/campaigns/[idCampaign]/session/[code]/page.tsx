@@ -174,6 +174,14 @@ export default function SessionPage() {
               </div>
 
               <div className="flex flex-wrap justify-end gap-2">
+                {isMJ && !sessionIsActive && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleLaunchSession}
+                    disabled={!isMJ || !sessionIsActive || isLaunching}>
+                    Clôturer la session
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={handleLeave}
