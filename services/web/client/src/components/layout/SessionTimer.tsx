@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { Timer } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { selectSessionStatus, selectSessionExpiresAt, selectCurrentSession } from "@/store/slices/sessionSlice";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 function formatDuration(seconds: number): string {
   if (seconds <= 0) return "00:00:00";
@@ -20,6 +21,7 @@ export default function SessionTimer() {
   const expiresAt = useAppSelector(selectSessionExpiresAt);
   const [remaining, setRemaining] = useState<number | null>(null);
   const session = useAppSelector(selectCurrentSession);
+  const t = useTranslations("sessionTimer");
 
   useEffect(() => {
     if (status !== "launched" || !expiresAt) return;
@@ -48,10 +50,7 @@ export default function SessionTimer() {
           <span>{formatDuration(remaining)}</span>
         </Link>
       </TooltipTrigger>
-      <TooltipContent>
-        Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à
-        l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée.
-      </TooltipContent>
+      <TooltipContent>{t("tooltip")}</TooltipContent>
     </Tooltip>
   );
 }

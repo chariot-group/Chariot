@@ -20,6 +20,8 @@ import NavigationService from '@/services/NavigationService';
 import { Group } from '@/types/campaign';
 import { useToast } from '@/hooks/useToast';
 import { usePathname, useRouter } from 'next/navigation';
+import { RootState } from '@/store';
+import { useStore } from 'react-redux';
 
 /**
  * Hook personnalisé pour gérer les groupes d'une campagne
@@ -28,6 +30,7 @@ export function useGroups() {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const pathname = usePathname();
+    const store = useStore<RootState>();
     const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
     const activeGroups = useAppSelector(selectActiveGroups);
     const archivedGroups = useAppSelector(selectArchivedGroups);
@@ -247,6 +250,7 @@ export function useGroups() {
                         const destination = await NavigationService.determinePostLoginDestination(
                             localeFromPath,
                             dispatch,
+                            store.getState.bind(store),
                         );
 
                         dispatch(setOpenGroup(null));
@@ -265,7 +269,7 @@ export function useGroups() {
                 throw e;
             }
         },
-        [activeGroups, archivedGroups, dispatch, pathname, router, success, toastError],
+        [activeGroups, archivedGroups, dispatch, pathname, router, success, toastError, store],
     );
 
     /**
