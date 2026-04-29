@@ -888,9 +888,9 @@
         "expired": "La session a expiré car le temps imparti s'est écoulé. Merci d'avoir joué !"
       },
       "confirm": "Retourner à l'accueil"
-    },
-    "sessionTime": {
-      "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée."
     }
+  },
+  "sessionTime": {
+    "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée."
   }
 }

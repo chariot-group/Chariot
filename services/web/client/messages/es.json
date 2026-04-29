@@ -884,9 +884,9 @@
         "expired": "La sesión ha expirado porque se agotó el tiempo. ¡Gracias por jugar!"
       },
       "confirm": "Volver al inicio"
-    },
-    "sessionTime": {
-      "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
     }
+  },
+  "sessionTime": {
+    "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
   }
 }
