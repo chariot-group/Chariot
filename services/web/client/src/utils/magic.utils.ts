@@ -220,3 +220,44 @@ export function incrementSpellSlotUsedInSpellcastingList(
         };
     });
 }
+
+/** Index du sort (référence d’objet, puis nom + niveau + usesPerDay). */
+export function findSpellIndexInList(spells: Spell[], selected: Spell): number {
+    const byRef = spells.indexOf(selected);
+    if (byRef >= 0) return byRef;
+    return spells.findIndex(
+        (s) =>
+            s.name === selected.name &&
+            s.level === selected.level &&
+            (s.usesPerDay ?? null) === (selected.usesPerDay ?? null),
+    );
+}
+
+/** Incrémente `used` sur un sort inné limité (usesPerDay défini). */
+export function incrementNpcInnateSpellUses(
+    spellcastingList: Spellcasting[],
+    className: string,
+    selectedSpell: Spell,
+): Spellcasting[] {
+    const targetClass = className.trim().toLowerCase();
+    return spellcastingList.map((sc) => {
+        if (sc.className.trim().toLowerCase() !== targetClass) return sc;
+        const idx = findSpellIndexInList(sc.spells, selectedSpell);
+        if (idx < 0) return sc;
+        const s = sc.spells[idx];
+        const max = s.usesPerDay;
+        if (max == null) return sc;
+        const used = s.used ?? 0;
+        if (used >= max) return sc;
+        const nextSpells = [...sc.spells];
+        nextSpells[idx] = { ...s, used: used + 1 };
+        return { ...sc, spells: nextSpells };
+    });
+}
+
+/** Sort inné avec quota journalier : il reste au moins une utilisation. */
+export function hasNpcInnateUsesRemaining(spell: Spell): boolean {
+    const max = spell.usesPerDay;
+    if (max == null) return false;
+    return (spell.used ?? 0) < max;
+}

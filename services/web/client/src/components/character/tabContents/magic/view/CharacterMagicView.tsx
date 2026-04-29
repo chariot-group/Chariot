@@ -482,14 +482,16 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
           <SpellDisplay
             spell={selectedSpell}
             accentColor={accentColor}
-            attackBonus={isPlayer(character) ? activeSpellcasting?.attackBonus ?? null : null}
+            attackBonus={activeSpellcasting?.attackBonus ?? null}
+            isNpc={!isPlayer(character)}
             titleEndContent={
-              isPlayer(character) && onCharacterUpdate ? (
+              onCharacterUpdate ? (
                 <SpellCastControls
-                  player={character as Player}
+                  characterKind={isPlayer(character) ? "players" : "npcs"}
+                  character={character as Player | NPC}
                   spellcasting={activeSpellcasting}
                   selectedSpell={selectedSpell}
-                  onCharacterUpdate={(p) => onCharacterUpdate(p)}
+                  onCharacterUpdate={onCharacterUpdate}
                 />
               ) : undefined
             }

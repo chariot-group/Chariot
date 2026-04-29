@@ -11,24 +11,29 @@ import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
-import type { Player, Spell, Spellcasting } from "@/types/character";
+import type { NPC, Player, Spell, Spellcasting } from "@/types/character";
 import {
   getUpcastSlotLevels,
   hasAvailableSpellSlot,
+  hasNpcInnateUsesRemaining,
+  incrementNpcInnateSpellUses,
   incrementSpellSlotUsedInSpellcastingList,
 } from "@/utils/magic.utils";
 import { cn } from "@/lib/utils";
 
+type CharacterKind = "players" | "npcs";
+
 interface SpellCastControlsProps {
-  player: Player;
+  characterKind: CharacterKind;
+  character: Player | NPC;
   spellcasting: Spellcasting;
   selectedSpell: Spell | null;
-  /** Mise à jour locale après PATCH (comme AbilitiesSection) */
-  onCharacterUpdate?: (updated: Player) => void;
+  onCharacterUpdate?: (updated: Player | NPC) => void;
 }
 
 export default function SpellCastControls({
-  player,
+  characterKind,
+  character,
   spellcasting,
   selectedSpell,
   onCharacterUpdate,
@@ -43,7 +48,7 @@ export default function SpellCastControls({
   const baseLevel = selectedSpell?.level ?? -1;
   const upcastLevels = selectedSpell ? getUpcastSlotLevels(spellcasting, baseLevel) : [];
 
-  const castAtLevel = useCallback(
+  const castSlotsAtLevel = useCallback(
     async (slotLevel: number) => {
       if (!onCharacterUpdate || !selectedSpell || busy) return;
       if (!hasAvailableSpellSlot(spellcasting, slotLevel)) {
@@ -53,15 +58,15 @@ export default function SpellCastControls({
 
       setBusy(true);
       try {
-        const list = player.spellcasting ?? [];
+        const list = character.spellcasting ?? [];
         const nextSpellcasting = incrementSpellSlotUsedInSpellcastingList(
           list,
           spellcasting.className,
           slotLevel,
         );
-        const updated = (await CharacterService.updateCharacter("players", player._id, {
+        const updated = (await CharacterService.updateCharacter(characterKind, character._id, {
           spellcasting: nextSpellcasting,
-        })) as Player;
+        })) as Player | NPC;
         onCharacterUpdate(updated);
       } catch (e) {
         console.error(e);
@@ -70,10 +75,106 @@ export default function SpellCastControls({
         setBusy(false);
       }
     },
-    [busy, onCharacterUpdate, player._id, player.spellcasting, selectedSpell, spellcasting, toast, tMagic],
+    [
+      busy,
+      character._id,
+      character.spellcasting,
+      characterKind,
+      onCharacterUpdate,
+      selectedSpell,
+      spellcasting,
+      toast,
+      tMagic,
+    ],
   );
 
-  if (!showCast || !selectedSpell || baseLevel <= 0 || (spellcasting.isInnate ?? false)) {
+  const castInnateLimited = useCallback(async () => {
+    if (!onCharacterUpdate || !selectedSpell || busy) return;
+    if (!hasNpcInnateUsesRemaining(selectedSpell)) {
+      toast.error(tMagic("spellCastNoNpcUses"));
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const list = character.spellcasting ?? [];
+      const nextSpellcasting = incrementNpcInnateSpellUses(list, spellcasting.className, selectedSpell);
+      const updated = (await CharacterService.updateCharacter(characterKind, character._id, {
+        spellcasting: nextSpellcasting,
+      })) as Player | NPC;
+      onCharacterUpdate(updated);
+    } catch (e) {
+      console.error(e);
+      toast.error(tMagic("spellCastError"));
+    } finally {
+      setBusy(false);
+    }
+  }, [
+    busy,
+    character._id,
+    character.spellcasting,
+    characterKind,
+    onCharacterUpdate,
+    selectedSpell,
+    spellcasting.className,
+    toast,
+    tMagic,
+  ]);
+
+  if (!showCast || !selectedSpell || !onCharacterUpdate) {
+    return null;
+  }
+
+  const isInnate = spellcasting.isInnate ?? false;
+
+  /* ─── Sorts innés (PNJ / line avec isInnate) : utilisations / jour ─── */
+  if (isInnate) {
+    if (selectedSpell.usesPerDay == null) {
+      return null;
+    }
+
+    const canCastInnate = hasNpcInnateUsesRemaining(selectedSpell) && !busy;
+    const noUsesLeft = !hasNpcInnateUsesRemaining(selectedSpell);
+    const innateTooltip = tMagic("npcSpellUsesExhaustedTooltip");
+
+    const compactInnate = "h-8 gap-1.5 px-3 has-[>svg]:px-2.5 text-sm rounded-[15px]";
+
+    const innateButton = (
+      <Button
+        type="button"
+        variant="outline"
+        size="default"
+        disabled={noUsesLeft || busy}
+        className={compactInnate}
+        aria-busy={busy}
+        aria-label={tMagic("castSpellNpcInnateAria", { name: selectedSpell.name })}
+        onClick={() => void castInnateLimited()}>
+        {busy ? <Loader2 className="size-4 animate-spin shrink-0" aria-hidden /> : null}
+        {tMagic("castSpell")}
+      </Button>
+    );
+
+    return (
+      <div
+        className="flex flex-col items-end gap-1"
+        role="group"
+        aria-label={tMagic("spellCastRegion")}>
+        {noUsesLeft ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">{innateButton}</span>
+            </TooltipTrigger>
+            <TooltipContent side="top">{innateTooltip}</TooltipContent>
+          </Tooltip>
+        ) : (
+          innateButton
+        )}
+      </div>
+    );
+  }
+
+  /* ─── Emplacements par niveau (PJ ou PNJ non inné) ─── */
+  if (baseLevel <= 0) {
     return null;
   }
 
@@ -82,11 +183,8 @@ export default function SpellCastControls({
   const allUpcastExhausted =
     upcastLevels.length > 0 && upcastLevels.every((l) => !hasAvailableSpellSlot(spellcasting, l));
 
-  const mainRounded = showUpcastTrigger
-    ? "rounded-l-[15px] rounded-y-[15px] rounded-r-none"
-    : "rounded-[15px]";
-  const chevronRounded = "rounded-r-[15px] rounded-y-[15px] rounded-l-none";
-
+  const mainRounded = showUpcastTrigger ? "rounded-l-[15px] rounded-r-none" : "rounded-[15px]";
+  const chevronRounded = "rounded-r-[15px] rounded-l-none";
   const compactBtn = "h-8 gap-1.5 px-3 has-[>svg]:px-2.5 text-sm";
 
   const slotTooltip = tMagic("spellSlotExhaustedTooltip");
@@ -100,9 +198,11 @@ export default function SpellCastControls({
       className={cn(compactBtn, mainRounded)}
       aria-busy={busy}
       aria-label={
-        noSlotForBase ? tMagic("spellCastNoSlotsAria") : tMagic("castSpellAtLevelAria", { level: baseLevel, name: selectedSpell.name })
+        noSlotForBase
+          ? tMagic("spellCastNoSlotsAria")
+          : tMagic("castSpellAtLevelAria", { level: baseLevel, name: selectedSpell.name })
       }
-      onClick={noSlotForBase ? undefined : () => void castAtLevel(baseLevel)}>
+      onClick={noSlotForBase ? undefined : () => void castSlotsAtLevel(baseLevel)}>
       {busy ? <Loader2 className="size-4 animate-spin shrink-0" aria-hidden /> : null}
       {tMagic("castSpell")}
     </Button>
@@ -184,7 +284,7 @@ export default function SpellCastControls({
                       className="rounded-[15px]"
                       onSelect={(e) => {
                         e.preventDefault();
-                        void castAtLevel(level);
+                        void castSlotsAtLevel(level);
                       }}>
                       {label}
                     </DropdownMenuItem>
