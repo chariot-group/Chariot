@@ -436,6 +436,7 @@
           "5": "Speed reduced to 0",
           "6": "Death"
         },
+        "exhaustionSessionOnlyNote": "Exhaustion can only be changed while you are in a session.",
         "savingThrows": "Saving throws",
         "masteryOf": "Mastery of",
         "masteryActive": "active",

@@ -17,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import Column2Edit from "@/components/character/tabContents/general/form/Column2Edit";
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -31,6 +33,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
+  const isInSession = useAppSelector(selectIsInSession);
   void player; // Silence unused player prop warning
 
   const {
@@ -789,8 +792,11 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   </label>
                   <Select
                     value={field.value?.toString() || "0"}
-                    onValueChange={(value) => field.onChange(parseInt(value))}>
-                    <SelectTrigger id="exhaustion-level">
+                    onValueChange={(value) => field.onChange(parseInt(value))}
+                    disabled={!isInSession}>
+                    <SelectTrigger
+                      id="exhaustion-level"
+                      aria-disabled={!isInSession}>
                       <SelectValue placeholder={t("exhaustionLevel")}>
                         {field.value !== undefined && field.value !== null
                           ? `${t("level")} ${field.value}`
@@ -814,6 +820,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       </SelectGroup>
                     </SelectContent>
                   </Select>
+                  {!isInSession && (
+                    <p
+                      className="text-xs text-muted-foreground"
+                      role="note">
+                      {t("exhaustionSessionOnlyNote")}
+                    </p>
+                  )}
                   {fieldState.error && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}

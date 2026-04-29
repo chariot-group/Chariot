@@ -436,6 +436,7 @@
           "5": "Velocidad reducida a 0",
           "6": "Muerte"
         },
+        "exhaustionSessionOnlyNote": "El agotamiento solo se puede cambiar durante una sesión.",
         "savingThrows": "Tiradas de salvación",
         "masteryOf": "Competencia de",
         "masteryActive": "activa",

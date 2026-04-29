@@ -437,6 +437,7 @@
           "5": "Vitesse réduite à 0",
           "6": "Mort"
         },
+        "exhaustionSessionOnlyNote": "L'épuisement ne peut être modifié qu'en session.",
         "savingThrows": "Jets de sauvegarde",
         "masteryOf": "Maîtrise de",
         "masteryActive": "active",

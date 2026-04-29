@@ -9,7 +9,8 @@ import CharacterService from '@/services/CharacterService';
 import { Player, NPC } from '@/types/character';
 import { createPlayerSchema, createNpcSchema } from '@/schemas/character';
 import { makeZodMessages } from '@/lib/zodErrorMap';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { selectIsInSession } from '@/store/slices/sessionSlice';
 import { upsertCharacterWithoutGroup } from '@/store/slices/characterSlice';
 import { upsertCharacterInGroups } from '@/store/slices/groupSlice';
 
@@ -125,6 +126,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
     const { character, loading: isLoading, error, refetch } = useCharacter(characterId);
     const toast = useToast();
     const dispatch = useAppDispatch();
+    const isInSession = useAppSelector(selectIsInSession);
     const t = useTranslations('characterForm');
     const tZod = useTranslations('zodErrors');
 
@@ -208,6 +210,10 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
                 );
             }
 
+            if (type === 'players' && !isInSession) {
+                delete (sanitizedData as Record<string, unknown>).exhaustionLevel;
+            }
+
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
             const parsedData = await resolvedSchema.parseAsync(sanitizedData);
 
@@ -263,6 +269,10 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
                         ? (group as { _id: string })._id
                         : group
                 );
+            }
+
+            if (type === 'players' && !isInSession) {
+                delete (sanitizedData as Record<string, unknown>).exhaustionLevel;
             }
 
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
