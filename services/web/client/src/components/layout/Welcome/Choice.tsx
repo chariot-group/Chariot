@@ -50,7 +50,7 @@ export default function Choice({ image, realm, link, onClick, disabled = false, 
 
   return (
     <article
-      className="relative w-full max-w-md mx-auto mb-8 sm:mb-10 md:mb-12"
+      className="w-full max-w-md mx-auto"
       role="listitem"
       aria-labelledby={`choice-title-${realm}`}>
       <Image
@@ -60,7 +60,7 @@ export default function Choice({ image, realm, link, onClick, disabled = false, 
         aria-hidden="true"
         className="w-full h-auto rounded-t-lg"
       />
-      <Card className="p-3 sm:p-4 md:p-5 lg:p-6 mt-2 sm:mt-3 md:mt-4 absolute left-1/2 -translate-x-1/2 -bottom-6 sm:-bottom-8 md:-bottom-10 w-[90%] sm:w-full flex flex-col items-center">
+      <Card className="p-3 sm:p-4 md:p-5 lg:p-6 w-full flex flex-col items-center -translate-y-10">
         <h3
           id={`choice-title-${realm}`}
           className="mb-2 sm:mb-3 text-center text-xs sm:text-sm md:text-base lg:text-lg font-semibold px-2 leading-tight"
