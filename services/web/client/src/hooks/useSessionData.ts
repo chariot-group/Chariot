@@ -19,7 +19,20 @@ interface UseSessionDataOptions {
     campaign: Campaign | undefined;
 }
 
-export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOptions) {
+export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOptions): {
+    campaignLabel: string | null;
+    locale: string;
+    participants: SessionParticipant[];
+    setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
+    participantNames: Record<string, string>;
+    setParticipantNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+    characterDetails: Record<string, Character>;
+    myCharacters: Character[];
+    fetchCharacterDetails: (ids: string[]) => Promise<void>;
+    getCharacterLabel: (characterId: string | null) => string;
+    isLoading: boolean;
+} {
+
     const dispatch = useAppDispatch();
     const router = useRouter();
     const toast = useToast();
@@ -34,6 +47,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const [participantNames, setParticipantNames] = useState<Record<string, string>>({});
     const [characterDetails, setCharacterDetails] = useState<Record<string, Character>>({});
     const [myCharacters, setMyCharacters] = useState<Character[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchCharacterDetails = async (ids: string[]) => {
         const missing = ids.filter((id) => id && !characterDetails[id]);
@@ -60,6 +74,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             } catch {
                 toast.info(t("toast.sessionNotFound"));
                 router.back();
+                setIsLoading(false);
                 return;
             }
 
@@ -106,8 +121,8 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             } catch {
                 // silently fail
             }
+            setIsLoading(false);
         };
-
         init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [code]);
@@ -132,5 +147,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         myCharacters,
         fetchCharacterDetails,
         getCharacterLabel,
+        isLoading,
     };
 }
+

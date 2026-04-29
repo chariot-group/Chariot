@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
 import { useSessionData } from "@/hooks/useSessionData";
+import type { SessionParticipant } from "@/services/SessionService";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useAppSelector } from "@/store/hooks";
@@ -54,7 +55,8 @@ export default function SessionPage() {
     myCharacters,
     fetchCharacterDetails,
     getCharacterLabel,
-  } = useSessionData({ code, idCampaign, campaign });
+    isLoading,
+  } = useSessionData({ code, idCampaign, campaign }) as ReturnType<typeof useSessionData>;
 
   const totalTokens = Object.values(tokensByUser).reduce((a, b) => a + b, 0);
   const myTokens = currentUser ? (tokensByUser[currentUser.keycloakId] ?? 0) : 0;
@@ -62,6 +64,29 @@ export default function SessionPage() {
   const isMJ = participants.find((p) => p.userId === currentUser?.keycloakId)?.status === "gameMaster";
   const maxAddable = Math.min((currentUser?.balance ?? 0) - myTokens, maxTokens - totalTokens);
   const maxCustomAmount = Math.max(1, Math.max(maxAddable, myTokens));
+
+  const sessionSocket = useSessionSocket({
+    token,
+    code,
+    campaignName: campaign?.label ?? campaignLabel ?? "",
+    currentUser,
+    participants,
+    setParticipants,
+    setParticipantNames,
+    fetchCharacterDetails,
+    tokensByUser,
+    setTokensByUser,
+  });
+
+  // Affiche un loader tant que le socket n'est pas prêt
+  if (isLoading || !sessionSocket) {
+    return (
+      <div className="flex flex-1 items-center justify-center h-full">
+        <Loader2 className="animate-spin w-8 h-8 mr-2" />
+        <span>Chargement de la session…</span>
+      </div>
+    );
+  }
 
   const {
     handleCharacterChange,
@@ -76,18 +101,7 @@ export default function SessionPage() {
     isLaunching,
     sessionEndReason,
     handleCloseSession,
-  } = useSessionSocket({
-    token,
-    code,
-    campaignName: campaign?.label ?? campaignLabel ?? "",
-    currentUser,
-    participants,
-    setParticipants,
-    setParticipantNames,
-    fetchCharacterDetails,
-    tokensByUser,
-    setTokensByUser,
-  });
+  } = sessionSocket;
 
   const copy = (text: string, setState: Dispatch<SetStateAction<"idle" | "loading" | "success">>): void => {
     setState("loading");
@@ -107,6 +121,15 @@ export default function SessionPage() {
       toast.error(t("toast.copyNotSupported"));
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center h-full">
+        <Loader2 className="animate-spin w-8 h-8 mr-2" />
+        <span>Chargement de la session…</span>
+      </div>
+    );
+  }
 
   return (
     <React.Fragment>
@@ -136,7 +159,7 @@ export default function SessionPage() {
                 className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
                 tabIndex={0}>
                 {participants.length > 0 &&
-                  participants.map((participant) => {
+                  participants.map((participant: SessionParticipant) => {
                     const isMe = participant.userId === currentUser?.keycloakId;
                     const isPlayer = participant.status === "connected";
                     const characterLabel = getCharacterLabel(participant.characterId);
