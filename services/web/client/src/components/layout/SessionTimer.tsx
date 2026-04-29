@@ -21,7 +21,7 @@ export default function SessionTimer() {
   const expiresAt = useAppSelector(selectSessionExpiresAt);
   const [remaining, setRemaining] = useState<number | null>(null);
   const session = useAppSelector(selectCurrentSession);
-  const t = useTranslations("sessionTimer");
+  const t = useTranslations("sessionTime");
 
   useEffect(() => {
     if (status !== "launched" || !expiresAt) return;
@@ -42,7 +42,7 @@ export default function SessionTimer() {
 
   return (
     <Tooltip>
-      <TooltipTrigger className="flex items-center gap-1.5">
+      <TooltipTrigger className="absolute -left-25 flex items-center gap-1.5 w-full">
         <Link
           href={`/campaigns/${session.campaignId}/session/${session.code}`}
           className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
@@ -50,7 +50,7 @@ export default function SessionTimer() {
           <span>{formatDuration(remaining)}</span>
         </Link>
       </TooltipTrigger>
-      <TooltipContent>{t("tooltip")}</TooltipContent>
+      <TooltipContent className="w-100">{t("tooltip")}</TooltipContent>
     </Tooltip>
   );
 }

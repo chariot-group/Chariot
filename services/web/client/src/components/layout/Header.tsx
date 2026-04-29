@@ -58,7 +58,7 @@ export default function Header() {
             priority
           />
         </button>
-        <div className="flex items-center gap-3">
+        <div className="relative flex items-center gap-3">
           <SessionTimer />
           <Profile />
         </div>

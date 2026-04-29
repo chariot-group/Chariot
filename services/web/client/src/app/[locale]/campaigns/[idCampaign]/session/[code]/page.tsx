@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { selectSessionStatus } from "@/store/slices/sessionSlice";
+import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
@@ -39,7 +40,6 @@ export default function SessionPage() {
 
   const sessionStatus = useAppSelector(selectSessionStatus);
   const sessionIsActive = sessionStatus == "activated";
-
   const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [tokensByUser, setTokensByUser] = useState<Record<string, number>>({});
@@ -176,11 +176,13 @@ export default function SessionPage() {
 
               <div className="flex flex-wrap justify-end gap-2">
                 {isMJ && !sessionIsActive && (
-                  <Button
-                    variant="destructive"
-                    onClick={handleCloseSession}>
-                    Clôturer la session
-                  </Button>
+                  <ConfirmCancelSessionDialog onConfirm={handleCloseSession}>
+                    <Button
+                      type="button"
+                      variant="destructive">
+                      Clôturer la session
+                    </Button>
+                  </ConfirmCancelSessionDialog>
                 )}
                 <Button
                   variant="outline"

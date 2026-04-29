@@ -888,6 +888,11 @@
         "expired": "La session a expiré car le temps imparti s'est écoulé. Merci d'avoir joué !"
       },
       "confirm": "Retourner à l'accueil"
+    },
+    "sessionCancel": {
+      "title": "Clôturer la session",
+      "description": "Vous vous apprêterez à clôturer la session. Tous les participants seront déconnectés et devront rejoindre une nouvelle session pour continuer à jouer ensemble.",
+      "confirm": "Clôturer la session"
     }
   },
   "sessionTime": {
