@@ -35,7 +35,7 @@ export function CharacterSelect({
       <SelectTrigger className={triggerClassName ?? "w-full"}>
         <SelectValue placeholder={placeholder}>{selectedLabel ?? undefined}</SelectValue>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper">
         {characters.map((character) => (
           <SelectItem
             key={character._id}
