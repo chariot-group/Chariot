@@ -151,3 +151,72 @@ export function getSpellsByUses(spellcasting: Spellcasting, usesPerDay: number |
 export function npcUsesKey(usesPerDay: number | null): string {
     return usesPerDay === null ? "uses-atWill" : `uses-${usesPerDay}`;
 }
+
+/** Niveaux d’emplacements pour lesquels le personnage a au moins un emplacement total (> 0). */
+export function getMasteredSpellSlotLevels(spellcasting: Spellcasting): number[] {
+    const slots = spellcasting.spellSlotsByLevel;
+    if (!slots) return [];
+    const levels: number[] = [];
+    for (const [key, entry] of Object.entries(slots)) {
+        const level = Number(key);
+        if (!Number.isFinite(level) || level < 1) continue;
+        const total = entry?.total ?? 0;
+        if (total > 0) levels.push(level);
+    }
+    levels.sort((a, b) => a - b);
+    return levels;
+}
+
+/**
+ * Niveaux d’emplacements utilisables pour un sort surcoaliser : strictement au-dessus du niveau du sort
+ * et parmi les niveaux maîtrisés (emplacements total > 0).
+ */
+export function getUpcastSlotLevels(spellcasting: Spellcasting, spellBaseLevel: number): number[] {
+    if (spellBaseLevel <= 0 || spellBaseLevel >= 9) return [];
+    const mastered = getMasteredSpellSlotLevels(spellcasting);
+    return mastered.filter((L) => L > spellBaseLevel);
+}
+
+export function getSpellSlotEntry(
+    spellcasting: Spellcasting,
+    level: number,
+): { total: number; used: number } | null {
+    const key = String(level);
+    const slot = spellcasting.spellSlotsByLevel?.[key];
+    if (!slot) return null;
+    return { total: slot.total ?? 0, used: slot.used ?? 0 };
+}
+
+export function hasAvailableSpellSlot(spellcasting: Spellcasting, level: number): boolean {
+    const s = getSpellSlotEntry(spellcasting, level);
+    if (!s) return false;
+    return s.used < s.total;
+}
+
+/** Incrémente `used` pour l’emplacement de niveau `slotLevel` sur la ligne d’incantation identifiée par `className`. */
+export function incrementSpellSlotUsedInSpellcastingList(
+    spellcastingList: Spellcasting[],
+    className: string,
+    slotLevel: number,
+): Spellcasting[] {
+    const key = String(slotLevel);
+    const target = className.trim().toLowerCase();
+    return spellcastingList.map((sc) => {
+        if (sc.className.trim().toLowerCase() !== target) {
+            return sc;
+        }
+        const slot = sc.spellSlotsByLevel?.[key];
+        if (!slot) return sc;
+        const nextUsed = (slot.used ?? 0) + 1;
+        return {
+            ...sc,
+            spellSlotsByLevel: {
+                ...sc.spellSlotsByLevel,
+                [key]: {
+                    ...slot,
+                    used: nextUsed,
+                },
+            },
+        };
+    });
+}

@@ -2,7 +2,7 @@
 
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
-import { Character, Player, Spell, Spellcasting } from "@/types/character";
+import { Character, NPC, Player, Spell, Spellcasting } from "@/types/character";
 import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown, WandSparkles } from "lucide-react";
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
@@ -17,13 +17,16 @@ import {
 } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
+import SpellCastControls from "@/components/character/tabContents/magic/SpellCastControls";
 
 interface CharacterMagicViewProps {
   character: Character;
   accentColor: string;
+  /** En lecture seule : permet de consommer un emplacement (session + PATCH) */
+  onCharacterUpdate?: (updated: Player | NPC) => void;
 }
 
-export default function CharacterMagicView({ character, accentColor }: CharacterMagicViewProps) {
+export default function CharacterMagicView({ character, accentColor, onCharacterUpdate }: CharacterMagicViewProps) {
   const tClass = useTranslations("classes");
   const tMagic = useTranslations("characterDetail.magic");
   const playerCharacter = isPlayer(character) ? (character as Player) : null;
@@ -479,6 +482,17 @@ export default function CharacterMagicView({ character, accentColor }: Character
           <SpellDisplay
             spell={selectedSpell}
             accentColor={accentColor}
+            attackBonus={isPlayer(character) ? activeSpellcasting?.attackBonus ?? null : null}
+            titleEndContent={
+              isPlayer(character) && onCharacterUpdate ? (
+                <SpellCastControls
+                  player={character as Player}
+                  spellcasting={activeSpellcasting}
+                  selectedSpell={selectedSpell}
+                  onCharacterUpdate={(p) => onCharacterUpdate(p)}
+                />
+              ) : undefined
+            }
           />
         </div>
       </div>
