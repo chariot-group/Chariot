@@ -44,7 +44,7 @@ export default function SessionTimer() {
     <Tooltip>
       <TooltipTrigger className="flex items-center gap-1.5">
         <Link
-          href={`/campaign/${session.campaignId}/session/${session.code}`}
+          href={`/campaigns/${session.campaignId}/session/${session.code}`}
           className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
           <Timer className="w-4 h-4 shrink-0" />
           <span>{formatDuration(remaining)}</span>
