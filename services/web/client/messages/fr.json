@@ -1,5 +1,6 @@
 {
   "sidebar": {
+    "disabledInSession": "Certaines actions sont désactivées en session",
     "gmSpace": "Espace maître du jeu",
     "playerSpace": "Espace joueur",
     "environmentChanged": "Vous êtes maintenant dans l''{space}.",

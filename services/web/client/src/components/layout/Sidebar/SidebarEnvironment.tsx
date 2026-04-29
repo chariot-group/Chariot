@@ -13,6 +13,9 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import NavigationService from "@/services/NavigationService";
 import { setSelectedCampaign } from "@/store/slices/campaignContextSlice";
+import { useStore } from "react-redux";
+import { RootState } from "@/store";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
 
 /**
  * Environment selector component
@@ -27,6 +30,7 @@ export default function SidebarEnvironment() {
   const dispatch = useAppDispatch();
   const open = useAppSelector(selectOpenEnvironment);
   const isGmMode = useAppSelector(selectIsGmMode);
+  const store = useStore<RootState>();
 
   /**
    * Handle environment mode change
@@ -40,7 +44,11 @@ export default function SidebarEnvironment() {
       dispatch(setSelectedCampaign(null));
 
       // Redirect to first player character
-      const destination = await NavigationService.determinePlayerSpaceDestination(locale, dispatch);
+      const destination = await NavigationService.determinePlayerSpaceDestination(
+        locale,
+        dispatch,
+        store.getState.bind(store),
+      );
       router.push(destination.path);
     }
   };
@@ -79,7 +87,7 @@ export default function SidebarEnvironment() {
           type="button"
           onClick={() => changeEnvironment("player")}
           aria-label={t("yourCharacters")}
-          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-xl py-1.5 px-3 w-full text-left focus-visible:border">
+          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-[12px] py-1.5 px-3 w-full text-left focus-visible:border">
           {t("yourCharacters")}
         </button>
 
