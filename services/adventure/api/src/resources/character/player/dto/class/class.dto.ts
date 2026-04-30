@@ -31,4 +31,9 @@ export class ClassDto {
   @IsOptional()
   @IsNumber()
   hitDice?: number;
+
+  @ApiProperty({ example: 5, required: false })
+  @IsOptional()
+  @IsNumber()
+  hitDiceRemaining?: number;
 }

@@ -100,6 +100,7 @@ export function ClassSchema(zm: ZodMessages) {
         subclass: z.string().optional(),
         level: z.coerce.number().optional(),
         hitDice: z.coerce.number().optional(),
+        hitDiceRemaining: z.coerce.number().int().min(0, { message: zm.minNumber(0) }).optional(),
     })
 };
 

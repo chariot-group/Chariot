@@ -263,6 +263,8 @@ export interface Class {
     subclass: string;
     level: number;
     hitDice: number;
+    /** Dés de vie restants pour cette classe ; absent = égal au niveau en entrée de jeu */
+    hitDiceRemaining?: number;
 }
 
 export interface Progression {

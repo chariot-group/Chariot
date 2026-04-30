@@ -23,6 +23,11 @@ export class Class {
   @ApiProperty({ example: 10 })
   @Prop()
   hitDice?: number;
+
+  /** Hit dice not yet recovered this day; defaults to level when absent */
+  @ApiProperty({ example: 5, required: false })
+  @Prop()
+  hitDiceRemaining?: number;
 }
 
 export const ClassSchema = SchemaFactory.createForClass(Class);

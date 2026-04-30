@@ -8,6 +8,7 @@ import React, { useEffect } from "react";
 import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { LongRestButton } from "@/components/character/LongRestButton";
+import { ShortRestButton } from "@/components/character/ShortRestButton";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
@@ -144,11 +145,18 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                       </TooltipContent>
                     </Tooltip>
                     {isPlayer(character) && !isEditing && onCharacterUpdate && (
-                      <LongRestButton
-                        player={character}
-                        isInSession={isInSession}
-                        onApplied={(updated) => onCharacterUpdate(updated)}
-                      />
+                      <span className="inline-flex items-center gap-1 shrink-0">
+                        <ShortRestButton
+                          player={character}
+                          isInSession={isInSession}
+                          onApplied={(updated) => onCharacterUpdate(updated)}
+                        />
+                        <LongRestButton
+                          player={character}
+                          isInSession={isInSession}
+                          onApplied={(updated) => onCharacterUpdate(updated)}
+                        />
+                      </span>
                     )}
                   </div>
 

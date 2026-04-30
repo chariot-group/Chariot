@@ -120,6 +120,7 @@ export function LongRestButton({ player, isInSession, onApplied }: LongRestButto
                         <ul className="list-disc pl-5 space-y-1.5 text-muted-foreground">
                             <li>{t("effectSpellSlots")}</li>
                             <li>{t("effectAbilities")}</li>
+                            <li>{t("effectHitDice")}</li>
                             <li>{t("effectHp")}</li>
                             <li>{t("effectTempHp")}</li>
                             <li>{t("effectExhaustion")}</li>
