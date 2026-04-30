@@ -18,6 +18,8 @@ import {
   hasNpcInnateUsesRemaining,
   incrementNpcInnateSpellUses,
   incrementSpellSlotUsedInSpellcastingList,
+  canCastSpellWithPreparedRules,
+  classWithSpellPrepared,
 } from "@/utils/magic.utils";
 import { cn } from "@/lib/utils";
 
@@ -127,6 +129,12 @@ export default function SpellCastControls({
 
   const isInnate = spellcasting.isInnate ?? false;
 
+  const blockedBecauseNotPrepared =
+    selectedSpell &&
+    !isInnate &&
+    classWithSpellPrepared(spellcasting) &&
+    !canCastSpellWithPreparedRules(selectedSpell, spellcasting);
+
   /* ─── Sorts innés (PNJ / line avec isInnate) : utilisations / jour ─── */
   if (isInnate) {
     if (selectedSpell.usesPerDay == null) {
@@ -169,6 +177,34 @@ export default function SpellCastControls({
         ) : (
           innateButton
         )}
+      </div>
+    );
+  }
+
+  if (blockedBecauseNotPrepared) {
+    const compactBlocked = "h-8 gap-1.5 px-3 has-[>svg]:px-2.5 text-sm rounded-[15px]";
+    const blockedBtn = (
+      <Button
+        type="button"
+        variant="outline"
+        disabled
+        className={compactBlocked}
+        aria-label={tMagic("spellCastNotPreparedAria")}>
+        {tMagic("castSpell")}
+      </Button>
+    );
+
+    return (
+      <div
+        className="flex flex-col items-end gap-1"
+        role="group"
+        aria-label={tMagic("spellCastRegion")}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex">{blockedBtn}</span>
+          </TooltipTrigger>
+          <TooltipContent side="top">{tMagic("spellNotPreparedTooltip")}</TooltipContent>
+        </Tooltip>
       </div>
     );
   }

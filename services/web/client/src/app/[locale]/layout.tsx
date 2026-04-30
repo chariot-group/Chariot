@@ -64,7 +64,7 @@ export default async function RootLayout({
 
                   {children}
                   {appVersion && (
-                    <p className="absolute bottom-0 left-0 lg:inset-x-0 text-center text-[10px] text-white/55 select-none">Chariot v{appVersion}</p>
+                    <p className="absolute bottom-0 left-2 lg:inset-x-0 text-center text-[10px] text-white/55 select-none">Chariot v{appVersion}</p>
                   )}
                 </div>
               </SidebarProvider>

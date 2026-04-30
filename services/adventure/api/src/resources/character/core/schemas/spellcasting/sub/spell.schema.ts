@@ -81,6 +81,14 @@ export class Spell {
   })
   @Prop({ default: 0 })
   used?: number;
+
+  @ApiProperty({
+    description:
+      'Prepared casters (player): for spells level 1+, whether this spell is prepared. false = cannot cast.',
+    required: false,
+  })
+  @Prop()
+  prepared?: boolean;
 }
 
 export const SpellSchema = SchemaFactory.createForClass(Spell);

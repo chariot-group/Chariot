@@ -34,6 +34,24 @@ export function getSpellByLevel(selectedSpellcasting: Spellcasting, level: numbe
 }
 
 /**
+ * Trie les sorts d’un même niveau : préparés d’abord (si mécanique active), puis par nom.
+ */
+export function sortSpellsPreparedFirst(spells: Spell[], spellLevel: number, appliesPreparedMechanic: boolean): Spell[] {
+    const copy = [...spells];
+    if (spellLevel <= 0 || !appliesPreparedMechanic) {
+        copy.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+        return copy;
+    }
+    copy.sort((a, b) => {
+        const pa = a.prepared === true ? 0 : 1;
+        const pb = b.prepared === true ? 0 : 1;
+        if (pa !== pb) return pa - pb;
+        return (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' });
+    });
+    return copy;
+}
+
+/**
  * Calcule le nombre de sorts préparés à partir des données brutes
  * (utilisé tant dans la vue que dans l'édition)
  *
@@ -105,6 +123,22 @@ export function classWithSpellPrepared(spellCasting: Spellcasting): boolean {
     return CLASSES_WITH_SPELL_PREPARED.includes(
         spellCasting.className.toLowerCase() as (typeof CLASSES_WITH_SPELL_PREPARED)[number],
     );
+}
+
+/**
+ * Nombre de sorts de niveau ≥ 1 marqués comme préparés (`prepared === true`).
+ */
+export function countPreparedSpellsInList(spells: Spell[]): number {
+    return spells.filter((s) => Number(s.level) > 0 && s.prepared === true).length;
+}
+
+/**
+ * Pour une classe à sorts préparés : un sort de niveau ≥ 1 n’est lançable que s’il est explicitement préparé.
+ */
+export function canCastSpellWithPreparedRules(spell: Spell, spellcasting: Spellcasting): boolean {
+    if ((spell.level ?? 0) === 0) return true;
+    if (!classWithSpellPrepared(spellcasting)) return true;
+    return spell.prepared === true;
 }
 
 // ─── NPC spell helpers ────────────────────────────────────────────────────────

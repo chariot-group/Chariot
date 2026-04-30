@@ -2,22 +2,41 @@
 
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Character, NPC, Player, Spell, Spellcasting } from "@/types/character";
-import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown, WandSparkles } from "lucide-react";
-import { useState, useRef } from "react";
+import {
+  Book,
+  Dice5,
+  Target,
+  ArrowLeft,
+  ListChevronsDownUp,
+  ListChevronsUpDown,
+  WandSparkles,
+  BookOpen,
+  BookOpenCheck,
+} from "lucide-react";
+import { useState, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
   classWithSpellPrepared,
+  countPreparedSpellsInList,
+  findSpellIndexInList,
   getSpellByLevel,
   hasLevel0Spells,
   numberSpellsPrepare,
   getNpcUsesGroups,
   getSpellsByUses,
   npcUsesKey,
+  sortSpellsPreparedFirst,
 } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import SpellCastControls from "@/components/character/tabContents/magic/SpellCastControls";
+import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
+import { Button } from "@/components/ui/button";
+import CharacterService from "@/services/CharacterService";
+import { useToast } from "@/hooks/useToast";
+import { cn } from "@/lib/utils";
 
 interface CharacterMagicViewProps {
   character: Character;
@@ -29,6 +48,7 @@ interface CharacterMagicViewProps {
 export default function CharacterMagicView({ character, accentColor, onCharacterUpdate }: CharacterMagicViewProps) {
   const tClass = useTranslations("classes");
   const tMagic = useTranslations("characterDetail.magic");
+  const toast = useToast();
   const playerCharacter = isPlayer(character) ? (character as Player) : null;
 
   const [selectedSpellcasting, setSelectedSpellcasting] = useState<Spellcasting | null>(
@@ -85,10 +105,14 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
     getInitialAccordionValuesForSpellcasting(selectedSpellcasting),
   );
 
+  const [preparationEditMode, setPreparationEditMode] = useState(false);
+  const [prepSavingKey, setPrepSavingKey] = useState<string | null>(null);
+
   const handleSpellcastingChange = (spellcasting: Spellcasting) => {
     setSelectedSpellcasting(spellcasting);
     setSelectedSpell(getInitialSpellForSpellcasting(spellcasting));
     setOpenAccordionValues(getInitialAccordionValuesForSpellcasting(spellcasting));
+    setPreparationEditMode(false);
   };
 
   const handleSpellSelect = (spell: Spell) => {
@@ -124,6 +148,71 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
     }, 350);
   };
 
+  const toggleSpellPreparedRemote = useCallback(
+    async (spell: Spell, spellLevel: number) => {
+      if (
+        !onCharacterUpdate ||
+        !isPlayer(character) ||
+        !activeSpellcasting ||
+        spellLevel <= 0 ||
+        activeSpellcasting.isInnate ||
+        !classWithSpellPrepared(activeSpellcasting)
+      ) {
+        return;
+      }
+
+      const spells = activeSpellcasting.spells ?? [];
+      const spellIdx = findSpellIndexInList(spells, spell);
+      if (spellIdx < 0) return;
+
+      const currentlyPrepared = spell.prepared === true;
+      const nextPrepared = !currentlyPrepared;
+
+      if (nextPrepared) {
+        const maxPrep = numberSpellsPrepare(activeSpellcasting, character);
+        const countExcl = spells.reduce((acc, s, i) => {
+          if (i === spellIdx) return acc;
+          if (Number(s.level) > 0 && s.prepared === true) return acc + 1;
+          return acc;
+        }, 0);
+        if (maxPrep > 0 && countExcl >= maxPrep) {
+          toast.error(tMagic("spellPrepareLimitTooltip"));
+          return;
+        }
+      }
+
+      const key = `${spell.name}-${spell.level}`;
+      setPrepSavingKey(key);
+      try {
+        const list = (character.spellcasting ?? []).map((sc) => {
+          if (sc.className.trim().toLowerCase() !== activeSpellcasting.className.trim().toLowerCase()) return sc;
+          const idx = findSpellIndexInList(sc.spells, spell);
+          if (idx < 0) return sc;
+          const nextSpells = [...sc.spells];
+          nextSpells[idx] = { ...nextSpells[idx], prepared: nextPrepared };
+          return { ...sc, spells: nextSpells };
+        });
+        const updated = (await CharacterService.updateCharacter("players", (character as Player)._id, {
+          spellcasting: list,
+        })) as Player;
+        const scNew = updated.spellcasting?.find(
+          (s) => s.className.trim().toLowerCase() === activeSpellcasting.className.trim().toLowerCase(),
+        );
+        const idxNew = scNew ? findSpellIndexInList(scNew.spells, spell) : -1;
+        if (idxNew >= 0 && scNew) {
+          setSelectedSpell(scNew.spells[idxNew]);
+        }
+        onCharacterUpdate(updated);
+      } catch (e) {
+        console.error(e);
+        toast.error(tMagic("spellCastError"));
+      } finally {
+        setPrepSavingKey(null);
+      }
+    },
+    [activeSpellcasting, character, onCharacterUpdate, toast, tMagic],
+  );
+
   if (!character.spellcasting || character.spellcasting.length === 0 || activeSpellcasting === null) {
     return (
       <div
@@ -136,6 +225,9 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
   }
 
   const isInnate = activeSpellcasting.isInnate ?? false;
+  const appliesPrepMechanic =
+    isPlayer(character) && classWithSpellPrepared(activeSpellcasting) && !isInnate;
+  const showPreparedSpellsControls = appliesPrepMechanic && Boolean(onCharacterUpdate);
   const allAccordionValues = isInnate
     ? getNpcUsesGroups(activeSpellcasting)
       .filter((uses) => getSpellsByUses(activeSpellcasting, uses).length > 0)
@@ -161,6 +253,21 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
       return levels.map((level) => `level-${level}`);
     })();
   const hasAccordionItems = allAccordionValues.length > 0;
+
+  const maxPreparedForView =
+    isPlayer(character) && activeSpellcasting
+      ? numberSpellsPrepare(activeSpellcasting, character)
+      : 0;
+  const currentPreparedCountView =
+    isPlayer(character) && activeSpellcasting && classWithSpellPrepared(activeSpellcasting)
+      ? countPreparedSpellsInList(activeSpellcasting.spells ?? [])
+      : 0;
+  const preparedCapacityReachedView =
+    isPlayer(character) &&
+    activeSpellcasting &&
+    classWithSpellPrepared(activeSpellcasting) &&
+    maxPreparedForView > 0 &&
+    currentPreparedCountView >= maxPreparedForView;
 
   return (
     <div
@@ -246,22 +353,74 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
               </span>
             </Card>
             {isPlayer(character) && classWithSpellPrepared(activeSpellcasting) && (
-              <Card className="gap-3 p-2 md:px-6 flex-row items-center">
-                <Book
-                  className="shrink-0"
-                  aria-hidden="true"
-                />
-                <span
-                  className="text-sm md:text-base hidden sm:inline"
-                  aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(activeSpellcasting, character)}`}>
-                  {tMagic("preparedSpells")}: <strong>{numberSpellsPrepare(activeSpellcasting, character)}</strong>
-                </span>
-                <span
-                  className="text-sm sm:hidden"
-                  aria-label={`${tMagic("preparedSpells")} : ${numberSpellsPrepare(activeSpellcasting, character)}`}>
-                  {tMagic("preparedShort")} : <strong>{numberSpellsPrepare(activeSpellcasting, character)}</strong>
-                </span>
-              </Card>
+              <>
+                {preparedCapacityReachedView ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Card className="gap-3 p-2 md:px-6 flex-row items-center cursor-default">
+                        <Book
+                          className="shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span
+                          className="text-sm md:text-base hidden sm:inline"
+                          aria-label={`${tMagic("preparedSpells")}: ${tMagic("preparedSpellsUsage", { current: currentPreparedCountView, max: maxPreparedForView })}`}>
+                          {tMagic("preparedSpells")}:{" "}
+                          <strong>
+                            {tMagic("preparedSpellsUsage", {
+                              current: currentPreparedCountView,
+                              max: maxPreparedForView,
+                            })}
+                          </strong>
+                        </span>
+                        <span
+                          className="text-sm sm:hidden"
+                          aria-label={`${tMagic("preparedSpells")}: ${tMagic("preparedSpellsUsage", { current: currentPreparedCountView, max: maxPreparedForView })}`}>
+                          {tMagic("preparedShort")}:{" "}
+                          <strong>
+                            {tMagic("preparedSpellsUsage", {
+                              current: currentPreparedCountView,
+                              max: maxPreparedForView,
+                            })}
+                          </strong>
+                        </span>
+                      </Card>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{tMagic("preparedSpellsLimitReachedTooltip")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Card className="gap-3 p-2 md:px-6 flex-row items-center">
+                    <Book
+                      className="shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="text-sm md:text-base hidden sm:inline"
+                      aria-label={`${tMagic("preparedSpells")}: ${tMagic("preparedSpellsUsage", { current: currentPreparedCountView, max: maxPreparedForView })}`}>
+                      {tMagic("preparedSpells")}:{" "}
+                      <strong>
+                        {tMagic("preparedSpellsUsage", {
+                          current: currentPreparedCountView,
+                          max: maxPreparedForView,
+                        })}
+                      </strong>
+                    </span>
+                    <span
+                      className="text-sm sm:hidden"
+                      aria-label={`${tMagic("preparedSpells")}: ${tMagic("preparedSpellsUsage", { current: currentPreparedCountView, max: maxPreparedForView })}`}>
+                      {tMagic("preparedShort")}:{" "}
+                      <strong>
+                        {tMagic("preparedSpellsUsage", {
+                          current: currentPreparedCountView,
+                          max: maxPreparedForView,
+                        })}
+                      </strong>
+                    </span>
+                  </Card>
+                )}
+              </>
             )}
             <Card className="gap-3 p-2 md:px-6 flex-row items-center">
               <Target
@@ -281,9 +440,30 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
             </Card>
           </div>
           <div className="flex flex-col gap-2 flex-1 overflow-hidden">
-            <Card className="gap-2 sm:gap-3 p-4 md:px-6 h-fit justify-between flex-row items-center">
+            <Card className="gap-2 sm:gap-3 p-4 md:px-6 h-fit flex-row flex-wrap items-center justify-between gap-y-2">
               <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h2>
-              <div className="flex justify-end shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
+                {showPreparedSpellsControls ? (
+                  <Button
+                    type="button"
+                    variant={preparationEditMode ? "default" : "outline"}
+                    size="sm"
+                    className={cn(
+                      "rounded-[15px] text-xs sm:text-sm gap-1.5",
+                      preparationEditMode &&
+                        "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                    )}
+                    onClick={() => setPreparationEditMode((v) => !v)}>
+                    {preparationEditMode ? (
+                      <BookOpenCheck className="size-4 shrink-0" />
+                    ) : (
+                      <BookOpen className="size-4 shrink-0" />
+                    )}
+                    <span>
+                      {preparationEditMode ? tMagic("finishChangingPrepared") : tMagic("changePreparedSpells")}
+                    </span>
+                  </Button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => {
@@ -299,6 +479,20 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                 </button>
               </div>
             </Card>
+
+            {preparationEditMode && showPreparedSpellsControls ? (
+              <div
+              className="rounded-[15px] border border-border bg-muted/40 px-3 py-2.5 sm:px-4 text-sm"
+              role="status">
+                <div className="flex gap-2.5 items-start">
+                  <BookOpen
+                    className="size-4 shrink-0 text-muted-foreground mt-0.5"
+                    aria-hidden
+                  />
+                  <p className="leading-snug text-foreground">{tMagic("preparationModeBanner")}</p>
+                </div>
+              </div>
+            ) : null}
 
             <nav
               className="flex flex-col gap-2 sm:gap-3 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
@@ -410,8 +604,13 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                       onValueChange={setOpenAccordionValues}
                       className="w-full flex flex-col gap-2">
                       {levels.map((level) => {
-                        const spells = getSpellByLevel(activeSpellcasting, level);
+                        const spells = sortSpellsPreparedFirst(
+                          getSpellByLevel(activeSpellcasting, level),
+                          level,
+                          appliesPrepMechanic,
+                        );
                         const slot = activeSpellcasting.spellSlotsByLevel?.[level];
+                        const spellsList = activeSpellcasting.spells ?? [];
 
                         return (
                           <AccordionItem
@@ -432,28 +631,95 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                               <div
                                 className="flex flex-wrap gap-2"
                                 role="list">
-                                {spells.map((spell, index) => (
-                                  <Card
-                                    ref={selectedSpell === spell ? selectedSpellRef : null}
-                                    onClick={() => handleSpellSelect(spell)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault();
-                                        handleSpellSelect(spell);
-                                      }
-                                    }}
-                                    key={index}
-                                    className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
-                                    role="button"
-                                    tabIndex={0}
-                                    aria-pressed={selectedSpell === spell}
-                                    aria-label={`${tMagic("selectSpell")}: ${spell.name}`}>
-                                    <span
-                                      className={`truncate text-sm md:text-base lg:text-lg ${selectedSpell === spell && "font-bold"} `}>
-                                      {spell.name}
-                                    </span>
-                                  </Card>
-                                ))}
+                                {spells.map((spell) => {
+                                  const isCantripRow = level === 0;
+                                  const showBookmarks = appliesPrepMechanic && !isCantripRow;
+                                  const prepEditRow =
+                                    preparationEditMode &&
+                                    showBookmarks &&
+                                    prepSavingKey === null &&
+                                    showPreparedSpellsControls;
+
+                                  if (!showBookmarks) {
+                                    return (
+                                      <Card
+                                        ref={selectedSpell === spell ? selectedSpellRef : null}
+                                        onClick={() => handleSpellSelect(spell)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            handleSpellSelect(spell);
+                                          }
+                                        }}
+                                        key={`${spell.name}-${spell.level}`}
+                                        className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-2 p-2 md:px-4 flex-row items-center cursor-pointer`}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-pressed={selectedSpell === spell}
+                                        aria-label={`${tMagic("selectSpell")}: ${spell.name}`}>
+                                        <span
+                                          className={`truncate text-sm md:text-base lg:text-lg flex-1 min-w-0 ${selectedSpell === spell && "font-bold"} `}>
+                                          {spell.name}
+                                        </span>
+                                      </Card>
+                                    );
+                                  }
+
+                                  const spellIdx = findSpellIndexInList(spellsList, spell);
+                                  const countExcl =
+                                    spellIdx >= 0
+                                      ? spellsList.reduce((acc, s, i) => {
+                                          if (i === spellIdx) return acc;
+                                          if (Number(s.level) > 0 && s.prepared === true) return acc + 1;
+                                          return acc;
+                                        }, 0)
+                                      : 0;
+                                  const prepareBlockedBookmark =
+                                    spell.prepared !== true &&
+                                    maxPreparedForView > 0 &&
+                                    countExcl >= maxPreparedForView;
+
+                                  const openDetail = () => handleSpellSelect(spell);
+
+                                  return (
+                                    <Card
+                                      ref={selectedSpell === spell ? selectedSpellRef : null}
+                                      onClick={openDetail}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                          e.preventDefault();
+                                          openDetail();
+                                        }
+                                      }}
+                                      key={`${spell.name}-${spell.level}`}
+                                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-2 py-2 pl-2 pr-2 md:pl-3 md:pr-3 flex-row items-center cursor-pointer`}
+                                      role="button"
+                                      tabIndex={0}
+                                      aria-pressed={selectedSpell === spell}
+                                      aria-label={`${tMagic("selectSpell")}: ${spell.name}`}>
+                                      <div className="flex flex-row items-center gap-2 min-w-0 flex-1">
+                                        <SpellPreparedPill
+                                          isPrepared={spell.prepared === true}
+                                          interactive={prepEditRow}
+                                          prepareBlocked={prepareBlockedBookmark}
+                                          onToggle={() => void toggleSpellPreparedRemote(spell, level)}
+                                          preparedTooltip={tMagic("preparedBookmarkPreparedTooltip")}
+                                          unpreparedTooltip={tMagic("preparedBookmarkUnpreparedTooltip")}
+                                          prepareBlockedTooltip={tMagic("spellPrepareLimitTooltip")}
+                                          ariaPrepared={tMagic("preparedPillAriaPrepared")}
+                                          ariaUnprepared={tMagic("preparedPillAriaUnprepared")}
+                                        />
+                                        <span
+                                          className={cn(
+                                            "truncate text-sm md:text-base lg:text-lg flex-1 min-w-0",
+                                            selectedSpell === spell && "font-bold",
+                                          )}>
+                                          {spell.name}
+                                        </span>
+                                      </div>
+                                    </Card>
+                                  );
+                                })}
                               </div>
                             </AccordionContent>
                           </AccordionItem>
@@ -484,6 +750,17 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
             accentColor={accentColor}
             attackBonus={activeSpellcasting?.attackBonus ?? null}
             isNpc={!isPlayer(character)}
+            preparationStatusBadge={
+              isPlayer(character) &&
+              activeSpellcasting &&
+              classWithSpellPrepared(activeSpellcasting) &&
+              selectedSpell &&
+              (selectedSpell.level ?? 0) > 0
+                ? selectedSpell.prepared === true
+                  ? "prepared"
+                  : "unprepared"
+                : "hidden"
+            }
             titleEndContent={
               onCharacterUpdate ? (
                 <SpellCastControls

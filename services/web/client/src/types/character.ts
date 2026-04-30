@@ -191,6 +191,11 @@ export interface Spell {
     usesPerDay?: number | null;
     /** NPC only — number of times this spell has been cast today */
     used?: number;
+    /**
+     * PJ, classes à sorts préparés (niveau ≥ 1) : uniquement `prepared === true` compte comme préparé et permet le lancement.
+     * `false` ou absent = non préparé.
+     */
+    prepared?: boolean;
 }
 
 export interface Spellcasting {

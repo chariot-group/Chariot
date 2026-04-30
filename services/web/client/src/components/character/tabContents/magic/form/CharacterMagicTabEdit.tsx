@@ -17,6 +17,9 @@ import {
   ChevronDown,
   BookPlus,
   ArrowLeft,
+  Book,
+  BookOpen,
+  BookOpenCheck,
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,9 +28,12 @@ import { calculateAbilityBonus, isPlayer } from "@/utils/global.utils";
 import {
   calculateSpellAttackBonus,
   calculateSpellSaveDC,
+  classWithSpellPrepared,
+  countPreparedSpellsInList,
   DICE_TYPES,
-  SPELL_SCHOOLS,
+  numberSpellsPrepare,
   npcUsesKey,
+  SPELL_SCHOOLS,
 } from "@/utils/magic.utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -35,12 +41,14 @@ import { ComboboxInput } from "@/components/ui/combobox-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { parseDamageFormula } from "@/utils/spell-damage.utils";
+import { cn } from "@/lib/utils";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatSignedBonus } from "@/utils/attack.utils";
 import type { Player, Spell, Spellcasting } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
 import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
+import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
 import React from "react";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
@@ -110,6 +118,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const [openSpellDetailsAccordion, setOpenSpellDetailsAccordion] = useState<string[]>([]);
   const [isCodexDialogOpen, setIsCodexDialogOpen] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const [preparationEditMode, setPreparationEditMode] = useState(false);
 
   const { isAvailable: isCodexAvailable } = useCodexHealth();
 
@@ -117,6 +126,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     setSelectedSpellcastingIndex(index);
     setSelectedSpellIndex(null);
     setShowMobileDetails(false);
+    setPreparationEditMode(false);
   }, []);
 
   // Manage focus when showing mobile details
@@ -162,17 +172,31 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         effectType: spell.effectType || "utility",
       };
 
+      const spellLevel = Number(spellWithDefaults.level ?? 0);
+      const scRow = form.getValues(`spellcasting.${selectedSpellcastingIndex}`) as Spellcasting | undefined;
+      const innateRow = form.getValues(`spellcasting.${selectedSpellcastingIndex}.isInnate`) ?? false;
+      if (
+        isPlayer(character) &&
+        !innateRow &&
+        scRow &&
+        classWithSpellPrepared(scRow) &&
+        spellLevel > 0 &&
+        spellWithDefaults.prepared === undefined
+      ) {
+        spellWithDefaults.prepared = false;
+      }
+
       const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
       form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spellWithDefaults], {
         shouldDirty: true,
       });
 
-      const spellLevel = Number(spellWithDefaults.level || 0);
-      if (spellLevel > 0) {
+      const spellLevelAfter = Number(spellWithDefaults.level || 0);
+      if (spellLevelAfter > 0) {
         const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
-        if (!currentSlots[spellLevel]) {
+        if (!currentSlots[spellLevelAfter]) {
           form.setValue(
-            `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevel}`,
+            `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevelAfter}`,
             { total: 2, used: 0 },
             { shouldDirty: true },
           );
@@ -201,7 +225,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
       setSelectedSpellIndex(currentSpells.length);
     },
-    [form, selectedSpellcastingIndex, openAccordionValues, isInnate],
+    [form, selectedSpellcastingIndex, openAccordionValues, isInnate, character],
   );
 
   const removeSpell = useCallback(
@@ -477,6 +501,22 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   const selectedSpellcasting = spellcastingList[selectedSpellcastingIndex];
 
+  const usesPreparedMechanic =
+    isPlayer(character) &&
+    !isInnate &&
+    !!selectedSpellcasting &&
+    classWithSpellPrepared(selectedSpellcasting as Spellcasting);
+
+  const maxPreparedSlots =
+    usesPreparedMechanic && isPlayer(character)
+      ? numberSpellsPrepare(selectedSpellcasting as Spellcasting, character)
+      : 0;
+
+  const preparedSpellsCounted = usesPreparedMechanic ? countPreparedSpellsInList(currentSpells) : 0;
+
+  const atPreparedLimit =
+    usesPreparedMechanic && maxPreparedSlots > 0 && preparedSpellsCounted >= maxPreparedSlots;
+
   // ── Prepared spells (calculated) ──
   const modSign = abilityMod >= 0 ? `+${abilityMod}` : `${abilityMod}`;
   const playerCharacter = isPlayer(character) ? (character as Player) : null;
@@ -523,6 +563,33 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     }, []);
     return acc;
   }, {});
+
+  if (usesPreparedMechanic) {
+    for (const lvl of levels) {
+      const idxList = spellIndicesByLevel[lvl];
+      if (!idxList?.length) continue;
+      idxList.sort((ai, bi) => {
+        const a = currentSpells[ai];
+        const b = currentSpells[bi];
+        if (lvl > 0) {
+          const pa = a.prepared === true ? 0 : 1;
+          const pb = b.prepared === true ? 0 : 1;
+          if (pa !== pb) return pa - pb;
+        }
+        return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
+      });
+    }
+  } else {
+    for (const lvl of levels) {
+      const idxList = spellIndicesByLevel[lvl];
+      if (!idxList?.length) continue;
+      idxList.sort((ai, bi) =>
+        (currentSpells[ai].name || "").localeCompare(currentSpells[bi].name || "", undefined, {
+          sensitivity: "base",
+        }),
+      );
+    }
+  }
 
   // NPC: spell indices grouped by usesPerDay, sorted alphabetically within each group
   const npcSpellIndicesByUses = npcUsesGroups.reduce<Record<string, number[]>>((acc, uses) => {
@@ -896,13 +963,79 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 )}
               </div>
             </div>
+
+            {usesPreparedMechanic && (
+              <div className="flex flex-col gap-1 pt-1">
+                {atPreparedLimit ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm cursor-default">
+                        <Book
+                          className="size-4 shrink-0"
+                          aria-hidden
+                        />
+                        <span>
+                          {tMagic("preparedSpells")}:{" "}
+                          <strong>
+                            {tMagic("preparedSpellsUsage", {
+                              current: preparedSpellsCounted,
+                              max: maxPreparedSlots,
+                            })}
+                          </strong>
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{tMagic("preparedSpellsLimitReachedTooltip")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm">
+                    <Book
+                      className="size-4 shrink-0"
+                      aria-hidden
+                    />
+                    <span>
+                      {tMagic("preparedSpells")}:{" "}
+                      <strong>
+                        {tMagic("preparedSpellsUsage", {
+                          current: preparedSpellsCounted,
+                          max: maxPreparedSlots,
+                        })}
+                      </strong>
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
 
           {/* Spell list */}
           <div className="flex flex-col gap-2 flex-1 overflow-hidden">
-            <Card className="gap-2 p-3 sm:p-4 md:px-6 flex-row justify-between items-center shrink-0">
+            <Card className="gap-2 p-3 sm:p-4 md:px-6 flex-row flex-wrap justify-between items-center shrink-0">
               <h3 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {usesPreparedMechanic ? (
+                  <Button
+                    type="button"
+                    variant={preparationEditMode ? "default" : "outline"}
+                    size="sm"
+                    className={cn(
+                      "rounded-[15px] text-xs sm:text-sm gap-1.5",
+                      preparationEditMode &&
+                        "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                    )}
+                    onClick={() => setPreparationEditMode((v) => !v)}>
+                    {preparationEditMode ? (
+                      <BookOpenCheck className="size-4 shrink-0" />
+                    ) : (
+                      <BookOpen className="size-4 shrink-0" />
+                    )}
+                    <span>
+                      {preparationEditMode ? tMagic("finishChangingPrepared") : tMagic("changePreparedSpells")}
+                    </span>
+                  </Button>
+                ) : null}
                 <ButtonGroup>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -966,6 +1099,20 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 </button>
               </div>
             </Card>
+
+            {usesPreparedMechanic && preparationEditMode ? (
+              <div
+                className="rounded-[15px] border border-border bg-muted/40 px-3 py-2.5 sm:px-4 text-sm"
+                role="status">
+                <div className="flex gap-2.5 items-start">
+                  <BookOpen
+                    className="size-4 shrink-0 text-muted-foreground mt-0.5"
+                    aria-hidden
+                  />
+                  <p className="leading-snug text-foreground">{tMagic("preparationModeBanner")}</p>
+                </div>
+              </div>
+            ) : null}
 
             <nav
               className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
@@ -1031,30 +1178,103 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     const spell = currentSpells[spellIndex];
                                     const spellName = spell?.name;
                                     const isSelected = selectedSpellIndex === spellIndex;
+                                    const showBookmarks = usesPreparedMechanic && level > 0;
+                                    const prepEditRow = preparationEditMode && showBookmarks;
+
+                                    const openSpellDetail = () => {
+                                      setSelectedSpellIndex(spellIndex);
+                                      setShowMobileDetails(true);
+                                    };
+
+                                    if (!showBookmarks) {
+                                      return (
+                                        <li key={spellIndex}>
+                                          <Card
+                                            onClick={openSpellDetail}
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                openSpellDetail();
+                                              }
+                                            }}
+                                            className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 p-2 sm:px-3 md:px-4 flex-row items-center cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={spellName || tMagic("newSpell")}>
+                                            <span
+                                              className={`truncate text-xs sm:text-sm md:text-base flex-1 min-w-0 ${isSelected ? "font-bold" : ""}`}
+                                              aria-hidden="true">
+                                              {spellName || tMagic("newSpell")}
+                                            </span>
+                                          </Card>
+                                        </li>
+                                      );
+                                    }
+
+                                    const countExcl = currentSpells.reduce((acc, s, i) => {
+                                      if (i === spellIndex) return acc;
+                                      if (Number(s.level) > 0 && s.prepared === true) return acc + 1;
+                                      return acc;
+                                    }, 0);
+                                    const prepareBlockedBookmark =
+                                      spell?.prepared !== true &&
+                                      maxPreparedSlots > 0 &&
+                                      countExcl >= maxPreparedSlots;
+
+                                    const toggleLocalPrepared = () => {
+                                      if (!prepEditRow || !spell) return;
+                                      const currentlyPrepared = spell.prepared === true;
+                                      const nextPrepared = !currentlyPrepared;
+                                      if (nextPrepared) {
+                                        const cx = currentSpells.reduce((acc, s, i) => {
+                                          if (i === spellIndex) return acc;
+                                          if (Number(s.level) > 0 && s.prepared === true) return acc + 1;
+                                          return acc;
+                                        }, 0);
+                                        if (maxPreparedSlots > 0 && cx >= maxPreparedSlots) return;
+                                      }
+                                      form.setValue(
+                                        `spellcasting.${selectedSpellcastingIndex}.spells.${spellIndex}.prepared`,
+                                        nextPrepared ? true : false,
+                                        { shouldDirty: true },
+                                      );
+                                    };
 
                                     return (
                                       <li key={spellIndex}>
                                         <Card
-                                          onClick={() => {
-                                            setSelectedSpellIndex(spellIndex);
-                                            setShowMobileDetails(true);
-                                          }}
+                                          onClick={openSpellDetail}
                                           onKeyDown={(e) => {
                                             if (e.key === "Enter" || e.key === " ") {
                                               e.preventDefault();
-                                              setSelectedSpellIndex(spellIndex);
-                                              setShowMobileDetails(true);
+                                              openSpellDetail();
                                             }
                                           }}
-                                          className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
+                                          className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 py-2 pl-2 pr-2 sm:pl-3 sm:pr-3 md:px-3 flex-row items-center cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
                                           role="button"
                                           tabIndex={0}
                                           aria-label={spellName || tMagic("newSpell")}>
-                                          <span
-                                            className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
-                                            aria-hidden="true">
-                                            {spellName || tMagic("newSpell")}
-                                          </span>
+                                          <div className="flex flex-row items-center gap-2 min-w-0 flex-1">
+                                            <SpellPreparedPill
+                                              isPrepared={spell?.prepared === true}
+                                              interactive={prepEditRow}
+                                              prepareBlocked={prepareBlockedBookmark}
+                                              onToggle={() => toggleLocalPrepared()}
+                                              preparedTooltip={tMagic("preparedBookmarkPreparedTooltip")}
+                                              unpreparedTooltip={tMagic("preparedBookmarkUnpreparedTooltip")}
+                                              prepareBlockedTooltip={tMagic("spellPrepareLimitTooltip")}
+                                              ariaPrepared={tMagic("preparedPillAriaPrepared")}
+                                              ariaUnprepared={tMagic("preparedPillAriaUnprepared")}
+                                            />
+                                            <span
+                                              className={cn(
+                                                "truncate text-xs sm:text-sm md:text-base flex-1 min-w-0",
+                                                isSelected && "font-bold",
+                                              )}
+                                              aria-hidden="true">
+                                              {spellName || tMagic("newSpell")}
+                                            </span>
+                                          </div>
                                         </Card>
                                       </li>
                                     );

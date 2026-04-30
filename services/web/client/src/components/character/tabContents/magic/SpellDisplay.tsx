@@ -2,8 +2,10 @@
 
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Spell } from "@/types/character";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import { formatDamageFormula } from "@/utils/spell-damage.utils";
 import { formatSignedBonus } from "@/utils/attack.utils";
 
@@ -15,6 +17,8 @@ interface SpellDisplayProps {
   titleEndContent?: ReactNode;
   attackBonus?: number | null;
   isNpc?: boolean;
+  /** PJ à sorts préparés, sort de niveau ≥ 1 : pastille verte / grise dans l’en-tête */
+  preparationStatusBadge?: "hidden" | "prepared" | "unprepared";
 }
 
 /**
@@ -28,6 +32,7 @@ export default function SpellDisplay({
   titleEndContent,
   attackBonus = null,
   isNpc = false,
+  preparationStatusBadge = "hidden",
 }: SpellDisplayProps) {
   const tMagic = useTranslations("characterDetail.magic");
   const tClasses = useTranslations("classes");
@@ -47,7 +52,33 @@ export default function SpellDisplay({
               id="spell-name">
               {spell.name}
             </h3>
-            {titleEndContent ? <div className="shrink-0 flex flex-col items-end">{titleEndContent}</div> : null}
+            <div className="shrink-0 flex flex-col items-end gap-2">
+              {titleEndContent ? <div className="flex flex-col items-end">{titleEndContent}</div> : null}
+              {preparationStatusBadge !== "hidden" ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium cursor-default border",
+                        preparationStatusBadge === "prepared"
+                          ? "bg-emerald-600/88 text-white border-emerald-500/35"
+                          : "border-foreground/15 bg-foreground/[0.06] text-muted-foreground",
+                      )}>
+                      {preparationStatusBadge === "prepared"
+                        ? tMagic("spellPreparedLabel")
+                        : tMagic("spellUnpreparedBadge")}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {preparationStatusBadge === "prepared"
+                        ? tMagic("spellPreparedStatusTooltip")
+                        : tMagic("spellNotPreparedTooltip")}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
+            </div>
           </div>
         </Card>
       )}
