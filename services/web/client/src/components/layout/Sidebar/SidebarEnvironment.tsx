@@ -15,7 +15,6 @@ import NavigationService from "@/services/NavigationService";
 import { setSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useStore } from "react-redux";
 import { RootState } from "@/store";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
 
 /**
  * Environment selector component

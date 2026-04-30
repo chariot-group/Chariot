@@ -3,7 +3,7 @@
 import { useCampaigns } from "@/hooks/useCampaigns";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import SidebarEnvironment from "@/components/layout/Sidebar/SidebarEnvironment";
 import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
 import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
