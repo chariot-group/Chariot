@@ -220,6 +220,22 @@
     "saveChanges": "Save changes",
     "saving": "Saving...",
     "cancel": "Cancel",
+    "longRest": {
+      "ariaLabel": "Long rest",
+      "disabledTooltip": "Long rest: only available during a session",
+      "confirmTitle": "Confirm long rest?",
+      "confirmIntro": "A long rest applies the following effects:",
+      "effectSpellSlots": "All spent spell slots are recovered (uses reset to zero).",
+      "effectAbilities": "Ability and trait counters set to reset on a long rest go back to zero uses.",
+      "effectHp": "Current hit points rise to your hit point maximum.",
+      "effectTempHp": "Temporary hit points are cleared.",
+      "effectExhaustion": "Your exhaustion level decreases by 1 (no effect if already 0).",
+      "confirm": "Confirm",
+      "confirming": "Applying…",
+      "cancel": "Cancel",
+      "success": "Long rest completed.",
+      "error": "Could not apply long rest."
+    },
     "edit": {
       "basicInfo": "Basic Information",
       "firstname": "First Name",

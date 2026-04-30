@@ -220,6 +220,22 @@
     "saveChanges": "Guardar cambios",
     "saving": "Guardando...",
     "cancel": "Cancelar",
+    "longRest": {
+      "ariaLabel": "Descanso largo",
+      "disabledTooltip": "Descanso largo: solo disponible en sesión",
+      "confirmTitle": "¿Confirmar descanso largo?",
+      "confirmIntro": "Un descanso largo aplica los siguientes efectos:",
+      "effectSpellSlots": "Todos los espacios de conjuro gastados se recuperan (usos a cero).",
+      "effectAbilities": "Los contadores de aptitudes y rasgos con « reinicio tras descanso largo » vuelven a cero.",
+      "effectHp": "Los puntos de vida actuales suben al máximo.",
+      "effectTempHp": "Los puntos de vida temporales vuelven a cero.",
+      "effectExhaustion": "El nivel de agotamiento baja en 1 (sin efecto si ya es 0).",
+      "confirm": "Confirmar",
+      "confirming": "Aplicando…",
+      "cancel": "Cancelar",
+      "success": "Descanso largo aplicado.",
+      "error": "No se pudo aplicar el descanso largo."
+    },
     "edit": {
       "basicInfo": "Información Básica",
       "firstname": "Nombre",

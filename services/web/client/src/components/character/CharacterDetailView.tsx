@@ -7,7 +7,10 @@ import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect } from "react";
 import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
+import { LongRestButton } from "@/components/character/LongRestButton";
 import { isPlayer } from "@/utils/global.utils";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -29,6 +32,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isInSession = useAppSelector(selectIsInSession);
 
   // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
   const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
@@ -123,14 +127,14 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
                 <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
                   {/* Ligne 1: Nom du personnage */}
-                  <div className="min-w-0 justify-start lg:justify-end flex">
+                  <div className="min-w-0 justify-start lg:justify-end flex items-center gap-2">
                     <Tooltip>
-                      <TooltipTrigger className="cursor-help truncate flex flex-row items-end gap-2">
+                      <TooltipTrigger className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
                         <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
                           {character.firstname?.trim()} {character.lastname?.trim()}{" "}
                         </h1>
                         {character.surname && (
-                          <span className="ml-auto text-gray-light italic lg:text-md text-sm">
+                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
                             ({character.surname?.trim()})
                           </span>
                         )}
@@ -139,6 +143,13 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                         {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
                       </TooltipContent>
                     </Tooltip>
+                    {isPlayer(character) && !isEditing && onCharacterUpdate && (
+                      <LongRestButton
+                        player={character}
+                        isInSession={isInSession}
+                        onApplied={(updated) => onCharacterUpdate(updated)}
+                      />
+                    )}
                   </div>
 
                   {/* Ligne 2: Surnom + Classe/CR + Groupe */}

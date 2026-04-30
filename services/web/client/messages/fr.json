@@ -221,6 +221,22 @@
     "saveChanges": "Sauvegarder",
     "saving": "Sauvegarde...",
     "cancel": "Annuler",
+    "longRest": {
+      "ariaLabel": "Repos long",
+      "disabledTooltip": "Repos long : uniquement en session",
+      "confirmTitle": "Confirmer le repos long ?",
+      "confirmIntro": "Un repos long applique les effets suivants :",
+      "effectSpellSlots": "Tous les emplacements de sorts dépensés sont récupérés (utilisations remises à zéro).",
+      "effectAbilities": "Les compteurs des capacités et traits marqués « réinitialisation après repos long » repassent à zéro.",
+      "effectHp": "Les points de vie actuels remontent au maximum.",
+      "effectTempHp": "Les points de vie temporaires repassent à zéro.",
+      "effectExhaustion": "Le niveau d’épuisement diminue de 1 (aucun effet s’il est déjà à 0).",
+      "confirm": "Confirmer",
+      "confirming": "Application…",
+      "cancel": "Annuler",
+      "success": "Repos long effectué.",
+      "error": "Impossible d’appliquer le repos long."
+    },
     "edit": {
       "basicInfo": "Informations de base",
       "firstname": "Prénom",
