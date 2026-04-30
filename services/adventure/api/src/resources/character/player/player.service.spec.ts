@@ -34,7 +34,9 @@ describe('PlayerService', () => {
           })),
           {
             updateOne: jest.fn().mockReturnValue({
-              exec: jest.fn().mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
+              exec: jest
+                .fn()
+                .mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
             }),
           },
         ),
@@ -278,7 +280,9 @@ describe('PlayerService', () => {
       });
 
       characterModel.discriminators.player.updateOne.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
       });
 
       groupModel.updateMany.mockResolvedValue({});
@@ -300,7 +304,9 @@ describe('PlayerService', () => {
       });
 
       characterModel.discriminators.player.updateOne.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue({ matchedCount: 0, modifiedCount: 0 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ matchedCount: 0, modifiedCount: 0 }),
       });
 
       await expect(service.update(playerId, dto)).rejects.toThrow(
@@ -321,7 +327,9 @@ describe('PlayerService', () => {
       });
 
       characterModel.discriminators.player.updateOne.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue({ matchedCount: 1, modifiedCount: 0 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ matchedCount: 1, modifiedCount: 0 }),
       });
 
       groupModel.updateMany.mockResolvedValue({});

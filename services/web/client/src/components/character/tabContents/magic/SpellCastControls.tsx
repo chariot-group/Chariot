@@ -141,7 +141,6 @@ export default function SpellCastControls({
       return null;
     }
 
-    const canCastInnate = hasNpcInnateUsesRemaining(selectedSpell) && !busy;
     const noUsesLeft = !hasNpcInnateUsesRemaining(selectedSpell);
     const innateTooltip = tMagic("npcSpellUsesExhaustedTooltip");
 

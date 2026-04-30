@@ -93,7 +93,8 @@ export class SpellDto {
   used?: number;
 
   @ApiProperty({
-    description: 'Prepared caster (player): level 1+ spells — whether prepared.',
+    description:
+      'Prepared caster (player): level 1+ spells — whether prepared.',
     required: false,
   })
   @IsOptional()

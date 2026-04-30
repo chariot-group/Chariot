@@ -15,7 +15,7 @@ import CharacterService from "@/services/CharacterService";
 import { useAppDispatch } from "@/store/hooks";
 import { upsertCharacterInGroups } from "@/store/slices/groupSlice";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
-import type { Player } from "@/types/character";
+import type { Class, Player } from "@/types/character";
 import {
     buildShortRestUpdatePayload,
     getHitDiceRemainingForClass,
@@ -37,6 +37,17 @@ type RollRow = { id: string; classIndex: number; value: string };
 
 function makeId(): string {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function parseShortRestHitDiceRolls(rollRows: RollRow[], classesList: Class[]): ShortRestHitDiceRoll[] | null {
+    const out: ShortRestHitDiceRoll[] = [];
+    for (const row of rollRows) {
+        const v = Number.parseInt(row.value.trim(), 10);
+        const side = hitDieSide(classesList[row.classIndex]);
+        if (!Number.isInteger(v) || v < 1 || v > side) return null;
+        out.push({ classIndex: row.classIndex, value: v });
+    }
+    return out;
 }
 
 /** Garde uniquement des valeurs entières dans [1, side] ou chaîne vide. */
@@ -64,7 +75,7 @@ export function ShortRestButton({ player, isInSession, onApplied }: ShortRestBut
     const [dialogOpen, setDialogOpen] = useState(false);
     const [rollRows, setRollRows] = useState<RollRow[]>([]);
 
-    const classes = player.class ?? [];
+    const classes = useMemo(() => player.class ?? [], [player.class]);
 
     useEffect(() => {
         if (!isInSession) setDialogOpen(false);
@@ -82,7 +93,7 @@ export function ShortRestButton({ player, isInSession, onApplied }: ShortRestBut
             }
         }
         return counts;
-    }, [rollRows, classes.length]);
+    }, [rollRows, classes]);
 
     const remainingAfterPending = useMemo(
         () => classes.map((c, i) => Math.max(0, getHitDiceRemainingForClass(c) - spentPerClass[i])),
@@ -112,26 +123,19 @@ export function ShortRestButton({ player, isInSession, onApplied }: ShortRestBut
         setRollRows((prev) => prev.map((r) => (r.id === id ? { ...r, value: next } : r)));
     };
 
-    const parsedRolls = (): ShortRestHitDiceRoll[] | null => {
-        const out: ShortRestHitDiceRoll[] = [];
-        for (const row of rollRows) {
-            const v = Number.parseInt(row.value.trim(), 10);
-            const side = hitDieSide(classes[row.classIndex]);
-            if (!Number.isInteger(v) || v < 1 || v > side) return null;
-            out.push({ classIndex: row.classIndex, value: v });
-        }
-        return out;
-    };
+    const parsedRolls = useMemo(
+        () => parseShortRestHitDiceRolls(rollRows, classes),
+        [rollRows, classes],
+    );
 
     const healingPreview = useMemo(() => {
-        const rolls = parsedRolls();
-        if (!rolls) return null;
-        return rolls.reduce((s, r) => s + r.value, 0);
-    }, [rollRows, classes]);
+        if (!parsedRolls) return null;
+        return parsedRolls.reduce((s, r) => s + r.value, 0);
+    }, [parsedRolls]);
 
     const runShortRest = async () => {
         if (pending || !isInSession) return;
-        const rolls = parsedRolls();
+        const rolls = parseShortRestHitDiceRolls(rollRows, classes);
         if (rollRows.length > 0 && rolls === null) {
             toast.error(t("invalidRoll"));
             return;
