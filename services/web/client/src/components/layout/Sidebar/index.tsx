@@ -19,6 +19,7 @@ export default function AppSidebar() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("sidebar");
+  const contextMode = useAppSelector((state) => state.environment.contextMode);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = triggerRef.current?.getBoundingClientRect();
@@ -33,16 +34,18 @@ export default function AppSidebar() {
       <Tooltip open={isInSession ? undefined : false}>
         <TooltipTrigger
           asChild
-          className="h-full">
+          className={`${contextMode !== "gm" ? "h-full" : ""}`}>
           <div
             ref={triggerRef}
             onMouseMove={isInSession ? handleMouseMove : undefined}>
             <SidebarHeader className={`bg-card sm:bg-transparent ${isInSession ? " pointer-events-none" : ""}`}>
               <SidebarEnvironment />
             </SidebarHeader>
-            <SidebarContent className={`bg-card sm:bg-transparent ${isInSession ? "pointer-events-none" : ""}`}>
-              <SidebarContext />
-            </SidebarContent>
+            {contextMode !== "gm" && (
+              <SidebarContent className={`bg-card sm:bg-transparent ${isInSession ? "pointer-events-none" : ""}`}>
+                <SidebarContext />
+              </SidebarContent>
+            )}
           </div>
         </TooltipTrigger>
         <TooltipContent
@@ -60,6 +63,11 @@ export default function AppSidebar() {
           <span>{t("disabledInSession")}</span>
         </TooltipContent>
       </Tooltip>
+      {contextMode === "gm" && (
+        <SidebarContent className={`bg-card sm:bg-transparent`}>
+          <SidebarContext />
+        </SidebarContent>
+      )}
       <SidebarFooter className="bg-card sm:bg-transparent">
         <ActionButton />
       </SidebarFooter>
