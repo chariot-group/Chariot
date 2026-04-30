@@ -885,6 +885,11 @@
         "expired": "La sesión ha expirado porque se agotó el tiempo. ¡Gracias por jugar!"
       },
       "confirm": "Volver al inicio"
+    },
+    "sessionCancel": {
+      "title": "Abandonar sesión",
+      "description": "Estás a punto de cerrar la sesión. Todos los participantes se desconectarán y deberán unirse a una nueva sesión para seguir jugando juntos.",
+      "confirm": "Abandonar sesión"
     }
   },
   "sessionTime": {

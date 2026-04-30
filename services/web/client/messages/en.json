@@ -884,6 +884,11 @@
         "expired": "The session has expired because the time limit was reached. Thank you for playing!"
       },
       "confirm": "Back to home"
+    },
+    "sessionCancel": {
+      "title": "Cancel session",
+      "description": "You are about to end the session. All participants will be logged out and will need to join a new session to continue playing together.",
+      "confirm": "Yes, cancel the session"
     }
   },
   "sessionTime": {
