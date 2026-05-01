@@ -57,6 +57,8 @@ export function ActionButton() {
 
   useSessionValidation();
 
+  useSessionValidation();
+
   const sessionStarted = sessionStatus && sessionStatus === "launched";
   const { characters: charactersWithoutGroup, loading: loadingCharactersWithoutGroup } = usePlayersWithoutGroup();
 
