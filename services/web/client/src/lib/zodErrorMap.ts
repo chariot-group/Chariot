@@ -73,5 +73,11 @@ export function makeZodMessages(t: TranslationFunction) {
          * Compteur capacité : actuel &gt; max
          */
         abilityCounterOrder: () => t('abilityCounterOrder'),
+
+        /**
+         * Totaux niveaux multiclass &gt; niveau global (erreur présentée sur dés restants)
+         */
+        classLevelTotalsVsGlobalHitDice: (total: number, global: number) =>
+            t('classLevelTotalsVsGlobalHitDice', { total, global }),
     };
 }

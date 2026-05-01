@@ -1,8 +1,11 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Spell } from "@/types/character";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import { formatDamageFormula } from "@/utils/spell-damage.utils";
 import { formatSignedBonus } from "@/utils/attack.utils";
 
@@ -10,8 +13,12 @@ interface SpellDisplayProps {
   spell: Spell | null;
   accentColor: string;
   showTitle?: boolean;
+  /** Contenu aligné à droite sur la même ligne que le titre (ex. actions de lancement en session) */
+  titleEndContent?: ReactNode;
   attackBonus?: number | null;
   isNpc?: boolean;
+  /** PJ à sorts préparés, sort de niveau ≥ 1 : pastille verte / grise dans l’en-tête */
+  preparationStatusBadge?: "hidden" | "prepared" | "unprepared";
 }
 
 /**
@@ -22,8 +29,10 @@ export default function SpellDisplay({
   spell,
   accentColor,
   showTitle = true,
+  titleEndContent,
   attackBonus = null,
   isNpc = false,
+  preparationStatusBadge = "hidden",
 }: SpellDisplayProps) {
   const tMagic = useTranslations("characterDetail.magic");
   const tClasses = useTranslations("classes");
@@ -37,11 +46,40 @@ export default function SpellDisplay({
     <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
       {showTitle && (
         <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
-          <h3
-            className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold`}
-            id="spell-name">
-            {spell.name}
-          </h3>
+          <div className="flex flex-row items-start justify-between gap-3 w-full min-w-0">
+            <h3
+              className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold flex-1 min-w-0`}
+              id="spell-name">
+              {spell.name}
+            </h3>
+            <div className="shrink-0 flex flex-col items-end gap-2">
+              {titleEndContent ? <div className="flex flex-col items-end">{titleEndContent}</div> : null}
+              {preparationStatusBadge !== "hidden" ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium cursor-default border",
+                        preparationStatusBadge === "prepared"
+                          ? "bg-emerald-600/88 text-white border-emerald-500/35"
+                          : "border-foreground/15 bg-foreground/[0.06] text-muted-foreground",
+                      )}>
+                      {preparationStatusBadge === "prepared"
+                        ? tMagic("spellPreparedLabel")
+                        : tMagic("spellUnpreparedBadge")}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {preparationStatusBadge === "prepared"
+                        ? tMagic("spellPreparedStatusTooltip")
+                        : tMagic("spellNotPreparedTooltip")}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
+            </div>
+          </div>
         </Card>
       )}
       <div className="flex flex-wrap gap-2 items-start">

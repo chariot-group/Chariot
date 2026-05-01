@@ -2,12 +2,14 @@
 
 import { AccordionTrigger, Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Character, Player, Spell, Spellcasting } from "@/types/character";
 import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import {
   classWithSpellPrepared,
+  countPreparedSpellsInList,
   getSpellByLevel,
   hasLevel0Spells,
   numberSpellsPrepare,
@@ -144,6 +146,21 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
     })();
   const hasAccordionItems = allAccordionValues.length > 0;
 
+  const maxPreparedForSheet =
+    isPlayer(character) && selectedSpellcasting
+      ? numberSpellsPrepare(selectedSpellcasting, character)
+      : 0;
+  const currentPreparedCount =
+    isPlayer(character) && selectedSpellcasting && classWithSpellPrepared(selectedSpellcasting)
+      ? countPreparedSpellsInList(selectedSpellcasting.spells ?? [])
+      : 0;
+  const preparedCapacityReached =
+    isPlayer(character) &&
+    selectedSpellcasting &&
+    classWithSpellPrepared(selectedSpellcasting) &&
+    maxPreparedForSheet > 0 &&
+    currentPreparedCount >= maxPreparedForSheet;
+
   return (
     <div
       className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0 max-h-[calc(100vh-20rem)] relative"
@@ -196,22 +213,74 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
             role="group"
             aria-label={tMagic("spellcastingStats")}>
             {isPlayer(character) && classWithSpellPrepared(selectedSpellcasting) && (
-              <Card className="gap-3 p-2 md:px-6 flex-row items-center">
-                <Book
-                  className="shrink-0"
-                  aria-hidden="true"
-                />
-                <span
-                  className="text-sm md:text-base hidden sm:inline"
-                  aria-label={`${tMagic("preparedSpells")}: ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
-                  {tMagic("preparedSpells")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
-                </span>
-                <span
-                  className="text-sm sm:hidden"
-                  aria-label={`${tMagic("preparedSpells")}: ${numberSpellsPrepare(selectedSpellcasting, character)}`}>
-                  {tMagic("preparedShort")}: <strong>{numberSpellsPrepare(selectedSpellcasting, character)}</strong>
-                </span>
-              </Card>
+              <>
+                {preparedCapacityReached ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Card className="gap-3 p-2 md:px-6 flex-row items-center cursor-default">
+                        <Book
+                          className="shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span
+                          className="text-sm md:text-base hidden sm:inline"
+                          aria-label={`${tMagic("preparedSpells")}: ${tMagic("preparedSpellsUsage", { current: currentPreparedCount, max: maxPreparedForSheet })}`}>
+                          {tMagic("preparedSpells")}:{" "}
+                          <strong>
+                            {tMagic("preparedSpellsUsage", {
+                              current: currentPreparedCount,
+                              max: maxPreparedForSheet,
+                            })}
+                          </strong>
+                        </span>
+                        <span
+                          className="text-sm sm:hidden"
+                          aria-label={`${tMagic("preparedSpells")}: ${tMagic("preparedSpellsUsage", { current: currentPreparedCount, max: maxPreparedForSheet })}`}>
+                          {tMagic("preparedShort")}:{" "}
+                          <strong>
+                            {tMagic("preparedSpellsUsage", {
+                              current: currentPreparedCount,
+                              max: maxPreparedForSheet,
+                            })}
+                          </strong>
+                        </span>
+                      </Card>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{tMagic("preparedSpellsLimitReachedTooltip")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Card className="gap-3 p-2 md:px-6 flex-row items-center">
+                    <Book
+                      className="shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="text-sm md:text-base hidden sm:inline"
+                      aria-label={`${tMagic("preparedSpells")}: ${tMagic("preparedSpellsUsage", { current: currentPreparedCount, max: maxPreparedForSheet })}`}>
+                      {tMagic("preparedSpells")}:{" "}
+                      <strong>
+                        {tMagic("preparedSpellsUsage", {
+                          current: currentPreparedCount,
+                          max: maxPreparedForSheet,
+                        })}
+                      </strong>
+                    </span>
+                    <span
+                      className="text-sm sm:hidden"
+                      aria-label={`${tMagic("preparedSpells")}: ${tMagic("preparedSpellsUsage", { current: currentPreparedCount, max: maxPreparedForSheet })}`}>
+                      {tMagic("preparedShort")}:{" "}
+                      <strong>
+                        {tMagic("preparedSpellsUsage", {
+                          current: currentPreparedCount,
+                          max: maxPreparedForSheet,
+                        })}
+                      </strong>
+                    </span>
+                  </Card>
+                )}
+              </>
             )}
             <Card className="gap-3 p-2 md:px-6 flex-row items-center">
               <Target
@@ -416,6 +485,14 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                       className={`truncate text-sm md:text-base lg:text-lg ${selectedSpell === spell && "font-bold"} `}>
                                       {spell.name}
                                     </span>
+                                    {isPlayer(character) &&
+                                      classWithSpellPrepared(selectedSpellcasting) &&
+                                      level > 0 &&
+                                      spell.prepared !== true && (
+                                        <span className="text-xs text-amber-600/90 font-medium">
+                                          {tMagic("spellUnpreparedBadge")}
+                                        </span>
+                                      )}
                                   </Card>
                                 ))}
                               </div>

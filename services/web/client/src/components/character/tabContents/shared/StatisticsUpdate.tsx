@@ -45,6 +45,33 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
     form.clearErrors(["stats.currentHitPoints", "stats.maxHitPoints"]);
   }
 
+  function handleHitDiceRemainingConstraintResult(
+    index: number,
+    maxCeiling: number,
+    payload: {
+      attemptedValue: number;
+      appliedValue: number;
+      wasClamped: boolean;
+      source: "quick-action" | "direct-input";
+    },
+  ) {
+    const path = `class.${index}.hitDiceRemaining`;
+
+    if (payload.wasClamped && payload.attemptedValue > maxCeiling) {
+      form.setError(path as never, {
+        type: "manual",
+        message: tEdit("hitDiceRemainingExceedsClassLevel", { max: maxCeiling }),
+      });
+      info(tEdit("quickWarnings.hitDiceRemainingClamped"));
+      return;
+    }
+
+    if (!payload.wasClamped) {
+      form.clearErrors(path as never);
+      void form.trigger(path as never);
+    }
+  }
+
   const { fields: classFields } = useFieldArray({
     control: form.control,
     name: "class",
@@ -485,11 +512,24 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
         <h3 className="text-sm font-medium">{t("hitPointsRoll")}</h3>
         <div className="flex flex-col gap-3">
           {classFields.map((classField, index) => {
+            const globalLevelNum = Number(form.watch("progression.level")) || 1;
+            const classLevelsWatch = (form.watch("class") || []) as Array<{ level?: unknown }>;
+            const totalClassLevels = classLevelsWatch.reduce(
+              (sum: number, c) => sum + (parseInt(String(c?.level ?? 0), 10) || 0),
+              0,
+            );
+            const currentClassLevel = parseInt(String(form.watch(`class.${index}.level`) ?? ""), 10) || 1;
+            const otherClassLevelsSum = totalClassLevels - currentClassLevel;
+            const maxLevelForThisClass = globalLevelNum - otherClassLevelsSum;
+
             const className = form.watch(`class.${index}.name`);
+            const shareAllowed = Math.max(0, maxLevelForThisClass);
+            const dicePoolCeiling = Math.min(currentClassLevel, shareAllowed);
+
             return (
               <div
                 key={classField.id}
-                className="flex gap-2 justify-between">
+                className="grid grid-cols-1 sm:grid-cols-3 gap-2 justify-between">
                 <Controller
                   name={`class.${index}.level`}
                   control={form.control}
@@ -505,12 +545,52 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                       </label>
                       <Input
                         {...field}
-                        value={field.value ?? 1}
+                        value={
+                          field.value === undefined || field.value === null ? "" : field.value
+                        }
                         id={`class-${index}-level`}
                         type="number"
                         className="text-sm"
                         min={1}
-                        max={20}
+                        max={maxLevelForThisClass}
+                        onChange={(e) => {
+                          const raw = e.target.value.trim();
+                          if (raw === "") {
+                            field.onChange("");
+                            return;
+                          }
+                          const parsed = Number(raw);
+                          if (!Number.isFinite(parsed)) return;
+
+                          const floor = 1;
+                          const ceil = Math.min(20, Math.max(floor, maxLevelForThisClass));
+                          const clampedLevel = Math.max(floor, Math.min(ceil, Math.floor(parsed)));
+
+                          field.onChange(clampedLevel);
+
+                          const g = Number(form.getValues("progression.level")) || 1;
+                          const cls = (form.getValues("class") || []) as Array<{ level?: unknown }>;
+                          let totalNext = 0;
+                          for (let j = 0; j < cls.length; j++) {
+                            const v =
+                              j === index
+                                ? clampedLevel
+                                : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
+                            totalNext += v;
+                          }
+                          const sumOthersNext = totalNext - clampedLevel;
+                          const shareNext = Math.max(0, g - sumOthersNext);
+                          const cap = Math.min(clampedLevel, shareNext);
+                          const remPath = `class.${index}.hitDiceRemaining`;
+                          const remRaw = form.getValues(remPath);
+                          if (
+                            typeof remRaw === "number" &&
+                            !Number.isNaN(remRaw) &&
+                            remRaw > cap
+                          ) {
+                            form.setValue(remPath, cap, { shouldDirty: true, shouldValidate: true });
+                          }
+                        }}
                       />
                       {fieldState.error && <FieldError errors={[fieldState.error]} />}
                     </Field>
@@ -547,6 +627,85 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                       {fieldState.error && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
+                />
+                <Controller
+                  name={`class.${index}.hitDiceRemaining`}
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    const stored = field.value;
+                    const cappedStored =
+                      typeof stored === "number" && !Number.isNaN(stored)
+                        ? Math.max(0, Math.min(Math.floor(stored), dicePoolCeiling))
+                        : undefined;
+                    /** Vide si non persisté : ne pas miroiter le niveau de classe dans ce champ */
+                    const displayRem =
+                      typeof cappedStored === "number" ? cappedStored : "";
+                    /** Base des actions +/- quand aucune valeur enregistrée (comportement = pool plein) */
+                    const currentForDiceOps =
+                      typeof cappedStored === "number" ? cappedStored : dicePoolCeiling;
+                    const effectiveRemainingForUsed =
+                      typeof cappedStored === "number" ? cappedStored : dicePoolCeiling;
+                    const hitDiceUsed = dicePoolCeiling - effectiveRemainingForUsed;
+
+                    return (
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical">
+                        <label
+                          htmlFor={`class-${index}-hit-dice-left`}
+                          className="text-xs">
+                          {t("hitDiceRemaining")}
+                        </label>
+                        <QuickNumberCalculator
+                          value={displayRem}
+                          currentValue={currentForDiceOps}
+                          min={0}
+                          max={dicePoolCeiling}
+                          onEmptyInput={() => field.onChange(dicePoolCeiling)}
+                          onValueChange={(nextValue) =>
+                            field.onChange(Math.max(0, Math.min(nextValue, dicePoolCeiling)))
+                          }
+                          onApply={(nextValue) =>
+                            field.onChange(Math.max(0, Math.min(nextValue, dicePoolCeiling)))
+                          }
+                          onConstraintResult={(payload) =>
+                            handleHitDiceRemainingConstraintResult(index, dicePoolCeiling, payload)
+                          }
+                          triggerLabel={`${t("hitDiceRemaining")} quick calculator`}
+                          inputLabel={`${t("hitDiceRemaining")} value`}
+                          tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
+                          inputProps={{
+                            id: `class-${index}-hit-dice-left`,
+                            className: "text-sm",
+                            onBlur: () => {
+                              field.onBlur();
+                              const remPath = `class.${index}.hitDiceRemaining`;
+                              const raw = form.getValues(remPath as never);
+                              if (raw === undefined || raw === null) {
+                                form.setValue(remPath as never, dicePoolCeiling, {
+                                  shouldDirty: true,
+                                  shouldValidate: true,
+                                });
+                              }
+                            },
+                            "aria-invalid": fieldState.invalid,
+                            "aria-describedby": fieldState.error
+                              ? `class-${index}-hit-dice-left-error`
+                              : undefined,
+                          }}
+                        />
+                        <p className="text-xs text-muted-foreground tabular-nums pt-0.5">
+                          {t("hitDiceUsed")}: {hitDiceUsed}
+                        </p>
+                        {fieldState.error && (
+                          <FieldError
+                            id={`class-${index}-hit-dice-left-error`}
+                            errors={[fieldState.error]}
+                          />
+                        )}
+                      </Field>
+                    );
+                  }}
                 />
               </div>
             );

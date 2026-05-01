@@ -154,7 +154,7 @@ export class PlayerService {
 
       const end: number = Date.now();
 
-      if (playerUpdate.modifiedCount === 0) {
+      if (playerUpdate.matchedCount === 0) {
         const message: string = `Player #${id} not found`;
         this.logger.error(message, null, this.SERVICE_NAME);
         throw new NotFoundException(message);
