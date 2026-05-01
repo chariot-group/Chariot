@@ -945,6 +945,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="inspiration-checkbox"
+                    className="cursor-pointer"
                     checked={field.value || false}
                     onCheckedChange={field.onChange}
                   />
