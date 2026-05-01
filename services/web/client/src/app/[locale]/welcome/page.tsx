@@ -37,14 +37,14 @@ export default function WelcomePage() {
       onClick: handleCampaignClick,
     },
     {
-      image: Session,
-      realm: "session",
-      onClick: () => setIsJoinSessionOpen(true),
-    },
-    {
       image: Character,
       realm: "character",
       onClick: handleCharacterClick,
+    },
+    {
+      image: Session,
+      realm: "session",
+      onClick: () => setIsJoinSessionOpen(true),
     },
   ];
 
