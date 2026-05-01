@@ -97,6 +97,33 @@ export function TagInput({
     }
   }, [highlightedIndex]);
 
+  // Ensure suggestions dropdown stays visible when it opens
+  useEffect(() => {
+    if (!showSuggestions || !suggestionsRef.current || !inputRef.current) {
+      return;
+    }
+
+    const rafId = window.requestAnimationFrame(() => {
+      const scrollContainer = document.getElementById("characterScrollView");
+      const input = inputRef.current;
+      const dropdown = suggestionsRef.current;
+      if (!input || !dropdown || !scrollContainer) {
+        return;
+      }
+
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const dropdownRect = dropdown.getBoundingClientRect();
+      const margin = 12;
+
+      if (dropdownRect.bottom > containerRect.bottom) {
+        const delta = dropdownRect.bottom - containerRect.bottom + margin;
+        scrollContainer.scrollBy({ top: delta, behavior: "smooth" });
+      }
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, [showSuggestions]);
+
   return (
     <div className="relative w-full">
       {/* Tags display */}
