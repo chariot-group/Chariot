@@ -3,7 +3,6 @@ import { persistStore, persistReducer, Persistor, createTransform } from 'redux-
 import storage from 'redux-persist/lib/storage';
 import environmentReducer from '@/store/slices/environmentSlice';
 import campaignReducer from '@/store/slices/campaignSlice';
-import actionButtonReducer from '@/store/slices/actionButtonSlice';
 import campaignContextReducer from '@/store/slices/campaignContextSlice';
 import groupReducer from '@/store/slices/groupSlice';
 import sidebarReducer from '@/store/slices/sidebarSlice';
@@ -110,7 +109,6 @@ function makePersistConfig(userId: string | null) {
 const rootReducer = combineReducers({
     environment: environmentReducer,
     campaign: campaignReducer,
-    actionButton: actionButtonReducer,
     campaignContext: campaignContextReducer,
     group: groupReducer,
     sidebar: sidebarReducer,

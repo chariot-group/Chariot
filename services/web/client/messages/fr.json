@@ -1,5 +1,6 @@
 {
   "sidebar": {
+    "disabledInSession": "Certaines actions sont désactivées en session",
     "gmSpace": "Espace maître du jeu",
     "playerSpace": "Espace joueur",
     "environmentChanged": "Vous êtes maintenant dans l''{space}.",
@@ -41,6 +42,7 @@
     "comingSoon": "Bientôt disponible",
     "alreadyInSession": "Action impossible, vous êtes déjà dans une session",
     "returnToSheet": "Retour à la fiche personnage",
+    "returnToSession": "Retourner à la session",
     "selectCampaign": "Sélectionner la campagne",
     "selectedCampaign": "Campagne sélectionnée",
     "selected": "sélectionné",
@@ -887,6 +889,14 @@
         "expired": "La session a expiré car le temps imparti s'est écoulé. Merci d'avoir joué !"
       },
       "confirm": "Retourner à l'accueil"
+    },
+    "sessionCancel": {
+      "title": "Clôturer la session",
+      "description": "Vous vous apprêterez à clôturer la session. Tous les participants seront déconnectés et devront rejoindre une nouvelle session pour continuer à jouer ensemble.",
+      "confirm": "Clôturer la session"
     }
+  },
+  "sessionTime": {
+    "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée."
   }
 }

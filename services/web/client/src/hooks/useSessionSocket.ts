@@ -316,5 +316,11 @@ export function useSessionSocket({
         router.push(`/${locale}/welcome`);
     };
 
-    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, handleAddTokenAmount, handleRemoveTokenAmount, handleLaunchSession, handleDismissSessionEnd, isChangingCharacter, isLeaving, isLaunching, sessionEndReason };
+    const handleCloseSession = () => {
+        const socket = socketRef.current;
+        if (!socket?.connected) return;
+        socket.emit("session:close", { sessionId: code });
+    };
+
+    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, handleAddTokenAmount, handleRemoveTokenAmount, handleLaunchSession, handleDismissSessionEnd, isChangingCharacter, isLeaving, isLaunching, sessionEndReason, handleCloseSession };
 }

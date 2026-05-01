@@ -49,12 +49,12 @@ export default function WelcomePage() {
   ];
 
   return (
-    <main className="flex flex-col items-center pt-8 md:pt-16 lg:pt-25 h-full px-4 sm:px-6 md:px-8 pb-6 md:pb-8">
+    <main className="flex flex-col items-center pt-8 md:pt-16 lg:pt-25 h-full px-4 sm:px-6 md:px-8 pb-6 md:pb-8 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
       <h1 className="text-base sm:text-lg md:text-xl">{t("title")}</h1>
       <h2 className="mb-4 sm:mb-6 md:mb-8 text-xl sm:text-2xl md:text-3xl font-bold text-center">{t("subTitle")}</h2>
 
       <div
-        className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 py-4 md:py-8"
+        className="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-3 xl:gap-6 py-4 md:py-8"
         role="list"
         aria-label={t("choices-list")}>
         {choices.map((choice) => (

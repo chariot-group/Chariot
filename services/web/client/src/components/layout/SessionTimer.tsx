@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { Timer } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { selectSessionStatus, selectSessionExpiresAt } from "@/store/slices/sessionSlice";
+import { selectSessionStatus, selectSessionExpiresAt, selectCurrentSession } from "@/store/slices/sessionSlice";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 function formatDuration(seconds: number): string {
   if (seconds <= 0) return "00:00:00";
@@ -17,6 +20,8 @@ export default function SessionTimer() {
   const status = useAppSelector(selectSessionStatus);
   const expiresAt = useAppSelector(selectSessionExpiresAt);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const session = useAppSelector(selectCurrentSession);
+  const t = useTranslations("sessionTime");
 
   useEffect(() => {
     if (status !== "launched" || !expiresAt) return;
@@ -36,10 +41,16 @@ export default function SessionTimer() {
   const isLow = remaining <= 300;
 
   return (
-    <div
-      className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
-      <Timer className="w-4 h-4 shrink-0" />
-      <span>{formatDuration(remaining)}</span>
-    </div>
+    <Tooltip>
+      <TooltipTrigger className="absolute -left-25 flex items-center gap-1.5 w-full">
+        <Link
+          href={`/campaigns/${session.campaignId}/session/${session.code}`}
+          className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
+          <Timer className="w-4 h-4 shrink-0" />
+          <span>{formatDuration(remaining)}</span>
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent className="w-100">{t("tooltip")}</TooltipContent>
+    </Tooltip>
   );
 }

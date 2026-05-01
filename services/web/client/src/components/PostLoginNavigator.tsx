@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useKeycloak } from "@/providers/KeycloakProvider";
 import NavigationService from "@/services/NavigationService";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch } from "@/store/hooks";
+import { RootState } from "@/store";
+import { useStore } from "react-redux";
 
 /**
  * Component responsible for handling post-login navigation (FR-006)
@@ -17,7 +19,8 @@ export default function PostLoginNavigator() {
   const locale = pathname.split("/")[1] || "fr";
   const { authenticated, loading } = useKeycloak();
   const dispatch = useAppDispatch();
-  const getState = useAppSelector((state) => state);
+
+  const store = useStore<RootState>();
 
   // Ref to track if we've already handled initial auth redirect
   const hasHandledAuthRef = useRef(false);
@@ -34,7 +37,11 @@ export default function PostLoginNavigator() {
           hasHandledAuthRef.current = true;
 
           try {
-            const destination = await NavigationService.determinePostLoginDestination(locale, dispatch, () => getState);
+            const destination = await NavigationService.determinePostLoginDestination(
+              locale,
+              dispatch,
+              store.getState.bind(store),
+            );
             router.push(destination.path);
           } catch (error) {
             console.error("Failed to determine post-login destination:", error);
@@ -46,7 +53,7 @@ export default function PostLoginNavigator() {
     };
 
     handlePostLoginNavigation();
-  }, [authenticated, loading, pathname, locale, router, dispatch, getState]);
+  }, [authenticated, loading, pathname, locale, router, dispatch, store]);
 
   // Ce composant ne rend rien, il gère uniquement la navigation
   return null;

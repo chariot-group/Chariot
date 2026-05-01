@@ -33,9 +33,11 @@ export function CharacterSelect({
       onValueChange={onValueChange}
       disabled={disabled}>
       <SelectTrigger className={triggerClassName ?? "w-full"}>
-        <SelectValue placeholder={placeholder}>{selectedLabel ?? undefined}</SelectValue>
+        <SelectValue placeholder={placeholder}>
+          {selectedLabel && value ? <span>{selectedLabel}</span> : <SelectValue placeholder={placeholder} />}
+        </SelectValue>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper">
         {characters.map((character) => (
           <SelectItem
             key={character._id}
