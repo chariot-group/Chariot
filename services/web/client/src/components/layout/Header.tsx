@@ -4,23 +4,16 @@ import Profile from "@/components/layout/Profile";
 import SessionTimer from "@/components/layout/SessionTimer";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import NavigationService from "@/services/NavigationService";
-import { useAppDispatch } from "@/store/hooks";
 
 import Logo from "@public/logo.svg";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import React from "react";
-import { RootState } from "@/store";
-import { useStore } from "react-redux";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const locale = pathname.split("/")[1] || "fr";
-  const dispatch = useAppDispatch();
   const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
-
-  const store = useStore<RootState>();
 
   const handleLogoClick = async () => {
     try {

@@ -9,7 +9,6 @@ import { useTranslations } from "next-intl";
 import CampaignList from "@/components/layout/Sidebar/CampaignList";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import NavigationService from "@/services/NavigationService";
 import { setSelectedCampaign } from "@/store/slices/campaignContextSlice";
