@@ -155,7 +155,7 @@
       "button": "Join a session",
       "button-aria": "Navigate to session joining",
       "comingSoon": "Coming soon",
-      "noCharacterWithoutGroup": "You must have at least one character without a group to join a session."
+      "noCharacterWithoutGroup": "You must have at least one character in your player space to join a session."
     },
     "character": {
       "title": "Create your first <br /> character",

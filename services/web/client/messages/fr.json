@@ -156,7 +156,7 @@
       "button": "Rejoindre une session",
       "button-aria": "Naviguer vers la participation à une session",
       "comingSoon": "Bientôt disponible",
-      "noCharacterWithoutGroup": "Vous devez avoir au moins un personnage sans groupe pour rejoindre une session."
+      "noCharacterWithoutGroup": "Vous devez avoir au moins un personnage dans votre espace joueur pour rejoindre une session."
     },
     "character": {
       "title": "Créer votre premier <br /> personnage",
