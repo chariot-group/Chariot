@@ -64,6 +64,10 @@ export const selectSessionCampaignId = (state: RootState) => state.session.campa
 export const selectSessionStatus = (state: RootState) => state.session.status;
 export const selectSessionExpiresAt = (state: RootState) => state.session.expiresAt;
 export const selectSessionParticipants = (state: RootState) => state.session.participants;
+
+export const selectCurrentUserParticipant = (state: RootState, userId: string) =>
+    state.session.participants.find((participant: SessionParticipant) => participant.userId === userId) || null;
+
 export const selectSessionTokensByUser = (state: RootState) => state.session.tokensByUser;
 
 export default sessionSlice.reducer;

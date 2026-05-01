@@ -1,5 +1,6 @@
 {
   "sidebar": {
+    "disabledInSession": "Algunas acciones están deshabilitadas durante la sesión",
     "gmSpace": "Espacio del máster",
     "playerSpace": "Espacio de jugador",
     "environmentChanged": "Ahora estás en el {space}.",
@@ -41,6 +42,7 @@
     "comingSoon": "Próximamente",
     "alreadyInSession": "No es posible realizar esta acción, ya estás conectado.",
     "returnToSheet": "Volver a la hoja de personaje",
+    "returnToSession": "Volver a la sesión",
     "selectCampaign": "Seleccionar campaña",
     "selectedCampaign": "Campaña seleccionada",
     "selected": "seleccionado",
@@ -883,6 +885,14 @@
         "expired": "La sesión ha expirado porque se agotó el tiempo. ¡Gracias por jugar!"
       },
       "confirm": "Volver al inicio"
+    },
+    "sessionCancel": {
+      "title": "Abandonar sesión",
+      "description": "Estás a punto de cerrar la sesión. Todos los participantes se desconectarán y deberán unirse a una nueva sesión para seguir jugando juntos.",
+      "confirm": "Abandonar sesión"
     }
+  },
+  "sessionTime": {
+    "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
   }
 }

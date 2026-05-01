@@ -118,7 +118,7 @@ export function JoinSessionDialog({
             maxLength={6}
             value={code}
             onChange={(val) => {
-              setCode(val);
+              setCode(val.toUpperCase());
               setError(null);
             }}
             disabled={isJoining}

@@ -7,8 +7,8 @@ import campaignService from "@/services/CampaignService";
 import characterService from "@/services/CharacterService";
 import sessionService, { type SessionParticipant } from "@/services/SessionService";
 import UserService from "@/services/UserService";
-import { useAppDispatch } from "@/store/hooks";
-import { setCurrentSession, setSessionStatus, setSessionExpiresAt } from "@/store/slices/sessionSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setCurrentSession, setSessionStatus, setSessionExpiresAt, selectIsInSession } from "@/store/slices/sessionSlice";
 import { useToast } from "@/hooks/useToast";
 import type { Character } from "@/types/character";
 import type { Campaign } from "@/types/campaign";
@@ -19,7 +19,20 @@ interface UseSessionDataOptions {
     campaign: Campaign | undefined;
 }
 
-export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOptions) {
+export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOptions): {
+    campaignLabel: string | null;
+    locale: string;
+    participants: SessionParticipant[];
+    setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
+    participantNames: Record<string, string>;
+    setParticipantNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+    characterDetails: Record<string, Character>;
+    myCharacters: Character[];
+    fetchCharacterDetails: (ids: string[]) => Promise<void>;
+    getCharacterLabel: (characterId: string | null) => string;
+    isLoading: boolean;
+} {
+
     const dispatch = useAppDispatch();
     const router = useRouter();
     const toast = useToast();
@@ -27,11 +40,14 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const pathname = usePathname();
     const locale = pathname.split("/")[1] || "fr";
 
+    const isInSession = useAppSelector(selectIsInSession);
+
     const [campaignLabel, setCampaignLabel] = useState<string | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
     const [participantNames, setParticipantNames] = useState<Record<string, string>>({});
     const [characterDetails, setCharacterDetails] = useState<Record<string, Character>>({});
     const [myCharacters, setMyCharacters] = useState<Character[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchCharacterDetails = async (ids: string[]) => {
         const missing = ids.filter((id) => id && !characterDetails[id]);
@@ -58,11 +74,16 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             } catch {
                 toast.info(t("toast.sessionNotFound"));
                 router.back();
+                setIsLoading(false);
                 return;
             }
 
             try {
-                await sessionService.joinSession(code);
+                if (!isInSession) {
+                    await sessionService.joinSession(code).then(() => {
+                        toast.success(t("toast.connectionSuccess"));
+                    });
+                }
             } catch {
                 // Session déjà rejointe ou erreur non bloquante
             }
@@ -75,7 +96,6 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             try {
                 const data = await sessionService.getParticipants(code);
                 setParticipants(data.participants);
-                toast.success(t("toast.connectionSuccess"));
 
                 const names = await Promise.all(
                     data.participants.map(async (p) => {
@@ -101,8 +121,8 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             } catch {
                 // silently fail
             }
+            setIsLoading(false);
         };
-
         init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [code]);
@@ -127,5 +147,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         myCharacters,
         fetchCharacterDetails,
         getCharacterLabel,
+        isLoading,
     };
 }
+

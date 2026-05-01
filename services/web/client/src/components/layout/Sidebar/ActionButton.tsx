@@ -2,16 +2,21 @@
 
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
-import { ActionButtonState, selectBattleInitialized, selectBattleStarted } from "@/store/slices/actionButtonSlice";
 import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import sessionService from "@/services/SessionService";
+import sessionService, { SessionParticipant } from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectCurrentSession, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import {
+  selectCurrentSession,
+  selectCurrentUserParticipant,
+  selectIsInSession,
+  selectSessionStatus,
+} from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
+import { useUser } from "@/hooks/useUser";
 
 interface ActionButtonConfig {
   label: string;
@@ -24,20 +29,37 @@ interface ActionButtonConfig {
   tooltip?: string;
 }
 
+type ActionButtonState =
+  | "initBattle"
+  | "launchSession"
+  | "joinSession"
+  | "startBattle"
+  | "reset"
+  | "returnToBattle"
+  | "returnToSheet"
+  | "returnToSession";
+
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const contextMode = useAppSelector((state) => state.environment.contextMode);
-  const battleInitialized = useAppSelector(selectBattleInitialized);
-  const battleStarted = useAppSelector(selectBattleStarted);
   const currentPage = usePathname() || "/";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
+  const user = useUser();
+
+  const currentParticipant = useAppSelector((state) =>
+    selectCurrentUserParticipant(state, user.user?.keycloakId || ""),
+  );
 
   useSessionValidation();
 
   const sessionStarted = sessionStatus && sessionStatus === "launched";
+
+  // TODO
+  const battleInitialized: boolean = false;
+  const battleStarted: boolean = false;
 
   /**
    * Determine button state based on context and workflow state
@@ -45,17 +67,12 @@ export function ActionButton() {
    * Player workflow: joinSession → returnToSheet
    */
   const getButtonState = (): ActionButtonConfig => {
-    if (contextMode === "gm") {
-      // GM: Launch session (initial state)
-      if (!sessionStarted) {
+    if (currentParticipant === null || isInSession === null || session === null) {
+      if (contextMode === "gm") {
         return {
           label: t("launchSession"),
           state: "launchSession",
           action: () => {
-            if (isInSession) {
-              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
-              return;
-            }
             if (!selectedCampaignId) return;
             sessionService.createSession(selectedCampaignId);
           },
@@ -65,62 +82,7 @@ export function ActionButton() {
           textColor: "text-black",
           tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
         };
-      }
-
-      // GM: Initialize battle (session started, battle not initialized)
-      if (sessionStarted && !battleInitialized) {
-        return {
-          label: t("initBattle"),
-          state: "initBattle",
-          action: () => {},
-          disabled: false,
-          icon: <LucideSwords className="size-6" />,
-          backgroundColor: "bg-red",
-          textColor: "text-white",
-        };
-      }
-
-      // GM: Start battle (battle initialized but not started)
-      if (battleInitialized && !battleStarted) {
-        return {
-          label: t("startBattle"),
-          state: "startBattle",
-          action: () => {},
-          disabled: false,
-          icon: <LucideSwords className="size-6" />,
-          backgroundColor: "bg-pink",
-          textColor: "text-black",
-        };
-      }
-
-      // GM: Reset (battle started + on initiativeTracker page)
-      if (battleStarted && currentPage === "/initiativeTracker") {
-        return {
-          label: t("reset"),
-          state: "reset",
-          action: () => {},
-          disabled: false,
-          icon: <RotateCcw className="size-6" />,
-          backgroundColor: "bg-gray-600",
-          textColor: "text-white",
-        };
-      }
-
-      // GM: Return to battle (battle started + on character page)
-      if (battleStarted && currentPage.includes("/characters/")) {
-        return {
-          label: t("returnToBattle"),
-          state: "returnToBattle",
-          action: () => {},
-          disabled: false,
-          icon: <ArrowLeft className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
-        };
-      }
-    } else {
-      // Player: Join session (initial state)
-      if (!sessionStarted) {
+      } else {
         return {
           label: t("joinSession"),
           state: "joinSession",
@@ -135,13 +97,108 @@ export function ActionButton() {
           textColor: "text-black",
         };
       }
+    }
+
+    if (currentParticipant?.status === "gameMaster") {
+      if (!sessionStarted) {
+        return {
+          label: t("returnToSession"),
+          state: "returnToSession",
+          action: () => {
+            window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+          },
+          disabled: false,
+          icon: <PlayCircle className="size-6" />,
+          backgroundColor: "bg-yellow",
+          textColor: "text-black",
+        };
+      }
+
+      // GM: Initialize battle (session started, battle not initialized)
+      if (sessionStarted && !battleInitialized) {
+        return {
+          label: t("initBattle"),
+          state: "initBattle",
+          action: () => {},
+          disabled: true,
+          icon: <LucideSwords className="size-6" />,
+          tooltip: t("comingSoon"),
+          backgroundColor: "bg-red",
+          textColor: "text-white",
+        };
+      }
+
+      // GM: Start battle (battle initialized but not started)
+      if (battleInitialized && !battleStarted) {
+        return {
+          label: t("startBattle"),
+          state: "startBattle",
+          action: () => {},
+          disabled: true,
+          icon: <LucideSwords className="size-6" />,
+          tooltip: t("comingSoon"),
+          backgroundColor: "bg-pink",
+          textColor: "text-black",
+        };
+      }
+
+      // GM: Reset (battle started + on initiativeTracker page)
+      if (battleStarted && currentPage === "/initiativeTracker") {
+        return {
+          label: t("reset"),
+          state: "reset",
+          action: () => {},
+          disabled: true,
+          tooltip: t("comingSoon"),
+          icon: <RotateCcw className="size-6" />,
+          backgroundColor: "bg-gray-600",
+          textColor: "text-white",
+        };
+      }
+
+      // GM: Return to battle (battle started + on character page)
+      if (battleStarted && currentPage.includes("/characters/")) {
+        return {
+          label: t("returnToBattle"),
+          state: "returnToBattle",
+          action: () => {},
+          disabled: true,
+          tooltip: t("comingSoon"),
+          icon: <ArrowLeft className="size-6" />,
+          backgroundColor: "bg-yellow",
+          textColor: "text-black",
+        };
+      }
+    } else {
+      // Player: Join session (initial state)
+      if (!sessionStarted) {
+        return {
+          label: t("returnToSession"),
+          state: "returnToSession",
+          action: () => {
+            window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+          },
+          disabled: false,
+          icon: <PlayCircle className="size-6" />,
+          backgroundColor: "bg-yellow",
+          textColor: "text-black",
+        };
+      }
 
       // Player: Return to character sheet (session started)
       if (sessionStarted) {
         return {
           label: t("returnToSheet"),
           state: "returnToSheet",
-          action: () => {},
+          action: () => {
+            const currentParticipant = session?.participants.find(
+              (p: SessionParticipant) => p.userId === user.user?.keycloakId,
+            );
+            const characterId = currentParticipant?.characterId;
+            if (isInSession && characterId) {
+              window.location.href = `/characters/${characterId}`;
+            }
+          },
           disabled: false,
           icon: <UserCircle className="size-6" />,
           backgroundColor: "bg-yellow",
@@ -154,11 +211,19 @@ export function ActionButton() {
     return {
       label: t("launchSession"),
       state: "launchSession",
-      action: () => {},
-      disabled: false,
+      action: () => {
+        if (isInSession) {
+          window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+          return;
+        }
+        if (!selectedCampaignId) return;
+        sessionService.createSession(selectedCampaignId);
+      },
+      disabled: !selectedCampaignId,
       icon: <PlayCircle className="size-6" />,
       backgroundColor: "bg-yellow",
       textColor: "text-black",
+      tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
     };
   };
 
