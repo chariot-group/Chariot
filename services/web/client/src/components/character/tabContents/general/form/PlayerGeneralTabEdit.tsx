@@ -415,6 +415,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     const selectedClasses = classLevels
                       .map((c, i: number) => (i !== index ? c?.name : null))
                       .filter(Boolean);
+                    const hitDiceRemainingError = errors.class?.[index]?.hitDiceRemaining;
 
                     return (
                       <div
@@ -605,10 +606,10 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             globalLevel,
                           })}
                         </div>
-                        {errors.class?.[index]?.hitDiceRemaining && (
+                        {hitDiceRemainingError && (
                           <FieldError
                             id={`class-level-${index}-hd-error`}
-                            errors={[errors.class[index]?.hitDiceRemaining!]}
+                            errors={[hitDiceRemainingError]}
                           />
                         )}
                       </div>

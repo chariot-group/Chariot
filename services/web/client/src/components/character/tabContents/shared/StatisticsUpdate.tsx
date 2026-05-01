@@ -37,6 +37,14 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
     form.clearErrors(["stats.currentHitPoints", "stats.maxHitPoints"]);
   }
 
+  function handleMaxHpConstraintResult(payload: { wasClamped: boolean; source: "quick-action" | "direct-input" }) {
+    if (payload.wasClamped) {
+      info(maxHpConstraintWarning);
+    }
+
+    form.clearErrors(["stats.currentHitPoints", "stats.maxHitPoints"]);
+  }
+
   function handleHitDiceRemainingConstraintResult(
     index: number,
     maxCeiling: number,
