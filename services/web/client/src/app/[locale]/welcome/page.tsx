@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
+import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 
 import Campaign from "@public/welcome/campaign.webp";
 import Session from "@public/welcome/session.webp";
@@ -19,6 +20,9 @@ export default function WelcomePage() {
   const [isJoinSessionOpen, setIsJoinSessionOpen] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { characters: charactersWithoutGroup, loading: loadingCharactersWithoutGroup } = usePlayersWithoutGroup();
+
+  const isJoinSessionDisabled = loadingCharactersWithoutGroup || charactersWithoutGroup.length === 0;
 
   const handleCampaignClick = () => {
     setIsCreateCampaignOpen(true);
@@ -45,6 +49,11 @@ export default function WelcomePage() {
       image: Session,
       realm: "session",
       onClick: () => setIsJoinSessionOpen(true),
+      disabled: isJoinSessionDisabled,
+      tooltip:
+        !loadingCharactersWithoutGroup && charactersWithoutGroup.length === 0
+          ? t("session.noCharacterWithoutGroup")
+          : undefined,
     },
   ];
 
