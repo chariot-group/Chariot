@@ -6,7 +6,7 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
-import { Eye, EyeOff, ShoppingCart, SquarePen } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, ShoppingCart, SquarePen } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
@@ -71,7 +71,17 @@ export default function ProfilePage() {
       role="main"
       aria-label={t("pageTitle")}>
       <h1 className="sr-only">{t("pageTitle")}</h1>
-      <div className="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-2 gap-2 py-2 sm:py-4 md:py-6 lg:py-8">
+      <div className="w-full justify-end flex">
+        <Button
+          variant={"link"}
+          onClick={() => router.back()}>
+          <div className="flex flex-row gap-1 items-center">
+            <ArrowLeft />
+            <span>Retour</span>
+          </div>
+        </Button>
+      </div>
+      <div className="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-2 gap-2 ">
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 gap-2">
           {!isUpdating && <ReadProfile user={user} />}
           {isUpdating && (
