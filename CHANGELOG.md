@@ -1,5 +1,59 @@
 # Changelog
 
+## [2.4.0] - 01-05-2026
+
+### Added
+- Added a back button on the profile page
+- Added a disabled state for "Join a Session" when no character exists in "My Characters", with a tooltip explaining why
+- Added spell preparation support for preparation-based spellcasters
+- Added prepared spell highlighting (green) and blocked casting of unprepared spells for classes that must prepare spells
+- Added spell casting flow with default casting at the spell's base level and slot consumption tracking per spell level
+- Added upcast support from the cast action (dropdown option), including level selection among available higher spell slots
+- Added upcast constraints:
+	- No upcast for cantrips (level 0 spells)
+	- No upcast for level 9 spells
+	- No upcast when the character has no access to higher spell levels
+- Added long rest mechanics:
+	- Reset all spent spell slots to 0 used
+	- Reset limited-use counters (for spell and non-spell abilities)
+	- Restore current HP to max HP
+	- Reset temporary HP to 0
+	- Reduce exhaustion by 1 when exhaustion is above 0
+	- Added "Long Rest" and "Sleep and Change Prepared Spells" options for eligible spellcasters
+- Added short rest mechanics:
+	- Players can spend hit dice
+	- Warlocks recover all spell slots
+	- Abilities and traits marked as short-rest reset are restored
+- Added support for limited-use counters on abilities and traits (for example Barbarian Rage, Fighter Second Wind)
+- Added reset policy options on abilities and traits:
+	- Reset on short rest
+	- Reset on long rest
+- Added a tooltip on the session timer explaining token validity (8 hours, as long as the session is not left for too long)
+- Added a way to voluntarily leave a session
+- Added a way to see who is currently in the session
+- Added explicit session lifecycle handling to prevent being forced back into a previously active session when trying to start a new one
+
+### Changed
+- Reordered Home cards: "Join a Session" and "Create a Character"
+- Updated spell deletion button placement in the add-spells UI for better usability
+- Added explicit unit guidance for character size input
+- Removed bold styling on selected and hovered values in mastery combobox inputs
+- Updated form background gray to the new shared Tailwind color token and applied it across forms using the old gray
+- Prevented exhaustion level edits outside active sessions
+- Updated Chariot logo redirection behavior in GM space to keep navigation consistent with the GM context
+- Improved responsive behavior for mastery combobox suggestion lists with auto-scroll into view
+- Reviewed and aligned additional edge cases related to session and rest flows
+
+### Fixed
+- Fixed duplicate workspace toast notifications triggered when opening the sidebar on mobile
+- Fixed profile page cropping and non-scrollable behavior on all non-large desktop viewports
+- Fixed mastery combobox option click selection while preserving keyboard navigation behavior
+- Fixed XP vs level warning not clearing after entering the expected value
+- Fixed passive perception warning not clearing after entering the expected value
+- Fixed half-proficiency and expertise labels appearing clickable without toggling their checkbox; label click now toggles the checkbox
+- Fixed missing hover state on the inspiration checkbox
+- Fixed mastery combobox suggestion panel opening outside the visible page area
+
 ## [2.3.5] - 26-04-2026
 
 ### Added
