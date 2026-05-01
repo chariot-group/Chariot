@@ -351,7 +351,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     const currentLevel = form.watch("progression.level") || 1;
                     const currentXp = form.watch("progression.experience") || 0;
                     const calculatedLevel = getLevelFromExperience(currentXp);
-                    const isSynced = isLevelXpSynced(currentXp, currentLevel);
+                    const isSynced = isLevelXpSynced(parseInt(currentXp), parseInt(currentLevel));
 
                     if (isSynced) {
                       return (
@@ -971,7 +971,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 const currentValue = form.watch("stats.passivePerception") || 0;
                 const calculatedValue = calculatePassivePerception();
 
-                if (currentValue !== calculatedValue && currentValue !== 0) {
+                if (parseInt(currentValue) !== calculatedValue && parseInt(currentValue) !== 0) {
                   return (
                     <div className="text-xs text-orange-600 dark:text-orange-400 p-2 bg-orange-600/10 rounded">
                       {t("passivePerceptionMismatch", { calculated: calculatedValue })}
@@ -1001,6 +1001,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="inspiration-checkbox"
+                    className="cursor-pointer"
                     checked={field.value || false}
                     onCheckedChange={field.onChange}
                   />

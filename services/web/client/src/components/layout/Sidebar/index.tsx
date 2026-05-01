@@ -3,71 +3,78 @@
 import { useCampaigns } from "@/hooks/useCampaigns";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import SidebarEnvironment from "@/components/layout/Sidebar/SidebarEnvironment";
 import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
 import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useTranslations } from "use-intl";
+
+const TOOLTIP_CURSOR_OFFSET = 4;
+type TooltipScope = "header" | "content" | null;
 
 export default function AppSidebar() {
   useCampaigns({ autoFetch: true, pageSize: 5 });
 
   const isInSession = useAppSelector(selectIsInSession);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const t = useTranslations("sidebar");
   const contextMode = useAppSelector((state) => state.environment.contextMode);
+  const isContextDisabled = isInSession && contextMode !== "gm";
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [tooltipScope, setTooltipScope] = useState<TooltipScope>(null);
+  const t = useTranslations("sidebar");
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = triggerRef.current?.getBoundingClientRect();
+  const handleMouseMoveHeader = (e: React.MouseEvent) => {
     setMousePos({
       x: e.clientX,
-      y: e.clientY - (rect?.height ?? 0), // soustrait la hauteur du trigger
+      y: e.clientY,
+    });
+  };
+
+  const handleMouseMoveContent = (e: React.MouseEvent) => {
+    setMousePos({
+      x: e.clientX,
+      y: e.clientY,
     });
   };
 
   return (
     <Sidebar className="bg-card sm:bg-transparent text-white border-r border-sidebar-border">
-      <Tooltip open={isInSession ? undefined : false}>
-        <TooltipTrigger
-          asChild
-          className={`${contextMode !== "gm" ? "h-full" : ""}`}>
-          <div
-            ref={triggerRef}
-            onMouseMove={isInSession ? handleMouseMove : undefined}>
-            <SidebarHeader className={`bg-card sm:bg-transparent ${isInSession ? " pointer-events-none" : ""}`}>
-              <SidebarEnvironment />
-            </SidebarHeader>
-            {contextMode !== "gm" && (
-              <SidebarContent className={`bg-card sm:bg-transparent ${isInSession ? "pointer-events-none" : ""}`}>
-                <SidebarContext />
-              </SidebarContent>
-            )}
+      <SidebarHeader className="bg-card sm:bg-transparent">
+        <div
+          className={`${contextMode !== "gm" ? "h-full" : ""}`}
+          onMouseEnter={isInSession ? () => setTooltipScope("header") : undefined}
+          onMouseLeave={isInSession ? () => setTooltipScope(null) : undefined}
+          onMouseMove={isInSession ? handleMouseMoveHeader : undefined}>
+          <div className={isInSession ? "pointer-events-none" : ""}>
+            <SidebarEnvironment />
           </div>
-        </TooltipTrigger>
-        <TooltipContent
-          side="bottom"
-          align="start"
-          sideOffset={0}
-          className="!translate-x-0 !translate-y-0 w-50"
+        </div>
+      </SidebarHeader>
+      <SidebarContent className="bg-card sm:bg-transparent">
+        <div
+          className={`${contextMode !== "gm" ? "h-full" : ""}`}
+          onMouseEnter={isContextDisabled ? () => setTooltipScope("content") : undefined}
+          onMouseLeave={isContextDisabled ? () => setTooltipScope(null) : undefined}
+          onMouseMove={isContextDisabled ? handleMouseMoveContent : undefined}>
+          <div className={isContextDisabled ? "pointer-events-none" : ""}>
+            <SidebarContext />
+          </div>
+        </div>
+      </SidebarContent>
+
+      {((isInSession && tooltipScope === "header") || (isContextDisabled && tooltipScope === "content")) && (
+        <div
+          role="tooltip"
+          className="bg-foreground text-background z-50 w-50 rounded-[15px] px-3 py-1.5 text-xs text-balance pointer-events-none fixed"
           style={{
-            position: "fixed",
-            top: mousePos.y + 12,
-            left: mousePos.x + 12,
-            transform: "none",
-            pointerEvents: "none",
+            top: mousePos.y + TOOLTIP_CURSOR_OFFSET,
+            left: mousePos.x + TOOLTIP_CURSOR_OFFSET,
           }}>
           <span>{t("disabledInSession")}</span>
-        </TooltipContent>
-      </Tooltip>
-      {contextMode === "gm" && (
-        <SidebarContent className={`bg-card sm:bg-transparent`}>
-          <SidebarContext />
-        </SidebarContent>
+        </div>
       )}
+
       <SidebarFooter className="bg-card sm:bg-transparent">
         <ActionButton />
       </SidebarFooter>

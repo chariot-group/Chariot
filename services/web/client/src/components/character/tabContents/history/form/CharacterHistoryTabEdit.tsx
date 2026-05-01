@@ -168,6 +168,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                     value={field.value ?? ""}
                     id="appearance-height"
                     tabIndex={4}
+                    step={0.1}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-height-error" : undefined}
                     placeholder={t("height")}
@@ -203,6 +204,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                   <Input
                     {...field}
                     min={0}
+                    step={0.1}
                     value={field.value ?? ""}
                     id="appearance-weight"
                     tabIndex={5}

@@ -639,9 +639,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   const allSpellAccordionKeys = !isInnate
     ? levels.filter((level) => (spellIndicesByLevel[level] ?? []).length > 0).map((level) => `level-${level}`)
-    : npcUsesGroups
-      .filter((uses) => (npcSpellIndicesByUses[npcUsesKey(uses)] ?? []).length > 0)
-      .map(npcUsesKey);
+    : npcUsesGroups.filter((uses) => (npcSpellIndicesByUses[npcUsesKey(uses)] ?? []).length > 0).map(npcUsesKey);
   const hasSpellAccordions = allSpellAccordionKeys.length > 0;
 
   // ── Keyboard navigation for tabs ──
@@ -703,7 +701,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 {spellcastingList.map((sc, index) => {
                   let label = sc?.className || tMagic("newSpellcasting");
                   if (isPlayer(character) && sc?.className) {
-                    const cls = playerCharacter?.class?.find((c) => c?.name?.toLowerCase() === sc.className?.toLowerCase());
+                    const cls = playerCharacter?.class?.find(
+                      (c) => c?.name?.toLowerCase() === sc.className?.toLowerCase(),
+                    );
                     label = cls ? `${tClass(cls.name)} ${tMagic("level")} ${cls.level}` : sc.className;
                   }
                   const isSelected = selectedSpellcastingIndex === index;
@@ -1447,7 +1447,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           ) : (
             <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
               {/* Name */}
-              <Card className="gap-2 sm:gap-3 py-3 sm:py-4 px-3 sm:px-4 md:px-6">
+              <Card className="gap-2 sm:gap-3 py-3 sm:py-4 px-3 sm:px-4 md:px-6 flex flex-row">
                 <Controller
                   name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.name`}
                   control={form.control}
@@ -1455,11 +1455,37 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     <Field
                       data-invalid={fieldState.invalid}
                       orientation="vertical">
-                      <label
-                        htmlFor={`spell-name-${selectedSpellIndex}`}
-                        className={`text-base sm:text-lg md:text-xl lg:text-2xl font-semibold ${accentColor}`}>
-                        {tEdit("spellName")}
-                      </label>
+                      <div className="flex flex-row items-center justify-between">
+                        <label
+                          htmlFor={`spell-name-${selectedSpellIndex}`}
+                          className={`text-base sm:text-lg md:text-xl lg:text-2xl font-semibold ${accentColor}`}>
+                          {tEdit("spellName")}
+                        </label>
+                        <ConfirmDialog
+                          title={tMagic("removeSpellTitle")}
+                          description={tMagic("removeSpellDescription", {
+                            name: currentSpells[selectedSpellIndex]?.name || tMagic("newSpell"),
+                          })}
+                          confirmLabel={tMagic("removeSpellConfirm")}
+                          cancelLabel={tCommon("cancel")}
+                          onConfirm={() => {
+                            if (selectedSpellIndex !== null) removeSpell(selectedSpellIndex);
+                          }}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:text-red-600"
+                            aria-label={tMagic("removeSpellWithName", {
+                              name: currentSpells[selectedSpellIndex]?.name || tMagic("newSpell"),
+                            })}>
+                            <Trash2
+                              className="size-4"
+                              aria-hidden="true"
+                            />
+                          </Button>
+                        </ConfirmDialog>
+                      </div>
                       <Input
                         {...field}
                         value={field.value ?? ""}
@@ -2052,32 +2078,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   )}
                 />
               </Card>
-              <ConfirmDialog
-                title={tMagic("removeSpellTitle")}
-                description={tMagic("removeSpellDescription", {
-                  name: currentSpells[selectedSpellIndex]?.name || tMagic("newSpell"),
-                })}
-                confirmLabel={tMagic("removeSpellConfirm")}
-                cancelLabel={tCommon("cancel")}
-                onConfirm={() => {
-                  if (selectedSpellIndex !== null) removeSpell(selectedSpellIndex);
-                }}>
-                <Card className="px-3.5 py-3 w-fit">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-500 size-9 hover:border-none"
-                    aria-label={tMagic("removeSpellWithName", {
-                      name: currentSpells[selectedSpellIndex]?.name || tMagic("newSpell"),
-                    })}>
-                    <Trash2
-                      className="size-5"
-                      aria-hidden="true"
-                    />
-                  </Button>
-                </Card>
-              </ConfirmDialog>
             </div>
           )}
         </div>

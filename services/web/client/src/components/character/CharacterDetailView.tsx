@@ -107,7 +107,9 @@ export default function CharacterDetailView({
   }, [form, isDirty, isEditing, onCancel, onUpdate, setIsEditing, t, toast]);
 
   return (
-    <main className="flex flex-col h-dvh overflow-hidden">
+    <main
+      className="flex flex-col h-screen overflow-hidden"
+      id="characterView">
       <form
         id="character-update-form"
         className="flex flex-col flex-1 min-h-0"
@@ -215,7 +217,9 @@ export default function CharacterDetailView({
           </div>
 
           {/* Contenu des onglets - scrollable (min-h-0 pour que les enfants h-full / flex-1 se calent sur la hauteur utile) */}
-          <div className="flex flex-1 min-h-0 flex-col overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+          <div
+            id="characterScrollView"
+            className="flex flex-1 min-h-0 flex-col overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
             <CharacterTabPanels
               character={character}
               form={form}
