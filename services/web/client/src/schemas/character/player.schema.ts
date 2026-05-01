@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { createCharacterSchema } from '@/schemas/character/character.schema';
-import { ActionSchema, ClassNameEnum, AlignmentEnum, StatsSchema } from '@/schemas/character/base.schema';
+import {
+    ActionSchema,
+    ClassNameEnum,
+    AlignmentEnum,
+    StatsSchema,
+    preprocessActionArrayRows,
+} from '@/schemas/character/base.schema';
 import { makeZodMessages } from '@/lib/zodErrorMap';
 
 
@@ -133,7 +139,7 @@ export const PlayerProfileSchema = z.object({
  */
 export function createPlayerSchema(zm: ZodMessages) {
     return createCharacterSchema(zm).extend({
-        actions: z.array(ActionSchema(zm)).optional(),
+        actions: z.preprocess(preprocessActionArrayRows, z.array(ActionSchema(zm)).optional()),
 
         inspiration: z.boolean({ message: zm.required() }).optional(),
 

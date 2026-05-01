@@ -17,6 +17,7 @@ import {
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
 import { useUser } from "@/hooks/useUser";
+import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 
 interface ActionButtonConfig {
   label: string;
@@ -41,6 +42,7 @@ type ActionButtonState =
 
 export function ActionButton() {
   const t = useTranslations("sidebar");
+  const tWelcome = useTranslations("welcome");
   const contextMode = useAppSelector((state) => state.environment.contextMode);
   const currentPage = usePathname() || "/";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
@@ -56,6 +58,9 @@ export function ActionButton() {
   useSessionValidation();
 
   const sessionStarted = sessionStatus && sessionStatus === "launched";
+  const { characters: charactersWithoutGroup, loading: loadingCharactersWithoutGroup } = usePlayersWithoutGroup();
+
+  const isJoinSessionDisabled = loadingCharactersWithoutGroup || charactersWithoutGroup.length === 0;
 
   // TODO
   const battleInitialized: boolean = false;
@@ -92,9 +97,10 @@ export function ActionButton() {
             }
           },
           icon: <Users className="size-6" />,
-          disabled: false,
+          disabled: isJoinSessionDisabled,
           backgroundColor: "bg-green",
           textColor: "text-black",
+          tooltip: isJoinSessionDisabled ? tWelcome("session.noCharacterWithoutGroup") : undefined,
         };
       }
     }

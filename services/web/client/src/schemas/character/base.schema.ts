@@ -349,10 +349,28 @@ export const DamageSchema = z.object({
 });
 
 export const DifficultyClassSchema = z.object({
-    dcType: z.string().optional(),
-    dcValue: z.coerce.number().int().min(0).optional(),
-    successType: z.string().optional(),
+    dcType: z.preprocess(
+        (val) => (val === null || val === undefined ? undefined : val),
+        z.string().optional(),
+    ),
+    dcValue: z.preprocess(
+        (val) =>
+            val === null || val === undefined || val === '' ? undefined : val,
+        z.coerce.number().int().min(0).optional(),
+    ),
+    successType: z.preprocess(
+        (val) => (val === null || val === undefined ? undefined : val),
+        z.string().optional(),
+    ),
 });
+
+/** Retire les entrées null des tableaux d'actions (payload Codex, useFieldArray, etc.). */
+export function preprocessActionArrayRows(value: unknown): unknown {
+    if (!Array.isArray(value)) return value;
+    return value.filter(
+        (item): item is object => item != null && typeof item === 'object' && !Array.isArray(item),
+    );
+}
 
 export const ActionUsageTypeEnum = z.enum(["action", "bonus_action", "reaction"]);
 

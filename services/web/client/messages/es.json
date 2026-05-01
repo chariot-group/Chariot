@@ -154,7 +154,8 @@
       "title": "Únete a <br /> una sesión",
       "button": "Unirse a una sesión",
       "button-aria": "Navegar hacia unirse a una sesión",
-      "comingSoon": "Próximamente"
+      "comingSoon": "Próximamente",
+      "noCharacterWithoutGroup": "Debes tener al menos un personaje en tu espacio de jugador para unirte a una sesión."
     },
     "character": {
       "title": "Crea tu primer <br /> personaje",

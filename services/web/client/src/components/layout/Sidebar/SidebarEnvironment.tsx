@@ -9,7 +9,6 @@ import { useTranslations } from "next-intl";
 import CampaignList from "@/components/layout/Sidebar/CampaignList";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import NavigationService from "@/services/NavigationService";
 import { setSelectedCampaign } from "@/store/slices/campaignContextSlice";
@@ -49,17 +48,15 @@ export default function SidebarEnvironment() {
         store.getState.bind(store),
       );
       router.push(destination.path);
+
+      const spaceName = isGmMode ? t("gmSpace") : t("playerSpace");
+      toast.info(t("environmentChanged", { space: spaceName.toLocaleLowerCase() }));
     }
   };
 
   const handleOpenChange = (isOpen: boolean) => {
     dispatch(setOpenEnvironment(isOpen));
   };
-
-  useEffect(() => {
-    const spaceName = isGmMode ? t("gmSpace") : t("playerSpace");
-    toast.info(t("environmentChanged", { space: spaceName.toLocaleLowerCase() }));
-  }, [isGmMode, t]);
 
   return (
     <Collapsible
