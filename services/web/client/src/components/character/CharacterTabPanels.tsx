@@ -53,13 +53,15 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                                 );
                             case "magic":
                                 return (
-                                    <CharacterMagicTabContent
-                                        character={character}
-                                        accentColor={TAB_COLORS[tab]}
-                                        form={form}
-                                        isEditing={isEditing}
-                                        onCharacterUpdate={onCharacterUpdate}
-                                    />
+                                    <div className="flex flex-col min-h-0 max-xl:max-h-none xl:h-[calc(100dvh-9.5rem)] 2xl:h-[calc(100dvh-8.75rem)] min-[1920px]:h-[calc(100dvh-8rem)] min-[2560px]:h-[calc(100dvh-7.5rem)]">
+                                        <CharacterMagicTabContent
+                                            character={character}
+                                            accentColor={TAB_COLORS[tab]}
+                                            form={form}
+                                            isEditing={isEditing}
+                                            onCharacterUpdate={onCharacterUpdate}
+                                        />
+                                    </div>
                                 );
                             case "inventory":
                                 return (

@@ -680,7 +680,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   return (
     <div
-      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-0 max-h-[calc(100vh-20rem)] relative"
+      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-0 min-h-0 max-xl:max-h-none xl:flex-1 xl:min-h-0 xl:h-full xl:max-h-full relative"
       role="main"
       aria-labelledby="magic-tab-edit">
       <h2
@@ -689,10 +689,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         {tMagic("spells")}
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr] lg:grid-cols-[1fr_1fr] xl:grid-cols-[1.2fr_1fr] gap-2 md:gap-4 h-full overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr] xl:grid-cols-[1fr_1fr] 2xl:grid-cols-[1.35fr_1fr] min-[1920px]:grid-cols-[1.5fr_1fr] min-[2560px]:grid-cols-[1.65fr_1fr] gap-2 md:gap-4 min-h-0 max-xl:h-auto xl:flex-1 xl:min-h-0 xl:h-full xl:overflow-hidden">
         {/* ══ Left column ══ */}
         <div
-          className={`flex flex-col gap-2 md:gap-4 h-full overflow-hidden ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
+          className={`flex flex-col gap-2 md:gap-4 min-h-0 max-xl:h-auto max-xl:overflow-visible xl:h-full xl:overflow-hidden ${showMobileDetails ? "hidden xl:flex" : "flex"}`}>
           {/* Spellcasting class tabs */}
           {isPlayer(character) && spellcastingList.length > 0 && (
             <div className="flex flex-col gap-2 shrink-0">
@@ -1046,7 +1046,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           </Card>
 
           {/* Spell list */}
-          <div className="flex flex-col gap-2 flex-1 overflow-hidden">
+          <div className="flex flex-col gap-2 max-xl:flex-none xl:flex-1 xl:min-h-0 xl:overflow-hidden">
             <Card className="gap-2 p-3 sm:p-4 md:px-6 flex-row flex-wrap justify-between items-center shrink-0">
               <h3 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h3>
               <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -1150,7 +1150,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             ) : null}
 
             <nav
-              className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              className="flex flex-col gap-2 max-xl:min-h-[min(50svh,32rem)] max-xl:overflow-visible max-xl:flex-none xl:min-h-0 xl:flex-1 xl:overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               aria-label={tMagic("spellListRegion")}>
               {!isInnate ? (
                 /* ── Accordion by level ── */
@@ -1425,14 +1425,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
         {/* ══ Right column: spell detail edit ══ */}
         <div
-          className={`flex flex-col gap-2 h-full overflow-hidden md:border-l md:pl-2 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}
+          className={`flex flex-col gap-2 min-h-0 max-xl:h-auto xl:h-full max-xl:overflow-visible xl:overflow-hidden xl:border-l xl:pl-4 ${showMobileDetails ? "flex" : "hidden xl:flex"}`}
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
-          {/* Back button for mobile */}
+          {/* Back button: single-column layouts (mobile through laptop lg) */}
           <button
             type="button"
             onClick={() => setShowMobileDetails(false)}
-            className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
+            className="xl:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
             aria-label={tMagic("backToList")}>
             <ArrowLeft className="w-4 h-4" />
             <span>{tMagic("backToList")}</span>

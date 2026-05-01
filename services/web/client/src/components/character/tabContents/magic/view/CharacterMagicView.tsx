@@ -271,13 +271,13 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
 
   return (
     <div
-      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0 max-h-[calc(100vh-20rem)] relative"
+      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-4 lg:px-0 min-h-0 max-xl:max-h-none xl:flex-1 xl:min-h-0 xl:h-full xl:max-h-full relative"
       role="region"
       aria-label={tMagic("mainRegion")}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 h-full overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr] xl:grid-cols-[1fr_1fr] 2xl:grid-cols-[1.35fr_1fr] min-[1920px]:grid-cols-[1.5fr_1fr] min-[2560px]:grid-cols-[1.65fr_1fr] gap-2 md:gap-4 min-h-0 max-xl:h-auto xl:flex-1 xl:min-h-0 xl:h-full xl:overflow-hidden">
         {/* Left column: Spell list (hidden on mobile when showing details) */}
         <div
-          className={`flex flex-col gap-2 md:gap-4 h-full overflow-hidden ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
+          className={`flex flex-col gap-2 md:gap-4 min-h-0 max-xl:h-auto max-xl:overflow-visible xl:h-full xl:overflow-hidden ${showMobileDetails ? "hidden xl:flex" : "flex"}`}>
           {character?.spellcasting?.length > 1 && (
             <nav
               className="flex flex-wrap sm:flex-row gap-2 shrink-0"
@@ -439,7 +439,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
               </span>
             </Card>
           </div>
-          <div className="flex flex-col gap-2 flex-1 overflow-hidden">
+          <div className="flex flex-col gap-2 max-xl:flex-none xl:flex-1 xl:min-h-0 xl:overflow-hidden">
             <Card className="gap-2 sm:gap-3 p-4 md:px-6 h-fit flex-row flex-wrap items-center justify-between gap-y-2">
               <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h2>
               <div className="flex items-center gap-2 shrink-0">
@@ -495,7 +495,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
             ) : null}
 
             <nav
-              className="flex flex-col gap-2 sm:gap-3 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              className="flex flex-col gap-2 sm:gap-3 max-xl:min-h-[min(50svh,32rem)] max-xl:overflow-visible max-xl:flex-none xl:min-h-0 xl:flex-1 xl:overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               role="navigation"
               aria-label={tMagic("spellListRegion")}
               aria-live="polite"
@@ -733,14 +733,14 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         </div>
         {/* Right column: Spell details (visible on mobile when showMobileDetails is true, always visible on desktop) */}
         <div
-          className={`flex flex-col gap-2 h-full overflow-hidden ${showMobileDetails ? "flex" : "hidden lg:flex"}`}
+          className={`flex flex-col gap-2 min-h-0 max-xl:h-auto xl:h-full max-xl:overflow-visible xl:overflow-hidden xl:border-l xl:pl-4 ${showMobileDetails ? "flex" : "hidden xl:flex"}`}
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
-          {/* Back button for mobile */}
+          {/* Back button: single-column layouts through laptop */}
           <button
             type="button"
             onClick={handleBackToList}
-            className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
+            className="xl:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
             aria-label={tMagic("backToList")}>
             <ArrowLeft className="w-4 h-4" />
             <span>{tMagic("backToList")}</span>
