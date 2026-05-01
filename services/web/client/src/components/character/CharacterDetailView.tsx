@@ -23,11 +23,17 @@ import { useFormState } from "react-hook-form";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
+  /** GET personnage (même source que la page) pour resync après sauvegarde si besoin. */
+  refetchCharacter?: () => Promise<void>;
   /** Sans argument : rechargement complet (ex. après sauvegarde). Avec personnage : mise à jour locale sans recharger toute la page. */
   onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
-export default function CharacterDetailView({ character, onCharacterUpdate }: CharacterDetailViewProps) {
+export default function CharacterDetailView({
+  character,
+  refetchCharacter,
+  onCharacterUpdate,
+}: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
   const toast = useToast();
@@ -54,6 +60,8 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
   const { form, onUpdate, onCancel, isEditing, setIsEditing, isSaving } = useCharacterForm({
     characterId: character._id,
     type: characterType,
+    sourceCharacter: character,
+    refetchCharacter,
     onSuccess: () => {
       // Rafraîchir les données du parent après la mise à jour
       if (onCharacterUpdate) {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm, UseFormReturn, FieldValues } from 'react-hook-form';
+import { useForm, UseFormReturn, FieldValues, useFormState } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
@@ -27,6 +27,14 @@ interface UseCharacterFormProps<TFormValues extends FieldValues = FieldValues> {
     characterId: string | null;
     /** Type de personnage (players ou npcs) */
     type: CharacterType;
+    /**
+     * Données serveur déjà chargées par la page parente (fiche personnage).
+     * Si défini avec characterId, évite un second fetch et permet de garder le formulaire
+     * aligné après une mise à jour locale (repos court/long, sort, etc.).
+     */
+    sourceCharacter?: Player | NPC;
+    /** Rafraîchissement GET à utiliser avec sourceCharacter (ex. après sauvegarde). */
+    refetchCharacter?: () => Promise<void>;
     /** Valeurs par défaut pour la création */
     defaultValues?: Partial<TFormValues>;
     /** Callback après succès de sauvegarde */
@@ -113,6 +121,8 @@ export interface UseCharacterFormReturn<TFormValues extends FieldValues = FieldV
 export function useCharacterForm<TFormValues extends FieldValues = FieldValues>({
     characterId,
     type,
+    sourceCharacter,
+    refetchCharacter,
     defaultValues = {} as Partial<TFormValues>,
     onSuccess,
 }: UseCharacterFormProps<TFormValues>): UseCharacterFormReturn<TFormValues> {
@@ -123,7 +133,15 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
 
     // Hooks
-    const { character, loading: isLoading, error, refetch } = useCharacter(characterId);
+    const fetchOwn = characterId != null && sourceCharacter === undefined;
+    const {
+        character: fetchedCharacter,
+        loading: isLoading,
+        error,
+        refetch: refetchInternal,
+    } = useCharacter(fetchOwn ? characterId : null);
+    const character = sourceCharacter ?? fetchedCharacter;
+    const refetch = refetchCharacter ?? refetchInternal;
     const toast = useToast();
     const dispatch = useAppDispatch();
     const isInSession = useAppSelector(selectIsInSession);
@@ -143,6 +161,8 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
         mode: 'onChange',
         shouldUnregister: false, // 🐛 FIX: Conserve les valeurs des champs même quand ils sont démontés
     });
+
+    const { isDirty } = useFormState({ control: form.control });
 
     // Normalise les clés numériques de spellSlotsByUses en "k{n}" pour éviter
     // que react-hook-form les interprète comme des indices de tableau.
@@ -178,12 +198,12 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
         };
     };
 
-    // Chargement des données existantes
+    // Chargement / resync depuis le serveur (ne pas écraser des changements locaux non sauvegardés)
     useEffect(() => {
-        if (character && characterId) {
-            form.reset(normalizeSpellSlots(character) as TFormValues);
-        }
-    }, [character, characterId, form]);
+        if (!character || !characterId) return;
+        if (isDirty) return;
+        form.reset(normalizeSpellSlots(character) as TFormValues);
+    }, [character, characterId, form, isDirty]);
 
     /**
      * Fonction de création d'un nouveau personnage

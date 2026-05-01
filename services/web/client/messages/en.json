@@ -213,7 +213,8 @@
       "uuid": "Invalid uuid"
     },
     "notMultipleOf": "Number must be a multiple of {multipleOf}",
-    "abilityCounterOrder": "Current uses cannot exceed the maximum."
+    "abilityCounterOrder": "Current uses cannot exceed the maximum.",
+    "classLevelTotalsVsGlobalHitDice": "Total class levels ({total}) exceed the character’s global level ({global}). Fix class levels or the global level — the error appears on remaining hit dice."
   },
   "characterDetail": {
     "editCharacter": "Edit character",
@@ -285,7 +286,8 @@
       },
       "quickWarnings": {
         "currentOutOfBounds": "Current HP was automatically adjusted between 0 and max HP.",
-        "maxBelowCurrent": "Max HP was automatically adjusted to stay greater than or equal to current HP."
+        "maxBelowCurrent": "Max HP was automatically adjusted to stay greater than or equal to current HP.",
+        "hitDiceRemainingClamped": "Remaining hit dice were capped by this class’s level."
       },
       "defense": "Defense",
       "initiative": "Initiative",
@@ -308,6 +310,7 @@
       "damageType": "Damage Type",
       "damageTypePlaceholder": "Fire, Cold...",
       "quickNumberPlaceholder": "Enter a number",
+      "hitDiceRemainingExceedsClassLevel": "This value exceeds what this class allows for remaining hit dice (max {max}).",
       "levelPlaceholder": "1",
       "zeroPlaceholder": "0",
       "proficiencyBonusPlaceholder": "+2",
@@ -342,6 +345,8 @@
     "battle": {
       "stats": "Stats",
       "hitLevel": "Level",
+      "hitDiceRemaining": "Hit dice remaining",
+      "hitDiceUsed": "Hit dice spent",
       "hitDice": "Hit Dice",
       "bonusHealthDice": "Bonus Health Dice",
       "multiplicator": "Multiplicator",

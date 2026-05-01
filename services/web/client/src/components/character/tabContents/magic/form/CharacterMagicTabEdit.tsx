@@ -6,7 +6,7 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRightLeft,
@@ -164,6 +164,41 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       name: `spellcasting.${selectedSpellcastingIndex}.isInnate`,
     }) ?? false;
 
+  /** Hors useFieldArray : `setValue` sur spellSlotsByLevel ne met pas à jour `spellcastingFields`. */
+  const watchedSpellSlotsByLevel = useWatch({
+    control: form.control,
+    name: `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`,
+  }) as Spellcasting["spellSlotsByLevel"] | undefined;
+
+  /** Tout niveau > 0 représenté par un sort doit avoir une ligne d’emplacements (ex. niveau modifié dans le formulaire sans repasser par « ajouter »).
+   *  Un `setValue` sur l’objet `spellSlotsByLevel` entier ne met pas toujours à jour les champs imbriqués (.total) : on écrit chaque niveau comme `addSpell`. */
+  useLayoutEffect(() => {
+    if (isInnate || spellcastingList.length === 0) return;
+    const basePath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
+    const slotsNow = ((form.getValues(basePath) ?? {}) as Spellcasting["spellSlotsByLevel"]) ?? {};
+
+    for (const s of currentSpells) {
+      const L = Number(s.level);
+      if (Number.isNaN(L) || L <= 0) continue;
+      const key = String(L);
+      const slotPath = `${basePath}.${key}`;
+      const entry = slotsNow[key];
+
+      if (entry == null || typeof entry !== "object") {
+        form.setValue(slotPath, { total: 1, used: 0 }, { shouldDirty: true });
+        continue;
+      }
+      const t = entry.total;
+      const u = entry.used;
+      if (t === undefined || t === null || Number.isNaN(Number(t))) {
+        form.setValue(`${slotPath}.total`, 1, { shouldDirty: true });
+      }
+      if (u === undefined || u === null || Number.isNaN(Number(u))) {
+        form.setValue(`${slotPath}.used`, 0, { shouldDirty: true });
+      }
+    }
+  }, [isInnate, selectedSpellcastingIndex, currentSpells, form, spellcastingList.length]);
+
   // Fonctions pour manipuler les spells directement
   const addSpell = useCallback(
     (spell: Partial<Spell>) => {
@@ -197,7 +232,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         if (!currentSlots[spellLevelAfter]) {
           form.setValue(
             `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevelAfter}`,
-            { total: 2, used: 0 },
+            { total: 1, used: 0 },
             { shouldDirty: true },
           );
         }
@@ -246,13 +281,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const appendSpellHelper = useCallback(() => {
     const levels: number[] = [];
     if (currentSpells.some((s) => Number(s.level) === 0)) levels.push(0);
-    const selectedSpellcasting = spellcastingList[selectedSpellcastingIndex];
-    if (selectedSpellcasting?.spellSlotsByLevel) {
-      Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
-        const n = Number(l);
-        if (!levels.includes(n)) levels.push(n);
-      });
-    }
+    const slotsRow =
+      (form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) as
+        | Spellcasting["spellSlotsByLevel"]
+        | undefined) ?? {};
+    Object.keys(slotsRow).forEach((l) => {
+      const n = Number(l);
+      if (!levels.includes(n)) levels.push(n);
+    });
     currentSpells.forEach((spell) => {
       const n = Number(spell.level);
       if (!levels.includes(n)) levels.push(n);
@@ -272,7 +308,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       effectType: "utility",
       usesPerDay: null,
     });
-  }, [currentSpells, spellcastingList, selectedSpellcastingIndex, addSpell]);
+  }, [currentSpells, form, selectedSpellcastingIndex, addSpell]);
 
   const addSpellFromCodex = useCallback(
     (spell: Partial<Spell>) => {
@@ -441,8 +477,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       saveDC: 10,
       attackBonus: 2,
       isInnate: false,
-      spellSlotsByLevel: { "1": { total: 2, used: 0 } },
-      totalSlots: 2,
+      spellSlotsByLevel: { "1": { total: 1, used: 0 } },
+      totalSlots: 1,
       spells: [],
     };
 
@@ -530,12 +566,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   if (!isInnate) {
     if (currentSpells.some((s) => Number(s.level) === 0)) levels.push(0);
-    if (selectedSpellcasting?.spellSlotsByLevel) {
-      Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
-        const n = Number(l);
-        if (!levels.includes(n)) levels.push(n);
-      });
-    }
+    const slotsMerged = watchedSpellSlotsByLevel ?? selectedSpellcasting?.spellSlotsByLevel ?? {};
+    Object.keys(slotsMerged).forEach((l) => {
+      const n = Number(l);
+      if (!levels.includes(n)) levels.push(n);
+    });
     currentSpells.forEach((spell) => {
       const n = Number(spell.level);
       if (!levels.includes(n)) levels.push(n);
@@ -1127,7 +1162,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     className="w-full flex flex-col gap-2">
                     {levels.map((level) => {
                       const indices = spellIndicesByLevel[level] ?? [];
-                      const hasSlots = level > 0 && selectedSpellcasting.spellSlotsByLevel?.[level] !== undefined;
+                      /** On n’affiche une section que si `indices.length > 0` : dès qu’un sort existe à ce niveau > 0, il faut pouvoir régler les emplacements. */
+                      const hasSlots = level > 0;
 
                       return (
                         spellIndicesByLevel[level].length > 0 && (
@@ -1150,16 +1186,31 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     <Controller
                                       name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total`}
                                       control={form.control}
-                                      render={({ field }) => (
-                                        <Input
-                                          {...field}
-                                          className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
-                                          type="number"
-                                          min={1}
-                                          onClick={(e) => e.stopPropagation()}
-                                          aria-label={tMagic("spellSlotsTotalForLevel", { level })}
-                                        />
-                                      )}
+                                      render={({ field }) => {
+                                        const parsed = Number(field.value);
+                                        const display =
+                                          Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+                                        return (
+                                          <Input
+                                            {...field}
+                                            value={display}
+                                            className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
+                                            type="number"
+                                            min={1}
+                                            onClick={(e) => e.stopPropagation()}
+                                            aria-label={tMagic("spellSlotsTotalForLevel", { level })}
+                                            onChange={(e) => {
+                                              const raw = e.target.value;
+                                              if (raw === "") {
+                                                field.onChange(1);
+                                                return;
+                                              }
+                                              const next = Number(raw);
+                                              field.onChange(Number.isFinite(next) ? next : 1);
+                                            }}
+                                          />
+                                        );
+                                      }}
                                     />
                                     <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">
                                       {tMagic("slotsLabel")}

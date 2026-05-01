@@ -101,7 +101,14 @@ export function LongRestButton({ player, isInSession, onApplied }: LongRestButto
                     </TooltipContent>
                 </Tooltip>
             ) : (
-                triggerButton
+                <Tooltip>
+                    <TooltipTrigger asChild>{triggerButton}</TooltipTrigger>
+                    <TooltipContent
+                        side="bottom"
+                        className="max-w-xs text-left">
+                        {t("ariaLabel")}
+                    </TooltipContent>
+                </Tooltip>
             )}
 
             <Dialog

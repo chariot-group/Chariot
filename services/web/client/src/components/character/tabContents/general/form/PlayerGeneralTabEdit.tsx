@@ -1,5 +1,5 @@
 import { Player } from "@/types/character";
-import { Controller, UseFormReturn, useFieldArray, FieldValues } from "react-hook-form";
+import { Controller, UseFormReturn, useFieldArray, FieldValues, useFormState } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -35,6 +35,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   const tAlignment = useTranslations("alignments");
   const isInSession = useAppSelector(selectIsInSession);
   void player; // Silence unused player prop warning
+  const { errors } = useFormState({ control: form.control });
 
   const {
     fields: abilitiesFields,
@@ -488,7 +489,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             control={form.control}
                             render={({ field, fieldState }) => (
                               <Field
-                                data-invalid={fieldState.invalid || totalClassLevels > globalLevel}
+                                data-invalid={fieldState.invalid}
                                 orientation="vertical">
                                 <label
                                   htmlFor={`class-level-${index}`}
@@ -497,31 +498,66 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                 </label>
                                 <Input
                                   {...field}
-                                  value={field.value || ""}
+                                  value={field.value === undefined || field.value === null ? "" : field.value}
                                   id={`class-level-${index}`}
                                   aria-invalid={fieldState.invalid}
-                                  aria-describedby={fieldState.error ? `class-level-${index}-error` : undefined}
+                                  aria-describedby={
+                                    fieldState.error
+                                      ? `class-level-${index}-error`
+                                      : errors.class?.[index]?.hitDiceRemaining
+                                        ? `class-level-${index}-hd-error`
+                                        : undefined
+                                  }
                                   placeholder={tEdit("levelPlaceholder")}
                                   type="number"
                                   min="1"
                                   max={maxLevelForThisClass}
+                                  onChange={(e) => {
+                                    const raw = e.target.value.trim();
+                                    if (raw === "") {
+                                      field.onChange("");
+                                      return;
+                                    }
+                                    const parsed = Number(raw);
+                                    if (!Number.isFinite(parsed)) return;
+
+                                    const floor = 1;
+                                    const ceil = Math.min(20, Math.max(floor, maxLevelForThisClass));
+                                    const clampedLevel = Math.max(floor, Math.min(ceil, Math.floor(parsed)));
+
+                                    field.onChange(clampedLevel);
+
+                                    const g = Number(form.getValues("progression.level")) || 1;
+                                    const cls = (form.getValues("class") || []) as Array<{ level?: unknown }>;
+                                    let totalNext = 0;
+                                    for (let j = 0; j < cls.length; j++) {
+                                      const v =
+                                        j === index
+                                          ? clampedLevel
+                                          : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
+                                      totalNext += v;
+                                    }
+                                    const sumOthersNext = totalNext - clampedLevel;
+                                    const shareNext = Math.max(0, g - sumOthersNext);
+                                    const cap = Math.min(clampedLevel, shareNext);
+                                    const remPath = `class.${index}.hitDiceRemaining`;
+                                    const remRaw = form.getValues(remPath);
+                                    if (
+                                      typeof remRaw === "number" &&
+                                      !Number.isNaN(remRaw) &&
+                                      remRaw > cap
+                                    ) {
+                                      form.setValue(remPath, cap, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                      });
+                                    }
+                                  }}
                                 />
                                 {fieldState.error && (
                                   <FieldError
                                     id={`class-level-${index}-error`}
                                     errors={[fieldState.error]}
-                                  />
-                                )}
-                                {totalClassLevels > globalLevel && (
-                                  <FieldError
-                                    errors={[
-                                      {
-                                        message: t("classLevelExceedsGlobal", {
-                                          total: totalClassLevels,
-                                          global: globalLevel,
-                                        }),
-                                      },
-                                    ]}
                                   />
                                 )}
                               </Field>
@@ -569,6 +605,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             globalLevel,
                           })}
                         </div>
+                        {errors.class?.[index]?.hitDiceRemaining && (
+                          <FieldError
+                            id={`class-level-${index}-hd-error`}
+                            errors={[errors.class[index]?.hitDiceRemaining!]}
+                          />
+                        )}
                       </div>
                     );
                   })}

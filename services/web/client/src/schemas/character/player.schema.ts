@@ -102,7 +102,21 @@ export function ClassSchema(zm: ZodMessages) {
         hitDice: z.coerce.number().optional(),
         hitDiceRemaining: z.coerce.number().int().min(0, { message: zm.minNumber(0) }).optional(),
     })
-};
+        .superRefine((data, ctx) => {
+            const { level: lvlRaw, hitDiceRemaining: remRaw } = data;
+            if (remRaw === undefined || remRaw === null) return;
+            if (typeof lvlRaw !== 'number' || Number.isNaN(lvlRaw)) return;
+            const lvl = Math.floor(lvlRaw);
+            const rem = Math.floor(remRaw);
+            if (rem > lvl) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: zm.maxNumber(lvl),
+                    path: ['hitDiceRemaining'],
+                });
+            }
+        });
+}
 
 // ===== Player Profile =====
 export const PlayerProfileSchema = z.object({
@@ -129,6 +143,36 @@ export function createPlayerSchema(zm: ZodMessages) {
         stats: createPlayerStatsSchema(zm).optional(),
         exhaustionLevel: z.coerce.number().int().min(0, { message: zm.minNumber(0) }).max(6, { message: zm.maxNumber(6) }).optional(),
         deathSaves: createDeathSavesSchema(zm).optional(),
+    }).superRefine((data, ctx) => {
+        const prog = data.progression?.level;
+        const cls = data.class;
+        if (prog === undefined || prog === null || typeof prog !== 'number' || Number.isNaN(prog))
+            return;
+        if (!Array.isArray(cls) || cls.length === 0)
+            return;
+
+        const globalLevel = Math.floor(prog);
+        let sumLevels = 0;
+        const levels = cls.map((c, i) => {
+            const lv =
+                typeof c?.level === 'number' && !Number.isNaN(c.level)
+                    ? Math.max(0, Math.floor(c.level))
+                    : 0;
+            sumLevels += lv;
+            return { i, lv };
+        });
+
+        levels.forEach(({ i, lv }) => {
+            const sumOthers = sumLevels - lv;
+            const maxAllowed = globalLevel - sumOthers;
+            if (lv > maxAllowed) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: zm.classLevelTotalsVsGlobalHitDice(sumLevels, globalLevel),
+                    path: ['class', i, 'hitDiceRemaining'],
+                });
+            }
+        });
     });
 }
 

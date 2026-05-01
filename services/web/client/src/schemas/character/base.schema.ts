@@ -210,7 +210,7 @@ export function AbilitySchema(zm: ZodMessages) {
                         ctx.addIssue({
                             code: z.ZodIssueCode.custom,
                             message: zm.abilityCounterOrder(),
-                            path: ['counterMax'],
+                            path: ['counterCurrent'],
                         });
                     }
                 }),

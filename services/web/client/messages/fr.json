@@ -214,7 +214,8 @@
       "uuid": "UUID invalide"
     },
     "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}",
-    "abilityCounterOrder": "L'utilisation actuelle ne peut pas dépasser le plafond."
+    "abilityCounterOrder": "L'utilisation actuelle ne peut pas dépasser le plafond.",
+    "classLevelTotalsVsGlobalHitDice": "Le total des niveaux de classe ({total}) dépasse le niveau global ({global}). Corrigez les niveaux de classe ou le niveau global — l’erreur est indiquée sur les dés restants."
   },
   "characterDetail": {
     "editCharacter": "Modifier le personnage",
@@ -286,7 +287,8 @@
       },
       "quickWarnings": {
         "currentOutOfBounds": "La valeur des PV actuels a été ajustée automatiquement entre 0 et les PV max.",
-        "maxBelowCurrent": "La valeur des PV max a été ajustée automatiquement pour rester supérieure ou égale aux PV actuels."
+        "maxBelowCurrent": "La valeur des PV max a été ajustée automatiquement pour rester supérieure ou égale aux PV actuels.",
+        "hitDiceRemainingClamped": "Les dés de vie restants ont été plafonnés au niveau de cette classe."
       },
       "defense": "Défense",
       "initiative": "Initiative",
@@ -309,6 +311,7 @@
       "damageType": "Type de dégâts",
       "damageTypePlaceholder": "Feu, Froid...",
       "quickNumberPlaceholder": "Saisir un nombre",
+      "hitDiceRemainingExceedsClassLevel": "Ce nombre dépasse le niveau autorisé pour cette classe (maximum : {max}).",
       "levelPlaceholder": "1",
       "zeroPlaceholder": "0",
       "proficiencyBonusPlaceholder": "+2",
@@ -343,6 +346,8 @@
     "battle": {
       "stats": "Statistiques",
       "hitLevel": "Niveau",
+      "hitDiceRemaining": "Dés restants",
+      "hitDiceUsed": "Dés dépensés",
       "hitDice": "Dé de Vie",
       "bonusHealthDice": "Bonus de vie",
       "multiplicator": "Multiplicateur",

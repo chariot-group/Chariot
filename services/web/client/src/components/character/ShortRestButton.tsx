@@ -204,7 +204,14 @@ export function ShortRestButton({ player, isInSession, onApplied }: ShortRestBut
                     </TooltipContent>
                 </Tooltip>
             ) : (
-                triggerButton
+                <Tooltip>
+                    <TooltipTrigger asChild>{triggerButton}</TooltipTrigger>
+                    <TooltipContent
+                        side="bottom"
+                        className="max-w-xs text-left">
+                        {t("ariaLabel")}
+                    </TooltipContent>
+                </Tooltip>
             )}
 
             <Dialog
