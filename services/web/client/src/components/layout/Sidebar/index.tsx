@@ -31,38 +31,62 @@ export default function AppSidebar() {
 
   return (
     <Sidebar className="bg-card sm:bg-transparent text-white border-r border-sidebar-border">
-      <Tooltip open={isInSession ? undefined : false}>
-        <TooltipTrigger
-          asChild
-          className={`${contextMode !== "gm" ? "h-full" : ""}`}>
-          <div
-            ref={triggerRef}
-            onMouseMove={isInSession ? handleMouseMove : undefined}>
-            <SidebarHeader className={`bg-card sm:bg-transparent ${isInSession ? " pointer-events-none" : ""}`}>
-              <SidebarEnvironment />
-            </SidebarHeader>
-            {contextMode !== "gm" && (
-              <SidebarContent className={`bg-card sm:bg-transparent ${isInSession ? "pointer-events-none" : ""}`}>
-                <SidebarContext />
-              </SidebarContent>
-            )}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent
-          side="bottom"
-          align="start"
-          sideOffset={0}
-          className="!translate-x-0 !translate-y-0 w-50"
-          style={{
-            position: "fixed",
-            top: mousePos.y + 12,
-            left: mousePos.x + 12,
-            transform: "none",
-            pointerEvents: "none",
-          }}>
-          <span>{t("disabledInSession")}</span>
-        </TooltipContent>
-      </Tooltip>
+      <SidebarHeader className={`bg-card sm:bg-transparent ${isInSession ? " pointer-events-none" : ""}`}>
+        <Tooltip open={isInSession ? undefined : false}>
+          <TooltipTrigger
+            asChild
+            className={`${contextMode !== "gm" ? "h-full" : ""}`}>
+            <div
+              ref={triggerRef}
+              onMouseMove={isInSession ? handleMouseMove : undefined}>
+              {contextMode !== "gm" && <SidebarEnvironment />}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            align="start"
+            sideOffset={0}
+            className="!translate-x-0 !translate-y-0 w-50"
+            style={{
+              position: "fixed",
+              top: mousePos.y + 12,
+              left: mousePos.x + 12,
+              transform: "none",
+              pointerEvents: "none",
+            }}>
+            <span>{t("disabledInSession")}</span>
+          </TooltipContent>
+        </Tooltip>
+      </SidebarHeader>
+      <SidebarContent className={`bg-card sm:bg-transparent ${isInSession ? "pointer-events-none" : ""}`}>
+        <Tooltip open={isInSession ? undefined : false}>
+          <TooltipTrigger
+            asChild
+            className={`${contextMode !== "gm" ? "h-full" : ""}`}>
+            <div
+              ref={triggerRef}
+              onMouseMove={isInSession ? handleMouseMove : undefined}>
+              {contextMode !== "gm" && <SidebarContext />}
+              {contextMode === "gm" && <SidebarContext />}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            align="start"
+            sideOffset={0}
+            className="!translate-x-0 !translate-y-0 w-50"
+            style={{
+              position: "fixed",
+              top: mousePos.y + 12,
+              left: mousePos.x + 12,
+              transform: "none",
+              pointerEvents: "none",
+            }}>
+            <span>{t("disabledInSession")}</span>
+          </TooltipContent>
+        </Tooltip>
+      </SidebarContent>
+
       {contextMode === "gm" && (
         <SidebarContent className={`bg-card sm:bg-transparent`}>
           <SidebarContext />
