@@ -210,7 +210,7 @@ export function AbilitySchema(zm: ZodMessages) {
                         ctx.addIssue({
                             code: z.ZodIssueCode.custom,
                             message: zm.abilityCounterOrder(),
-                            path: ['counterMax'],
+                            path: ['counterCurrent'],
                         });
                     }
                 }),
@@ -247,6 +247,7 @@ export const SpellSchema = z.object({
     healingDetails: HealingDetailsSchema,
     usesPerDay: z.number().nullable().optional(),
     used: numericInput(true),
+    prepared: z.boolean().optional(),
 });
 
 export const SpellSlotSchema = z.object({

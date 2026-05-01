@@ -8,6 +8,7 @@ import RunningIcon from "@public/assets/icons/running-icon.svg";
 import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
+import { getHitDiceRemainingForClass } from "@/utils/rest.utils";
 
 interface StatisticsProps {
   player: Player;
@@ -184,15 +185,19 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
       />
       <div className="text-lg px-2">
         <span>{t("hitDice")}</span>
-        {player.class.map((c, i) => (
-          <span key={c.name}>
-            {i === 0 ? " " : " + "}
-            <span className="font-bold">
-              {c.level}d{c.hitDice}
+        {player.class.map((c, i) => {
+          const rem = getHitDiceRemainingForClass(c);
+          const lvl = Math.max(0, Math.floor(c.level ?? 0));
+          return (
+            <span key={`${c.name}-${i}`}>
+              {i === 0 ? " " : " + "}
+              <span className="font-bold">
+                {rem}/{lvl}d{c.hitDice}
+              </span>
+              {` (${tClass(c.name)})`}
             </span>
-            {` (${tClass(c.name)})`}
-          </span>
-        ))}
+          );
+        })}
       </div>
     </Card>
   );

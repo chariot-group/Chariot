@@ -4247,6 +4247,10 @@
           "hitDice": {
             "type": "number",
             "example": 10
+          },
+          "hitDiceRemaining": {
+            "type": "number",
+            "example": 5
           }
         },
         "required": [
@@ -4738,6 +4742,10 @@
           "hitDice": {
             "type": "number",
             "example": 10
+          },
+          "hitDiceRemaining": {
+            "type": "number",
+            "example": 5
           }
         },
         "required": [

@@ -39,6 +39,7 @@ export default function Character() {
   return (
     <CharacterDetailView
       character={character as Player | NPC}
+      refetchCharacter={refetch}
       onCharacterUpdate={(updated) => {
         if (updated) {
           setCharacter(updated);

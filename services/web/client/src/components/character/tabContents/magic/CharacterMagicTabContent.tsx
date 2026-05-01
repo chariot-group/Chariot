@@ -1,4 +1,4 @@
-import { Character } from "@/types/character";
+import { Character, NPC, Player } from "@/types/character";
 import CharacterMagicView from "@/components/character/tabContents/magic/view/CharacterMagicView";
 import CharacterMagicTabEdit from "@/components/character/tabContents/magic/form/CharacterMagicTabEdit";
 import { UseFormReturn, FieldValues } from "react-hook-form";
@@ -8,6 +8,7 @@ interface CharacterMagicTabContentProps {
   accentColor: string;
   form: UseFormReturn<FieldValues>;
   isEditing: boolean;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 export default function CharacterMagicTabContent({
@@ -15,6 +16,7 @@ export default function CharacterMagicTabContent({
   accentColor,
   form,
   isEditing,
+  onCharacterUpdate,
 }: CharacterMagicTabContentProps) {
   if (isEditing) {
     return (
@@ -30,6 +32,7 @@ export default function CharacterMagicTabContent({
     <CharacterMagicView
       character={character}
       accentColor={accentColor}
+      onCharacterUpdate={onCharacterUpdate}
     />
   );
 }

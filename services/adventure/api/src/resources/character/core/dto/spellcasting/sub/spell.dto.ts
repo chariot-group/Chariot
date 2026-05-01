@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   DamageDetailsDto,
@@ -91,4 +91,13 @@ export class SpellDto {
   @IsOptional()
   @IsNumber()
   used?: number;
+
+  @ApiProperty({
+    description:
+      'Prepared caster (player): level 1+ spells — whether prepared.',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  prepared?: boolean;
 }

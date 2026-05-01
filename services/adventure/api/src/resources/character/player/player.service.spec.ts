@@ -34,7 +34,9 @@ describe('PlayerService', () => {
           })),
           {
             updateOne: jest.fn().mockReturnValue({
-              exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+              exec: jest
+                .fn()
+                .mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
             }),
           },
         ),
@@ -278,7 +280,9 @@ describe('PlayerService', () => {
       });
 
       characterModel.discriminators.player.updateOne.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
       });
 
       groupModel.updateMany.mockResolvedValue({});
@@ -287,7 +291,7 @@ describe('PlayerService', () => {
       expect(result.message).toContain('update in');
     });
 
-    it('should throw NotFoundException if update did not modify any document', async () => {
+    it('should throw NotFoundException if update did not match any document', async () => {
       const playerId = new Types.ObjectId();
       const dto: UpdatePlayerDto = { firstname: 'No Match', groups: [] };
 
@@ -300,13 +304,38 @@ describe('PlayerService', () => {
       });
 
       characterModel.discriminators.player.updateOne.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue({ modifiedCount: 0 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ matchedCount: 0, modifiedCount: 0 }),
       });
 
-      // NotFoundException may not be imported by default, so we use a dynamic require if needed.
       await expect(service.update(playerId, dto)).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should succeed when document matched but no field changed', async () => {
+      const playerId = new Types.ObjectId();
+      const dto: UpdatePlayerDto = { firstname: 'Same' };
+
+      characterModel.findById.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue({
+          _id: playerId,
+          groups: [{ _id: new Types.ObjectId() }],
+        }),
+        populate: jest.fn().mockReturnThis(),
+      });
+
+      characterModel.discriminators.player.updateOne.mockReturnValueOnce({
+        exec: jest
+          .fn()
+          .mockResolvedValue({ matchedCount: 1, modifiedCount: 0 }),
+      });
+
+      groupModel.updateMany.mockResolvedValue({});
+
+      const result = await service.update(playerId, dto);
+      expect(result.message).toContain('update in');
     });
 
     it('should throw InternalServerErrorException on unexpected failure', async () => {

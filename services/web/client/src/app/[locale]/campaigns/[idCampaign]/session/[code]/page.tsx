@@ -350,7 +350,12 @@ export default function SessionPage() {
                         linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
                       }`}
                       disabled={linkCopyState !== "idle"}
-                      onClick={() => copy(window.location.href, setLinkCopyState)}>
+                      onClick={() =>
+                        copy(
+                          `${window.location.origin}/campaigns/${idCampaign}/session/${code}`,
+                          setLinkCopyState,
+                        )
+                      }>
                       {linkCopyState === "success" ? <Check /> : <Link />}
                     </Button>
                   </TooltipTrigger>
