@@ -188,6 +188,7 @@ export function TagInput({
                     type="button"
                     role="option"
                     aria-selected={index === highlightedIndex}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => addTag(option)}
                     onMouseEnter={() => setHighlightedIndex(index)}
                     className={`w-full my-0.5 cursor-pointer text-left rounded-[15px] py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight,color,background-color] ${
