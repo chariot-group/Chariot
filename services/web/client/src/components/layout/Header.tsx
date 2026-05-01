@@ -24,12 +24,7 @@ export default function Header() {
 
   const handleLogoClick = async () => {
     try {
-      const destination = await NavigationService.determinePostLoginDestination(
-        locale,
-        dispatch,
-        store.getState.bind(store),
-      );
-      router.push(destination.path);
+      router.push(`/${locale}/welcome`);
     } catch (error) {
       console.error("Failed to determine post-login destination:", error);
       // Fallback vers welcome en cas d'erreur
