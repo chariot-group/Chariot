@@ -141,24 +141,28 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
           <div className="flex items-center gap-2">
             <Checkbox
               id="enable-half-proficiency"
+              className="cursor-pointer"
               checked={enableHalfProficiency}
               onCheckedChange={(checked) => setEnableHalfProficiency(checked === true)}
             />
             <Label
               htmlFor="enable-half-proficiency"
-              className="cursor-pointer text-sm">
+              onClick={() => setEnableHalfProficiency((prev) => !prev)}
+              className="cursor-pointer text-sm text-card-foreground">
               {t("enableHalfProficiency")}
             </Label>
           </div>
           <div className="flex items-center gap-2">
             <Checkbox
               id="enable-expertise"
+              className="cursor-pointer"
               checked={enableExpertise}
               onCheckedChange={(checked) => setEnableExpertise(checked === true)}
             />
             <Label
               htmlFor="enable-expertise"
-              className="cursor-pointer text-sm">
+              onClick={() => setEnableExpertise((prev) => !prev)}
+              className="cursor-pointer text-sm text-card-foreground">
               {t("enableExpertise")}
             </Label>
           </div>

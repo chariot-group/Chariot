@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createCharacterSchema } from '@/schemas/character/character.schema';
-import { ActionSchema, AlignmentEnum } from '@/schemas/character/base.schema';
+import { ActionSchema, AlignmentEnum, preprocessActionArrayRows } from '@/schemas/character/base.schema';
 import { makeZodMessages } from '@/lib/zodErrorMap';
 
 type ZodMessages = ReturnType<typeof makeZodMessages>;
@@ -8,9 +8,9 @@ type ZodMessages = ReturnType<typeof makeZodMessages>;
 // ===== NPC Actions =====
 export function ActionsSchema(zm: ZodMessages) {
     return z.object({
-        standard: z.array(ActionSchema(zm)).optional(),
-        legendary: z.array(ActionSchema(zm)).optional(),
-        lair: z.array(ActionSchema(zm)).optional(),
+        standard: z.preprocess(preprocessActionArrayRows, z.array(ActionSchema(zm)).optional()),
+        legendary: z.preprocess(preprocessActionArrayRows, z.array(ActionSchema(zm)).optional()),
+        lair: z.preprocess(preprocessActionArrayRows, z.array(ActionSchema(zm)).optional()),
     });
 };
 

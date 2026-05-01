@@ -19,7 +19,7 @@ export default function Character() {
   const activeGroups = useAppSelector(selectActiveGroups);
   const archivedGroups = useAppSelector(selectArchivedGroups);
 
-  const { character, loading, error, refetch } = useCharacter(characterId);
+  const { character, loading, error, refetch, setCharacter } = useCharacter(characterId);
 
   const getFallbackRoute = useCallback((): string => {
     const remainingActive = activeGroups.filter((group) => group._id !== groupId);
@@ -99,7 +99,14 @@ export default function Character() {
   return (
     <CharacterDetailView
       character={character as Player | NPC}
-      onCharacterUpdate={refetch}
+      refetchCharacter={refetch}
+      onCharacterUpdate={(updated) => {
+        if (updated) {
+          setCharacter(updated);
+        } else {
+          void refetch();
+        }
+      }}
     />
   );
 }

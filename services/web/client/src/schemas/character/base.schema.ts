@@ -135,12 +135,87 @@ export const AffinitiesSchema = z.object({
 });
 
 // ===== Ability =====
+function toOptionalInt(v: unknown): number | undefined {
+    if (v === '' || v === null || v === undefined) return undefined;
+    if (typeof v === 'number') {
+        return Number.isFinite(v) ? v : undefined;
+    }
+    const n = Number(v);
+    return Number.isFinite(n) ? n : undefined;
+}
+
 export function AbilitySchema(zm: ZodMessages) {
-    return z.object({
-        name: z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }),
-        description: z.string().optional(),
-    })
-};
+    return z
+        .preprocess(
+            (val) => {
+                if (typeof val !== 'object' || val === null) return val;
+                const o = { ...(val as Record<string, unknown>) };
+
+                if (o.hasCounter === 'true' || o.hasCounter === true) o.hasCounter = true;
+                else if (o.hasCounter === 'false' || o.hasCounter === false) o.hasCounter = false;
+
+                if (o.hasCounter !== true) {
+                    delete o.counterMax;
+                    delete o.counterCurrent;
+                    delete o.counterResetsOnShortRest;
+                    delete o.counterResetsOnLongRest;
+                }
+
+                if (o.counterResetsOnShortRest === 'true' || o.counterResetsOnShortRest === true) {
+                    o.counterResetsOnShortRest = true;
+                } else if (o.counterResetsOnShortRest === 'false' || o.counterResetsOnShortRest === false) {
+                    o.counterResetsOnShortRest = false;
+                }
+
+                if (o.counterResetsOnLongRest === 'true' || o.counterResetsOnLongRest === true) {
+                    o.counterResetsOnLongRest = true;
+                } else if (o.counterResetsOnLongRest === 'false' || o.counterResetsOnLongRest === false) {
+                    o.counterResetsOnLongRest = false;
+                }
+
+                if (o.description === null) o.description = undefined;
+
+                return o;
+            },
+            z
+                .object({
+                    name: z.preprocess(
+                        (v) => (v === null || v === undefined ? '' : v),
+                        z.string({ message: zm.required() }).min(1, { message: zm.minString(1) }),
+                    ),
+                    description: z.preprocess(
+                        (v) => (v === null || v === undefined ? undefined : v),
+                        z.string().optional(),
+                    ),
+                    hasCounter: z.boolean().optional(),
+                    counterMax: z
+                        .preprocess(toOptionalInt, z.number().int().min(0, { message: zm.minNumber(0) }).optional()),
+                    counterCurrent: z
+                        .preprocess(toOptionalInt, z.number().int().min(0, { message: zm.minNumber(0) }).optional()),
+                    counterResetsOnShortRest: z.boolean().optional(),
+                    counterResetsOnLongRest: z.boolean().optional(),
+                })
+                .superRefine((a, ctx) => {
+                    if (!a.hasCounter) return;
+                    if (a.counterMax === undefined) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: zm.required(),
+                            path: ['counterMax'],
+                        });
+                        return;
+                    }
+                    const current = a.counterCurrent ?? 0;
+                    if (current > a.counterMax) {
+                        ctx.addIssue({
+                            code: z.ZodIssueCode.custom,
+                            message: zm.abilityCounterOrder(),
+                            path: ['counterCurrent'],
+                        });
+                    }
+                }),
+        );
+}
 
 // ===== Spellcasting =====
 const DamageDetailsSchema = z.object({
@@ -172,6 +247,7 @@ export const SpellSchema = z.object({
     healingDetails: HealingDetailsSchema,
     usesPerDay: z.number().nullable().optional(),
     used: numericInput(true),
+    prepared: z.boolean().optional(),
 });
 
 export const SpellSlotSchema = z.object({
@@ -273,10 +349,28 @@ export const DamageSchema = z.object({
 });
 
 export const DifficultyClassSchema = z.object({
-    dcType: z.string().optional(),
-    dcValue: z.coerce.number().int().min(0).optional(),
-    successType: z.string().optional(),
+    dcType: z.preprocess(
+        (val) => (val === null || val === undefined ? undefined : val),
+        z.string().optional(),
+    ),
+    dcValue: z.preprocess(
+        (val) =>
+            val === null || val === undefined || val === '' ? undefined : val,
+        z.coerce.number().int().min(0).optional(),
+    ),
+    successType: z.preprocess(
+        (val) => (val === null || val === undefined ? undefined : val),
+        z.string().optional(),
+    ),
 });
+
+/** Retire les entrées null des tableaux d'actions (payload Codex, useFieldArray, etc.). */
+export function preprocessActionArrayRows(value: unknown): unknown {
+    if (!Array.isArray(value)) return value;
+    return value.filter(
+        (item): item is object => item != null && typeof item === 'object' && !Array.isArray(item),
+    );
+}
 
 export const ActionUsageTypeEnum = z.enum(["action", "bonus_action", "reaction"]);
 

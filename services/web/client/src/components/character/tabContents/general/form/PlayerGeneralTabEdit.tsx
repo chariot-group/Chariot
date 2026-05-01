@@ -1,5 +1,5 @@
 import { Player } from "@/types/character";
-import { Controller, UseFormReturn, useFieldArray, FieldValues } from "react-hook-form";
+import { Controller, UseFormReturn, useFieldArray, FieldValues, useFormState } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -17,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import Column2Edit from "@/components/character/tabContents/general/form/Column2Edit";
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -31,7 +33,9 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
+  const isInSession = useAppSelector(selectIsInSession);
   void player; // Silence unused player prop warning
+  const { errors } = useFormState({ control: form.control });
 
   const {
     fields: abilitiesFields,
@@ -347,7 +351,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     const currentLevel = form.watch("progression.level") || 1;
                     const currentXp = form.watch("progression.experience") || 0;
                     const calculatedLevel = getLevelFromExperience(currentXp);
-                    const isSynced = isLevelXpSynced(currentXp, currentLevel);
+                    const isSynced = isLevelXpSynced(parseInt(currentXp), parseInt(currentLevel));
 
                     if (isSynced) {
                       return (
@@ -411,6 +415,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     const selectedClasses = classLevels
                       .map((c, i: number) => (i !== index ? c?.name : null))
                       .filter(Boolean);
+                    const hitDiceRemainingError = errors.class?.[index]?.hitDiceRemaining;
 
                     return (
                       <div
@@ -485,7 +490,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             control={form.control}
                             render={({ field, fieldState }) => (
                               <Field
-                                data-invalid={fieldState.invalid || totalClassLevels > globalLevel}
+                                data-invalid={fieldState.invalid}
                                 orientation="vertical">
                                 <label
                                   htmlFor={`class-level-${index}`}
@@ -494,31 +499,66 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                 </label>
                                 <Input
                                   {...field}
-                                  value={field.value || ""}
+                                  value={field.value === undefined || field.value === null ? "" : field.value}
                                   id={`class-level-${index}`}
                                   aria-invalid={fieldState.invalid}
-                                  aria-describedby={fieldState.error ? `class-level-${index}-error` : undefined}
+                                  aria-describedby={
+                                    fieldState.error
+                                      ? `class-level-${index}-error`
+                                      : errors.class?.[index]?.hitDiceRemaining
+                                        ? `class-level-${index}-hd-error`
+                                        : undefined
+                                  }
                                   placeholder={tEdit("levelPlaceholder")}
                                   type="number"
                                   min="1"
                                   max={maxLevelForThisClass}
+                                  onChange={(e) => {
+                                    const raw = e.target.value.trim();
+                                    if (raw === "") {
+                                      field.onChange("");
+                                      return;
+                                    }
+                                    const parsed = Number(raw);
+                                    if (!Number.isFinite(parsed)) return;
+
+                                    const floor = 1;
+                                    const ceil = Math.min(20, Math.max(floor, maxLevelForThisClass));
+                                    const clampedLevel = Math.max(floor, Math.min(ceil, Math.floor(parsed)));
+
+                                    field.onChange(clampedLevel);
+
+                                    const g = Number(form.getValues("progression.level")) || 1;
+                                    const cls = (form.getValues("class") || []) as Array<{ level?: unknown }>;
+                                    let totalNext = 0;
+                                    for (let j = 0; j < cls.length; j++) {
+                                      const v =
+                                        j === index
+                                          ? clampedLevel
+                                          : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
+                                      totalNext += v;
+                                    }
+                                    const sumOthersNext = totalNext - clampedLevel;
+                                    const shareNext = Math.max(0, g - sumOthersNext);
+                                    const cap = Math.min(clampedLevel, shareNext);
+                                    const remPath = `class.${index}.hitDiceRemaining`;
+                                    const remRaw = form.getValues(remPath);
+                                    if (
+                                      typeof remRaw === "number" &&
+                                      !Number.isNaN(remRaw) &&
+                                      remRaw > cap
+                                    ) {
+                                      form.setValue(remPath, cap, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                      });
+                                    }
+                                  }}
                                 />
                                 {fieldState.error && (
                                   <FieldError
                                     id={`class-level-${index}-error`}
                                     errors={[fieldState.error]}
-                                  />
-                                )}
-                                {totalClassLevels > globalLevel && (
-                                  <FieldError
-                                    errors={[
-                                      {
-                                        message: t("classLevelExceedsGlobal", {
-                                          total: totalClassLevels,
-                                          global: globalLevel,
-                                        }),
-                                      },
-                                    ]}
                                   />
                                 )}
                               </Field>
@@ -566,6 +606,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                             globalLevel,
                           })}
                         </div>
+                        {hitDiceRemainingError && (
+                          <FieldError
+                            id={`class-level-${index}-hd-error`}
+                            errors={[hitDiceRemainingError]}
+                          />
+                        )}
                       </div>
                     );
                   })}
@@ -789,8 +835,11 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   </label>
                   <Select
                     value={field.value?.toString() || "0"}
-                    onValueChange={(value) => field.onChange(parseInt(value))}>
-                    <SelectTrigger id="exhaustion-level">
+                    onValueChange={(value) => field.onChange(parseInt(value))}
+                    disabled={!isInSession}>
+                    <SelectTrigger
+                      id="exhaustion-level"
+                      aria-disabled={!isInSession}>
                       <SelectValue placeholder={t("exhaustionLevel")}>
                         {field.value !== undefined && field.value !== null
                           ? `${t("level")} ${field.value}`
@@ -814,6 +863,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       </SelectGroup>
                     </SelectContent>
                   </Select>
+                  {!isInSession && (
+                    <p
+                      className="text-xs text-muted-foreground"
+                      role="note">
+                      {t("exhaustionSessionOnlyNote")}
+                    </p>
+                  )}
                   {fieldState.error && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
@@ -915,7 +971,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 const currentValue = form.watch("stats.passivePerception") || 0;
                 const calculatedValue = calculatePassivePerception();
 
-                if (currentValue !== calculatedValue && currentValue !== 0) {
+                if (parseInt(currentValue) !== calculatedValue && parseInt(currentValue) !== 0) {
                   return (
                     <div className="text-xs text-orange-600 dark:text-orange-400 p-2 bg-orange-600/10 rounded">
                       {t("passivePerceptionMismatch", { calculated: calculatedValue })}
@@ -945,6 +1001,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="inspiration-checkbox"
+                    className="cursor-pointer"
                     checked={field.value || false}
                     onCheckedChange={field.onChange}
                   />
@@ -1009,6 +1066,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               append={appendAbility}
               remove={removeAbility}
               accentColor={accentColor}
+              abilityCounterMode="player"
             />
           </div>
         </section>

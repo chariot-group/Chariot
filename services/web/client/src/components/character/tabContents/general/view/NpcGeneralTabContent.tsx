@@ -9,9 +9,10 @@ import NpcStatistics from "@/components/character/tabContents/shared/NpcStatisti
 interface NpcGeneralTabContentProps {
   npc: NPC;
   accentColor: string;
+  onCharacterUpdate?: (updated?: NPC) => void;
 }
 
-export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTabContentProps) {
+export default function NpcGeneralTabContent({ npc, accentColor, onCharacterUpdate }: NpcGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
   const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
@@ -159,6 +160,9 @@ export default function NpcGeneralTabContent({ npc, accentColor }: NpcGeneralTab
             title={t("characterAbilities")}
             headingId="abilities-heading"
             className="gap-3 py-4 px-4 md:px-6"
+            characterId={npc._id}
+            characterKind="npcs"
+            onAfterAbilityUse={onCharacterUpdate}
           />
         </section>
       </div>

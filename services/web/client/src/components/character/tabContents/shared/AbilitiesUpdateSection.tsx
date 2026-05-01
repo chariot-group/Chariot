@@ -3,11 +3,17 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, FieldValues } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown, Moon, Clock } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
+
+type AbilityCounterMode = "player" | "npc";
 
 interface AbilitiesUpdateSectionProps {
   title: string;
@@ -17,6 +23,8 @@ interface AbilitiesUpdateSectionProps {
   append: UseFieldArrayAppend<FieldValues, string>;
   remove: UseFieldArrayRemove;
   accentColor: string;
+  /** Joueur : l'ajustement de l'usage courant n'est proposé qu'en session (MJ / joueur) */
+  abilityCounterMode: AbilityCounterMode;
 }
 
 const AbilitiesUpdateSection = ({
@@ -27,10 +35,13 @@ const AbilitiesUpdateSection = ({
   append,
   remove,
   accentColor,
+  abilityCounterMode,
 }: AbilitiesUpdateSectionProps) => {
   const tMagic = useTranslations("characterDetail.magic");
   const tEdit = useTranslations("characterDetail.edit");
   const tBattle = useTranslations("characterDetail.battle");
+  const isInSession = useAppSelector(selectIsInSession);
+  const showCurrentCounter = abilityCounterMode === "npc" || (abilityCounterMode === "player" && isInSession);
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const hasAbilities = fields.length > 0;
@@ -49,12 +60,9 @@ const AbilitiesUpdateSection = ({
             size="sm"
             ref={undefined}
             onClick={() => {
-              append({ name: "", description: "" });
-              // Add new ability to open accordion and scroll into view
+              append({ name: "", description: "", hasCounter: false });
               const newIndex = fields.length;
               setOpenAccordionValues([...openAccordionValues, `ability-${newIndex}`]);
-
-              // Scroll to the newly created ability after next render
               setTimeout(() => {
                 const newAbility = document.getElementById(`ability-${newIndex}`);
                 if (newAbility) {
@@ -92,6 +100,9 @@ const AbilitiesUpdateSection = ({
           className="w-full flex flex-col gap-3">
           {fields.map((field, index) => {
             const abilityName = form.watch(`${fieldArrayName}.${index}.name`);
+            const hasCounter = form.watch(`${fieldArrayName}.${index}.hasCounter`) === true;
+            const counterMaxVal = form.watch(`${fieldArrayName}.${index}.counterMax`);
+            const counterCurrentVal = form.watch(`${fieldArrayName}.${index}.counterCurrent`) ?? 0;
 
             const nameError = form.getFieldState(`${fieldArrayName}.${index}.name`).invalid;
             const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
@@ -105,9 +116,18 @@ const AbilitiesUpdateSection = ({
                 className="border-b border-gray">
                 <div className="relative">
                   <AccordionTrigger
-                    className={`text-left w-full hover:no-underline pr-10 truncate ${hasError ? "ring-destructive ring" : ""}`}
+                    className={`min-w-0 w-full items-center text-left hover:no-underline pr-10 gap-2 ${hasError ? "ring-destructive ring" : ""}`}
                     aria-label={`Détails de la capacité ${index + 1}`}>
-                    <span className="font-medium truncate">{abilityName}</span>
+                    <span className="min-w-0 min-h-0 flex-1 overflow-hidden truncate font-medium">
+                      {abilityName || "—"}
+                    </span>
+                    {hasCounter && counterMaxVal !== undefined && counterMaxVal !== null && (
+                      <span
+                        className="text-xs sm:text-sm font-normal text-muted-foreground tabular-nums shrink-0 whitespace-nowrap"
+                        aria-label={tBattle("abilityCounterShort", { current: counterCurrentVal, max: counterMaxVal })}>
+                        {tBattle("abilityCounterShort", { current: counterCurrentVal, max: counterMaxVal })}
+                      </span>
+                    )}
                   </AccordionTrigger>
                   <Button
                     type="button"
@@ -117,7 +137,8 @@ const AbilitiesUpdateSection = ({
                       e.stopPropagation();
                       remove(index);
                     }}
-                    className="text-red-500 shrink-0 absolute right-0 top-1/2 -translate-y-1/2">
+                    className="text-red-500 shrink-0 absolute right-0 top-1/2 -translate-y-1/2"
+                    aria-label={tBattle("abilityRemove")}>
                     <Trash2 className="size-4" />
                   </Button>
                 </div>
@@ -152,7 +173,8 @@ const AbilitiesUpdateSection = ({
                     render={({ field: descField, fieldState }) => (
                       <Field
                         data-invalid={fieldState.invalid}
-                        orientation="vertical">
+                        orientation="vertical"
+                        className="mb-3">
                         <label
                           htmlFor={`${fieldArrayName}-description-${index}`}
                           className="text-sm font-medium">
@@ -169,6 +191,214 @@ const AbilitiesUpdateSection = ({
                       </Field>
                     )}
                   />
+
+                  <div className="mb-3 rounded-[15px] border border-border/80 p-3 space-y-3">
+                    <Controller
+                      name={`${fieldArrayName}.${index}.hasCounter`}
+                      control={form.control}
+                      render={({ field: hcField }) => (
+                        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                          <div className="flex items-center gap-2 min-h-8">
+                            <Checkbox
+                              id={`${fieldArrayName}-hasCounter-${index}`}
+                              checked={hcField.value === true}
+                              onCheckedChange={(c) => {
+                                const on = c === true;
+                                hcField.onChange(on);
+                                if (on) {
+                                  const prevMax = form.getValues(`${fieldArrayName}.${index}.counterMax`);
+                                  const prevCur = form.getValues(`${fieldArrayName}.${index}.counterCurrent`);
+                                  form.setValue(
+                                    `${fieldArrayName}.${index}.counterMax`,
+                                    typeof prevMax === "number" && !Number.isNaN(prevMax) ? prevMax : 1,
+                                    { shouldDirty: true },
+                                  );
+                                  form.setValue(
+                                    `${fieldArrayName}.${index}.counterCurrent`,
+                                    typeof prevCur === "number" && !Number.isNaN(prevCur) ? prevCur : 0,
+                                    { shouldDirty: true },
+                                  );
+                                } else {
+                                  form.setValue(`${fieldArrayName}.${index}.counterMax`, undefined, { shouldDirty: true });
+                                  form.setValue(`${fieldArrayName}.${index}.counterCurrent`, undefined, { shouldDirty: true });
+                                  form.setValue(`${fieldArrayName}.${index}.counterResetsOnShortRest`, undefined, {
+                                    shouldDirty: true,
+                                  });
+                                  form.setValue(`${fieldArrayName}.${index}.counterResetsOnLongRest`, undefined, {
+                                    shouldDirty: true,
+                                  });
+                                }
+                                form.clearErrors(`${fieldArrayName}.${index}.counterMax`);
+                                form.clearErrors(`${fieldArrayName}.${index}.counterCurrent`);
+                              }}
+                            />
+                            <Label
+                              htmlFor={`${fieldArrayName}-hasCounter-${index}`}
+                              className="text-sm font-medium leading-none cursor-pointer">
+                              {tBattle("abilityHasCounter")}
+                            </Label>
+                          </div>
+                        </div>
+                      )}
+                    />
+                    {hasCounter && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <Controller
+                          name={`${fieldArrayName}.${index}.counterMax`}
+                          control={form.control}
+                          render={({ field: maxField, fieldState }) => (
+                            <Field
+                              data-invalid={fieldState.invalid}
+                              orientation="vertical">
+                              <label
+                                htmlFor={`${fieldArrayName}-counterMax-${index}`}
+                                className="text-sm font-medium">
+                                {tBattle("abilityCounterMax")}
+                              </label>
+                              <Input
+                                name={maxField.name}
+                                ref={maxField.ref}
+                                onBlur={maxField.onBlur}
+                                value={maxField.value === undefined || maxField.value === null ? "" : String(maxField.value)}
+                                id={`${fieldArrayName}-counterMax-${index}`}
+                                type="number"
+                                inputMode="numeric"
+                                min={Math.max(0, Number(counterCurrentVal) || 0)}
+                                className="text-sm tabular-nums"
+                                aria-invalid={fieldState.invalid}
+                                aria-describedby={fieldState.error ? `${fieldArrayName}-counterMax-err-${index}` : undefined}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  if (v === "") {
+                                    maxField.onChange(undefined);
+                                    return;
+                                  }
+                                  const n = Number(v);
+                                  maxField.onChange(Number.isNaN(n) ? undefined : n);
+                                }}
+                              />
+                              {fieldState.error && (
+                                <FieldError
+                                  id={`${fieldArrayName}-counterMax-err-${index}`}
+                                  errors={[fieldState.error]}
+                                />
+                              )}
+                            </Field>
+                          )}
+                        />
+                        {showCurrentCounter && (
+                          <Controller
+                            name={`${fieldArrayName}.${index}.counterCurrent`}
+                            control={form.control}
+                            render={({ field: curField, fieldState }) => (
+                              <Field
+                                data-invalid={fieldState.invalid}
+                                orientation="vertical">
+                                <label
+                                  htmlFor={`${fieldArrayName}-counterCurrent-${index}`}
+                                  className="text-sm font-medium">
+                                  {tBattle("abilityCounterCurrent")}
+                                </label>
+                                <Input
+                                  name={curField.name}
+                                  ref={curField.ref}
+                                  onBlur={curField.onBlur}
+                                  value={
+                                    curField.value === undefined || curField.value === null
+                                      ? "0"
+                                      : String(curField.value)
+                                  }
+                                  id={`${fieldArrayName}-counterCurrent-${index}`}
+                                  type="number"
+                                  inputMode="numeric"
+                                  min={0}
+                                  max={typeof counterMaxVal === "number" ? counterMaxVal : undefined}
+                                  className="text-sm tabular-nums"
+                                  aria-invalid={fieldState.invalid}
+                                  aria-describedby={fieldState.error ? `${fieldArrayName}-counterCurrent-err-${index}` : undefined}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    if (v === "") {
+                                      curField.onChange(0);
+                                      return;
+                                    }
+                                    const n = parseInt(v, 10);
+                                    curField.onChange(Number.isNaN(n) ? 0 : n);
+                                  }}
+                                />
+                                {fieldState.error && (
+                                  <FieldError
+                                    id={`${fieldArrayName}-counterCurrent-err-${index}`}
+                                    errors={[fieldState.error]}
+                                  />
+                                )}
+                              </Field>
+                            )}
+                          />
+                        )}
+                        <fieldset className="min-w-0 border-0 p-0 m-0 sm:col-span-2">
+                          <legend className="sr-only">{tBattle("abilityCounterResetLegend")}</legend>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                            <Controller
+                              name={`${fieldArrayName}.${index}.counterResetsOnShortRest`}
+                              control={form.control}
+                              render={({ field: srField }) => (
+                                <div className="flex w-full min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                                  <Clock
+                                    size={24}
+                                    className="shrink-0 text-white"
+                                    aria-hidden
+                                  />
+                                  <Checkbox
+                                    id={`${fieldArrayName}-counterResetShort-${index}`}
+                                    checked={srField.value === true}
+                                    onCheckedChange={(c) => srField.onChange(c === true)}
+                                    className="shrink-0"
+                                  />
+                                  <Label
+                                    htmlFor={`${fieldArrayName}-counterResetShort-${index}`}
+                                    className="min-w-0 flex-1 cursor-pointer text-sm font-normal leading-snug">
+                                    {tBattle("abilityCounterResetShortRest")}
+                                  </Label>
+                                </div>
+                              )}
+                            />
+                            <Controller
+                              name={`${fieldArrayName}.${index}.counterResetsOnLongRest`}
+                              control={form.control}
+                              render={({ field: lrField }) => (
+                                <div className="flex w-full min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                                  <Moon
+                                    size={24}
+                                    className="shrink-0 text-white"
+                                    aria-hidden
+                                  />
+                                  <Checkbox
+                                    id={`${fieldArrayName}-counterResetLong-${index}`}
+                                    checked={lrField.value === true}
+                                    onCheckedChange={(c) => lrField.onChange(c === true)}
+                                    className="shrink-0"
+                                  />
+                                  <Label
+                                    htmlFor={`${fieldArrayName}-counterResetLong-${index}`}
+                                    className="min-w-0 flex-1 cursor-pointer text-sm font-normal leading-snug">
+                                    {tBattle("abilityCounterResetLongRest")}
+                                  </Label>
+                                </div>
+                              )}
+                            />
+                          </div>
+                        </fieldset>
+                      </div>
+                    )}
+                    {abilityCounterMode === "player" && hasCounter && !isInSession && (
+                      <p
+                        className="text-xs text-muted-foreground"
+                        role="note">
+                        {tBattle("abilityCounterPlayerSessionNote")}
+                      </p>
+                    )}
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             );

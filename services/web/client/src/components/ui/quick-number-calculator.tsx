@@ -16,6 +16,10 @@ interface QuickNumberCalculatorProps {
   min?: number;
   max?: number;
   disabled?: boolean;
+  /**
+   * Champ optionnel : vide la valeur au lieu de forcer 0 quand l’utilisateur efface le champ.
+   */
+  onEmptyInput?: () => void;
   triggerLabel?: string;
   inputLabel?: string;
   tooltipPlaceholder?: string;
@@ -36,6 +40,7 @@ export function QuickNumberCalculator({
   min,
   max,
   disabled = false,
+  onEmptyInput,
   triggerLabel = "Quick calculator",
   inputLabel = "Value",
   tooltipPlaceholder = "Saisir une valeur",
@@ -138,6 +143,10 @@ export function QuickNumberCalculator({
 
   function handleBaseInputChange(rawValue: string) {
     if (rawValue === "") {
+      if (onEmptyInput) {
+        onEmptyInput();
+        return;
+      }
       onValueChange(0);
       return;
     }
@@ -176,7 +185,7 @@ export function QuickNumberCalculator({
     }
   }
 
-  const inputValue = value ?? 0;
+  const inputValue = value ?? (onEmptyInput ? "" : 0);
   const { onClick: inputOnClick, onFocus: inputOnFocus, ...restInputProps } = inputProps ?? {};
 
   return (

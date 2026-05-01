@@ -147,6 +147,16 @@ export interface Affinities {
 export interface Ability {
     name: string;
     description: string;
+    /** Compteur d'utilisations — absent ou false : données héritées inchangées */
+    hasCounter?: boolean;
+    /** Plafond d'utilisations (inclus) lorsque le compteur est actif */
+    counterMax?: number;
+    /** Utilisations consommées ; défaut 0 */
+    counterCurrent?: number;
+    /** Réinitialisation du compteur après un repos court (métadonnée) */
+    counterResetsOnShortRest?: boolean;
+    /** Réinitialisation du compteur après un repos long (métadonnée) */
+    counterResetsOnLongRest?: boolean;
 }
 
 export interface DamageDetails {
@@ -181,6 +191,11 @@ export interface Spell {
     usesPerDay?: number | null;
     /** NPC only — number of times this spell has been cast today */
     used?: number;
+    /**
+     * PJ, classes à sorts préparés (niveau ≥ 1) : uniquement `prepared === true` compte comme préparé et permet le lancement.
+     * `false` ou absent = non préparé.
+     */
+    prepared?: boolean;
 }
 
 export interface Spellcasting {
@@ -248,6 +263,8 @@ export interface Class {
     subclass: string;
     level: number;
     hitDice: number;
+    /** Dés de vie restants pour cette classe ; absent = égal au niveau en entrée de jeu */
+    hitDiceRemaining?: number;
 }
 
 export interface Progression {

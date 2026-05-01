@@ -159,6 +159,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
             append={appendAbility}
             remove={removeAbility}
             accentColor={accentColor}
+            abilityCounterMode="player"
           />
         </div>
         <div className="flex flex-row gap-2 order-1 lg:order-2">

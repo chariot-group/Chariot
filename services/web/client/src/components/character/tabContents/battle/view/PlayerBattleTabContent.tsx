@@ -12,9 +12,10 @@ import Statistics from "@/components/character/tabContents/shared/Statistics";
 interface Props {
   player: Player;
   accentColor: string;
+  onCharacterUpdate?: (updated?: Player) => void;
 }
 
-const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
+const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Props) => {
   const t = useTranslations("characterDetail.battle");
 
   // Configuration des badges de statistiques
@@ -113,6 +114,9 @@ const PlayerBattleTabContent = ({ player, accentColor }: Props) => {
             accentColor={accentColor}
             title={t("abilitiesAndTraits")}
             headingId="abilities-traits-heading"
+            characterId={player._id}
+            characterKind="players"
+            onAfterAbilityUse={onCharacterUpdate}
           />
         </div>
         <div className="flex flex-row gap-2 order-1 lg:order-2">

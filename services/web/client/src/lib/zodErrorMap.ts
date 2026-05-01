@@ -68,5 +68,16 @@ export function makeZodMessages(t: TranslationFunction) {
          * Message pour .multipleOf()
          */
         notMultipleOf: (multipleOf: number) => t('notMultipleOf', { multipleOf }),
+
+        /**
+         * Compteur capacité : actuel &gt; max
+         */
+        abilityCounterOrder: () => t('abilityCounterOrder'),
+
+        /**
+         * Totaux niveaux multiclass &gt; niveau global (erreur présentée sur dés restants)
+         */
+        classLevelTotalsVsGlobalHitDice: (total: number, global: number) =>
+            t('classLevelTotalsVsGlobalHitDice', { total, global }),
     };
 }

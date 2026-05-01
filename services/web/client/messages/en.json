@@ -1,5 +1,6 @@
 {
   "sidebar": {
+    "disabledInSession": "Some actions are disabled during session",
     "gmSpace": "Game Master Space",
     "playerSpace": "Player Space",
     "environmentChanged": "You are now in the {space}.",
@@ -41,6 +42,7 @@
     "comingSoon": "Coming soon",
     "alreadyInSession": "Action cannot be performed; you are already logged in.",
     "returnToSheet": "Return to Character Sheet",
+    "returnToSession": "Return to Session",
     "selectCampaign": "Select campaign",
     "selectedCampaign": "Selected campaign",
     "selected": "selected",
@@ -152,7 +154,8 @@
       "title": "Join <br /> a session",
       "button": "Join a session",
       "button-aria": "Navigate to session joining",
-      "comingSoon": "Coming soon"
+      "comingSoon": "Coming soon",
+      "noCharacterWithoutGroup": "You must have at least one character in your player space to join a session."
     },
     "character": {
       "title": "Create your first <br /> character",
@@ -212,13 +215,56 @@
       "url": "Invalid url",
       "uuid": "Invalid uuid"
     },
-    "notMultipleOf": "Number must be a multiple of {multipleOf}"
+    "notMultipleOf": "Number must be a multiple of {multipleOf}",
+    "abilityCounterOrder": "Current uses cannot exceed the maximum.",
+    "classLevelTotalsVsGlobalHitDice": "Total class levels ({total}) exceed the character’s global level ({global}). Fix class levels or the global level — the error appears on remaining hit dice."
   },
   "characterDetail": {
     "editCharacter": "Edit character",
     "saveChanges": "Save changes",
     "saving": "Saving...",
     "cancel": "Cancel",
+    "longRest": {
+      "ariaLabel": "Long rest",
+      "disabledTooltip": "Long rest: only available during a session",
+      "confirmTitle": "Confirm long rest?",
+      "confirmIntro": "A long rest applies the following effects:",
+      "effectSpellSlots": "All spent spell slots are recovered (uses reset to zero).",
+      "effectAbilities": "Ability and trait counters set to reset on a long rest go back to zero uses.",
+      "effectHp": "Current hit points rise to your hit point maximum.",
+      "effectTempHp": "Temporary hit points are cleared.",
+      "effectExhaustion": "Your exhaustion level decreases by 1 (no effect if already 0).",
+      "effectHitDice": "Hit dice per class are restored to your maximum.",
+      "confirm": "Confirm",
+      "confirming": "Applying…",
+      "cancel": "Cancel",
+      "success": "Long rest completed.",
+      "error": "Could not apply long rest."
+    },
+    "shortRest": {
+      "ariaLabel": "Short rest",
+      "disabledTooltip": "Short rest: only available during a session",
+      "confirmTitle": "Confirm short rest?",
+      "confirmIntro": "A short rest applies the following effects:",
+      "effectAbilitiesShort": "Ability and trait counters that reset on a short rest return to zero uses.",
+      "effectWarlockSlots": "Warlock spell slots are recovered (uses reset to zero).",
+      "hitDiceSectionTitle": "Spend hit dice (optional)",
+      "hitDiceSectionHint": "Add one row per die spent, then enter each rolled result (1 to that die’s maximum). Current HP cannot exceed your maximum.",
+      "hitDiceEmptyHint": "Use + to add a die row, then type each roll.",
+      "hitDicePool": "{name}: {remaining} / {max} dice left (d{side})",
+      "addDie": "Add hit die",
+      "addDieTooltip": "Spend one hit die from this class to heal. You can then enter the rolled result below.",
+      "removeLastDie": "Remove last die for this class",
+      "removeLastDieTooltip": "Remove the most recently added die row for this class (useful if you added one by mistake).",
+      "rollLabel": "Die",
+      "invalidRoll": "Enter a valid whole number for each spent die (within the die range).",
+      "totalHealing": "Hit points recovered: +{n}",
+      "confirm": "Confirm",
+      "confirming": "Applying…",
+      "cancel": "Cancel",
+      "success": "Short rest completed.",
+      "error": "Could not apply short rest."
+    },
     "edit": {
       "basicInfo": "Basic Information",
       "firstname": "First Name",
@@ -243,7 +289,8 @@
       },
       "quickWarnings": {
         "currentOutOfBounds": "Current HP was automatically adjusted between 0 and max HP.",
-        "maxBelowCurrent": "Max HP was automatically adjusted to stay greater than or equal to current HP."
+        "maxBelowCurrent": "Max HP was automatically adjusted to stay greater than or equal to current HP.",
+        "hitDiceRemainingClamped": "Remaining hit dice were capped by this class’s level."
       },
       "defense": "Defense",
       "initiative": "Initiative",
@@ -266,6 +313,7 @@
       "damageType": "Damage Type",
       "damageTypePlaceholder": "Fire, Cold...",
       "quickNumberPlaceholder": "Enter a number",
+      "hitDiceRemainingExceedsClassLevel": "This value exceeds what this class allows for remaining hit dice (max {max}).",
       "levelPlaceholder": "1",
       "zeroPlaceholder": "0",
       "proficiencyBonusPlaceholder": "+2",
@@ -300,6 +348,8 @@
     "battle": {
       "stats": "Stats",
       "hitLevel": "Level",
+      "hitDiceRemaining": "Hit dice remaining",
+      "hitDiceUsed": "Hit dice spent",
       "hitDice": "Hit Dice",
       "bonusHealthDice": "Bonus Health Dice",
       "multiplicator": "Multiplicator",
@@ -310,6 +360,19 @@
       "failures": "Failures:",
       "performedThrow": "Performed Throw",
       "unperformedThrow": "Unperformed Throw",
+      "abilityHasCounter": "Use counter",
+      "abilityCounterMax": "Maximum",
+      "abilityCounterCurrent": "Current uses",
+      "abilityCounterShort": "{current} / {max}",
+      "abilityUse": "Use",
+      "abilityUseAria": "Use {name}, {current} out of {max} uses",
+      "abilityUseLimitReached": "Maximum uses reached",
+      "abilityUseError": "Could not save use",
+      "abilityRemove": "Remove this ability",
+      "abilityCounterPlayerSessionNote": "While not in a session, current uses cannot be edited here.",
+      "abilityCounterResetLegend": "Counter reset after rest",
+      "abilityCounterResetShortRest": "Resets after a short rest",
+      "abilityCounterResetLongRest": "Resets after a long rest",
       "abilitiesAndTraits": "Abilities and Traits",
       "actions": "Actions",
       "legendaryActions": "Legendary Actions",
@@ -377,8 +440,8 @@
       "eyes": "Eyes",
       "age": "Age",
       "skin": "Skin",
-      "height": "Height",
-      "weight": "Weight",
+      "height": "Height (m)",
+      "weight": "Weight (kg)",
       "hair": "Hair",
       "alliesAndOrgs": "Allies and Organizations",
       "bonds": "Bonds",
@@ -422,6 +485,7 @@
           "5": "Speed reduced to 0",
           "6": "Death"
         },
+        "exhaustionSessionOnlyNote": "Exhaustion can only be changed while you are in a session.",
         "savingThrows": "Saving throws",
         "masteryOf": "Mastery of",
         "masteryActive": "active",
@@ -702,6 +766,21 @@
       "attackBonusMismatch": "Calculated: {calculated} (proficiency {prof} + modifier {mod})",
       "syncAttackBonus": "Apply +{bonus}",
       "preparedSpellsInfo": "Max: {count} prepared (level {level} + modifier {mod})",
+      "preparedSpellsUsage": "{current} / {max}",
+      "preparedSpellsLimitReachedTooltip": "You have prepared as many spells as allowed by your Prepared spells limit.",
+      "spellPreparedLabel": "Prepared",
+      "spellPrepareLimitTooltip": "You cannot prepare more spells than your Prepared spells limit.",
+      "spellNotPreparedTooltip": "This spell is not prepared. Prepare it on your sheet before casting.",
+      "spellUnpreparedBadge": "Not prepared",
+      "spellPreparedStatusTooltip": "This spell is prepared and ready to cast.",
+      "spellCastNotPreparedAria": "Cast — spell not prepared",
+      "changePreparedSpells": "Change my prepared spells",
+      "finishChangingPrepared": "Done",
+      "preparationModeBanner": "Preparation mode is on. Tap the check or circle on the left to prepare or unprepare a spell. Tap the spell name or the rest of the row to open the spell sheet.",
+      "preparedBookmarkPreparedTooltip": "Prepared spell. In preparation mode, tap the check control to unprepare.",
+      "preparedBookmarkUnpreparedTooltip": "Not prepared. In preparation mode, tap the circle control to prepare.",
+      "preparedPillAriaPrepared": "Prepared spell — toggle preparation",
+      "preparedPillAriaUnprepared": "Not prepared — toggle preparation",
       "slotsLabel": "slots",
       "removeSpellTitle": "Remove spell",
       "removeSpellDescription": "Are you sure you want to remove \"{name}\"?",
@@ -715,6 +794,20 @@
       "spellcastingClassRequiresClass": "Add at least one class to this player before choosing a spellcasting class.",
       "spellSlotsTotalForLevel": "Number of spell slots for level {level}",
       "moreSpellOptions": "More spell options",
+      "castSpell": "Cast",
+      "castAtHigherLevel": "Cast at a higher level",
+      "castAtLevelOption": "Cast at level {level}",
+      "castUsingSlotLevel": "Using a level {level} slot",
+      "spellCastRegion": "Cast spell",
+      "spellCastNoSlots": "No spell slot available at this level.",
+      "spellSlotExhaustedTooltip": "No slot left at this level.",
+      "npcSpellUsesExhaustedTooltip": "No uses left.",
+      "castSpellNpcInnateAria": "Cast {name}",
+      "spellCastNoNpcUses": "No uses left for this spell.",
+      "spellCastNoSlotsAria": "Cast — no slot at this spell's level",
+      "castSpellAtLevelAria": "Cast {name} using a level {level} slot",
+      "spellCastMoreOptionsAria": "More cast options",
+      "spellCastError": "Could not record the spell cast.",
       "removeSpellWithName": "Remove spell {name}",
       "expandAllSpellLevels": "Expand all spell levels",
       "collapseAllSpellLevels": "Collapse all spell levels",
@@ -868,6 +961,14 @@
         "expired": "The session has expired because the time limit was reached. Thank you for playing!"
       },
       "confirm": "Back to home"
+    },
+    "sessionCancel": {
+      "title": "Cancel session",
+      "description": "You are about to end the session. All participants will be logged out and will need to join a new session to continue playing together.",
+      "confirm": "Yes, cancel the session"
     }
+  },
+  "sessionTime": {
+    "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left."
   }
 }

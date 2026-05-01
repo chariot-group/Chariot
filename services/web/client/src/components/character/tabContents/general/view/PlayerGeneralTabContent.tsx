@@ -12,9 +12,14 @@ import Statistics from "@/components/character/tabContents/shared/Statistics";
 interface PlayerGeneralTabContentProps {
   player: Player;
   accentColor: string;
+  onCharacterUpdate?: (updated?: Player) => void;
 }
 
-export default function PlayerGeneralTabContent({ player, accentColor }: PlayerGeneralTabContentProps) {
+export default function PlayerGeneralTabContent({
+  player,
+  accentColor,
+  onCharacterUpdate,
+}: PlayerGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
   const tPlayer = useTranslations("characterDetail.player");
   const tAlignment = useTranslations("alignments");
@@ -267,6 +272,9 @@ export default function PlayerGeneralTabContent({ player, accentColor }: PlayerG
             title={t("characterAbilities")}
             headingId="abilities-heading"
             className="gap-3 py-4 px-4 md:px-6"
+            characterId={player._id}
+            characterKind="players"
+            onAfterAbilityUse={onCharacterUpdate}
           />
         </section>
       </div>

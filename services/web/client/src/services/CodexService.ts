@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { Spell, NPC } from '@/types/character';
+import { Spell, NPC, Action, ActionUsageType } from '@/types/character';
 
 export interface CodexSpellTranslation {
     name: string;
@@ -231,6 +231,113 @@ class CodexService {
         }
 
         return 'Unaligned';
+    }
+
+    /**
+     * Usage / ability issus du Codex peuvent être absents, null, ou hors format Chariot.
+     * On filtre les entrées null et on ne garde que des enums valides pour le formulaire.
+     */
+    private parseNpcUsageType(raw: unknown): ActionUsageType {
+        if (raw === undefined || raw === null || raw === '') {
+            return 'action';
+        }
+        const slug = String(raw)
+            .trim()
+            .toLowerCase()
+            .replace(/[\s-]+/g, '_');
+        if (slug === 'action' || slug === 'bonus_action' || slug === 'reaction') {
+            return slug;
+        }
+        return 'action';
+    }
+
+    private parseNpcAttackAbility(raw: unknown): NonNullable<Action['attackAbility']> | undefined {
+        if (raw === undefined || raw === null || raw === '') {
+            return undefined;
+        }
+        const key = String(raw).trim().toLowerCase().replace(/\s+/g, '');
+        const map: Record<string, NonNullable<Action['attackAbility']>> = {
+            str: 'strength',
+            strength: 'strength',
+            dex: 'dexterity',
+            dexterity: 'dexterity',
+            con: 'constitution',
+            constitution: 'constitution',
+            int: 'intelligence',
+            intelligence: 'intelligence',
+            wis: 'wisdom',
+            wisdom: 'wisdom',
+            cha: 'charisma',
+            charisma: 'charisma',
+        };
+        return map[key];
+    }
+
+    private normalizeNpcDifficultyClass(raw: unknown): Action['dc'] | undefined {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+        const o = raw as Record<string, unknown>;
+        let dcValue: number | undefined;
+        const dvRaw = o.dcValue;
+        if (typeof dvRaw === 'number' && !Number.isNaN(dvRaw)) {
+            dcValue = Math.floor(dvRaw);
+        } else if (typeof dvRaw === 'string' && dvRaw.trim() !== '') {
+            const n = Number(dvRaw);
+            if (!Number.isNaN(n)) dcValue = Math.floor(n);
+        }
+        const dcType = typeof o.dcType === 'string' ? o.dcType : undefined;
+        const successType = typeof o.successType === 'string' ? o.successType : undefined;
+        const out: NonNullable<Action['dc']> = {};
+        if (dcType !== undefined) out.dcType = dcType;
+        if (successType !== undefined) out.successType = successType;
+        if (dcValue !== undefined) out.dcValue = dcValue;
+        return Object.keys(out).length === 0 ? undefined : out;
+    }
+
+    private mapCodexRowToNpcAction(
+        raw: Record<string, unknown>,
+        opts: { attackBonus: number; range: string },
+    ): Action {
+        const ability = this.parseNpcAttackAbility(raw.attackAbility);
+        const damage = Array.isArray(raw.damage) ? (raw.damage as Action['damage']) : undefined;
+        const dc = this.normalizeNpcDifficultyClass(raw.dc);
+
+        return {
+            name: typeof raw.name === 'string' ? raw.name : '',
+            type: typeof raw.type === 'string' ? raw.type : '',
+            usageType: this.parseNpcUsageType(raw.usageType),
+            ...(ability ? { attackAbility: ability } : {}),
+            description: typeof raw.description === 'string' ? raw.description : undefined,
+            attackBonus: opts.attackBonus,
+            damage,
+            range: opts.range,
+            dc: dc ?? undefined,
+            cost: typeof raw.cost === 'number' ? raw.cost : undefined,
+        };
+    }
+
+    private normalizeCodexActionsForNpc(
+        list: unknown,
+        opts: { attackBonus: number; range: string; forceAttackAndRange?: boolean },
+    ): Action[] {
+        const arr = Array.isArray(list) ? list : [];
+        return arr
+            .filter(
+                (item): item is Record<string, unknown> =>
+                    item != null && typeof item === 'object' && !Array.isArray(item),
+            )
+            .map((raw) => {
+                const attackBonus = opts.forceAttackAndRange
+                    ? opts.attackBonus
+                    : typeof raw.attackBonus === 'number'
+                      ? raw.attackBonus
+                      : opts.attackBonus;
+                const range = opts.forceAttackAndRange
+                    ? opts.range
+                    : typeof raw.range === 'string'
+                      ? raw.range
+                      : opts.range;
+                return this.mapCodexRowToNpcAction(raw, { attackBonus, range });
+            });
     }
 
     private normalizeSpellcasting(codexSpellcasting: CodexMonsterTranslation['spellcasting'] = [], lang?: string) {
@@ -542,21 +649,20 @@ class CodexService {
             abilities: translation.abilities,
             spellcasting: this.normalizeSpellcasting(translation.spellcasting, lang),
             actions: {
-                standard: (translation.actions?.standard ?? []).map(action => ({
-                    ...action,
-                    attackBonus: action.attackBonus ?? 0,
-                    range: action.range ?? "",
-                })),
-                legendary: (translation.actions?.legendary ?? []).map(action => ({
-                    ...action,
+                standard: this.normalizeCodexActionsForNpc(translation.actions?.standard, {
                     attackBonus: 0,
-                    range: "",
-                })),
-                lair: (translation.actions?.lair ?? []).map(action => ({
-                    ...action,
+                    range: '',
+                }),
+                legendary: this.normalizeCodexActionsForNpc(translation.actions?.legendary, {
                     attackBonus: 0,
-                    range: "",
-                })),
+                    range: '',
+                    forceAttackAndRange: true,
+                }),
+                lair: this.normalizeCodexActionsForNpc(translation.actions?.lair, {
+                    attackBonus: 0,
+                    range: '',
+                    forceAttackAndRange: true,
+                }),
             },
             challenge: translation.challenge,
             profile: {

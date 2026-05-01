@@ -7,7 +7,11 @@ import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect } from "react";
 import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
+import { LongRestButton } from "@/components/character/LongRestButton";
+import { ShortRestButton } from "@/components/character/ShortRestButton";
 import { isPlayer } from "@/utils/global.utils";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -15,18 +19,27 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
+import { useFormState } from "react-hook-form";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
-  onCharacterUpdate?: () => void; // Callback pour rafraîchir les données du parent
+  /** GET personnage (même source que la page) pour resync après sauvegarde si besoin. */
+  refetchCharacter?: () => Promise<void>;
+  /** Sans argument : rechargement complet (ex. après sauvegarde). Avec personnage : mise à jour locale sans recharger toute la page. */
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
-export default function CharacterDetailView({ character, onCharacterUpdate }: CharacterDetailViewProps) {
+export default function CharacterDetailView({
+  character,
+  refetchCharacter,
+  onCharacterUpdate,
+}: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isInSession = useAppSelector(selectIsInSession);
 
   // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
   const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
@@ -47,6 +60,8 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
   const { form, onUpdate, onCancel, isEditing, setIsEditing, isSaving } = useCharacterForm({
     characterId: character._id,
     type: characterType,
+    sourceCharacter: character,
+    refetchCharacter,
     onSuccess: () => {
       // Rafraîchir les données du parent après la mise à jour
       if (onCharacterUpdate) {
@@ -54,6 +69,9 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       }
     },
   });
+
+  // Abonnement explicite (sinon isDirty ne met pas à jour le footer quand seuls des champs imbriqués changent, ex. abilities)
+  const { isDirty } = useFormState({ control: form.control });
 
   // Si on arrive avec mode=edit (création depuis la sidebar, ou autre lien), ouvrir directement en édition
   useEffect(() => {
@@ -74,7 +92,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
       }
 
       if (!isEditing || !isEnterWithoutModifiers(event) || isTypingInInputElement(event.target)) return;
-      if (!form.formState.isDirty) return;
+      if (!isDirty) return;
 
       event.preventDefault();
       event.stopPropagation();
@@ -86,10 +104,12 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcuts, true);
     };
-  }, [form, isEditing, onCancel, onUpdate, setIsEditing, t, toast]);
+  }, [form, isDirty, isEditing, onCancel, onUpdate, setIsEditing, t, toast]);
 
   return (
-    <main className="flex flex-col h-dvh overflow-hidden">
+    <main
+      className="flex flex-col h-screen overflow-hidden"
+      id="characterView">
       <form
         id="character-update-form"
         className="flex flex-col flex-1 min-h-0"
@@ -118,14 +138,14 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
                 <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
                   {/* Ligne 1: Nom du personnage */}
-                  <div className="min-w-0 justify-start lg:justify-end flex">
+                  <div className="min-w-0 justify-start lg:justify-end flex items-center gap-2">
                     <Tooltip>
-                      <TooltipTrigger className="cursor-help truncate flex flex-row items-end gap-2">
+                      <TooltipTrigger className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
                         <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
                           {character.firstname?.trim()} {character.lastname?.trim()}{" "}
                         </h1>
                         {character.surname && (
-                          <span className="ml-auto text-gray-light italic lg:text-md text-sm">
+                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
                             ({character.surname?.trim()})
                           </span>
                         )}
@@ -134,6 +154,20 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                         {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
                       </TooltipContent>
                     </Tooltip>
+                    {isPlayer(character) && !isEditing && onCharacterUpdate && (
+                      <span className="inline-flex items-center gap-1 shrink-0">
+                        <ShortRestButton
+                          player={character}
+                          isInSession={isInSession}
+                          onApplied={(updated) => onCharacterUpdate(updated)}
+                        />
+                        <LongRestButton
+                          player={character}
+                          isInSession={isInSession}
+                          onApplied={(updated) => onCharacterUpdate(updated)}
+                        />
+                      </span>
+                    )}
                   </div>
 
                   {/* Ligne 2: Surnom + Classe/CR + Groupe */}
@@ -182,12 +216,15 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
             </div>
           </div>
 
-          {/* Contenu des onglets - scrollable */}
-          <div className="flex-1 overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+          {/* Contenu des onglets - scrollable (min-h-0 pour que les enfants h-full / flex-1 se calent sur la hauteur utile) */}
+          <div
+            id="characterScrollView"
+            className="flex flex-1 min-h-0 flex-col overflow-y-auto w-full mx-auto px-4 sm:px-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
             <CharacterTabPanels
               character={character}
               form={form}
               isEditing={isEditing}
+              onCharacterUpdate={onCharacterUpdate}
             />
           </div>
         </Tabs>
@@ -201,7 +238,7 @@ export default function CharacterDetailView({ character, onCharacterUpdate }: Ch
                 <Button
                   type="submit"
                   form="character-update-form"
-                  disabled={isSaving || !form.formState.isDirty}
+                  disabled={isSaving || !isDirty}
                   tabIndex={0}
                   className={`
                   lg:text-sm text-xs font-semibold

@@ -4,8 +4,6 @@ import Profile from "@/components/layout/Profile";
 import SessionTimer from "@/components/layout/SessionTimer";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import NavigationService from "@/services/NavigationService";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import Logo from "@public/logo.svg";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -15,14 +13,11 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const locale = pathname.split("/")[1] || "fr";
-  const dispatch = useAppDispatch();
-  const getState = useAppSelector((state) => state);
   const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
 
   const handleLogoClick = async () => {
     try {
-      const destination = await NavigationService.determinePostLoginDestination(locale, dispatch, () => getState);
-      router.push(destination.path);
+      router.push(`/${locale}/welcome`);
     } catch (error) {
       console.error("Failed to determine post-login destination:", error);
       // Fallback vers welcome en cas d'erreur
@@ -51,7 +46,7 @@ export default function Header() {
             priority
           />
         </button>
-        <div className="flex items-center gap-3">
+        <div className="relative flex items-center gap-3">
           <SessionTimer />
           <Profile />
         </div>
