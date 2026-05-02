@@ -379,7 +379,15 @@ jobs:
             </html>
 
       - name: Comment PR with results
-        if: github.event_name == 'pull_request'
+        if: >-
+          github.event_name == 'pull_request' &&
+          (
+            inputs.has-critical-dep-web == 'true' ||
+            inputs.has-critical-dep-backend == 'true' ||
+            inputs.secrets-found == 'true' ||
+            inputs.dependency-scan-result != 'success' ||
+            inputs.secret-scan-result != 'success'
+          )
         uses: actions/github-script@v8
         continue-on-error: true
         with:
