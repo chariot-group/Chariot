@@ -1,0 +1,105 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+
+  # npm — adventure
+  - package-ecosystem: "npm"
+    directory: "/services/adventure/api"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+    versioning-strategy: increase
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+
+  # npm — gateway
+  - package-ecosystem: "npm"
+    directory: "/services/gateway/api"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+    versioning-strategy: increase
+
+  # npm — session
+  - package-ecosystem: "npm"
+    directory: "/services/session/api"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+    versioning-strategy: increase
+
+  # npm — web
+  - package-ecosystem: "npm"
+    directory: "/services/web/client"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+    versioning-strategy: increase
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+
+  # Docker — adventure
+  - package-ecosystem: "docker"
+    directory: "/services/adventure/api"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+
+  # Docker — gateway
+  - package-ecosystem: "docker"
+    directory: "/services/gateway/api"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+
+  # Docker — session
+  - package-ecosystem: "docker"
+    directory: "/services/session/api"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+
+  # Docker — sso
+  - package-ecosystem: "docker"
+    directory: "/services/sso"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"
+
+  # Docker — web
+  - package-ecosystem: "docker"
+    directory: "/services/web/client"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "02:00"
+      timezone: "Europe/Paris"

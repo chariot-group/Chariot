@@ -21,14 +21,12 @@ body:
     attributes:
       label: Contexte
       description: Pourquoi cette intégration est-elle nécessaire ?
-    validations:
-      required: true
 
   - type: textarea
     id: criteres
     attributes:
       label: Critères d’acceptation
-      description: Tous les critères qui doivent obligatoirement être fait.
+      description: Tous les critères qui doivent obligatoirement être faits.
       value: |
         - [ ] 
 
