@@ -34,7 +34,7 @@
     "redux-persist": "^6.0.0",
     "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.3.6"
+    "zod": "^4.4.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
