@@ -28,7 +28,7 @@ body:
     id: criteres
     attributes:
       label: Critères d’acceptation
-      description: Tous les critères qui doivent obligatoirement être fait.
+      description: Tous les critères qui doivent obligatoirement être faits.
       value: |
         - [ ] 
 
