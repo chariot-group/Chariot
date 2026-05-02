@@ -54,7 +54,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Download all scan reports
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           path: security/reports/
