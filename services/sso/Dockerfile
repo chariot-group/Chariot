@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:26.4
+FROM quay.io/keycloak/keycloak:26.6
 
 # Build optimized Keycloak image with postgres support
 RUN /opt/keycloak/bin/kc.sh build \
