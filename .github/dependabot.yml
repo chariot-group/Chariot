@@ -33,6 +33,9 @@ updates:
     patterns:
       - "*"
     versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+      - dependency-name: "@stripe/*"
 
   # npm — session
   - package-ecosystem: "npm"
@@ -42,6 +45,9 @@ updates:
     patterns:
       - "*"
     versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+      - dependency-name: "@stripe/*"
 
   # npm — web
   - package-ecosystem: "npm"
