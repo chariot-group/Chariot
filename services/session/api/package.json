@@ -73,7 +73,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "jest": "^30.0.0",
     "prettier": "^3.5.3",
-    "prisma": "^6.19.3",
+    "prisma": "^7.8.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
