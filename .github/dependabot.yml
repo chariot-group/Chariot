@@ -18,6 +18,9 @@ updates:
       time: "02:00"
       timezone: "Europe/Paris"
     versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+      - dependency-name: "@stripe/*"
     groups:
       react:
         patterns:
@@ -33,6 +36,9 @@ updates:
       time: "02:00"
       timezone: "Europe/Paris"
     versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+      - dependency-name: "@stripe/*"
 
   # npm — session
   - package-ecosystem: "npm"
@@ -43,6 +49,9 @@ updates:
       time: "02:00"
       timezone: "Europe/Paris"
     versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+      - dependency-name: "@stripe/*"
 
   # npm — web
   - package-ecosystem: "npm"
@@ -53,6 +62,9 @@ updates:
       time: "02:00"
       timezone: "Europe/Paris"
     versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+      - dependency-name: "@stripe/*"
     groups:
       react:
         patterns:
