@@ -9,6 +9,7 @@ import {
   BadRequestException,
   GoneException,
   NotFoundException,
+  ForbiddenException,
   Get,
   Query,
   UseGuards,
@@ -16,8 +17,6 @@ import {
 import { PlayerService } from '@/resources/character/player/player.service';
 import { CreatePlayerDto } from '@/resources/character/player/dto/create-player.dto';
 import { UpdatePlayerDto } from '@/resources/character/player/dto/update-player.dto';
-import { IsCreator } from '@/common/decorators/is-creator.decorator';
-import { CharacterService } from '@/resources/character/character.service';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -39,6 +38,7 @@ import {
 } from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 import { IsCreatorGuard } from '@/common/guards/is-creator.guard';
+import { SessionAccessService } from '@/common/session/session-access.service';
 
 @ApiExtraModels(IResponse, IPaginatedResponse, Player)
 @Controller('characters/players')
@@ -46,6 +46,7 @@ import { IsCreatorGuard } from '@/common/guards/is-creator.guard';
 export class PlayerController {
   constructor(
     private readonly playerService: PlayerService,
+    private readonly sessionAccessService: SessionAccessService,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
     @InjectModel(Group.name)
@@ -152,7 +153,6 @@ export class PlayerController {
     });
   }
 
-  @IsCreator(CharacterService)
   @ApiOperation({ summary: 'Update a player by ID' })
   @ApiParam({
     name: 'id',
@@ -193,9 +193,36 @@ export class PlayerController {
   async update(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
     @Body() updatePlayerDto: UpdatePlayerDto,
+    @Req() request: { user: { keycloakId: string }; headers: { authorization?: string } },
+    @Query('sessionCode') sessionCode?: string,
   ): Promise<IResponse<Character>> {
     await this.validateResource(id);
     await this.validateGroupRelations(updatePlayerDto.groups);
+
+    const playerDoc = await this.characterModel
+      .findById(id)
+      .select('createdBy')
+      .exec();
+    if (!playerDoc) {
+      const message = `Player #${id} not found`;
+      this.logger.error(message, null, this.CONTROLLER_NAME);
+      throw new NotFoundException(message);
+    }
+
+    const userId = request.user.keycloakId;
+    if (playerDoc.createdBy !== userId) {
+      const code = sessionCode?.trim();
+      if (!code) {
+        throw new ForbiddenException(
+          'You can only update your own characters outside of an authorized session',
+        );
+      }
+      await this.sessionAccessService.assertGmEdit(
+        request.headers.authorization,
+        code,
+        id.toString(),
+      );
+    }
 
     return this.playerService.update(id, updatePlayerDto);
   }

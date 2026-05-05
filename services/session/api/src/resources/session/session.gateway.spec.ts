@@ -68,6 +68,7 @@ const mockSessionService = {
     close: jest.fn(),
     expireSession: jest.fn(),
     disconnectParticipant: jest.fn(),
+    findParticipants: jest.fn(),
 };
 
 const mockRedisService = {
@@ -405,20 +406,61 @@ describe('SessionGateway', () => {
     describe('handleLeaveSession', () => {
         it('should leave session, notify others, and emit session:left', async () => {
             const session = makeSession({ status: SessionStatus.activated });
+            mockSessionService.findParticipants.mockResolvedValue({
+                message: 'ok',
+                data: {
+                    author: { userId: 'user-uuid-1', campaignId: 'camp-1' },
+                    participants: [
+                        {
+                            id: 'part-1',
+                            userId: 'user-uuid-1',
+                            characterId: 'char-99',
+                            status: 'connected',
+                            joinedAt: new Date().toISOString(),
+                            sessionId: 'sess-uuid-1',
+                        },
+                    ],
+                },
+            });
             mockSessionService.leave.mockResolvedValue(session);
 
-            const client = makeSocket();
+            const participantLeftEmit = jest.fn();
+            const client = makeSocket({
+                to: jest.fn().mockReturnValue({ emit: participantLeftEmit }),
+            });
             const data = { sessionId: 'sess-uuid-1' };
 
             await gateway.handleLeaveSession(client, data);
 
+            expect(mockSessionService.findParticipants).toHaveBeenCalledWith('sess-uuid-1');
             expect(mockSessionService.leave).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1');
             expect(client.leave).toHaveBeenCalledWith('sess-uuid-1');
+            expect(participantLeftEmit).toHaveBeenCalledWith('session:participant-left', {
+                userId: 'user-uuid-1',
+                username: 'testuser',
+                characterId: 'char-99',
+            });
             expect(client.emit).toHaveBeenCalledWith('session:left', { sessionId: 'sess-uuid-1' });
         });
 
         it('should also emit session:closed when the session is closed after leaving', async () => {
             const session = makeSession({ status: SessionStatus.closed });
+            mockSessionService.findParticipants.mockResolvedValue({
+                message: 'ok',
+                data: {
+                    author: { userId: 'user-uuid-1', campaignId: 'camp-1' },
+                    participants: [
+                        {
+                            id: 'part-1',
+                            userId: 'user-uuid-1',
+                            characterId: null,
+                            status: 'connected',
+                            joinedAt: new Date().toISOString(),
+                            sessionId: 'sess-uuid-1',
+                        },
+                    ],
+                },
+            });
             mockSessionService.leave.mockResolvedValue(session);
 
             const client = makeSocket();
@@ -431,6 +473,22 @@ describe('SessionGateway', () => {
         });
 
         it('should emit session:error when service throws', async () => {
+            mockSessionService.findParticipants.mockResolvedValue({
+                message: 'ok',
+                data: {
+                    author: { userId: 'user-uuid-1', campaignId: 'camp-1' },
+                    participants: [
+                        {
+                            id: 'part-1',
+                            userId: 'user-uuid-1',
+                            characterId: null,
+                            status: 'connected',
+                            joinedAt: new Date().toISOString(),
+                            sessionId: 'sess-uuid-1',
+                        },
+                    ],
+                },
+            });
             mockSessionService.leave.mockRejectedValue(new Error('Leave failed'));
             const client = makeSocket();
 

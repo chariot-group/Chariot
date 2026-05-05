@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PlayerController } from '@/resources/character/player/player.controller';
 import { PlayerService } from '@/resources/character/player/player.service';
 import { CharacterService } from '@/resources/character/character.service';
+import { SessionAccessService } from '@/common/session/session-access.service';
 import { Types } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
@@ -93,6 +94,7 @@ describe('PlayerController - createPlayer', () => {
           useValue: {}, // not used here
         },
         { provide: getModelToken(Group.name), useValue: groupModel },
+        { provide: SessionAccessService, useValue: { assertGmEdit: jest.fn() } },
       ],
     }).compile();
 
@@ -159,6 +161,7 @@ describe('PlayerController - update', () => {
 
   const playerId = new Types.ObjectId();
   const groupId = new Types.ObjectId().toHexString();
+  const ownerKeycloakId = 'a3d73edb-5f4c-4e38-9c6b-0c25a58b1234';
 
   const updateDto = {
     firstname: 'Updated Player',
@@ -174,7 +177,11 @@ describe('PlayerController - update', () => {
 
     characterModel = {
       findById: jest.fn().mockReturnThis(),
-      exec: jest.fn().mockResolvedValue({ _id: playerId, deletedAt: null }),
+      select: jest.fn().mockReturnThis(),
+      exec: jest
+        .fn()
+        .mockResolvedValueOnce({ _id: playerId, deletedAt: null })
+        .mockResolvedValueOnce({ createdBy: ownerKeycloakId }),
     };
 
     groupModel = {
@@ -182,11 +189,14 @@ describe('PlayerController - update', () => {
       exec: jest.fn().mockResolvedValue({ _id: groupId, deletedAt: null }),
     };
 
+    const sessionAccess = { assertGmEdit: jest.fn().mockResolvedValue(undefined) };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PlayerController],
       providers: [
         { provide: PlayerService, useValue: playerService },
         { provide: CharacterService, useValue: {} },
+        { provide: SessionAccessService, useValue: sessionAccess },
         { provide: getModelToken(Character.name), useValue: characterModel },
         { provide: getModelToken(Group.name), useValue: groupModel },
       ],
@@ -198,7 +208,17 @@ describe('PlayerController - update', () => {
   it('should update player after validating resource and groups', async () => {
     playerService.update.mockResolvedValue({ data: 'updated' });
 
-    const result = await controller.update(playerId, updateDto);
+    const requestMock = {
+      user: { keycloakId: ownerKeycloakId },
+      headers: { authorization: 'Bearer token' },
+    };
+
+    const result = await controller.update(
+      playerId,
+      updateDto,
+      requestMock as any,
+      undefined,
+    );
 
     expect(characterModel.findById).toHaveBeenCalledWith(playerId);
     expect(groupModel.findById).toHaveBeenCalledWith(groupId);
@@ -210,7 +230,17 @@ describe('PlayerController - update', () => {
     const updateDtoWithoutGroups = { ...updateDto, groups: [] };
     playerService.update.mockResolvedValue({ data: 'updated' });
 
-    const result = await controller.update(playerId, updateDtoWithoutGroups);
+    const requestMock = {
+      user: { keycloakId: ownerKeycloakId },
+      headers: { authorization: 'Bearer token' },
+    };
+
+    const result = await controller.update(
+      playerId,
+      updateDtoWithoutGroups,
+      requestMock as any,
+      undefined,
+    );
 
     expect(characterModel.findById).toHaveBeenCalledWith(playerId);
     expect(groupModel.findById).not.toHaveBeenCalled();
@@ -224,25 +254,40 @@ describe('PlayerController - update', () => {
   it('should throw BadRequestException for invalid group ID during update', async () => {
     const invalidUpdateDto = { ...updateDto, groups: ['invalid-id'] };
 
-    await expect(controller.update(playerId, invalidUpdateDto)).rejects.toThrow(
-      BadRequestException,
-    );
+    const requestMock = {
+      user: { keycloakId: ownerKeycloakId },
+      headers: { other: '' },
+    };
+
+    await expect(
+      controller.update(playerId, invalidUpdateDto, requestMock as any, undefined),
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('should throw NotFoundException if group is not found during update', async () => {
     groupModel.exec.mockResolvedValue(null);
 
-    await expect(controller.update(playerId, updateDto)).rejects.toThrow(
-      NotFoundException,
-    );
+    const requestMock = {
+      user: { keycloakId: ownerKeycloakId },
+      headers: {},
+    };
+
+    await expect(
+      controller.update(playerId, updateDto, requestMock as any, undefined),
+    ).rejects.toThrow(NotFoundException);
   });
 
   it('should throw GoneException if group is soft-deleted during update', async () => {
     groupModel.exec.mockResolvedValue({ deletedAt: new Date() });
 
-    await expect(controller.update(playerId, updateDto)).rejects.toThrow(
-      GoneException,
-    );
+    const requestMock = {
+      user: { keycloakId: ownerKeycloakId },
+      headers: {},
+    };
+
+    await expect(
+      controller.update(playerId, updateDto, requestMock as any, undefined),
+    ).rejects.toThrow(GoneException);
   });
 });
 
@@ -265,6 +310,7 @@ describe('PlayerController - validateResource', () => {
         { provide: CharacterService, useValue: {} },
         { provide: getModelToken(Character.name), useValue: characterModel },
         { provide: getModelToken(Group.name), useValue: {} },
+        { provide: SessionAccessService, useValue: { assertGmEdit: jest.fn() } },
       ],
     }).compile();
 
@@ -315,6 +361,7 @@ describe('PlayerController - validateGroupRelations', () => {
         { provide: CharacterService, useValue: {} },
         { provide: getModelToken(Character.name), useValue: {} },
         { provide: getModelToken(Group.name), useValue: groupModel },
+        { provide: SessionAccessService, useValue: { assertGmEdit: jest.fn() } },
       ],
     }).compile();
 

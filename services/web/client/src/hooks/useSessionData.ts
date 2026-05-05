@@ -52,7 +52,9 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const fetchCharacterDetails = async (ids: string[]) => {
         const missing = ids.filter((id) => id && !characterDetails[id]);
         if (missing.length === 0) return;
-        const results = await Promise.allSettled(missing.map((id) => characterService.getCharacterById(id)));
+        const results = await Promise.allSettled(
+            missing.map((id) => characterService.getCharacterById(id, { sessionCode: code })),
+        );
         setCharacterDetails((prev) => {
             const next = { ...prev };
             results.forEach((result, i) => {

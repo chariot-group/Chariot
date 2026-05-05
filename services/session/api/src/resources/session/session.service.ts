@@ -418,6 +418,55 @@ export class SessionService {
         }
     }
 
+    /**
+     * Vérifie qu'un utilisateur authentifié peut lire ou faire éditer (MJ) un personnage
+     * via une session active — utilisé par le service Adventure (API-to-API avec JWT utilisateur).
+     */
+    async validateCharacterAccessForAdventure(
+        code: string,
+        userId: string,
+        characterId: string,
+        mode: 'roster-read' | 'gm-edit',
+    ): Promise<IResponse<{ ok: true }>> {
+        try {
+            const session = await this._findSession(code);
+            const me = session.participants.find((p) => p.userId === userId);
+            if (!me) {
+                throw new ForbiddenException('User is not a session participant');
+            }
+
+            const cid = characterId.trim();
+            const inRoster = session.participants.some((p) => p.characterId === cid);
+            if (!inRoster) {
+                throw new ForbiddenException('Character is not part of this session roster');
+            }
+
+            if (mode === 'roster-read') {
+                return { message: 'Access granted', data: { ok: true } };
+            }
+
+            if (me.status !== ParticipantStatus.gameMaster) {
+                throw new ForbiddenException('Only the game master can edit this character in session');
+            }
+
+            const heldByPlayer = session.participants.some(
+                (p) => p.status !== ParticipantStatus.gameMaster && p.characterId === cid,
+            );
+            if (!heldByPlayer) {
+                throw new ForbiddenException('Character is not assigned to a player in this session');
+            }
+
+            return { message: 'Access granted', data: { ok: true } };
+        } catch (error: unknown) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            const message = `Error validating character access for session ${code}: ${(error as Error).message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
     async findParticipants(code: string): Promise<IResponse<SessionParticipantsDetails>> {
         try {
             const start: number = Date.now();

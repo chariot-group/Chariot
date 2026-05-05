@@ -3,16 +3,26 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { io, type Socket } from "socket.io-client";
-import sessionService, { type SessionParticipant } from "@/services/SessionService";
+import { type Socket } from "socket.io-client";
+import sessionService, {
+    type SessionParticipant,
+    mapParticipantsFromSessionLaunchedPayload,
+    parseExpiresAtFromLaunchedPayload,
+} from "@/services/SessionService";
 import UserService from "@/services/UserService";
 import { useAppDispatch } from "@/store/hooks";
-import { clearCurrentSession, setSessionParticipants, setSessionStatus, setSessionExpiresAt, setSessionTokensByUser } from "@/store/slices/sessionSlice";
+import { clearCurrentSession, setSessionParticipants, setSessionStatus, setSessionExpiresAt, setSessionTokensByUser, touchRemoteCharacterSheet } from "@/store/slices/sessionSlice";
 import { useToast } from "@/hooks/useToast";
+import { acquireSessionSocket, releaseSessionSocket } from "@/lib/sessionSocketPool";
+import { shouldNotifyPlayerOfGmCharacterSheetUpdate } from "@/lib/shouldNotifyPlayerOfGmCharacterSheetUpdate";
+import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayerFromCampaignGroupsOnSessionLeave";
+import { invalidateCache as invalidateGroupCache } from "@/store/slices/groupSlice";
 
 interface UseSessionSocketOptions {
     token: string | null | undefined;
     code: string;
+    /** Campagne de la session : utilisée pour retirer le joueur des groupes de cette campagne à la sortie. */
+    campaignId?: string;
     campaignName: string;
     currentUser: { keycloakId: string; balance: number } | null | undefined;
     participants: SessionParticipant[];
@@ -26,6 +36,7 @@ interface UseSessionSocketOptions {
 export function useSessionSocket({
     token,
     code,
+    campaignId,
     campaignName,
     currentUser,
     participants,
@@ -46,6 +57,7 @@ export function useSessionSocket({
     const participantsRef = useRef(participants);
     const tokensByUserRef = useRef(tokensByUser);
     const campaignNameRef = useRef(campaignName);
+    const currentUserRef = useRef(currentUser);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
     const [isLaunching, setIsLaunching] = useState(false);
@@ -64,6 +76,10 @@ export function useSessionSocket({
         campaignNameRef.current = campaignName;
     }, [campaignName]);
 
+    useEffect(() => {
+        currentUserRef.current = currentUser;
+    }, [currentUser]);
+
     // Sync session state to Redux store so it's accessible from any page
     useEffect(() => {
         dispatch(setSessionParticipants(participants));
@@ -76,114 +92,137 @@ export function useSessionSocket({
     useEffect(() => {
         if (!token) return;
 
-        const wsUrl = process.env.NEXT_PUBLIC_SESSION_WS_URL ?? "http://localhost:9002";
+        console.info("Attaching to shared session WebSocket pool");
 
-        console.info(`Connecting to session WebSocket at [${wsUrl}]}`);
-
-        const socket = io(`${wsUrl}/session`, {
-            auth: { token },
-            path: "/ws",
-            transports: ["polling", "websocket"],
-        });
+        const socket = acquireSessionSocket(code, token);
 
         socketRef.current = socket;
 
-        socket.on("connect", () => {
-            const myParticipant = participantsRef.current.find((p) => p.userId === currentUser?.keycloakId);
-            socket.emit("session:join", {
-                sessionId: code,
-                characterId: myParticipant?.characterId ?? null,
-            });
-        });
+        const onParticipantCharacterChanged = ({
+            userId,
+            characterId,
+        }: {
+            userId: string;
+            characterId: string;
+        }) => {
+            setParticipants((prev) => prev.map((p) => (p.userId === userId ? { ...p, characterId } : p)));
+            fetchCharacterDetails([characterId]);
+        };
 
-        socket.on(
-            "session:participant-character-changed",
-            ({ userId, characterId }: { userId: string; characterId: string }) => {
-                setParticipants((prev) => prev.map((p) => (p.userId === userId ? { ...p, characterId } : p)));
-                fetchCharacterDetails([characterId]);
-            },
-        );
+        const onCharacterSheetUpdated = ({ characterId }: { characterId: string }) => {
+            if (!characterId) return;
+            dispatch(touchRemoteCharacterSheet(characterId));
+            fetchCharacterDetails([characterId]);
+            if (
+                shouldNotifyPlayerOfGmCharacterSheetUpdate(
+                    characterId,
+                    currentUserRef.current?.keycloakId,
+                    participantsRef.current,
+                )
+            ) {
+                toast.info(t("toast.sheetEditedByGm"));
+            }
+        };
 
-        socket.on(
-            "session:participant-joined",
-            async ({
-                userId,
-                username,
-                characterId,
-                status,
-            }: {
-                userId: string;
-                username: string;
-                characterId: string;
-                status: "connected" | "gameMaster" | "disconnected";
-            }) => {
-                setParticipants((prev) => {
-                    const exists = prev.some((p) => p.userId === userId);
-                    if (exists) {
-                        return prev.map((p) =>
-                            p.userId === userId
-                                ? { ...p, status: status ?? "connected", characterId: characterId ?? p.characterId }
-                                : p,
-                        );
-                    }
-                    return [
-                        ...prev,
-                        {
-                            id: userId,
-                            userId,
-                            characterId: characterId ?? null,
-                            status: status ?? ("connected" as const),
-                            joinedAt: new Date().toISOString(),
-                            sessionId: code,
-                        },
-                    ];
-                });
-                setParticipantNames((prev) => (prev[userId] ? prev : { ...prev, [userId]: username || userId }));
-                try {
-                    const user = await UserService.getUserById(userId);
-                    setParticipantNames((prev) => ({
-                        ...prev,
-                        [userId]: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.username,
-                    }));
-                } catch {
-                    // keep the username fallback already set
+        const onParticipantJoined = async ({
+            userId,
+            username,
+            characterId,
+            status,
+        }: {
+            userId: string;
+            username: string;
+            characterId: string;
+            status: "connected" | "gameMaster" | "disconnected";
+        }) => {
+            setParticipants((prev) => {
+                const exists = prev.some((p) => p.userId === userId);
+                if (exists) {
+                    return prev.map((p) =>
+                        p.userId === userId
+                            ? { ...p, status: status ?? "connected", characterId: characterId ?? p.characterId }
+                            : p,
+                    );
                 }
-                if (characterId) fetchCharacterDetails([characterId]);
-            },
-        );
+                return [
+                    ...prev,
+                    {
+                        id: userId,
+                        userId,
+                        characterId: characterId ?? null,
+                        status: status ?? ("connected" as const),
+                        joinedAt: new Date().toISOString(),
+                        sessionId: code,
+                    },
+                ];
+            });
+            setParticipantNames((prev) => (prev[userId] ? prev : { ...prev, [userId]: username || userId }));
+            try {
+                const user = await UserService.getUserById(userId);
+                setParticipantNames((prev) => ({
+                    ...prev,
+                    [userId]: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.username,
+                }));
+            } catch {
+                // keep the username fallback already set
+            }
+            if (characterId) fetchCharacterDetails([characterId]);
+        };
 
-        socket.on("session:participant-left", ({ userId }: { userId: string }) => {
+        const onParticipantLeft = ({ userId }: { userId: string; characterId?: string | null }) => {
             setParticipants((prev) => prev.filter((p) => p.userId !== userId));
-        });
+        };
 
-        socket.on("session:participant-disconnected", ({ userId }: { userId: string }) => {
+        const onParticipantDisconnected = ({ userId }: { userId: string }) => {
             setParticipants((prev) =>
                 prev.map((p) => (p.userId === userId ? { ...p, status: "disconnected" as const } : p)),
             );
-        });
+        };
 
-        socket.on("session:expired", () => {
-            setSessionEndReason('expired');
-        });
+        const onSessionExpired = () => {
+            setSessionEndReason("expired");
+        };
 
-        socket.on("session:closed", () => {
-            setSessionEndReason('closed');
-        });
+        const onSessionClosed = () => {
+            setSessionEndReason("closed");
+        };
 
-        socket.on("session:token-updated", ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
+        const onTokenUpdated = ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
             setTokensByUser(updatedTokens);
-        });
+        };
 
-        socket.on("session:launched", async () => {
+        const onSessionLaunched = async (payload?: {
+            session?: { participants?: unknown; expiresAt?: unknown };
+            expiresAt?: unknown;
+        }) => {
             dispatch(setSessionStatus("launched"));
-            toast.success(t("toast.sessionLaunched"));
-            try {
-                const session = await sessionService.getSession(code);
-                dispatch(setSessionExpiresAt(session.expiresAt));
-            } catch {
-                // Non-blocking: timer won't display if fetch fails
+            const exp =
+                parseExpiresAtFromLaunchedPayload(payload?.expiresAt) ??
+                parseExpiresAtFromLaunchedPayload(payload?.session?.expiresAt);
+            if (exp != null) {
+                dispatch(setSessionExpiresAt(exp));
+            } else {
+                try {
+                    const session = await sessionService.getSession(code);
+                    dispatch(setSessionExpiresAt(session.expiresAt));
+                } catch {
+                    // Non-blocking: timer won't display if fetch fails
+                }
             }
             const userId = currentUser?.keycloakId;
+            const myParticipantBefore =
+                userId != null ? participantsRef.current.find((p) => p.userId === userId) : undefined;
+
+            const rawList = payload?.session?.participants;
+            const mappedParticipants = Array.isArray(rawList)
+                ? mapParticipantsFromSessionLaunchedPayload(rawList, code)
+                : null;
+            if (mappedParticipants) {
+                setParticipants(mappedParticipants);
+            }
+
+            toast.success(t("toast.sessionLaunched"));
+
             const myTokens = userId ? (tokensByUserRef.current[userId] ?? 0) : 0;
             if (userId && myTokens >= 1) {
                 try {
@@ -192,14 +231,37 @@ export function useSessionSocket({
                     // history update failure should not block navigation
                 }
             }
-            const myParticipant = participantsRef.current.find((p) => p.userId === userId);
-            if (myParticipant?.characterId) {
-                router.push(`/${locale}/characters/${myParticipant.characterId}`);
+
+            const charIdForNav =
+                myParticipantBefore?.characterId ??
+                (userId != null ? mappedParticipants?.find((p) => p.userId === userId)?.characterId : undefined);
+
+            if (charIdForNav) {
+                router.push(`/${locale}/characters/${charIdForNav}`);
             }
-        });
+        };
+
+        socket.on("session:participant-character-changed", onParticipantCharacterChanged);
+        socket.on("session:character-sheet-updated", onCharacterSheetUpdated);
+        socket.on("session:participant-joined", onParticipantJoined);
+        socket.on("session:participant-left", onParticipantLeft);
+        socket.on("session:participant-disconnected", onParticipantDisconnected);
+        socket.on("session:expired", onSessionExpired);
+        socket.on("session:closed", onSessionClosed);
+        socket.on("session:token-updated", onTokenUpdated);
+        socket.on("session:launched", onSessionLaunched);
 
         return () => {
-            socket.disconnect();
+            socket.off("session:participant-character-changed", onParticipantCharacterChanged);
+            socket.off("session:character-sheet-updated", onCharacterSheetUpdated);
+            socket.off("session:participant-joined", onParticipantJoined);
+            socket.off("session:participant-left", onParticipantLeft);
+            socket.off("session:participant-disconnected", onParticipantDisconnected);
+            socket.off("session:expired", onSessionExpired);
+            socket.off("session:closed", onSessionClosed);
+            socket.off("session:token-updated", onTokenUpdated);
+            socket.off("session:launched", onSessionLaunched);
+            releaseSessionSocket();
             socketRef.current = null;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -224,13 +286,31 @@ export function useSessionSocket({
         setIsLeaving(true);
 
         const socket = socketRef.current;
+        const userId = currentUser?.keycloakId;
+        const myParticipant = participantsRef.current.find((p) => p.userId === userId);
+        const shouldStripGroups =
+            Boolean(campaignId?.trim()) &&
+            Boolean(myParticipant?.characterId) &&
+            myParticipant?.status !== "gameMaster";
+
+        const afterLeaveSuccess = async () => {
+            if (shouldStripGroups && campaignId && myParticipant?.characterId) {
+                try {
+                    await removePlayerFromCampaignGroupsOnSessionLeave(campaignId, myParticipant.characterId);
+                    dispatch(invalidateGroupCache());
+                } catch (e) {
+                    console.error("Failed to remove player from campaign groups after leaving session:", e);
+                }
+            }
+            dispatch(clearCurrentSession());
+            toast.info(t("toast.leaveSuccess"));
+            router.push(`/${locale}/welcome`);
+        };
 
         if (socket?.connected) {
             socket.emit("session:leave", { sessionId: code });
             socket.once("session:left", () => {
-                dispatch(clearCurrentSession());
-                toast.info(t("toast.leaveSuccess"));
-                router.push(`/${locale}/welcome`);
+                void afterLeaveSuccess();
             });
             socket.once("session:error", () => {
                 toast.error(t("toast.leaveError"));
@@ -239,9 +319,7 @@ export function useSessionSocket({
         } else {
             try {
                 await sessionService.leaveSession(code);
-                dispatch(clearCurrentSession());
-                toast.info(t("toast.leaveSuccess"));
-                router.push(`/${locale}/welcome`);
+                await afterLeaveSuccess();
             } catch {
                 toast.error(t("toast.leaveError"));
                 setIsLeaving(false);
