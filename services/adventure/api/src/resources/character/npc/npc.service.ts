@@ -37,9 +37,7 @@ export class NpcService {
   private groupRefToIdString(
     ref: Types.ObjectId | Pick<GroupDocument, '_id'>,
   ): string {
-    return ref instanceof Types.ObjectId
-      ? ref.toString()
-      : ref._id.toString();
+    return ref instanceof Types.ObjectId ? ref.toString() : ref._id.toString();
   }
 
   private async validateGroupRelations(groupIds: string[]): Promise<void> {

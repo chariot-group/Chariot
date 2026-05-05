@@ -332,9 +332,7 @@ export class GroupService {
         return character;
       });
       const characterIds: Types.ObjectId[] = rawCharacterIds.map((cid) =>
-        cid instanceof Types.ObjectId
-          ? cid
-          : new Types.ObjectId(String(cid)),
+        cid instanceof Types.ObjectId ? cid : new Types.ObjectId(String(cid)),
       );
 
       if (characterIds.length > 0) {

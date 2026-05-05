@@ -34,9 +34,7 @@ export class PlayerService {
   private groupRefToIdString(
     ref: Types.ObjectId | Pick<GroupDocument, '_id'>,
   ): string {
-    return ref instanceof Types.ObjectId
-      ? ref.toString()
-      : ref._id.toString();
+    return ref instanceof Types.ObjectId ? ref.toString() : ref._id.toString();
   }
 
   async create(
@@ -131,9 +129,7 @@ export class PlayerService {
           throw new GoneException(message);
         }
       } else {
-        groups = player.groups.map((group) =>
-          this.groupRefToIdString(group),
-        );
+        groups = player.groups.map((group) => this.groupRefToIdString(group));
       }
 
       const groupsToRemove = player.groups.filter(
