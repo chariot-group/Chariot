@@ -24,7 +24,7 @@ import UserService from "@/services/UserService";
 import { useSidebar } from "@/components/ui/sidebar";
 import characterService from "@/services/CharacterService";
 
-const ROSTER_FETCH_DEBOUNCE_MS = 450;
+const ROSTER_FETCH_DEBOUNCE_MS = 220;
 
 /**
  * Personnages choisis par les joueurs pendant une session — visible uniquement pour le MJ.
@@ -51,20 +51,49 @@ export default function GmSessionPlayersSidebarSection() {
     !!currentUser?.keycloakId &&
     participants.some((p) => p.userId === currentUser.keycloakId && p.status === "gameMaster");
 
-  const playerRoster = participants.filter(
-    (p) => p.status !== "gameMaster" && p.characterId != null && p.characterId.length > 0,
+  /** Tous les humains hors MJ dans la session (y compris avant choix de personnage). */
+  const presenceRoster = React.useMemo(
+    () => participants.filter((p) => p.status !== "gameMaster"),
+    [participants],
   );
 
-  const rosterKey = playerRoster.map((p) => `${p.userId}:${p.characterId}`).join("|");
+  /**
+   * Signature ordre-indépendante : réordonnement HTTP uniquement sans changer les paires
+   * (inclut `characterId` vide tant que le joueur n’a pas choisi).
+   */
+  const rosterStableKey = React.useMemo(() => {
+    return presenceRoster
+      .map((p) => `${p.userId}:${p.characterId ?? ""}`)
+      .sort()
+      .join("\u001f");
+  }, [presenceRoster]);
+
+  /** Dernière liste participants — synchro pendant le rendu pour que les effets voient toujours le roster aligné avec le store. */
+  const participantsRef = React.useRef(participants);
+  participantsRef.current = participants;
+
+  const rosterRemoteVersionsKey = React.useMemo(() => {
+    const roster = participants.filter(
+      (p) => p.status !== "gameMaster" && p.characterId != null && String(p.characterId).length > 0,
+    );
+    return roster
+      .map((p) => {
+        const cid = String(p.characterId);
+        return `${cid}:${remoteVersions[cid] ?? 0}`;
+      })
+      .sort()
+      .join("|");
+  }, [rosterStableKey, remoteVersions, participants]);
 
   /** Retirer labels des joueurs qui ne sont plus au roster (évite d’afficher un UUID fantôme). */
   React.useEffect(() => {
-    const roster = participants.filter(
-      (p) => p.status !== "gameMaster" && p.characterId != null && p.characterId.length > 0,
+    const rosterPresence = participantsRef.current.filter((p) => p.status !== "gameMaster");
+    const rosterWithSheet = rosterPresence.filter(
+      (p) => p.characterId != null && p.characterId.length > 0,
     );
-    const uids = new Set(roster.map((p) => p.userId));
+    const uids = new Set(rosterPresence.map((p) => p.userId));
     const cids = new Set(
-      roster.map((p) => p.characterId).filter((id): id is string => Boolean(id && id.length > 0)),
+      rosterWithSheet.map((p) => p.characterId).filter((id): id is string => Boolean(id && id.length > 0)),
     );
     setDisplayNames((prev) => {
       const next = { ...prev };
@@ -80,13 +109,13 @@ export default function GmSessionPlayersSidebarSection() {
       }
       return next;
     });
-  }, [participants]);
+  }, [rosterStableKey]);
 
   const prevRemoteVersionsRef = React.useRef<Record<string, number>>({});
 
   /** Après une synchro WS sur une fiche, mettre à jour le libellé concerné uniquement (évite le burst HTTP / 429). */
   React.useEffect(() => {
-    const roster = participants.filter(
+    const roster = participantsRef.current.filter(
       (p) => p.status !== "gameMaster" && p.characterId != null && p.characterId.length > 0,
     );
     if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || roster.length === 0) {
@@ -135,37 +164,93 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [contextMode, isGm, isInSession, participants, remoteVersions, rosterKey, sessionCode]);
+  }, [contextMode, isGm, isInSession, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
 
   /** Chargement initial / changement de roster : requêtes espacées pour rester sous le rate limit gateway. */
   React.useEffect(() => {
-    const roster = participants.filter(
-      (p) => p.status !== "gameMaster" && p.characterId != null && p.characterId.length > 0,
-    );
-    if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || roster.length === 0) {
+    if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode) {
       return;
     }
 
     let cancelled = false;
     const timer = window.setTimeout(() => {
       void (async () => {
+        const roster = participantsRef.current.filter((p) => p.status !== "gameMaster");
+        const withChar = roster.filter((p) => p.characterId != null && String(p.characterId).trim().length > 0);
+        // #region agent log
+        fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
+          body: JSON.stringify({
+            sessionId: "5f720e",
+            runId: "post-fix-verify",
+            location: "GmSessionPlayersSidebarSection.tsx:debouncedRosterFetch",
+            message: "roster fetch tick",
+            data: {
+              presenceLen: roster.length,
+              rosterLenWithChar: withChar.length,
+              cids: withChar.map((p) => String(p.characterId).slice(0, 8)),
+              rosterStableKey,
+            },
+            timestamp: Date.now(),
+            hypothesisId: "H-presence",
+          }),
+        }).catch(() => {});
+        // #endregion
+        if (roster.length === 0 || cancelled) return;
         const nameUpdates: Record<string, string> = {};
         const charUpdates: Record<string, string> = {};
         for (const p of roster) {
-          const cid = p.characterId as string;
           try {
             const u = await UserService.getUserById(p.userId);
             nameUpdates[p.userId] = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.username;
           } catch {
             nameUpdates[p.userId] = p.userId;
           }
+          const cid = p.characterId?.trim();
+          if (!cid) {
+            continue;
+          }
           try {
             const ch = await characterService.getCharacterById(cid, { sessionCode });
             let label = ch.firstname?.trim() ?? "";
             if (ch.lastname) label += ` ${ch.lastname.trim()}`;
             charUpdates[cid] = label.trim() || cid;
+            // #region agent log
+            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
+              body: JSON.stringify({
+                sessionId: "5f720e",
+                location: "GmSessionPlayersSidebarSection.tsx:getCharacterById",
+                message: "character label resolved",
+                data: {
+                  cid8: cid.slice(0, 8),
+                  labelLen: charUpdates[cid].length,
+                  looksLikeUuid: charUpdates[cid] === cid,
+                  hasFn: Boolean(ch.firstname?.trim()),
+                },
+                timestamp: Date.now(),
+                hypothesisId: "H2",
+              }),
+            }).catch(() => {});
+            // #endregion
           } catch {
             charUpdates[cid] = cid;
+            // #region agent log
+            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
+              body: JSON.stringify({
+                sessionId: "5f720e",
+                location: "GmSessionPlayersSidebarSection.tsx:getCharacterById",
+                message: "character fetch failed, fallback to id",
+                data: { cid8: cid.slice(0, 8) },
+                timestamp: Date.now(),
+                hypothesisId: "H2",
+              }),
+            }).catch(() => {});
+            // #endregion
           }
           if (cancelled) return;
         }
@@ -180,9 +265,9 @@ export default function GmSessionPlayersSidebarSection() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [contextMode, isGm, isInSession, participants, rosterKey, sessionCode]);
+  }, [contextMode, isGm, isInSession, rosterStableKey, sessionCode]);
 
-  if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || playerRoster.length === 0) {
+  if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || presenceRoster.length === 0) {
     return null;
   }
 
@@ -221,30 +306,49 @@ export default function GmSessionPlayersSidebarSection() {
       <CollapsibleContent
         id="session-players-content"
         className="my-2 flex mx-5 flex-col gap-1">
-        {playerRoster.map((p) => {
-          const cid = p.characterId as string;
+        {presenceRoster.map((p) => {
+          const cid = p.characterId?.trim();
           const userLabel = displayNames[p.userId] ?? p.userId;
-          const charLabel = characterLabels[cid] ?? cid;
-          const href = `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`;
-          const isSelected = selectedCharacterId === cid;
+          const hasSheet = Boolean(cid);
+          const charLabel = hasSheet ? characterLabels[cid!] ?? cid! : "";
+          const href = cid
+            ? `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`
+            : "";
+          const isSelected = Boolean(cid && selectedCharacterId === cid);
+          const rowClasses = `w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 transition-all duration-100 focus-visible:ring-1 ${
+            hasSheet ? "hover:bg-card/50 cursor-pointer" : "cursor-default opacity-80"
+          } ${isSelected ? "bg-card/50 font-bold" : ""}`;
+
+          const primaryLabel = hasSheet ? charLabel : t("sessionPlayerChoosingCharacter");
+
+          const innerLabel = (
+            <span className="block min-w-0 flex-1 truncate">{primaryLabel}</span>
+          );
+
           return (
-            <Tooltip key={`${p.userId}-${cid}`}>
+            <Tooltip key={`${p.userId}-${cid ?? "pending"}`}>
               <TooltipTrigger asChild>
-                <Link
-                  href={href}
-                  aria-current={isSelected ? "page" : undefined}
-                  aria-label={`${charLabel} — ${t("playedBy", { name: userLabel })}`}
-                  title={t("playedBy", { name: userLabel })}
-                  className={`w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${isSelected ? "bg-card/50 font-bold" : ""}`}
-                  onClick={() => {
-                    if (isMobile) setOpenMobile(false);
-                  }}>
-                  <span className="block min-w-0 flex-1 truncate">{charLabel}</span>
-                </Link>
+                {hasSheet ? (
+                  <Link
+                    href={href}
+                    aria-current={isSelected ? "page" : undefined}
+                    aria-label={`${charLabel} — ${t("playedBy", { name: userLabel })}`}
+                    title={t("playedBy", { name: userLabel })}
+                    className={rowClasses}
+                    onClick={() => {
+                      if (isMobile) setOpenMobile(false);
+                    }}>
+                    {innerLabel}
+                  </Link>
+                ) : (
+                  <div
+                    className={rowClasses}
+                    aria-label={`${t("sessionPlayerChoosingCharacter")} — ${t("playedBy", { name: userLabel })}`}>
+                    {innerLabel}
+                  </div>
+                )}
               </TooltipTrigger>
-              <TooltipContent side="right">
-                {t("playedBy", { name: userLabel })}
-              </TooltipContent>
+              <TooltipContent side="right">{t("playedBy", { name: userLabel })}</TooltipContent>
             </Tooltip>
           );
         })}

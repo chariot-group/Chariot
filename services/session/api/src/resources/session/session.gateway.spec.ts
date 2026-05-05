@@ -410,6 +410,36 @@ describe('SessionGateway', () => {
             expect(client.emit).toHaveBeenCalledWith('session:joined', { session });
         });
 
+        it('should broadcast persisted characterId when WS join payload omits it', async () => {
+            const session = makeSession({
+                participants: [
+                    {
+                        id: 'part-joiner',
+                        userId: 'user-uuid-1',
+                        characterId: 'char-from-db',
+                        status: 'connected',
+                        joinedAt: new Date().toISOString(),
+                        sessionId: 'sess-uuid-1',
+                    },
+                ] as any,
+            });
+            mockSessionService.join.mockResolvedValue(session);
+
+            const roomEmit = jest.fn();
+            const client = makeSocket({
+                to: jest.fn().mockReturnValue({ emit: roomEmit }),
+            });
+
+            await gateway.handleJoinSession(client, { sessionId: 'sess-uuid-1', characterId: null });
+
+            expect(roomEmit).toHaveBeenCalledWith('session:participant-joined', {
+                userId: 'user-uuid-1',
+                username: 'testuser',
+                characterId: 'char-from-db',
+                status: 'connected',
+            });
+        });
+
         it('should emit session:error when service throws', async () => {
             mockSessionService.join.mockRejectedValue(new Error('Join failed'));
             const client = makeSocket();

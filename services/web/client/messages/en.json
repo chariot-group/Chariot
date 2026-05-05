@@ -16,6 +16,7 @@
     "createGroup": "Create a Group",
     "yourArchives": "Your Archives",
     "sessionPlayers": "Players (session)",
+    "sessionPlayerChoosingCharacter": "Choosing character…",
     "playedBy": "Played by {name}",
     "noArchives": "No archives.",
     "rightClickToAdd": "Right click to add.",

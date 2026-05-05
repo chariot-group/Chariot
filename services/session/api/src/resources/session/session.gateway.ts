@@ -207,11 +207,15 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             const joinedParticipant = session.participants.find((p) => p.userId === client.user.keycloakId);
 
-            // Notifier les autres participants
+            // Notifier les autres participants — utiliser le roster persisté : le client peut envoyer
+            // `characterId: null` au WS (ex. reconnect avant hydratation Redux) alors que le join HTTP
+            // a déjà associé un personnage (`join` conserve `existingParticipant.characterId`).
+            const rosterCharacterId = joinedParticipant?.characterId ?? data.characterId ?? null;
+
             client.to(session.id).emit('session:participant-joined', {
                 userId: client.user.keycloakId,
                 username: client.user.username,
-                characterId: data.characterId,
+                characterId: rosterCharacterId,
                 status: joinedParticipant?.status ?? 'connected',
             });
 

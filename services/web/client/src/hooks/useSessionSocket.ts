@@ -10,13 +10,23 @@ import sessionService, {
     parseExpiresAtFromLaunchedPayload,
 } from "@/services/SessionService";
 import UserService from "@/services/UserService";
-import { useAppDispatch } from "@/store/hooks";
-import { clearCurrentSession, setSessionParticipants, setSessionStatus, setSessionExpiresAt, setSessionTokensByUser, touchRemoteCharacterSheet } from "@/store/slices/sessionSlice";
+import { useAppDispatch, useAppStore } from "@/store/hooks";
+import {
+    clearCurrentSession,
+    selectSessionParticipants,
+    setSessionParticipants,
+    setSessionStatus,
+    setSessionExpiresAt,
+    setSessionTokensByUser,
+    touchRemoteCharacterSheet,
+} from "@/store/slices/sessionSlice";
 import { useToast } from "@/hooks/useToast";
 import { acquireSessionSocket, releaseSessionSocket } from "@/lib/sessionSocketPool";
 import { shouldNotifyPlayerOfGmCharacterSheetUpdate } from "@/lib/shouldNotifyPlayerOfGmCharacterSheetUpdate";
 import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayerFromCampaignGroupsOnSessionLeave";
+import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
 import { invalidateCache as invalidateGroupCache } from "@/store/slices/groupSlice";
+import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
 
 interface UseSessionSocketOptions {
     token: string | null | undefined;
@@ -47,6 +57,7 @@ export function useSessionSocket({
     setTokensByUser,
 }: UseSessionSocketOptions) {
     const dispatch = useAppDispatch();
+    const appStore = useAppStore();
     const router = useRouter();
     const toast = useToast();
     const t = useTranslations("sessionPage");
@@ -80,10 +91,35 @@ export function useSessionSocket({
         currentUserRef.current = currentUser;
     }, [currentUser]);
 
-    // Sync session state to Redux store so it's accessible from any page
+    // Sync session state to Redux — fusion avec le store pour ne pas écraser les MAJ WS/layout (sidebar MJ).
     useEffect(() => {
-        dispatch(setSessionParticipants(participants));
-    }, [participants, dispatch]);
+        const fromRedux = selectSessionParticipants(appStore.getState());
+        const merged = mergeParticipantsPreserveCharacterIds(fromRedux, participants);
+        // #region agent log
+        const sig = (xs: SessionParticipant[]) =>
+            [...xs].map((p) => `${p.userId}:${p.characterId ?? ""}:${p.status}`).sort().join("|");
+        if (sig(merged) !== sig(participants)) {
+            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
+                body: JSON.stringify({
+                    sessionId: "5f720e",
+                    runId: "redux-merge",
+                    location: "useSessionSocket.ts:syncParticipantsToRedux",
+                    message: "merged local participants with Redux (avoid wipe)",
+                    data: {
+                        reduxLen: fromRedux.length,
+                        localLen: participants.length,
+                        mergedLen: merged.length,
+                    },
+                    timestamp: Date.now(),
+                    hypothesisId: "H-redux-stomp",
+                }),
+            }).catch(() => {});
+        }
+        // #endregion
+        dispatch(setSessionParticipants(merged));
+    }, [participants, dispatch, appStore]);
 
     useEffect(() => {
         dispatch(setSessionTokensByUser(tokensByUser));
@@ -105,8 +141,43 @@ export function useSessionSocket({
             userId: string;
             characterId: string;
         }) => {
-            setParticipants((prev) => prev.map((p) => (p.userId === userId ? { ...p, characterId } : p)));
+            // #region agent log
+            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
+                body: JSON.stringify({
+                    sessionId: "5f720e",
+                    location: "useSessionSocket.ts:onParticipantCharacterChanged",
+                    message: "WS character changed (session page)",
+                    data: { uid8: userId.slice(0, 8), cid8: characterId?.slice(0, 8) },
+                    timestamp: Date.now(),
+                    hypothesisId: "H3",
+                }),
+            }).catch(() => {});
+            // #endregion
+            setParticipants((prev) => {
+                const exists = prev.some((p) => p.userId === userId);
+                if (exists) {
+                    return prev.map((p) => (p.userId === userId ? { ...p, characterId } : p));
+                }
+                return [
+                    ...prev,
+                    {
+                        id: userId,
+                        userId,
+                        characterId,
+                        status: "connected" as const,
+                        joinedAt: new Date().toISOString(),
+                        sessionId: code,
+                    },
+                ];
+            });
             fetchCharacterDetails([characterId]);
+            const cidTrim = typeof characterId === "string" ? characterId.trim() : "";
+            if (cidTrim) {
+                dispatch(touchRemoteCharacterSheet(cidTrim));
+            }
+            requestSessionRosterHttpSync();
         };
 
         const onCharacterSheetUpdated = ({ characterId }: { characterId: string }) => {
@@ -166,7 +237,14 @@ export function useSessionSocket({
             } catch {
                 // keep the username fallback already set
             }
-            if (characterId) fetchCharacterDetails([characterId]);
+            if (characterId) {
+                fetchCharacterDetails([characterId]);
+                const jc = typeof characterId === "string" ? characterId.trim() : "";
+                if (jc) {
+                    dispatch(touchRemoteCharacterSheet(jc));
+                }
+            }
+            requestSessionRosterHttpSync();
         };
 
         const onParticipantLeft = ({
@@ -228,7 +306,7 @@ export function useSessionSocket({
                     // Non-blocking: timer won't display if fetch fails
                 }
             }
-            const userId = currentUser?.keycloakId;
+            const userId = currentUserRef.current?.keycloakId;
             const myParticipantBefore =
                 userId != null ? participantsRef.current.find((p) => p.userId === userId) : undefined;
 
@@ -283,8 +361,7 @@ export function useSessionSocket({
             releaseSessionSocket();
             socketRef.current = null;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token]);
+    }, [token, code, fetchCharacterDetails, dispatch]);
 
     const handleCharacterChange = (characterId: string) => {
         const socket = socketRef.current;

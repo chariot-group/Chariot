@@ -23,7 +23,11 @@ import sessionService, {
     parseExpiresAtFromLaunchedPayload,
 } from "@/services/SessionService";
 import { selectUser } from "@/store/slices/userSlice";
-import { registerSessionSyncSocket } from "@/lib/sessionCharacterSyncBridge";
+import {
+    registerSessionRosterHttpSyncScheduler,
+    registerSessionSyncSocket,
+    requestSessionRosterHttpSync,
+} from "@/lib/sessionCharacterSyncBridge";
 import { shouldNotifyPlayerOfGmCharacterSheetUpdate } from "@/lib/shouldNotifyPlayerOfGmCharacterSheetUpdate";
 import { setSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 import {
@@ -31,6 +35,7 @@ import {
     getPooledSessionSocket,
     releaseSessionSocket,
 } from "@/lib/sessionSocketPool";
+import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
 import { useToast } from "@/hooks/useToast";
 
 /** Évite les rafales HTTP lors des reconnexions Socket.IO rapprochées. */
@@ -50,7 +55,8 @@ function extractCharacterIdFromSessionContextPath(pathname: string): string | nu
 /**
  * Une connexion WebSocket partagée (voir `sessionSocketPool`) pour la session en cours,
  * y compris sur la page lobby : évite une seconde connexion et une reconnexion à chaque navigation.
- * Les événements chevauchants avec la page session ne sont branchés que hors lobby (cf. second effet).
+ * joined / change-character mettent toujours à jour Redux (sidebar). Les toasts déconnexion / départ
+ * restent hors lobby pour éviter les doublons avec la page session.
  */
 export default function SessionCharacterSyncClient() {
     const pathname = usePathname();
@@ -108,11 +114,45 @@ export default function SessionCharacterSyncClient() {
                 void sessionService
                     .getParticipants(code)
                     .then((d) => {
-                        dispatch(setSessionParticipants(d.participants));
+                        const prev = participantsRef.current;
+                        const fetchedIds = new Set(d.participants.map((x) => x.userId));
+                        const extrasCarried = prev.filter((p) => !fetchedIds.has(p.userId)).length;
+                        const merged = mergeParticipantsPreserveCharacterIds(prev, d.participants);
+                        // #region agent log
+                        let preserved = 0;
+                        for (const fp of d.participants) {
+                            const pr = prev.find((p) => p.userId === fp.userId);
+                            const fpEmpty = fp.characterId == null || String(fp.characterId).trim().length === 0;
+                            const prHas = pr?.characterId != null && String(pr.characterId).trim().length > 0;
+                            if (fpEmpty && prHas) preserved++;
+                        }
+                        fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
+                            body: JSON.stringify({
+                                sessionId: "5f720e",
+                                runId: "post-fix",
+                                location: "SessionCharacterSyncClient.tsx:scheduleRosterHttpSync",
+                                message: "roster HTTP sync merged",
+                                data: {
+                                    preserved,
+                                    extrasCarried,
+                                    outLen: merged.length,
+                                    fetchedLen: d.participants.length,
+                                    prevLen: prev.length,
+                                },
+                                timestamp: Date.now(),
+                                hypothesisId: "H-merge",
+                            }),
+                        }).catch(() => {});
+                        // #endregion
+                        dispatch(setSessionParticipants(merged));
                     })
                     .catch(() => {});
             }, ROSTER_HTTP_SYNC_DEBOUNCE_MS);
         };
+
+        registerSessionRosterHttpSyncScheduler(scheduleRosterHttpSync);
 
         const onConnect = () => {
             const my = participantsRef.current.find((p) => p.userId === userIdRef.current);
@@ -154,6 +194,7 @@ export default function SessionCharacterSyncClient() {
         registerSessionSyncSocket(socket);
 
         return () => {
+            registerSessionRosterHttpSyncScheduler(null);
             if (rosterSyncTimer !== null) {
                 clearTimeout(rosterSyncTimer);
             }
@@ -173,10 +214,6 @@ export default function SessionCharacterSyncClient() {
 
         const socket = getPooledSessionSocket();
         if (!socket) {
-            return;
-        }
-
-        if (isOnSessionLobbyPage) {
             return;
         }
 
@@ -216,98 +253,174 @@ export default function SessionCharacterSyncClient() {
                 ];
             }
             dispatch(setSessionParticipants(next));
+            const joinedCid = payload.characterId?.trim();
+            if (joinedCid) {
+                dispatch(touchRemoteCharacterSheet(joinedCid));
+            }
+            requestSessionRosterHttpSync();
         };
 
         const onParticipantCharacterChanged = (payload: { userId: string; characterId: string }) => {
+            // #region agent log
+            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
+                body: JSON.stringify({
+                    sessionId: "5f720e",
+                    runId: "post-fix",
+                    location: "SessionCharacterSyncClient.tsx:onParticipantCharacterChanged",
+                    message: "WS character changed (layout)",
+                    data: {
+                        uid8: payload.userId.slice(0, 8),
+                        cid8: payload.characterId?.slice(0, 8),
+                    },
+                    timestamp: Date.now(),
+                    hypothesisId: "H1,H3",
+                }),
+            }).catch(() => {});
+            // #endregion
             const list = participantsRef.current;
-            const next = list.map((p) =>
-                p.userId === payload.userId ? { ...p, characterId: payload.characterId } : p,
-            );
-            dispatch(setSessionParticipants(next));
-        };
-
-        const onSheetUpdated = ({ characterId }: { characterId: string }) => {
-            if (!characterId) return;
-            dispatch(touchRemoteCharacterSheet(characterId));
-            if (
-                shouldNotifyPlayerOfGmCharacterSheetUpdate(
-                    characterId,
-                    userIdRef.current,
-                    participantsRef.current,
-                )
-            ) {
-                toastRef.current.info(tRef.current("toast.sheetEditedByGm"));
-            }
-        };
-
-        const onParticipantDisconnected = ({
-            userId,
-            username,
-        }: {
-            userId: string;
-            username?: string;
-        }) => {
-            if (userId === userIdRef.current) return;
-            const list = participantsRef.current;
-            const next = list.map((p) =>
-                p.userId === userId ? { ...p, status: "disconnected" as const } : p,
-            );
-            dispatch(setSessionParticipants(next));
-            const label = username?.trim() || userId;
-            toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
-        };
-
-        const onParticipantLeft = (payload: {
-            userId: string;
-            username?: string;
-            characterId?: string | null;
-        }) => {
-            dispatch(removeSessionParticipantByUserId(payload.userId));
-
-            const myId = userIdRef.current;
-            const amGm = myId
-                ? participantsRef.current.some((p) => p.userId === myId && p.status === "gameMaster")
-                : false;
-            const leftCharId = payload.characterId?.trim() ?? "";
-            const viewing = extractCharacterIdFromSessionContextPath(pathnameRef.current);
-            const gmViewingDepartedCharacter = Boolean(amGm && leftCharId && viewing === leftCharId);
-
-            if (payload.userId !== myId) {
-                if (gmViewingDepartedCharacter) {
-                    toastRef.current.info(tRef.current("toast.participantLeftViewingCharacter"));
-                } else {
-                    const label = payload.username?.trim() || payload.userId;
-                    toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
-                }
-            }
-
-            if (!myId) return;
-            if (!amGm || !leftCharId) return;
-            if (viewing !== leftCharId) return;
-
-            const path = pathnameRef.current;
-            const locale = path.split("/")[1] || "fr";
-            const camp = campaignIdRef.current;
             const sessionCode = codeRef.current;
-            if (camp && sessionCode) {
-                routerRef.current.push(`/${locale}/campaigns/${camp}/session/${sessionCode}`);
-            } else {
-                routerRef.current.push(`/${locale}/welcome`);
+            if (!sessionCode) return;
+            const exists = list.some((p) => p.userId === payload.userId);
+            const next: SessionParticipant[] = exists
+                ? list.map((p) =>
+                      p.userId === payload.userId ? { ...p, characterId: payload.characterId } : p,
+                  )
+                : [
+                      ...list,
+                      {
+                          id: payload.userId,
+                          userId: payload.userId,
+                          characterId: payload.characterId,
+                          status: "connected" as const,
+                          joinedAt: new Date().toISOString(),
+                          sessionId: sessionCode,
+                      },
+                  ];
+            dispatch(setSessionParticipants(next));
+            const changedCid = payload.characterId?.trim();
+            if (changedCid) {
+                dispatch(touchRemoteCharacterSheet(changedCid));
             }
+            requestSessionRosterHttpSync();
+            // #region agent log
+            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
+                body: JSON.stringify({
+                    sessionId: "5f720e",
+                    runId: "rt-sync",
+                    location: "SessionCharacterSyncClient.tsx:afterCharChangedWs",
+                    message: "touched+fanned roster GET after WS char change",
+                    data: {
+                        cid8: changedCid ? changedCid.slice(0, 8) : null,
+                        hadCid: Boolean(changedCid),
+                    },
+                    timestamp: Date.now(),
+                    hypothesisId: "H-RT",
+                }),
+            }).catch(() => {});
+            // #endregion
         };
 
         socket.on("session:participant-joined", onParticipantJoined);
         socket.on("session:participant-character-changed", onParticipantCharacterChanged);
-        socket.on("session:character-sheet-updated", onSheetUpdated);
-        socket.on("session:participant-left", onParticipantLeft);
-        socket.on("session:participant-disconnected", onParticipantDisconnected);
+
+        let onSheetUpdated: ((payload: { characterId: string }) => void) | undefined;
+        let onParticipantDisconnected:
+            | ((payload: { userId: string; username?: string }) => void)
+            | undefined;
+        let onParticipantLeft:
+            | ((payload: {
+                  userId: string;
+                  username?: string;
+                  characterId?: string | null;
+              }) => void)
+            | undefined;
+
+        if (!isOnSessionLobbyPage) {
+            onSheetUpdated = ({ characterId }: { characterId: string }) => {
+                if (!characterId) return;
+                dispatch(touchRemoteCharacterSheet(characterId));
+                if (
+                    shouldNotifyPlayerOfGmCharacterSheetUpdate(
+                        characterId,
+                        userIdRef.current,
+                        participantsRef.current,
+                    )
+                ) {
+                    toastRef.current.info(tRef.current("toast.sheetEditedByGm"));
+                }
+            };
+
+            onParticipantDisconnected = ({
+                userId,
+                username,
+            }: {
+                userId: string;
+                username?: string;
+            }) => {
+                if (userId === userIdRef.current) return;
+                const list = participantsRef.current;
+                const next = list.map((p) =>
+                    p.userId === userId ? { ...p, status: "disconnected" as const } : p,
+                );
+                dispatch(setSessionParticipants(next));
+                const label = username?.trim() || userId;
+                toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
+            };
+
+            onParticipantLeft = (payload: {
+                userId: string;
+                username?: string;
+                characterId?: string | null;
+            }) => {
+                dispatch(removeSessionParticipantByUserId(payload.userId));
+
+                const myId = userIdRef.current;
+                const amGm = myId
+                    ? participantsRef.current.some((p) => p.userId === myId && p.status === "gameMaster")
+                    : false;
+                const leftCharId = payload.characterId?.trim() ?? "";
+                const viewing = extractCharacterIdFromSessionContextPath(pathnameRef.current);
+                const gmViewingDepartedCharacter = Boolean(amGm && leftCharId && viewing === leftCharId);
+
+                if (payload.userId !== myId) {
+                    if (gmViewingDepartedCharacter) {
+                        toastRef.current.info(tRef.current("toast.participantLeftViewingCharacter"));
+                    } else {
+                        const label = payload.username?.trim() || payload.userId;
+                        toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
+                    }
+                }
+
+                if (!myId) return;
+                if (!amGm || !leftCharId) return;
+                if (viewing !== leftCharId) return;
+
+                const path = pathnameRef.current;
+                const locale = path.split("/")[1] || "fr";
+                const camp = campaignIdRef.current;
+                const sessionCode = codeRef.current;
+                if (camp && sessionCode) {
+                    routerRef.current.push(`/${locale}/campaigns/${camp}/session/${sessionCode}`);
+                } else {
+                    routerRef.current.push(`/${locale}/welcome`);
+                }
+            };
+
+            socket.on("session:character-sheet-updated", onSheetUpdated);
+            socket.on("session:participant-left", onParticipantLeft);
+            socket.on("session:participant-disconnected", onParticipantDisconnected);
+        }
 
         return () => {
             socket.off("session:participant-joined", onParticipantJoined);
             socket.off("session:participant-character-changed", onParticipantCharacterChanged);
-            socket.off("session:character-sheet-updated", onSheetUpdated);
-            socket.off("session:participant-left", onParticipantLeft);
-            socket.off("session:participant-disconnected", onParticipantDisconnected);
+            if (onSheetUpdated) socket.off("session:character-sheet-updated", onSheetUpdated);
+            if (onParticipantLeft) socket.off("session:participant-left", onParticipantLeft);
+            if (onParticipantDisconnected) socket.off("session:participant-disconnected", onParticipantDisconnected);
         };
     }, [shouldConnect, code, token, isOnSessionLobbyPage, dispatch]);
 

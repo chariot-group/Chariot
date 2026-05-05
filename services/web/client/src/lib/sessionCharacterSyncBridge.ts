@@ -3,6 +3,9 @@ import type { Socket } from "socket.io-client";
 /** Socket actif (page session ou pont hors page session) pour émettre les synchros de fiches. */
 let activeSessionSyncSocket: Socket | null = null;
 
+/** Planificateur défini par `SessionCharacterSyncClient` (effet acquisition socket). */
+let sessionRosterHttpSyncScheduler: (() => void) | null = null;
+
 export function registerSessionSyncSocket(socket: Socket | null): void {
     activeSessionSyncSocket = socket;
 }
@@ -16,4 +19,13 @@ export function emitCharacterSheetUpdated(sessionCode: string, characterId: stri
         sessionId: code,
         characterId: cid,
     });
+}
+
+export function registerSessionRosterHttpSyncScheduler(scheduler: (() => void) | null): void {
+    sessionRosterHttpSyncScheduler = scheduler;
+}
+
+/** Re-lance un GET /participants après un événement WS (joined / perso choisi). */
+export function requestSessionRosterHttpSync(): void {
+    sessionRosterHttpSyncScheduler?.();
 }
