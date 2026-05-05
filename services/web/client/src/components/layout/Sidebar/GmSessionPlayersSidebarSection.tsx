@@ -186,27 +186,6 @@ export default function GmSessionPlayersSidebarSection() {
     const timer = window.setTimeout(() => {
       void (async () => {
         const roster = participantsRef.current.filter((p) => p.status !== "gameMaster");
-        const withChar = roster.filter((p) => p.characterId != null && String(p.characterId).trim().length > 0);
-        // #region agent log
-        fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
-          body: JSON.stringify({
-            sessionId: "5f720e",
-            runId: "post-fix-verify",
-            location: "GmSessionPlayersSidebarSection.tsx:debouncedRosterFetch",
-            message: "roster fetch tick",
-            data: {
-              presenceLen: roster.length,
-              rosterLenWithChar: withChar.length,
-              cids: withChar.map((p) => String(p.characterId).slice(0, 8)),
-              rosterStableKey,
-            },
-            timestamp: Date.now(),
-            hypothesisId: "H-presence",
-          }),
-        }).catch(() => {});
-        // #endregion
         if (roster.length === 0 || cancelled) return;
         const nameUpdates: Record<string, string> = {};
         const charUpdates: Record<string, string> = {};
@@ -226,41 +205,8 @@ export default function GmSessionPlayersSidebarSection() {
             let label = ch.firstname?.trim() ?? "";
             if (ch.lastname) label += ` ${ch.lastname.trim()}`;
             charUpdates[cid] = label.trim() || cid;
-            // #region agent log
-            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
-              body: JSON.stringify({
-                sessionId: "5f720e",
-                location: "GmSessionPlayersSidebarSection.tsx:getCharacterById",
-                message: "character label resolved",
-                data: {
-                  cid8: cid.slice(0, 8),
-                  labelLen: charUpdates[cid].length,
-                  looksLikeUuid: charUpdates[cid] === cid,
-                  hasFn: Boolean(ch.firstname?.trim()),
-                },
-                timestamp: Date.now(),
-                hypothesisId: "H2",
-              }),
-            }).catch(() => {});
-            // #endregion
           } catch {
             charUpdates[cid] = cid;
-            // #region agent log
-            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
-              body: JSON.stringify({
-                sessionId: "5f720e",
-                location: "GmSessionPlayersSidebarSection.tsx:getCharacterById",
-                message: "character fetch failed, fallback to id",
-                data: { cid8: cid.slice(0, 8) },
-                timestamp: Date.now(),
-                hypothesisId: "H2",
-              }),
-            }).catch(() => {});
-            // #endregion
           }
           if (cancelled) return;
         }

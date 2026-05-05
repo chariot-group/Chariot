@@ -112,29 +112,6 @@ export function useSessionSocket({
     useEffect(() => {
         const fromRedux = selectSessionParticipants(appStore.getState());
         const merged = mergeParticipantsPreserveCharacterIds(fromRedux, participants);
-        // #region agent log
-        const sig = (xs: SessionParticipant[]) =>
-            [...xs].map((p) => `${p.userId}:${p.characterId ?? ""}:${p.status}`).sort().join("|");
-        if (sig(merged) !== sig(participants)) {
-            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
-                body: JSON.stringify({
-                    sessionId: "5f720e",
-                    runId: "redux-merge",
-                    location: "useSessionSocket.ts:syncParticipantsToRedux",
-                    message: "merged local participants with Redux (avoid wipe)",
-                    data: {
-                        reduxLen: fromRedux.length,
-                        localLen: participants.length,
-                        mergedLen: merged.length,
-                    },
-                    timestamp: Date.now(),
-                    hypothesisId: "H-redux-stomp",
-                }),
-            }).catch(() => {});
-        }
-        // #endregion
         dispatch(setSessionParticipants(merged));
     }, [participants, dispatch, appStore]);
 
@@ -158,20 +135,6 @@ export function useSessionSocket({
             userId: string;
             characterId: string;
         }) => {
-            // #region agent log
-            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
-                body: JSON.stringify({
-                    sessionId: "5f720e",
-                    location: "useSessionSocket.ts:onParticipantCharacterChanged",
-                    message: "WS character changed (session page)",
-                    data: { uid8: userId.slice(0, 8), cid8: characterId?.slice(0, 8) },
-                    timestamp: Date.now(),
-                    hypothesisId: "H3",
-                }),
-            }).catch(() => {});
-            // #endregion
             setParticipantsRef.current((prev) => {
                 const exists = prev.some((p) => p.userId === userId);
                 if (exists) {

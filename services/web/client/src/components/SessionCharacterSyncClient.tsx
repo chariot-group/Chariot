@@ -115,37 +115,7 @@ export default function SessionCharacterSyncClient() {
                     .getParticipants(code)
                     .then((d) => {
                         const prev = participantsRef.current;
-                        const fetchedIds = new Set(d.participants.map((x) => x.userId));
-                        const extrasCarried = prev.filter((p) => !fetchedIds.has(p.userId)).length;
                         const merged = mergeParticipantsPreserveCharacterIds(prev, d.participants);
-                        // #region agent log
-                        let preserved = 0;
-                        for (const fp of d.participants) {
-                            const pr = prev.find((p) => p.userId === fp.userId);
-                            const fpEmpty = fp.characterId == null || String(fp.characterId).trim().length === 0;
-                            const prHas = pr?.characterId != null && String(pr.characterId).trim().length > 0;
-                            if (fpEmpty && prHas) preserved++;
-                        }
-                        fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
-                            body: JSON.stringify({
-                                sessionId: "5f720e",
-                                runId: "post-fix",
-                                location: "SessionCharacterSyncClient.tsx:scheduleRosterHttpSync",
-                                message: "roster HTTP sync merged",
-                                data: {
-                                    preserved,
-                                    extrasCarried,
-                                    outLen: merged.length,
-                                    fetchedLen: d.participants.length,
-                                    prevLen: prev.length,
-                                },
-                                timestamp: Date.now(),
-                                hypothesisId: "H-merge",
-                            }),
-                        }).catch(() => {});
-                        // #endregion
                         dispatch(setSessionParticipants(merged));
                     })
                     .catch(() => {});
@@ -261,24 +231,6 @@ export default function SessionCharacterSyncClient() {
         };
 
         const onParticipantCharacterChanged = (payload: { userId: string; characterId: string }) => {
-            // #region agent log
-            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
-                body: JSON.stringify({
-                    sessionId: "5f720e",
-                    runId: "post-fix",
-                    location: "SessionCharacterSyncClient.tsx:onParticipantCharacterChanged",
-                    message: "WS character changed (layout)",
-                    data: {
-                        uid8: payload.userId.slice(0, 8),
-                        cid8: payload.characterId?.slice(0, 8),
-                    },
-                    timestamp: Date.now(),
-                    hypothesisId: "H1,H3",
-                }),
-            }).catch(() => {});
-            // #endregion
             const list = participantsRef.current;
             const sessionCode = codeRef.current;
             if (!sessionCode) return;
@@ -304,24 +256,6 @@ export default function SessionCharacterSyncClient() {
                 dispatch(touchRemoteCharacterSheet(changedCid));
             }
             requestSessionRosterHttpSync();
-            // #region agent log
-            fetch("http://127.0.0.1:7712/ingest/88a8f719-5db4-47fb-b3e7-e6144e1ff4b6", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "5f720e" },
-                body: JSON.stringify({
-                    sessionId: "5f720e",
-                    runId: "rt-sync",
-                    location: "SessionCharacterSyncClient.tsx:afterCharChangedWs",
-                    message: "touched+fanned roster GET after WS char change",
-                    data: {
-                        cid8: changedCid ? changedCid.slice(0, 8) : null,
-                        hadCid: Boolean(changedCid),
-                    },
-                    timestamp: Date.now(),
-                    hypothesisId: "H-RT",
-                }),
-            }).catch(() => {});
-            // #endregion
         };
 
         socket.on("session:participant-joined", onParticipantJoined);
