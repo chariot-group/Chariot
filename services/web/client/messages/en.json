@@ -956,6 +956,8 @@
       "copyError": "Unable to copy the code",
       "copyNotSupported": "Copy is not supported by this browser",
       "participantLeftViewingCharacter": "The player of this character has left the session.",
+      "participantLeftSession": "{username} left the session.",
+      "participantDisconnected": "{username} disconnected from the session.",
       "sheetEditedByGm": "The game master has updated your character sheet."
     },
     "title": "Session",

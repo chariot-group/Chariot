@@ -26,6 +26,8 @@ interface AuthenticatedSocket extends Socket {
         email: string;
         username: string;
     };
+    /** Rooms session (id session) encore jointes ; à la coupure Socket.IO, `rooms` peut déjà être vide. */
+    sessionRoomIds?: Set<string>;
 }
 
 @WebSocketGateway({
@@ -130,27 +132,43 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     handleDisconnect(client: AuthenticatedSocket) {
-        if (client.user) {
-            this.logger.verbose(`Client disconnected: ${client.user.username} (${client.id})`, this.SERVICE_NAME);
+        if (!client.user) {
+            return;
+        }
+        this.logger.verbose(`Client disconnected: ${client.user.username} (${client.id})`, this.SERVICE_NAME);
 
-            // Marquer le participant comme déconnecté dans toutes les sessions qu'il occupait
-            const sessionRooms = [...client.rooms].filter(r => r !== client.id);
-            for (const sessionId of sessionRooms) {
-                this.sessionService.disconnectParticipant(sessionId, client.user.keycloakId).then(() => {
-                    client.to(sessionId).emit('session:participant-disconnected', {
-                        userId: client.user.keycloakId,
-                        username: client.user.username,
-                    });
-                }).catch((err: any) => {
-                    this.logger.error(`Error handling disconnect for session ${sessionId}: ${err.message}`, null, this.SERVICE_NAME);
-                });
-            }
+        const tracked = client.sessionRoomIds ? [...client.sessionRoomIds] : [];
+        const fromRooms = [...client.rooms].filter(r => r !== client.id);
+        const sessionIds = [...new Set([...tracked, ...fromRooms])];
+
+        const payload = {
+            userId: client.user.keycloakId,
+            username: client.user.username,
+        };
+
+        for (const sessionId of sessionIds) {
+            /* Immédiat : ne pas attendre la persistance, sinon le toast côté clients n'arrive qu'avec retard. */
+            this.server.to(sessionId).emit('session:participant-disconnected', payload);
+            this.sessionService.disconnectParticipant(sessionId, client.user.keycloakId).catch((err: any) => {
+                this.logger.error(`Error handling disconnect for session ${sessionId}: ${err.message}`, null, this.SERVICE_NAME);
+            });
         }
     }
 
     /** Extracts SessionWithParticipants from either a raw session or an IResponse wrapper. */
     private extractSession(result: any): SessionWithParticipants {
         return result?.data ?? result;
+    }
+
+    private trackSessionRoom(client: AuthenticatedSocket, sessionId: string): void {
+        if (!client.sessionRoomIds) {
+            client.sessionRoomIds = new Set();
+        }
+        client.sessionRoomIds.add(sessionId);
+    }
+
+    private untrackSessionRoom(client: AuthenticatedSocket, sessionId: string): void {
+        client.sessionRoomIds?.delete(sessionId);
     }
 
     @SubscribeMessage('session:create')
@@ -163,6 +181,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.create(data, client.user.keycloakId));
 
             client.join(session.id);
+            this.trackSessionRoom(client, session.id);
             client.emit('session:created', { session });
             let duration: number = (Date.now() - start) / 1000;
 
@@ -184,6 +203,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.join(data.sessionId, data, client.user.keycloakId));
 
             client.join(session.id);
+            this.trackSessionRoom(client, session.id);
 
             const joinedParticipant = session.participants.find((p) => p.userId === client.user.keycloakId);
 
@@ -227,9 +247,10 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const roomId = session.id;
 
             client.leave(roomId);
+            this.untrackSessionRoom(client, roomId);
 
-            // Notifier les autres participants
-            client.to(roomId).emit('session:participant-left', {
+            /* Après leave(), le socket n’est plus dans la room : client.to() est peu fiable ; le namespace cible correctement les participants restants. */
+            this.server.to(roomId).emit('session:participant-left', {
                 userId: client.user.keycloakId,
                 username: client.user.username,
                 characterId: leavingCharacterId,

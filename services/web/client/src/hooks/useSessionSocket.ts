@@ -169,14 +169,33 @@ export function useSessionSocket({
             if (characterId) fetchCharacterDetails([characterId]);
         };
 
-        const onParticipantLeft = ({ userId }: { userId: string; characterId?: string | null }) => {
+        const onParticipantLeft = ({
+            userId,
+            username,
+        }: {
+            userId: string;
+            username?: string;
+            characterId?: string | null;
+        }) => {
+            if (userId === currentUserRef.current?.keycloakId) return;
             setParticipants((prev) => prev.filter((p) => p.userId !== userId));
+            const label = username?.trim() || userId;
+            toast.info(t("toast.participantLeftSession", { username: label }));
         };
 
-        const onParticipantDisconnected = ({ userId }: { userId: string }) => {
+        const onParticipantDisconnected = ({
+            userId,
+            username,
+        }: {
+            userId: string;
+            username?: string;
+        }) => {
+            if (userId === currentUserRef.current?.keycloakId) return;
             setParticipants((prev) =>
                 prev.map((p) => (p.userId === userId ? { ...p, status: "disconnected" as const } : p)),
             );
+            const label = username?.trim() || userId;
+            toast.info(t("toast.participantDisconnected", { username: label }));
         };
 
         const onSessionExpired = () => {

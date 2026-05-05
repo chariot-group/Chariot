@@ -961,6 +961,8 @@
       "copyError": "Impossible de copier le code",
       "copyNotSupported": "La copie n'est pas supportée par ce navigateur",
       "participantLeftViewingCharacter": "Le joueur de ce personnage a quitté la session.",
+      "participantLeftSession": "{username} a quitté la session.",
+      "participantDisconnected": "{username} s'est déconnecté de la session.",
       "sheetEditedByGm": "Le maître du jeu a modifié votre fiche personnage."
     },
     "title": "Session",

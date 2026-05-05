@@ -240,25 +240,55 @@ export default function SessionCharacterSyncClient() {
             }
         };
 
-        const onParticipantLeft = (payload: { userId: string; characterId?: string | null }) => {
+        const onParticipantDisconnected = ({
+            userId,
+            username,
+        }: {
+            userId: string;
+            username?: string;
+        }) => {
+            if (userId === userIdRef.current) return;
+            const list = participantsRef.current;
+            const next = list.map((p) =>
+                p.userId === userId ? { ...p, status: "disconnected" as const } : p,
+            );
+            dispatch(setSessionParticipants(next));
+            const label = username?.trim() || userId;
+            toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
+        };
+
+        const onParticipantLeft = (payload: {
+            userId: string;
+            username?: string;
+            characterId?: string | null;
+        }) => {
             dispatch(removeSessionParticipantByUserId(payload.userId));
 
             const myId = userIdRef.current;
-            if (!myId) return;
-            const amGm = participantsRef.current.some(
-                (p) => p.userId === myId && p.status === "gameMaster",
-            );
+            const amGm = myId
+                ? participantsRef.current.some((p) => p.userId === myId && p.status === "gameMaster")
+                : false;
             const leftCharId = payload.characterId?.trim() ?? "";
-            if (!amGm || !leftCharId) return;
-
             const viewing = extractCharacterIdFromSessionContextPath(pathnameRef.current);
+            const gmViewingDepartedCharacter = Boolean(amGm && leftCharId && viewing === leftCharId);
+
+            if (payload.userId !== myId) {
+                if (gmViewingDepartedCharacter) {
+                    toastRef.current.info(tRef.current("toast.participantLeftViewingCharacter"));
+                } else {
+                    const label = payload.username?.trim() || payload.userId;
+                    toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
+                }
+            }
+
+            if (!myId) return;
+            if (!amGm || !leftCharId) return;
             if (viewing !== leftCharId) return;
 
             const path = pathnameRef.current;
             const locale = path.split("/")[1] || "fr";
             const camp = campaignIdRef.current;
             const sessionCode = codeRef.current;
-            toastRef.current.info(tRef.current("toast.participantLeftViewingCharacter"));
             if (camp && sessionCode) {
                 routerRef.current.push(`/${locale}/campaigns/${camp}/session/${sessionCode}`);
             } else {
@@ -270,12 +300,14 @@ export default function SessionCharacterSyncClient() {
         socket.on("session:participant-character-changed", onParticipantCharacterChanged);
         socket.on("session:character-sheet-updated", onSheetUpdated);
         socket.on("session:participant-left", onParticipantLeft);
+        socket.on("session:participant-disconnected", onParticipantDisconnected);
 
         return () => {
             socket.off("session:participant-joined", onParticipantJoined);
             socket.off("session:participant-character-changed", onParticipantCharacterChanged);
             socket.off("session:character-sheet-updated", onSheetUpdated);
             socket.off("session:participant-left", onParticipantLeft);
+            socket.off("session:participant-disconnected", onParticipantDisconnected);
         };
     }, [shouldConnect, code, token, isOnSessionLobbyPage, dispatch]);
 

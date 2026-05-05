@@ -330,6 +330,28 @@ describe('SessionGateway', () => {
             const client = makeSocket({ user: undefined });
             expect(() => gateway.handleDisconnect(client)).not.toThrow();
         });
+
+        it('should emit participant-disconnected immediately via server.to and persist async', () => {
+            let resolveDisconnect: () => void = () => {};
+            const disconnectPromise = new Promise<void>((res) => {
+                resolveDisconnect = res;
+            });
+            mockSessionService.disconnectParticipant.mockReturnValue(disconnectPromise);
+
+            const sessionRoomIds = new Set<string>(['sess-uuid-1']);
+            const client = makeSocket({ sessionRoomIds });
+
+            gateway.handleDisconnect(client);
+
+            expect(mockServer.to).toHaveBeenCalledWith('sess-uuid-1');
+            expect(mockRoomEmit).toHaveBeenCalledWith('session:participant-disconnected', {
+                userId: 'user-uuid-1',
+                username: 'testuser',
+            });
+            expect(mockSessionService.disconnectParticipant).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1');
+
+            resolveDisconnect();
+        });
     });
 
     // ── handleCreateSession ───────────────────────────────────────────────────
@@ -424,10 +446,7 @@ describe('SessionGateway', () => {
             });
             mockSessionService.leave.mockResolvedValue(session);
 
-            const participantLeftEmit = jest.fn();
-            const client = makeSocket({
-                to: jest.fn().mockReturnValue({ emit: participantLeftEmit }),
-            });
+            const client = makeSocket();
             const data = { sessionId: 'sess-uuid-1' };
 
             await gateway.handleLeaveSession(client, data);
@@ -435,7 +454,8 @@ describe('SessionGateway', () => {
             expect(mockSessionService.findParticipants).toHaveBeenCalledWith('sess-uuid-1');
             expect(mockSessionService.leave).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1');
             expect(client.leave).toHaveBeenCalledWith('sess-uuid-1');
-            expect(participantLeftEmit).toHaveBeenCalledWith('session:participant-left', {
+            expect(mockServer.to).toHaveBeenCalledWith('sess-uuid-1');
+            expect(mockRoomEmit).toHaveBeenCalledWith('session:participant-left', {
                 userId: 'user-uuid-1',
                 username: 'testuser',
                 characterId: 'char-99',
