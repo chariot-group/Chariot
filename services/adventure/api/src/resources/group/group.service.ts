@@ -320,7 +320,7 @@ export class GroupService {
       const deletionDate = new Date();
       group.deletedAt = deletionDate;
 
-      const characterIds = (group.characters || []).map((character) => {
+      const rawCharacterIds = (group.characters || []).map((character) => {
         const maybeCharacter = character as { _id?: unknown };
         if (
           typeof maybeCharacter === 'object' &&
@@ -331,6 +331,11 @@ export class GroupService {
         }
         return character;
       });
+      const characterIds: Types.ObjectId[] = rawCharacterIds.map((cid) =>
+        cid instanceof Types.ObjectId
+          ? cid
+          : new Types.ObjectId(String(cid)),
+      );
 
       if (characterIds.length > 0) {
         await this.characterModel

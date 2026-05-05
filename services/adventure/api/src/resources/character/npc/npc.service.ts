@@ -34,6 +34,14 @@ export class NpcService {
   private readonly SERVICE_NAME = NpcService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
 
+  private groupRefToIdString(
+    ref: Types.ObjectId | Pick<GroupDocument, '_id'>,
+  ): string {
+    return ref instanceof Types.ObjectId
+      ? ref.toString()
+      : ref._id.toString();
+  }
+
   private async validateGroupRelations(groupIds: string[]): Promise<void> {
     if (!groupIds || groupIds.length === 0) return;
 
@@ -145,12 +153,14 @@ export class NpcService {
           throw new GoneException(message);
         }
       } else {
-        groups = npc.groups.map((group) => group._id.toString());
+        groups = npc.groups.map((group) => this.groupRefToIdString(group));
       }
 
-      const groupsToRemove: Group[] = npc.groups.filter(
+      const groupsToRemove = npc.groups.filter(
         (oldGroups) =>
-          !groups.some((newGroups) => newGroups === oldGroups._id.toString()),
+          !groups.some(
+            (newGroups) => newGroups === this.groupRefToIdString(oldGroups),
+          ),
       );
 
       const start: number = Date.now();
