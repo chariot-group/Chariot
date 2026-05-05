@@ -193,7 +193,11 @@ export class PlayerController {
   async update(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
     @Body() updatePlayerDto: UpdatePlayerDto,
-    @Req() request: { user: { keycloakId: string }; headers: { authorization?: string } },
+    @Req()
+    request: {
+      user: { keycloakId: string };
+      headers: { authorization?: string };
+    },
     @Query('sessionCode') sessionCode?: string,
   ): Promise<IResponse<Character>> {
     await this.validateResource(id);

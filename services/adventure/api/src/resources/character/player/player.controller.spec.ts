@@ -94,7 +94,10 @@ describe('PlayerController - createPlayer', () => {
           useValue: {}, // not used here
         },
         { provide: getModelToken(Group.name), useValue: groupModel },
-        { provide: SessionAccessService, useValue: { assertGmEdit: jest.fn() } },
+        {
+          provide: SessionAccessService,
+          useValue: { assertGmEdit: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -189,7 +192,9 @@ describe('PlayerController - update', () => {
       exec: jest.fn().mockResolvedValue({ _id: groupId, deletedAt: null }),
     };
 
-    const sessionAccess = { assertGmEdit: jest.fn().mockResolvedValue(undefined) };
+    const sessionAccess = {
+      assertGmEdit: jest.fn().mockResolvedValue(undefined),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PlayerController],
@@ -260,7 +265,12 @@ describe('PlayerController - update', () => {
     };
 
     await expect(
-      controller.update(playerId, invalidUpdateDto, requestMock as any, undefined),
+      controller.update(
+        playerId,
+        invalidUpdateDto,
+        requestMock as any,
+        undefined,
+      ),
     ).rejects.toThrow(BadRequestException);
   });
 
@@ -310,7 +320,10 @@ describe('PlayerController - validateResource', () => {
         { provide: CharacterService, useValue: {} },
         { provide: getModelToken(Character.name), useValue: characterModel },
         { provide: getModelToken(Group.name), useValue: {} },
-        { provide: SessionAccessService, useValue: { assertGmEdit: jest.fn() } },
+        {
+          provide: SessionAccessService,
+          useValue: { assertGmEdit: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -361,7 +374,10 @@ describe('PlayerController - validateGroupRelations', () => {
         { provide: CharacterService, useValue: {} },
         { provide: getModelToken(Character.name), useValue: {} },
         { provide: getModelToken(Group.name), useValue: groupModel },
-        { provide: SessionAccessService, useValue: { assertGmEdit: jest.fn() } },
+        {
+          provide: SessionAccessService,
+          useValue: { assertGmEdit: jest.fn() },
+        },
       ],
     }).compile();
 

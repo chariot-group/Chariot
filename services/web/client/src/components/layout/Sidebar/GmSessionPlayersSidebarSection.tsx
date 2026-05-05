@@ -68,9 +68,11 @@ export default function GmSessionPlayersSidebarSection() {
       .join("\u001f");
   }, [presenceRoster]);
 
-  /** Dernière liste participants — synchro pendant le rendu pour que les effets voient toujours le roster aligné avec le store. */
+  /** Dernière liste participants — alignée sur le store après le commit (voir effets roster). */
   const participantsRef = React.useRef(participants);
-  participantsRef.current = participants;
+  React.useLayoutEffect(() => {
+    participantsRef.current = participants;
+  }, [participants]);
 
   const rosterRemoteVersionsKey = React.useMemo(() => {
     const roster = participants.filter(
@@ -83,7 +85,7 @@ export default function GmSessionPlayersSidebarSection() {
       })
       .sort()
       .join("|");
-  }, [rosterStableKey, remoteVersions, participants]);
+  }, [remoteVersions, participants]);
 
   /** Retirer labels des joueurs qui ne sont plus au roster (évite d’afficher un UUID fantôme). */
   React.useEffect(() => {
@@ -164,7 +166,15 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [contextMode, isGm, isInSession, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
+  }, [
+    contextMode,
+    isGm,
+    isInSession,
+    remoteVersions,
+    rosterRemoteVersionsKey,
+    rosterStableKey,
+    sessionCode,
+  ]);
 
   /** Chargement initial / changement de roster : requêtes espacées pour rester sous le rate limit gateway. */
   React.useEffect(() => {

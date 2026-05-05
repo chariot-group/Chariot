@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } 
 import CharacterService from '@/services/CharacterService';
 import { Character } from '@/types/character';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectCharacterSheetRemoteVersions } from '@/store/slices/sessionSlice';
 import {
     fetchCharactersWithoutGroupStart,
     fetchCharactersWithoutGroupSuccess,

@@ -69,6 +69,13 @@ export function useSessionSocket({
     const tokensByUserRef = useRef(tokensByUser);
     const campaignNameRef = useRef(campaignName);
     const currentUserRef = useRef(currentUser);
+    const localeRef = useRef(locale);
+    const routerRef = useRef(router);
+    const toastRef = useRef(toast);
+    const tRef = useRef(t);
+    const setParticipantsRef = useRef(setParticipants);
+    const setParticipantNamesRef = useRef(setParticipantNames);
+    const setTokensByUserRef = useRef(setTokensByUser);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
     const [isLaunching, setIsLaunching] = useState(false);
@@ -90,6 +97,16 @@ export function useSessionSocket({
     useEffect(() => {
         currentUserRef.current = currentUser;
     }, [currentUser]);
+
+    useEffect(() => {
+        localeRef.current = locale;
+        routerRef.current = router;
+        toastRef.current = toast;
+        tRef.current = t;
+        setParticipantsRef.current = setParticipants;
+        setParticipantNamesRef.current = setParticipantNames;
+        setTokensByUserRef.current = setTokensByUser;
+    }, [locale, router, toast, t, setParticipants, setParticipantNames, setTokensByUser]);
 
     // Sync session state to Redux — fusion avec le store pour ne pas écraser les MAJ WS/layout (sidebar MJ).
     useEffect(() => {
@@ -155,7 +172,7 @@ export function useSessionSocket({
                 }),
             }).catch(() => {});
             // #endregion
-            setParticipants((prev) => {
+            setParticipantsRef.current((prev) => {
                 const exists = prev.some((p) => p.userId === userId);
                 if (exists) {
                     return prev.map((p) => (p.userId === userId ? { ...p, characterId } : p));
@@ -191,7 +208,7 @@ export function useSessionSocket({
                     participantsRef.current,
                 )
             ) {
-                toast.info(t("toast.sheetEditedByGm"));
+                toastRef.current.info(tRef.current("toast.sheetEditedByGm"));
             }
         };
 
@@ -206,7 +223,7 @@ export function useSessionSocket({
             characterId: string;
             status: "connected" | "gameMaster" | "disconnected";
         }) => {
-            setParticipants((prev) => {
+            setParticipantsRef.current((prev) => {
                 const exists = prev.some((p) => p.userId === userId);
                 if (exists) {
                     return prev.map((p) =>
@@ -227,10 +244,10 @@ export function useSessionSocket({
                     },
                 ];
             });
-            setParticipantNames((prev) => (prev[userId] ? prev : { ...prev, [userId]: username || userId }));
+            setParticipantNamesRef.current((prev) => (prev[userId] ? prev : { ...prev, [userId]: username || userId }));
             try {
                 const user = await UserService.getUserById(userId);
-                setParticipantNames((prev) => ({
+                setParticipantNamesRef.current((prev) => ({
                     ...prev,
                     [userId]: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.username,
                 }));
@@ -256,9 +273,9 @@ export function useSessionSocket({
             characterId?: string | null;
         }) => {
             if (userId === currentUserRef.current?.keycloakId) return;
-            setParticipants((prev) => prev.filter((p) => p.userId !== userId));
+            setParticipantsRef.current((prev) => prev.filter((p) => p.userId !== userId));
             const label = username?.trim() || userId;
-            toast.info(t("toast.participantLeftSession", { username: label }));
+            toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
         };
 
         const onParticipantDisconnected = ({
@@ -269,11 +286,11 @@ export function useSessionSocket({
             username?: string;
         }) => {
             if (userId === currentUserRef.current?.keycloakId) return;
-            setParticipants((prev) =>
+            setParticipantsRef.current((prev) =>
                 prev.map((p) => (p.userId === userId ? { ...p, status: "disconnected" as const } : p)),
             );
             const label = username?.trim() || userId;
-            toast.info(t("toast.participantDisconnected", { username: label }));
+            toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
         };
 
         const onSessionExpired = () => {
@@ -285,7 +302,7 @@ export function useSessionSocket({
         };
 
         const onTokenUpdated = ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
-            setTokensByUser(updatedTokens);
+            setTokensByUserRef.current(updatedTokens);
         };
 
         const onSessionLaunched = async (payload?: {
@@ -315,10 +332,10 @@ export function useSessionSocket({
                 ? mapParticipantsFromSessionLaunchedPayload(rawList, code)
                 : null;
             if (mappedParticipants) {
-                setParticipants(mappedParticipants);
+                setParticipantsRef.current(mappedParticipants);
             }
 
-            toast.success(t("toast.sessionLaunched"));
+            toastRef.current.success(tRef.current("toast.sessionLaunched"));
 
             const myTokens = userId ? (tokensByUserRef.current[userId] ?? 0) : 0;
             if (userId && myTokens >= 1) {
@@ -334,7 +351,7 @@ export function useSessionSocket({
                 (userId != null ? mappedParticipants?.find((p) => p.userId === userId)?.characterId : undefined);
 
             if (charIdForNav) {
-                router.push(`/${locale}/characters/${charIdForNav}`);
+                routerRef.current.push(`/${localeRef.current}/characters/${charIdForNav}`);
             }
         };
 

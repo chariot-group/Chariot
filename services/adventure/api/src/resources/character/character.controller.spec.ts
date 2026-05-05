@@ -24,7 +24,10 @@ describe('CharacterController - findAll', () => {
           provide: getModelToken(Character.name),
           useValue: {},
         },
-        { provide: SessionAccessService, useValue: { assertRosterRead: jest.fn() } },
+        {
+          provide: SessionAccessService,
+          useValue: { assertRosterRead: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -71,7 +74,9 @@ describe('CharacterController - findOne', () => {
     characterModel = {
       findById: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
-      exec: jest.fn().mockResolvedValue({ deletedAt: null, createdBy: 'userId123' }),
+      exec: jest
+        .fn()
+        .mockResolvedValue({ deletedAt: null, createdBy: 'userId123' }),
     };
 
     const sessionAccessService = {
@@ -95,7 +100,11 @@ describe('CharacterController - findOne', () => {
     characterService.findOne.mockResolvedValue(mockData);
     const mockReq = { user: { keycloakId: 'userId123' }, headers: {} };
 
-    const result = await controller.findOne(characterId, mockReq as any, undefined);
+    const result = await controller.findOne(
+      characterId,
+      mockReq as any,
+      undefined,
+    );
 
     expect(characterModel.findById).toHaveBeenCalled();
     expect(characterService.findOne).toHaveBeenCalledWith(characterId);
@@ -125,7 +134,10 @@ describe('CharacterController - remove', () => {
       providers: [
         { provide: CharacterService, useValue: characterService },
         { provide: getModelToken(Character.name), useValue: characterModel },
-        { provide: SessionAccessService, useValue: { assertRosterRead: jest.fn() } },
+        {
+          provide: SessionAccessService,
+          useValue: { assertRosterRead: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -160,7 +172,10 @@ describe('CharacterController - validateResource', () => {
       providers: [
         { provide: CharacterService, useValue: {} },
         { provide: getModelToken(Character.name), useValue: characterModel },
-        { provide: SessionAccessService, useValue: { assertRosterRead: jest.fn() } },
+        {
+          provide: SessionAccessService,
+          useValue: { assertRosterRead: jest.fn() },
+        },
       ],
     }).compile();
 

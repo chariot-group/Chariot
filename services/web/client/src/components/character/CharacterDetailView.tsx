@@ -47,17 +47,29 @@ export default function CharacterDetailView({
   const currentUser = useAppSelector(selectUser);
   const sessionCodeRedux = useAppSelector(selectSessionCode);
   const sessionCodeFromUrl = searchParams.get("sessionCode");
-  const [playedByLabel, setPlayedByLabel] = useState<string | null>(null);
+  const currentUserKeycloakId = currentUser?.keycloakId ?? null;
 
-  const isGmViewingPlayerSheet = useMemo(
-    () =>
-      contextMode === "gm" &&
-      isPlayer(character) &&
-      !!currentUser?.keycloakId &&
-      character.createdBy != null &&
-      character.createdBy !== currentUser.keycloakId,
-    [character, contextMode, currentUser?.keycloakId],
-  );
+  const isGmViewingPlayerSheet =
+    contextMode === "gm" &&
+    isPlayer(character) &&
+    currentUserKeycloakId != null &&
+    character.createdBy != null &&
+    character.createdBy !== currentUserKeycloakId;
+
+  const playedBySubjectId =
+    isGmViewingPlayerSheet && character.createdBy != null ? String(character.createdBy) : null;
+
+  const [resolvedPlayedBy, setResolvedPlayedBy] = useState<{
+    createdByKey: string;
+    label: string;
+  } | null>(null);
+
+  const playedByLabel =
+    playedBySubjectId != null &&
+    resolvedPlayedBy != null &&
+    resolvedPlayedBy.createdByKey === playedBySubjectId
+      ? resolvedPlayedBy.label
+      : null;
 
   const canEditAsGm = useMemo(
     () =>
@@ -104,25 +116,26 @@ export default function CharacterDetailView({
   const { isDirty } = useFormState({ control: form.control });
 
   useEffect(() => {
-    if (!isGmViewingPlayerSheet || !character.createdBy) {
-      setPlayedByLabel(null);
+    if (!playedBySubjectId) {
       return;
     }
     let cancelled = false;
-    void UserService.getUserById(character.createdBy)
+    void UserService.getUserById(playedBySubjectId)
       .then((u) => {
         if (!cancelled) {
           const label = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.username;
-          setPlayedByLabel(label);
+          setResolvedPlayedBy({ createdByKey: playedBySubjectId, label });
         }
       })
       .catch(() => {
-        if (!cancelled) setPlayedByLabel(null);
+        if (!cancelled) {
+          setResolvedPlayedBy(null);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [isGmViewingPlayerSheet, character.createdBy]);
+  }, [playedBySubjectId]);
 
   useEffect(() => {
     if (!showEditControls && isEditing) {

@@ -38,12 +38,7 @@ export class SessionAccessService {
     sessionCode: string,
     characterId: string,
   ): Promise<void> {
-    await this.postValidate(
-      authHeader,
-      sessionCode,
-      characterId,
-      'gm-edit',
-    );
+    await this.postValidate(authHeader, sessionCode, characterId, 'gm-edit');
   }
 
   private dedupeKey(
@@ -118,7 +113,9 @@ export class SessionAccessService {
       }
       const message = `Session service unreachable: ${(err as Error).message}`;
       this.logger.error(message, (err as Error).stack);
-      throw new ServiceUnavailableException('Could not validate session access');
+      throw new ServiceUnavailableException(
+        'Could not validate session access',
+      );
     }
   }
 }

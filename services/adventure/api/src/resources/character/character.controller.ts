@@ -139,7 +139,8 @@ export class CharacterController {
   @Get(':id')
   async findOne(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
-    @Req() req: { user: { keycloakId: string }; headers: { authorization?: string } },
+    @Req()
+    req: { user: { keycloakId: string }; headers: { authorization?: string } },
     @Query('sessionCode') sessionCode?: string,
   ): Promise<IResponse<Character>> {
     await this.validateResource(id);
