@@ -21,26 +21,46 @@ const campaignSlice = createSlice({
             state.loading = true;
             state.error = null;
         },
-        fetchCampaignsSuccess: (state, action: PayloadAction<{ campaigns: Campaign[]; total: number }>) => {
-            state.campaigns = action.payload.campaigns;
-            state.total = action.payload.total;
-            state.hasMore = action.payload.campaigns.length < action.payload.total;
+        fetchCampaignsSuccess: (
+            state,
+            action: PayloadAction<{ campaigns: Campaign[]; total?: number; pageSize: number }>,
+        ) => {
+            const { campaigns, total, pageSize } = action.payload;
+            state.campaigns = campaigns;
             state.loading = false;
             state.error = null;
             state.lastFetch = Date.now();
             state.currentPage = 1;
+            if (typeof total === 'number' && Number.isFinite(total) && total >= 0) {
+                state.total = total;
+                state.hasMore = campaigns.length < total;
+            } else {
+                state.total = campaigns.length;
+                state.hasMore = campaigns.length >= pageSize;
+            }
         },
         loadMoreCampaignsStart: (state) => {
             state.loadingMore = true;
             state.error = null;
         },
-        loadMoreCampaignsSuccess: (state, action: PayloadAction<{ campaigns: Campaign[]; total: number }>) => {
-            state.campaigns = [...state.campaigns, ...action.payload.campaigns];
-            state.total = action.payload.total;
-            state.hasMore = state.campaigns.length < action.payload.total;
+        loadMoreCampaignsSuccess: (
+            state,
+            action: PayloadAction<{ campaigns: Campaign[]; total?: number; pageSize: number }>,
+        ) => {
+            const { campaigns: incoming, total, pageSize } = action.payload;
+            const existingIds = new Set(state.campaigns.map((c) => c._id));
+            const batch = incoming.filter((c) => !existingIds.has(c._id));
+            state.campaigns = [...state.campaigns, ...batch];
             state.loadingMore = false;
             state.error = null;
             state.currentPage += 1;
+            if (typeof total === 'number' && Number.isFinite(total) && total >= 0) {
+                state.total = total;
+                state.hasMore = state.campaigns.length < total;
+            } else {
+                state.total = state.campaigns.length;
+                state.hasMore = batch.length >= pageSize && batch.length > 0;
+            }
         },
         fetchCampaignsFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;

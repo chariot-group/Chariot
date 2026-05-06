@@ -16,6 +16,7 @@ import {
     selectLastFetch,
     invalidateCache,
     clearCampaigns,
+    upsertCampaign,
 } from '@/store/slices/campaignSlice';
 import { setSelectedCampaign, selectSelectedCampaignId } from '@/store/slices/campaignContextSlice';
 import { selectContextMode } from '@/store/slices/environmentSlice';
@@ -58,19 +59,25 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
     const fetchCampaigns = useCallback(async (params?: { sort?: string; label?: string }) => {
         try {
             dispatch(fetchCampaignsStart());
-            const data = await CampaignService.getCampaigns({
+            const result = await CampaignService.getCampaigns({
                 ...params,
                 page: 1,
                 offset: pageSize,
             });
-            dispatch(fetchCampaignsSuccess({ campaigns: data, total: data.length }));
+            dispatch(
+                fetchCampaignsSuccess({
+                    campaigns: result.data,
+                    total: result.totalItems,
+                    pageSize,
+                }),
+            );
 
             // Auto-sélectionner la première campagne si option activée, aucune campagne sélectionnée, et en mode GM
-            if (autoSelectFirst && data.length > 0 && !selectedCampaignId && contextMode === 'gm') {
-                dispatch(setSelectedCampaign(data[0]._id));
+            if (autoSelectFirst && result.data.length > 0 && !selectedCampaignId && contextMode === 'gm') {
+                dispatch(setSelectedCampaign(result.data[0]._id));
             }
 
-            return data;
+            return result.data;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch campaigns';
             dispatch(fetchCampaignsFailure(errorMessage));
@@ -86,19 +93,25 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
 
         try {
             dispatch(loadMoreCampaignsStart());
-            const data = await CampaignService.getCampaigns({
+            const result = await CampaignService.getCampaigns({
                 ...params,
                 page: currentPage + 1,
                 offset: pageSize,
             });
-            dispatch(loadMoreCampaignsSuccess({ campaigns: data, total: total + data.length }));
-            return data;
+            dispatch(
+                loadMoreCampaignsSuccess({
+                    campaigns: result.data,
+                    total: result.totalItems,
+                    pageSize,
+                }),
+            );
+            return result.data;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to load more campaigns';
             dispatch(fetchCampaignsFailure(errorMessage));
             throw err;
         }
-    }, [dispatch, currentPage, pageSize, hasMore, loadingMore, total]);
+    }, [dispatch, currentPage, pageSize, hasMore, loadingMore]);
 
     /**
      * Rafraîchit les campagnes en invalidant d'abord le cache
@@ -117,12 +130,11 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
     }, [dispatch]);
 
     /**
-     * Crée une nouvelle campagne et met à jour le cache
+     * Crée une nouvelle campagne et l'insère en tête de liste sans vider les pages déjà chargées.
      */
     const createCampaign = useCallback(async (data: { label: string; groups: { active: string[]; archived: string[] } }): Promise<Campaign> => {
         const newCampaign = await CampaignService.createCampaign(data);
-        // Invalider le cache pour forcer un rafraîchissement
-        dispatch(invalidateCache());
+        dispatch(upsertCampaign(newCampaign));
         return newCampaign;
     }, [dispatch]);
 

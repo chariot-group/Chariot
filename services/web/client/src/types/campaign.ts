@@ -57,11 +57,13 @@ export interface CampaignState {
     total: number;
 }
 
+/** Réponse brute attendue pour GET /campaigns (service adventure → gateway). */
 export interface PaginatedCampaignsResponse {
     data: Campaign[];
-    meta: {
-        total: number;
+    pagination?: {
+        totalItems: number;
         page: number;
         offset: number;
     };
+    message?: string;
 }

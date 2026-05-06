@@ -44,6 +44,8 @@
     "returnToSheet": "Return to Character Sheet",
     "returnToSession": "Return to Session",
     "selectCampaign": "Select campaign",
+    "loadMoreCampaigns": "Load more",
+    "loadMoreCampaignsAria": "Load more campaigns",
     "selectedCampaign": "Selected campaign",
     "selected": "selected",
     "createCampaignDialogTitle": "Create a New Campaign",

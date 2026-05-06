@@ -66,8 +66,9 @@ class NavigationService {
         try {
             const result = await CampaignService.getCampaigns({ page: 1, offset: 10 });
             dispatch(fetchCampaignsSuccess({
-                campaigns: result,
-                total: result.length
+                campaigns: result.data,
+                total: result.totalItems,
+                pageSize: 10,
             }));
         } catch (error) {
             dispatch(fetchCampaignsFailure(
