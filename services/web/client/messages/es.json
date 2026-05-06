@@ -844,7 +844,12 @@
         },
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",
-        "resultsMore": "+"
+        "resultsMore": "+",
+        "preview": {
+          "availableLanguages": "También disponible en",
+          "previousLanguage": "Volver al idioma anterior",
+          "previousLanguageButton": "Volver"
+        }
       },
       "monsterCodexDialog": {
         "title": "Buscar un monstruo en Codex",
@@ -874,7 +879,10 @@
           "calculatedArmorClass": "CA calculada",
           "sourceArmorClass": "fuente: {value}",
           "hitPointsDice": "Dados de puntos de golpe",
-          "estimatedProficiencyBonus": "Bonificación de competencia (estimada)"
+          "estimatedProficiencyBonus": "Bonificación de competencia (estimada)",
+          "availableLanguages": "También disponible en",
+          "previousLanguage": "Volver al idioma anterior",
+          "previousLanguageButton": "Volver"
         }
       }
     }

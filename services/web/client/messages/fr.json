@@ -848,7 +848,12 @@
         },
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
-        "resultsMore": "+"
+        "resultsMore": "+",
+        "preview": {
+          "availableLanguages": "Autres langues",
+          "previousLanguage": "Revenir à la langue précédente",
+          "previousLanguageButton": "Retour"
+        }
       },
       "monsterCodexDialog": {
         "title": "Rechercher un monstre dans Codex",
@@ -878,7 +883,10 @@
           "calculatedArmorClass": "CA calculée",
           "sourceArmorClass": "source: {value}",
           "hitPointsDice": "Dés de points de vie",
-          "estimatedProficiencyBonus": "Bonus de maîtrise (estimé)"
+          "estimatedProficiencyBonus": "Bonus de maîtrise (estimé)",
+          "availableLanguages": "Autres langues",
+          "previousLanguage": "Revenir à la langue précédente",
+          "previousLanguageButton": "Retour"
         }
       }
     }
