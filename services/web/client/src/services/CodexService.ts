@@ -730,14 +730,32 @@ class CodexService {
                     if (!entry.spells) continue;
                     entry.spells = entry.spells.map((spell) => {
                         const id = spell as string;
-                        if (id && spellMap.has(id)) {
-                            const spellItem = spellMap.get(id)!;
-                            if (entry.spellSlotsByUses) {
-                                spellItem.translations[lang].usesPerDay = entry.spellSlotsByUses![id] ?? null;
-                            }
+                        if (!(id && spellMap.has(id))) {
+                            return spell;
+                        }
+                        const spellItem = spellMap.get(id)!;
+
+                        const slotsByUses = entry.spellSlotsByUses;
+                        if (!slotsByUses || typeof slotsByUses !== 'object') {
                             return spellItem;
                         }
-                        return spell;
+
+                        // Monster locale may list a language the spell document does not translate (e.g. fr vs en-only spell).
+                        const spellLang =
+                            spellItem.translations[lang] != null
+                                ? lang
+                                : spellItem.translations['en'] != null
+                                  ? 'en'
+                                  : spellItem.languages.find((l) => spellItem.translations[l] != null);
+
+                        if (!spellLang || spellItem.translations[spellLang] == null) {
+                            return spellItem;
+                        }
+
+                        // Clone so we do not mutate the shared spellMap entry (used across all monsters in the list).
+                        const merged = JSON.parse(JSON.stringify(spellItem)) as CodexSpellItem;
+                        merged.translations[spellLang].usesPerDay = slotsByUses[id] ?? null;
+                        return merged;
                     }) as typeof entry.spells;
                 }
             }

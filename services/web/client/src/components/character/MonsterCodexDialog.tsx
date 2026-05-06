@@ -14,6 +14,7 @@ import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
+import { codexLocaleFlagEmoji } from "@/utils/codexLocale.utils";
 import React from "react";
 
 interface MonsterCodexDialogProps {
@@ -25,12 +26,15 @@ interface MonsterCodexDialogProps {
 function MonsterResultItem({
   monsterItem,
   selectedLang,
+  pinnedLang,
   isSelected,
   onMonsterClick,
   tDialog,
 }: {
   monsterItem: CodexMonsterItem;
   selectedLang: string | null;
+  /** En mode « toutes les langues », une ligne par langue : pas de sélecteur sur la carte */
+  pinnedLang?: string | null;
   isSelected: boolean;
   onMonsterClick: (monster: CodexMonsterItem, lang: string) => void;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
@@ -38,7 +42,8 @@ function MonsterResultItem({
   const [overrideLang, setOverrideLang] = useState<string | null>(null);
 
   const displayLang =
-    overrideLang ||
+    pinnedLang ??
+    overrideLang ??
     (selectedLang && monsterItem.languages.includes(selectedLang) ? selectedLang : monsterItem.languages[0] || "en");
 
   const translation = monsterItem.translations[displayLang];
@@ -63,13 +68,29 @@ function MonsterResultItem({
       }`}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {tDialog("monsterInfo", {
-                cr: formatChallengeRating(translation.challenge?.challengeRating),
-                type: translation.profile?.type,
-              })}
+          <div className="flex flex-1 min-w-0 gap-2 items-start">
+            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none"
+                    aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
+                    {codexLocaleFlagEmoji(pinnedLang)}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{tDialog(`languageFilter.${pinnedLang}`)}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {tDialog("monsterInfo", {
+                  cr: formatChallengeRating(translation.challenge?.challengeRating),
+                  type: translation.profile?.type,
+                })}
+              </div>
             </div>
           </div>
           <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -101,7 +122,7 @@ function MonsterResultItem({
             </div>
           </div>
         </div>
-        {monsterItem.languages.length > 1 && (
+        {!pinnedLang && monsterItem.languages.length > 1 && (
           <Select
             value={displayLang}
             onValueChange={handleLangChange}>
@@ -143,7 +164,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<CodexMonsterItem[]>([]);
   const [selectedMonster, setSelectedMonster] = useState<Partial<NPC> | null>(null);
-  const [selectedMonsterId, setSelectedMonsterId] = useState<string | null>(null);
+  /** Clé `${_id}:${lang}` pour distinguer la même entrée codex en plusieurs langues */
+  const [selectedMonsterKey, setSelectedMonsterKey] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -228,7 +250,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setSelectedLang(userLocale);
       setSearchResults([]);
       setSelectedMonster(null);
-      setSelectedMonsterId(null);
+      setSelectedMonsterKey(null);
       setShowMobileDetails(false);
       setError(null);
       setCurrentPage(1);
@@ -251,7 +273,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   const handleMonsterClick = (codexMonsterItem: CodexMonsterItem, lang: string) => {
     const convertedMonster = CodexService.convertToChariotNPC(codexMonsterItem, lang);
     setSelectedMonster(convertedMonster);
-    setSelectedMonsterId(codexMonsterItem._id);
+    setSelectedMonsterKey(`${codexMonsterItem._id}:${lang}`);
     setShowMobileDetails(true);
   };
 
@@ -344,23 +366,37 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                   return (
                     <React.Fragment>
                       <div className="flex flex-col gap-2">
-                        {searchResults.map((monsterItem) => {
+                        {searchResults.flatMap((monsterItem) => {
                           if (selectedLang && !monsterItem.languages.includes(selectedLang)) {
-                            return null;
+                            return [];
                           }
 
-                          const isSelected = selectedMonsterId === monsterItem._id;
+                          if (selectedLang) {
+                            return [
+                              <MonsterResultItem
+                                key={`${monsterItem._id}-${selectedLang}`}
+                                monsterItem={monsterItem}
+                                selectedLang={selectedLang}
+                                isSelected={selectedMonsterKey === `${monsterItem._id}:${selectedLang}`}
+                                onMonsterClick={handleMonsterClick}
+                                tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                              />,
+                            ];
+                          }
 
-                          return (
-                            <MonsterResultItem
-                              key={`${monsterItem._id}-${selectedLang}`}
-                              monsterItem={monsterItem}
-                              selectedLang={selectedLang}
-                              isSelected={isSelected}
-                              onMonsterClick={handleMonsterClick}
-                              tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
-                            />
-                          );
+                          return monsterItem.languages
+                            .filter((lang: string) => monsterItem.translations[lang])
+                            .map((lang: string) => (
+                              <MonsterResultItem
+                                key={`${monsterItem._id}-${lang}`}
+                                monsterItem={monsterItem}
+                                selectedLang={selectedLang}
+                                pinnedLang={lang}
+                                isSelected={selectedMonsterKey === `${monsterItem._id}:${lang}`}
+                                onMonsterClick={handleMonsterClick}
+                                tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                              />
+                            ));
                         })}
                       </div>
                       {/* Bouton Charger plus */}
