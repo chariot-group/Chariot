@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NPC } from "@/types/character";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import type { Locale } from "@/i18n/request";
 import CodexService, { CodexMonsterItem } from "@/services/CodexService";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -134,6 +135,7 @@ function MonsterResultItem({
 }
 
 export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelected }: MonsterCodexDialogProps) {
+  const userLocale = useLocale() as Locale;
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
   const tMagic = useTranslations("characterDetail.magic");
 
@@ -154,7 +156,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
 
   // Recherche avec debounce
   const searchMonsters = useCallback(
-    async (query: string, page: number = 1, append: boolean = false) => {
+    async (query: string, page: number = 1, append: boolean = false, apiLang?: string | null) => {
+      const lang = apiLang !== undefined ? apiLang : selectedLang;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -171,7 +174,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setError(null);
 
       try {
-        const response = await CodexService.searchMonsters(query, selectedLang, page, ITEMS_PER_PAGE);
+        const response = await CodexService.searchMonsters(query, lang, page, ITEMS_PER_PAGE);
         const rawResults = response.data || [];
         const newResults = await CodexService.populateMonstersList(rawResults);
 
@@ -222,7 +225,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   useEffect(() => {
     if (open) {
       setSearchQuery("");
-      setSelectedLang(null);
+      setSelectedLang(userLocale);
       setSearchResults([]);
       setSelectedMonster(null);
       setSelectedMonsterId(null);
@@ -231,8 +234,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
-      // Charger les données initiales
-      searchMonsters("", 1, false);
+      // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
+      searchMonsters("", 1, false, userLocale);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);

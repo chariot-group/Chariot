@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spell } from "@/types/character";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import type { Locale } from "@/i18n/request";
 import CodexService, { CodexSpellItem } from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
@@ -147,6 +148,7 @@ export default function CodexSpellSearchDialog({
   onSpellSelected,
   accentColor,
 }: CodexSpellSearchDialogProps) {
+  const userLocale = useLocale() as Locale;
   const tMagic = useTranslations("characterDetail.magic");
   const tDialog = useTranslations("characterDetail.magic.codexDialog");
   const tClasses = useTranslations("classes");
@@ -168,7 +170,8 @@ export default function CodexSpellSearchDialog({
 
   // Recherche avec debounce
   const searchSpells = useCallback(
-    async (query: string, page: number = 1, append: boolean = false) => {
+    async (query: string, page: number = 1, append: boolean = false, apiLang?: string | null) => {
+      const lang = apiLang !== undefined ? apiLang : selectedLang;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -185,7 +188,7 @@ export default function CodexSpellSearchDialog({
       setError(null);
 
       try {
-        const response = await CodexService.searchSpells(query, selectedLang, page, ITEMS_PER_PAGE);
+        const response = await CodexService.searchSpells(query, lang, page, ITEMS_PER_PAGE);
         const newResults = response.data || [];
 
         // Vérifier si on a atteint la fin en comparant le nombre d'éléments reçus
@@ -235,7 +238,7 @@ export default function CodexSpellSearchDialog({
   useEffect(() => {
     if (open) {
       setSearchQuery("");
-      setSelectedLang(null);
+      setSelectedLang(userLocale);
       setSearchResults([]);
       setSelectedSpell(null);
       setSelectedSpellId(null);
@@ -244,8 +247,8 @@ export default function CodexSpellSearchDialog({
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
-      // Charger les données initiales
-      searchSpells("", 1, false);
+      // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
+      searchSpells("", 1, false, userLocale);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
