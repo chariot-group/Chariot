@@ -574,8 +574,7 @@ export default function CodexSpellSearchDialog({
             type="button"
             onClick={handleValidate}
             disabled={!selectedSpell}
-            style={{ backgroundColor: accentColor }}
-            className="text-white">
+            className="bg-purple hover:bg-purple/90 text-white">
             {tDialog("validate")}
           </Button>
         </DialogFooter>
