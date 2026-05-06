@@ -4,11 +4,23 @@ import {
     fetchGroupsStart,
     fetchGroupsSuccess,
     fetchGroupsFailure,
+    loadMoreActiveGroupsStart,
+    loadMoreActiveGroupsSuccess,
+    loadMoreArchivedGroupsStart,
+    loadMoreArchivedGroupsSuccess,
     selectActiveGroups,
     selectArchivedGroups,
     selectGroupsLoading,
+    selectGroupsLoadingMoreActive,
+    selectGroupsLoadingMoreArchived,
     selectGroupsError,
     selectOpenGroupId,
+    selectActiveGroupsPage,
+    selectArchivedGroupsPage,
+    selectActiveGroupsHasMore,
+    selectArchivedGroupsHasMore,
+    selectGroupsCampaignId,
+    selectGroupsLastFetch,
     setOpenGroup,
     clearGroups,
     invalidateCache as invalidateGroupCache,
@@ -23,6 +35,23 @@ import { usePathname, useRouter } from 'next/navigation';
 import { RootState } from '@/store';
 import { useStore } from 'react-redux';
 
+const GROUPS_PAGE_SIZE = 5;
+
+function normalizeGroupIdList(items: unknown[] | undefined): string[] {
+    if (!items || !Array.isArray(items)) {
+        return [];
+    }
+    return items
+        .map((item) => {
+            if (typeof item === 'string') return item;
+            if (typeof item === 'object' && item !== null && '_id' in item) {
+                return (item as { _id?: string })._id;
+            }
+            return undefined;
+        })
+        .filter((id: string | undefined): id is string => Boolean(id));
+}
+
 /**
  * Hook personnalisé pour gérer les groupes d'une campagne
  */
@@ -35,12 +64,20 @@ export function useGroups() {
     const activeGroups = useAppSelector(selectActiveGroups);
     const archivedGroups = useAppSelector(selectArchivedGroups);
     const loading = useAppSelector(selectGroupsLoading);
+    const loadingMoreActive = useAppSelector(selectGroupsLoadingMoreActive);
+    const loadingMoreArchived = useAppSelector(selectGroupsLoadingMoreArchived);
     const error = useAppSelector(selectGroupsError);
     const openGroupId = useAppSelector(selectOpenGroupId);
+    const activePage = useAppSelector(selectActiveGroupsPage);
+    const archivedPage = useAppSelector(selectArchivedGroupsPage);
+    const hasMoreActive = useAppSelector(selectActiveGroupsHasMore);
+    const hasMoreArchived = useAppSelector(selectArchivedGroupsHasMore);
+    const groupsCampaignId = useAppSelector(selectGroupsCampaignId);
+    const groupsLastFetch = useAppSelector(selectGroupsLastFetch);
     const { success, error: toastError } = useToast();
 
     /**
-     * Récupère les groupes de la campagne sélectionnée
+     * Récupère la première page des groupes actifs et archivés (en parallèle).
      */
     const fetchGroups = useCallback(async () => {
         if (!selectedCampaignId) {
@@ -48,61 +85,105 @@ export function useGroups() {
             return;
         }
 
+        const { groupsCampaignId: cachedCampaignId } = store.getState().group;
+        if (cachedCampaignId !== null && cachedCampaignId !== selectedCampaignId) {
+            dispatch(clearGroups());
+        }
+
         try {
             dispatch(fetchGroupsStart());
 
-            // Récupérer tous les groupes de la campagne
-            const allGroups = await GroupService.getGroupsByCampaign(selectedCampaignId);
+            const [activeRes, archivedRes] = await Promise.all([
+                GroupService.getGroupsByCampaign(selectedCampaignId, {
+                    page: 1,
+                    offset: GROUPS_PAGE_SIZE,
+                    type: 'active',
+                }),
+                GroupService.getGroupsByCampaign(selectedCampaignId, {
+                    page: 1,
+                    offset: GROUPS_PAGE_SIZE,
+                    type: 'archived',
+                }),
+            ]);
 
-            // Récupérer la campagne à jour depuis l'API pour obtenir les IDs des groupes actifs et archivés
-            const campaign = await CampaignService.getCampaignById(selectedCampaignId);
-
-            // Vérifier que campaign.groups existe et a les propriétés nécessaires
-            if (!campaign.groups || !campaign.groups.active || !campaign.groups.archived) {
-                console.warn('Campaign groups structure is invalid', campaign);
-                dispatch(fetchGroupsSuccess({ active: [], archived: [] }));
-                return;
-            }
-
-            // Les groupes peuvent être renvoyés soit comme IDs (string[]), soit comme objets peuplés ({ _id: string, ... })
-            const normalizeIds = (items: unknown[]): string[] =>
-                items
-                    .map((item) => {
-                        if (typeof item === 'string') return item;
-                        if (typeof item === 'object' && item !== null && '_id' in item) {
-                            return (item as { _id?: string })._id;
-                        }
-                        return undefined;
-                    })
-                    .filter((id: string | undefined): id is string => Boolean(id));
-
-            const campaignGroups = campaign.groups as { active?: unknown[]; archived?: unknown[] };
-            const activeGroupIds = normalizeIds(campaignGroups.active || []);
-            const archivedGroupIds = normalizeIds(campaignGroups.archived || []);
-
-            // Séparer les groupes actifs et archivés à partir des IDs normalisés
-            const active = allGroups.filter(group =>
-                activeGroupIds.includes(group._id)
+            dispatch(
+                fetchGroupsSuccess({
+                    campaignId: selectedCampaignId,
+                    active: activeRes.data,
+                    archived: archivedRes.data,
+                    pageSize: GROUPS_PAGE_SIZE,
+                    activeTotal: activeRes.totalItems,
+                    archivedTotal: archivedRes.totalItems,
+                }),
             );
-
-            const archived = allGroups.filter(group =>
-                archivedGroupIds.includes(group._id)
-            );
-
-            dispatch(fetchGroupsSuccess({ active, archived }));
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch groups';
             dispatch(fetchGroupsFailure(errorMessage));
             throw err;
         }
-    }, [dispatch, selectedCampaignId]);
+    }, [dispatch, selectedCampaignId, store]);
+
+    const loadMoreActiveGroups = useCallback(async () => {
+        if (!selectedCampaignId || !hasMoreActive || loadingMoreActive) {
+            return;
+        }
+
+        try {
+            dispatch(loadMoreActiveGroupsStart());
+            const result = await GroupService.getGroupsByCampaign(selectedCampaignId, {
+                page: activePage + 1,
+                offset: GROUPS_PAGE_SIZE,
+                type: 'active',
+            });
+            dispatch(
+                loadMoreActiveGroupsSuccess({
+                    groups: result.data,
+                    total: result.totalItems,
+                    pageSize: GROUPS_PAGE_SIZE,
+                }),
+            );
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to load more groups';
+            dispatch(fetchGroupsFailure(errorMessage));
+            throw err;
+        }
+    }, [dispatch, selectedCampaignId, hasMoreActive, loadingMoreActive, activePage]);
+
+    const loadMoreArchivedGroups = useCallback(async () => {
+        if (!selectedCampaignId || !hasMoreArchived || loadingMoreArchived) {
+            return;
+        }
+
+        try {
+            dispatch(loadMoreArchivedGroupsStart());
+            const result = await GroupService.getGroupsByCampaign(selectedCampaignId, {
+                page: archivedPage + 1,
+                offset: GROUPS_PAGE_SIZE,
+                type: 'archived',
+            });
+            dispatch(
+                loadMoreArchivedGroupsSuccess({
+                    groups: result.data,
+                    total: result.totalItems,
+                    pageSize: GROUPS_PAGE_SIZE,
+                }),
+            );
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to load more archives';
+            dispatch(fetchGroupsFailure(errorMessage));
+            throw err;
+        }
+    }, [dispatch, selectedCampaignId, hasMoreArchived, loadingMoreArchived, archivedPage]);
 
     /**
      * Toggle l'ouverture d'un groupe
      */
-    const toggleGroup = useCallback((groupId: string) => {
-        dispatch(setOpenGroup(groupId));
-    }, [dispatch]);
+    const toggleGroup = useCallback(
+        (groupId: string) => {
+            dispatch(setOpenGroup(groupId));
+        },
+        [dispatch],
+    );
 
     /**
      * Ferme tous les groupes
@@ -114,21 +195,22 @@ export function useGroups() {
     /**
      * Crée un nouveau groupe et invalide le cache
      */
-    const createGroup = useCallback(async (data: { label: string }): Promise<Group> => {
-        if (!selectedCampaignId) {
-            throw new Error('No campaign selected');
-        }
+    const createGroup = useCallback(
+        async (data: { label: string }): Promise<Group> => {
+            if (!selectedCampaignId) {
+                throw new Error('No campaign selected');
+            }
 
-        const newGroup = await GroupService.createGroup(selectedCampaignId, data);
-        // Invalider le cache pour forcer un rafraîchissement lors du prochain fetch
-        dispatch(invalidateGroupCache());
+            const newGroup = await GroupService.createGroup(selectedCampaignId, data);
+            dispatch(invalidateGroupCache());
 
-        return newGroup;
-    }, [selectedCampaignId, dispatch]);
+            return newGroup;
+        },
+        [selectedCampaignId, dispatch],
+    );
 
     /**
      * Rafraîchit les groupes en invalidant d'abord le cache
-     * (pattern aligné sur useCampaigns / refreshCampaigns)
      */
     const refreshGroups = useCallback(async () => {
         dispatch(invalidateGroupCache());
@@ -137,8 +219,7 @@ export function useGroups() {
     }, [dispatch, fetchGroups]);
 
     /**
-     * Archive un groupe (le déplace de active vers archived pour la campagne courante)
-     * Met ensuite à jour les listes localement pour une UX plus fluide.
+     * Archive un groupe : met à jour les IDs côté campagne (source de vérité complète), puis recharge la liste.
      */
     const archiveGroup = useCallback(
         async (groupId: string) => {
@@ -147,17 +228,23 @@ export function useGroups() {
             }
 
             try {
-                const activeIds = activeGroups.map(group => group._id);
-                const archivedIds = archivedGroups.map(group => group._id);
+                const campaign = await CampaignService.getCampaignById(selectedCampaignId);
+                if (!campaign.groups?.active || !campaign.groups?.archived) {
+                    console.warn('Campaign groups structure is invalid', campaign);
+                    return;
+                }
+
+                const activeIds = normalizeGroupIdList(campaign.groups.active as unknown[]);
+                const archivedIdsRaw = normalizeGroupIdList(campaign.groups.archived as unknown[]);
 
                 if (!activeIds.includes(groupId)) {
                     return;
                 }
 
-                const newActiveIds = activeIds.filter(id => id !== groupId);
-                const newArchivedIds = archivedIds.includes(groupId)
-                    ? archivedIds
-                    : [...archivedIds, groupId];
+                const newActiveIds = activeIds.filter((id) => id !== groupId);
+                const newArchivedIds = archivedIdsRaw.includes(groupId)
+                    ? archivedIdsRaw
+                    : [...archivedIdsRaw, groupId];
 
                 await CampaignService.updateCampaign(selectedCampaignId, {
                     groups: {
@@ -166,13 +253,7 @@ export function useGroups() {
                     },
                 });
 
-                const groupToArchive = activeGroups.find(group => group._id === groupId);
-                const newActiveGroups = activeGroups.filter(group => group._id !== groupId);
-                const newArchivedGroups = groupToArchive
-                    ? [...archivedGroups, groupToArchive]
-                    : archivedGroups;
-
-                dispatch(fetchGroupsSuccess({ active: newActiveGroups, archived: newArchivedGroups }));
+                await fetchGroups();
                 success('Group archived');
             } catch (e) {
                 const message = e instanceof Error ? e.message : 'Failed to archive group';
@@ -180,12 +261,11 @@ export function useGroups() {
                 throw e;
             }
         },
-        [selectedCampaignId, activeGroups, archivedGroups, dispatch, success, toastError],
+        [selectedCampaignId, fetchGroups, success, toastError],
     );
 
     /**
-     * Désarchive un groupe (le déplace de archived vers active pour la campagne courante)
-     * Met ensuite à jour les listes localement.
+     * Désarchive un groupe
      */
     const unarchiveGroup = useCallback(
         async (groupId: string) => {
@@ -194,17 +274,21 @@ export function useGroups() {
             }
 
             try {
-                const activeIds = activeGroups.map(group => group._id);
-                const archivedIds = archivedGroups.map(group => group._id);
+                const campaign = await CampaignService.getCampaignById(selectedCampaignId);
+                if (!campaign.groups?.active || !campaign.groups?.archived) {
+                    console.warn('Campaign groups structure is invalid', campaign);
+                    return;
+                }
+
+                const activeIds = normalizeGroupIdList(campaign.groups.active as unknown[]);
+                const archivedIds = normalizeGroupIdList(campaign.groups.archived as unknown[]);
 
                 if (!archivedIds.includes(groupId)) {
                     return;
                 }
 
-                const newArchivedIds = archivedIds.filter(id => id !== groupId);
-                const newActiveIds = activeIds.includes(groupId)
-                    ? activeIds
-                    : [...activeIds, groupId];
+                const newArchivedIds = archivedIds.filter((id) => id !== groupId);
+                const newActiveIds = activeIds.includes(groupId) ? activeIds : [...activeIds, groupId];
 
                 await CampaignService.updateCampaign(selectedCampaignId, {
                     groups: {
@@ -213,13 +297,7 @@ export function useGroups() {
                     },
                 });
 
-                const groupToUnarchive = archivedGroups.find(group => group._id === groupId);
-                const newArchivedGroups = archivedGroups.filter(group => group._id !== groupId);
-                const newActiveGroups = groupToUnarchive
-                    ? [...activeGroups, groupToUnarchive]
-                    : activeGroups;
-
-                dispatch(fetchGroupsSuccess({ active: newActiveGroups, archived: newArchivedGroups }));
+                await fetchGroups();
                 success('Group unarchived');
             } catch (e) {
                 const message = e instanceof Error ? e.message : 'Failed to unarchive group';
@@ -227,21 +305,18 @@ export function useGroups() {
                 throw e;
             }
         },
-        [selectedCampaignId, activeGroups, archivedGroups, dispatch, success, toastError],
+        [selectedCampaignId, fetchGroups, success, toastError],
     );
 
     /**
-     * Supprime un groupe définitivement et met à jour les listes localement.
+     * Supprime un groupe définitivement
      */
     const deleteGroup = useCallback(
         async (groupId: string) => {
             try {
                 await GroupService.deleteGroup(groupId);
 
-                const newActiveGroups = activeGroups.filter(group => group._id !== groupId);
-                const newArchivedGroups = archivedGroups.filter(group => group._id !== groupId);
-
-                dispatch(fetchGroupsSuccess({ active: newActiveGroups, archived: newArchivedGroups }));
+                await fetchGroups();
 
                 const localeFromPath = pathname?.split('/')[1] || 'fr';
 
@@ -269,27 +344,39 @@ export function useGroups() {
                 throw e;
             }
         },
-        [activeGroups, archivedGroups, dispatch, pathname, router, success, toastError, store],
+        [dispatch, fetchGroups, pathname, router, success, toastError, store],
     );
 
-    /**
-     * Charge les groupes quand la campagne sélectionnée change
-     */
     useEffect(() => {
-        if (selectedCampaignId) {
-            fetchGroups();
-        } else {
+        if (!selectedCampaignId) {
             dispatch(clearGroups());
+            return;
         }
-    }, [selectedCampaignId, fetchGroups, dispatch]);
+        if (groupsCampaignId === selectedCampaignId && groupsLastFetch !== null) {
+            return;
+        }
+        if (error) {
+            return;
+        }
+        if (store.getState().group.loading) {
+            return;
+        }
+        void fetchGroups();
+    }, [selectedCampaignId, groupsCampaignId, groupsLastFetch, error, fetchGroups, dispatch, store]);
 
     return {
         activeGroups,
         archivedGroups,
         loading,
+        loadingMoreActive,
+        loadingMoreArchived,
+        hasMoreActive,
+        hasMoreArchived,
         error,
         openGroupId,
         fetchGroups,
+        loadMoreActiveGroups,
+        loadMoreArchivedGroups,
         toggleGroup,
         closeAllGroups,
         createGroup,

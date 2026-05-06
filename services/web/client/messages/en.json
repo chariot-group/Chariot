@@ -46,6 +46,8 @@
     "selectCampaign": "Select campaign",
     "loadMoreCampaigns": "Load more",
     "loadMoreCampaignsAria": "Load more campaigns",
+    "loadMoreGroups": "Load more",
+    "loadMoreGroupsAria": "Load more groups",
     "selectedCampaign": "Selected campaign",
     "selected": "selected",
     "createCampaignDialogTitle": "Create a New Campaign",

@@ -128,7 +128,7 @@ class NavigationService {
         locale: string
     ): Promise<NavigationDestination> {
         try {
-            const allGroups = await GroupService.getGroupsByCampaign(campaignId);
+            const allGroups = await GroupService.getAllGroupsByCampaign(campaignId);
             const campaign = await CampaignService.getCampaignById(campaignId);
 
             if (!campaign.groups?.active || !campaign.groups?.archived) {
