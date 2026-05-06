@@ -847,7 +847,8 @@
         "preview": {
           "availableLanguages": "Also available in",
           "previousLanguage": "Back to previous language",
-          "previousLanguageButton": "Back"
+          "previousLanguageButton": "Back",
+          "loadTranslationError": "Could not load this language. Try again or pick another."
         }
       },
       "monsterCodexDialog": {
@@ -881,7 +882,8 @@
           "estimatedProficiencyBonus": "Estimated proficiency bonus",
           "availableLanguages": "Also available in",
           "previousLanguage": "Back to previous language",
-          "previousLanguageButton": "Back"
+          "previousLanguageButton": "Back",
+          "loadTranslationError": "Could not load this language. Try again or pick another."
         }
       }
     }

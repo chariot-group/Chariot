@@ -15,9 +15,10 @@ import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguage
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  codexAvailableTranslationLangs,
+  codexDeclaredPreviewLangs,
   codexLocaleFlagEmoji,
   codexSpellLangsVisibleInAllLanguagesSearch,
+  codexSpellTranslationLooksUsable,
 } from "@/utils/codexLocale.utils";
 
 interface CodexSpellSearchDialogProps {
@@ -42,7 +43,7 @@ function SpellResultItem({
   /** En mode « toutes les langues », une ligne par langue : drapeau sur la carte */
   pinnedLang?: string | null;
   isSelected: boolean;
-  onSpellClick: (spell: CodexSpellItem, lang: string) => void;
+  onSpellClick: (spell: CodexSpellItem, lang: string) => void | Promise<void>;
   tDialog: (key: string) => string;
   tMagic: (key: string, values?: Record<string, unknown>) => string;
   t: (key: string) => string;
@@ -155,6 +156,8 @@ export default function CodexSpellSearchDialog({
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const [previewLangResolving, setPreviewLangResolving] = useState(false);
+  const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const isLoadingRef = useRef(false);
   const spellPreviewScrollRef = useRef<HTMLDivElement>(null);
 
@@ -242,6 +245,8 @@ export default function CodexSpellSearchDialog({
       setPreviewLangStack([]);
       setSelectedSpellKey(null);
       setShowMobileDetails(false);
+      setPreviewLangResolving(false);
+      setPreviewTranslationError(null);
       setError(null);
       setCurrentPage(1);
       setHasMore(false);
@@ -260,7 +265,7 @@ export default function CodexSpellSearchDialog({
     }
   };
 
-  const handleSpellClick = (
+  const handleSpellClick = async (
     codexSpellItem: CodexSpellItem,
     lang: string,
     options?: { fromPreviewLangBar?: boolean },
@@ -285,15 +290,50 @@ export default function CodexSpellSearchDialog({
       setPreviewLangStack([]);
     }
 
-    const convertedSpell = CodexService.convertToChariotSpell(codexSpellItem, lang);
-    setSelectedCodexSpell(codexSpellItem);
-    setSelectedSpell(convertedSpell);
-    setSelectedSpellKey(`${codexSpellItem._id}:${lang}`);
-    setShowMobileDetails(true);
+    setPreviewTranslationError(null);
+
+    let item = codexSpellItem;
+    const shouldHydrate = fromPreview || !codexSpellTranslationLooksUsable(item.translations[lang]);
+
+    if (shouldHydrate) {
+      setPreviewLangResolving(true);
+      try {
+        const forLang = await CodexService.getSpellById(item._id, lang);
+        if (forLang) {
+          item = CodexService.overlaySpellTranslationsFromDetail(item, forLang, [lang]);
+        }
+        if (!codexSpellTranslationLooksUsable(item.translations[lang])) {
+          const unscoped = await CodexService.getSpellById(item._id);
+          if (unscoped) {
+            item = CodexService.overlaySpellTranslationsFromDetail(item, unscoped, [lang]);
+            if (!codexSpellTranslationLooksUsable(item.translations[lang])) {
+              item = CodexService.mergeSpellFillMissingTranslations(item, unscoped);
+            }
+          }
+        }
+        if (!codexSpellTranslationLooksUsable(item.translations[lang])) {
+          setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+          return;
+        }
+      } finally {
+        setPreviewLangResolving(false);
+      }
+    }
+
+    try {
+      const convertedSpell = CodexService.convertToChariotSpell(item, lang);
+      setSelectedCodexSpell(item);
+      setSelectedSpell(convertedSpell);
+      setSelectedSpellKey(`${item._id}:${lang}`);
+      setShowMobileDetails(true);
+    } catch {
+      setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+    }
   };
 
   const handlePreviewLangUndo = () => {
     if (!selectedCodexSpell || previewLangStack.length === 0) return;
+    setPreviewTranslationError(null);
     const prevLang = previewLangStack[previewLangStack.length - 1];
     const convertedSpell = CodexService.convertToChariotSpell(selectedCodexSpell, prevLang);
     setSelectedSpell(convertedSpell);
@@ -482,28 +522,34 @@ export default function CodexSpellSearchDialog({
                 {(() => {
                   const colon = selectedSpellKey.lastIndexOf(":");
                   const previewLang = colon >= 0 ? selectedSpellKey.slice(colon + 1) : userLocale;
-                  const langs = codexAvailableTranslationLangs(
-                    selectedCodexSpell.languages,
-                    selectedCodexSpell.translations as Record<string, unknown>,
-                  );
+                  const langs = codexDeclaredPreviewLangs(selectedCodexSpell.languages);
                   return (
-                    <CodexPreviewLanguageBar
-                      availableLangs={langs}
-                      currentLang={previewLang}
-                      onSelectLang={(l) => handleSpellClick(selectedCodexSpell, l, { fromPreviewLangBar: true })}
-                      onUndo={handlePreviewLangUndo}
-                      canUndo={previewLangStack.length > 0}
-                      label={tDialog("preview.availableLanguages")}
-                      undoLabel={tDialog("preview.previousLanguage")}
-                      undoButtonLabel={tDialog("preview.previousLanguageButton")}
-                      getLanguageAriaLabel={(l) => tDialog(`languageFilter.${l}`)}
-                    />
+                    <>
+                      <CodexPreviewLanguageBar
+                        availableLangs={langs}
+                        currentLang={previewLang}
+                        disabled={previewLangResolving}
+                        onSelectLang={(l) =>
+                          handleSpellClick(selectedCodexSpell, l, { fromPreviewLangBar: true })
+                        }
+                        onUndo={handlePreviewLangUndo}
+                        canUndo={previewLangStack.length > 0}
+                        label={tDialog("preview.availableLanguages")}
+                        undoLabel={tDialog("preview.previousLanguage")}
+                        undoButtonLabel={tDialog("preview.previousLanguageButton")}
+                        getLanguageAriaLabel={(l) => tDialog(`languageFilter.${l}`)}
+                      />
+                      {previewTranslationError ? (
+                        <p className="text-sm text-red-500 shrink-0 -mt-2 mb-2">{previewTranslationError}</p>
+                      ) : null}
+                    </>
                   );
                 })()}
                 <div
                   ref={spellPreviewScrollRef}
                   className="min-h-0 flex-1 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
                   <SpellDisplay
+                    key={selectedSpellKey}
                     spell={selectedSpell as Spell}
                     accentColor={accentColor}
                   />

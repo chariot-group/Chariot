@@ -848,7 +848,8 @@
         "preview": {
           "availableLanguages": "También disponible en",
           "previousLanguage": "Volver al idioma anterior",
-          "previousLanguageButton": "Volver"
+          "previousLanguageButton": "Volver",
+          "loadTranslationError": "No se pudo cargar este idioma. Inténtalo de nuevo u elige otro."
         }
       },
       "monsterCodexDialog": {
@@ -882,7 +883,8 @@
           "estimatedProficiencyBonus": "Bonificación de competencia (estimada)",
           "availableLanguages": "También disponible en",
           "previousLanguage": "Volver al idioma anterior",
-          "previousLanguageButton": "Volver"
+          "previousLanguageButton": "Volver",
+          "loadTranslationError": "No se pudo cargar este idioma. Inténtalo de nuevo u elige otro."
         }
       }
     }

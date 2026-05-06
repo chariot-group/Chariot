@@ -16,9 +16,10 @@ import MonsterPreview from "@/components/character/MonsterPreview";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import {
-  codexAvailableTranslationLangs,
+  codexDeclaredPreviewLangs,
   codexLocaleFlagEmoji,
   codexMonsterLangsVisibleInAllLanguagesSearch,
+  codexMonsterTranslationLooksUsable,
 } from "@/utils/codexLocale.utils";
 import React from "react";
 
@@ -41,7 +42,7 @@ function MonsterResultItem({
   /** En mode « toutes les langues », une ligne par langue : drapeau sur la carte */
   pinnedLang?: string | null;
   isSelected: boolean;
-  onMonsterClick: (monster: CodexMonsterItem, lang: string) => void;
+  onMonsterClick: (monster: CodexMonsterItem, lang: string) => void | Promise<void>;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
 }) {
   const displayLang =
@@ -142,6 +143,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const [previewLangResolving, setPreviewLangResolving] = useState(false);
+  const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const isLoadingRef = useRef(false);
 
   const ITEMS_PER_PAGE = 20;
@@ -224,6 +227,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setPreviewLangStack([]);
       setSelectedMonsterKey(null);
       setShowMobileDetails(false);
+      setPreviewLangResolving(false);
+      setPreviewTranslationError(null);
       setError(null);
       setCurrentPage(1);
       setHasMore(false);
@@ -242,7 +247,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     }
   };
 
-  const handleMonsterClick = (
+  const handleMonsterClick = async (
     codexMonsterItem: CodexMonsterItem,
     lang: string,
     options?: { fromPreviewLangBar?: boolean },
@@ -267,15 +272,56 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setPreviewLangStack([]);
     }
 
-    const convertedMonster = CodexService.convertToChariotNPC(codexMonsterItem, lang);
-    setSelectedCodexMonster(codexMonsterItem);
-    setSelectedMonster(convertedMonster);
-    setSelectedMonsterKey(`${codexMonsterItem._id}:${lang}`);
-    setShowMobileDetails(true);
+    setPreviewTranslationError(null);
+
+    let item = codexMonsterItem;
+    const shouldHydrate = fromPreview || !codexMonsterTranslationLooksUsable(item.translations[lang]);
+
+    if (shouldHydrate) {
+      setPreviewLangResolving(true);
+      try {
+        const forLang = await CodexService.getMonsterById(item._id, lang);
+        if (forLang) {
+          item = CodexService.overlayMonsterTranslationsFromDetail(item, forLang, [lang]);
+        }
+        if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
+          const unscoped = await CodexService.getMonsterById(item._id);
+          if (unscoped) {
+            item = CodexService.overlayMonsterTranslationsFromDetail(item, unscoped, [lang]);
+            if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
+              item = CodexService.mergeMonsterFillMissingTranslations(item, unscoped);
+            }
+          }
+        }
+        if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
+          setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+          return;
+        }
+        const populated = await CodexService.populateMonstersList([item]);
+        item = populated[0];
+        if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
+          setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+          return;
+        }
+      } finally {
+        setPreviewLangResolving(false);
+      }
+    }
+
+    try {
+      const convertedMonster = CodexService.convertToChariotNPC(item, lang);
+      setSelectedCodexMonster(item);
+      setSelectedMonster(convertedMonster);
+      setSelectedMonsterKey(`${item._id}:${lang}`);
+      setShowMobileDetails(true);
+    } catch {
+      setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+    }
   };
 
   const handlePreviewLangUndo = () => {
     if (!selectedCodexMonster || previewLangStack.length === 0) return;
+    setPreviewTranslationError(null);
     const prevLang = previewLangStack[previewLangStack.length - 1];
     const convertedMonster = CodexService.convertToChariotNPC(selectedCodexMonster, prevLang);
     setSelectedMonster(convertedMonster);
@@ -460,22 +506,27 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                 {(() => {
                   const colon = selectedMonsterKey.lastIndexOf(":");
                   const previewLang = colon >= 0 ? selectedMonsterKey.slice(colon + 1) : userLocale;
-                  const langs = codexAvailableTranslationLangs(
-                    selectedCodexMonster.languages,
-                    selectedCodexMonster.translations as Record<string, unknown>,
-                  );
+                  const langs = codexDeclaredPreviewLangs(selectedCodexMonster.languages);
                   return (
-                    <CodexPreviewLanguageBar
-                      availableLangs={langs}
-                      currentLang={previewLang}
-                      onSelectLang={(l) => handleMonsterClick(selectedCodexMonster, l, { fromPreviewLangBar: true })}
-                      onUndo={handlePreviewLangUndo}
-                      canUndo={previewLangStack.length > 0}
-                      label={tDialog("preview.availableLanguages")}
-                      undoLabel={tDialog("preview.previousLanguage")}
-                      undoButtonLabel={tDialog("preview.previousLanguageButton")}
-                      getLanguageAriaLabel={(l) => tDialog(`languageFilter.${l}`)}
-                    />
+                    <>
+                      <CodexPreviewLanguageBar
+                        availableLangs={langs}
+                        currentLang={previewLang}
+                        disabled={previewLangResolving}
+                        onSelectLang={(l) =>
+                          handleMonsterClick(selectedCodexMonster, l, { fromPreviewLangBar: true })
+                        }
+                        onUndo={handlePreviewLangUndo}
+                        canUndo={previewLangStack.length > 0}
+                        label={tDialog("preview.availableLanguages")}
+                        undoLabel={tDialog("preview.previousLanguage")}
+                        undoButtonLabel={tDialog("preview.previousLanguageButton")}
+                        getLanguageAriaLabel={(l) => tDialog(`languageFilter.${l}`)}
+                      />
+                      {previewTranslationError ? (
+                        <p className="text-sm text-red-500 shrink-0 -mt-2 mb-2">{previewTranslationError}</p>
+                      ) : null}
+                    </>
                   );
                 })()}
                 <div className="min-h-0 flex-1 overflow-visible lg:overflow-hidden">

@@ -491,9 +491,7 @@ class CodexService {
      * @param lang - La langue à utiliser pour la traduction
      */
     convertToChariotSpell(codexSpellItem: CodexSpellItem, lang: string): Partial<Spell> {
-        // Récupérer la traduction dans la langue demandée, sinon fallback sur la première disponible
-        const translation = codexSpellItem.translations[lang] ||
-            codexSpellItem.translations[codexSpellItem.languages[0]];
+        const translation = codexSpellItem.translations[lang];
 
         if (!translation) {
             console.error('No translation found for spell', codexSpellItem);
@@ -592,14 +590,65 @@ class CodexService {
     }
 
     /**
+     * Détail monstre par ID. Comme la liste, `lang` inclut la locale demandée dans la réponse (souvent en + lang ; sans param, surtout l’anglais).
+     */
+    async getMonsterById(id: string, lang?: string | null): Promise<CodexMonsterItem | null> {
+        try {
+            const params: Record<string, string> = {};
+            if (lang) {
+                params.lang = lang;
+            }
+            const response = await this.client.get<{ message: string; data: CodexMonsterItem | CodexMonsterItem[] }>(
+                `/monsters/${id}`,
+                Object.keys(params).length > 0 ? { params } : undefined,
+            );
+            const data = response.data.data;
+            const item = Array.isArray(data) ? data[0] : data;
+            return item ?? null;
+        } catch (err) {
+            console.error(`Failed to fetch monster ${id}:`, err);
+            return null;
+        }
+    }
+
+    /**
+     * Met à jour uniquement les locales listées avec le détail API (le détail l’emporte), sans écraser les autres traductions du partiel.
+     */
+    overlayMonsterTranslationsFromDetail(
+        partial: CodexMonsterItem,
+        detail: CodexMonsterItem,
+        langs: string[],
+    ): CodexMonsterItem {
+        const merged: CodexMonsterItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        for (const l of langs) {
+            const t = detail.translations[l];
+            if (t != null) {
+                merged.translations[l] = t;
+            }
+        }
+        return merged;
+    }
+
+    /** Complète les traductions absentes du partiel à partir du détail (ne remplace pas les clés déjà présentes). */
+    mergeMonsterFillMissingTranslations(partial: CodexMonsterItem, detail: CodexMonsterItem): CodexMonsterItem {
+        const merged: CodexMonsterItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        for (const l of Object.keys(detail.translations)) {
+            if (merged.translations[l] == null && detail.translations[l] != null) {
+                merged.translations[l] = detail.translations[l];
+            }
+        }
+        return merged;
+    }
+
+    /**
      * Convertit un monstre Codex en format Chariot NPC
      * @param codexMonsterItem - L'item Codex complet
      * @param lang - La langue à utiliser pour la traduction
      */
     convertToChariotNPC(codexMonsterItem: CodexMonsterItem, lang: string): Partial<NPC> {
-        // Récupérer la traduction dans la langue demandée, sinon fallback sur la première disponible
-        const translation = codexMonsterItem.translations[lang] ||
-            codexMonsterItem.translations[codexMonsterItem.languages[0]];
+        const translation = codexMonsterItem.translations[lang];
 
         if (!translation) {
             console.error('No translation found for monster', codexMonsterItem);
@@ -673,11 +722,18 @@ class CodexService {
     }
 
     /**
-     * Fetche un sort par son ID. Gère les réponses en objet ou en tableau.
+     * Fetche un sort par son ID. `lang` aligne le comportement sur la liste (traductions présentes pour la locale).
      */
-    async getSpellById(id: string): Promise<CodexSpellItem | null> {
+    async getSpellById(id: string, lang?: string | null): Promise<CodexSpellItem | null> {
         try {
-            const response = await this.client.get<{ message: string; data: CodexSpellItem | CodexSpellItem[] }>(`/spells/${id}`);
+            const params: Record<string, string> = {};
+            if (lang) {
+                params.lang = lang;
+            }
+            const response = await this.client.get<{ message: string; data: CodexSpellItem | CodexSpellItem[] }>(
+                `/spells/${id}`,
+                Object.keys(params).length > 0 ? { params } : undefined,
+            );
             const data = response.data.data;
             const item = Array.isArray(data) ? data[0] : data;
             return item ?? null;
@@ -685,6 +741,33 @@ class CodexService {
             console.error(`Failed to fetch spell ${id}:`, err);
             return null;
         }
+    }
+
+    /** Dépôt des traductions du détail pour les locales indiquées (le détail l’emporte pour ces clés). */
+    overlaySpellTranslationsFromDetail(partial: CodexSpellItem, detail: CodexSpellItem, langs: string[]): CodexSpellItem {
+        const merged: CodexSpellItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        merged.classes = [...new Set([...(merged.classes ?? []), ...(detail.classes ?? [])])];
+        for (const l of langs) {
+            const t = detail.translations[l];
+            if (t != null) {
+                merged.translations[l] = t;
+            }
+        }
+        return merged;
+    }
+
+    /** Ajoute les traductions présentes dans le détail mais absentes du partiel (null / undefined). */
+    mergeSpellFillMissingTranslations(partial: CodexSpellItem, detail: CodexSpellItem): CodexSpellItem {
+        const merged: CodexSpellItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        merged.classes = [...new Set([...(merged.classes ?? []), ...(detail.classes ?? [])])];
+        for (const l of Object.keys(detail.translations)) {
+            if (merged.translations[l] == null && detail.translations[l] != null) {
+                merged.translations[l] = detail.translations[l];
+            }
+        }
+        return merged;
     }
 
     /**

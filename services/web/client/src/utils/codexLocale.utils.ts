@@ -1,4 +1,9 @@
-import type { CodexMonsterItem, CodexMonsterTranslation, CodexSpellItem } from "@/services/CodexService";
+import type {
+  CodexMonsterItem,
+  CodexMonsterTranslation,
+  CodexSpellItem,
+  CodexSpellTranslation,
+} from "@/services/CodexService";
 
 /**
  * Langues du document Codex pour lesquelles une traduction existe réellement.
@@ -11,6 +16,26 @@ export function codexAvailableTranslationLangs(
 ): string[] {
   const keys = new Set<string>([...(languages ?? []), ...Object.keys(translations ?? {})]);
   return [...keys].filter((l) => translations?.[l] != null).sort();
+}
+
+/**
+ * Langues déclarées sur le document Codex (`languages`), pour la preview :
+ * la liste peut contenir des locales dont le payload de recherche n’a pas encore chargé `translations`.
+ */
+export function codexDeclaredPreviewLangs(languages: string[] | undefined): string[] {
+  return [...new Set((languages ?? []).filter(Boolean))].sort();
+}
+
+/** Indique si une traduction sort Codex est exploitable (évite les stubs `{}` ou clés fantômes). */
+export function codexSpellTranslationLooksUsable(t: CodexSpellTranslation | undefined | null): boolean {
+  return t != null && typeof t.name === "string" && t.name.trim().length > 0;
+}
+
+/** Indique si une traduction monstre Codex est exploitable. */
+export function codexMonsterTranslationLooksUsable(t: CodexMonsterTranslation | undefined | null): boolean {
+  if (t == null) return false;
+  if ((t.firstname ?? "").trim().length > 0) return true;
+  return [t.lastname, t.surname].filter(Boolean).join(" ").trim().length > 0;
 }
 
 /**
