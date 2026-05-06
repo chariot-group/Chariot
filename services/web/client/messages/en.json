@@ -48,6 +48,8 @@
     "loadMoreCampaignsAria": "Load more campaigns",
     "loadMoreGroups": "Load more",
     "loadMoreGroupsAria": "Load more groups",
+    "loadMoreCharacters": "Load more",
+    "loadMoreCharactersAria": "Load more characters",
     "selectedCampaign": "Selected campaign",
     "selected": "selected",
     "createCampaignDialogTitle": "Create a New Campaign",
