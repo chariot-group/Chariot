@@ -1,5 +1,5 @@
 import apiClient from './ApiService';
-import { Campaign, PaginatedCampaignsResponse } from '@/types/campaign';
+import { Campaign } from '@/types/campaign';
 
 interface GetCampaignsParams {
     page?: number;
@@ -8,19 +8,48 @@ interface GetCampaignsParams {
     label?: string;
 }
 
+function parseCampaignListPayload(raw: unknown): { data: Campaign[]; totalItems?: number } {
+    if (raw == null || typeof raw !== 'object') {
+        return { data: [] };
+    }
+    const body = raw as Record<string, unknown>;
+    const items = body.data;
+    const data: Campaign[] = Array.isArray(items) ? (items as Campaign[]) : [];
+
+    const pagination = body.pagination ?? body.meta;
+    if (pagination != null && typeof pagination === 'object') {
+        const p = pagination as Record<string, unknown>;
+        const rawTotal = p.totalItems ?? p.total_items ?? p.total;
+        if (typeof rawTotal === 'number' && Number.isFinite(rawTotal)) {
+            return { data, totalItems: rawTotal };
+        }
+        if (typeof rawTotal === 'string' && rawTotal.trim() !== '') {
+            const n = Number(rawTotal);
+            if (Number.isFinite(n)) {
+                return { data, totalItems: n };
+            }
+        }
+    }
+    return { data };
+}
+
 class CampaignService {
     private readonly BASE_PATH = '/campaigns';
 
     /**
-     * Récupère la liste des campagnes de l'utilisateur
+     * Récupère la liste des campagnes de l'utilisateur (paginée).
+     * `totalItems` peut être absent si la forme du JSON réseau diffère — le store utilise alors la taille de page.
      */
-    async getCampaigns(params?: GetCampaignsParams): Promise<Campaign[]> {
+    async getCampaigns(params?: GetCampaignsParams): Promise<{
+        data: Campaign[];
+        totalItems?: number;
+    }> {
         try {
-            const response = await apiClient().get<PaginatedCampaignsResponse>(this.BASE_PATH, {
+            const response = await apiClient().get<unknown>(this.BASE_PATH, {
                 params,
             });
 
-            return response.data.data;
+            return parseCampaignListPayload(response.data);
         } catch (error) {
             console.error('Error fetching campaigns:', error);
             throw error;

@@ -78,7 +78,7 @@ export default function SidebarEnvironment() {
       </CollapsibleTrigger>
       <CollapsibleContent
         id="spaces-content"
-        className="my-2 flex mx-5 flex-col gap-2">
+        className="my-2 mx-5 flex min-h-0 min-w-0 flex-col gap-2">
         <button
           type="button"
           onClick={() => changeEnvironment("player")}
