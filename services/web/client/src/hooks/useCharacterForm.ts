@@ -39,6 +39,8 @@ interface UseCharacterFormProps<TFormValues extends FieldValues = FieldValues> {
     defaultValues?: Partial<TFormValues>;
     /** Callback après succès de sauvegarde */
     onSuccess?: (data: Player | NPC) => void;
+    /** Code session (query) — requis pour la sauvegarde en tant que MJ sur la fiche d’un joueur */
+    sessionCode?: string | null;
 }
 
 /**
@@ -125,6 +127,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
     refetchCharacter,
     defaultValues = {} as Partial<TFormValues>,
     onSuccess,
+    sessionCode,
 }: UseCharacterFormProps<TFormValues>): UseCharacterFormReturn<TFormValues> {
     // États
     const [isSaving, setIsSaving] = useState(false);
@@ -139,7 +142,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
         loading: isLoading,
         error,
         refetch: refetchInternal,
-    } = useCharacter(fetchOwn ? characterId : null);
+    } = useCharacter(fetchOwn ? characterId : null, sessionCode ?? undefined);
     const character = sourceCharacter ?? fetchedCharacter;
     const refetch = refetchCharacter ?? refetchInternal;
     const toast = useToast();
@@ -301,7 +304,8 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
             const updatedCharacter = await CharacterService.updateCharacter(
                 type,
                 characterId,
-                parsedData
+                parsedData,
+                sessionCode,
             );
 
             const updatedCharacterWithUserId = updatedCharacter as Player | NPC | (Player | NPC & { userId?: string });

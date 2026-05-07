@@ -1,15 +1,17 @@
 "use client";
 
 import { useCharacter } from "@/hooks/useCharacter";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import CharacterDetailView from "@/components/character/CharacterDetailView";
 
 export default function Character() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const characterId = params.idCharacters as string;
-  const { character, loading, error, refetch, setCharacter } = useCharacter(characterId);
+  const sessionCode = searchParams.get("sessionCode");
+  const { character, loading, error, refetch, setCharacter } = useCharacter(characterId, sessionCode);
   const router = useRouter();
 
   if (loading) {

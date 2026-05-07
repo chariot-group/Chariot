@@ -17,6 +17,7 @@ import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
+import { Groups } from '@/resources/campaign/schemas/sub/groups.schema';
 
 @Injectable()
 export class CampaignService {
@@ -38,12 +39,17 @@ export class CampaignService {
   ): Promise<IResponse<Campaign>> {
     try {
       const { groups, ...campaignData } = createCampaignDto;
-      const totalGroups: string[] = groups.active.concat(groups.archived);
+      const activeIds = groups.active ?? [];
+      const archivedIds = groups.archived ?? [];
+      const totalGroups: string[] = [...activeIds, ...archivedIds];
 
       const start: number = Date.now();
       const campaign: Campaign = await this.campaignModel.create({
         ...campaignData,
-        groups,
+        groups: {
+          active: activeIds,
+          archived: archivedIds,
+        } as unknown as Groups,
         createdBy: userId,
       });
       // Incrémentation du compteur Prometheus
