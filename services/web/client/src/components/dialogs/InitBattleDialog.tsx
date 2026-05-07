@@ -274,7 +274,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
     return () => {
       isMounted = false;
     };
-  }, [open, selectedCampaignId, session?.code, session?.participants]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, session?.initBattleDraft]);
 
   const selectedGroups = React.useMemo(() => {
     const selectedIds = new Set(selectedGroupIds);
@@ -319,64 +319,6 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
 
     setExpandedGroupIds(nextExpandedGroupIds);
     persistInitBattleDraft({ expandedGroupIds: nextExpandedGroupIds });
-  };
-
-  const toggleGroupSelection = (groupId: string, shouldSelect: boolean) => {
-    if (!shouldSelect && mandatoryGroupIds.includes(groupId)) {
-      return;
-    }
-
-    const nextSelectedGroupIds =
-      shouldSelect || mandatoryGroupIds.includes(groupId)
-        ? getSanitizedGroupIds(selectedGroupIds.includes(groupId) ? selectedGroupIds : [...selectedGroupIds, groupId])
-        : getSanitizedGroupIds(selectedGroupIds.filter((id) => id !== groupId));
-    const nextExpandedGroupIds = shouldSelect
-      ? expandedGroupIds.includes(groupId)
-        ? expandedGroupIds
-        : [...expandedGroupIds, groupId]
-      : expandedGroupIds.filter((id) => id !== groupId);
-    const nextExcludedMembersByGroup = shouldSelect
-      ? excludedMembersByGroup
-      : Object.fromEntries(Object.entries(excludedMembersByGroup).filter(([id]) => id !== groupId));
-
-    setSelectedGroupIds(nextSelectedGroupIds);
-    setExpandedGroupIds(nextExpandedGroupIds);
-    setExcludedMembersByGroup(nextExcludedMembersByGroup);
-
-    persistInitBattleDraft({
-      selectedGroupIds: nextSelectedGroupIds,
-      expandedGroupIds: nextExpandedGroupIds,
-      excludedMembersByGroup: nextExcludedMembersByGroup,
-    });
-  };
-
-  const selectAllGroups = () => {
-    const nextSelectedGroupIds = groups.map((group) => group._id);
-    const nextExpandedGroupIds = Array.from(new Set(expandedGroupIds.concat(nextSelectedGroupIds)));
-
-    setSelectedGroupIds(nextSelectedGroupIds);
-    setExpandedGroupIds(nextExpandedGroupIds);
-
-    persistInitBattleDraft({
-      selectedGroupIds: nextSelectedGroupIds,
-      expandedGroupIds: nextExpandedGroupIds,
-    });
-  };
-
-  const deselectAllGroups = () => {
-    const nextSelectedGroupIds = mandatoryGroupIds;
-    const nextExpandedGroupIds = mandatoryGroupIds;
-    const nextExcludedMembersByGroup = {};
-
-    setSelectedGroupIds(nextSelectedGroupIds);
-    setExpandedGroupIds(nextExpandedGroupIds);
-    setExcludedMembersByGroup(nextExcludedMembersByGroup);
-
-    persistInitBattleDraft({
-      selectedGroupIds: nextSelectedGroupIds,
-      expandedGroupIds: nextExpandedGroupIds,
-      excludedMembersByGroup: nextExcludedMembersByGroup,
-    });
   };
 
   const toggleMemberInInitiative = (groupId: string, memberId: string, includeInInitiative: boolean) => {
