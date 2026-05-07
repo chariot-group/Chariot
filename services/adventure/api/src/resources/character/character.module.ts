@@ -12,6 +12,7 @@ import { PlayerModule } from '@/resources/character/player/player.module';
 import { CharacterService } from '@/resources/character/character.service';
 import { CharacterController } from '@/resources/character/character.controller';
 import { MetricsModule } from '@/metrics/metrics.module';
+import { SessionAccessModule } from '@/common/session/session-access.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { MetricsModule } from '@/metrics/metrics.module';
       { name: Group.name, schema: GroupSchema },
     ]),
     MetricsModule,
+    SessionAccessModule,
     NpcModule,
     PlayerModule,
   ],

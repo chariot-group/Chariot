@@ -26,6 +26,8 @@ interface AuthenticatedSocket extends Socket {
         email: string;
         username: string;
     };
+    /** Rooms session (id session) encore jointes ; à la coupure Socket.IO, `rooms` peut déjà être vide. */
+    sessionRoomIds?: Set<string>;
 }
 
 @WebSocketGateway({
@@ -130,27 +132,43 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     handleDisconnect(client: AuthenticatedSocket) {
-        if (client.user) {
-            this.logger.verbose(`Client disconnected: ${client.user.username} (${client.id})`, this.SERVICE_NAME);
+        if (!client.user) {
+            return;
+        }
+        this.logger.verbose(`Client disconnected: ${client.user.username} (${client.id})`, this.SERVICE_NAME);
 
-            // Marquer le participant comme déconnecté dans toutes les sessions qu'il occupait
-            const sessionRooms = [...client.rooms].filter(r => r !== client.id);
-            for (const sessionId of sessionRooms) {
-                this.sessionService.disconnectParticipant(sessionId, client.user.keycloakId).then(() => {
-                    client.to(sessionId).emit('session:participant-disconnected', {
-                        userId: client.user.keycloakId,
-                        username: client.user.username,
-                    });
-                }).catch((err: any) => {
-                    this.logger.error(`Error handling disconnect for session ${sessionId}: ${err.message}`, null, this.SERVICE_NAME);
-                });
-            }
+        const tracked = client.sessionRoomIds ? [...client.sessionRoomIds] : [];
+        const fromRooms = [...client.rooms].filter(r => r !== client.id);
+        const sessionIds = [...new Set([...tracked, ...fromRooms])];
+
+        const payload = {
+            userId: client.user.keycloakId,
+            username: client.user.username,
+        };
+
+        for (const sessionId of sessionIds) {
+            /* Immédiat : ne pas attendre la persistance, sinon le toast côté clients n'arrive qu'avec retard. */
+            this.server.to(sessionId).emit('session:participant-disconnected', payload);
+            this.sessionService.disconnectParticipant(sessionId, client.user.keycloakId).catch((err: any) => {
+                this.logger.error(`Error handling disconnect for session ${sessionId}: ${err.message}`, null, this.SERVICE_NAME);
+            });
         }
     }
 
     /** Extracts SessionWithParticipants from either a raw session or an IResponse wrapper. */
     private extractSession(result: any): SessionWithParticipants {
         return result?.data ?? result;
+    }
+
+    private trackSessionRoom(client: AuthenticatedSocket, sessionId: string): void {
+        if (!client.sessionRoomIds) {
+            client.sessionRoomIds = new Set();
+        }
+        client.sessionRoomIds.add(sessionId);
+    }
+
+    private untrackSessionRoom(client: AuthenticatedSocket, sessionId: string): void {
+        client.sessionRoomIds?.delete(sessionId);
     }
 
     @SubscribeMessage('session:create')
@@ -163,6 +181,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.create(data, client.user.keycloakId));
 
             client.join(session.id);
+            this.trackSessionRoom(client, session.id);
             client.emit('session:created', { session });
             let duration: number = (Date.now() - start) / 1000;
 
@@ -184,14 +203,19 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.join(data.sessionId, data, client.user.keycloakId));
 
             client.join(session.id);
+            this.trackSessionRoom(client, session.id);
 
             const joinedParticipant = session.participants.find((p) => p.userId === client.user.keycloakId);
 
-            // Notifier les autres participants
+            // Notifier les autres participants — utiliser le roster persisté : le client peut envoyer
+            // `characterId: null` au WS (ex. reconnect avant hydratation Redux) alors que le join HTTP
+            // a déjà associé un personnage (`join` conserve `existingParticipant.characterId`).
+            const rosterCharacterId = joinedParticipant?.characterId ?? data.characterId ?? null;
+
             client.to(session.id).emit('session:participant-joined', {
                 userId: client.user.keycloakId,
                 username: client.user.username,
-                characterId: data.characterId,
+                characterId: rosterCharacterId,
                 status: joinedParticipant?.status ?? 'connected',
             });
 
@@ -216,15 +240,24 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ) {
         try {
             let start: number = Date.now();
+            /* Snapshot avant leave : après suppression le personnage n’est plus dans le roster. */
+            const preDetails = await this.sessionService.findParticipants(data.sessionId);
+            const leavingParticipant = preDetails.data.participants.find(
+                (p) => p.userId === client.user.keycloakId,
+            );
+            const leavingCharacterId: string | null = leavingParticipant?.characterId ?? null;
+
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.leave(data.sessionId, client.user.keycloakId));
             const roomId = session.id;
 
             client.leave(roomId);
+            this.untrackSessionRoom(client, roomId);
 
-            // Notifier les autres participants
-            client.to(roomId).emit('session:participant-left', {
+            /* Après leave(), le socket n’est plus dans la room : client.to() est peu fiable ; le namespace cible correctement les participants restants. */
+            this.server.to(roomId).emit('session:participant-left', {
                 userId: client.user.keycloakId,
                 username: client.user.username,
+                characterId: leavingCharacterId,
             });
 
             client.emit('session:left', { sessionId: data.sessionId });
@@ -286,6 +319,44 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             this.logger.verbose(`${client.user.username} changed character in session ${roomId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
             let message: string = `Failed to change character: ${error.message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            client.emit('session:error', { message });
+        }
+    }
+
+    /**
+     * Diffuse une mise à jour de fiche personnage aux autres participants (émetteur exclu).
+     * Convention Socket.IO : `sessionId` dans le body est le code OTP (même valeur que pour `session:join`), pas l'id technique interne.
+     */
+    @SubscribeMessage('session:character-sheet-updated')
+    async handleCharacterSheetUpdated(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string; characterId: string },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const me = session.participants.find((p) => p.userId === client.user.keycloakId);
+            if (!me) {
+                client.emit('session:error', { message: 'Not a session participant' });
+                return;
+            }
+            const cid = (data.characterId ?? '').trim();
+            if (!cid) {
+                client.emit('session:error', { message: 'Missing characterId' });
+                return;
+            }
+            const onRoster = session.participants.some((p) => p.characterId === cid);
+            if (!onRoster) {
+                client.emit('session:error', { message: 'Character is not on this session roster' });
+                return;
+            }
+            client.to(session.id).emit('session:character-sheet-updated', { characterId: cid });
+            this.logger.verbose(
+                `${client.user.username} broadcast character sheet update ${cid} in session ${session.id}`,
+                this.SERVICE_NAME,
+            );
+        } catch (error: any) {
+            const message: string = `Failed to broadcast character sheet update: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             client.emit('session:error', { message });
         }

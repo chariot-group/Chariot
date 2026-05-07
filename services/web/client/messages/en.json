@@ -15,6 +15,9 @@
     "yourGroups": "Your Groups",
     "createGroup": "Create a Group",
     "yourArchives": "Your Archives",
+    "sessionPlayers": "Players (session)",
+    "sessionPlayerChoosingCharacter": "Choosing character…",
+    "playedBy": "Played by {name}",
     "noArchives": "No archives.",
     "rightClickToAdd": "Right click to add.",
     "noGroups": "No groups",
@@ -221,6 +224,7 @@
   },
   "characterDetail": {
     "editCharacter": "Edit character",
+    "playedBy": "Played by {name}",
     "saveChanges": "Save changes",
     "saving": "Saving...",
     "cancel": "Cancel",
@@ -961,7 +965,11 @@
       "sessionLaunchError": "Unable to launch the session",
       "copySuccess": "Code copied to clipboard",
       "copyError": "Unable to copy the code",
-      "copyNotSupported": "Copy is not supported by this browser"
+      "copyNotSupported": "Copy is not supported by this browser",
+      "participantLeftViewingCharacter": "The player of this character has left the session.",
+      "participantLeftSession": "{username} left the session.",
+      "participantDisconnected": "{username} disconnected from the session.",
+      "sheetEditedByGm": "The game master has updated your character sheet."
     },
     "title": "Session",
     "sessionEnded": {

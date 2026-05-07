@@ -9,6 +9,7 @@ import {
   Logger,
   NotFoundException,
   GoneException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CharacterService } from '@/resources/character/character.service';
 import { IsCreator } from '@/common/decorators/is-creator.decorator';
@@ -30,12 +31,14 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
+import { SessionAccessService } from '@/common/session/session-access.service';
 
 @UseGuards(IsCreatorGuard)
 @Controller('characters')
 export class CharacterController {
   constructor(
     private readonly characterService: CharacterService,
+    private readonly sessionAccessService: SessionAccessService,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
   ) {}
@@ -136,8 +139,37 @@ export class CharacterController {
   @Get(':id')
   async findOne(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+    @Req()
+    req: { user: { keycloakId: string }; headers: { authorization?: string } },
+    @Query('sessionCode') sessionCode?: string,
   ): Promise<IResponse<Character>> {
     await this.validateResource(id);
+
+    const minimal = await this.characterModel
+      .findById(id)
+      .select('createdBy')
+      .exec();
+
+    if (!minimal) {
+      const message = `Character ${id} not found`;
+      this.logger.error(message, null, this.CONTROLLER_NAME);
+      throw new NotFoundException(message);
+    }
+
+    const requesterId = req.user.keycloakId;
+    if (minimal.createdBy !== requesterId) {
+      const code = sessionCode?.trim();
+      if (!code) {
+        throw new ForbiddenException(
+          'You can only view your own characters without an active session context',
+        );
+      }
+      await this.sessionAccessService.assertRosterRead(
+        req.headers.authorization,
+        code,
+        id.toString(),
+      );
+    }
 
     return this.characterService.findOne(id);
   }

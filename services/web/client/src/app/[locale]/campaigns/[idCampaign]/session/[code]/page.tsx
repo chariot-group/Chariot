@@ -68,6 +68,7 @@ export default function SessionPage() {
   const sessionSocket = useSessionSocket({
     token,
     code,
+    campaignId: idCampaign,
     campaignName: campaign?.label ?? campaignLabel ?? "",
     currentUser,
     participants,

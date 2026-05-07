@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronRight, PlusCircleIcon, Loader2 } from "lucide-react";
+import { ChevronRight, Layers2, PlusCircleIcon, Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useGroups } from "@/hooks/useGroups";
 import GroupList from "@/components/layout/Sidebar/GroupList";
@@ -19,6 +19,7 @@ import { selectGroupToOpen, setGroupToOpen } from "@/store/slices/campaignContex
 import { setOpenGroup } from "@/store/slices/groupSlice";
 import CharactersWithoutGroupList from "@/components/layout/Sidebar/CharactersWithoutGroupList";
 import { CreateGroupDialog } from "@/components/dialogs/CreateGroupDialog";
+import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessionPlayersSidebarSection";
 
 /**
  * Context navigation component for GM mode
@@ -75,6 +76,8 @@ export default function SidebarContext() {
       {/* Selected campaign name */}
       {selectedCampaign && <h2 className="text-lg text-white">{selectedCampaign.label}</h2>}
 
+      <GmSessionPlayersSidebarSection />
+
       {/* Active groups section */}
       <Collapsible
         className="rounded-[15px] border-2"
@@ -83,10 +86,16 @@ export default function SidebarContext() {
         <CollapsibleTrigger
           aria-expanded={openActive}
           aria-controls="active-groups-content"
-          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/context focus-visible:border ${openActive ? "bg-white" : ""}`}>
-          <span
-            className={`text-sm group-hover/context:font-bold group-hover/context:text-black ${openActive ? "text-black font-bold" : ""}`}>
-            {t("yourGroups")}
+          className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center gap-2 group/context focus-visible:border ${openActive ? "bg-white" : ""}`}>
+          <span className="flex min-w-0 items-center gap-2">
+            <Layers2
+              aria-hidden="true"
+              className={`h-4 w-4 shrink-0 transition-colors group-hover/context:text-black ${openActive ? "text-black" : ""}`}
+            />
+            <span
+              className={`text-sm truncate group-hover/context:font-bold group-hover/context:text-black ${openActive ? "text-black font-bold" : ""}`}>
+              {t("yourGroups")}
+            </span>
           </span>
           <ChevronRight
             aria-hidden="true"

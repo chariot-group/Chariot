@@ -38,11 +38,16 @@ interface UsePlayersWithoutGroupReturn {
 
 /**
  * Hook pour récupérer un personnage par son ID
+ * @param sessionCode — requis côté API pour lire une fiche d’un autre joueur pendant une session
  */
-export function useCharacter(characterId: string | null): UseCharacterReturn {
+export function useCharacter(characterId: string | null, sessionCode?: string | null): UseCharacterReturn {
     const [character, setCharacter] = useState<Character | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    const remoteVersion = useAppSelector((s) =>
+        characterId ? ((s.session.characterSheetRemoteVersions ?? {})[characterId] ?? 0) : 0,
+    );
 
     const fetchCharacter = useCallback(async () => {
         if (!characterId) {
@@ -53,7 +58,7 @@ export function useCharacter(characterId: string | null): UseCharacterReturn {
         try {
             setLoading(true);
             setError(null);
-            const data = await CharacterService.getCharacterById(characterId);
+            const data = await CharacterService.getCharacterById(characterId, { sessionCode });
             setCharacter(data);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch character';
@@ -62,11 +67,40 @@ export function useCharacter(characterId: string | null): UseCharacterReturn {
         } finally {
             setLoading(false);
         }
-    }, [characterId]);
+    }, [characterId, sessionCode]);
 
     useEffect(() => {
         fetchCharacter();
     }, [fetchCharacter]);
+
+    /** Rechargement lors d’une synchro temps réel (WebSocket session). */
+    useEffect(() => {
+        if (!characterId || remoteVersion < 1) return;
+        let cancelled = false;
+        void (async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await CharacterService.getCharacterById(characterId, { sessionCode });
+                if (!cancelled) {
+                    setCharacter(data);
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    const errorMessage = err instanceof Error ? err.message : 'Failed to fetch character';
+                    setError(errorMessage);
+                    console.error('Error fetching character:', err);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [remoteVersion, characterId, sessionCode]);
 
     return {
         character,

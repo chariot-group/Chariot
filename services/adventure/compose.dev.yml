@@ -59,6 +59,7 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       SHOWCASE_URL: ${SHOWCASE_URL}
+      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://host.docker.internal:9002}
     depends_on:
       chariot-mongo:
         condition: service_healthy
