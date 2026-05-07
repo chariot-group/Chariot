@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { CheckIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ export function MultiSelect({
   clearLabel,
   className,
 }: MultiSelectProps) {
+  const t = useTranslations("multiSelect");
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const closeTimeoutRef = React.useRef<number | null>(null);
@@ -167,7 +169,7 @@ export function MultiSelect({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onKeyDown={handleInputKeyDown}
-          placeholder={placeholder ?? "Rechercher un groupe"}
+          placeholder={searchPlaceholder ?? placeholder ?? t("searchPlaceholder")}
           className="h-auto bg-transparent px-0 py-0 text-sm shadow-none focus-visible:border-none focus-visible:ring-none"
         />
       </div>
@@ -214,7 +216,7 @@ export function MultiSelect({
                       onPointerDown={handleOptionPointerDown}
                       onClick={() => toggleValue(option.value)}
                       className="cursor-pointer rounded-full p-0.5 transition-colors hover:bg-white/10"
-                      aria-label={`Remove ${option.label}`}>
+                      aria-label={t("removeOption", { label: option.label })}>
                       <XIcon className="size-3.5" />
                     </button>
                   </span>
@@ -224,7 +226,7 @@ export function MultiSelect({
 
             <div className="max-h-60 space-y-1 overflow-y-auto pr-1">
               {filteredOptions.length === 0 ? (
-                <p className="px-2 py-2 text-sm text-muted-foreground">{emptyText ?? "Aucun groupe correspondant."}</p>
+                <p className="px-2 py-2 text-sm text-muted-foreground">{emptyText ?? t("emptyText")}</p>
               ) : (
                 filteredOptions.map((option) => {
                   const isSelected = selectedValues.has(option.value);
@@ -263,8 +265,7 @@ export function MultiSelect({
 
             {hasSelectedOptions && (
               <p className="px-1 text-xs text-muted-foreground">
-                {selectedOptions.length} groupe{selectedOptions.length > 1 ? "s" : ""} sélectionné
-                {selectedOptions.length > 1 ? "s" : ""}.
+                {t("selectedCount", { count: selectedOptions.length })}
               </p>
             )}
           </div>

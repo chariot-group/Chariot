@@ -70,9 +70,12 @@
     "createCharacterDialogDescription": "¿Qué tipo de personaje quieres crear?",
     "playerCharacter": "Personaje jugador",
     "npcCharacter": "PNJ",
-    "npcCodexCharacter": "PNJ desde Codex",
+    "npcCodexCharacter": "PNJ desde Codex"
+  },
+  "initTracker": {
+    "noCharacters": "Sin personajes",
     "initBattleDialogTitle": "Inicializar batalla",
-    "initBattleSelectedGroups": "Grupos que van a luchar",
+    "initBattleSelectedGroups": "Jugadores en la iniciativa",
     "initBattleLoadingGroups": "Cargando grupos...",
     "initBattleNoGroupSelected": "Ningún grupo seleccionado.",
     "initBattleSearchAndSelectGroups": "Buscar y seleccionar grupos",
@@ -89,6 +92,12 @@
     "initBattleRemoveGroup": "Quitar grupo de la selección",
     "initBattleInInitiative": "Comprometido",
     "initBattleValidateSelection": "Confirmar configuración"
+  },
+  "multiSelect": {
+    "searchPlaceholder": "Buscar",
+    "emptyText": "No hay resultados coincidentes.",
+    "removeOption": "Quitar {label}",
+    "selectedCount": "{count, plural, one {# grupo seleccionado.} other {# grupos seleccionados.}}"
   },
   "common": {
     "save": "Guardar",

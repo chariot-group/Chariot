@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { MultiSelect } from "../ui/multi-select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import groupService from "@/services/GroupService";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
@@ -21,8 +21,8 @@ import { selectCurrentSession, setSessionInitBattleDraft } from "@/store/slices/
 import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Label } from "../ui/label";
-import { Separator } from "../ui/separator";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { SessionParticipant } from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 
@@ -178,7 +178,7 @@ const buildSessionParticipantsGroup = async (
 };
 
 export function InitBattleDialog({ children }: InitBattleDialogProps) {
-  const t = useTranslations("sidebar");
+  const t = useTranslations("initTracker");
   const tCommon = useTranslations("common");
   const dispatch = useAppDispatch();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
@@ -246,13 +246,9 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           groupsWithSessionParticipants,
           nextMandatoryGroupIds,
         );
-        const draftExpandedGroupIds = draft?.expandedGroupIds ?? nextSelectedGroupIds;
+        const draftExpandedGroupIds = draft?.expandedGroupIds ?? [];
         const nextExpandedGroupIds = Array.from(
-          new Set(
-            draftExpandedGroupIds
-              .filter((groupId) => nextSelectedGroupIds.includes(groupId))
-              .concat(nextSelectedGroupIds),
-          ),
+          new Set(draftExpandedGroupIds.filter((groupId) => nextSelectedGroupIds.includes(groupId))),
         );
         const nextExcludedMembersByGroup = Object.fromEntries(
           Object.entries(draft?.excludedMembersByGroup ?? {}).filter(([groupId]) =>
@@ -414,8 +410,8 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           <DialogTitle>{t("initBattleDialogTitle")}</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
-          <Card className="gap-4  p-4 sm:p-5">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] grid-cols-1 items-start">
+          <Card className="gap-4 p-4 sm:p-5 order-2 lg:order-1">
             <div className="space-y-2">
               <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
 
@@ -515,7 +511,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
             </div>
           </Card>
 
-          <Card className="gap-3 p-4 sm:p-5">
+          <Card className="gap-3 p-4 sm:p-5 order-1 lg:order-2">
             <p className="text-sm font-semibold">{t("initBattleSettings")}</p>
             <div className="flex items-center gap-2">
               <Checkbox
