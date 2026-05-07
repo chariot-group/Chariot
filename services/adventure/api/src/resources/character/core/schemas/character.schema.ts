@@ -4,7 +4,6 @@ import {
   Affinities,
   AffinitiesSchema,
 } from '@/resources/character/core/schemas/affinities/affinities.schema';
-import { Group } from '@/resources/group/schemas/group.schema';
 import { BaseSchema } from '@/common/schemas/base-schema';
 import { Ability } from '@/resources/character/core/schemas/ability/ability.schema';
 import { Spellcasting } from '@/resources/character/core/schemas/spellcasting/spellcasting.schema';
@@ -71,13 +70,16 @@ export class Character extends BaseSchema {
   @Prop({ type: Conditions, default: {} })
   conditions: Conditions;
 
-  @ApiProperty({ type: [Group] })
+  @ApiProperty({
+    type: [String],
+    example: ['507f1f77bcf86cd799439011'],
+  })
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
     default: [],
     required: false,
   })
-  groups: Group[];
+  groups: mongoose.Types.ObjectId[];
 
   @ApiProperty({ example: null })
   @Prop({ default: null })

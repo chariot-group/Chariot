@@ -99,5 +99,43 @@ class SessionService {
     }
 }
 
+/** Participants issus du broadcast WS `session:launched` (souvent sérialisés depuis Prisma). */
+export function mapParticipantsFromSessionLaunchedPayload(
+    raw: unknown,
+    fallbackSessionOtpCode: string,
+): SessionParticipant[] {
+    if (!Array.isArray(raw)) return [];
+    const allowed: ReadonlySet<SessionParticipant['status']> = new Set(['connected', 'disconnected', 'gameMaster']);
+    const out: SessionParticipant[] = [];
+    for (const item of raw) {
+        if (!item || typeof item !== 'object') continue;
+        const p = item as Record<string, unknown>;
+        const userId = p.userId;
+        if (typeof userId !== 'string') continue;
+        const id = typeof p.id === 'string' ? p.id : userId;
+        const characterId: string | null =
+            p.characterId == null || p.characterId === '' ? null : String(p.characterId);
+        const st = p.status;
+        const status: SessionParticipant['status'] =
+            typeof st === 'string' && allowed.has(st as SessionParticipant['status'])
+                ? (st as SessionParticipant['status'])
+                : 'connected';
+        let joinedAt = new Date().toISOString();
+        if (typeof p.joinedAt === 'string') joinedAt = p.joinedAt;
+        else if (p.joinedAt instanceof Date) joinedAt = p.joinedAt.toISOString();
+        const sessionId =
+            typeof p.sessionId === 'string' && p.sessionId.length > 0 ? p.sessionId : fallbackSessionOtpCode;
+        out.push({ id, userId, characterId, status, joinedAt, sessionId });
+    }
+    return out;
+}
+
+export function parseExpiresAtFromLaunchedPayload(value: unknown): string | null {
+    if (value == null) return null;
+    if (typeof value === 'string') return value;
+    if (value instanceof Date) return value.toISOString();
+    return null;
+}
+
 const sessionService = new SessionService();
 export default sessionService;

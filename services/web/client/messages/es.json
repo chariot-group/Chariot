@@ -15,6 +15,9 @@
     "yourGroups": "Tus grupos",
     "createGroup": "Crear un grupo",
     "yourArchives": "Tus archivos",
+    "sessionPlayers": "Jugadores (sesión)",
+    "sessionPlayerChoosingCharacter": "Eligiendo personaje…",
+    "playedBy": "Jugado por {name}",
     "noArchives": "Sin archivos.",
     "rightClickToAdd": "Clic derecho para añadir.",
     "noGroups": "Sin grupos",
@@ -227,6 +230,7 @@
   },
   "characterDetail": {
     "editCharacter": "Modificar personaje",
+    "playedBy": "Jugado por {name}",
     "saveChanges": "Guardar cambios",
     "saving": "Guardando...",
     "cancel": "Cancelar",
@@ -958,7 +962,11 @@
       "sessionLaunchError": "No se puede lanzar la sesión",
       "copySuccess": "Código copiado al portapapeles",
       "copyError": "No se puede copiar el código",
-      "copyNotSupported": "La copia no está soportada por este navegador"
+      "copyNotSupported": "La copia no está soportada por este navegador",
+      "participantLeftViewingCharacter": "El jugador de este personaje ha abandonado la sesión.",
+      "participantLeftSession": "{username} ha abandonado la sesión.",
+      "participantDisconnected": "{username} se ha desconectado de la sesión.",
+      "sheetEditedByGm": "El director de juego ha modificado tu hoja de personaje."
     },
     "title": "Sesión",
     "sessionEnded": {

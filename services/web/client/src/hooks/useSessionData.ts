@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import campaignService from "@/services/CampaignService";
@@ -49,10 +49,16 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const [myCharacters, setMyCharacters] = useState<Character[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchCharacterDetails = async (ids: string[]) => {
-        const missing = ids.filter((id) => id && !characterDetails[id]);
+    /** Toujours à jour : les handlers WebSocket gardent une ref stable (voir `useSessionSocket` deps `[token]`). */
+    const characterDetailsRef = useRef<Record<string, Character>>({});
+    characterDetailsRef.current = characterDetails;
+
+    const fetchCharacterDetails = useCallback(async (ids: string[]) => {
+        const missing = ids.filter((id) => id && !characterDetailsRef.current[id]);
         if (missing.length === 0) return;
-        const results = await Promise.allSettled(missing.map((id) => characterService.getCharacterById(id)));
+        const results = await Promise.allSettled(
+            missing.map((id) => characterService.getCharacterById(id, { sessionCode: code })),
+        );
         setCharacterDetails((prev) => {
             const next = { ...prev };
             results.forEach((result, i) => {
@@ -62,7 +68,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             });
             return next;
         });
-    };
+    }, [code]);
 
     useEffect(() => {
         const init = async () => {
