@@ -1,0 +1,14 @@
+name: Nouvelle release
+description: Template de création d'une release pour Chariot
+title: "[CHARIOT] Release v"
+labels: ['Release']
+assignees: []
+body:
+  - type: textarea
+    id: criteres
+    attributes:
+      label: Etapes pour la release
+      description: Les étapes pour mettre en prod.
+      value: |
+        - [ ] J'ai mis à jour et daté le changelog
+        - [ ] J'ai mis à jour les `package.json` et `package-lock.json`

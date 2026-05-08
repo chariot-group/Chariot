@@ -4,14 +4,17 @@ import { SquarePen, X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { LongRestButton } from "@/components/character/LongRestButton";
 import { ShortRestButton } from "@/components/character/ShortRestButton";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import { selectIsInSession, selectSessionCode } from "@/store/slices/sessionSlice";
+import { selectUser } from "@/store/slices/userSlice";
+import UserService from "@/services/UserService";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -40,6 +43,44 @@ export default function CharacterDetailView({
   const router = useRouter();
   const searchParams = useSearchParams();
   const isInSession = useAppSelector(selectIsInSession);
+  const contextMode = useAppSelector(selectContextMode);
+  const currentUser = useAppSelector(selectUser);
+  const sessionCodeRedux = useAppSelector(selectSessionCode);
+  const sessionCodeFromUrl = searchParams.get("sessionCode");
+  const currentUserKeycloakId = currentUser?.keycloakId ?? null;
+
+  const isGmViewingPlayerSheet =
+    contextMode === "gm" &&
+    isPlayer(character) &&
+    currentUserKeycloakId != null &&
+    character.createdBy != null &&
+    character.createdBy !== currentUserKeycloakId;
+
+  const playedBySubjectId =
+    isGmViewingPlayerSheet && character.createdBy != null ? String(character.createdBy) : null;
+
+  const [resolvedPlayedBy, setResolvedPlayedBy] = useState<{
+    createdByKey: string;
+    label: string;
+  } | null>(null);
+
+  const playedByLabel =
+    playedBySubjectId != null &&
+    resolvedPlayedBy != null &&
+    resolvedPlayedBy.createdByKey === playedBySubjectId
+      ? resolvedPlayedBy.label
+      : null;
+
+  const canEditAsGm = useMemo(
+    () =>
+      isGmViewingPlayerSheet &&
+      isInSession &&
+      !!sessionCodeFromUrl &&
+      sessionCodeFromUrl === sessionCodeRedux,
+    [isGmViewingPlayerSheet, isInSession, sessionCodeFromUrl, sessionCodeRedux],
+  );
+
+  const showEditControls = !isGmViewingPlayerSheet || canEditAsGm;
 
   // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
   const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
@@ -62,6 +103,7 @@ export default function CharacterDetailView({
     type: characterType,
     sourceCharacter: character,
     refetchCharacter,
+    sessionCode: sessionCodeFromUrl,
     onSuccess: () => {
       // Rafraîchir les données du parent après la mise à jour
       if (onCharacterUpdate) {
@@ -73,13 +115,48 @@ export default function CharacterDetailView({
   // Abonnement explicite (sinon isDirty ne met pas à jour le footer quand seuls des champs imbriqués changent, ex. abilities)
   const { isDirty } = useFormState({ control: form.control });
 
+  useEffect(() => {
+    if (!playedBySubjectId) {
+      return;
+    }
+    let cancelled = false;
+    void UserService.getUserById(playedBySubjectId)
+      .then((u) => {
+        if (!cancelled) {
+          const label = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.username;
+          setResolvedPlayedBy({ createdByKey: playedBySubjectId, label });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setResolvedPlayedBy(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [playedBySubjectId]);
+
+  useEffect(() => {
+    if (!showEditControls && isEditing) {
+      onCancel();
+      setIsEditing(false);
+    }
+  }, [showEditControls, isEditing, onCancel, setIsEditing]);
+
   // Si on arrive avec mode=edit (création depuis la sidebar, ou autre lien), ouvrir directement en édition
   useEffect(() => {
     const mode = searchParams.get("mode");
-    if (mode === "edit") {
+    if (mode === "edit" && showEditControls) {
       setIsEditing(true);
     }
-  }, [searchParams, setIsEditing]);
+    if (mode === "edit" && !showEditControls) {
+      setIsEditing(false);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("mode");
+      router.replace(`?${params.toString()}`, { scroll: false });
+    }
+  }, [searchParams, setIsEditing, showEditControls, router]);
 
   useEffect(() => {
     const handleGlobalShortcuts = (event: KeyboardEvent) => {
@@ -151,10 +228,18 @@ export default function CharacterDetailView({
                         )}
                       </TooltipTrigger>
                       <TooltipContent>
-                        {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
+                        <div className="flex flex-col gap-1">
+                          <span>
+                            {character.firstname} {character.lastname}{" "}
+                            {character.surname && `(${character.surname})`}
+                          </span>
+                          {isGmViewingPlayerSheet && playedByLabel ? (
+                            <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
+                          ) : null}
+                        </div>
                       </TooltipContent>
                     </Tooltip>
-                    {isPlayer(character) && !isEditing && onCharacterUpdate && (
+                    {isPlayer(character) && !isEditing && onCharacterUpdate && !isGmViewingPlayerSheet && (
                       <span className="inline-flex items-center gap-1 shrink-0">
                         <ShortRestButton
                           player={character}
@@ -173,13 +258,18 @@ export default function CharacterDetailView({
                   {/* Ligne 2: Surnom + Classe/CR + Groupe */}
                   <div className="flex flex-col gap-2 text-sm items-start lg:items-end justify-end">
                     {isPlayer(character) ? (
-                      <div className="text-white font-semibold">
-                        {character.class.map((cls: { name: string; level: number }, index: number) => (
-                          <span key={index}>
-                            {tClass(cls.name)} Niv {cls.level}
-                            {index < character.class.length - 1 && " / "}
-                          </span>
-                        ))}
+                      <div className="flex flex-col gap-1 text-white font-semibold items-start lg:items-end">
+                        <div>
+                          {character.class.map((cls: { name: string; level: number }, index: number) => (
+                            <span key={index}>
+                              {tClass(cls.name)} Niv {cls.level}
+                              {index < character.class.length - 1 && " / "}
+                            </span>
+                          ))}
+                        </div>
+                        {isGmViewingPlayerSheet && playedByLabel ? (
+                          <span className="text-xs font-normal text-gray-light">{t("playedBy", { name: playedByLabel })}</span>
+                        ) : null}
                       </div>
                     ) : (
                       <div className="text-white font-semibold">
@@ -230,6 +320,7 @@ export default function CharacterDetailView({
         </Tabs>
 
         {/* Footer avec boutons - fixe en bas */}
+        {showEditControls ? (
         <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 border-t border-transparent">
           <div className="w-full mx-auto flex flex-row-reverse gap-2">
             {isEditing ? (
@@ -311,6 +402,7 @@ export default function CharacterDetailView({
             )}
           </div>
         </div>
+        ) : null}
       </form>
     </main>
   );

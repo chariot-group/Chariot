@@ -152,7 +152,7 @@ export class SeederService {
           });
 
           activeCharacters.forEach((c: CharacterDocument) => {
-            c.groups.push(activeGroup.id);
+            c.groups.push(activeGroup._id);
             c.createdBy = activeGroup.createdBy;
             c.save();
           });
@@ -179,7 +179,7 @@ export class SeederService {
           });
 
           archivedCharacters.forEach((c: CharacterDocument) => {
-            c.groups.push(archivedGroup.id);
+            c.groups.push(archivedGroup._id);
             c.createdBy = archivedGroup.createdBy;
             c.save();
           });

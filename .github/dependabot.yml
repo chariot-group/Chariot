@@ -1,0 +1,99 @@
+version: 2
+
+multi-ecosystem-groups:
+  weekend-nightly:
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+
+  # npm — adventure
+  - package-ecosystem: "npm"
+    directory: "/services/adventure/api"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+    versioning-strategy: increase
+
+  # npm — gateway
+  - package-ecosystem: "npm"
+    directory: "/services/gateway/api"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+      - dependency-name: "@stripe/*"
+
+  # npm — session
+  - package-ecosystem: "npm"
+    directory: "/services/session/api"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+      - dependency-name: "@stripe/*"
+
+  # npm — web
+  - package-ecosystem: "npm"
+    directory: "/services/web/client"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+    versioning-strategy: increase
+
+  # Docker — adventure
+  - package-ecosystem: "docker"
+    directory: "/services/adventure/api"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+
+  # Docker — gateway
+  - package-ecosystem: "docker"
+    directory: "/services/gateway/api"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+
+  # Docker — session
+  - package-ecosystem: "docker"
+    directory: "/services/session/api"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+
+  # Docker — sso
+  - package-ecosystem: "docker"
+    directory: "/services/sso"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+
+  # Docker — web
+  - package-ecosystem: "docker"
+    directory: "/services/web/client"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"

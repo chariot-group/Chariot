@@ -289,6 +289,8 @@ export interface Group {
 
 export interface Character {
     _id: string;
+    /** Propriétaire Keycloak (renvoyé par l’API pour affichage / logique client). */
+    createdBy?: string;
     firstname: string;
     lastname: string;
     surname: string;

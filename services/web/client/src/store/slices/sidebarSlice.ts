@@ -5,12 +5,14 @@ export interface SidebarState {
     openEnvironment: boolean;
     openActiveGroups: boolean;
     openArchivedGroups: boolean;
+    openSessionPlayers: boolean;
 }
 
 const initialState: SidebarState = {
     openEnvironment: false,
     openActiveGroups: false,
     openArchivedGroups: false,
+    openSessionPlayers: true,
 };
 
 const sidebarSlice = createSlice({
@@ -41,10 +43,14 @@ const sidebarSlice = createSlice({
                 state.openEnvironment = true;
             }
         },
+        setOpenSessionPlayers: (state, action: PayloadAction<boolean>) => {
+            state.openSessionPlayers = action.payload;
+        },
         closeAllMenus: (state) => {
             state.openEnvironment = false;
             state.openActiveGroups = false;
             state.openArchivedGroups = false;
+            state.openSessionPlayers = false;
         },
     },
 });
@@ -53,6 +59,7 @@ export const {
     setOpenEnvironment,
     setOpenActiveGroups,
     setOpenArchivedGroups,
+    setOpenSessionPlayers,
     closeAllMenus,
 } = sidebarSlice.actions;
 
@@ -60,5 +67,6 @@ export const {
 export const selectOpenEnvironment = (state: RootState) => state.sidebar.openEnvironment;
 export const selectOpenActiveGroups = (state: RootState) => state.sidebar.openActiveGroups;
 export const selectOpenArchivedGroups = (state: RootState) => state.sidebar.openArchivedGroups;
+export const selectOpenSessionPlayers = (state: RootState) => state.sidebar.openSessionPlayers;
 
 export default sidebarSlice.reducer;

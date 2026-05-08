@@ -10,6 +10,7 @@ import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
 import React, { useState } from "react";
 import { useTranslations } from "use-intl";
+import { cn } from "@/lib/utils";
 
 const TOOLTIP_CURSOR_OFFSET = 4;
 type TooltipScope = "header" | "content" | null;
@@ -51,13 +52,23 @@ export default function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent className="bg-card sm:bg-transparent">
+      <SidebarContent
+        className={cn(
+          "bg-card sm:bg-transparent",
+          contextMode !== "gm" && "overflow-hidden",
+        )}>
         <div
-          className={`${contextMode !== "gm" ? "h-full" : ""}`}
+          className={cn(
+            contextMode !== "gm" && "flex h-full min-h-0 flex-1 flex-col",
+          )}
           onMouseEnter={isContextDisabled ? () => setTooltipScope("content") : undefined}
           onMouseLeave={isContextDisabled ? () => setTooltipScope(null) : undefined}
           onMouseMove={isContextDisabled ? handleMouseMoveContent : undefined}>
-          <div className={isContextDisabled ? "pointer-events-none" : ""}>
+          <div
+            className={cn(
+              isContextDisabled && "pointer-events-none",
+              contextMode !== "gm" && "flex min-h-0 flex-1 flex-col",
+            )}>
             <SidebarContext />
           </div>
         </div>

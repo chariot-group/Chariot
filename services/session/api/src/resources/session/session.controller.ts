@@ -4,6 +4,7 @@ import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { SessionResponseDto, SessionListResponseDto } from '@/resources/session/dto/session-response.dto';
 import { SessionParticipantsResponseDto } from '@/resources/session/dto/session-participants-response.dto';
+import { ValidateCharacterAccessDto } from '@/resources/session/dto/validate-character-access.dto';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
 import { IResponse } from '@/common/dtos/response.dto';
@@ -38,6 +39,20 @@ export class SessionController {
     @ApiResponse({ status: 500, description: 'Erreur interne du serveur' })
     findParticipants(@Param('code') code: string): Promise<IResponse<SessionParticipantsDetails>> {
         return this.sessionService.findParticipants(code);
+    }
+
+    @Post(':code/validate-character-access')
+    @ApiOperation({ summary: "Valider l'accès à une fiche personnage pour la session (participants ou MJ en édition)" })
+    @ApiParam({ name: 'code', description: 'Session code (OTP)' })
+    @ApiResponse({ status: 200, description: 'Accès autorisé' })
+    @ApiResponse({ status: 403, description: 'Accès refusé' })
+    @ApiResponse({ status: 404, description: 'Session introuvable' })
+    validateCharacterAccess(
+        @Param('code') code: string,
+        @Body() body: ValidateCharacterAccessDto,
+        @Req() req: { user: { keycloakId: string } },
+    ): Promise<IResponse<{ ok: true }>> {
+        return this.sessionService.validateCharacterAccessForAdventure(code, req.user.keycloakId, body.characterId, body.mode);
     }
 
     @Get(':code')

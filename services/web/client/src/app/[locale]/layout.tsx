@@ -9,6 +9,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
 import PostLoginNavigator from "@/components/PostLoginNavigator";
+import SessionCharacterSyncClientDynamic from "@/components/SessionCharacterSyncClientDynamic";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -53,6 +54,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <KeycloakProvider>
             <ReduxProvider>
+              <SessionCharacterSyncClientDynamic />
               <SidebarProvider>
                 <AppSidebar />
 

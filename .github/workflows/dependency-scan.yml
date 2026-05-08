@@ -30,7 +30,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Node.js for web
         uses: actions/setup-node@v6
@@ -48,7 +48,7 @@ jobs:
         run: mkdir -p security/reports
 
       - name: Run Trivy dependency scan
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: './services/web/client'
@@ -92,7 +92,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Node.js for adventure
         uses: actions/setup-node@v6
@@ -110,7 +110,7 @@ jobs:
         run: mkdir -p security/reports
 
       - name: Run Trivy dependency scan
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: './services/adventure/api'
