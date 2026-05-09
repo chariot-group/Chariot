@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.5.1] - 09-05-2026
+
+### Added
+
+### Changed
+
+### Fixed
+- Fixed prisma generate
+
 ## [2.5.0] - 08-05-2026
 
 ### Added
