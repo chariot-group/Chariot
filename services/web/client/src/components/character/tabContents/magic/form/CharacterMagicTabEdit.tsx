@@ -326,6 +326,15 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   );
   const hasAvailableSpellcastingClasses = availableSpellcastingClasses.length > 0;
 
+  const watchedSpellcastingClassNames =
+    (
+      useWatch({
+        control: form.control,
+        name: "spellcasting",
+      }) as Array<{ className?: string }> | undefined
+    )?.map((sc) => sc?.className ?? "") ?? [];
+
+  const currentClassName: string = watchedSpellcastingClassNames[selectedSpellcastingIndex] ?? "";
   const currentAbilityKey: string =
     useWatch({ control: form.control, name: `spellcasting.${selectedSpellcastingIndex}.ability` }) ?? "";
   const currentSaveDC: number | null = useWatch({
@@ -367,6 +376,20 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     control: form.control,
     name: `${watchPath}.usesPerDay`,
   });
+
+  // Sync spellcasting className when the player has a single class
+  // – covers: setting the default when className is blank, and propagating a class rename.
+  useEffect(() => {
+    if (!isPlayer(character)) return;
+    if (availableSpellcastingClasses.length !== 1) return;
+    const singleClassName = availableSpellcastingClasses[0].name;
+    const currentList = form.getValues("spellcasting") ?? [];
+    currentList.forEach((sc, i) => {
+      if ((sc.className ?? "") !== singleClassName) {
+        form.setValue(`spellcasting.${i}.className`, singleClassName, { shouldDirty: true });
+      }
+    });
+  }, [availableSpellcastingClasses, character, form]);
 
   // NPC: sync spellSlotsByUses when usesPerDay changes on the selected spell
   useEffect(() => {
@@ -541,7 +564,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     isPlayer(character) &&
     !isInnate &&
     !!selectedSpellcasting &&
-    classWithSpellPrepared(selectedSpellcasting as Spellcasting);
+    classWithSpellPrepared({ ...(selectedSpellcasting as Spellcasting), className: currentClassName });
 
   const maxPreparedSlots =
     usesPreparedMechanic && isPlayer(character)
@@ -550,8 +573,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   const preparedSpellsCounted = usesPreparedMechanic ? countPreparedSpellsInList(currentSpells) : 0;
 
-  const atPreparedLimit =
-    usesPreparedMechanic && maxPreparedSlots > 0 && preparedSpellsCounted >= maxPreparedSlots;
+  const atPreparedLimit = usesPreparedMechanic && maxPreparedSlots > 0 && preparedSpellsCounted >= maxPreparedSlots;
 
   // ── Prepared spells (calculated) ──
   const modSign = abilityMod >= 0 ? `+${abilityMod}` : `${abilityMod}`;
@@ -699,12 +721,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 role="tablist"
                 aria-label={tMagic("spellcastingClass")}>
                 {spellcastingList.map((sc, index) => {
-                  let label = sc?.className || tMagic("newSpellcasting");
-                  if (isPlayer(character) && sc?.className) {
-                    const cls = playerCharacter?.class?.find(
-                      (c) => c?.name?.toLowerCase() === sc.className?.toLowerCase(),
-                    );
-                    label = cls ? `${tClass(cls.name)} ${tMagic("level")} ${cls.level}` : sc.className;
+                  const liveClassName = watchedSpellcastingClassNames[index] ?? sc?.className ?? "";
+                  let label = liveClassName || tMagic("newSpellcasting");
+                  if (isPlayer(character) && liveClassName) {
+                    const cls = classesList.find((c) => c?.name?.toLowerCase() === liveClassName.toLowerCase());
+                    label = cls?.name ? `${tClass(cls.name)} ${tMagic("level")} ${cls.level}` : liveClassName;
                   }
                   const isSelected = selectedSpellcastingIndex === index;
                   return (
@@ -1057,8 +1078,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     size="sm"
                     className={cn(
                       "rounded-[15px] text-xs sm:text-sm gap-1.5",
-                      preparationEditMode &&
-                        "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                      preparationEditMode && "ring-2 ring-ring ring-offset-2 ring-offset-background",
                     )}
                     onClick={() => setPreparationEditMode((v) => !v)}>
                     {preparationEditMode ? (
@@ -1188,8 +1208,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                       control={form.control}
                                       render={({ field }) => {
                                         const parsed = Number(field.value);
-                                        const display =
-                                          Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+                                        const display = Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
                                         return (
                                           <Input
                                             {...field}
@@ -1268,9 +1287,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                       return acc;
                                     }, 0);
                                     const prepareBlockedBookmark =
-                                      spell?.prepared !== true &&
-                                      maxPreparedSlots > 0 &&
-                                      countExcl >= maxPreparedSlots;
+                                      spell?.prepared !== true && maxPreparedSlots > 0 && countExcl >= maxPreparedSlots;
 
                                     const toggleLocalPrepared = () => {
                                       if (!prepEditRow || !spell) return;
