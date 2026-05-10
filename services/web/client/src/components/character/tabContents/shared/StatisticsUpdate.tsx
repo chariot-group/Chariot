@@ -109,7 +109,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                   aria-hidden="true"
                   width={20}
                   height={20}
-                  className="size-5"
+                  className="size-5 brightness-0 invert"
                 />
                 <Input
                   {...field}
@@ -152,7 +152,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                   aria-hidden="true"
                   width={20}
                   height={20}
-                  className="size-5"
+                  className="size-5 brightness-0 invert"
                 />
                 <Input
                   {...field}
@@ -193,7 +193,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                 <RulerIcon
                   size={20}
-                  className="text-black shrink-0"
+                  className="text-white shrink-0"
                   aria-hidden="true"
                 />
                 <Select
@@ -248,7 +248,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     src={RunningIcon}
                     alt=""
                     aria-hidden="true"
-                    className="size-6"
+                    className="size-6 brightness-0 invert"
                   />
                   <Input
                     {...field}
@@ -278,7 +278,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                   <Mountain
                     size={24}
-                    className="text-black"
+                    className="text-white"
                     aria-hidden="true"
                   />
                   <Input
@@ -309,7 +309,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                   <Waves
                     size={24}
-                    className="text-black"
+                    className="text-white"
                     aria-hidden="true"
                   />
                   <Input
@@ -340,7 +340,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                   <Bird
                     size={24}
-                    className="text-black"
+                    className="text-white"
                     aria-hidden="true"
                   />
                   <Input
@@ -371,7 +371,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                   <Shovel
                     size={24}
-                    className="text-black"
+                    className="text-white"
                     aria-hidden="true"
                   />
                   <Input
@@ -413,7 +413,9 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                   max={safeMaxHitPoints}
                   onValueChange={(nextValue) => field.onChange(nextValue)}
                   onApply={(nextValue) => field.onChange(nextValue)}
-                  onConstraintResult={({ wasClamped, source }) => handleCurrentHpConstraintResult({ wasClamped, source })}
+                  onConstraintResult={({ wasClamped, source }) =>
+                    handleCurrentHpConstraintResult({ wasClamped, source })
+                  }
                   triggerLabel={`${tEdit("currentHP")} quick calculator`}
                   inputLabel={`${tEdit("currentHP")} value`}
                   tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
@@ -545,9 +547,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                       </label>
                       <Input
                         {...field}
-                        value={
-                          field.value === undefined || field.value === null ? "" : field.value
-                        }
+                        value={field.value === undefined || field.value === null ? "" : field.value}
                         id={`class-${index}-level`}
                         type="number"
                         className="text-sm"
@@ -572,10 +572,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                           const cls = (form.getValues("class") || []) as Array<{ level?: unknown }>;
                           let totalNext = 0;
                           for (let j = 0; j < cls.length; j++) {
-                            const v =
-                              j === index
-                                ? clampedLevel
-                                : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
+                            const v = j === index ? clampedLevel : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
                             totalNext += v;
                           }
                           const sumOthersNext = totalNext - clampedLevel;
@@ -583,11 +580,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                           const cap = Math.min(clampedLevel, shareNext);
                           const remPath = `class.${index}.hitDiceRemaining`;
                           const remRaw = form.getValues(remPath);
-                          if (
-                            typeof remRaw === "number" &&
-                            !Number.isNaN(remRaw) &&
-                            remRaw > cap
-                          ) {
+                          if (typeof remRaw === "number" && !Number.isNaN(remRaw) && remRaw > cap) {
                             form.setValue(remPath, cap, { shouldDirty: true, shouldValidate: true });
                           }
                         }}
@@ -638,13 +631,10 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                         ? Math.max(0, Math.min(Math.floor(stored), dicePoolCeiling))
                         : undefined;
                     /** Vide si non persisté : ne pas miroiter le niveau de classe dans ce champ */
-                    const displayRem =
-                      typeof cappedStored === "number" ? cappedStored : "";
+                    const displayRem = typeof cappedStored === "number" ? cappedStored : "";
                     /** Base des actions +/- quand aucune valeur enregistrée (comportement = pool plein) */
-                    const currentForDiceOps =
-                      typeof cappedStored === "number" ? cappedStored : dicePoolCeiling;
-                    const effectiveRemainingForUsed =
-                      typeof cappedStored === "number" ? cappedStored : dicePoolCeiling;
+                    const currentForDiceOps = typeof cappedStored === "number" ? cappedStored : dicePoolCeiling;
+                    const effectiveRemainingForUsed = typeof cappedStored === "number" ? cappedStored : dicePoolCeiling;
                     const hitDiceUsed = dicePoolCeiling - effectiveRemainingForUsed;
 
                     return (
@@ -665,9 +655,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                           onValueChange={(nextValue) =>
                             field.onChange(Math.max(0, Math.min(nextValue, dicePoolCeiling)))
                           }
-                          onApply={(nextValue) =>
-                            field.onChange(Math.max(0, Math.min(nextValue, dicePoolCeiling)))
-                          }
+                          onApply={(nextValue) => field.onChange(Math.max(0, Math.min(nextValue, dicePoolCeiling)))}
                           onConstraintResult={(payload) =>
                             handleHitDiceRemainingConstraintResult(index, dicePoolCeiling, payload)
                           }
@@ -689,9 +677,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                               }
                             },
                             "aria-invalid": fieldState.invalid,
-                            "aria-describedby": fieldState.error
-                              ? `class-${index}-hit-dice-left-error`
-                              : undefined,
+                            "aria-describedby": fieldState.error ? `class-${index}-hit-dice-left-error` : undefined,
                           }}
                         />
                         <p className="text-xs text-muted-foreground tabular-nums pt-0.5">
