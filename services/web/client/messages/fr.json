@@ -369,6 +369,7 @@
       "deathSaves": "JDS contre la Mort",
       "successes": "Succès :",
       "failures": "Échecs :",
+      "deathSavesSessionOnlyNote": "Les jets de sauvegarde contre la mort ne peuvent être modifiés qu'en session.",
       "performedThrow": "Jet effectué",
       "unperformedThrow": "Jet non effectué",
       "abilityHasCounter": "Compteur d'utilisations",

@@ -14,6 +14,8 @@ import StatisticsUpdate from "@/components/character/tabContents/shared/Statisti
 import { Controller } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeTagInput } from "@/components/ui/damage-type-tag-input";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
 
 interface PlayerBattleTabEditProps {
   player: Player;
@@ -24,6 +26,7 @@ interface PlayerBattleTabEditProps {
 export default function PlayerBattleTabEdit({ player, accentColor, form }: PlayerBattleTabEditProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
+  const isInSession = useAppSelector(selectIsInSession);
 
   const {
     fields: abilitiesFields,
@@ -92,7 +95,8 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                     key={"death-save-success-" + index}
                     type="button"
                     onClick={() => form.setValue("deathSaves.successes", index + 1, { shouldDirty: true })}
-                    className="cursor-pointer hover:opacity-80 transition-opacity p-1"
+                    disabled={!isInSession}
+                    className="cursor-pointer hover:opacity-80 transition-opacity p-1 disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label={`${t("successes")} ${index + 1}`}>
                     <Image
                       src={index < currentSuccesses ? RedCircle : WhiteCircle}
@@ -118,7 +122,8 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                     key={"death-save-failure-" + index}
                     type="button"
                     onClick={() => form.setValue("deathSaves.failures", index + 1, { shouldDirty: true })}
-                    className="cursor-pointer hover:opacity-80 transition-opacity p-1"
+                    disabled={!isInSession}
+                    className="cursor-pointer hover:opacity-80 transition-opacity p-1 disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label={`${t("failures")} ${index + 1}`}>
                     <Image
                       src={index < currentFailures ? RedCircle : WhiteCircle}
@@ -137,6 +142,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
             type="button"
             variant="ghost"
             size="sm"
+            disabled={!isInSession}
             onClick={() => {
               form.setValue("deathSaves.successes", 0, { shouldDirty: true });
               form.setValue("deathSaves.failures", 0, { shouldDirty: true });
@@ -145,6 +151,13 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
             <RefreshCcw />
             {tEdit("reset")}
           </Button>
+          {!isInSession && (
+            <p
+              className="text-xs text-muted-foreground"
+              role="note">
+              {t("deathSavesSessionOnlyNote")}
+            </p>
+          )}
         </Card>
       </div>
 

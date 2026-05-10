@@ -368,6 +368,7 @@
       "deathSaves": "Salvaciones de Muerte",
       "successes": "Éxitos:",
       "failures": "Fallos:",
+      "deathSavesSessionOnlyNote": "Las tiradas de salvación contra la muerte solo se pueden cambiar durante una sesión.",
       "performedThrow": "Tirada realizada",
       "unperformedThrow": "Tirada no realizada",
       "abilityHasCounter": "Contador de usos",

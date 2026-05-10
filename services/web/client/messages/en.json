@@ -368,6 +368,7 @@
       "deathSaves": "Death Saves",
       "successes": "Successes:",
       "failures": "Failures:",
+      "deathSavesSessionOnlyNote": "Death saving throws can only be changed while you are in a session.",
       "performedThrow": "Performed Throw",
       "unperformedThrow": "Unperformed Throw",
       "abilityHasCounter": "Use counter",
