@@ -459,7 +459,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                   return (
                                     <label
                                       key={member._id}
-                                      className="flex flex-col">
+                                      className="flex flex-col cursor-pointer">
                                       <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-sm">
                                         <span className="truncate">
                                           {formatCharacterName(member)}
@@ -480,6 +480,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                           </span>
                                           <Checkbox
                                             checked={memberIncluded}
+                                            className="cursor-pointer"
                                             onCheckedChange={(checked) =>
                                               toggleMemberInInitiative(group._id, member._id, Boolean(checked))
                                             }
