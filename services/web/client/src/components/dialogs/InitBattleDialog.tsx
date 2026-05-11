@@ -384,7 +384,6 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                 searchPlaceholder={t("initBattleSearchGroupPlaceholder")}
                 emptyText={t("initBattleNoSearchResult")}
                 selectAllLabel={t("initBattleSelectAllGroups")}
-                clearLabel={t("initBattleDeselectAllGroups")}
               />
             </div>
 

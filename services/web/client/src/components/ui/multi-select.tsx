@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { CheckIcon, XIcon } from "lucide-react";
+import { CheckIcon, MinusIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +19,6 @@ interface MultiSelectProps {
   searchPlaceholder?: string;
   emptyText?: string;
   selectAllLabel?: string;
-  clearLabel?: string;
   className?: string;
 }
 
@@ -32,7 +30,6 @@ export function MultiSelect({
   searchPlaceholder,
   emptyText,
   selectAllLabel,
-  clearLabel,
   className,
 }: MultiSelectProps) {
   const t = useTranslations("multiSelect");
@@ -150,6 +147,20 @@ export function MultiSelect({
 
   const hasSelectedOptions = selectedOptions.length > 0;
 
+  const allFilteredSelected =
+    filteredOptions.length > 0 && filteredOptions.every((option) => selectedValues.has(option.value));
+  const someFilteredSelected = filteredOptions.some((option) => selectedValues.has(option.value));
+
+  const handleSelectAll = () => {
+    if (allFilteredSelected) {
+      const filteredValues = new Set(filteredOptions.map((o) => o.value));
+      onChange(value.filter((v) => !filteredValues.has(v)));
+    } else {
+      const filteredValues = filteredOptions.map((o) => o.value);
+      onChange([...value, ...filteredValues.filter((v) => !selectedValues.has(v))]);
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -179,28 +190,36 @@ export function MultiSelect({
           <div
             className="space-y-3"
             onKeyDown={(event) => event.stopPropagation()}>
-            {(selectAllLabel || clearLabel) && (
-              <div className="flex flex-wrap gap-2">
-                {selectAllLabel && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onPointerDown={(event) => event.preventDefault()}
-                    onClick={() => onChange(options.map((option) => option.value))}>
-                    {selectAllLabel}
-                  </Button>
-                )}
-                {clearLabel && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onPointerDown={(event) => event.preventDefault()}
-                    onClick={() => onChange([])}>
-                    {clearLabel}
-                  </Button>
-                )}
+            {selectAllLabel && filteredOptions.length > 0 && (
+              <div
+                role="button"
+                tabIndex={0}
+                onPointerDown={handleOptionPointerDown}
+                onClick={handleSelectAll}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleSelectAll();
+                  }
+                }}
+                className={cn(
+                  "flex w-full cursor-pointer items-center justify-between gap-3 rounded-[15px] px-2 py-2 pb-3 text-left text-sm font-medium transition-colors hover:bg-white/10",
+                  allFilteredSelected && "text-white",
+                )}>
+                <span className="truncate">{selectAllLabel}</span>
+                <span
+                  className={cn(
+                    "flex size-4 shrink-0 items-center justify-center rounded-[4px] border",
+                    allFilteredSelected
+                      ? "border-white bg-white text-black"
+                      : someFilteredSelected
+                        ? "border-white bg-white/30 text-white"
+                        : "border-white/30",
+                  )}
+                  aria-hidden="true">
+                  {allFilteredSelected && <CheckIcon className="size-3" />}
+                  {!allFilteredSelected && someFilteredSelected && <MinusIcon className="size-3" />}
+                </span>
               </div>
             )}
 
