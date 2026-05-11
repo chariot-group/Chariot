@@ -25,18 +25,22 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SessionParticipant } from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
+import { Player } from "@/types/character";
 
 type BattleGroupCharacter = {
   _id: string;
   firstname?: string;
   lastname?: string;
   surname?: string;
-  userId?: string;
+  createdBy?: string;
   challenge?: {
     challengeRating?: number | string;
   };
   profile?: {
     type?: string;
+  };
+  progression?: {
+    level?: number;
   };
 };
 
@@ -48,7 +52,9 @@ const SESSION_PARTICIPANTS_GROUP_ID = "__session_participants__";
 const SESSION_PARTICIPANTS_GROUP_LABEL = "Participants session";
 
 const sanitizeGroupIds = (nextGroupIds: string[], allGroups: BattleGroup[], mandatoryIds: string[]): string[] => {
-  const validGroupIds = new Set(allGroups.map((group) => group._id));
+  const validGroupIds = new Set(
+    allGroups.filter((group) => (group.characters ?? []).length > 0).map((group) => group._id),
+  );
   const sanitized = new Set(nextGroupIds.filter((groupId) => validGroupIds.has(groupId)));
 
   mandatoryIds.forEach((groupId) => {
@@ -87,10 +93,20 @@ const parseChallengeRating = (value: unknown): number => {
   return 0;
 };
 
-const getNpcCr = (character: BattleGroupCharacter): number => {
+const isNpcCharacter = (character: BattleGroupCharacter): boolean => {
   const cr = parseChallengeRating(character.challenge?.challengeRating);
-  const isNpc = cr > 0 || !character.userId || !!character.profile?.type;
-  return isNpc ? cr : 0;
+  return cr > 0 || !character.createdBy || !!character.profile?.type;
+};
+
+const getNpcCr = (character: BattleGroupCharacter): number => {
+  if (!isNpcCharacter(character)) return 0;
+  return parseChallengeRating(character.challenge?.challengeRating);
+};
+
+const getPlayerLevel = (character: BattleGroupCharacter): number => {
+  if (isNpcCharacter(character)) return 0;
+  const level = character.progression?.level;
+  return typeof level === "number" && Number.isFinite(level) && level > 0 ? level : 0;
 };
 
 const formatCharacterName = (character: BattleGroupCharacter): string => {
@@ -145,7 +161,8 @@ const buildSessionParticipantsGroup = async (
       firstname: character.firstname,
       lastname: character.lastname,
       surname: character.surname,
-      userId: character.createdBy,
+      createdBy: character.createdBy,
+      progression: (character as Player).progression,
     });
   });
 
@@ -160,7 +177,7 @@ const buildSessionParticipantsGroup = async (
       existingCharacter ?? {
         _id: characterId,
         surname: "Participant",
-        userId: participant.userId,
+        createdBy: participant.userId,
       },
     );
   });
@@ -226,7 +243,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
     const loadGroups = async () => {
       setIsLoading(true);
       try {
-        const allGroups = (await groupService.getAllGroupsByCampaign(selectedCampaignId)) as BattleGroup[];
+        const allGroups = (await groupService.getAllGroupsByCampaign(selectedCampaignId, "active")) as BattleGroup[];
         if (!isMounted) return;
 
         const sessionParticipantsGroup = await buildSessionParticipantsGroup(
@@ -284,6 +301,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const groupOptions = React.useMemo(() => {
     const uniqueGroups = new Map<string, { label: string; value: string }>();
     groups.forEach((group) => {
+      if ((group.characters ?? []).length === 0) return;
       uniqueGroups.set(group._id, {
         label: group.label,
         value: group._id,
@@ -381,7 +399,16 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                 <div className="max-h-[40vh] space-y-2 overflow-y-auto pr-1">
                   {selectedGroups.map((group) => {
                     const members = group.characters ?? [];
-                    const totalNpcCr = members.reduce((sum, character) => sum + getNpcCr(character), 0);
+                    const npcMembers = members.filter(isNpcCharacter);
+                    const playerMembers = members.filter((c) => !isNpcCharacter(c));
+                    const avgNpcCr =
+                      npcMembers.length > 0
+                        ? npcMembers.reduce((sum, c) => sum + getNpcCr(c), 0) / npcMembers.length
+                        : 0;
+                    const avgPlayerLevel =
+                      playerMembers.length > 0
+                        ? playerMembers.reduce((sum, c) => sum + getPlayerLevel(c), 0) / playerMembers.length
+                        : 0;
                     const excludedMembers = new Set(excludedMembersByGroup[group._id] ?? []);
                     const includedCount = members.length - excludedMembers.size;
                     const isExpanded = expandedGroupIds.includes(group._id);
@@ -397,11 +424,18 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                           <div className="min-w-0">
                             <p className="truncate font-semibold">{group.label}</p>
                             <p className="text-xs text-muted-foreground">
-                              {t("initBattleGroupStats", {
-                                members: members.length,
-                                cr: formatCr(totalNpcCr),
-                              })}
+                              {t("initBattleGroupStats", { members: members.length })}
                             </p>
+                            {npcMembers.length > 0 && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("initBattleNpcAvgCr", { cr: formatCr(avgNpcCr) })}
+                              </p>
+                            )}
+                            {playerMembers.length > 0 && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("initBattlePlayerAvgLevel", { level: formatCr(avgPlayerLevel) })}
+                              </p>
+                            )}
                             <p className="text-xs text-muted-foreground">
                               {t("initBattleIncludedMembers", {
                                 included: includedCount,
@@ -424,7 +458,19 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                     key={member._id}
                                     className="flex flex-col">
                                     <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-sm">
-                                      <span className="truncate">{formatCharacterName(member)}</span>
+                                      <span className="truncate">
+                                        {formatCharacterName(member)}
+                                        {isNpcCharacter(member) && getNpcCr(member) > 0 && (
+                                          <span className="ml-1 text-xs text-muted-foreground">
+                                            (CR {formatCr(getNpcCr(member))})
+                                          </span>
+                                        )}
+                                        {!isNpcCharacter(member) && getPlayerLevel(member) > 0 && (
+                                          <span className="ml-1 text-xs text-muted-foreground">
+                                            (niv. {getPlayerLevel(member)})
+                                          </span>
+                                        )}
+                                      </span>
                                       <span className="flex shrink-0 items-center gap-2">
                                         <span className="text-xs text-muted-foreground">
                                           {t("initBattleInInitiative")}
