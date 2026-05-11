@@ -423,7 +423,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                           <button
                             type="button"
                             onClick={() => toggleGroupExpanded(group._id)}
-                            className="flex w-full items-start justify-between gap-2 text-left">
+                            className="flex w-full items-start justify-between gap-2 text-left hover:cursor-pointer">
                             <div className="min-w-0">
                               <p className="truncate font-semibold">{group.label}</p>
                               <p className="text-xs text-muted-foreground">
