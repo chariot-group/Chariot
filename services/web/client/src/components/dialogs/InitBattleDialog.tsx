@@ -366,159 +366,163 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
       open={open}
       onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl h-[85vh] !flex flex-col">
         <DialogHeader>
           <DialogTitle>{t("initBattleDialogTitle")}</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] grid-cols-1 items-start">
-          <Card className="gap-4 p-4 sm:p-5 order-2 lg:order-1">
-            <div className="space-y-2">
-              <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] grid-cols-1 items-start">
+            <Card className="gap-4 p-4 sm:p-5 order-2 lg:order-1 h-full">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
 
-              <MultiSelect
-                value={selectedGroupIds}
-                onChange={handleSelectedGroupIdsChange}
-                options={groupOptions}
-                placeholder={t("initBattleSearchGroupPlaceholder")}
-                searchPlaceholder={t("initBattleSearchGroupPlaceholder")}
-                emptyText={t("initBattleNoSearchResult")}
-                selectAllLabel={t("initBattleSelectAllGroups")}
-              />
-            </div>
+                <MultiSelect
+                  value={selectedGroupIds}
+                  onChange={handleSelectedGroupIdsChange}
+                  options={groupOptions}
+                  placeholder={t("initBattleSearchGroupPlaceholder")}
+                  searchPlaceholder={t("initBattleSearchGroupPlaceholder")}
+                  emptyText={t("initBattleNoSearchResult")}
+                  selectAllLabel={t("initBattleSelectAllGroups")}
+                  disabledValues={mandatoryGroupIds}
+                  disabledTooltip={t("initBattleParticipantsCannotBeExcluded")}
+                />
+              </div>
 
-            <div className="space-y-2">
-              {isLoading ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" />
-                  {t("initBattleLoadingGroups")}
-                </div>
-              ) : selectedGroups.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("initBattleNoGroupSelected")}</p>
-              ) : (
-                <div className="max-h-[40vh] space-y-2 overflow-y-auto pr-1">
-                  {selectedGroups.map((group) => {
-                    const members = group.characters ?? [];
-                    const npcMembers = members.filter(isNpcCharacter);
-                    const playerMembers = members.filter((c) => !isNpcCharacter(c));
-                    const avgNpcCr =
-                      npcMembers.length > 0
-                        ? npcMembers.reduce((sum, c) => sum + getNpcCr(c), 0) / npcMembers.length
-                        : 0;
-                    const avgPlayerLevel =
-                      playerMembers.length > 0
-                        ? playerMembers.reduce((sum, c) => sum + getPlayerLevel(c), 0) / playerMembers.length
-                        : 0;
-                    const excludedMembers = new Set(excludedMembersByGroup[group._id] ?? []);
-                    const includedCount = members.length - excludedMembers.size;
-                    const isExpanded = expandedGroupIds.includes(group._id);
+              <div className="space-y-2 h-full">
+                {isLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" />
+                    {t("initBattleLoadingGroups")}
+                  </div>
+                ) : selectedGroups.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{t("initBattleNoGroupSelected")}</p>
+                ) : (
+                  <div className="max-h-[55vh] space-y-2 overflow-y-auto pr-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                    {selectedGroups.map((group) => {
+                      const members = group.characters ?? [];
+                      const npcMembers = members.filter(isNpcCharacter);
+                      const playerMembers = members.filter((c) => !isNpcCharacter(c));
+                      const avgNpcCr =
+                        npcMembers.length > 0
+                          ? npcMembers.reduce((sum, c) => sum + getNpcCr(c), 0) / npcMembers.length
+                          : 0;
+                      const avgPlayerLevel =
+                        playerMembers.length > 0
+                          ? playerMembers.reduce((sum, c) => sum + getPlayerLevel(c), 0) / playerMembers.length
+                          : 0;
+                      const excludedMembers = new Set(excludedMembersByGroup[group._id] ?? []);
+                      const includedCount = members.length - excludedMembers.size;
+                      const isExpanded = expandedGroupIds.includes(group._id);
 
-                    return (
-                      <Card
-                        key={group._id}
-                        className="rounded-[24px] bg-gray-middle-light p-3">
-                        <button
-                          type="button"
-                          onClick={() => toggleGroupExpanded(group._id)}
-                          className="flex w-full items-start justify-between gap-2 text-left">
-                          <div className="min-w-0">
-                            <p className="truncate font-semibold">{group.label}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {t("initBattleGroupStats", { members: members.length })}
-                            </p>
-                            {npcMembers.length > 0 && (
+                      return (
+                        <Card
+                          key={group._id}
+                          className="rounded-[24px] bg-gray-middle-light p-3">
+                          <button
+                            type="button"
+                            onClick={() => toggleGroupExpanded(group._id)}
+                            className="flex w-full items-start justify-between gap-2 text-left">
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold">{group.label}</p>
                               <p className="text-xs text-muted-foreground">
-                                {t("initBattleNpcAvgCr", { cr: formatCr(avgNpcCr) })}
+                                {t("initBattleGroupStats", { members: members.length })}
                               </p>
-                            )}
-                            {playerMembers.length > 0 && (
+                              {npcMembers.length > 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  {t("initBattleNpcAvgCr", { cr: formatCr(avgNpcCr) })}
+                                </p>
+                              )}
+                              {playerMembers.length > 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  {t("initBattlePlayerAvgLevel", { level: formatCr(avgPlayerLevel) })}
+                                </p>
+                              )}
                               <p className="text-xs text-muted-foreground">
-                                {t("initBattlePlayerAvgLevel", { level: formatCr(avgPlayerLevel) })}
+                                {t("initBattleIncludedMembers", {
+                                  included: includedCount,
+                                  total: members.length,
+                                })}
                               </p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              {t("initBattleIncludedMembers", {
-                                included: includedCount,
-                                total: members.length,
-                              })}
-                            </p>
-                          </div>
-                          {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-                        </button>
+                            </div>
+                            {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                          </button>
 
-                        {isExpanded && (
-                          <div>
-                            {members.length === 0 ? (
-                              <p className="text-xs text-muted-foreground">{t("noCharacters")}</p>
-                            ) : (
-                              members.map((member) => {
-                                const memberIncluded = !excludedMembers.has(member._id);
-                                return (
-                                  <label
-                                    key={member._id}
-                                    className="flex flex-col">
-                                    <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-sm">
-                                      <span className="truncate">
-                                        {formatCharacterName(member)}
-                                        {isNpcCharacter(member) && getNpcCr(member) > 0 && (
-                                          <span className="ml-1 text-xs text-muted-foreground">
-                                            (CR {formatCr(getNpcCr(member))})
-                                          </span>
-                                        )}
-                                        {!isNpcCharacter(member) && getPlayerLevel(member) > 0 && (
-                                          <span className="ml-1 text-xs text-muted-foreground">
-                                            (niv. {getPlayerLevel(member)})
-                                          </span>
-                                        )}
-                                      </span>
-                                      <span className="flex shrink-0 items-center gap-2">
-                                        <span className="text-xs text-muted-foreground">
-                                          {t("initBattleInInitiative")}
+                          {isExpanded && (
+                            <div>
+                              {members.length === 0 ? (
+                                <p className="text-xs text-muted-foreground">{t("noCharacters")}</p>
+                              ) : (
+                                members.map((member) => {
+                                  const memberIncluded = !excludedMembers.has(member._id);
+                                  return (
+                                    <label
+                                      key={member._id}
+                                      className="flex flex-col">
+                                      <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-sm">
+                                        <span className="truncate">
+                                          {formatCharacterName(member)}
+                                          {isNpcCharacter(member) && getNpcCr(member) > 0 && (
+                                            <span className="ml-1 text-xs text-muted-foreground">
+                                              (CR {formatCr(getNpcCr(member))})
+                                            </span>
+                                          )}
+                                          {!isNpcCharacter(member) && getPlayerLevel(member) > 0 && (
+                                            <span className="ml-1 text-xs text-muted-foreground">
+                                              (niv. {getPlayerLevel(member)})
+                                            </span>
+                                          )}
                                         </span>
-                                        <Checkbox
-                                          checked={memberIncluded}
-                                          onCheckedChange={(checked) =>
-                                            toggleMemberInInitiative(group._id, member._id, Boolean(checked))
-                                          }
-                                        />
-                                      </span>
-                                    </div>
+                                        <span className="flex shrink-0 items-center gap-2">
+                                          <span className="text-xs text-muted-foreground">
+                                            {t("initBattleInInitiative")}
+                                          </span>
+                                          <Checkbox
+                                            checked={memberIncluded}
+                                            onCheckedChange={(checked) =>
+                                              toggleMemberInInitiative(group._id, member._id, Boolean(checked))
+                                            }
+                                          />
+                                        </span>
+                                      </div>
 
-                                    <Separator className="my-1" />
-                                  </label>
-                                );
-                              })
-                            )}
-                          </div>
-                        )}
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </Card>
+                                      <Separator className="my-1" />
+                                    </label>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </Card>
 
-          <Card className="gap-3 p-4 sm:p-5 order-1 lg:order-2">
-            <p className="text-sm font-semibold">{t("initBattleSettings")}</p>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="enable-half-proficiency"
-                className="cursor-pointer"
-                checked={showAllOpponents}
-                onCheckedChange={(checked) => {
-                  const nextShowAllOpponents = Boolean(checked);
-                  setShowAllOpponents(nextShowAllOpponents);
-                  persistInitBattleDraft({ showAllOpponents: nextShowAllOpponents });
-                }}
-              />
-              <Label
-                htmlFor="enable-half-proficiency"
-                className="cursor-pointer text-sm text-card-foreground">
-                {t("initBattleShowAllOpponents")}
-              </Label>
-            </div>
-          </Card>
+            <Card className="gap-3 p-4 sm:p-5 order-1 lg:order-2">
+              <p className="text-sm font-semibold">{t("initBattleSettings")}</p>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="enable-half-proficiency"
+                  className="cursor-pointer"
+                  checked={showAllOpponents}
+                  onCheckedChange={(checked) => {
+                    const nextShowAllOpponents = Boolean(checked);
+                    setShowAllOpponents(nextShowAllOpponents);
+                    persistInitBattleDraft({ showAllOpponents: nextShowAllOpponents });
+                  }}
+                />
+                <Label
+                  htmlFor="enable-half-proficiency"
+                  className="cursor-pointer text-sm text-card-foreground">
+                  {t("initBattleShowAllOpponents")}
+                </Label>
+              </div>
+            </Card>
+          </div>
         </div>
 
         <DialogFooter>

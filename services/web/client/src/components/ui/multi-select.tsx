@@ -4,6 +4,7 @@ import * as React from "react";
 import { CheckIcon, MinusIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 type MultiSelectOption = {
@@ -20,6 +21,8 @@ interface MultiSelectProps {
   emptyText?: string;
   selectAllLabel?: string;
   className?: string;
+  disabledValues?: string[];
+  disabledTooltip?: string;
 }
 
 export function MultiSelect({
@@ -31,7 +34,10 @@ export function MultiSelect({
   emptyText,
   selectAllLabel,
   className,
+  disabledValues,
+  disabledTooltip,
 }: MultiSelectProps) {
+  const disabledSet = React.useMemo(() => new Set(disabledValues ?? []), [disabledValues]);
   const t = useTranslations("multiSelect");
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
@@ -225,21 +231,38 @@ export function MultiSelect({
 
             {selectedOptions.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {selectedOptions.map((option) => (
-                  <span
-                    key={option.value}
-                    className="inline-flex items-center gap-1 rounded-[15px] bg-white/10 px-2 py-1 text-sm text-white">
-                    <span className="max-w-48 truncate">{option.label}</span>
-                    <button
-                      type="button"
-                      onPointerDown={handleOptionPointerDown}
-                      onClick={() => toggleValue(option.value)}
-                      className="cursor-pointer rounded-full p-0.5 transition-colors hover:bg-white/10"
-                      aria-label={t("removeOption", { label: option.label })}>
-                      <XIcon className="size-3.5" />
-                    </button>
-                  </span>
-                ))}
+                {selectedOptions.map((option) => {
+                  const isDisabled = disabledSet.has(option.value);
+
+                  const badge = (
+                    <span
+                      key={option.value}
+                      className="inline-flex items-center gap-1 rounded-[15px] bg-white/10 px-2 py-1 text-sm text-white">
+                      <span className="max-w-48 truncate">{option.label}</span>
+                      {!isDisabled && (
+                        <button
+                          type="button"
+                          onPointerDown={handleOptionPointerDown}
+                          onClick={() => toggleValue(option.value)}
+                          className="cursor-pointer rounded-full p-0.5 transition-colors hover:bg-white/10"
+                          aria-label={t("removeOption", { label: option.label })}>
+                          <XIcon className="size-3.5" />
+                        </button>
+                      )}
+                    </span>
+                  );
+
+                  if (isDisabled && disabledTooltip) {
+                    return (
+                      <Tooltip key={option.value}>
+                        <TooltipTrigger asChild>{badge}</TooltipTrigger>
+                        <TooltipContent>{disabledTooltip}</TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+
+                  return badge;
+                })}
               </div>
             )}
 
@@ -249,22 +272,28 @@ export function MultiSelect({
               ) : (
                 filteredOptions.map((option) => {
                   const isSelected = selectedValues.has(option.value);
+                  const isDisabled = disabledSet.has(option.value);
 
                   return (
                     <div
                       key={option.value}
                       role="button"
-                      tabIndex={0}
-                      onPointerDown={handleOptionPointerDown}
-                      onClick={() => toggleValue(option.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          toggleValue(option.value);
-                        }
-                      }}
+                      tabIndex={isDisabled ? -1 : 0}
+                      onPointerDown={isDisabled ? undefined : handleOptionPointerDown}
+                      onClick={isDisabled ? undefined : () => toggleValue(option.value)}
+                      onKeyDown={
+                        isDisabled
+                          ? undefined
+                          : (event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                toggleValue(option.value);
+                              }
+                            }
+                      }
                       className={cn(
-                        "flex w-full cursor-pointer items-center justify-between gap-3 rounded-[15px] px-2 py-2 text-left text-sm transition-colors hover:bg-white/10",
+                        "flex w-full items-center justify-between gap-3 rounded-[15px] px-2 py-2 text-left text-sm transition-colors",
+                        isDisabled ? "cursor-default opacity-60" : "cursor-pointer hover:bg-white/10",
                         isSelected && "bg-white/10 text-white",
                       )}>
                       <span className="truncate">{option.label}</span>

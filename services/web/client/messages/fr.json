@@ -93,6 +93,7 @@
     "initBattleCollapseGroup": "Masquer les membres du groupe",
     "initBattleRemoveGroup": "Retirer le groupe de la sélection",
     "initBattleInInitiative": "Engagé(e)",
+    "initBattleParticipantsCannotBeExcluded": "Les participants ne peuvent pas être exclus de l'initiative",
     "initBattleValidateSelection": "Valider la configuration"
   },
   "multiSelect": {
