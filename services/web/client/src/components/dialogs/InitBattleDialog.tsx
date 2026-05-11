@@ -291,7 +291,8 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
     return () => {
       isMounted = false;
     };
-  }, [open, selectedCampaignId, session?.code, session?.participants, session?.initBattleDraft]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initBattleDraft is only read once on open to restore draft state; including it would retrigger loadGroups on every user interaction
+  }, [open, selectedCampaignId, session?.code, session?.participants]);
 
   const selectedGroups = React.useMemo(() => {
     const selectedIds = new Set(selectedGroupIds);
