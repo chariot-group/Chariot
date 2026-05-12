@@ -54,6 +54,25 @@ const groupTransform = createTransform(
     { whitelist: ['group'] }
 );
 
+/**
+ * Nettoie un tableau de personnages persistés : conserve l'ordre, supprime les `_id` dupliqués (premier vu gagne)
+ * et écarte les entrées sans `_id`. Indispensable pour purger des états persistés pollués avant l'ajout du dedupe
+ * côté reducer (sinon la cooldown `characters.length > 0` empêche le refetch et l'erreur de clé dupliquée persiste).
+ */
+const sanitizePersistedCharacters = (value: unknown): unknown => {
+    if (!Array.isArray(value)) return value;
+    const seen = new Set<string>();
+    const cleaned: unknown[] = [];
+    for (const item of value) {
+        const id = (item as { _id?: unknown } | null)?._id;
+        if (typeof id !== 'string' || id.length === 0) continue;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        cleaned.push(item);
+    }
+    return cleaned;
+};
+
 const characterTransform = createTransform(
     (inboundState: Record<string, unknown>) => {
         const { loadingWithoutGroup, loadingMoreWithoutGroup, errorWithoutGroup, loadingAll, errorAll, ...rest } = inboundState;
@@ -67,6 +86,8 @@ const characterTransform = createTransform(
     (outboundState: Record<string, unknown>) => {
         return {
             ...outboundState,
+            charactersWithoutGroup: sanitizePersistedCharacters(outboundState.charactersWithoutGroup),
+            allCharacters: sanitizePersistedCharacters(outboundState.allCharacters),
             loadingWithoutGroup: false,
             loadingMoreWithoutGroup: false,
             errorWithoutGroup: null,
