@@ -9,6 +9,8 @@ import { ConfigService } from '@nestjs/config';
 import { KeycloakAuthGuard } from './keycloak-auth.guard';
 import * as jwt from 'jsonwebtoken';
 
+jest.mock('jsonwebtoken');
+
 describe('KeycloakAuthGuard', () => {
   let guard: KeycloakAuthGuard;
   let reflector: Reflector;

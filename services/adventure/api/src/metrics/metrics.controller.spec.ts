@@ -4,7 +4,12 @@ import { Response } from 'express';
 import * as promClient from 'prom-client';
 
 // Mock prom-client
-jest.mock('prom-client');
+jest.mock('prom-client', () => ({
+  register: {
+    contentType: 'text/plain; version=0.0.4; charset=utf-8',
+    metrics: jest.fn(),
+  },
+}));
 
 describe('MetricsController', () => {
   let controller: MetricsController;
@@ -18,21 +23,12 @@ describe('MetricsController', () => {
       send: jest.fn().mockReturnThis(),
     } as any;
 
-    // Setup mock register
-    mockRegister = {
-      contentType: 'text/plain; version=0.0.4; charset=utf-8',
-      metrics: jest
-        .fn()
-        .mockResolvedValue(
-          '# HELP chariot_http_requests_total Total HTTP requests\n',
-        ),
-    };
-
-    Object.defineProperty(promClient, 'register', {
-      value: mockRegister,
-      writable: true,
-      configurable: true,
-    });
+    // Setup mock register - use the factory mock, don't redefine
+    mockRegister = promClient.register as any;
+    (mockRegister.metrics as jest.Mock).mockReset();
+    (mockRegister.metrics as jest.Mock).mockResolvedValue(
+      '# HELP chariot_http_requests_total Total HTTP requests\n',
+    );
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MetricsController],
