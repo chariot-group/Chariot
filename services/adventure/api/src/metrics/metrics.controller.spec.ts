@@ -28,7 +28,11 @@ describe('MetricsController', () => {
         ),
     };
 
-    (promClient.register as any) = mockRegister;
+    Object.defineProperty(promClient, 'register', {
+      value: mockRegister,
+      writable: true,
+      configurable: true,
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MetricsController],

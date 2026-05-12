@@ -10,7 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
 import * as jwt from 'jsonwebtoken';
-import * as jwksClient from 'jwks-rsa';
+import jwksClient = require('jwks-rsa');
 
 type DecodedToken = jwt.JwtPayload & {
   sub?: string;
@@ -32,7 +32,7 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
   constructor(
     private reflector: Reflector,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   onModuleInit() {
     // URL interne pour récupérer les clés JWKS
@@ -125,8 +125,8 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
       return true;
     } catch (error) {
       this.logger.error(
-        `Token validation failed: ${error.message}`,
-        error.stack,
+        `Token validation failed: ${(error as Error).message}`,
+        (error as Error).stack,
       );
       throw new UnauthorizedException('Invalid token');
     }
