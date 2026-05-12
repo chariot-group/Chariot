@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 type MultiSelectOption = {
   label: string;
   value: string;
+  description?: React.ReactNode;
 };
 
 interface MultiSelectProps {
@@ -283,7 +284,12 @@ export function MultiSelect({
                         isDisabled ? "cursor-default opacity-60" : "cursor-pointer hover:bg-white/10",
                         isSelected && "bg-white/10 text-white",
                       )}>
-                      <span className="truncate">{option.label}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate">{option.label}</div>
+                        {option.description && (
+                          <div className="mt-0.5 text-xs text-foreground/60">{option.description}</div>
+                        )}
+                      </div>
                       <span
                         className={cn(
                           "flex size-4 shrink-0 items-center justify-center rounded-[4px] border",

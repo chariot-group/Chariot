@@ -299,17 +299,55 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
     return groups.filter((group) => selectedIds.has(group._id));
   }, [groups, selectedGroupIds]);
 
+  const canValidate = React.useMemo(() => {
+    const nonParticipantGroups = selectedGroups.filter((g) => g._id !== SESSION_PARTICIPANTS_GROUP_ID);
+    if (nonParticipantGroups.length === 0) return false;
+    return selectedGroups.every((group) => {
+      const members = group.characters ?? [];
+      const excluded = new Set(excludedMembersByGroup[group._id] ?? []);
+      return members.length - excluded.size > 0;
+    });
+  }, [selectedGroups, excludedMembersByGroup]);
+
   const groupOptions = React.useMemo(() => {
-    const uniqueGroups = new Map<string, { label: string; value: string }>();
+    const uniqueGroups = new Map<string, { label: string; value: string; description?: React.ReactNode }>();
     groups.forEach((group) => {
-      if ((group.characters ?? []).length === 0) return;
+      const members = group.characters ?? [];
+      if (members.length === 0) return;
+      const npcMembers = members.filter(isNpcCharacter);
+      const playerMembers = members.filter((c) => !isNpcCharacter(c));
+      const totalNpcCr = npcMembers.length > 0 ? npcMembers.reduce((sum, c) => sum + getNpcCr(c), 0) : 0;
+      const avgPlayerLevel =
+        playerMembers.length > 0
+          ? playerMembers.reduce((sum, c) => sum + getPlayerLevel(c), 0) / playerMembers.length
+          : 0;
       uniqueGroups.set(group._id, {
         label: group.label,
         value: group._id,
+        description: (
+          <span className="flex flex-wrap gap-x-2 gap-y-0.5">
+            <span className="flex items-center gap-1">
+              <Users className="size-3 shrink-0 text-foreground/50" />
+              {t("initBattleGroupStats", { members: members.length })}
+            </span>
+            {npcMembers.length > 0 && (
+              <span className="flex items-center gap-1">
+                <Skull className="size-3 shrink-0 text-red-400" />
+                {t("initBattleNpcTotalCr", { cr: formatCr(totalNpcCr) })}
+              </span>
+            )}
+            {playerMembers.length > 0 && (
+              <span className="flex items-center gap-1">
+                <Star className="size-3 shrink-0 text-yellow-400" />
+                {t("initBattlePlayerAvgLevel", { level: formatCr(avgPlayerLevel) })}
+              </span>
+            )}
+          </span>
+        ),
       });
     });
     return Array.from(uniqueGroups.values());
-  }, [groups]);
+  }, [groups, t]);
 
   const handleSelectedGroupIdsChange = (nextGroupIds: string[]) => {
     const validGroupIds = getSanitizedGroupIds(nextGroupIds);
@@ -531,7 +569,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
             <Button variant="outline">{tCommon("cancel")}</Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button disabled={selectedGroups.length === 0}>{t("initBattleValidateSelection")}</Button>
+            <Button disabled={!canValidate}>{t("initBattleValidateSelection")}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
