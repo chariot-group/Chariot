@@ -372,10 +372,29 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] grid-cols-1 items-start">
-            <Card className="gap-4 p-4 sm:p-5 order-2 lg:order-1 h-full">
-              <div className="space-y-2">
-                <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
+          <div className="grid gap-4 grid-cols-1 items-start">
+            <Card className="gap-4 p-4 sm:p-5 h-full">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="enable-half-proficiency"
+                      className="cursor-pointer"
+                      checked={showAllOpponents}
+                      onCheckedChange={(checked) => {
+                        const nextShowAllOpponents = Boolean(checked);
+                        setShowAllOpponents(nextShowAllOpponents);
+                        persistInitBattleDraft({ showAllOpponents: nextShowAllOpponents });
+                      }}
+                    />
+                    <Label
+                      htmlFor="enable-half-proficiency"
+                      className="cursor-pointer text-sm text-card-foreground">
+                      {t("initBattleShowAllOpponents")}
+                    </Label>
+                  </div>
+                </div>
 
                 <MultiSelect
                   value={selectedGroupIds}
@@ -506,27 +525,6 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                     })}
                   </div>
                 )}
-              </div>
-            </Card>
-
-            <Card className="gap-3 p-4 sm:p-5 order-1 lg:order-2">
-              <p className="text-sm font-semibold">{t("initBattleSettings")}</p>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="enable-half-proficiency"
-                  className="cursor-pointer"
-                  checked={showAllOpponents}
-                  onCheckedChange={(checked) => {
-                    const nextShowAllOpponents = Boolean(checked);
-                    setShowAllOpponents(nextShowAllOpponents);
-                    persistInitBattleDraft({ showAllOpponents: nextShowAllOpponents });
-                  }}
-                />
-                <Label
-                  htmlFor="enable-half-proficiency"
-                  className="cursor-pointer text-sm text-card-foreground">
-                  {t("initBattleShowAllOpponents")}
-                </Label>
               </div>
             </Card>
           </div>
