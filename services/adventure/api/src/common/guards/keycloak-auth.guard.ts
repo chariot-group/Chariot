@@ -32,7 +32,7 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
   constructor(
     private reflector: Reflector,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     // URL interne pour récupérer les clés JWKS
