@@ -181,7 +181,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         }
       }
 
-      const key = `${spell.name}-${spell.level}`;
+      const key = `prep-${spellIdx}-${spell.level ?? 0}`;
       setPrepSavingKey(key);
       try {
         const list = (character.spellcasting ?? []).map((sc) => {
@@ -240,12 +240,14 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
       if (activeSpellcasting.spellSlotsByLevel) {
         Object.keys(activeSpellcasting.spellSlotsByLevel).forEach((l) => {
           const n = Number(l);
+          if (!Number.isFinite(n)) return;
           if (!levels.includes(n)) levels.push(n);
         });
       }
       if (activeSpellcasting.spells) {
         activeSpellcasting.spells.forEach((spell) => {
           const n = Number(spell.level);
+          if (!Number.isFinite(n)) return;
           if (!levels.includes(n)) levels.push(n);
         });
       }
@@ -544,7 +546,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                           handleSpellSelect(spell);
                                         }
                                       }}
-                                      key={index}
+                                      key={`${key}-spell-${index}`}
                                       className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
                                       role="button"
                                       tabIndex={0}
@@ -582,6 +584,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                   if (activeSpellcasting.spellSlotsByLevel) {
                     Object.keys(activeSpellcasting.spellSlotsByLevel).forEach((l) => {
                       const n = Number(l);
+                      if (!Number.isFinite(n)) return;
                       if (!levels.includes(n)) levels.push(n);
                     });
                   }
@@ -590,6 +593,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                   if (activeSpellcasting.spells) {
                     activeSpellcasting.spells.forEach((spell) => {
                       const n = Number(spell.level);
+                      if (!Number.isFinite(n)) return;
                       if (!levels.includes(n)) levels.push(n);
                     });
                   }
@@ -609,12 +613,13 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                           level,
                           appliesPrepMechanic,
                         );
-                        const slot = activeSpellcasting.spellSlotsByLevel?.[level];
+                        const slotKey = String(level);
+                        const slot = activeSpellcasting.spellSlotsByLevel?.[slotKey];
                         const spellsList = activeSpellcasting.spells ?? [];
 
                         return (
                           <AccordionItem
-                            key={level}
+                            key={`spell-level-${slotKey}`}
                             value={`level-${level}`}
                             className={`flex flex-col gap-2`}>
                             <Card className="gap-3 p-0">
@@ -631,7 +636,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                               <div
                                 className="flex flex-wrap gap-2"
                                 role="list">
-                                {spells.map((spell) => {
+                                {spells.map((spell, spellRowIndex) => {
+                                  const rowKey = `lvl-${level}-row-${spellRowIndex}`;
                                   const isCantripRow = level === 0;
                                   const showBookmarks = appliesPrepMechanic && !isCantripRow;
                                   const prepEditRow =
@@ -651,7 +657,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                             handleSpellSelect(spell);
                                           }
                                         }}
-                                        key={`${spell.name}-${spell.level}`}
+                                        key={rowKey}
                                         className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-2 p-2 md:px-4 flex-row items-center cursor-pointer`}
                                         role="button"
                                         tabIndex={0}
@@ -691,7 +697,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                           openDetail();
                                         }
                                       }}
-                                      key={`${spell.name}-${spell.level}`}
+                                      key={rowKey}
                                       className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-2 py-2 pl-2 pr-2 md:pl-3 md:pr-3 flex-row items-center cursor-pointer`}
                                       role="button"
                                       tabIndex={0}
