@@ -23,6 +23,7 @@ import { ChevronDown, ChevronRight, Loader2, Skull, Star, Swords, Users } from "
 import { useTranslations } from "next-intl";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionParticipant } from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 import { Player } from "@/types/character";
@@ -333,6 +334,14 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
             {npcMembers.length > 0 && (
               <span className="flex items-center gap-1">
                 <Skull className="size-3 shrink-0 text-red-400" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <abbr className="no-underline cursor-help">{t("initBattleNpcCrLabel")}</abbr>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tCommon("challengeRatingTooltip")}</p>
+                  </TooltipContent>
+                </Tooltip>{" "}
                 {t("initBattleNpcTotalCr", { cr: formatCr(totalNpcCr) })}
               </span>
             )}
@@ -487,6 +496,14 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                 {npcMembers.length > 0 && (
                                   <span className="flex items-center gap-1 text-xs text-foreground/70">
                                     <Skull className="size-3 shrink-0 text-red-400" />
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <abbr className="no-underline cursor-help">{t("initBattleNpcCrLabel")}</abbr>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{tCommon("challengeRatingTooltip")}</p>
+                                      </TooltipContent>
+                                    </Tooltip>{" "}
                                     {t("initBattleNpcTotalCr", { cr: formatCr(totalNpcCr) })}
                                   </span>
                                 )}
@@ -524,7 +541,18 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                           {formatCharacterName(member)}
                                           {isNpcCharacter(member) && getNpcCr(member) > 0 && (
                                             <span className="ml-1 text-xs text-muted-foreground">
-                                              (CR {formatCr(getNpcCr(member))})
+                                              (
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <abbr className="no-underline cursor-help">
+                                                    {t("initBattleNpcCrLabel")}
+                                                  </abbr>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                  <p>{tCommon("challengeRatingTooltip")}</p>
+                                                </TooltipContent>
+                                              </Tooltip>{" "}
+                                              {formatCr(getNpcCr(member))})
                                             </span>
                                           )}
                                           {!isNpcCharacter(member) && getPlayerLevel(member) > 0 && (

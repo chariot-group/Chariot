@@ -86,8 +86,9 @@
     "initBattleSettings": "Settings",
     "initBattleNoSearchResult": "No groups found.",
     "initBattleGroupStats": "Members: {members}",
+    "initBattleNpcCrLabel": "CR",
     "initBattleNpcAvgCr": "Avg NPC CR: {cr}",
-    "initBattleNpcTotalCr": "Total NPC CR: {cr}",
+    "initBattleNpcTotalCr": "total NPC: {cr}",
     "initBattlePlayerAvgLevel": "Avg player level: {level}",
     "initBattleIncludedMembers": "Members in initiative: {included}/{total}",
     "initBattleExpandGroup": "Show group members",
@@ -106,6 +107,7 @@
   "common": {
     "save": "Save",
     "cancel": "Cancel",
+    "challengeRatingTooltip": "Challenge Rating",
     "errors": {
       "campaignNameRequired": "Campaign name is required",
       "campaignCreationFailed": "Failed to create campaign",
@@ -907,7 +909,8 @@
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
-        "monsterInfo": "CR {cr} • {type}",
+        "crLabel": "CR",
+        "monsterInfo": "{cr} • {type}",
         "preview": {
           "challengeRatingShort": "CR",
           "experiencePointsShort": "XP",

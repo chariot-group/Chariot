@@ -86,8 +86,9 @@
     "initBattleSettings": "Paramètres",
     "initBattleNoSearchResult": "Aucun groupe trouvé.",
     "initBattleGroupStats": "Membres : {members}",
+    "initBattleNpcCrLabel": "ID",
     "initBattleNpcAvgCr": "ID moy PNJ : {cr}",
-    "initBattleNpcTotalCr": "Somme ID PNJ : {cr}",
+    "initBattleNpcTotalCr": "total PNJ : {cr}",
     "initBattlePlayerAvgLevel": "Niveau moy joueurs : {level}",
     "initBattleIncludedMembers": "Membres dans l'initiative: {included}/{total}",
     "initBattleExpandGroup": "Afficher les membres du groupe",
@@ -107,6 +108,7 @@
     "save": "Sauvegarder",
     "delete": "Supprimer",
     "cancel": "Annuler",
+    "challengeRatingTooltip": "Indice de dangerosité",
     "errors": {
       "campaignNameRequired": "Le nom de la campagne est requis",
       "campaignCreationFailed": "Échec de la création de la campagne",
@@ -912,7 +914,8 @@
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
-        "monsterInfo": "ID {cr} • {type}",
+        "crLabel": "ID",
+        "monsterInfo": "{cr} • {type}",
         "preview": {
           "challengeRatingShort": "FP",
           "experiencePointsShort": "XP",
