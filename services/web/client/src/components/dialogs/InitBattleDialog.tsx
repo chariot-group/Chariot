@@ -19,7 +19,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { selectCurrentSession, setSessionInitBattleDraft } from "@/store/slices/sessionSlice";
 import { Group } from "@/types/campaign";
-import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2, Skull, Star, Swords, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -426,25 +426,31 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                             className="flex w-full items-start justify-between gap-2 text-left hover:cursor-pointer">
                             <div className="min-w-0">
                               <p className="truncate font-semibold">{group.label}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {t("initBattleGroupStats", { members: members.length })}
-                              </p>
-                              {npcMembers.length > 0 && (
-                                <p className="text-xs text-muted-foreground">
-                                  {t("initBattleNpcAvgCr", { cr: formatCr(avgNpcCr) })}
-                                </p>
-                              )}
-                              {playerMembers.length > 0 && (
-                                <p className="text-xs text-muted-foreground">
-                                  {t("initBattlePlayerAvgLevel", { level: formatCr(avgPlayerLevel) })}
-                                </p>
-                              )}
-                              <p className="text-xs text-muted-foreground">
-                                {t("initBattleIncludedMembers", {
-                                  included: includedCount,
-                                  total: members.length,
-                                })}
-                              </p>
+                              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                                <span className="flex items-center gap-1 text-xs text-foreground/70">
+                                  <Users className="size-3 shrink-0 text-foreground/50" />
+                                  {t("initBattleGroupStats", { members: members.length })}
+                                </span>
+                                {npcMembers.length > 0 && (
+                                  <span className="flex items-center gap-1 text-xs text-foreground/70">
+                                    <Skull className="size-3 shrink-0 text-red-400" />
+                                    {t("initBattleNpcAvgCr", { cr: formatCr(avgNpcCr) })}
+                                  </span>
+                                )}
+                                {playerMembers.length > 0 && (
+                                  <span className="flex items-center gap-1 text-xs text-foreground/70">
+                                    <Star className="size-3 shrink-0 text-yellow-400" />
+                                    {t("initBattlePlayerAvgLevel", { level: formatCr(avgPlayerLevel) })}
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1 text-xs font-medium text-foreground/80">
+                                  <Swords className="size-3 shrink-0 text-blue-400" />
+                                  {t("initBattleIncludedMembers", {
+                                    included: includedCount,
+                                    total: members.length,
+                                  })}
+                                </span>
+                              </div>
                             </div>
                             {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
                           </button>
