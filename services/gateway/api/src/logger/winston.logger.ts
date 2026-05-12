@@ -1,5 +1,5 @@
 import * as winston from "winston";
-import * as DailyRotateFile from "winston-daily-rotate-file";
+import DailyRotateFile from "winston-daily-rotate-file";
 import { utilities as nestWinstonModuleUtilities } from "nest-winston";
 
 const logLevel = process.env.GATEWAY_LOG_LEVEL || "info";
