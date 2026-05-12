@@ -92,7 +92,7 @@
     "initBattleExpandGroup": "Show group members",
     "initBattleCollapseGroup": "Hide group members",
     "initBattleRemoveGroup": "Remove group from selection",
-    "initBattleInInitiative": "Engaged",
+    "initBattleInInitiative": "In initiative",
     "initBattleParticipantsCannotBeExcluded": "Participants cannot be excluded from the initiative",
     "initBattleValidateSelection": "Confirm configuration"
   },
