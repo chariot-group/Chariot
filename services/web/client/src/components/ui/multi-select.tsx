@@ -41,7 +41,6 @@ export function MultiSelect({
   const t = useTranslations("multiSelect");
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
-  const closeTimeoutRef = React.useRef<number | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const shouldOpenOnFocusRef = React.useRef(false);
@@ -90,11 +89,6 @@ export function MultiSelect({
   };
 
   const handleFocus = () => {
-    if (closeTimeoutRef.current !== null) {
-      window.clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-
     if (shouldOpenOnFocusRef.current) {
       updateOpenState(query);
     }
@@ -102,53 +96,29 @@ export function MultiSelect({
     shouldOpenOnFocusRef.current = false;
   };
 
-  const handleBlur = () => {
-    closeTimeoutRef.current = window.setTimeout(() => {
-      setOpen(false);
-    }, 120);
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const relatedTarget = event.relatedTarget as Node | null;
+    // Don't close if focus moved to an element inside our container (e.g. keyboard nav).
+    if (relatedTarget && containerRef.current?.contains(relatedTarget)) return;
+    // Otherwise (outside element or null = mobile tap outside) → close.
+    setOpen(false);
   };
 
   React.useEffect(() => {
-    return () => {
-      if (closeTimeoutRef.current !== null) {
-        window.clearTimeout(closeTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  React.useEffect(() => {
-    const handlePointerDownOutside = (event: PointerEvent) => {
-      if (!containerRef.current) {
-        return;
-      }
-
-      if (!containerRef.current.contains(event.target as Node)) {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
         setOpen(false);
       }
     };
-
-    document.addEventListener("pointerdown", handlePointerDownOutside);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDownOutside);
-    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Escape") {
-      setOpen(false);
-      return;
-    }
-
     if (event.key === "Enter" && filteredOptions.length > 0) {
       event.preventDefault();
       toggleValue(filteredOptions[0].value);
     }
-  };
-
-  const handleOptionPointerDown = (event: React.PointerEvent<HTMLElement>) => {
-    // Keep focus on the input so the menu stays interactive while selecting multiple groups.
-    event.preventDefault();
   };
 
   const hasSelectedOptions = selectedOptions.length > 0;
@@ -187,12 +157,19 @@ export function MultiSelect({
           onBlur={handleBlur}
           onKeyDown={handleInputKeyDown}
           placeholder={searchPlaceholder ?? placeholder ?? t("searchPlaceholder")}
-          className="h-auto bg-transparent px-0 py-0 text-sm shadow-none focus-visible:border-none focus-visible:ring-none"
+          className="h-auto bg-transparent px-0 py-0 rounded-none text-sm shadow-none focus-visible:border-none focus-visible:ring-none"
         />
       </div>
 
       {open && (
-        <div className="absolute top-[calc(100%+0.25rem)] z-50 w-[min(32rem,calc(100vw-3rem))] rounded-[15px] border bg-gray-middle-light p-3 shadow-md">
+        <div
+          className="absolute top-[calc(100%+0.25rem)] z-50 w-full rounded-[15px] border bg-gray-middle-light p-3 shadow-md"
+          onPointerDown={(e) => {
+            // Prevent the input from losing focus when tapping anywhere inside the
+            // dropdown (non-interactive areas, badges, etc.). Each interactive element
+            // also calls preventDefault in its own handler, but this covers everything.
+            e.preventDefault();
+          }}>
           <div
             className="space-y-3"
             onKeyDown={(event) => event.stopPropagation()}>
@@ -200,8 +177,10 @@ export function MultiSelect({
               <div
                 role="button"
                 tabIndex={0}
-                onPointerDown={handleOptionPointerDown}
-                onClick={handleSelectAll}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  handleSelectAll();
+                }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
@@ -242,8 +221,10 @@ export function MultiSelect({
                       {!isDisabled && (
                         <button
                           type="button"
-                          onPointerDown={handleOptionPointerDown}
-                          onClick={() => toggleValue(option.value)}
+                          onPointerDown={(event) => {
+                            event.preventDefault();
+                            toggleValue(option.value);
+                          }}
                           className="cursor-pointer rounded-full p-0.5 transition-colors hover:bg-white/10"
                           aria-label={t("removeOption", { label: option.label })}>
                           <XIcon className="size-3.5" />
@@ -279,8 +260,14 @@ export function MultiSelect({
                       key={option.value}
                       role="button"
                       tabIndex={isDisabled ? -1 : 0}
-                      onPointerDown={isDisabled ? undefined : handleOptionPointerDown}
-                      onClick={isDisabled ? undefined : () => toggleValue(option.value)}
+                      onPointerDown={
+                        isDisabled
+                          ? undefined
+                          : (event) => {
+                              event.preventDefault();
+                              toggleValue(option.value);
+                            }
+                      }
                       onKeyDown={
                         isDisabled
                           ? undefined

@@ -313,9 +313,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
 
   const handleSelectedGroupIdsChange = (nextGroupIds: string[]) => {
     const validGroupIds = getSanitizedGroupIds(nextGroupIds);
-    const nextExpandedGroupIds = Array.from(
-      new Set(expandedGroupIds.filter((id) => validGroupIds.includes(id)).concat(validGroupIds)),
-    );
+    const nextExpandedGroupIds = expandedGroupIds.filter((id) => validGroupIds.includes(id));
     const nextExcludedMembersByGroup = Object.fromEntries(
       Object.entries(excludedMembersByGroup).filter(([groupId]) => validGroupIds.includes(groupId)),
     );
@@ -371,13 +369,13 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           <DialogTitle>{t("initBattleDialogTitle")}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex-1 min-h-0">
           <div className="grid gap-4 grid-cols-1 items-start">
             <Card className="gap-4 p-4 sm:p-5 h-full">
               <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                   <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <Checkbox
                       id="enable-half-proficiency"
                       className="cursor-pointer"
@@ -418,7 +416,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                 ) : selectedGroups.length === 0 ? (
                   <p className="text-sm text-muted-foreground">{t("initBattleNoGroupSelected")}</p>
                 ) : (
-                  <div className="max-h-[55vh] space-y-2 overflow-y-auto pr-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                  <div className="max-h-[40vh] sm:max-h-[55vh] space-y-2 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
                     {selectedGroups.map((group) => {
                       const members = group.characters ?? [];
                       const npcMembers = members.filter(isNpcCharacter);
