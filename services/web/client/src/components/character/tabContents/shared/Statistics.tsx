@@ -1,11 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Player } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
+import { Bird, Dices, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import Image from "next/image";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
-import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import { getHitDiceRemainingForClass } from "@/utils/rest.utils";
@@ -122,13 +121,10 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
               tabIndex={0}
               role="img"
               aria-label={`${t("initiativeTooltip")} ${player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}`}>
-              <Image
-                src={FeatherIcon}
-                alt=""
+              <Dices
+                size={30}
+                className="text-black shrink-0"
                 aria-hidden="true"
-                className="size-5"
-                width={20}
-                height={20}
               />
               <span aria-hidden="true">
                 {player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}

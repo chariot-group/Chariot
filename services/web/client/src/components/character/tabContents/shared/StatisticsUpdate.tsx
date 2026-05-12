@@ -3,10 +3,9 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { Controller, useFieldArray, UseFormReturn, FieldValues } from "react-hook-form";
-import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
+import { Bird, Dices, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
-import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import Image from "next/image";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
@@ -146,13 +145,10 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                 {tEdit("initiative")}
               </label>
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                <Image
-                  src={FeatherIcon}
-                  alt=""
+                <Dices
+                  size={25}
+                  className="text-black shrink-0"
                   aria-hidden="true"
-                  width={20}
-                  height={20}
-                  className="size-5"
                 />
                 <Input
                   {...field}
