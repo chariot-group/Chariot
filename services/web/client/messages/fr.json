@@ -87,6 +87,7 @@
     "initBattleNoSearchResult": "Aucun groupe trouvé.",
     "initBattleGroupStats": "Membres : {members}",
     "initBattleNpcAvgCr": "ID moy PNJ : {cr}",
+    "initBattleNpcTotalCr": "Somme ID PNJ : {cr}",
     "initBattlePlayerAvgLevel": "Niveau moy joueurs : {level}",
     "initBattleIncludedMembers": "Membres dans l'initiative: {included}/{total}",
     "initBattleExpandGroup": "Afficher les membres du groupe",

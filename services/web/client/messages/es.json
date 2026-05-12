@@ -87,6 +87,7 @@
     "initBattleNoSearchResult": "No se encontraron grupos.",
     "initBattleGroupStats": "Miembros: {members}",
     "initBattleNpcAvgCr": "CR prom PNJ: {cr}",
+    "initBattleNpcTotalCr": "CR total PNJ: {cr}",
     "initBattlePlayerAvgLevel": "Nivel prom jugadores: {level}",
     "initBattleIncludedMembers": "Miembros en iniciativa: {included}/{total}",
     "initBattleExpandGroup": "Mostrar miembros del grupo",

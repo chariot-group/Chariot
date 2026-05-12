@@ -421,10 +421,8 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                       const members = group.characters ?? [];
                       const npcMembers = members.filter(isNpcCharacter);
                       const playerMembers = members.filter((c) => !isNpcCharacter(c));
-                      const avgNpcCr =
-                        npcMembers.length > 0
-                          ? npcMembers.reduce((sum, c) => sum + getNpcCr(c), 0) / npcMembers.length
-                          : 0;
+                      const totalNpcCr =
+                        npcMembers.length > 0 ? npcMembers.reduce((sum, c) => sum + getNpcCr(c), 0) : 0;
                       const avgPlayerLevel =
                         playerMembers.length > 0
                           ? playerMembers.reduce((sum, c) => sum + getPlayerLevel(c), 0) / playerMembers.length
@@ -451,7 +449,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                 {npcMembers.length > 0 && (
                                   <span className="flex items-center gap-1 text-xs text-foreground/70">
                                     <Skull className="size-3 shrink-0 text-red-400" />
-                                    {t("initBattleNpcAvgCr", { cr: formatCr(avgNpcCr) })}
+                                    {t("initBattleNpcTotalCr", { cr: formatCr(totalNpcCr) })}
                                   </span>
                                 )}
                                 {playerMembers.length > 0 && (

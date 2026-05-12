@@ -87,6 +87,7 @@
     "initBattleNoSearchResult": "No groups found.",
     "initBattleGroupStats": "Members: {members}",
     "initBattleNpcAvgCr": "Avg NPC CR: {cr}",
+    "initBattleNpcTotalCr": "Total NPC CR: {cr}",
     "initBattlePlayerAvgLevel": "Avg player level: {level}",
     "initBattleIncludedMembers": "Members in initiative: {included}/{total}",
     "initBattleExpandGroup": "Show group members",
