@@ -164,7 +164,7 @@ export function MultiSelect({
 
       {open && (
         <div
-          className="absolute top-[calc(100%+0.25rem)] z-50 w-full rounded-[15px] border bg-gray-middle-light p-3 shadow-md"
+          className="absolute top-[calc(100%+0.25rem)] z-50 w-full rounded-[15px] border bg-card p-3 shadow-md"
           onPointerDown={(e) => {
             // Prevent the input from losing focus when tapping anywhere inside the
             // dropdown (non-interactive areas, badges, etc.). Each interactive element
