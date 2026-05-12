@@ -14,6 +14,19 @@ const numericInput = (optional = false) => {
     return optional ? schema.optional() : schema;
 };
 
+/** Comme numericInput, mais accepte la virgule décimale (saisie fr). */
+const numericSpeedInput = (optional = false) => {
+    const schema = z.preprocess((val) => {
+        if (typeof val === 'string') {
+            const trimmed = val.trim();
+            if (trimmed === '') return val;
+            return trimmed.replace(',', '.');
+        }
+        return val;
+    }, z.coerce.number());
+    return optional ? schema.optional() : schema;
+};
+
 // ===== Enums =====
 export const AlignmentEnum = z.enum([
     'Lawful Good',
@@ -50,11 +63,11 @@ export const ClassNameEnum = z.enum([
 
 // ===== Stats Sub-Schemas =====
 export const SpeedSchema = z.object({
-    walk: numericInput(true),
-    climb: numericInput(true),
-    swim: numericInput(true),
-    fly: numericInput(true),
-    burrow: numericInput(true),
+    walk: numericSpeedInput(true),
+    climb: numericSpeedInput(true),
+    swim: numericSpeedInput(true),
+    fly: numericSpeedInput(true),
+    burrow: numericSpeedInput(true),
 });
 
 export const AbilityScoresSchema = z.object({

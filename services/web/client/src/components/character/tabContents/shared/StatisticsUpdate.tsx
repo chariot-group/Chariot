@@ -254,6 +254,8 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     value={field.value ?? ""}
                     id="speed-walk"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     min={0}
                     className="text-sm"
                   />
@@ -285,6 +287,8 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     value={field.value ?? ""}
                     id="speed-climb"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     className="text-sm"
                     min={0}
                   />
@@ -316,6 +320,8 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     value={field.value ?? ""}
                     id="speed-swim"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     min={0}
                     className="text-sm"
                   />
@@ -347,6 +353,8 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     value={field.value ?? ""}
                     id="speed-fly"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     className="text-sm"
                     min={0}
                   />
@@ -378,6 +386,8 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     value={field.value ?? ""}
                     id="speed-burrow"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     className="text-sm"
                     min={0}
                   />
