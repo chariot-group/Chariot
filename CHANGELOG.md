@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.5.1] - 09-05-2026
+
+### Added
+
+### Changed
+
+### Fixed
+- Fixed prisma generate
+
+## [2.5.0] - 08-05-2026
+
+### Added
+- Added a release ticket template
+- Added a `Refacto` label
+- Added a dedicated "My Players" section above groups for GMs during sessions
+- Added icons to visually differentiate "My Groups" and "My Players" sections
+- Added access to player sheets for GMs with permission available only during sessions
+- Added real-time participant disconnect toasts visible to all session participants
+- Added "Load more" button in active groups
+- Added "Load more" button in archived groups
+- Added "Load more" button in group characters
+- Added "Load more" button in "My Characters"
+- Added "Load more" button in campaigns
+
+### Changed
+- Replaced Renovate with Dependabot
+- Changed CI/CD end message behavior to send notifications only when a pipeline problem occurs
+- Made ticket context optional
+
+### Fixed
+- Fixed visual lag issues
+
+
 ## [2.4.0] - 01-05-2026
 
 ### Added

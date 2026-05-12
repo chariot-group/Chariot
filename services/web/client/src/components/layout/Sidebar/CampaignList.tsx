@@ -1,7 +1,6 @@
 "use client";
 
 import { useCampaigns } from "@/hooks/useCampaigns";
-import { useEffect, useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
@@ -13,11 +12,7 @@ import { usePathname } from "next/navigation";
 import NavigationService from "@/services/NavigationService";
 
 /**
- * Campaign list component with infinite scroll
- * Displays user's campaigns and allows selection
- * Auto-loads more campaigns when scrolling to bottom
- *
- * autoFetch=false: NavigationService loads campaigns at login; hook respects 3s cooldown
+ * Liste des campagnes : zone à hauteur max fixe, tout le contenu (y compris « Charger plus ») défile ensemble.
  */
 export default function CampaignList() {
   const t = useTranslations("sidebar");
@@ -29,62 +24,22 @@ export default function CampaignList() {
     pageSize: 5,
   });
 
-  const observerTarget = useRef<HTMLDivElement>(null);
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const dispatch = useAppDispatch();
 
-  /**
-   * Handle campaign selection
-   * Switches to GM mode, sets selected campaign and redirects to first character
-   * Also auto-opens the active groups section and the group containing the character
-   */
   const handleCampaignClick = async (campaignId: string) => {
     dispatch(setSelectedCampaign(campaignId));
     dispatch(setContextMode("gm"));
     dispatch(setOpenActiveGroups(true));
 
-    // Determine destination and redirect
     const destination = await NavigationService.determineSpaceDestination(campaignId, locale);
 
-    // Save the group ID to open automatically when groups are loaded
     if (destination.groupId) {
       dispatch(setGroupToOpen(destination.groupId));
     }
 
     router.push(destination.path);
   };
-
-  /**
-   * Intersection Observer callback for infinite scroll
-   * Loads more campaigns when user scrolls to bottom
-   */
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && hasMore && !loadingMore) {
-        loadMoreCampaigns();
-      }
-    },
-    [hasMore, loadingMore, loadMoreCampaigns],
-  );
-
-  // Setup Intersection Observer for infinite scroll
-  useEffect(() => {
-    const element = observerTarget.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: "20px",
-      threshold: 0,
-    });
-
-    observer.observe(element);
-
-    return () => {
-      observer.unobserve(element);
-    };
-  }, [handleObserver]);
 
   if (loading && campaigns.length === 0) {
     return (
@@ -99,7 +54,7 @@ export default function CampaignList() {
   }
 
   return (
-    <div className="flex flex-col gap-2 max-h-75 overflow-y-auto mt-1">
+    <div className="mt-1 flex min-h-0 w-full max-h-52 flex-col overflow-y-auto overflow-x-hidden gap-2 overscroll-contain py-0.5 pr-0.5">
       {campaigns.map((campaign) => {
         const isSelected = selectedCampaignId === campaign._id;
         return (
@@ -109,7 +64,7 @@ export default function CampaignList() {
             onClick={() => handleCampaignClick(campaign._id)}
             aria-pressed={isSelected}
             aria-label={`${isSelected ? t("selectedCampaign") : t("selectCampaign")} ${campaign.label}`}
-            className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white text-left transition-all duration-100 w-full focus-visible:border truncate ${
+            className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white text-left transition-all duration-100 w-full shrink-0 focus-visible:border truncate ${
               isSelected ? "bg-card font-bold" : "hover:bg-card hover:font-bold"
             }`}>
             {campaign.label}
@@ -117,17 +72,17 @@ export default function CampaignList() {
         );
       })}
 
-      {/* Intersection Observer target for infinite scroll */}
-      <div
-        ref={observerTarget}
-        className="h-1"
-      />
-
-      {/* Loading indicator for pagination */}
-      {loadingMore && (
-        <div className="flex justify-center items-center py-2">
-          <Loader2 className="w-4 h-4 animate-spin text-white" />
-        </div>
+      {hasMore && (
+        <button
+          type="button"
+          key="campaign-list-load-more"
+          onClick={() => void loadMoreCampaigns()}
+          disabled={loadingMore}
+          aria-busy={loadingMore}
+          aria-label={t("loadMoreCampaignsAria")}
+          className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
+          {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mx-auto" aria-hidden /> : t("loadMoreCampaigns")}
+        </button>
       )}
     </div>
   );

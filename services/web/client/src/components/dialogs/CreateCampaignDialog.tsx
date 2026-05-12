@@ -40,7 +40,7 @@ export function CreateCampaignDialog({ children, open: controlledOpen, onOpenCha
 
     const [campaignName, setCampaignName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
-    const { createCampaign, refreshCampaigns } = useCampaigns({ autoFetch: false });
+    const { createCampaign } = useCampaigns({ autoFetch: false });
 
     const handleCreate = async () => {
         if (!campaignName.trim()) {
@@ -61,8 +61,6 @@ export function CreateCampaignDialog({ children, open: controlledOpen, onOpenCha
             dispatch(setSelectedCampaign(newCampaign._id));
             dispatch(setContextMode("gm"));
 
-            // Rafraîchir la liste des campagnes avant d'afficher le succès
-            await refreshCampaigns();
             showToast(t("campaignCreatedSuccess", { name: newCampaign.label }), "success");
             handleOpenChange(false);
             setCampaignName("");
