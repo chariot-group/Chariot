@@ -33,7 +33,7 @@ export class GroupService {
     private characterModel: Model<CharacterDocument>,
     @InjectMetric('chariot_groups_created_total')
     private readonly groupsCreatedCounter: Counter,
-  ) { }
+  ) {}
 
   private readonly SERVICE_NAME = GroupService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
@@ -163,7 +163,8 @@ export class GroupService {
         .populate({
           path: 'characters',
           match: { deletedAt: null },
-          select: '_id firstname lastname surname createdBy challenge profile progression',
+          select:
+            '_id firstname lastname surname createdBy challenge profile progression',
         })
         .exec();
 
