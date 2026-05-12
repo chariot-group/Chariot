@@ -26,7 +26,7 @@ export class Stats {
 
   @ApiProperty({ example: 100 })
   @Prop({
-    default: function (this: any) {
+    default: function (this: { maxHitPoints: number }) {
       return this.maxHitPoints;
     },
   })
