@@ -148,7 +148,6 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   aria-describedby={fieldState.error ? "initiative-error" : undefined}
                   placeholder={tEdit("initiative")}
                   type="number"
-                  min={0}
                 />
               </div>
               {fieldState.error && (
