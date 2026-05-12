@@ -189,7 +189,7 @@ export function MultiSelect({
                   }
                 }}
                 className={cn(
-                  "flex w-full cursor-pointer items-center justify-between gap-3 rounded-[15px] px-2 py-2 pb-3 text-left text-sm font-medium transition-colors hover:bg-white/10",
+                  "flex w-full cursor-pointer items-center justify-between gap-3 rounded-[15px] px-2 py-2 text-left text-sm font-medium transition-colors hover:bg-white/10",
                   allFilteredSelected && "text-white",
                 )}>
                 <span className="truncate">{selectAllLabel}</span>
