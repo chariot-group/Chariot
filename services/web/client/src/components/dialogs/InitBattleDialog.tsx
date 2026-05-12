@@ -407,9 +407,9 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           <DialogTitle>{t("initBattleDialogTitle")}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0">
-          <div className="grid gap-4 grid-cols-1 items-start">
-            <Card className="gap-4 p-4 sm:p-5 h-full bg-transparent">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="grid gap-4 grid-cols-1 items-start h-full">
+            <Card className="gap-4 p-4 sm:p-5 h-full bg-transparent !flex !flex-col">
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                   <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
