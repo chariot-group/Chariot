@@ -46,7 +46,6 @@ function MonsterResultItem({
   tDialog: (key: string, values?: Record<string, unknown>) => string;
 }) {
   const tCommon = useTranslations("common");
-  const [overrideLang, setOverrideLang] = useState<string | null>(null);
 
   const displayLang =
     pinnedLang ??
@@ -138,7 +137,6 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   const userLocale = useLocale() as Locale;
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
   const tMagic = useTranslations("characterDetail.magic");
-  const tCommon = useTranslations("common");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
