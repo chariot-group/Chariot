@@ -15,6 +15,7 @@ import {
   selectSessionStatus,
 } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { InitBattleDialog } from "@/components/dialogs/InitBattleDialog";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
 import { useUser } from "@/hooks/useUser";
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
@@ -54,8 +55,6 @@ export function ActionButton() {
   const currentParticipant = useAppSelector((state) =>
     selectCurrentUserParticipant(state, user.user?.keycloakId || ""),
   );
-
-  useSessionValidation();
 
   useSessionValidation();
 
@@ -128,9 +127,8 @@ export function ActionButton() {
           label: t("initBattle"),
           state: "initBattle",
           action: () => {},
-          disabled: true,
+          disabled: false,
           icon: <LucideSwords className="size-6" />,
-          tooltip: t("comingSoon"),
           backgroundColor: "bg-red",
           textColor: "text-white",
         };
@@ -248,6 +246,10 @@ export function ActionButton() {
 
   if (button.state === "joinSession" && !button.disabled) {
     return <JoinSessionDialog>{buttonContent}</JoinSessionDialog>;
+  }
+
+  if (button.state === "initBattle" && !button.disabled) {
+    return <InitBattleDialog>{buttonContent}</InitBattleDialog>;
   }
 
   return button.disabled && button.tooltip ? (

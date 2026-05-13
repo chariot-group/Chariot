@@ -72,10 +72,43 @@
     "npcCharacter": "PNJ",
     "npcCodexCharacter": "PNJ depuis Codex"
   },
+  "initTracker": {
+    "noCharacters": "Aucun personnage",
+    "initBattleDialogTitle": "Initialiser le combat",
+    "initBattleSelectedGroups": "Joueurs dans l'initiative",
+    "initBattleLoadingGroups": "Chargement des groupes...",
+    "initBattleNoGroupSelected": "Aucun groupe sélectionné.",
+    "initBattleSearchAndSelectGroups": "Recherche et sélection des groupes",
+    "initBattleSearchGroupPlaceholder": "Rechercher un groupe par nom",
+    "initBattleSelectAllGroups": "Tout cocher",
+    "initBattleDeselectAllGroups": "Tout décocher",
+    "initBattleShowAllOpponents": "Montrer tous les adversaires",
+    "initBattleSettings": "Paramètres",
+    "initBattleNoSearchResult": "Aucun groupe trouvé.",
+    "initBattleGroupStats": "Membres : {members}",
+    "initBattleNpcCrLabel": "ID",
+    "initBattleNpcAvgCr": "ID moy PNJ : {cr}",
+    "initBattleNpcTotalCr": "total PNJ : {cr}",
+    "initBattlePlayerAvgLevel": "Niveau moy joueurs : {level}",
+    "initBattleIncludedMembers": "Membres dans l'initiative: {included}/{total}",
+    "initBattleExpandGroup": "Afficher les membres du groupe",
+    "initBattleCollapseGroup": "Masquer les membres du groupe",
+    "initBattleRemoveGroup": "Retirer le groupe de la sélection",
+    "initBattleInInitiative": "Dans l'initiative",
+    "initBattleParticipantsCannotBeExcluded": "Les participants ne peuvent pas être exclus de l'initiative",
+    "initBattleValidateSelection": "Valider la configuration"
+  },
+  "multiSelect": {
+    "searchPlaceholder": "Rechercher",
+    "emptyText": "Aucun résultat correspondant.",
+    "removeOption": "Retirer {label}",
+    "selectedCount": "{count, plural, one {# groupe sélectionné.} other {# groupes sélectionnés.}}"
+  },
   "common": {
     "save": "Sauvegarder",
     "delete": "Supprimer",
     "cancel": "Annuler",
+    "challengeRatingTooltip": "Indice de dangerosité",
     "errors": {
       "campaignNameRequired": "Le nom de la campagne est requis",
       "campaignCreationFailed": "Échec de la création de la campagne",
@@ -881,7 +914,8 @@
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
-        "monsterInfo": "CR {cr} • {type}",
+        "crLabel": "ID",
+        "monsterInfo": "{cr} • {type}",
         "preview": {
           "challengeRatingShort": "FP",
           "experiencePointsShort": "XP",
