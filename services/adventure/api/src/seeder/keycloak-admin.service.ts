@@ -23,24 +23,34 @@ export class KeycloakAdminService {
     );
   }
 
-  private async authenticate() {
-    try {
-      await this.adminClient.auth({
-        username: this.configService.get<string>(
-          'KEYCLOAK_ADMIN_USER',
-          'admin',
-        ),
-        password: this.configService.get<string>(
-          'KEYCLOAK_ADMIN_PASSWORD',
-          'admin',
-        ),
-        grantType: 'password',
-        clientId: 'admin-cli',
-      });
-      this.logger.log('Authenticated with Keycloak admin');
-    } catch (error) {
-      this.logger.error('Failed to authenticate with Keycloak', error);
-      throw error;
+  private async authenticate(retries = 10, delayMs = 3000) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await this.adminClient.auth({
+          username: this.configService.get<string>(
+            'KEYCLOAK_ADMIN_USER',
+            'admin',
+          ),
+          password: this.configService.get<string>(
+            'KEYCLOAK_ADMIN_PASSWORD',
+            'admin',
+          ),
+          grantType: 'password',
+          clientId: 'admin-cli',
+        });
+        this.logger.log('Authenticated with Keycloak admin');
+        return;
+      } catch (error) {
+        if (attempt < retries) {
+          this.logger.warn(
+            `Keycloak not ready (attempt ${attempt}/${retries}), retrying in ${delayMs}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        } else {
+          this.logger.error('Failed to authenticate with Keycloak', error);
+          throw error;
+        }
+      }
     }
   }
 

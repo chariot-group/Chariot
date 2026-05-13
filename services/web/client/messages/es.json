@@ -72,9 +72,42 @@
     "npcCharacter": "PNJ",
     "npcCodexCharacter": "PNJ desde Codex"
   },
+  "initTracker": {
+    "noCharacters": "Sin personajes",
+    "initBattleDialogTitle": "Inicializar batalla",
+    "initBattleSelectedGroups": "Jugadores en la iniciativa",
+    "initBattleLoadingGroups": "Cargando grupos...",
+    "initBattleNoGroupSelected": "Ningún grupo seleccionado.",
+    "initBattleSearchAndSelectGroups": "Buscar y seleccionar grupos",
+    "initBattleSearchGroupPlaceholder": "Buscar grupos por nombre",
+    "initBattleSelectAllGroups": "Seleccionar todo",
+    "initBattleDeselectAllGroups": "Deseleccionar todo",
+    "initBattleShowAllOpponents": "Mostrar todos los adversarios",
+    "initBattleSettings": "Parámetros",
+    "initBattleNoSearchResult": "No se encontraron grupos.",
+    "initBattleGroupStats": "Miembros: {members}",
+    "initBattleNpcCrLabel": "CR",
+    "initBattleNpcAvgCr": "CR prom PNJ: {cr}",
+    "initBattleNpcTotalCr": "total PNJ: {cr}",
+    "initBattlePlayerAvgLevel": "Nivel prom jugadores: {level}",
+    "initBattleIncludedMembers": "Miembros en iniciativa: {included}/{total}",
+    "initBattleExpandGroup": "Mostrar miembros del grupo",
+    "initBattleCollapseGroup": "Ocultar miembros del grupo",
+    "initBattleRemoveGroup": "Quitar grupo de la selección",
+    "initBattleInInitiative": "En iniciativa",
+    "initBattleParticipantsCannotBeExcluded": "Los participantes no pueden ser excluidos de la iniciativa",
+    "initBattleValidateSelection": "Confirmar configuración"
+  },
+  "multiSelect": {
+    "searchPlaceholder": "Buscar",
+    "emptyText": "No hay resultados coincidentes.",
+    "removeOption": "Quitar {label}",
+    "selectedCount": "{count, plural, one {# grupo seleccionado.} other {# grupos seleccionados.}}"
+  },
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
+    "challengeRatingTooltip": "Índice de peligrosidad",
     "errors": {
       "campaignNameRequired": "El nombre de la campaña es requerido",
       "campaignCreationFailed": "Error al crear la campaña",
@@ -883,7 +916,8 @@
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
-        "monsterInfo": "CR {cr} • {type}",
+        "crLabel": "CR",
+        "monsterInfo": "{cr} • {type}",
         "preview": {
           "challengeRatingShort": "CR",
           "experiencePointsShort": "XP",

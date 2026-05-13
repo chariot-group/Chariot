@@ -45,6 +45,9 @@ function MonsterResultItem({
   onMonsterClick: (monster: CodexMonsterItem, lang: string) => void | Promise<void>;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
 }) {
+  const tCommon = useTranslations("common");
+  const [overrideLang, setOverrideLang] = useState<string | null>(null);
+
   const displayLang =
     pinnedLang ??
     (selectedLang && monsterItem.languages.includes(selectedLang) ? selectedLang : monsterItem.languages[0] || "en");
@@ -81,7 +84,15 @@ function MonsterResultItem({
             ) : null}
             <div className="min-w-0 flex-1">
               <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tCommon("challengeRatingTooltip")}</p>
+                  </TooltipContent>
+                </Tooltip>
                 {tDialog("monsterInfo", {
                   cr: formatChallengeRating(translation.challenge?.challengeRating),
                   type: translation.profile?.type,
@@ -127,6 +138,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   const userLocale = useLocale() as Locale;
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
   const tMagic = useTranslations("characterDetail.magic");
+  const tCommon = useTranslations("common");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);

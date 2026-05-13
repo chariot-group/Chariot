@@ -2,6 +2,20 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
 
+export interface SessionInitBattleDraft {
+    showAllOpponents: boolean;
+    selectedGroupIds: string[];
+    expandedGroupIds: string[];
+    excludedMembersByGroup: Record<string, string[]>;
+}
+
+const initialInitBattleDraft: SessionInitBattleDraft = {
+    showAllOpponents: false,
+    selectedGroupIds: [],
+    expandedGroupIds: [],
+    excludedMembersByGroup: {},
+};
+
 export interface CurrentSessionState {
     code: string | null;
     campaignId: string | null;
@@ -10,6 +24,7 @@ export interface CurrentSessionState {
     expiresAt: string | null;
     participants: SessionParticipant[];
     tokensByUser: Record<string, number>;
+    initBattleDraft: SessionInitBattleDraft;
     /** Incrémenté à chaque synchro WS distante pour une fiche (temps réel hors rechargement). */
     characterSheetRemoteVersions: Record<string, number>;
 }
@@ -22,6 +37,7 @@ const initialState: CurrentSessionState = {
     expiresAt: null,
     participants: [],
     tokensByUser: {},
+    initBattleDraft: initialInitBattleDraft,
     characterSheetRemoteVersions: {},
 };
 
@@ -42,6 +58,7 @@ const sessionSlice = createSlice({
             state.expiresAt = null;
             state.participants = [];
             state.tokensByUser = {};
+            state.initBattleDraft = initialInitBattleDraft;
             state.characterSheetRemoteVersions = {};
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
@@ -61,6 +78,15 @@ const sessionSlice = createSlice({
         setSessionTokensByUser: (state, action: PayloadAction<Record<string, number>>) => {
             state.tokensByUser = action.payload;
         },
+        setSessionInitBattleDraft: (state, action: PayloadAction<Partial<SessionInitBattleDraft>>) => {
+            state.initBattleDraft = {
+                ...state.initBattleDraft,
+                ...action.payload,
+            };
+        },
+        resetSessionInitBattleDraft: (state) => {
+            state.initBattleDraft = initialInitBattleDraft;
+        },
         touchRemoteCharacterSheet: (state, action: PayloadAction<string>) => {
             if (!state.characterSheetRemoteVersions) {
                 state.characterSheetRemoteVersions = {};
@@ -72,7 +98,18 @@ const sessionSlice = createSlice({
     },
 });
 
-export const { setCurrentSession, clearCurrentSession, setSessionStatus, setSessionExpiresAt, setSessionParticipants, removeSessionParticipantByUserId, setSessionTokensByUser, touchRemoteCharacterSheet } = sessionSlice.actions;
+export const {
+    setCurrentSession,
+    clearCurrentSession,
+    setSessionStatus,
+    setSessionExpiresAt,
+    setSessionParticipants,
+    removeSessionParticipantByUserId,
+    setSessionTokensByUser,
+    setSessionInitBattleDraft,
+    resetSessionInitBattleDraft,
+    touchRemoteCharacterSheet,
+} = sessionSlice.actions;
 
 export const selectCurrentSession = (state: RootState) => state.session;
 export const selectIsInSession = (state: RootState) => state.session.isInSession;
@@ -81,6 +118,7 @@ export const selectSessionCampaignId = (state: RootState) => state.session.campa
 export const selectSessionStatus = (state: RootState) => state.session.status;
 export const selectSessionExpiresAt = (state: RootState) => state.session.expiresAt;
 export const selectSessionParticipants = (state: RootState) => state.session.participants;
+export const selectSessionInitBattleDraft = (state: RootState) => state.session.initBattleDraft;
 
 export const selectCurrentUserParticipant = (state: RootState, userId: string) =>
     state.session.participants.find((participant: SessionParticipant) => participant.userId === userId) || null;
