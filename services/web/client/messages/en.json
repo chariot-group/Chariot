@@ -886,7 +886,13 @@
         },
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",
-        "resultsMore": "+"
+        "resultsMore": "+",
+        "preview": {
+          "availableLanguages": "Also available in",
+          "previousLanguage": "Back to previous language",
+          "previousLanguageButton": "Back",
+          "loadTranslationError": "Could not load this language. Try again or pick another."
+        }
       },
       "monsterCodexDialog": {
         "title": "Search for a monster in Codex",
@@ -917,7 +923,11 @@
           "calculatedArmorClass": "Calculated AC",
           "sourceArmorClass": "source: {value}",
           "hitPointsDice": "Hit points dice",
-          "estimatedProficiencyBonus": "Estimated proficiency bonus"
+          "estimatedProficiencyBonus": "Estimated proficiency bonus",
+          "availableLanguages": "Also available in",
+          "previousLanguage": "Back to previous language",
+          "previousLanguageButton": "Back",
+          "loadTranslationError": "Could not load this language. Try again or pick another."
         }
       }
     }

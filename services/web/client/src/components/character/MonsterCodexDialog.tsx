@@ -7,12 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NPC } from "@/types/character";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import type { Locale } from "@/i18n/request";
 import CodexService, { CodexMonsterItem } from "@/services/CodexService";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
+import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
+import {
+  codexDeclaredPreviewLangs,
+  codexLocaleFlagEmoji,
+  codexMonsterLangsVisibleInAllLanguagesSearch,
+  codexMonsterTranslationLooksUsable,
+} from "@/utils/codexLocale.utils";
 import React from "react";
 
 interface MonsterCodexDialogProps {
@@ -24,35 +32,30 @@ interface MonsterCodexDialogProps {
 function MonsterResultItem({
   monsterItem,
   selectedLang,
+  pinnedLang,
   isSelected,
   onMonsterClick,
   tDialog,
 }: {
   monsterItem: CodexMonsterItem;
   selectedLang: string | null;
+  /** En mode « toutes les langues », une ligne par langue : drapeau sur la carte */
+  pinnedLang?: string | null;
   isSelected: boolean;
-  onMonsterClick: (monster: CodexMonsterItem, lang: string) => void;
+  onMonsterClick: (monster: CodexMonsterItem, lang: string) => void | Promise<void>;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
 }) {
   const tCommon = useTranslations("common");
-  const [overrideLang, setOverrideLang] = useState<string | null>(null);
 
   const displayLang =
-    overrideLang ||
+    pinnedLang ??
     (selectedLang && monsterItem.languages.includes(selectedLang) ? selectedLang : monsterItem.languages[0] || "en");
 
   const translation = monsterItem.translations[displayLang];
   if (!translation) return null;
 
-  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!(e.target as HTMLElement).hasAttribute("data-lang-selector")) {
-      onMonsterClick(monsterItem, displayLang);
-    }
-  };
-
-  const handleLangChange = (lang: string) => {
-    setOverrideLang(lang);
-    onMonsterClick(monsterItem, lang);
+  const handleCardClick = () => {
+    onMonsterClick(monsterItem, displayLang);
   };
 
   return (
@@ -63,21 +66,37 @@ function MonsterResultItem({
       }`}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-            <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1">
+          <div className="flex flex-1 min-w-0 gap-2 items-start">
+            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
+                  <span
+                    className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none"
+                    aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
+                    {codexLocaleFlagEmoji(pinnedLang)}
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{tCommon("challengeRatingTooltip")}</p>
+                  <p>{tDialog(`languageFilter.${pinnedLang}`)}</p>
                 </TooltipContent>
               </Tooltip>
-              {tDialog("monsterInfo", {
-                cr: formatChallengeRating(translation.challenge?.challengeRating),
-                type: translation.profile?.type,
-              })}
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
+              <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tCommon("challengeRatingTooltip")}</p>
+                  </TooltipContent>
+                </Tooltip>
+                {tDialog("monsterInfo", {
+                  cr: formatChallengeRating(translation.challenge?.challengeRating),
+                  type: translation.profile?.type,
+                })}
+              </div>
             </div>
           </div>
           <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -109,62 +128,41 @@ function MonsterResultItem({
             </div>
           </div>
         </div>
-        {monsterItem.languages.length > 1 && (
-          <Select
-            value={displayLang}
-            onValueChange={handleLangChange}>
-            <SelectTrigger
-              className="lang-selector-trigger w-auto h-7 text-xs px-2 py-1 border-none bg-transparent focus:ring-0 focus:ring-offset-0"
-              data-lang-selector>
-              <SelectValue>
-                <span className="text-base flex items-center gap-2">
-                  <span>{tDialog(`languageFilter.${displayLang}`)}</span>
-                </span>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {monsterItem.languages
-                .sort((a) => (a === selectedLang ? -1 : 1))
-                .map((lang) => (
-                  <SelectItem
-                    key={lang}
-                    value={lang}>
-                    <span className="text-base flex items-center gap-2">
-                      <span>{tDialog(`languageFilter.${lang}`)}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        )}
       </div>
     </Card>
   );
 }
 
 export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelected }: MonsterCodexDialogProps) {
+  const userLocale = useLocale() as Locale;
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
   const tMagic = useTranslations("characterDetail.magic");
-  const tCommon = useTranslations("common");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<CodexMonsterItem[]>([]);
   const [selectedMonster, setSelectedMonster] = useState<Partial<NPC> | null>(null);
-  const [selectedMonsterId, setSelectedMonsterId] = useState<string | null>(null);
+  const [selectedCodexMonster, setSelectedCodexMonster] = useState<CodexMonsterItem | null>(null);
+  /** Pile des langues de prévisualisation (barre latérale) pour revenir en arrière */
+  const [previewLangStack, setPreviewLangStack] = useState<string[]>([]);
+  /** Clé `${_id}:${lang}` pour distinguer la même entrée codex en plusieurs langues */
+  const [selectedMonsterKey, setSelectedMonsterKey] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const [previewLangResolving, setPreviewLangResolving] = useState(false);
+  const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const isLoadingRef = useRef(false);
 
   const ITEMS_PER_PAGE = 20;
 
   // Recherche avec debounce
   const searchMonsters = useCallback(
-    async (query: string, page: number = 1, append: boolean = false) => {
+    async (query: string, page: number = 1, append: boolean = false, apiLang?: string | null) => {
+      const lang = apiLang !== undefined ? apiLang : selectedLang;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -181,7 +179,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setError(null);
 
       try {
-        const response = await CodexService.searchMonsters(query, selectedLang, page, ITEMS_PER_PAGE);
+        const response = await CodexService.searchMonsters(query, lang, page, ITEMS_PER_PAGE);
         const rawResults = response.data || [];
         const newResults = await CodexService.populateMonstersList(rawResults);
 
@@ -232,17 +230,21 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   useEffect(() => {
     if (open) {
       setSearchQuery("");
-      setSelectedLang(null);
+      setSelectedLang(userLocale);
       setSearchResults([]);
       setSelectedMonster(null);
-      setSelectedMonsterId(null);
+      setSelectedCodexMonster(null);
+      setPreviewLangStack([]);
+      setSelectedMonsterKey(null);
       setShowMobileDetails(false);
+      setPreviewLangResolving(false);
+      setPreviewTranslationError(null);
       setError(null);
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
-      // Charger les données initiales
-      searchMonsters("", 1, false);
+      // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
+      searchMonsters("", 1, false, userLocale);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -255,11 +257,86 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     }
   };
 
-  const handleMonsterClick = (codexMonsterItem: CodexMonsterItem, lang: string) => {
-    const convertedMonster = CodexService.convertToChariotNPC(codexMonsterItem, lang);
+  const handleMonsterClick = async (
+    codexMonsterItem: CodexMonsterItem,
+    lang: string,
+    options?: { fromPreviewLangBar?: boolean },
+  ) => {
+    const fromPreview = options?.fromPreviewLangBar ?? false;
+    const prevKey = selectedMonsterKey;
+    let currentLangForSameId: string | undefined;
+    if (prevKey) {
+      const colon = prevKey.lastIndexOf(":");
+      const prevId = colon >= 0 ? prevKey.slice(0, colon) : prevKey;
+      const prevLang = colon >= 0 ? prevKey.slice(colon + 1) : undefined;
+      if (prevId === codexMonsterItem._id && prevLang) {
+        currentLangForSameId = prevLang;
+      }
+    }
+
+    if (fromPreview) {
+      if (currentLangForSameId && currentLangForSameId !== lang) {
+        setPreviewLangStack((s) => [...s, currentLangForSameId]);
+      }
+    } else {
+      setPreviewLangStack([]);
+    }
+
+    setPreviewTranslationError(null);
+
+    let item = codexMonsterItem;
+    const shouldHydrate = fromPreview || !codexMonsterTranslationLooksUsable(item.translations[lang]);
+
+    if (shouldHydrate) {
+      setPreviewLangResolving(true);
+      try {
+        const forLang = await CodexService.getMonsterById(item._id, lang);
+        if (forLang) {
+          item = CodexService.overlayMonsterTranslationsFromDetail(item, forLang, [lang]);
+        }
+        if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
+          const unscoped = await CodexService.getMonsterById(item._id);
+          if (unscoped) {
+            item = CodexService.overlayMonsterTranslationsFromDetail(item, unscoped, [lang]);
+            if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
+              item = CodexService.mergeMonsterFillMissingTranslations(item, unscoped);
+            }
+          }
+        }
+        if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
+          setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+          return;
+        }
+        const populated = await CodexService.populateMonstersList([item]);
+        item = populated[0];
+        if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
+          setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+          return;
+        }
+      } finally {
+        setPreviewLangResolving(false);
+      }
+    }
+
+    try {
+      const convertedMonster = CodexService.convertToChariotNPC(item, lang);
+      setSelectedCodexMonster(item);
+      setSelectedMonster(convertedMonster);
+      setSelectedMonsterKey(`${item._id}:${lang}`);
+      setShowMobileDetails(true);
+    } catch {
+      setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+    }
+  };
+
+  const handlePreviewLangUndo = () => {
+    if (!selectedCodexMonster || previewLangStack.length === 0) return;
+    setPreviewTranslationError(null);
+    const prevLang = previewLangStack[previewLangStack.length - 1];
+    const convertedMonster = CodexService.convertToChariotNPC(selectedCodexMonster, prevLang);
     setSelectedMonster(convertedMonster);
-    setSelectedMonsterId(codexMonsterItem._id);
-    setShowMobileDetails(true);
+    setSelectedMonsterKey(`${selectedCodexMonster._id}:${prevLang}`);
+    setPreviewLangStack((s) => s.slice(0, -1));
   };
 
   const handleValidate = () => {
@@ -339,7 +416,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                     ).length;
                   } else {
                     visibleCount = searchResults.reduce(
-                      (count, item) => count + item.languages.filter((lang: string) => item.translations[lang]).length,
+                      (count, item) =>
+                        count + codexMonsterLangsVisibleInAllLanguagesSearch(item, searchQuery).length,
                       0,
                     );
                   }
@@ -351,22 +429,36 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                   return (
                     <React.Fragment>
                       <div className="flex flex-col gap-2">
-                        {searchResults.map((monsterItem) => {
+                        {searchResults.flatMap((monsterItem) => {
                           if (selectedLang && !monsterItem.languages.includes(selectedLang)) {
-                            return null;
+                            return [];
                           }
 
-                          const isSelected = selectedMonsterId === monsterItem._id;
+                          if (selectedLang) {
+                            return [
+                              <MonsterResultItem
+                                key={`${monsterItem._id}-${selectedLang}`}
+                                monsterItem={monsterItem}
+                                selectedLang={selectedLang}
+                                isSelected={selectedMonsterKey === `${monsterItem._id}:${selectedLang}`}
+                                onMonsterClick={handleMonsterClick}
+                                tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                              />,
+                            ];
+                          }
 
-                          return (
-                            <MonsterResultItem
-                              key={`${monsterItem._id}-${selectedLang}`}
-                              monsterItem={monsterItem}
-                              selectedLang={selectedLang}
-                              isSelected={isSelected}
-                              onMonsterClick={handleMonsterClick}
-                              tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
-                            />
+                          return codexMonsterLangsVisibleInAllLanguagesSearch(monsterItem, searchQuery).map(
+                            (lang: string) => (
+                              <MonsterResultItem
+                                key={`${monsterItem._id}-${lang}`}
+                                monsterItem={monsterItem}
+                                selectedLang={selectedLang}
+                                pinnedLang={lang}
+                                isSelected={selectedMonsterKey === `${monsterItem._id}:${lang}`}
+                                onMonsterClick={handleMonsterClick}
+                                tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                              />
+                            ),
                           );
                         })}
                       </div>
@@ -409,19 +501,47 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
 
           {/* Partie droite : Affichage du monstre sélectionné */}
           <div
-            className={`flex-col w-full lg:w-3/4 overflow-y-auto lg:overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
+            className={`flex flex-col flex-1 min-h-0 w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
             <Button
               type="button"
               variant="ghost"
-              className="lg:hidden self-start mb-2 px-2"
+              className="lg:hidden self-start shrink-0 mb-2 px-2"
               onClick={() => setShowMobileDetails(false)}
               aria-label={tMagic("backToList")}>
               <ArrowLeft className="size-4 mr-2" />
               {tMagic("backToList")}
             </Button>
-            {selectedMonster ? (
-              <div className="h-full min-h-0 pr-0 lg:pr-2 overflow-visible lg:overflow-hidden">
-                <MonsterPreview monster={selectedMonster} />
+            {selectedMonster && selectedCodexMonster && selectedMonsterKey ? (
+              <div className="flex flex-col flex-1 min-h-0 pr-0 lg:pr-2 overflow-visible lg:overflow-hidden">
+                {(() => {
+                  const colon = selectedMonsterKey.lastIndexOf(":");
+                  const previewLang = colon >= 0 ? selectedMonsterKey.slice(colon + 1) : userLocale;
+                  const langs = codexDeclaredPreviewLangs(selectedCodexMonster.languages);
+                  return (
+                    <>
+                      <CodexPreviewLanguageBar
+                        availableLangs={langs}
+                        currentLang={previewLang}
+                        disabled={previewLangResolving}
+                        onSelectLang={(l) =>
+                          handleMonsterClick(selectedCodexMonster, l, { fromPreviewLangBar: true })
+                        }
+                        onUndo={handlePreviewLangUndo}
+                        canUndo={previewLangStack.length > 0}
+                        label={tDialog("preview.availableLanguages")}
+                        undoLabel={tDialog("preview.previousLanguage")}
+                        undoButtonLabel={tDialog("preview.previousLanguageButton")}
+                        getLanguageAriaLabel={(l) => tDialog(`languageFilter.${l}`)}
+                      />
+                      {previewTranslationError ? (
+                        <p className="text-sm text-red-500 shrink-0 -mt-2 mb-2">{previewTranslationError}</p>
+                      ) : null}
+                    </>
+                  );
+                })()}
+                <div className="min-h-0 flex-1 overflow-visible lg:overflow-hidden">
+                  <MonsterPreview monster={selectedMonster} />
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
