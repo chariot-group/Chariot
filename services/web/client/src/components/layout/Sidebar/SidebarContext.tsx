@@ -118,7 +118,7 @@ export default function SidebarContext() {
             <button
               type="button"
               aria-label={t("createGroup")}
-              className="text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white hover:[background-color:#e8e8e8] rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+              className="sidebar-btn-white text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
               {t("createGroup")}
               <PlusCircleIcon
                 aria-hidden="true"

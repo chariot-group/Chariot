@@ -94,7 +94,7 @@ export default function CharactersWithoutGroupList() {
         href="/characters/new/players"
         onClick={() => setOpenMobile(false)}
         aria-label={t("createCharacter")}
-        className="shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white hover:[background-color:#e8e8e8] rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
         {t("createCharacter")}
         <PlusCircleIcon
           aria-hidden="true"

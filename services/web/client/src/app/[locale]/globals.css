@@ -37,6 +37,11 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-blue: var(--blue);
+  --color-green: var(--green);
+  --color-red: var(--red);
+  --color-pink: var(--pink);
+  --color-yellow: var(--yellow);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -94,6 +99,11 @@
   --toastify-font-family: "Inter Tight", sans-serif;
   --toastify-text-color-light: #565656;
   --toastify-toast-bd-radius: var(--radius);
+}
+
+/* Sidebar white button hover */
+.sidebar-btn-white:hover {
+  background-color: #e8e8e8;
 }
 
 /* Surcharger le positionnement du toast en mobile */
