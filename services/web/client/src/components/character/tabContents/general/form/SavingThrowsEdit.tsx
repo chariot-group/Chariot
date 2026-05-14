@@ -1,5 +1,4 @@
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
-import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getIconForValue } from "@/utils/global.utils";

@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatSignedBonus } from "@/utils/attack.utils";
-import type { Player, Spell, Spellcasting } from "@/types/character";
+import type { Spell, Spellcasting } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
 import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
@@ -577,7 +577,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
   // ── Prepared spells (calculated) ──
   const modSign = abilityMod >= 0 ? `+${abilityMod}` : `${abilityMod}`;
-  const playerCharacter = isPlayer(character) ? (character as Player) : null;
 
   const saveDCSynced = isPlayer(character) && currentSaveDC === calculatedSaveDC;
   const attackBonusSynced = isPlayer(character) && currentAttackBonus === calculatedAttackBonus;
