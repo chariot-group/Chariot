@@ -157,7 +157,7 @@ export default function SessionPage() {
               <div
                 role="list"
                 aria-label={t("players.ariaLabel")}
-                className="grid [grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr))] items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
                 tabIndex={0}>
                 {participants.length > 0 &&
                   participants.map((participant: SessionParticipant) => {
@@ -169,7 +169,7 @@ export default function SessionPage() {
                       <Card
                         key={participant.id}
                         role="listitem"
-                        className="border bg-gray border-none flex flex-col gap-2 p-3">
+                        className="bg-gray flex flex-col gap-2 p-3">
                         <div className="flex flex-row justify-between items-center gap-3">
                           <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
                           {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
@@ -189,9 +189,7 @@ export default function SessionPage() {
                             triggerClassName="w-full text-xs"
                           />
                         ) : (
-                          participant.characterId && (
-                            <span className="text-xs text-muted-foreground truncate">{characterLabel}</span>
-                          )
+                          <span className="text-xs text-muted-foreground truncate">{characterLabel ?? "\u00A0"}</span>
                         )}
                       </Card>
                     );
