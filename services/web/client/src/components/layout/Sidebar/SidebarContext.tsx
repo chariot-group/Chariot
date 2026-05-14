@@ -99,7 +99,7 @@ export default function SidebarContext() {
               className={`h-4 w-4 shrink-0 transition-colors group-hover/context:text-black ${openActive ? "text-black" : ""}`}
             />
             <span
-              className={`text-sm truncate group-hover/context:font-bold group-hover/context:text-black ${openActive ? "text-black font-bold" : ""}`}>
+              className={`text-sm truncate group-hover/context:text-black ${openActive ? "text-black font-bold" : ""}`}>
               {t("yourGroups")}
             </span>
           </span>
@@ -118,7 +118,7 @@ export default function SidebarContext() {
             <button
               type="button"
               aria-label={t("createGroup")}
-              className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+              className="text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white hover:[background-color:#e8e8e8] rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
               {t("createGroup")}
               <PlusCircleIcon
                 aria-hidden="true"
@@ -181,8 +181,7 @@ export default function SidebarContext() {
               aria-hidden="true"
               className={`h-4 w-4 shrink-0 transition-colors group-hover/context:text-black ${openArchived ? "text-black" : ""}`}
             />
-            <span
-              className={`text-sm group-hover/context:font-bold group-hover/context:text-black ${openArchived ? "text-black font-bold" : ""}`}>
+            <span className={`text-sm group-hover/context:text-black ${openArchived ? "text-black font-bold" : ""}`}>
               {t("yourArchives")}
             </span>
           </span>

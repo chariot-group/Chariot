@@ -94,7 +94,7 @@ export default function CharactersWithoutGroupList() {
         href="/characters/new/players"
         onClick={() => setOpenMobile(false)}
         aria-label={t("createCharacter")}
-        className="shrink-0 text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+        className="shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white hover:[background-color:#e8e8e8] rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
         {t("createCharacter")}
         <PlusCircleIcon
           aria-hidden="true"
@@ -115,7 +115,7 @@ export default function CharactersWithoutGroupList() {
                   onClick={() => dispatch(clearSelectedCampaign())}
                   className={`w-full shrink-0 border-2 cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/character focus-visible:border ${isSelected ? "bg-white" : ""}`}>
                   <span
-                    className={`text-sm min-w-0 truncate group-hover/character:font-bold group-hover/character:text-black ${isSelected ? "font-bold text-black" : ""}`}>
+                    className={`text-sm min-w-0 truncate group-hover/character:text-black ${isSelected ? "font-bold text-black" : ""}`}>
                     {character.firstname} {character.lastname}
                   </span>
                 </Link>
@@ -142,7 +142,14 @@ export default function CharactersWithoutGroupList() {
             aria-busy={loadingMore}
             aria-label={t("loadMoreCharactersAria")}
             className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
-            {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mx-auto" aria-hidden /> : t("loadMoreCharacters")}
+            {loadingMore ? (
+              <Loader2
+                className="w-4 h-4 animate-spin mx-auto"
+                aria-hidden
+              />
+            ) : (
+              t("loadMoreCharacters")
+            )}
           </button>
         )}
       </div>

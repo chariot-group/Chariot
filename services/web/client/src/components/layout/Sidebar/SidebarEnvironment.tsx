@@ -67,8 +67,7 @@ export default function SidebarEnvironment() {
         aria-expanded={open}
         aria-controls="spaces-content"
         className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/environment focus-visible:border ${open ? "bg-white" : ""}`}>
-        <span
-          className={`text-sm group-hover/environment:font-bold group-hover/environment:text-black ${open ? "text-black font-bold" : ""}`}>
+        <span className={`text-sm group-hover/environment:text-black ${open ? "text-black font-bold" : ""}`}>
           {isGmMode ? t("gmSpace") : t("playerSpace")}
         </span>
         <ChevronRight
@@ -83,7 +82,7 @@ export default function SidebarEnvironment() {
           type="button"
           onClick={() => changeEnvironment("player")}
           aria-label={t("yourCharacters")}
-          className="text-sm text-black cursor-pointer border hover:font-bold bg-white transition-all duration-100 rounded-[12px] py-1.5 px-3 w-full text-left focus-visible:border">
+          className="text-sm text-black cursor-pointer border bg-white hover:[background-color:#e8e8e8] transition-all duration-100 rounded-[12px] py-1.5 px-3 w-full text-left focus-visible:border">
           {t("yourCharacters")}
         </button>
 
@@ -97,7 +96,7 @@ export default function SidebarEnvironment() {
           <button
             type="button"
             aria-label={t("createCampaign")}
-            className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
+            className="text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white hover:[background-color:#e8e8e8] rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
             {t("createCampaign")}
             <PlusCircleIcon className="w-5 h-5" />
           </button>

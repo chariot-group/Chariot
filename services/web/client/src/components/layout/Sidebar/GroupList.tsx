@@ -93,7 +93,7 @@ export default function GroupList({
                 <CollapsibleTrigger
                   aria-expanded={isOpen}
                   aria-controls={`group-${group._id}-content`}
-                  className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center focus-visible:border ${isOpen ? "font-bold" : ""}`}>
+                  className={`w-full bg-card cursor-pointer py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center focus-visible:border ${isOpen ? "font-bold" : ""}`}>
                   <span className={`text-sm text-left ${isOpen ? "font-bold" : ""}`}>{group.label}</span>
                   <ChevronRight
                     aria-hidden="true"
