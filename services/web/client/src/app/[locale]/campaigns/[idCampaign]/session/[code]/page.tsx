@@ -157,7 +157,7 @@ export default function SessionPage() {
               <div
                 role="list"
                 aria-label={t("players.ariaLabel")}
-                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+                className="grid [grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr))] items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
                 tabIndex={0}>
                 {participants.length > 0 &&
                   participants.map((participant: SessionParticipant) => {
