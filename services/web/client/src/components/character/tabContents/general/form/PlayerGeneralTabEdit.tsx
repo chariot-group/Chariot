@@ -12,8 +12,6 @@ import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import Column2Edit from "@/components/character/tabContents/general/form/Column2Edit";
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
@@ -533,9 +531,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                     let totalNext = 0;
                                     for (let j = 0; j < cls.length; j++) {
                                       const v =
-                                        j === index
-                                          ? clampedLevel
-                                          : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
+                                        j === index ? clampedLevel : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
                                       totalNext += v;
                                     }
                                     const sumOthersNext = totalNext - clampedLevel;
@@ -543,11 +539,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                     const cap = Math.min(clampedLevel, shareNext);
                                     const remPath = `class.${index}.hitDiceRemaining`;
                                     const remRaw = form.getValues(remPath);
-                                    if (
-                                      typeof remRaw === "number" &&
-                                      !Number.isNaN(remRaw) &&
-                                      remRaw > cap
-                                    ) {
+                                    if (typeof remRaw === "number" && !Number.isNaN(remRaw) && remRaw > cap) {
                                       form.setValue(remPath, cap, {
                                         shouldDirty: true,
                                         shouldValidate: true,
@@ -986,7 +978,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
           {/* Inspiration */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6"
+            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
             role="region"
             aria-labelledby="inspiration-heading-edit">
             <h2
@@ -999,17 +991,25 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
               control={form.control}
               render={({ field }) => (
                 <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="inspiration-checkbox"
-                    className="cursor-pointer"
-                    checked={field.value || false}
-                    onCheckedChange={field.onChange}
-                  />
-                  <Label
-                    htmlFor="inspiration-checkbox"
-                    className="cursor-pointer text-sm">
-                    {field.value ? t("inspirationActive") : t("inspirationInactive")}
-                  </Label>
+                  {isInSession ? (
+                    field.value ? (
+                      <span className="text-sm font-medium">{t("inspirationActive")}</span>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => field.onChange(true)}>
+                        {t("inspirationAddButton")}
+                      </Button>
+                    )
+                  ) : (
+                    <span
+                      className="text-sm text-muted-foreground"
+                      title={t("inspirationSessionOnlyNote")}>
+                      {field.value ? t("inspirationActive") : t("inspirationInactive")}
+                    </span>
+                  )}
                 </div>
               )}
             />
