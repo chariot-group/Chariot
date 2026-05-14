@@ -65,11 +65,12 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("savingThrows")}
             </h2>
+
+            <SavingThrowsEdit
+              form={form}
+              accentColor={accentColor}
+            />
           </Card>
-          <SavingThrowsEdit
-            form={form}
-            accentColor={accentColor}
-          />
         </div>
 
         {/* Jets de sauvegarde contre la mort */}

@@ -119,13 +119,12 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
           className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
           {t("savingThrows")}
         </h2>
-      </Card>
-      <div>
+
         <SavingThrowsEdit
           form={form}
           accentColor={accentColor}
         />
-      </div>
+      </Card>
       {/* Compétences */}
       <Card
         className="flex flex-wrap justify-between gap-3 py-4 px-4 md:px-6"
@@ -167,15 +166,14 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
             </Label>
           </div>
         </div>
-      </Card>
-      <div>
+
         <SkillsEdit
           form={form}
           accentColor={accentColor}
           enableHalfProficiency={enableHalfProficiency}
           enableExpertise={enableExpertise}
         />
-      </div>
+      </Card>
     </section>
   );
 }

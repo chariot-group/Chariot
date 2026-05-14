@@ -55,7 +55,7 @@ export default function SavingThrow({ skillName, accentColor, tooltip, stats }: 
   }
 
   return (
-    <Card className="p-2">
+    <div className="p-2">
       <div className="text-sm flex items-center gap-2 justify-between">
         <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
         <div className="flex flex-row gap-2">
@@ -70,6 +70,6 @@ export default function SavingThrow({ skillName, accentColor, tooltip, stats }: 
           />
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

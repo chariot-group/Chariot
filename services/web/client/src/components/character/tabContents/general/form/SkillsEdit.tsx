@@ -149,7 +149,7 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
                 type="button"
                 onClick={() => toggleSkillProficiency(key)}
                 className="text-left">
-                <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
+                <div className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
                   <div className="text-sm flex items-center justify-between gap-2">
                     <div className="flex items-center min-w-0 flex-1 gap-2">
                       <span className="shrink-0">{icon}</span>
@@ -167,7 +167,7 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
                       />
                     </div>
                   </div>
-                </Card>
+                </div>
               </button>
             )}
           />
