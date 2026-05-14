@@ -235,12 +235,21 @@ export function ActionButton() {
     };
   };
 
+  const hoverMap: Record<string, string> = {
+    "bg-yellow": "hover:bg-[#e6b000]",
+    "bg-green": "hover:bg-[#7dc400]",
+    "bg-red": "hover:bg-[#e02020]",
+    "bg-pink": "hover:bg-[#e090e0]",
+    "bg-gray-600": "hover:bg-gray-700",
+  };
+
   const button = getButtonState();
+  const hoverClass = hoverMap[button.backgroundColor] ?? "hover:brightness-90";
   const buttonContent = (
     <Button
       onClick={button.action}
       disabled={button.disabled}
-      className={`w-full py-5 hover:font-bold transition-all duration-100 ${button.backgroundColor} ${button.textColor} rounded-2xl flex items-center justify-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+      className={`w-full py-5 transition-colors duration-150 ${button.backgroundColor} ${hoverClass} ${button.textColor} rounded-2xl flex items-center justify-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
       {button.icon}
       <span className="text-lg truncate">{button.label}</span>
     </Button>
