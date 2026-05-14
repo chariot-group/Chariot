@@ -392,7 +392,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                           handleSpellSelect(spell);
                                         }
                                       }}
-                                      key={index}
+                                      key={`spell-npc-${key}-idx-${index}`}
                                       className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
                                       role="button"
                                       tabIndex={0}
@@ -423,6 +423,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                   if (selectedSpellcasting.spellSlotsByLevel) {
                     Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
                       const n = Number(l);
+                      if (!Number.isFinite(n)) return;
                       if (!levels.includes(n)) levels.push(n);
                     });
                   }
@@ -430,6 +431,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                   if (selectedSpellcasting.spells) {
                     selectedSpellcasting.spells.forEach((spell) => {
                       const n = Number(spell.level);
+                      if (!Number.isFinite(n)) return;
                       if (!levels.includes(n)) levels.push(n);
                     });
                   }
@@ -444,11 +446,12 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                       className="w-full flex flex-col gap-2">
                       {levels.map((level) => {
                         const spells = getSpellByLevel(selectedSpellcasting, level);
-                        const slot = selectedSpellcasting.spellSlotsByLevel?.[level];
+                        const slotKey = String(level);
+                        const slot = selectedSpellcasting.spellSlotsByLevel?.[slotKey];
 
                         return (
                           <AccordionItem
-                            key={level}
+                            key={`spell-level-${slotKey}`}
                             value={`level-${level}`}
                             className={`flex flex-col gap-2`}>
                             <Card className="gap-3 p-0">
@@ -475,7 +478,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                         handleSpellSelect(spell);
                                       }
                                     }}
-                                    key={index}
+                                    key={`spell-lvl-${level}-idx-${index}`}
                                     className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
                                     role="button"
                                     tabIndex={0}

@@ -163,7 +163,8 @@ export class GroupService {
         .populate({
           path: 'characters',
           match: { deletedAt: null },
-          select: '_id firstname lastname surname userId',
+          select:
+            '_id firstname lastname surname createdBy challenge profile progression',
         })
         .exec();
 

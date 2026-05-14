@@ -7,11 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spell } from "@/types/character";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import type { Locale } from "@/i18n/request";
 import CodexService, { CodexSpellItem } from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
+import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  codexDeclaredPreviewLangs,
+  codexLocaleFlagEmoji,
+  codexSpellLangsVisibleInAllLanguagesSearch,
+  codexSpellTranslationLooksUsable,
+} from "@/utils/codexLocale.utils";
 
 interface CodexSpellSearchDialogProps {
   open: boolean;
@@ -23,6 +31,7 @@ interface CodexSpellSearchDialogProps {
 function SpellResultItem({
   spellItem,
   selectedLang,
+  pinnedLang,
   isSelected,
   onSpellClick,
   tDialog,
@@ -31,32 +40,25 @@ function SpellResultItem({
 }: {
   spellItem: CodexSpellItem;
   selectedLang: string | null;
+  /** En mode « toutes les langues », une ligne par langue : drapeau sur la carte */
+  pinnedLang?: string | null;
   isSelected: boolean;
-  onSpellClick: (spell: CodexSpellItem, lang: string) => void;
+  onSpellClick: (spell: CodexSpellItem, lang: string) => void | Promise<void>;
   tDialog: (key: string) => string;
   tMagic: (key: string, values?: Record<string, unknown>) => string;
   t: (key: string) => string;
 }) {
-  const [overrideLang, setOverrideLang] = useState<string | null>(null);
-
   const tGeneral = useTranslations("characterDetail.player");
 
   const displayLang =
-    overrideLang ||
+    pinnedLang ??
     (selectedLang && spellItem.languages.includes(selectedLang) ? selectedLang : spellItem.languages[0] || "en");
 
   const translation = spellItem.translations[displayLang];
   if (!translation) return null;
 
-  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!(e.target as HTMLElement).hasAttribute("data-lang-selector")) {
-      onSpellClick(spellItem, displayLang);
-    }
-  };
-
-  const handleLangChange = (lang: string) => {
-    setOverrideLang(lang);
-    onSpellClick(spellItem, lang);
+  const handleCardClick = () => {
+    onSpellClick(spellItem, displayLang);
   };
 
   return (
@@ -67,17 +69,33 @@ function SpellResultItem({
       }`}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <div className="font-semibold text-sm md:text-base">{translation.name}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {tMagic("spellLevel", { level: translation.level })} • {translation.school}
-            </div>
-            {spellItem.classes && spellItem.classes.length > 0 && (
+          <div className="flex flex-1 min-w-0 gap-2 items-start">
+            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none"
+                    aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
+                    {codexLocaleFlagEmoji(pinnedLang)}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{tDialog(`languageFilter.${pinnedLang}`)}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-sm md:text-base">{translation.name}</div>
               <div className="text-xs text-muted-foreground mt-1">
-                <strong>{tGeneral("general.classes")}:</strong>{" "}
-                {spellItem.classes.map((c) => t(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
+                {tMagic("spellLevel", { level: translation.level })} • {translation.school}
               </div>
-            )}
+              {spellItem.classes && spellItem.classes.length > 0 && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  <strong>{tGeneral("general.classes")}:</strong>{" "}
+                  {spellItem.classes.map((c) => t(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex flex-col items-end gap-1.5 shrink-0">
             <div className="flex gap-1.5">
@@ -108,34 +126,6 @@ function SpellResultItem({
             </div>
           </div>
         </div>
-        {spellItem.languages.length > 1 && (
-          <Select
-            value={displayLang}
-            onValueChange={handleLangChange}>
-            <SelectTrigger
-              className="w-auto h-7 text-xs px-2 py-1 border-none bg-transparent focus:ring-0 focus:ring-offset-0"
-              data-lang-selector>
-              <SelectValue>
-                <span className="text-base flex items-center gap-2">
-                  <span>{tDialog(`languageFilter.${displayLang}`)}</span>
-                </span>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {spellItem.languages
-                .sort((a) => (a === selectedLang ? -1 : 1))
-                .map((lang) => (
-                  <SelectItem
-                    key={lang}
-                    value={lang}>
-                    <span className="text-base flex items-center gap-2">
-                      <span>{tDialog(`languageFilter.${lang}`)}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        )}
       </div>
     </Card>
   );
@@ -147,6 +137,7 @@ export default function CodexSpellSearchDialog({
   onSpellSelected,
   accentColor,
 }: CodexSpellSearchDialogProps) {
+  const userLocale = useLocale() as Locale;
   const tMagic = useTranslations("characterDetail.magic");
   const tDialog = useTranslations("characterDetail.magic.codexDialog");
   const tClasses = useTranslations("classes");
@@ -155,20 +146,32 @@ export default function CodexSpellSearchDialog({
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<CodexSpellItem[]>([]);
   const [selectedSpell, setSelectedSpell] = useState<Partial<Spell> | null>(null);
-  const [selectedSpellId, setSelectedSpellId] = useState<string | null>(null);
+  const [selectedCodexSpell, setSelectedCodexSpell] = useState<CodexSpellItem | null>(null);
+  const [previewLangStack, setPreviewLangStack] = useState<string[]>([]);
+  /** Clé `${_id}:${lang}` pour distinguer la même entrée codex en plusieurs langues */
+  const [selectedSpellKey, setSelectedSpellKey] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
+  const [previewLangResolving, setPreviewLangResolving] = useState(false);
+  const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const isLoadingRef = useRef(false);
+  const spellPreviewScrollRef = useRef<HTMLDivElement>(null);
 
   const ITEMS_PER_PAGE = 20;
 
+  useEffect(() => {
+    if (!selectedSpellKey) return;
+    spellPreviewScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selectedSpellKey]);
+
   // Recherche avec debounce
   const searchSpells = useCallback(
-    async (query: string, page: number = 1, append: boolean = false) => {
+    async (query: string, page: number = 1, append: boolean = false, apiLang?: string | null) => {
+      const lang = apiLang !== undefined ? apiLang : selectedLang;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -185,7 +188,7 @@ export default function CodexSpellSearchDialog({
       setError(null);
 
       try {
-        const response = await CodexService.searchSpells(query, selectedLang, page, ITEMS_PER_PAGE);
+        const response = await CodexService.searchSpells(query, lang, page, ITEMS_PER_PAGE);
         const newResults = response.data || [];
 
         // Vérifier si on a atteint la fin en comparant le nombre d'éléments reçus
@@ -235,17 +238,21 @@ export default function CodexSpellSearchDialog({
   useEffect(() => {
     if (open) {
       setSearchQuery("");
-      setSelectedLang(null);
+      setSelectedLang(userLocale);
       setSearchResults([]);
       setSelectedSpell(null);
-      setSelectedSpellId(null);
+      setSelectedCodexSpell(null);
+      setPreviewLangStack([]);
+      setSelectedSpellKey(null);
       setShowMobileDetails(false);
+      setPreviewLangResolving(false);
+      setPreviewTranslationError(null);
       setError(null);
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
-      // Charger les données initiales
-      searchSpells("", 1, false);
+      // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
+      searchSpells("", 1, false, userLocale);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -258,11 +265,80 @@ export default function CodexSpellSearchDialog({
     }
   };
 
-  const handleSpellClick = (codexSpellItem: CodexSpellItem, lang: string) => {
-    const convertedSpell = CodexService.convertToChariotSpell(codexSpellItem, lang);
+  const handleSpellClick = async (
+    codexSpellItem: CodexSpellItem,
+    lang: string,
+    options?: { fromPreviewLangBar?: boolean },
+  ) => {
+    const fromPreview = options?.fromPreviewLangBar ?? false;
+    const prevKey = selectedSpellKey;
+    let currentLangForSameId: string | undefined;
+    if (prevKey) {
+      const colon = prevKey.lastIndexOf(":");
+      const prevId = colon >= 0 ? prevKey.slice(0, colon) : prevKey;
+      const prevLang = colon >= 0 ? prevKey.slice(colon + 1) : undefined;
+      if (prevId === codexSpellItem._id && prevLang) {
+        currentLangForSameId = prevLang;
+      }
+    }
+
+    if (fromPreview) {
+      if (currentLangForSameId && currentLangForSameId !== lang) {
+        setPreviewLangStack((s) => [...s, currentLangForSameId]);
+      }
+    } else {
+      setPreviewLangStack([]);
+    }
+
+    setPreviewTranslationError(null);
+
+    let item = codexSpellItem;
+    const shouldHydrate = fromPreview || !codexSpellTranslationLooksUsable(item.translations[lang]);
+
+    if (shouldHydrate) {
+      setPreviewLangResolving(true);
+      try {
+        const forLang = await CodexService.getSpellById(item._id, lang);
+        if (forLang) {
+          item = CodexService.overlaySpellTranslationsFromDetail(item, forLang, [lang]);
+        }
+        if (!codexSpellTranslationLooksUsable(item.translations[lang])) {
+          const unscoped = await CodexService.getSpellById(item._id);
+          if (unscoped) {
+            item = CodexService.overlaySpellTranslationsFromDetail(item, unscoped, [lang]);
+            if (!codexSpellTranslationLooksUsable(item.translations[lang])) {
+              item = CodexService.mergeSpellFillMissingTranslations(item, unscoped);
+            }
+          }
+        }
+        if (!codexSpellTranslationLooksUsable(item.translations[lang])) {
+          setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+          return;
+        }
+      } finally {
+        setPreviewLangResolving(false);
+      }
+    }
+
+    try {
+      const convertedSpell = CodexService.convertToChariotSpell(item, lang);
+      setSelectedCodexSpell(item);
+      setSelectedSpell(convertedSpell);
+      setSelectedSpellKey(`${item._id}:${lang}`);
+      setShowMobileDetails(true);
+    } catch {
+      setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+    }
+  };
+
+  const handlePreviewLangUndo = () => {
+    if (!selectedCodexSpell || previewLangStack.length === 0) return;
+    setPreviewTranslationError(null);
+    const prevLang = previewLangStack[previewLangStack.length - 1];
+    const convertedSpell = CodexService.convertToChariotSpell(selectedCodexSpell, prevLang);
     setSelectedSpell(convertedSpell);
-    setSelectedSpellId(codexSpellItem._id);
-    setShowMobileDetails(true);
+    setSelectedSpellKey(`${selectedCodexSpell._id}:${prevLang}`);
+    setPreviewLangStack((s) => s.slice(0, -1));
   };
 
   const handleValidate = () => {
@@ -342,7 +418,11 @@ export default function CodexSpellSearchDialog({
                       (item) => CodexService.getSpellTranslation(item, selectedLang) !== null,
                     ).length;
                   } else {
-                    visibleCount = searchResults.length;
+                    visibleCount = searchResults.reduce(
+                      (count, item) =>
+                        count + codexSpellLangsVisibleInAllLanguagesSearch(item, searchQuery).length,
+                      0,
+                    );
                   }
 
                   if (visibleCount === 0) {
@@ -352,25 +432,40 @@ export default function CodexSpellSearchDialog({
                   return (
                     <React.Fragment>
                       <div className="flex flex-col gap-2">
-                        {searchResults.map((spellItem) => {
+                        {searchResults.flatMap((spellItem) => {
                           if (selectedLang && !spellItem.languages.includes(selectedLang)) {
-                            return null;
+                            return [];
                           }
 
-                          const isSelected = selectedSpellId === spellItem._id;
+                          if (selectedLang) {
+                            const isSelected = selectedSpellKey === `${spellItem._id}:${selectedLang}`;
+                            return [
+                              <SpellResultItem
+                                key={`${spellItem._id}-${selectedLang}`}
+                                spellItem={spellItem}
+                                selectedLang={selectedLang}
+                                isSelected={isSelected}
+                                onSpellClick={handleSpellClick}
+                                tDialog={tDialog}
+                                tMagic={tMagic as (key: string, values?: Record<string, unknown>) => string}
+                                t={tClasses}
+                              />,
+                            ];
+                          }
 
-                          return (
+                          return codexSpellLangsVisibleInAllLanguagesSearch(spellItem, searchQuery).map((lang) => (
                             <SpellResultItem
-                              key={`${spellItem._id}-${selectedLang}`}
+                              key={`${spellItem._id}-${lang}`}
                               spellItem={spellItem}
                               selectedLang={selectedLang}
-                              isSelected={isSelected}
+                              pinnedLang={lang}
+                              isSelected={selectedSpellKey === `${spellItem._id}:${lang}`}
                               onSpellClick={handleSpellClick}
                               tDialog={tDialog}
                               tMagic={tMagic as (key: string, values?: Record<string, unknown>) => string}
                               t={tClasses}
                             />
-                          );
+                          ));
                         })}
                       </div>
                       {/* Bouton Charger plus */}
@@ -412,22 +507,53 @@ export default function CodexSpellSearchDialog({
 
           {/* Partie droite : Affichage du sort sélectionné */}
           <div
-            className={`flex-col w-full lg:w-3/4 overflow-y-auto lg:overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
+            className={`flex flex-col flex-1 min-h-0 w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
             <Button
               type="button"
               variant="ghost"
-              className="lg:hidden self-start mb-2 px-2"
+              className="lg:hidden self-start shrink-0 mb-2 px-2"
               onClick={() => setShowMobileDetails(false)}
               aria-label={tMagic("backToList")}>
               <ArrowLeft className="size-4 mr-2" />
               {tMagic("backToList")}
             </Button>
-            {selectedSpell ? (
-              <div className="h-full min-h-0 pr-0 lg:pr-2 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-                <SpellDisplay
-                  spell={selectedSpell as Spell}
-                  accentColor={accentColor}
-                />
+            {selectedSpell && selectedCodexSpell && selectedSpellKey ? (
+              <div className="flex flex-col flex-1 min-h-0 pr-0 lg:pr-2">
+                {(() => {
+                  const colon = selectedSpellKey.lastIndexOf(":");
+                  const previewLang = colon >= 0 ? selectedSpellKey.slice(colon + 1) : userLocale;
+                  const langs = codexDeclaredPreviewLangs(selectedCodexSpell.languages);
+                  return (
+                    <>
+                      <CodexPreviewLanguageBar
+                        availableLangs={langs}
+                        currentLang={previewLang}
+                        disabled={previewLangResolving}
+                        onSelectLang={(l) =>
+                          handleSpellClick(selectedCodexSpell, l, { fromPreviewLangBar: true })
+                        }
+                        onUndo={handlePreviewLangUndo}
+                        canUndo={previewLangStack.length > 0}
+                        label={tDialog("preview.availableLanguages")}
+                        undoLabel={tDialog("preview.previousLanguage")}
+                        undoButtonLabel={tDialog("preview.previousLanguageButton")}
+                        getLanguageAriaLabel={(l) => tDialog(`languageFilter.${l}`)}
+                      />
+                      {previewTranslationError ? (
+                        <p className="text-sm text-red-500 shrink-0 -mt-2 mb-2">{previewTranslationError}</p>
+                      ) : null}
+                    </>
+                  );
+                })()}
+                <div
+                  ref={spellPreviewScrollRef}
+                  className="min-h-0 flex-1 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                  <SpellDisplay
+                    key={selectedSpellKey}
+                    spell={selectedSpell as Spell}
+                    accentColor={accentColor}
+                  />
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
@@ -448,8 +574,7 @@ export default function CodexSpellSearchDialog({
             type="button"
             onClick={handleValidate}
             disabled={!selectedSpell}
-            style={{ backgroundColor: accentColor }}
-            className="text-white">
+            className="bg-purple hover:bg-purple/90 text-white">
             {tDialog("validate")}
           </Button>
         </DialogFooter>

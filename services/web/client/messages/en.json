@@ -72,9 +72,42 @@
     "npcCharacter": "NPC",
     "npcCodexCharacter": "NPC from Codex"
   },
+  "initTracker": {
+    "noCharacters": "No characters",
+    "initBattleDialogTitle": "Initialize battle",
+    "initBattleSelectedGroups": "Players in initiative",
+    "initBattleLoadingGroups": "Loading groups...",
+    "initBattleNoGroupSelected": "No group selected.",
+    "initBattleSearchAndSelectGroups": "Search and select groups",
+    "initBattleSearchGroupPlaceholder": "Search groups by name",
+    "initBattleSelectAllGroups": "Select all",
+    "initBattleDeselectAllGroups": "Deselect all",
+    "initBattleShowAllOpponents": "Show all opponents",
+    "initBattleSettings": "Settings",
+    "initBattleNoSearchResult": "No groups found.",
+    "initBattleGroupStats": "Members: {members}",
+    "initBattleNpcCrLabel": "CR",
+    "initBattleNpcAvgCr": "Avg NPC CR: {cr}",
+    "initBattleNpcTotalCr": "total NPC: {cr}",
+    "initBattlePlayerAvgLevel": "Avg player level: {level}",
+    "initBattleIncludedMembers": "Members in initiative: {included}/{total}",
+    "initBattleExpandGroup": "Show group members",
+    "initBattleCollapseGroup": "Hide group members",
+    "initBattleRemoveGroup": "Remove group from selection",
+    "initBattleInInitiative": "In initiative",
+    "initBattleParticipantsCannotBeExcluded": "Participants cannot be excluded from the initiative",
+    "initBattleValidateSelection": "Confirm configuration"
+  },
+  "multiSelect": {
+    "searchPlaceholder": "Search",
+    "emptyText": "No matching results.",
+    "removeOption": "Remove {label}",
+    "selectedCount": "{count, plural, one {# group selected.} other {# groups selected.}}"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
+    "challengeRatingTooltip": "Challenge Rating",
     "errors": {
       "campaignNameRequired": "Campaign name is required",
       "campaignCreationFailed": "Failed to create campaign",
@@ -858,7 +891,13 @@
         },
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",
-        "resultsMore": "+"
+        "resultsMore": "+",
+        "preview": {
+          "availableLanguages": "Also available in",
+          "previousLanguage": "Back to previous language",
+          "previousLanguageButton": "Back",
+          "loadTranslationError": "Could not load this language. Try again or pick another."
+        }
       },
       "monsterCodexDialog": {
         "title": "Search for a monster in Codex",
@@ -881,14 +920,19 @@
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
-        "monsterInfo": "CR {cr} • {type}",
+        "crLabel": "CR",
+        "monsterInfo": "{cr} • {type}",
         "preview": {
           "challengeRatingShort": "CR",
           "experiencePointsShort": "XP",
           "calculatedArmorClass": "Calculated AC",
           "sourceArmorClass": "source: {value}",
           "hitPointsDice": "Hit points dice",
-          "estimatedProficiencyBonus": "Estimated proficiency bonus"
+          "estimatedProficiencyBonus": "Estimated proficiency bonus",
+          "availableLanguages": "Also available in",
+          "previousLanguage": "Back to previous language",
+          "previousLanguageButton": "Back",
+          "loadTranslationError": "Could not load this language. Try again or pick another."
         }
       }
     }
