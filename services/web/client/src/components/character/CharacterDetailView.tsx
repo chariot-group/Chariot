@@ -7,8 +7,6 @@ import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useMemo, useState } from "react";
 import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
-import { LongRestButton } from "@/components/character/LongRestButton";
-import { ShortRestButton } from "@/components/character/ShortRestButton";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
@@ -239,20 +237,6 @@ export default function CharacterDetailView({
                         </div>
                       </TooltipContent>
                     </Tooltip>
-                    {isPlayer(character) && !isEditing && onCharacterUpdate && !isGmViewingPlayerSheet && (
-                      <span className="inline-flex items-center gap-1 shrink-0">
-                        <ShortRestButton
-                          player={character}
-                          isInSession={isInSession}
-                          onApplied={(updated) => onCharacterUpdate(updated)}
-                        />
-                        <LongRestButton
-                          player={character}
-                          isInSession={isInSession}
-                          onApplied={(updated) => onCharacterUpdate(updated)}
-                        />
-                      </span>
-                    )}
                   </div>
 
                   {/* Ligne 2: Surnom + Classe/CR + Groupe */}

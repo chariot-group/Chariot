@@ -104,6 +104,7 @@ export default function PlayerGeneralTabContent({
           <Statistics
             player={player}
             accentColor={accentColor}
+            onCharacterUpdate={onCharacterUpdate}
           />
 
           <Column2

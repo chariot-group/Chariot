@@ -27,6 +27,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
         <Statistics
           player={player}
           accentColor={accentColor}
+          onCharacterUpdate={onCharacterUpdate}
         />
         {/* Jet de sauvegarde */}
         <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">

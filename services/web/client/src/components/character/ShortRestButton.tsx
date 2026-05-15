@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import CharacterService from "@/services/CharacterService";
 import { useAppDispatch } from "@/store/hooks";
 import { upsertCharacterInGroups } from "@/store/slices/groupSlice";
@@ -22,7 +21,7 @@ import {
     hitDieSide,
     type ShortRestHitDiceRoll,
 } from "@/utils/rest.utils";
-import { Clock, Loader2, Minus, Plus } from "lucide-react";
+import { BicepsFlexed, Clock, Dice5, Loader2, Minus, Plus, WandSparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useToast } from "@/hooks/useToast";
@@ -31,6 +30,7 @@ interface ShortRestButtonProps {
     player: Player;
     isInSession: boolean;
     onApplied: (updated: Player) => void;
+    showLabel?: boolean;
 }
 
 type RollRow = { id: string; classIndex: number; value: string };
@@ -65,7 +65,7 @@ const hitDiceScrollAreaClass =
     "[scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-muted/50 " +
     "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/35";
 
-export function ShortRestButton({ player, isInSession, onApplied }: ShortRestButtonProps) {
+export function ShortRestButton({ player, isInSession, onApplied, showLabel = false }: ShortRestButtonProps) {
     const t = useTranslations("characterDetail.shortRest");
     const tClass = useTranslations("classes");
     const toast = useToast();
@@ -76,6 +76,26 @@ export function ShortRestButton({ player, isInSession, onApplied }: ShortRestBut
     const [rollRows, setRollRows] = useState<RollRow[]>([]);
 
     const classes = useMemo(() => player.class ?? [], [player.class]);
+    const shortRestAbilityCount = useMemo(
+        () =>
+            (player.abilities ?? []).filter(
+                (ability) => ability.hasCounter === true && ability.counterResetsOnShortRest === true,
+            ).length,
+        [player.abilities],
+    );
+    const hasShortRestAbilities = shortRestAbilityCount > 0;
+    const hasWarlockSpellcasting = useMemo(
+        () => (player.spellcasting ?? []).some((spellcasting) => spellcasting.className?.toLowerCase() === "warlock"),
+        [player.spellcasting],
+    );
+    const shortRestClasses = useMemo(
+        () => classes.filter((c) => (c.level ?? 0) > 0),
+        [classes],
+    );
+    const hasAnyHitDice = useMemo(
+        () => shortRestClasses.some((c) => getHitDiceRemainingForClass(c) > 0),
+        [shortRestClasses],
+    );
 
     useEffect(() => {
         if (!isInSession) setDialogOpen(false);
@@ -165,14 +185,15 @@ export function ShortRestButton({ player, isInSession, onApplied }: ShortRestBut
         }
     };
 
-    const buttonClass =
-        "shrink-0 size-9 sm:size-10 border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white disabled:opacity-50 disabled:pointer-events-none";
+    const buttonClass = showLabel
+        ? "h-8 shrink-0 border-border/70 bg-background/60 px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+        : "shrink-0 size-9 sm:size-10 border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white disabled:pointer-events-none disabled:opacity-50";
 
     const triggerButton = (
         <Button
             type="button"
             variant="outline"
-            size="icon"
+            size={showLabel ? "sm" : "icon"}
             disabled={!isInSession || pending || dialogOpen}
             className={buttonClass}
             onClick={() => {
@@ -182,13 +203,41 @@ export function ShortRestButton({ player, isInSession, onApplied }: ShortRestBut
             aria-expanded={isInSession ? dialogOpen : undefined}
             aria-haspopup={isInSession ? "dialog" : undefined}>
             <Clock
-                className="size-4 sm:size-5"
+                className={showLabel ? "size-4" : "size-4 sm:size-5"}
                 aria-hidden="true"
             />
+            {showLabel && <span>{t("ariaLabel")}</span>}
         </Button>
     );
 
     const rowsByClass = classes.map((_, ci) => rollRows.filter((r) => r.classIndex === ci));
+    const topEffects = [
+        hasShortRestAbilities
+            ? {
+                  key: "abilities",
+                  icon: (
+                      <BicepsFlexed
+                          className="size-7 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                      />
+                  ),
+                  label: t("effectAbilitiesShort"),
+              }
+            : null,
+        hasWarlockSpellcasting
+            ? {
+                  key: "warlock-spells",
+                  icon: (
+                      <WandSparkles
+                          className="size-7 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                      />
+                  ),
+                  label: t("effectWarlockSlots"),
+              }
+            : null,
+    ].filter((effect): effect is NonNullable<typeof effect> => effect !== null);
+    const hasAnyMechanicalEffect = topEffects.length > 0 || hasAnyHitDice;
 
     return (
         <>
@@ -226,152 +275,144 @@ export function ShortRestButton({ player, isInSession, onApplied }: ShortRestBut
                         <DialogTitle>{t("confirmTitle")}</DialogTitle>
                     </DialogHeader>
                     <div className="text-sm text-foreground min-h-0 overflow-y-auto pr-1 -mr-1 flex flex-col gap-3">
-                        <p>{t("confirmIntro")}</p>
-                        <ul className="list-disc pl-5 space-y-1.5 text-muted-foreground shrink-0">
-                            <li>{t("effectAbilitiesShort")}</li>
-                            <li>{t("effectWarlockSlots")}</li>
-                        </ul>
+                        {topEffects.length > 0 && (
+                            <ul className="space-y-2 text-sm text-foreground sm:text-base shrink-0">
+                                {topEffects.map((effect) => (
+                                    <li
+                                        key={effect.key}
+                                        className="flex items-start gap-2.5 leading-6">
+                                        <span className="mt-1">{effect.icon}</span>
+                                        <span>{effect.label}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
 
-                        <div
-                            className={cn(
-                                "rounded-[15px] border border-border bg-card text-card-foreground p-4 shadow-sm space-y-3 shrink-0",
-                            )}>
-                            <div className="min-w-0 space-y-1">
-                                <p className="font-semibold text-foreground leading-tight">{t("hitDiceSectionTitle")}</p>
-                                <p className="text-xs text-muted-foreground leading-snug">{t("hitDiceSectionHint")}</p>
-                            </div>
-
-                            <div className={hitDiceScrollAreaClass}>
-                                <div className="space-y-4 pr-0.5">
-                                    {classes.map((c, classIndex) => {
-                                        if ((c.level ?? 0) <= 0) return null;
-                                        const side = hitDieSide(c);
-                                        const maxPool = getHitDiceRemainingForClass(c);
-                                        const rows = rowsByClass[classIndex];
-                                        const canRemove = rows.length > 0;
-                                        return (
-                                            <div
-                                                key={`${c.name}-${classIndex}`}
-                                                className="rounded-[15px] border border-border bg-background p-3 space-y-3">
-                                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    <span className="text-xs sm:text-sm font-medium leading-snug min-w-0">
-                                                        {t("hitDicePool", {
-                                                            name: tClass(c.name),
-                                                            remaining: maxPool - spentPerClass[classIndex],
-                                                            max: maxPool,
-                                                            side,
-                                                        })}
-                                                    </span>
-                                                    <div className="flex gap-1 shrink-0">
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <span className="inline-flex">
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        className="size-8 border-border bg-background/90 shadow-xs"
-                                                                        disabled={pending || !canAddForClass(classIndex)}
-                                                                        onClick={() => addDie(classIndex)}
-                                                                        aria-label={t("addDie")}>
-                                                                        <Plus
-                                                                            className="size-3.5"
-                                                                            aria-hidden="true"
-                                                                        />
-                                                                    </Button>
-                                                                </span>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent
-                                                                side="bottom"
-                                                                className="max-w-xs text-left text-xs leading-snug rounded-[15px]">
-                                                                {t("addDieTooltip")}
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                        <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                <span className="inline-flex">
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        className="size-8 border-border bg-background/90 shadow-xs"
-                                                                        disabled={pending || !canRemove}
-                                                                        onClick={() => removeLastForClass(classIndex)}
-                                                                        aria-label={t("removeLastDie")}>
-                                                                        <Minus
-                                                                            className="size-3.5"
-                                                                            aria-hidden="true"
-                                                                        />
-                                                                    </Button>
-                                                                </span>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent
-                                                                side="bottom"
-                                                                className="max-w-xs text-left text-xs leading-snug rounded-[15px]">
-                                                                {t("removeLastDieTooltip")}
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </div>
-                                                </div>
-                                                {rows.length > 0 ? (
-                                                    <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 gap-2">
-                                                        {rows.map((row, ri) => (
-                                                            <div
-                                                                key={row.id}
-                                                                className="rounded-[15px] border border-border bg-background px-2 py-1.5 shadow-xs">
-                                                                <label
-                                                                    className="sr-only"
-                                                                    htmlFor={`${baseId}-r-${row.id}`}>
-                                                                    {`${t("rollLabel")} ${ri + 1} (d${side})`}
-                                                                </label>
-                                                                <Input
-                                                                    id={`${baseId}-r-${row.id}`}
-                                                                    type="text"
-                                                                    inputMode="numeric"
-                                                                    autoComplete="off"
-                                                                    disabled={pending}
-                                                                    placeholder={`1–${side}`}
-                                                                    value={row.value}
-                                                                    onChange={(e) =>
-                                                                        handleDieValueChange(
-                                                                            row.id,
-                                                                            e.target.value,
-                                                                            side,
-                                                                        )
-                                                                    }
-                                                                    onKeyDown={(e) => {
-                                                                        if (
-                                                                            e.key === "-" ||
-                                                                            e.key === "e" ||
-                                                                            e.key === "E" ||
-                                                                            e.key === "+" ||
-                                                                            e.key === "."
-                                                                        ) {
-                                                                            e.preventDefault();
-                                                                        }
-                                                                    }}
-                                                                    className="h-8 px-2 text-center text-sm tabular-nums bg-background border-border/80"
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-xs text-muted-foreground italic">
-                                                        {t("hitDiceEmptyHint")}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                        {hasAnyHitDice && (
+                            <section className="space-y-3 shrink-0">
+                                <div className="flex items-start gap-2.5">
+                                    <Dice5
+                                        className="size-7 shrink-0 text-muted-foreground"
+                                        aria-hidden="true"
+                                    />
+                                    <div className="min-w-0">
+                                        <p className="font-medium text-foreground leading-tight">{t("hitDiceSectionTitle")}</p>
+                                        <p className="text-xs text-muted-foreground leading-snug">{t("hitDiceSectionHint")}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+
+                                <div className={hitDiceScrollAreaClass}>
+                                    <div className="pr-0.5">
+                                        {classes.map((c, classIndex) => {
+                                            if ((c.level ?? 0) <= 0 || getHitDiceRemainingForClass(c) <= 0) return null;
+                                            const side = hitDieSide(c);
+                                            const maxPool = getHitDiceRemainingForClass(c);
+                                            const rows = rowsByClass[classIndex];
+                                            const canRemove = rows.length > 0;
+                                            return (
+                                                <div
+                                                    key={`${c.name}-${classIndex}`}
+                                                    className="border-t border-border/60 py-3 first:border-t-0 first:pt-0 last:pb-0 space-y-2.5">
+                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                        <span className="text-xs sm:text-sm font-medium leading-snug min-w-0">
+                                                            {t("hitDicePool", {
+                                                                name: tClass(c.name),
+                                                                remaining: maxPool - spentPerClass[classIndex],
+                                                                max: maxPool,
+                                                                side,
+                                                            })}
+                                                        </span>
+                                                        <div className="flex gap-1 shrink-0">
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="size-8"
+                                                                disabled={pending || !canAddForClass(classIndex)}
+                                                                onClick={() => addDie(classIndex)}
+                                                                aria-label={t("addDie")}>
+                                                                <Plus
+                                                                    className="size-3.5"
+                                                                    aria-hidden="true"
+                                                                />
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="size-8"
+                                                                disabled={pending || !canRemove}
+                                                                onClick={() => removeLastForClass(classIndex)}
+                                                                aria-label={t("removeLastDie")}>
+                                                                <Minus
+                                                                    className="size-3.5"
+                                                                    aria-hidden="true"
+                                                                />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    {rows.length > 0 ? (
+                                                        <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 gap-2">
+                                                            {rows.map((row, ri) => (
+                                                                <div key={row.id}>
+                                                                    <label
+                                                                        className="sr-only"
+                                                                        htmlFor={`${baseId}-r-${row.id}`}>
+                                                                        {`${t("rollLabel")} ${ri + 1} (d${side})`}
+                                                                    </label>
+                                                                    <Input
+                                                                        id={`${baseId}-r-${row.id}`}
+                                                                        type="text"
+                                                                        inputMode="numeric"
+                                                                        autoComplete="off"
+                                                                        disabled={pending}
+                                                                        placeholder={`1–${side}`}
+                                                                        value={row.value}
+                                                                        onChange={(e) =>
+                                                                            handleDieValueChange(
+                                                                                row.id,
+                                                                                e.target.value,
+                                                                                side,
+                                                                            )
+                                                                        }
+                                                                        onKeyDown={(e) => {
+                                                                            if (
+                                                                                e.key === "-" ||
+                                                                                e.key === "e" ||
+                                                                                e.key === "E" ||
+                                                                                e.key === "+" ||
+                                                                                e.key === "."
+                                                                            ) {
+                                                                                e.preventDefault();
+                                                                            }
+                                                                        }}
+                                                                        className="h-9 px-2 text-center text-sm tabular-nums"
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-muted-foreground italic">
+                                                            {t("hitDiceEmptyHint")}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {!hasAnyMechanicalEffect && (
+                            <p className="text-sm text-muted-foreground sm:text-base">{t("noMechanicalEffect")}</p>
+                        )}
 
                         {healingPreview != null && rollRows.length > 0 && (
                             <p className="text-sm font-medium shrink-0">{t("totalHealing", { n: healingPreview })}</p>
                         )}
                     </div>
-                    <DialogFooter className="gap-2 sm:gap-2 shrink-0 border-t border-border/60 pt-2">
+                    <DialogFooter className="flex-row justify-end gap-2 shrink-0 border-t border-border/60 pt-2">
                         <Button
                             type="button"
                             variant="outline"

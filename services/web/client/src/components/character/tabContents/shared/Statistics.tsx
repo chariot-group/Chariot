@@ -8,15 +8,21 @@ import RunningIcon from "@public/assets/icons/running-icon.svg";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import { getHitDiceRemainingForClass } from "@/utils/rest.utils";
+import { ShortRestButton } from "@/components/character/ShortRestButton";
+import { LongRestButton } from "@/components/character/LongRestButton";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
 
 interface StatisticsProps {
   player: Player;
   accentColor: string;
+  onCharacterUpdate?: (updated?: Player) => void;
 }
 
-export default function Statistics({ player, accentColor }: StatisticsProps) {
+export default function Statistics({ player, accentColor, onCharacterUpdate }: StatisticsProps) {
   const t = useTranslations("characterDetail.battle");
   const tClass = useTranslations("classes");
+  const isInSession = useAppSelector(selectIsInSession);
   const speed = player.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
 
   const speedBadges = [
@@ -195,6 +201,26 @@ export default function Statistics({ player, accentColor }: StatisticsProps) {
           );
         })}
       </div>
+      {onCharacterUpdate && (
+        <div className="mt-1 border-t border-border/60 px-2 pt-3">
+          <div className="flex justify-end">
+            <div className="flex flex-row gap-2 sm:flex-col xl:flex-row">
+              <ShortRestButton
+                player={player}
+                isInSession={isInSession}
+                onApplied={(updated) => onCharacterUpdate(updated)}
+                showLabel
+              />
+              <LongRestButton
+                player={player}
+                isInSession={isInSession}
+                onApplied={(updated) => onCharacterUpdate(updated)}
+                showLabel
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

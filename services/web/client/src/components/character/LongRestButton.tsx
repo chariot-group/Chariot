@@ -14,8 +14,8 @@ import { useAppDispatch } from "@/store/hooks";
 import { upsertCharacterInGroups } from "@/store/slices/groupSlice";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import type { Player } from "@/types/character";
-import { buildLongRestUpdatePayload } from "@/utils/rest.utils";
-import { Moon, Loader2 } from "lucide-react";
+import { buildLongRestUpdatePayload, getHitDiceRemainingForClass } from "@/utils/rest.utils";
+import { BatteryMedium, BicepsFlexed, Dice5, HeartMinus, HeartPlus, Loader2, WandSparkles, Moon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/useToast";
@@ -24,14 +24,113 @@ interface LongRestButtonProps {
     player: Player;
     isInSession: boolean;
     onApplied: (updated: Player) => void;
+    showLabel?: boolean;
 }
 
-export function LongRestButton({ player, isInSession, onApplied }: LongRestButtonProps) {
+export function LongRestButton({ player, isInSession, onApplied, showLabel = false }: LongRestButtonProps) {
     const t = useTranslations("characterDetail.longRest");
     const toast = useToast();
     const dispatch = useAppDispatch();
     const [pending, setPending] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const hasSpellRecovery = (player.spellcasting ?? []).some((spellcasting) => {
+        const hasUsedSlotsByLevel = Object.values(spellcasting.spellSlotsByLevel ?? {}).some((slot) => (slot?.used ?? 0) > 0);
+        const hasUsedSpellsByDay = (spellcasting.spells ?? []).some(
+            (spell) => spell.usesPerDay != null && (spell.used ?? 0) > 0,
+        );
+        const hasUsedSlotsByUses = Object.values(spellcasting.spellSlotsByUses ?? {}).some(
+            (used) => typeof used === "number" && used > 0,
+        );
+
+        return hasUsedSlotsByLevel || hasUsedSpellsByDay || hasUsedSlotsByUses;
+    });
+    const hasAbilityRecovery = (player.abilities ?? []).some(
+        (ability) =>
+            ability.hasCounter === true &&
+            ability.counterResetsOnLongRest === true &&
+            (ability.counterCurrent ?? 0) > 0,
+    );
+    const hasSpentHitDice = (player.class ?? []).some(
+        (characterClass) => getHitDiceRemainingForClass(characterClass) < Math.max(0, Math.floor(characterClass.level ?? 0)),
+    );
+    const hasMissingHp = player.stats.currentHitPoints < player.stats.maxHitPoints;
+    const hasTempHp = player.stats.tempHitPoints > 0;
+    const hasExhaustion = player.exhaustionLevel > 0;
+
+    const restEffects = [
+        hasSpellRecovery
+            ? {
+                  key: "spell-slots",
+                  icon: (
+                      <WandSparkles
+                          className="size-7 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                      />
+                  ),
+                  label: t("effectSpellSlots"),
+              }
+            : null,
+        hasAbilityRecovery
+            ? {
+                  key: "abilities",
+                  icon: (
+                      <BicepsFlexed
+                          className="size-7 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                      />
+                  ),
+                  label: t("effectAbilities"),
+              }
+            : null,
+        hasSpentHitDice
+            ? {
+                  key: "hit-dice",
+                  icon: (
+                      <Dice5
+                          className="size-7 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                      />
+                  ),
+                  label: t("effectHitDice"),
+              }
+            : null,
+        hasMissingHp
+            ? {
+                  key: "hp",
+                  icon: (
+                      <HeartPlus
+                          className="size-7 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                      />
+                  ),
+                  label: t("effectHp"),
+              }
+            : null,
+        hasTempHp
+            ? {
+                  key: "temp-hp",
+                  icon: (
+                      <HeartMinus
+                          className="size-7 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                      />
+                  ),
+                  label: t("effectTempHp"),
+              }
+            : null,
+        hasExhaustion
+            ? {
+                  key: "exhaustion",
+                  icon: (
+                      <BatteryMedium
+                          className="size-7 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                      />
+                  ),
+                  label: t("effectExhaustion"),
+              }
+            : null,
+    ].filter((effect): effect is NonNullable<typeof effect> => effect !== null);
 
     useEffect(() => {
         if (!isInSession) setDialogOpen(false);
@@ -64,14 +163,15 @@ export function LongRestButton({ player, isInSession, onApplied }: LongRestButto
         }
     };
 
-    const buttonClass =
-        "shrink-0 size-9 sm:size-10 border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white disabled:opacity-50 disabled:pointer-events-none";
+    const buttonClass = showLabel
+        ? "h-8 shrink-0 border-border/70 bg-background/60 px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+        : "shrink-0 size-9 sm:size-10 border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white disabled:pointer-events-none disabled:opacity-50";
 
     const triggerButton = (
         <Button
             type="button"
             variant="outline"
-            size="icon"
+            size={showLabel ? "sm" : "icon"}
             disabled={!isInSession || pending || dialogOpen}
             className={buttonClass}
             onClick={() => {
@@ -81,9 +181,10 @@ export function LongRestButton({ player, isInSession, onApplied }: LongRestButto
             aria-expanded={isInSession ? dialogOpen : undefined}
             aria-haspopup={isInSession ? "dialog" : undefined}>
             <Moon
-                className="size-4 sm:size-5"
+                className={showLabel ? "size-4" : "size-4 sm:size-5"}
                 aria-hidden="true"
             />
+            {showLabel && <span>{t("ariaLabel")}</span>}
         </Button>
     );
 
@@ -116,24 +217,29 @@ export function LongRestButton({ player, isInSession, onApplied }: LongRestButto
                 onOpenChange={(open) => !pending && setDialogOpen(open)}>
                 <DialogContent
                     showCloseButton={!pending}
-                    className="max-w-md"
+                    className="max-w-lg"
                     onPointerDownOutside={(e) => pending && e.preventDefault()}
                     onEscapeKeyDown={(e) => pending && e.preventDefault()}>
                     <DialogHeader>
-                        <DialogTitle>{t("confirmTitle")}</DialogTitle>
+                        <DialogTitle className="text-xl sm:text-2xl">{t("confirmTitle")}</DialogTitle>
                     </DialogHeader>
-                    <div className="text-sm text-foreground space-y-3">
-                        <p>{t("confirmIntro")}</p>
-                        <ul className="list-disc pl-5 space-y-1.5 text-muted-foreground">
-                            <li>{t("effectSpellSlots")}</li>
-                            <li>{t("effectAbilities")}</li>
-                            <li>{t("effectHitDice")}</li>
-                            <li>{t("effectHp")}</li>
-                            <li>{t("effectTempHp")}</li>
-                            <li>{t("effectExhaustion")}</li>
-                        </ul>
+                    <div>
+                        {restEffects.length > 0 ? (
+                            <ul className="space-y-2 text-sm text-foreground sm:text-base">
+                                {restEffects.map((effect) => (
+                                    <li
+                                        key={effect.key}
+                                        className="flex items-start gap-2.5 leading-6">
+                                        <span className="mt-1">{effect.icon}</span>
+                                        <span>{effect.label}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground sm:text-base">{t("noMechanicalEffect")}</p>
+                        )}
                     </div>
-                    <DialogFooter className="gap-2 sm:gap-2">
+                    <DialogFooter className="flex-row justify-end gap-2">
                         <Button
                             type="button"
                             variant="outline"
