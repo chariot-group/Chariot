@@ -107,7 +107,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
                     data.participants.map(async (p) => {
                         try {
                             const user = await UserService.getUserById(p.userId);
-                            return [p.userId, `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.username] as const;
+                            return [p.userId, user.username?.trim() || p.userId] as const;
                         } catch {
                             return [p.userId, p.userId] as const;
                         }
@@ -156,4 +156,3 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         isLoading,
     };
 }
-

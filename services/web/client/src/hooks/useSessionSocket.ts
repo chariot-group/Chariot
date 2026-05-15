@@ -212,7 +212,7 @@ export function useSessionSocket({
                 const user = await UserService.getUserById(userId);
                 setParticipantNamesRef.current((prev) => ({
                     ...prev,
-                    [userId]: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.username,
+                    [userId]: user.username?.trim() || userId,
                 }));
             } catch {
                 // keep the username fallback already set

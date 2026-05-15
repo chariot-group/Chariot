@@ -123,7 +123,7 @@ export default function CharacterDetailView({
     void UserService.getUserById(playedBySubjectId)
       .then((u) => {
         if (!cancelled) {
-          const label = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.username;
+          const label = u.username?.trim() || playedBySubjectId;
           setResolvedPlayedBy({ createdByKey: playedBySubjectId, label });
         }
       })

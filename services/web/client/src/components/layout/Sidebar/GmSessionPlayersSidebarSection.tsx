@@ -191,7 +191,7 @@ export default function GmSessionPlayersSidebarSection() {
         for (const p of roster) {
           try {
             const u = await UserService.getUserById(p.userId);
-            nameUpdates[p.userId] = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.username;
+            nameUpdates[p.userId] = u.username?.trim() || p.userId;
           } catch {
             nameUpdates[p.userId] = p.userId;
           }
