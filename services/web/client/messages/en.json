@@ -382,6 +382,8 @@
       "abilityRemove": "Remove this ability",
       "abilityCounterPlayerSessionNote": "While not in a session, current uses cannot be edited here.",
       "abilityCounterResetLegend": "Counter reset after rest",
+      "abilityCounterResetShortRestShort": "Resets at short rest",
+      "abilityCounterResetLongRestShort": "Resets at long rest",
       "abilityCounterResetShortRest": "Resets after a short rest",
       "abilityCounterResetLongRest": "Resets after a long rest",
       "abilitiesAndTraits": "Abilities and Traits",

@@ -382,6 +382,8 @@
       "abilityRemove": "Quitar esta habilidad",
       "abilityCounterPlayerSessionNote": "Fuera de sesión no puedes ajustar los usos actuales aquí.",
       "abilityCounterResetLegend": "Reinicio del contador tras descanso",
+      "abilityCounterResetShortRestShort": "Reinicio al descanso corto",
+      "abilityCounterResetLongRestShort": "Reinicio al descanso largo",
       "abilityCounterResetShortRest": "Se reinicia tras un descanso corto",
       "abilityCounterResetLongRest": "Se reinicia tras un descanso largo",
       "abilitiesAndTraits": "Habilidades y rasgos",

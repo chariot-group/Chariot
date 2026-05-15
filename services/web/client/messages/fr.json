@@ -383,6 +383,8 @@
       "abilityRemove": "Supprimer cette capacité",
       "abilityCounterPlayerSessionNote": "Hors session, l’utilisation actuelle n’est pas modifiable ici.",
       "abilityCounterResetLegend": "Réinitialisation du compteur après repos",
+      "abilityCounterResetShortRestShort": "Se recharge au repos court",
+      "abilityCounterResetLongRestShort": "Se recharge au repos long",
       "abilityCounterResetShortRest": "Réinitialisation au repos court",
       "abilityCounterResetLongRest": "Réinitialisation au repos long",
       "abilitiesAndTraits": "Capacités et traits",
