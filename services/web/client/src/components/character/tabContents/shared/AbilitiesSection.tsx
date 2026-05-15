@@ -10,6 +10,7 @@ import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 type CharacterTypeFilter = "players" | "npcs";
 
@@ -39,6 +40,7 @@ const AbilitiesSection = ({
   const t = useTranslations("characterDetail.battle");
   const toast = useToast();
   const isInSession = useAppSelector(selectIsInSession);
+  const sessionCode = useActiveSessionCode();
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
 
   const showUseControls = isInSession && Boolean(onAfterAbilityUse);
@@ -70,7 +72,7 @@ const AbilitiesSection = ({
         const type = characterKind === "npcs" ? "npcs" : "players";
         const updated = (await CharacterService.updateCharacter(type, characterId, {
           abilities: next,
-        })) as Player | NPC;
+        }, sessionCode)) as Player | NPC;
         onAfterAbilityUse?.(updated);
       } catch (e) {
         console.error(e);
@@ -79,7 +81,7 @@ const AbilitiesSection = ({
         setLoadingIndex(null);
       }
     },
-    [abilities, characterId, characterKind, onAfterAbilityUse, toast, t]
+    [abilities, characterId, characterKind, onAfterAbilityUse, sessionCode, toast, t]
   );
 
   return (

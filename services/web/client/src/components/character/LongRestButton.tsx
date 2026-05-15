@@ -19,6 +19,7 @@ import { BatteryMedium, BicepsFlexed, Dice5, HeartMinus, HeartPlus, Loader2, Wan
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/useToast";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 interface LongRestButtonProps {
     player: Player;
@@ -31,6 +32,7 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
     const t = useTranslations("characterDetail.longRest");
     const toast = useToast();
     const dispatch = useAppDispatch();
+    const sessionCode = useActiveSessionCode();
     const [pending, setPending] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const hasSpellRecovery = (player.spellcasting ?? []).some((spellcasting) => {
@@ -141,7 +143,7 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
         setPending(true);
         try {
             const payload = buildLongRestUpdatePayload(player);
-            const updated = (await CharacterService.updateCharacter("players", player._id, payload)) as Player;
+            const updated = (await CharacterService.updateCharacter("players", player._id, payload, sessionCode)) as Player;
             dispatch(upsertCharacterWithoutGroup(updated));
             const withUser = updated as Player & { userId?: string };
             dispatch(

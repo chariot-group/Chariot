@@ -37,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 interface CharacterMagicViewProps {
   character: Character;
@@ -49,6 +50,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
   const tClass = useTranslations("classes");
   const tMagic = useTranslations("characterDetail.magic");
   const toast = useToast();
+  const sessionCode = useActiveSessionCode();
   const playerCharacter = isPlayer(character) ? (character as Player) : null;
 
   const [selectedSpellcasting, setSelectedSpellcasting] = useState<Spellcasting | null>(
@@ -194,7 +196,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         });
         const updated = (await CharacterService.updateCharacter("players", (character as Player)._id, {
           spellcasting: list,
-        })) as Player;
+        }, sessionCode)) as Player;
         const scNew = updated.spellcasting?.find(
           (s) => s.className.trim().toLowerCase() === activeSpellcasting.className.trim().toLowerCase(),
         );
@@ -210,7 +212,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         setPrepSavingKey(null);
       }
     },
-    [activeSpellcasting, character, onCharacterUpdate, toast, tMagic],
+    [activeSpellcasting, character, onCharacterUpdate, sessionCode, toast, tMagic],
   );
 
   if (!character.spellcasting || character.spellcasting.length === 0 || activeSpellcasting === null) {

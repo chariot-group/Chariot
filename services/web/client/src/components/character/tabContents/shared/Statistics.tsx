@@ -12,6 +12,9 @@ import { ShortRestButton } from "@/components/character/ShortRestButton";
 import { LongRestButton } from "@/components/character/LongRestButton";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
+import { SessionHealthDialog } from "@/components/character/session/SessionHealthDialog";
+import { useState } from "react";
 
 interface StatisticsProps {
   player: Player;
@@ -23,7 +26,10 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
   const t = useTranslations("characterDetail.battle");
   const tClass = useTranslations("classes");
   const isInSession = useAppSelector(selectIsInSession);
+  const sessionCode = useActiveSessionCode();
+  const [healthDialogOpen, setHealthDialogOpen] = useState(false);
   const speed = player.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
+  const canEditHealthInSession = isInSession && Boolean(onCharacterUpdate);
 
   const speedBadges = [
     {
@@ -184,6 +190,8 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
         currentHP={player.stats.currentHitPoints}
         maxHP={player.stats.maxHitPoints}
         tempHP={player.stats.tempHitPoints}
+        interactive={canEditHealthInSession}
+        onClick={canEditHealthInSession ? () => setHealthDialogOpen(true) : undefined}
       />
       <div className="text-lg px-2">
         <span>{t("hitDice")}</span>
@@ -221,6 +229,15 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
           </div>
         </div>
       )}
+      {canEditHealthInSession && onCharacterUpdate ? (
+        <SessionHealthDialog
+          open={healthDialogOpen}
+          onOpenChange={setHealthDialogOpen}
+          player={player}
+          sessionCode={sessionCode}
+          onCharacterUpdate={onCharacterUpdate}
+        />
+      ) : null}
     </Card>
   );
 }

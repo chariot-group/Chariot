@@ -25,6 +25,7 @@ import { BicepsFlexed, Clock, Dice5, Loader2, Minus, Plus, WandSparkles } from "
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useToast } from "@/hooks/useToast";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 interface ShortRestButtonProps {
     player: Player;
@@ -70,6 +71,7 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
     const tClass = useTranslations("classes");
     const toast = useToast();
     const dispatch = useAppDispatch();
+    const sessionCode = useActiveSessionCode();
     const baseId = useId();
     const [pending, setPending] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -163,7 +165,7 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
         setPending(true);
         try {
             const payload = buildShortRestUpdatePayload(player, rolls ?? []);
-            const updated = (await CharacterService.updateCharacter("players", player._id, payload)) as Player;
+            const updated = (await CharacterService.updateCharacter("players", player._id, payload, sessionCode)) as Player;
             dispatch(upsertCharacterWithoutGroup(updated));
             const withUser = updated as Player & { userId?: string };
             dispatch(

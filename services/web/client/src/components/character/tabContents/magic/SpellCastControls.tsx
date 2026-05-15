@@ -22,6 +22,7 @@ import {
   classWithSpellPrepared,
 } from "@/utils/magic.utils";
 import { cn } from "@/lib/utils";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 type CharacterKind = "players" | "npcs";
 
@@ -43,6 +44,7 @@ export default function SpellCastControls({
   const tMagic = useTranslations("characterDetail.magic");
   const toast = useToast();
   const isInSession = useAppSelector(selectIsInSession);
+  const sessionCode = useActiveSessionCode();
   const [busy, setBusy] = useState(false);
 
   const showCast = isInSession && Boolean(onCharacterUpdate);
@@ -68,7 +70,7 @@ export default function SpellCastControls({
         );
         const updated = (await CharacterService.updateCharacter(characterKind, character._id, {
           spellcasting: nextSpellcasting,
-        })) as Player | NPC;
+        }, sessionCode)) as Player | NPC;
         onCharacterUpdate(updated);
       } catch (e) {
         console.error(e);
@@ -85,6 +87,7 @@ export default function SpellCastControls({
       onCharacterUpdate,
       selectedSpell,
       spellcasting,
+      sessionCode,
       toast,
       tMagic,
     ],
@@ -103,7 +106,7 @@ export default function SpellCastControls({
       const nextSpellcasting = incrementNpcInnateSpellUses(list, spellcasting.className, selectedSpell);
       const updated = (await CharacterService.updateCharacter(characterKind, character._id, {
         spellcasting: nextSpellcasting,
-      })) as Player | NPC;
+      }, sessionCode)) as Player | NPC;
       onCharacterUpdate(updated);
     } catch (e) {
       console.error(e);
@@ -119,6 +122,7 @@ export default function SpellCastControls({
     onCharacterUpdate,
     selectedSpell,
     spellcasting.className,
+    sessionCode,
     toast,
     tMagic,
   ]);
