@@ -206,7 +206,7 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
       </div>
 
       {/* Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 w-full">
 
         {/* Actions Standards */}
         <ActionUpdateSection
