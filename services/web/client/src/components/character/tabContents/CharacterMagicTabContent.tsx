@@ -15,6 +15,7 @@ import {
   numberSpellsPrepare,
   getNpcUsesGroups,
   getSpellsByUses,
+  getRemainingSpellSlots,
   npcUsesKey,
 } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
@@ -444,7 +445,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                       className="w-full flex flex-col gap-2">
                       {levels.map((level) => {
                         const spells = getSpellByLevel(selectedSpellcasting, level);
-                        const slot = selectedSpellcasting.spellSlotsByLevel?.[level];
+                        const slotCount = level > 0 ? getRemainingSpellSlots(selectedSpellcasting, level) : null;
 
                         return (
                           <AccordionItem
@@ -455,8 +456,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                               <AccordionTrigger className="py-4 px-4 md:px-6">
                                 <h2 className={`text-base md:text-lg font-medium ${accentColor}`}>
                                   {level === 0
-                                    ? tMagic("cantrips")
-                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { used: slot?.used || 0, total: slot?.total || 0 })}`}
+                                    ? `${tMagic("cantrips")}: ∞`
+                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { current: slotCount?.current || 0, total: slotCount?.total || 0 })}`}
                                 </h2>
                               </AccordionTrigger>
                             </Card>

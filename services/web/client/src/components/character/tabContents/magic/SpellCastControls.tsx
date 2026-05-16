@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Check, ChevronDown, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
@@ -18,6 +18,7 @@ import {
   hasNpcInnateUsesRemaining,
   incrementNpcInnateSpellUses,
   incrementSpellSlotUsedInSpellcastingList,
+  getRemainingSpellSlots,
   canCastSpellWithPreparedRules,
   classWithSpellPrepared,
 } from "@/utils/magic.utils";
@@ -31,6 +32,7 @@ interface SpellCastControlsProps {
   character: Player | NPC;
   spellcasting: Spellcasting;
   selectedSpell: Spell | null;
+  accentColor: string;
   onCharacterUpdate?: (updated: Player | NPC) => void;
 }
 
@@ -39,6 +41,7 @@ export default function SpellCastControls({
   character,
   spellcasting,
   selectedSpell,
+  accentColor,
   onCharacterUpdate,
 }: SpellCastControlsProps) {
   const tMagic = useTranslations("characterDetail.magic");
@@ -46,11 +49,34 @@ export default function SpellCastControls({
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useActiveSessionCode();
   const [busy, setBusy] = useState(false);
+  const [showLightCastFeedback, setShowLightCastFeedback] = useState(false);
+  const lightCastFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showCast = isInSession && Boolean(onCharacterUpdate);
 
   const baseLevel = selectedSpell?.level ?? -1;
   const upcastLevels = selectedSpell ? getUpcastSlotLevels(spellcasting, baseLevel) : [];
+  const compactSingleButton = "h-8 gap-1.5 px-3 has-[>svg]:px-2.5 text-sm rounded-[15px]";
+  const cantripCastLabel = `${tMagic("castSpell")} ∞`;
+
+  useEffect(() => {
+    return () => {
+      if (lightCastFeedbackTimeoutRef.current) {
+        clearTimeout(lightCastFeedbackTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const triggerLightCastFeedback = useCallback(() => {
+    if (lightCastFeedbackTimeoutRef.current) {
+      clearTimeout(lightCastFeedbackTimeoutRef.current);
+    }
+    setShowLightCastFeedback(true);
+    lightCastFeedbackTimeoutRef.current = setTimeout(() => {
+      setShowLightCastFeedback(false);
+      lightCastFeedbackTimeoutRef.current = null;
+    }, 1400);
+  }, []);
 
   const castSlotsAtLevel = useCallback(
     async (slotLevel: number) => {
@@ -68,10 +94,11 @@ export default function SpellCastControls({
           spellcasting.className,
           slotLevel,
         );
-        const updated = (await CharacterService.updateCharacter(characterKind, character._id, {
+      const updated = (await CharacterService.updateCharacter(characterKind, character._id, {
           spellcasting: nextSpellcasting,
         }, sessionCode)) as Player | NPC;
         onCharacterUpdate(updated);
+        triggerLightCastFeedback();
       } catch (e) {
         console.error(e);
         toast.error(tMagic("spellCastError"));
@@ -90,6 +117,7 @@ export default function SpellCastControls({
       sessionCode,
       toast,
       tMagic,
+      triggerLightCastFeedback,
     ],
   );
 
@@ -108,6 +136,7 @@ export default function SpellCastControls({
         spellcasting: nextSpellcasting,
       }, sessionCode)) as Player | NPC;
       onCharacterUpdate(updated);
+      triggerLightCastFeedback();
     } catch (e) {
       console.error(e);
       toast.error(tMagic("spellCastError"));
@@ -125,11 +154,20 @@ export default function SpellCastControls({
     sessionCode,
     toast,
     tMagic,
+    triggerLightCastFeedback,
   ]);
 
   if (!showCast || !selectedSpell || !onCharacterUpdate) {
     return null;
   }
+
+  const lightCastFeedback = (
+    <span
+      className={cn("text-xs font-medium whitespace-nowrap transition-opacity", accentColor)}
+      aria-live="polite">
+      {showLightCastFeedback ? tMagic("spellCastLightFeedback") : ""}
+    </span>
+  );
 
   const isInnate = spellcasting.isInnate ?? false;
 
@@ -142,13 +180,28 @@ export default function SpellCastControls({
   /* ─── Sorts innés (PNJ / line avec isInnate) : utilisations / jour ─── */
   if (isInnate) {
     if (selectedSpell.usesPerDay == null) {
-      return null;
+      return (
+        <div
+          className="flex items-center justify-end gap-2"
+          role="group"
+          aria-label={tMagic("spellCastRegion")}>
+          {lightCastFeedback}
+          <Button
+            type="button"
+            variant="outline"
+            size="default"
+            className={compactSingleButton}
+            aria-label={tMagic("castSpellNpcInnateAria", { name: selectedSpell.name })}
+            onClick={triggerLightCastFeedback}>
+            {showLightCastFeedback ? <Check className="size-4 shrink-0" aria-hidden /> : null}
+            {cantripCastLabel}
+          </Button>
+        </div>
+      );
     }
 
     const noUsesLeft = !hasNpcInnateUsesRemaining(selectedSpell);
     const innateTooltip = tMagic("npcSpellUsesExhaustedTooltip");
-
-    const compactInnate = "h-8 gap-1.5 px-3 has-[>svg]:px-2.5 text-sm rounded-[15px]";
 
     const innateButton = (
       <Button
@@ -156,7 +209,7 @@ export default function SpellCastControls({
         variant="outline"
         size="default"
         disabled={noUsesLeft || busy}
-        className={compactInnate}
+        className={compactSingleButton}
         aria-busy={busy}
         aria-label={tMagic("castSpellNpcInnateAria", { name: selectedSpell.name })}
         onClick={() => void castInnateLimited()}>
@@ -167,9 +220,10 @@ export default function SpellCastControls({
 
     return (
       <div
-        className="flex flex-col items-end gap-1"
+        className="flex items-center justify-end gap-2"
         role="group"
         aria-label={tMagic("spellCastRegion")}>
+        {lightCastFeedback}
         {noUsesLeft ? (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -199,7 +253,7 @@ export default function SpellCastControls({
 
     return (
       <div
-        className="flex flex-col items-end gap-1"
+        className="flex items-center justify-end gap-2"
         role="group"
         aria-label={tMagic("spellCastRegion")}>
         <Tooltip>
@@ -214,7 +268,24 @@ export default function SpellCastControls({
 
   /* ─── Emplacements par niveau (PJ ou PNJ non inné) ─── */
   if (baseLevel <= 0) {
-    return null;
+      return (
+        <div
+        className="flex items-center justify-end gap-2"
+        role="group"
+        aria-label={tMagic("spellCastRegion")}>
+        {lightCastFeedback}
+        <Button
+          type="button"
+          variant="outline"
+          size="default"
+          className={compactSingleButton}
+          aria-label={tMagic("castSpellAtLevelAria", { level: 0, name: selectedSpell.name })}
+          onClick={triggerLightCastFeedback}>
+            {showLightCastFeedback ? <Check className="size-4 shrink-0" aria-hidden /> : null}
+          {cantripCastLabel}
+        </Button>
+      </div>
+    );
   }
 
   const noSlotForBase = !hasAvailableSpellSlot(spellcasting, baseLevel);
@@ -227,6 +298,7 @@ export default function SpellCastControls({
   const compactBtn = "h-8 gap-1.5 px-3 has-[>svg]:px-2.5 text-sm";
 
   const slotTooltip = tMagic("spellSlotExhaustedTooltip");
+  const baseSlotCount = getRemainingSpellSlots(spellcasting, baseLevel);
 
   const mainButton = (
     <Button
@@ -243,7 +315,7 @@ export default function SpellCastControls({
       }
       onClick={noSlotForBase ? undefined : () => void castSlotsAtLevel(baseLevel)}>
       {busy ? <Loader2 className="size-4 animate-spin shrink-0" aria-hidden /> : null}
-      {tMagic("castSpell")}
+      {tMagic("castSpell")} ({tMagic("spellSlots", { current: baseSlotCount?.current || 0, total: baseSlotCount?.total || 0 })})
     </Button>
   );
 
@@ -263,9 +335,10 @@ export default function SpellCastControls({
 
   return (
     <div
-      className="flex flex-col items-end gap-1"
+      className="flex items-center justify-end gap-2"
       role="group"
       aria-label={tMagic("spellCastRegion")}>
+      {lightCastFeedback}
       <ButtonGroup>
         {noSlotForBase ? (
           <Tooltip>
@@ -298,7 +371,11 @@ export default function SpellCastControls({
                 className="min-w-48 rounded-[15px] p-1">
                 {upcastLevels.map((level) => {
                   const available = hasAvailableSpellSlot(spellcasting, level) && !busy;
-                  const label = tMagic("castAtLevelOption", { level });
+                  const slotCount = getRemainingSpellSlots(spellcasting, level);
+                  const label = `${tMagic("castAtLevelOption", { level })} (${tMagic("spellSlots", {
+                    current: slotCount?.current || 0,
+                    total: slotCount?.total || 0,
+                  })})`;
                   if (!available) {
                     return (
                       <Tooltip key={level}>

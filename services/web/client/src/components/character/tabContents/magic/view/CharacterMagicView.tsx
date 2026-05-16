@@ -26,6 +26,7 @@ import {
   numberSpellsPrepare,
   getNpcUsesGroups,
   getSpellsByUses,
+  getRemainingSpellSlots,
   npcUsesKey,
   sortSpellsPreparedFirst,
 } from "@/utils/magic.utils";
@@ -611,7 +612,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                           level,
                           appliesPrepMechanic,
                         );
-                        const slot = activeSpellcasting.spellSlotsByLevel?.[level];
+                        const slotCount = level > 0 ? getRemainingSpellSlots(activeSpellcasting, level) : null;
                         const spellsList = activeSpellcasting.spells ?? [];
 
                         return (
@@ -623,8 +624,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                               <AccordionTrigger className="py-4 px-4 md:px-6">
                                 <h2 className={`text-base md:text-lg font-medium ${accentColor}`}>
                                   {level === 0
-                                    ? tMagic("cantrips")
-                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { used: slot?.used || 0, total: slot?.total || 0 })}`}
+                                    ? `${tMagic("cantrips")}: ∞`
+                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { current: slotCount?.current || 0, total: slotCount?.total || 0 })}`}
                                 </h2>
                               </AccordionTrigger>
                             </Card>
@@ -770,6 +771,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                   character={character as Player | NPC}
                   spellcasting={activeSpellcasting}
                   selectedSpell={selectedSpell}
+                  accentColor={accentColor}
                   onCharacterUpdate={onCharacterUpdate}
                 />
               ) : undefined
