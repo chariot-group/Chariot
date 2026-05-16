@@ -1160,10 +1160,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 role="status">
                 <div className="flex gap-2.5 items-start">
                   <BookOpen
-                    className="size-4 shrink-0 text-muted-foreground mt-0.5"
+                    className="size-4 shrink-0 text-muted-white mt-0.5"
                     aria-hidden
                   />
-                  <p className="leading-snug text-foreground">{tMagic("preparationModeBanner")}</p>
+                  <p className="leading-snug text-white">{tMagic("preparationModeBanner")}</p>
                 </div>
               </div>
             ) : null}
