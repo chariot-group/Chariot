@@ -331,11 +331,11 @@ export default function CharacterDetailView({
                     tabIndex={0}
                     className={`
                   lg:text-sm text-xs font-semibold
-                  ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
-                  ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
-                  ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
-                  ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
-                  ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+                  ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+                  ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+                  ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+                  ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+                  ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
                 `}
                     aria-label={t("saveChanges")}
                     aria-busy={isSaving}>
@@ -384,11 +384,11 @@ export default function CharacterDetailView({
                   }}
                   className={`
                 lg:text-sm text-xs font-semibold
-                ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
-                ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
-                ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
-                ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
-                ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+                ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+                ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+                ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+                ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+                ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
               `}
                   aria-label={t("editCharacter")}>
                   <SquarePen

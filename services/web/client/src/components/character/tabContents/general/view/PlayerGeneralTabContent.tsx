@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
-import { useToast } from "@/hooks/useToast";
+import { toast } from "react-toastify";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -29,7 +29,6 @@ export default function PlayerGeneralTabContent({
   const tAlignment = useTranslations("alignments");
   const tClass = useTranslations("classes");
   const tEdit = useTranslations("characterDetail.edit");
-  const toast = useToast();
   const isInSession = useAppSelector(selectIsInSession);
   const [isInspirationLoading, setIsInspirationLoading] = useState(false);
 
@@ -251,9 +250,8 @@ export default function PlayerGeneralTabContent({
                         inspiration: false,
                       })) as Player;
                       onCharacterUpdate(updated);
-                    } catch (e) {
-                      console.error(e);
-                      toast.error(t("inspirationUseError"));
+                    } catch {
+                      toast.error(t("inspirationUseError"), { toastId: "inspiration-error" });
                     } finally {
                       setIsInspirationLoading(false);
                     }
