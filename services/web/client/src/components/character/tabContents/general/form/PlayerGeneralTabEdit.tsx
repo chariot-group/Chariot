@@ -353,7 +353,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
                     if (isSynced) {
                       return (
-                        <div className="flex items-center gap-2 p-2 bg-green/20 rounded text-sm text-green-600 dark:text-green-400">
+                        <div className="flex items-center gap-2 my-2 p-2 bg-green/20 rounded-[23px] text-sm text-green-600 dark:text-green-400">
                           <span>✓ {t("xpLevelSynced")}</span>
                         </div>
                       );
@@ -978,41 +978,48 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
           {/* Inspiration */}
           <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
+            className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="inspiration-heading-edit">
-            <h2
-              id="inspiration-heading-edit"
-              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
-              {t("inspiration")}
-            </h2>
-            <Controller
-              name="inspiration"
-              control={form.control}
-              render={({ field }) => (
-                <div className="flex items-center gap-2">
-                  {isInSession ? (
-                    field.value ? (
-                      <span className="text-sm font-medium">{t("inspirationActive")}</span>
+            <div className="flex items-center justify-between">
+              <h2
+                id="inspiration-heading-edit"
+                className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+                {t("inspiration")}
+              </h2>
+              <Controller
+                name="inspiration"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center gap-2">
+                    {isInSession ? (
+                      field.value ? (
+                        <span className="text-sm font-medium">{t("inspirationActive")}</span>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => field.onChange(true)}>
+                          {t("inspirationAddButton")}
+                        </Button>
+                      )
                     ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => field.onChange(true)}>
-                        {t("inspirationAddButton")}
-                      </Button>
-                    )
-                  ) : (
-                    <span
-                      className="text-sm text-muted-foreground"
-                      title={t("inspirationSessionOnlyNote")}>
-                      {field.value ? t("inspirationActive") : t("inspirationInactive")}
-                    </span>
-                  )}
-                </div>
-              )}
-            />
+                      <span className="text-sm text-muted-foreground">
+                        {field.value ? t("inspirationActive") : t("inspirationInactive")}
+                      </span>
+                    )}
+                  </div>
+                )}
+              />
+            </div>
+            {!isInSession && (
+              <p
+                className="text-xs text-muted-foreground"
+                role="note">
+                {t("inspirationSessionOnlyNote")}
+              </p>
+            )}
           </Card>
 
           {/* Historique */}
