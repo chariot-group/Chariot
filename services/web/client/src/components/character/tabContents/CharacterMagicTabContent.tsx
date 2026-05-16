@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Character, Player, Spell, Spellcasting } from "@/types/character";
 import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
   classWithSpellPrepared,
@@ -78,6 +78,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>(() =>
     getInitialAccordionValuesForSpellcasting(selectedSpellcasting),
   );
+  const spellCardRingStyle = { "--tw-ring-color": `var(--${accentColor})` } as CSSProperties;
 
   const handleSpellcastingChange = (spellcasting: Spellcasting) => {
     setSelectedSpellcasting(spellcasting);
@@ -394,7 +395,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                         }
                                       }}
                                       key={index}
-                                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      style={spellCardRingStyle}
                                       role="button"
                                       tabIndex={0}
                                       aria-pressed={selectedSpell === spell}
@@ -477,7 +479,8 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                       }
                                     }}
                                     key={index}
-                                    className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                    className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                    style={spellCardRingStyle}
                                     role="button"
                                     tabIndex={0}
                                     aria-pressed={selectedSpell === spell}

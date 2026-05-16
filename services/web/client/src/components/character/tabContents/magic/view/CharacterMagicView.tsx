@@ -15,7 +15,7 @@ import {
   BookOpen,
   BookOpenCheck,
 } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
   classWithSpellPrepared,
@@ -98,6 +98,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
     character.spellcasting?.find((spellcasting) => spellcasting.className === selectedSpellcasting?.className) ||
     character.spellcasting?.[0] ||
     null;
+  const spellCardRingStyle = { "--tw-ring-color": `var(--${accentColor})` } as CSSProperties;
 
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const selectedSpellRef = useRef<HTMLDivElement | null>(null);
@@ -548,7 +549,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                         }
                                       }}
                                       key={index}
-                                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      style={spellCardRingStyle}
                                       role="button"
                                       tabIndex={0}
                                       aria-pressed={selectedSpell === spell}
@@ -655,7 +657,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                           }
                                         }}
                                         key={`${spell.name}-${spell.level}`}
-                                        className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-2 p-2 md:px-4 flex-row items-center cursor-pointer`}
+                                        className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-2 p-2 md:px-4 flex-row items-center cursor-pointer`}
+                                        style={spellCardRingStyle}
                                         role="button"
                                         tabIndex={0}
                                         aria-pressed={selectedSpell === spell}
@@ -695,7 +698,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                         }
                                       }}
                                       key={`${spell.name}-${spell.level}`}
-                                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-2 py-2 pl-2 pr-2 md:pl-3 md:pr-3 flex-row items-center cursor-pointer`}
+                                      className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-2 py-2 pl-2 pr-2 md:pl-3 md:pr-3 flex-row items-center cursor-pointer`}
+                                      style={spellCardRingStyle}
                                       role="button"
                                       tabIndex={0}
                                       aria-pressed={selectedSpell === spell}
