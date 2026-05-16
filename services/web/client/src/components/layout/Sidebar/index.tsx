@@ -7,7 +7,7 @@ import SidebarEnvironment from "@/components/layout/Sidebar/SidebarEnvironment";
 import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
 import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 import React, { useState } from "react";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
@@ -19,8 +19,10 @@ export default function AppSidebar() {
   useCampaigns({ autoFetch: true, pageSize: 5 });
 
   const isInSession = useAppSelector(selectIsInSession);
+  const sessionStatus = useAppSelector(selectSessionStatus);
   const contextMode = useAppSelector((state) => state.environment.contextMode);
-  const isContextDisabled = isInSession && contextMode !== "gm";
+  const isSessionLaunched = isInSession && sessionStatus === "launched";
+  const isContextDisabled = isSessionLaunched && contextMode !== "gm";
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [tooltipScope, setTooltipScope] = useState<TooltipScope>(null);
   const t = useTranslations("sidebar");
@@ -44,10 +46,10 @@ export default function AppSidebar() {
       <SidebarHeader className="bg-card sm:bg-transparent">
         <div
           className={`${contextMode !== "gm" ? "h-full" : ""}`}
-          onMouseEnter={isInSession ? () => setTooltipScope("header") : undefined}
-          onMouseLeave={isInSession ? () => setTooltipScope(null) : undefined}
-          onMouseMove={isInSession ? handleMouseMoveHeader : undefined}>
-          <div className={isInSession ? "pointer-events-none" : ""}>
+          onMouseEnter={isSessionLaunched ? () => setTooltipScope("header") : undefined}
+          onMouseLeave={isSessionLaunched ? () => setTooltipScope(null) : undefined}
+          onMouseMove={isSessionLaunched ? handleMouseMoveHeader : undefined}>
+          <div className={isSessionLaunched ? "pointer-events-none" : ""}>
             <SidebarEnvironment />
           </div>
         </div>
@@ -74,7 +76,7 @@ export default function AppSidebar() {
         </div>
       </SidebarContent>
 
-      {((isInSession && tooltipScope === "header") || (isContextDisabled && tooltipScope === "content")) && (
+      {((isSessionLaunched && tooltipScope === "header") || (isContextDisabled && tooltipScope === "content")) && (
         <div
           role="tooltip"
           className="bg-foreground text-background z-50 w-50 rounded-[15px] px-3 py-1.5 text-xs text-balance pointer-events-none fixed"

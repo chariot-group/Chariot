@@ -27,6 +27,8 @@ import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayer
 import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
 import { invalidateCache as invalidateGroupCache } from "@/store/slices/groupSlice";
 import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
+import { setContextMode } from "@/store/slices/environmentSlice";
+import NavigationService from "@/services/NavigationService";
 
 interface UseSessionSocketOptions {
     token: string | null | undefined;
@@ -313,9 +315,28 @@ export function useSessionSocket({
                 myParticipantBefore?.characterId ??
                 (userId != null ? mappedParticipants?.find((p) => p.userId === userId)?.characterId : undefined);
 
+            if (myParticipantBefore?.status === "gameMaster") {
+                dispatch(setContextMode("gm"));
+                if (campaignId) {
+                    const destination = await NavigationService.determineSpaceDestination(campaignId, localeRef.current);
+                    routerRef.current.push(destination.path);
+                    return;
+                }
+            }
+
+            dispatch(setContextMode("player"));
+
             if (charIdForNav) {
                 routerRef.current.push(`/${localeRef.current}/characters/${charIdForNav}`);
+                return;
             }
+
+            const destination = await NavigationService.determinePlayerSpaceDestination(
+                localeRef.current,
+                dispatch,
+                appStore.getState,
+            );
+            routerRef.current.push(destination.path);
         };
 
         socket.on("session:participant-character-changed", onParticipantCharacterChanged);
@@ -341,7 +362,7 @@ export function useSessionSocket({
             releaseSessionSocket();
             socketRef.current = null;
         };
-    }, [token, code, fetchCharacterDetails, dispatch]);
+    }, [token, code, fetchCharacterDetails, dispatch, appStore, campaignId]);
 
     const handleCharacterChange = (characterId: string) => {
         const socket = socketRef.current;
