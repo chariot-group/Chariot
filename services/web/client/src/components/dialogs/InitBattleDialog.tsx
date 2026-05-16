@@ -356,7 +356,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
       });
     });
     return Array.from(uniqueGroups.values());
-  }, [groups, t]);
+  }, [groups, t, tCommon]);
 
   const handleSelectedGroupIdsChange = (nextGroupIds: string[]) => {
     const validGroupIds = getSanitizedGroupIds(nextGroupIds);
