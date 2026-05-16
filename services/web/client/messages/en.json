@@ -991,7 +991,8 @@
       "participantLeftViewingCharacter": "The player of this character has left the session.",
       "participantLeftSession": "{username} left the session.",
       "participantDisconnected": "{username} disconnected from the session.",
-      "sheetEditedByGm": "The game master has updated your character sheet."
+      "sheetEditedByGm": "The game master has updated your character sheet.",
+      "sessionClosedBySelf": "The session was closed successfully."
     },
     "title": "Session",
     "sessionEnded": {

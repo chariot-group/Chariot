@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { type Socket } from "socket.io-client";
@@ -21,7 +21,12 @@ import {
     touchRemoteCharacterSheet,
 } from "@/store/slices/sessionSlice";
 import { useToast } from "@/hooks/useToast";
-import { acquireSessionSocket, releaseSessionSocket } from "@/lib/sessionSocketPool";
+import {
+    acquireSessionSocket,
+    destroySessionSocket,
+    releaseSessionSocket,
+    shouldShowSessionEndNotice,
+} from "@/lib/sessionSocketPool";
 import { shouldNotifyPlayerOfGmCharacterSheetUpdate } from "@/lib/shouldNotifyPlayerOfGmCharacterSheetUpdate";
 import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayerFromCampaignGroupsOnSessionLeave";
 import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
@@ -78,6 +83,7 @@ export function useSessionSocket({
     const setParticipantsRef = useRef(setParticipants);
     const setParticipantNamesRef = useRef(setParticipantNames);
     const setTokensByUserRef = useRef(setTokensByUser);
+    const hasProcessedSessionEndRef = useRef(false);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
     const [isLaunching, setIsLaunching] = useState(false);
@@ -109,6 +115,39 @@ export function useSessionSocket({
         setParticipantNamesRef.current = setParticipantNames;
         setTokensByUserRef.current = setTokensByUser;
     }, [locale, router, toast, t, setParticipants, setParticipantNames, setTokensByUser]);
+
+    useEffect(() => {
+        hasProcessedSessionEndRef.current = false;
+    }, [code]);
+
+    const isCurrentUserGameMaster = useEffectEvent(() => {
+        const userId = currentUserRef.current?.keycloakId;
+        if (!userId) return false;
+        return participantsRef.current.some((participant) => participant.userId === userId && participant.status === "gameMaster");
+    });
+
+    const endSessionLocally = useEffectEvent((reason: "closed" | "expired") => {
+        if (hasProcessedSessionEndRef.current) return;
+        hasProcessedSessionEndRef.current = true;
+        const isGameMaster = isCurrentUserGameMaster();
+        if (shouldShowSessionEndNotice(code, reason)) {
+            const toastKey =
+                reason === "expired"
+                    ? "sessionEnded.description.expired"
+                    : isGameMaster
+                      ? "toast.sessionClosedBySelf"
+                      : "sessionEnded.description.closed";
+            toastRef.current.info(tRef.current(toastKey));
+        }
+        setSessionEndReason(reason);
+        setIsChangingCharacter(false);
+        setIsLeaving(false);
+        setIsLaunching(false);
+        destroySessionSocket();
+        socketRef.current = null;
+        dispatch(clearCurrentSession());
+        routerRef.current.push(`/${localeRef.current}/welcome`);
+    });
 
     // Sync session state to Redux — fusion avec le store pour ne pas écraser les MAJ WS/layout (sidebar MJ).
     useEffect(() => {
@@ -259,11 +298,11 @@ export function useSessionSocket({
         };
 
         const onSessionExpired = () => {
-            setSessionEndReason("expired");
+            endSessionLocally("expired");
         };
 
         const onSessionClosed = () => {
-            setSessionEndReason("closed");
+            endSessionLocally("closed");
         };
 
         const onTokenUpdated = ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {

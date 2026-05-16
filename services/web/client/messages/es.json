@@ -992,7 +992,8 @@
       "participantLeftViewingCharacter": "El jugador de este personaje ha abandonado la sesión.",
       "participantLeftSession": "{username} ha abandonado la sesión.",
       "participantDisconnected": "{username} se ha desconectado de la sesión.",
-      "sheetEditedByGm": "El director de juego ha modificado tu hoja de personaje."
+      "sheetEditedByGm": "El director de juego ha modificado tu hoja de personaje.",
+      "sessionClosedBySelf": "La sesión se ha cerrado correctamente."
     },
     "title": "Sesión",
     "sessionEnded": {

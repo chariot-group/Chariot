@@ -374,6 +374,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             await this.redisService.clearTokens(data.sessionId);
             this.server.to(roomId).emit('session:closed', { sessionId: data.sessionId });
+            this.server.in(roomId).socketsLeave(roomId);
 
             let duration: number = (Date.now() - start) / 1000;
             this.logger.verbose(`Session ${roomId} closed by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
