@@ -157,7 +157,7 @@ export default function SessionPage() {
               <div
                 role="list"
                 aria-label={t("players.ariaLabel")}
-                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 max-h-[40vh] xl:h-[55vh] overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 items-start gap-3 overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
                 tabIndex={0}>
                 {participants.length > 0 &&
                   participants.map((participant: SessionParticipant) => {
@@ -169,7 +169,7 @@ export default function SessionPage() {
                       <Card
                         key={participant.id}
                         role="listitem"
-                        className="border bg-gray border-none flex flex-col gap-2 p-3">
+                        className="bg-gray flex flex-col gap-2 p-3">
                         <div className="flex flex-row justify-between items-center gap-3">
                           <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
                           {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
@@ -189,9 +189,7 @@ export default function SessionPage() {
                             triggerClassName="w-full text-xs"
                           />
                         ) : (
-                          participant.characterId && (
-                            <span className="text-xs text-muted-foreground truncate">{characterLabel}</span>
-                          )
+                          <span className="text-xs text-muted-foreground truncate">{characterLabel ?? "\u00A0"}</span>
                         )}
                       </Card>
                     );
@@ -199,6 +197,12 @@ export default function SessionPage() {
               </div>
 
               <div className="flex flex-wrap justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleLeave}
+                  disabled={isLeaving}>
+                  {t("players.leaveButton")}
+                </Button>
                 {isMJ && !sessionIsActive && (
                   <ConfirmCancelSessionDialog onConfirm={handleCloseSession}>
                     <Button
@@ -208,108 +212,104 @@ export default function SessionPage() {
                     </Button>
                   </ConfirmCancelSessionDialog>
                 )}
-                <Button
-                  variant="outline"
-                  onClick={handleLeave}
-                  disabled={isLeaving}>
-                  {t("players.leaveButton")}
-                </Button>
                 {/* Split token button */}
-                <div className="flex items-center">
-                  <Button
-                    className="rounded-r-none border-r-0 pr-1"
-                    aria-label={
-                      totalTokens >= maxTokens
-                        ? t("players.launchSessionAriaLabel")
-                        : t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })
-                    }
-                    disabled={!sessionIsActive || (totalTokens >= maxTokens ? !isMJ || isLaunching : maxAddable <= 0)}
-                    onClick={totalTokens >= maxTokens ? handleLaunchSession : handleAddToken}>
-                    {totalTokens >= maxTokens ? (
-                      <React.Fragment>
-                        {isLaunching ? <Loader2 className="animate-spin" /> : null}
-                        {t("players.launchSessionButton")}
-                      </React.Fragment>
-                    ) : (
-                      <span className="flex items-center gap-1.5">
-                        {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
-                        <Image
-                          src={Token}
-                          alt=""
-                          aria-hidden="true"
-                          className="w-3 h-3 sm:w-4 sm:h-4"
-                        />
-                      </span>
-                    )}
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      disabled={!sessionIsActive}
-                      asChild>
-                      <Button
-                        disabled={!sessionIsActive}
-                        className="rounded-l-none px-2 pl-1"
-                        aria-label={t("players.tokenMenuAriaLabel")}>
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="w-56 p-3">
-                      {/* Custom amount selector */}
-                      <p className="text-xs text-muted-foreground mb-2">{t("players.customAmount")}</p>
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-7 w-7"
-                          disabled={customAmount <= 1}
-                          onClick={() => setCustomAmount((a) => Math.max(1, a - 1))}>
-                          <Minus className="w-3 h-3" />
-                        </Button>
-                        <span className="text-sm font-medium w-6 text-center">{customAmount}</span>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-7 w-7"
-                          disabled={customAmount >= maxCustomAmount}
-                          onClick={() => setCustomAmount((a) => Math.min(maxCustomAmount, a + 1))}>
-                          <Plus className="w-3 h-3" />
-                        </Button>
-                      </div>
-                      <div className="flex gap-2 mb-1">
-                        <Button
-                          size="sm"
-                          className="flex-1"
-                          disabled={maxAddable <= 0}
-                          onClick={() => handleAddTokenAmount(customAmount)}>
-                          <Plus className="w-3 h-3" />
-                          {t("players.addCustomButton")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1"
-                          disabled={myTokens <= 0}
-                          onClick={() => handleRemoveTokenAmount(customAmount)}>
-                          <Minus className="w-3 h-3" />
-                          {t("players.removeCustomButton")}
-                        </Button>
-                      </div>
-                      {myTokens > 0 && (
+                {sessionIsActive && (
+                  <div className="flex items-center">
+                    <Button
+                      className="rounded-r-none border-r-0 pr-1"
+                      aria-label={
+                        totalTokens >= maxTokens
+                          ? t("players.launchSessionAriaLabel")
+                          : t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })
+                      }
+                      disabled={!sessionIsActive || (totalTokens >= maxTokens ? !isMJ || isLaunching : maxAddable <= 0)}
+                      onClick={totalTokens >= maxTokens ? handleLaunchSession : handleAddToken}>
+                      {totalTokens >= maxTokens ? (
                         <React.Fragment>
-                          <DropdownMenuSeparator className="my-2" />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => handleRemoveTokenAmount(myTokens)}>
-                            <Trash2 className="w-3 h-3" />
-                            {t("players.removeAllButton", { myTokens })}
-                          </DropdownMenuItem>
+                          {isLaunching ? <Loader2 className="animate-spin" /> : null}
+                          {t("players.launchSessionButton")}
                         </React.Fragment>
+                      ) : (
+                        <span className="flex items-center gap-1.5">
+                          {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
+                          <Image
+                            src={Token}
+                            alt=""
+                            aria-hidden="true"
+                            className="w-3 h-3 sm:w-4 sm:h-4"
+                          />
+                        </span>
                       )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        disabled={!sessionIsActive}
+                        asChild>
+                        <Button
+                          disabled={!sessionIsActive}
+                          className="rounded-l-none px-2 pl-1"
+                          aria-label={t("players.tokenMenuAriaLabel")}>
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-56 p-3">
+                        {/* Custom amount selector */}
+                        <p className="text-xs text-muted-foreground mb-2">{t("players.customAmount")}</p>
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            disabled={customAmount <= 1}
+                            onClick={() => setCustomAmount((a) => Math.max(1, a - 1))}>
+                            <Minus className="w-3 h-3" />
+                          </Button>
+                          <span className="text-sm font-medium w-6 text-center">{customAmount}</span>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            disabled={customAmount >= maxCustomAmount}
+                            onClick={() => setCustomAmount((a) => Math.min(maxCustomAmount, a + 1))}>
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <div className="flex gap-2 mb-1">
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            disabled={maxAddable <= 0}
+                            onClick={() => handleAddTokenAmount(customAmount)}>
+                            <Plus className="w-3 h-3" />
+                            {t("players.addCustomButton")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            disabled={myTokens <= 0}
+                            onClick={() => handleRemoveTokenAmount(customAmount)}>
+                            <Minus className="w-3 h-3" />
+                            {t("players.removeCustomButton")}
+                          </Button>
+                        </div>
+                        {myTokens > 0 && (
+                          <React.Fragment>
+                            <DropdownMenuSeparator className="my-2" />
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => handleRemoveTokenAmount(myTokens)}>
+                              <Trash2 className="w-3 h-3" />
+                              {t("players.removeAllButton", { myTokens })}
+                            </DropdownMenuItem>
+                          </React.Fragment>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
               </div>
             </Card>
           </section>
@@ -352,10 +352,7 @@ export default function SessionPage() {
                       }`}
                       disabled={linkCopyState !== "idle"}
                       onClick={() =>
-                        copy(
-                          `${window.location.origin}/campaigns/${idCampaign}/session/${code}`,
-                          setLinkCopyState,
-                        )
+                        copy(`${window.location.origin}/campaigns/${idCampaign}/session/${code}`, setLinkCopyState)
                       }>
                       {linkCopyState === "success" ? <Check /> : <Link />}
                     </Button>

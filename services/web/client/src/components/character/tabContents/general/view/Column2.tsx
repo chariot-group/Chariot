@@ -46,22 +46,22 @@ export default function Column2({ player, accentColor, className }: Column2Props
             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {t("savingThrows")}
           </h2>
+          <div
+            className="grid grid-cols-2 gap-2"
+            role="list">
+            {player?.stats &&
+              Object.entries(player?.stats?.savingThrows).map(([key]) => {
+                return (
+                  <SavingThrow
+                    key={key}
+                    skillName={key as keyof typeof player.stats.abilityScores}
+                    accentColor={accentColor}
+                    stats={player?.stats}
+                  />
+                );
+              })}
+          </div>
         </Card>
-        <div
-          className="grid grid-cols-2 gap-2"
-          role="list">
-          {player?.stats &&
-            Object.entries(player?.stats?.savingThrows).map(([key]) => {
-              return (
-                <SavingThrow
-                  key={key}
-                  skillName={key as keyof typeof player.stats.abilityScores}
-                  accentColor={accentColor}
-                  stats={player?.stats}
-                />
-              );
-            })}
-        </div>
       </div>
 
       {/* Compétences */}
@@ -75,11 +75,11 @@ export default function Column2({ player, accentColor, className }: Column2Props
             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {t("skills")}
           </h2>
+          <Skills
+            accentColor={accentColor}
+            stats={player?.stats}
+          />
         </Card>
-        <Skills
-          accentColor={accentColor}
-          stats={player?.stats}
-        />
       </div>
     </section>
   );

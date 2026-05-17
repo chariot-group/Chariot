@@ -126,6 +126,12 @@ const sessionTransform = createTransform(
         expiresAt: outbound?.expiresAt ?? null,
         participants: outbound?.participants ?? [],
         tokensByUser: outbound?.tokensByUser ?? {},
+        initBattleDraft: {
+            showAllOpponents: outbound?.initBattleDraft?.showAllOpponents ?? false,
+            selectedGroupIds: outbound?.initBattleDraft?.selectedGroupIds ?? [],
+            expandedGroupIds: outbound?.initBattleDraft?.expandedGroupIds ?? [],
+            excludedMembersByGroup: outbound?.initBattleDraft?.excludedMembersByGroup ?? {},
+        },
         characterSheetRemoteVersions:
             outbound?.characterSheetRemoteVersions && typeof outbound.characterSheetRemoteVersions === 'object'
                 ? outbound.characterSheetRemoteVersions

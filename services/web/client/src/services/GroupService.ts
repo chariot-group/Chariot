@@ -60,7 +60,7 @@ class GroupService {
      * Récupère tous les groupes de la campagne (active + archived via `type=all`), en enchaînant les pages.
      * À utiliser pour la navigation ou tout besoin de liste complète.
      */
-    async getAllGroupsByCampaign(campaignId: string): Promise<Group[]> {
+    async getAllGroupsByCampaign(campaignId: string, type: 'all' | 'active' | 'archived' = 'all'): Promise<Group[]> {
         const pageSize = 50;
         let page = 1;
         const all: Group[] = [];
@@ -70,7 +70,7 @@ class GroupService {
             const { data, totalItems } = await this.getGroupsByCampaign(campaignId, {
                 page,
                 offset: pageSize,
-                type: 'all',
+                type,
             });
 
             const existingIds = new Set(all.map((g) => g._id));

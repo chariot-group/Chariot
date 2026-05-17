@@ -78,11 +78,12 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("savingThrows")}
             </h2>
+
+            <SavingThrowsEdit
+              form={form}
+              accentColor={accentColor}
+            />
           </Card>
-          <SavingThrowsEdit
-            form={form}
-            accentColor={accentColor}
-          />
         </div>
 
         {/* Capacités et traits */}
@@ -207,7 +208,6 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
 
       {/* Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 w-full">
-
         {/* Actions Standards */}
         <ActionUpdateSection
           title={t("actions")}

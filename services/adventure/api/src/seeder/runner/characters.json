@@ -430,8 +430,8 @@
         "saveDC": 13,
         "attackBonus": 5,
         "className": "Innate",
-        "spellSlotsByUses": {
-          "k1": {
+        "spellSlotsByLevel": {
+          "1": {
             "total": 1,
             "used": 0
           }
@@ -1018,16 +1018,16 @@
             "usesPerDay": 1
           }
         ],
-        "spellSlotsByUses": {
-          "k3": {
+        "spellSlotsByLevel": {
+          "3": {
             "total": 3,
             "used": 0
           },
-          "k2": {
+          "2": {
             "total": 2,
             "used": 0
           },
-          "k1": {
+          "1": {
             "total": 1,
             "used": 0
           }

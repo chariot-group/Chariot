@@ -340,6 +340,33 @@ class CodexService {
             });
     }
 
+    /**
+     * Choisit une traduction exploitable (nom non vide), en privilégiant la locale du monstre.
+     * Évite les stubs `{}` ou entrées présentes mais vides qui bloquaient le repli en/en.
+     */
+    private pickCodexSpellTranslationForLocale(s: CodexSpellItem, preferred?: string): CodexSpellTranslation | undefined {
+        const usableName = (tr: CodexSpellTranslation | undefined): boolean =>
+            tr != null && typeof tr.name === 'string' && tr.name.trim().length > 0;
+
+        if (preferred && usableName(s.translations[preferred])) {
+            return s.translations[preferred];
+        }
+        if (usableName(s.translations['en'])) {
+            return s.translations['en'];
+        }
+        for (const loc of s.languages ?? []) {
+            if (usableName(s.translations[loc])) {
+                return s.translations[loc];
+            }
+        }
+        for (const loc of Object.keys(s.translations ?? {})) {
+            if (usableName(s.translations[loc])) {
+                return s.translations[loc];
+            }
+        }
+        return undefined;
+    }
+
     private normalizeSpellcasting(codexSpellcasting: CodexMonsterTranslation['spellcasting'] = [], lang?: string) {
         const effectTypeMap: Record<number, 'attack' | 'heal' | 'utility'> = { 0: 'attack', 1: 'heal', 2: 'utility' };
 
@@ -373,25 +400,26 @@ class CodexService {
                 // Objet sort peuplé : { _id, translations: { en: {...} }, languages: [...] }
                 if (spell && typeof spell === 'object' && 'translations' in spell) {
                     const s = spell as CodexSpellItem;
-                    const spellLang = (lang && s.translations[lang])
-                        ? lang
-                        : (s.translations['en'] ? 'en' : s.languages[0]);
-                    const t = spellLang ? s.translations[spellLang] : undefined;
-                    return {
-                        name: t?.name || '',
-                        level: t?.level ?? 0,
-                        school: t?.school || '',
-                        description: t?.description || '',
-                        components: t?.components || [],
-                        castingTime: t?.castingTime || '',
-                        duration: t?.duration || '',
-                        range: t?.range || '',
-                        usesPerDay: t?.usesPerDay ?? null,
-                        used: 0,
-                        effectType: (typeof t?.effectType === 'number' ? effectTypeMap[t.effectType] : t?.effectType) || 'utility' as const,
-                        damage: t?.damage ?? undefined,
-                        healing: undefined as string | undefined,
-                    };
+                    const t = this.pickCodexSpellTranslationForLocale(s, lang);
+                    if (t) {
+                        return {
+                            name: t.name || '',
+                            level: t.level ?? 0,
+                            school: t.school || '',
+                            description: t.description || '',
+                            components: t.components || [],
+                            castingTime: t.castingTime || '',
+                            duration: t.duration || '',
+                            range: t.range || '',
+                            usesPerDay: t.usesPerDay ?? null,
+                            used: 0,
+                            effectType:
+                                (typeof t.effectType === 'number' ? effectTypeMap[t.effectType] : t.effectType) ||
+                                ('utility' as const),
+                            damage: t.damage ?? undefined,
+                            healing: undefined as string | undefined,
+                        };
+                    }
                 }
                 // Forme aplatie ou ID non résolu
                 const flat = spell as Partial<Spell> & {
@@ -491,9 +519,7 @@ class CodexService {
      * @param lang - La langue à utiliser pour la traduction
      */
     convertToChariotSpell(codexSpellItem: CodexSpellItem, lang: string): Partial<Spell> {
-        // Récupérer la traduction dans la langue demandée, sinon fallback sur la première disponible
-        const translation = codexSpellItem.translations[lang] ||
-            codexSpellItem.translations[codexSpellItem.languages[0]];
+        const translation = codexSpellItem.translations[lang];
 
         if (!translation) {
             console.error('No translation found for spell', codexSpellItem);
@@ -592,14 +618,65 @@ class CodexService {
     }
 
     /**
+     * Détail monstre par ID. Comme la liste, `lang` inclut la locale demandée dans la réponse (souvent en + lang ; sans param, surtout l’anglais).
+     */
+    async getMonsterById(id: string, lang?: string | null): Promise<CodexMonsterItem | null> {
+        try {
+            const params: Record<string, string> = {};
+            if (lang) {
+                params.lang = lang;
+            }
+            const response = await this.client.get<{ message: string; data: CodexMonsterItem | CodexMonsterItem[] }>(
+                `/monsters/${id}`,
+                Object.keys(params).length > 0 ? { params } : undefined,
+            );
+            const data = response.data.data;
+            const item = Array.isArray(data) ? data[0] : data;
+            return item ?? null;
+        } catch (err) {
+            console.error(`Failed to fetch monster ${id}:`, err);
+            return null;
+        }
+    }
+
+    /**
+     * Met à jour uniquement les locales listées avec le détail API (le détail l’emporte), sans écraser les autres traductions du partiel.
+     */
+    overlayMonsterTranslationsFromDetail(
+        partial: CodexMonsterItem,
+        detail: CodexMonsterItem,
+        langs: string[],
+    ): CodexMonsterItem {
+        const merged: CodexMonsterItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        for (const l of langs) {
+            const t = detail.translations[l];
+            if (t != null) {
+                merged.translations[l] = t;
+            }
+        }
+        return merged;
+    }
+
+    /** Complète les traductions absentes du partiel à partir du détail (ne remplace pas les clés déjà présentes). */
+    mergeMonsterFillMissingTranslations(partial: CodexMonsterItem, detail: CodexMonsterItem): CodexMonsterItem {
+        const merged: CodexMonsterItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        for (const l of Object.keys(detail.translations)) {
+            if (merged.translations[l] == null && detail.translations[l] != null) {
+                merged.translations[l] = detail.translations[l];
+            }
+        }
+        return merged;
+    }
+
+    /**
      * Convertit un monstre Codex en format Chariot NPC
      * @param codexMonsterItem - L'item Codex complet
      * @param lang - La langue à utiliser pour la traduction
      */
     convertToChariotNPC(codexMonsterItem: CodexMonsterItem, lang: string): Partial<NPC> {
-        // Récupérer la traduction dans la langue demandée, sinon fallback sur la première disponible
-        const translation = codexMonsterItem.translations[lang] ||
-            codexMonsterItem.translations[codexMonsterItem.languages[0]];
+        const translation = codexMonsterItem.translations[lang];
 
         if (!translation) {
             console.error('No translation found for monster', codexMonsterItem);
@@ -673,11 +750,18 @@ class CodexService {
     }
 
     /**
-     * Fetche un sort par son ID. Gère les réponses en objet ou en tableau.
+     * Fetche un sort par son ID. `lang` aligne le comportement sur la liste (traductions présentes pour la locale).
      */
-    async getSpellById(id: string): Promise<CodexSpellItem | null> {
+    async getSpellById(id: string, lang?: string | null): Promise<CodexSpellItem | null> {
         try {
-            const response = await this.client.get<{ message: string; data: CodexSpellItem | CodexSpellItem[] }>(`/spells/${id}`);
+            const params: Record<string, string> = {};
+            if (lang) {
+                params.lang = lang;
+            }
+            const response = await this.client.get<{ message: string; data: CodexSpellItem | CodexSpellItem[] }>(
+                `/spells/${id}`,
+                Object.keys(params).length > 0 ? { params } : undefined,
+            );
             const data = response.data.data;
             const item = Array.isArray(data) ? data[0] : data;
             return item ?? null;
@@ -685,6 +769,57 @@ class CodexService {
             console.error(`Failed to fetch spell ${id}:`, err);
             return null;
         }
+    }
+
+    /** Dépôt des traductions du détail pour les locales indiquées (le détail l’emporte pour ces clés). */
+    overlaySpellTranslationsFromDetail(partial: CodexSpellItem, detail: CodexSpellItem, langs: string[]): CodexSpellItem {
+        const merged: CodexSpellItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        merged.classes = [...new Set([...(merged.classes ?? []), ...(detail.classes ?? [])])];
+        for (const l of langs) {
+            const t = detail.translations[l];
+            if (t != null) {
+                merged.translations[l] = t;
+            }
+        }
+        return merged;
+    }
+
+    /**
+     * Référence sort dans spellcasting : ID brut (liste), `{ _id }`, ou document Codex peuplé.
+     * Sans cela, un objet passé à getSpellById devient `/spells/[object Object]` → 400.
+     */
+    private resolveSpellReferenceId(spell: unknown): string | null {
+        if (typeof spell === 'string') {
+            const t = spell.trim();
+            return t.length > 0 ? t : null;
+        }
+        if (spell && typeof spell === 'object') {
+            const o = spell as { _id?: unknown; $oid?: unknown };
+            if (typeof o._id === 'string') {
+                const trimmed = o._id.trim();
+                return trimmed.length > 0 ? trimmed : null;
+            }
+            // BSON Extended JSON côté API
+            if (typeof o.$oid === 'string') {
+                const trimmed = o.$oid.trim();
+                return trimmed.length > 0 ? trimmed : null;
+            }
+        }
+        return null;
+    }
+
+    /** Ajoute les traductions présentes dans le détail mais absentes du partiel (null / undefined). */
+    mergeSpellFillMissingTranslations(partial: CodexSpellItem, detail: CodexSpellItem): CodexSpellItem {
+        const merged: CodexSpellItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        merged.classes = [...new Set([...(merged.classes ?? []), ...(detail.classes ?? [])])];
+        for (const l of Object.keys(detail.translations)) {
+            if (merged.translations[l] == null && detail.translations[l] != null) {
+                merged.translations[l] = detail.translations[l];
+            }
+        }
+        return merged;
     }
 
     /**
@@ -699,10 +834,10 @@ class CodexService {
                 if (!translation?.spellcasting) continue;
                 for (const entry of translation.spellcasting) {
                     for (const spell of entry.spells || []) {
-                        const id = spell as string;
+                        const id = this.resolveSpellReferenceId(spell);
                         if (id) {
-                            spellIdSet.add(id)
-                        };
+                            spellIdSet.add(id);
+                        }
                     }
                 }
             }
@@ -729,15 +864,33 @@ class CodexService {
                 for (const entry of translation.spellcasting) {
                     if (!entry.spells) continue;
                     entry.spells = entry.spells.map((spell) => {
-                        const id = spell as string;
-                        if (id && spellMap.has(id)) {
-                            const spellItem = spellMap.get(id)!;
-                            if (entry.spellSlotsByUses) {
-                                spellItem.translations[lang].usesPerDay = entry.spellSlotsByUses![id] ?? null;
-                            }
+                        const id = this.resolveSpellReferenceId(spell);
+                        if (!(id && spellMap.has(id))) {
+                            return spell;
+                        }
+                        const spellItem = spellMap.get(id)!;
+
+                        const slotsByUses = entry.spellSlotsByUses;
+                        if (!slotsByUses || typeof slotsByUses !== 'object') {
                             return spellItem;
                         }
-                        return spell;
+
+                        // Monster locale may list a language the spell document does not translate (e.g. fr vs en-only spell).
+                        const spellLang =
+                            spellItem.translations[lang] != null
+                                ? lang
+                                : spellItem.translations['en'] != null
+                                  ? 'en'
+                                  : spellItem.languages.find((l) => spellItem.translations[l] != null);
+
+                        if (!spellLang || spellItem.translations[spellLang] == null) {
+                            return spellItem;
+                        }
+
+                        // Clone so we do not mutate the shared spellMap entry (used across all monsters in the list).
+                        const merged = JSON.parse(JSON.stringify(spellItem)) as CodexSpellItem;
+                        merged.translations[spellLang].usesPerDay = slotsByUses[id] ?? null;
+                        return merged;
                     }) as typeof entry.spells;
                 }
             }

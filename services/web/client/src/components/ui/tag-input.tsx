@@ -8,6 +8,7 @@ interface TagInputProps {
   value: string[];
   onChange: (value: string[]) => void;
   suggestions?: string[];
+  allowCustomValues?: boolean;
   placeholder?: string;
   id?: string;
   "aria-invalid"?: boolean;
@@ -18,6 +19,7 @@ export function TagInput({
   value = [],
   onChange,
   suggestions = [],
+  allowCustomValues = true,
   placeholder = "",
   id,
   "aria-invalid": ariaInvalid,
@@ -40,6 +42,7 @@ export function TagInput({
   // Check if current input is a custom entry (not in suggestions and not already added)
   const trimmedInput = inputValue.trim();
   const isCustomEntry =
+    allowCustomValues &&
     trimmedInput.length > 0 &&
     !suggestions.some((s) => s.toLowerCase() === trimmedInput.toLowerCase()) &&
     !value.some((v) => v.toLowerCase() === trimmedInput.toLowerCase());
@@ -50,7 +53,13 @@ export function TagInput({
 
   const addTag = (tag: string) => {
     const trimmedTag = tag.trim();
-    if (trimmedTag && !value.some((v) => v.toLowerCase() === trimmedTag.toLowerCase())) {
+    const matchesSuggestion = suggestions.some((s) => s.toLowerCase() === trimmedTag.toLowerCase());
+
+    if (
+      trimmedTag &&
+      (allowCustomValues || matchesSuggestion) &&
+      !value.some((v) => v.toLowerCase() === trimmedTag.toLowerCase())
+    ) {
       onChange([...value, trimmedTag]);
       setInputValue("");
       setIsSuggestionsDismissed(false);
@@ -69,7 +78,7 @@ export function TagInput({
       e.preventDefault();
       if (highlightedIndex >= 0 && highlightedIndex < allOptions.length) {
         addTag(allOptions[highlightedIndex]);
-      } else if (inputValue.trim()) {
+      } else if (allowCustomValues && inputValue.trim()) {
         addTag(inputValue);
       }
     } else if (e.key === "ArrowDown") {

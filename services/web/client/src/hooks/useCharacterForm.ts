@@ -235,6 +235,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
             if (type === 'players' && !isInSession) {
                 delete (sanitizedData as Record<string, unknown>).exhaustionLevel;
+                delete (sanitizedData as Record<string, unknown>).inspiration;
             }
 
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
@@ -296,6 +297,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
             if (type === 'players' && !isInSession) {
                 delete (sanitizedData as Record<string, unknown>).exhaustionLevel;
+                delete (sanitizedData as Record<string, unknown>).inspiration;
             }
 
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)

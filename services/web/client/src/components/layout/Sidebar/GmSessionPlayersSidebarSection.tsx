@@ -15,10 +15,7 @@ import {
   selectSessionParticipants,
   selectCharacterSheetRemoteVersions,
 } from "@/store/slices/sessionSlice";
-import {
-  selectOpenSessionPlayers,
-  setOpenSessionPlayers,
-} from "@/store/slices/sidebarSlice";
+import { selectOpenSessionPlayers, setOpenSessionPlayers } from "@/store/slices/sidebarSlice";
 import UserService from "@/services/UserService";
 import { useSidebar } from "@/components/ui/sidebar";
 import characterService from "@/services/CharacterService";
@@ -51,10 +48,7 @@ export default function GmSessionPlayersSidebarSection() {
     participants.some((p) => p.userId === currentUser.keycloakId && p.status === "gameMaster");
 
   /** Tous les humains hors MJ dans la session (y compris avant choix de personnage). */
-  const presenceRoster = React.useMemo(
-    () => participants.filter((p) => p.status !== "gameMaster"),
-    [participants],
-  );
+  const presenceRoster = React.useMemo(() => participants.filter((p) => p.status !== "gameMaster"), [participants]);
 
   /**
    * Signature ordre-indépendante : réordonnement HTTP uniquement sans changer les paires
@@ -89,9 +83,7 @@ export default function GmSessionPlayersSidebarSection() {
   /** Retirer labels des joueurs qui ne sont plus au roster (évite d’afficher un UUID fantôme). */
   React.useEffect(() => {
     const rosterPresence = participantsRef.current.filter((p) => p.status !== "gameMaster");
-    const rosterWithSheet = rosterPresence.filter(
-      (p) => p.characterId != null && p.characterId.length > 0,
-    );
+    const rosterWithSheet = rosterPresence.filter((p) => p.characterId != null && p.characterId.length > 0);
     const uids = new Set(rosterPresence.map((p) => p.userId));
     const cids = new Set(
       rosterWithSheet.map((p) => p.characterId).filter((id): id is string => Boolean(id && id.length > 0)),
@@ -165,15 +157,7 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [
-    contextMode,
-    isGm,
-    isInSession,
-    remoteVersions,
-    rosterRemoteVersionsKey,
-    rosterStableKey,
-    sessionCode,
-  ]);
+  }, [contextMode, isGm, isInSession, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
 
   /** Chargement initial / changement de roster : requêtes espacées pour rester sous le rate limit gateway. */
   React.useEffect(() => {
@@ -249,7 +233,7 @@ export default function GmSessionPlayersSidebarSection() {
             className={`h-4 w-4 shrink-0 transition-colors group-hover/context:text-black ${openSection ? "text-black" : ""}`}
           />
           <span
-            className={`text-sm truncate group-hover/context:font-bold group-hover/context:text-black ${openSection ? "text-black font-bold" : ""}`}>
+            className={`text-sm truncate group-hover/context:text-black ${openSection ? "text-black font-bold" : ""}`}>
             {t("sessionPlayers")}
           </span>
         </span>
@@ -265,7 +249,7 @@ export default function GmSessionPlayersSidebarSection() {
           const cid = p.characterId?.trim();
           const userLabel = displayNames[p.userId] ?? p.userId;
           const hasSheet = Boolean(cid);
-          const charLabel = hasSheet ? characterLabels[cid!] ?? cid! : "";
+          const charLabel = hasSheet ? (characterLabels[cid!] ?? cid!) : "";
           const href = cid
             ? `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`
             : "";

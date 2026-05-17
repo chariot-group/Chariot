@@ -46,14 +46,14 @@ export default function SpellDisplay({
     <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
       {showTitle && (
         <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
-          <div className="flex flex-row items-start justify-between gap-3 w-full min-w-0">
+          <div className="flex flex-row items-center justify-between gap-3 w-full min-w-0">
             <h3
               className={`${accentColor} text-lg sm:text-xl md:text-2xl font-semibold flex-1 min-w-0`}
               id="spell-name">
               {spell.name}
             </h3>
-            <div className="shrink-0 flex flex-col items-end gap-2">
-              {titleEndContent ? <div className="flex flex-col items-end">{titleEndContent}</div> : null}
+            <div className="shrink-0 flex flex-row items-center gap-2">
+              {titleEndContent ? <div className="flex flex-col items-center">{titleEndContent}</div> : null}
               {preparationStatusBadge !== "hidden" ? (
                 <Tooltip>
                   <TooltipTrigger asChild>

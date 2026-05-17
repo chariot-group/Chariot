@@ -30,7 +30,7 @@ export function hasLevel0Spells(spellcasting: Spellcasting): boolean {
  */
 export function getSpellByLevel(selectedSpellcasting: Spellcasting, level: number): Spell[] {
     if (!selectedSpellcasting) return [];
-    return selectedSpellcasting.spells.filter((spell) => spell.level === level);
+    return selectedSpellcasting.spells.filter((spell) => Number(spell.level) === level);
 }
 
 /**

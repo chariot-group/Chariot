@@ -73,9 +73,42 @@
     "npcCharacter": "PNJ",
     "npcCodexCharacter": "PNJ desde Codex"
   },
+  "initTracker": {
+    "noCharacters": "Sin personajes",
+    "initBattleDialogTitle": "Inicializar batalla",
+    "initBattleSelectedGroups": "Jugadores en la iniciativa",
+    "initBattleLoadingGroups": "Cargando grupos...",
+    "initBattleNoGroupSelected": "Ningún grupo seleccionado.",
+    "initBattleSearchAndSelectGroups": "Buscar y seleccionar grupos",
+    "initBattleSearchGroupPlaceholder": "Buscar grupos por nombre",
+    "initBattleSelectAllGroups": "Seleccionar todo",
+    "initBattleDeselectAllGroups": "Deseleccionar todo",
+    "initBattleShowAllOpponents": "Mostrar todos los adversarios",
+    "initBattleSettings": "Parámetros",
+    "initBattleNoSearchResult": "No se encontraron grupos.",
+    "initBattleGroupStats": "Miembros: {members}",
+    "initBattleNpcCrLabel": "CR",
+    "initBattleNpcAvgCr": "CR prom PNJ: {cr}",
+    "initBattleNpcTotalCr": "total PNJ: {cr}",
+    "initBattlePlayerAvgLevel": "Nivel prom jugadores: {level}",
+    "initBattleIncludedMembers": "Miembros en iniciativa: {included}/{total}",
+    "initBattleExpandGroup": "Mostrar miembros del grupo",
+    "initBattleCollapseGroup": "Ocultar miembros del grupo",
+    "initBattleRemoveGroup": "Quitar grupo de la selección",
+    "initBattleInInitiative": "En iniciativa",
+    "initBattleParticipantsCannotBeExcluded": "Los participantes no pueden ser excluidos de la iniciativa",
+    "initBattleValidateSelection": "Confirmar configuración"
+  },
+  "multiSelect": {
+    "searchPlaceholder": "Buscar",
+    "emptyText": "No hay resultados coincidentes.",
+    "removeOption": "Quitar {label}",
+    "selectedCount": "{count, plural, one {# grupo seleccionado.} other {# grupos seleccionados.}}"
+  },
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
+    "challengeRatingTooltip": "Índice de peligrosidad",
     "errors": {
       "campaignNameRequired": "El nombre de la campaña es requerido",
       "campaignCreationFailed": "Error al crear la campaña",
@@ -370,6 +403,7 @@
       "deathSaves": "Salvaciones de Muerte",
       "successes": "Éxitos:",
       "failures": "Fallos:",
+      "deathSavesSessionOnlyNote": "Las tiradas de salvación contra la muerte solo se pueden cambiar durante una sesión.",
       "performedThrow": "Tirada realizada",
       "unperformedThrow": "Tirada no realizada",
       "abilityHasCounter": "Contador de usos",
@@ -496,9 +530,13 @@
         "weapons": "Arma(s)",
         "armors": "Armadura(s)",
         "inspiration": "Inspiración",
-        "inspirationActive": "activa",
-        "inspirationInactive": "inactiva",
+        "inspirationActive": "Activa",
+        "inspirationInactive": "Inactiva",
         "inspirationState": "Estado de inspiración",
+        "inspirationAddButton": "Añadir un punto de inspiración",
+        "inspirationUseButton": "Usar el punto de inspiración",
+        "inspirationSessionOnlyNote": "La inspiración solo se puede cambiar durante una sesión.",
+        "inspirationUseError": "No se pudo usar el punto de inspiración.",
         "exhaustion": "Agotamiento",
         "exhaustionLevel": "Nivel de agotamiento",
         "exhaustionLevels": {
@@ -882,7 +920,13 @@
         },
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",
-        "resultsMore": "+"
+        "resultsMore": "+",
+        "preview": {
+          "availableLanguages": "También disponible en",
+          "previousLanguage": "Volver al idioma anterior",
+          "previousLanguageButton": "Volver",
+          "loadTranslationError": "No se pudo cargar este idioma. Inténtalo de nuevo u elige otro."
+        }
       },
       "monsterCodexDialog": {
         "title": "Buscar un monstruo en Codex",
@@ -905,14 +949,19 @@
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
-        "monsterInfo": "CR {cr} • {type}",
+        "crLabel": "CR",
+        "monsterInfo": "{cr} • {type}",
         "preview": {
           "challengeRatingShort": "CR",
           "experiencePointsShort": "XP",
           "calculatedArmorClass": "CA calculada",
           "sourceArmorClass": "fuente: {value}",
           "hitPointsDice": "Dados de puntos de golpe",
-          "estimatedProficiencyBonus": "Bonificación de competencia (estimada)"
+          "estimatedProficiencyBonus": "Bonificación de competencia (estimada)",
+          "availableLanguages": "También disponible en",
+          "previousLanguage": "Volver al idioma anterior",
+          "previousLanguageButton": "Volver",
+          "loadTranslationError": "No se pudo cargar este idioma. Inténtalo de nuevo u elige otro."
         }
       }
     }

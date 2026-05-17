@@ -93,7 +93,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   aria-hidden="true"
                   width={20}
                   height={20}
-                  className="size-5"
+                  className="size-5 brightness-0 invert"
                 />
                 <Input
                   {...field}
@@ -132,8 +132,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
               </label>
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                 <Dices
-                  size={25}
-                  className="text-black shrink-0"
+                  size={20}
+                  className="size-5 text-white shrink-0"
                   aria-hidden="true"
                 />
                 <Input
@@ -174,7 +174,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                 <RulerIcon
                   size={20}
-                  className="text-black shrink-0"
+                  className="text-white shrink-0"
                   aria-hidden="true"
                 />
                 <Select
@@ -230,7 +230,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     src={RunningIcon}
                     alt=""
                     aria-hidden="true"
-                    className="size-6"
+                    className="size-6 brightness-0 invert"
                   />
                   <Input
                     {...field}
@@ -262,7 +262,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                   <Mountain
                     size={24}
-                    className="text-black"
+                    className="text-white"
                     aria-hidden="true"
                   />
                   <Input
@@ -295,7 +295,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                   <Waves
                     size={24}
-                    className="text-black"
+                    className="text-white"
                     aria-hidden="true"
                   />
                   <Input
@@ -328,7 +328,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                   <Bird
                     size={24}
-                    className="text-black"
+                    className="text-white"
                     aria-hidden="true"
                   />
                   <Input
@@ -361,7 +361,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                 <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
                   <Shovel
                     size={24}
-                    className="text-black"
+                    className="text-white"
                     aria-hidden="true"
                   />
                   <Input
@@ -405,7 +405,9 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   max={safeMaxHitPoints}
                   onValueChange={(nextValue) => field.onChange(nextValue)}
                   onApply={(nextValue) => field.onChange(nextValue)}
-                  onConstraintResult={({ wasClamped, source }) => handleCurrentHpConstraintResult({ wasClamped, source })}
+                  onConstraintResult={({ wasClamped, source }) =>
+                    handleCurrentHpConstraintResult({ wasClamped, source })
+                  }
                   triggerLabel={`${tEdit("currentHP")} quick calculator`}
                   inputLabel={`${tEdit("currentHP")} value`}
                   tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
