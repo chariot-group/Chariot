@@ -79,7 +79,7 @@ export default function GroupList({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
       {groups.map((group) => {
         const isOpen = openGroupIds.includes(group._id);
 
@@ -93,7 +93,7 @@ export default function GroupList({
                 <CollapsibleTrigger
                   aria-expanded={isOpen}
                   aria-controls={`group-${group._id}-content`}
-                  className={`w-full bg-card cursor-pointer hover:font-bold py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center focus-visible:border ${isOpen ? "font-bold" : ""}`}>
+                  className={`w-full bg-card cursor-pointer py-1.5 px-3 rounded-[12px] transition-all duration-100 flex justify-between items-center focus-visible:border ${isOpen ? "font-bold" : ""}`}>
                   <span className={`text-sm text-left ${isOpen ? "font-bold" : ""}`}>{group.label}</span>
                   <ChevronRight
                     aria-hidden="true"
@@ -155,8 +155,9 @@ export default function GroupList({
                       aria-current={isSelected ? "page" : undefined}
                       aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
                       title={`${character.firstname} ${character.lastname}`}
-                      className={`w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${isSelected ? "bg-card/50 font-bold" : ""
-                        }`}
+                      className={`w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 hover:bg-card/50 transition-all duration-100 cursor-pointer focus-visible:ring-1 ${
+                        isSelected ? "bg-card/50 font-bold" : ""
+                      }`}
                       onClick={() => {
                         if (isMobile) setOpenMobile(false);
                       }}>
