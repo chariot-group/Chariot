@@ -1,0 +1,69 @@
+name: chariot-payment-prod
+
+services:
+  chariot-payment-postgres:
+    image: postgres:16-alpine
+    container_name: chariot-payment-postgres-prod
+    restart: unless-stopped
+    ports:
+      - "5432"
+    volumes:
+      - chariot_payment_postgres_data_prod:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${PAYMENT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PAYMENT_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PAYMENT_POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PAYMENT_POSTGRES_USER} -d ${PAYMENT_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - chariot-network
+
+  chariot-payment:
+    image: ghcr.io/chariot-group/chariot-payment-production:latest
+    container_name: chariot-payment-prod
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/src/main"
+    ports:
+      - "9003"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${PAYMENT_DATABASE_URL}
+      PAYMENT_URL: ${PAYMENT_URL}
+      PAYMENT_VERSION: ${PAYMENT_VERSION}
+      FRONTEND_URL: ${FRONTEND_URL}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    depends_on:
+      chariot-payment-postgres:
+        condition: service_healthy
+    networks:
+      - chariot-network
+      - chariot-group-network-prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-payment-prod.rule=Host(`${PAYMENT_HOST}`)"
+      - "traefik.http.routers.chariot-payment-prod.entrypoints=websecure"
+      - "traefik.http.routers.chariot-payment-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-payment-prod.loadbalancer.server.port=9003"
+      - "traefik.http.routers.chariot-payment-prod.service=chariot-payment-prod"
+      - "traefik.docker.network=traefik-public"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+volumes:
+  chariot_payment_postgres_data_prod:
+  chariot_payment_logs_prod:
+
+networks:
+  chariot-network:
+    driver: bridge
+  chariot-group-network-prod:
+    external: true
