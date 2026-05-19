@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ChevronRight, Users } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectUser } from "@/store/slices/userSlice";
@@ -176,7 +175,7 @@ export default function GmSessionPlayersSidebarSection() {
         for (const p of roster) {
           try {
             const u = await UserService.getUserById(p.userId);
-            nameUpdates[p.userId] = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.username;
+            nameUpdates[p.userId] = u.username?.trim() || p.userId;
           } catch {
             nameUpdates[p.userId] = p.userId;
           }
@@ -261,33 +260,36 @@ export default function GmSessionPlayersSidebarSection() {
 
           const primaryLabel = hasSheet ? charLabel : t("sessionPlayerChoosingCharacter");
 
-          const innerLabel = <span className="block min-w-0 flex-1 truncate">{primaryLabel}</span>;
+          const inlineLabel = `${primaryLabel} (${userLabel})`;
+
+          const innerLabel = (
+            <span className="flex min-w-0 flex-1 items-center">
+              <span className="min-w-0 truncate">{primaryLabel}</span>
+              <span className="shrink-0">{` (${userLabel})`}</span>
+            </span>
+          );
 
           return (
-            <Tooltip key={`${p.userId}-${cid ?? "pending"}`}>
-              <TooltipTrigger asChild>
-                {hasSheet ? (
-                  <Link
-                    href={href}
-                    aria-current={isSelected ? "page" : undefined}
-                    aria-label={`${charLabel} — ${t("playedBy", { name: userLabel })}`}
-                    title={t("playedBy", { name: userLabel })}
-                    className={rowClasses}
-                    onClick={() => {
-                      if (isMobile) setOpenMobile(false);
-                    }}>
-                    {innerLabel}
-                  </Link>
-                ) : (
-                  <div
-                    className={rowClasses}
-                    aria-label={`${t("sessionPlayerChoosingCharacter")} — ${t("playedBy", { name: userLabel })}`}>
-                    {innerLabel}
-                  </div>
-                )}
-              </TooltipTrigger>
-              <TooltipContent side="right">{t("playedBy", { name: userLabel })}</TooltipContent>
-            </Tooltip>
+            hasSheet ? (
+              <Link
+                key={`${p.userId}-${cid ?? "pending"}`}
+                href={href}
+                aria-current={isSelected ? "page" : undefined}
+                aria-label={inlineLabel}
+                className={rowClasses}
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                }}>
+                {innerLabel}
+              </Link>
+            ) : (
+              <div
+                key={`${p.userId}-${cid ?? "pending"}`}
+                className={rowClasses}
+                aria-label={inlineLabel}>
+                {innerLabel}
+              </div>
+            )
           );
         })}
       </CollapsibleContent>

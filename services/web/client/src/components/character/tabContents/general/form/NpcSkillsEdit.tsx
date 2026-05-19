@@ -63,8 +63,8 @@ export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
             name={`stats.skills.${key}`}
             control={form.control}
             render={({ field }) => (
-              <Card className="p-2">
-                <div className="flex flex-row items-center gap-2">
+              <Card className="min-w-0 p-2">
+                <div className="grid grid-cols-[auto_minmax(0,1fr)_5rem] items-center gap-2">
                   <Icon
                     className="w-5 h-5 shrink-0"
                     aria-hidden="true"
@@ -76,16 +76,18 @@ export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
                       ({abilityModifier >= 0 ? `+${abilityModifier}` : abilityModifier})
                     </p>
                   </div>
-                  <Input
-                    {...field}
-                    value={field.value === 0 ? "" : field.value}
-                    className="w-16 text-center"
-                    type="number"
-                    placeholder={t("abilityBonusPlaceholder", {
-                      value: abilityModifier >= 0 ? `+${abilityModifier}` : `${abilityModifier}`,
-                    })}
-                    aria-label={t(`skillNames.${key}`)}
-                  />
+                  <div className="w-20 shrink-0">
+                    <Input
+                      {...field}
+                      value={field.value === 0 ? "" : field.value}
+                      className="text-center"
+                      type="number"
+                      placeholder={t("abilityBonusPlaceholder", {
+                        value: abilityModifier >= 0 ? `+${abilityModifier}` : `${abilityModifier}`,
+                      })}
+                      aria-label={t(`skillNames.${key}`)}
+                    />
+                  </div>
                 </div>
               </Card>
             )}

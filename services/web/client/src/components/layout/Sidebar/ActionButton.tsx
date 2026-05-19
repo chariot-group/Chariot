@@ -1,13 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService, { SessionParticipant } from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
+import { setContextMode } from "@/store/slices/environmentSlice";
 import {
   selectCurrentSession,
   selectCurrentUserParticipant,
@@ -44,6 +45,8 @@ type ActionButtonState =
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const tWelcome = useTranslations("welcome");
+  const dispatch = useAppDispatch();
+  const router = useRouter();
   const contextMode = useAppSelector((state) => state.environment.contextMode);
   const currentPage = usePathname() || "/";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
@@ -66,6 +69,13 @@ export function ActionButton() {
   // TODO
   const battleInitialized: boolean = false;
   const battleStarted: boolean = false;
+
+  const navigateToSession = (nextContextMode?: "player" | "gm") => {
+    if (nextContextMode) {
+      dispatch(setContextMode(nextContextMode));
+    }
+    router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
+  };
 
   /**
    * Determine button state based on context and workflow state
@@ -112,7 +122,7 @@ export function ActionButton() {
           label: t("returnToSession"),
           state: "returnToSession",
           action: () => {
-            window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+            navigateToSession();
           },
           disabled: false,
           icon: <PlayCircle className="size-6" />,
@@ -182,7 +192,7 @@ export function ActionButton() {
           label: t("returnToSession"),
           state: "returnToSession",
           action: () => {
-            window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+            navigateToSession("player");
           },
           disabled: false,
           icon: <PlayCircle className="size-6" />,

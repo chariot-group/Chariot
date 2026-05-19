@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useKeycloak } from "@/providers/KeycloakProvider";
@@ -10,6 +10,7 @@ import {
     selectSessionCode,
     selectSessionCampaignId,
     selectSessionParticipants,
+    clearCurrentSession,
     removeSessionParticipantByUserId,
     setSessionParticipants,
     setSessionExpiresAt,
@@ -32,8 +33,10 @@ import { shouldNotifyPlayerOfGmCharacterSheetUpdate } from "@/lib/shouldNotifyPl
 import { setSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 import {
     acquireSessionSocket,
+    destroySessionSocket,
     getPooledSessionSocket,
     releaseSessionSocket,
+    shouldShowSessionEndNotice,
 } from "@/lib/sessionSocketPool";
 import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
 import { useToast } from "@/hooks/useToast";
@@ -79,6 +82,7 @@ export default function SessionCharacterSyncClient() {
     const toastRef = useRef(toast);
     const routerRef = useRef(router);
     const tRef = useRef(t);
+    const hasProcessedSessionEndRef = useRef(false);
 
     useEffect(() => {
         participantsRef.current = participants;
@@ -90,6 +94,29 @@ export default function SessionCharacterSyncClient() {
         routerRef.current = router;
         tRef.current = t;
     }, [participants, user?.keycloakId, pathname, campaignId, code, toast, router, t]);
+
+    useEffect(() => {
+        if (isInSession && code) {
+            hasProcessedSessionEndRef.current = false;
+        }
+    }, [isInSession, code]);
+
+    const isCurrentUserGameMaster = useEffectEvent(() => {
+        const userId = userIdRef.current;
+        if (!userId) return false;
+        return participantsRef.current.some((participant) => participant.userId === userId && participant.status === "gameMaster");
+    });
+
+    const endSessionLocally = useEffectEvent(() => {
+        if (hasProcessedSessionEndRef.current) return;
+        hasProcessedSessionEndRef.current = true;
+        destroySessionSocket();
+        dispatch(clearCurrentSession());
+
+        const path = pathnameRef.current;
+        const locale = path.split("/")[1] || "fr";
+        routerRef.current.push(`/${locale}/welcome`);
+    });
 
     const shouldConnect = Boolean(isInSession && code && token);
 
@@ -155,8 +182,28 @@ export default function SessionCharacterSyncClient() {
             scheduleRosterHttpSync();
         };
 
+        const onSessionEnded = (reason: "closed" | "expired") => {
+            const sessionCode = codeRef.current;
+            if (sessionCode && shouldShowSessionEndNotice(sessionCode, reason)) {
+                const isGameMaster = isCurrentUserGameMaster();
+                const toastKey =
+                    reason === "expired"
+                        ? "sessionEnded.description.expired"
+                        : isGameMaster
+                          ? "toast.sessionClosedBySelf"
+                          : "sessionEnded.description.closed";
+                toastRef.current.info(tRef.current(toastKey));
+            }
+            endSessionLocally();
+        };
+
+        const onSessionClosed = () => onSessionEnded("closed");
+        const onSessionExpired = () => onSessionEnded("expired");
+
         socket.on("connect", onConnect);
         socket.on("session:launched", onSessionLaunched);
+        socket.on("session:closed", onSessionClosed);
+        socket.on("session:expired", onSessionExpired);
         if (socket.connected) {
             onConnect();
         }
@@ -170,6 +217,8 @@ export default function SessionCharacterSyncClient() {
             }
             socket.off("connect", onConnect);
             socket.off("session:launched", onSessionLaunched);
+            socket.off("session:closed", onSessionClosed);
+            socket.off("session:expired", onSessionExpired);
             registerSessionSyncSocket(null);
             releaseSessionSocket();
         };

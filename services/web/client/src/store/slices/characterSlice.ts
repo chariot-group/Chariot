@@ -20,6 +20,19 @@ interface CharacterState {
     lastFetchAll: number | null;
 }
 
+/**
+ * Conserve l'ordre tout en supprimant les doublons par `_id` (premier vu gagne).
+ * Garde-fou contre les fetch/loadMore qui se chevauchent (StrictMode, clics rapides, upsert + page refetch).
+ */
+const dedupeCharactersById = (characters: Character[]): Character[] => {
+    const byId = new Map<string, Character>();
+    for (const character of characters) {
+        if (!character?._id) continue;
+        if (!byId.has(character._id)) byId.set(character._id, character);
+    }
+    return Array.from(byId.values());
+};
+
 const initialState: CharacterState = {
     charactersWithoutGroup: [],
     loadingWithoutGroup: false,
@@ -46,9 +59,9 @@ const characterSlice = createSlice({
             state.errorWithoutGroup = null;
         },
         fetchCharactersWithoutGroupSuccess: (state, action: PayloadAction<{ characters: Character[]; total: number }>) => {
-            state.charactersWithoutGroup = action.payload.characters;
+            state.charactersWithoutGroup = dedupeCharactersById(action.payload.characters);
             state.totalWithoutGroup = action.payload.total;
-            state.hasMoreWithoutGroup = action.payload.characters.length < action.payload.total;
+            state.hasMoreWithoutGroup = state.charactersWithoutGroup.length < action.payload.total;
             state.loadingWithoutGroup = false;
             state.errorWithoutGroup = null;
             state.lastFetchWithoutGroup = Date.now();
@@ -61,7 +74,10 @@ const characterSlice = createSlice({
             state.errorWithoutGroup = null;
         },
         loadMoreCharactersWithoutGroupSuccess: (state, action: PayloadAction<{ characters: Character[]; total: number }>) => {
-            state.charactersWithoutGroup = [...state.charactersWithoutGroup, ...action.payload.characters];
+            state.charactersWithoutGroup = dedupeCharactersById([
+                ...state.charactersWithoutGroup,
+                ...action.payload.characters,
+            ]);
             state.totalWithoutGroup = action.payload.total;
             state.hasMoreWithoutGroup = state.charactersWithoutGroup.length < action.payload.total;
             state.loadingMoreWithoutGroup = false;

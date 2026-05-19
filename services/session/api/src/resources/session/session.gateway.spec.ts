@@ -595,6 +595,8 @@ describe('SessionGateway', () => {
             expect(mockSessionService.close).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1');
             expect(mockServer.to).toHaveBeenCalledWith('sess-uuid-1');
             expect(mockRoomEmit).toHaveBeenCalledWith('session:closed', { sessionId: 'sess-uuid-1' });
+            expect(mockServer.in).toHaveBeenCalledWith('sess-uuid-1');
+            expect(mockSocketsLeave).toHaveBeenCalledWith('sess-uuid-1');
         });
 
         it('should emit session:error when service throws', async () => {

@@ -15,7 +15,7 @@ import {
   BookOpen,
   BookOpenCheck,
 } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
   classWithSpellPrepared,
@@ -26,6 +26,7 @@ import {
   numberSpellsPrepare,
   getNpcUsesGroups,
   getSpellsByUses,
+  getRemainingSpellSlots,
   npcUsesKey,
   sortSpellsPreparedFirst,
 } from "@/utils/magic.utils";
@@ -37,6 +38,7 @@ import { Button } from "@/components/ui/button";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 interface CharacterMagicViewProps {
   character: Character;
@@ -49,6 +51,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
   const tClass = useTranslations("classes");
   const tMagic = useTranslations("characterDetail.magic");
   const toast = useToast();
+  const sessionCode = useActiveSessionCode();
   const playerCharacter = isPlayer(character) ? (character as Player) : null;
 
   const [selectedSpellcasting, setSelectedSpellcasting] = useState<Spellcasting | null>(
@@ -95,6 +98,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
     character.spellcasting?.find((spellcasting) => spellcasting.className === selectedSpellcasting?.className) ||
     character.spellcasting?.[0] ||
     null;
+  const spellCardRingStyle = { "--tw-ring-color": `var(--${accentColor})` } as CSSProperties;
 
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const selectedSpellRef = useRef<HTMLDivElement | null>(null);
@@ -196,7 +200,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         });
         const updated = (await CharacterService.updateCharacter("players", (character as Player)._id, {
           spellcasting: list,
-        })) as Player;
+        }, sessionCode)) as Player;
         const scNew = updated.spellcasting?.find(
           (s) => s.className.trim().toLowerCase() === activeSpellcasting.className.trim().toLowerCase(),
         );
@@ -212,7 +216,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         setPrepSavingKey(null);
       }
     },
-    [activeSpellcasting, character, onCharacterUpdate, toast, tMagic],
+    [activeSpellcasting, character, onCharacterUpdate, sessionCode, toast, tMagic],
   );
 
   if (!character.spellcasting || character.spellcasting.length === 0 || activeSpellcasting === null) {
@@ -545,7 +549,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                         }
                                       }}
                                       key={`${key}-spell-${index}`}
-                                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      style={spellCardRingStyle}
                                       role="button"
                                       tabIndex={0}
                                       aria-pressed={selectedSpell === spell}
@@ -612,7 +617,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                           appliesPrepMechanic,
                         );
                         const slotKey = String(level);
-                        const slot = activeSpellcasting.spellSlotsByLevel?.[slotKey];
+                        const slotCount = level > 0 ? getRemainingSpellSlots(activeSpellcasting, level) : null;
                         const spellsList = activeSpellcasting.spells ?? [];
 
                         return (
@@ -624,8 +629,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                               <AccordionTrigger className="py-4 px-4 md:px-6">
                                 <h2 className={`text-base md:text-lg font-medium ${accentColor}`}>
                                   {level === 0
-                                    ? tMagic("cantrips")
-                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { used: slot?.used || 0, total: slot?.total || 0 })}`}
+                                    ? `${tMagic("cantrips")}: ∞`
+                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { current: slotCount?.current || 0, total: slotCount?.total || 0 })}`}
                                 </h2>
                               </AccordionTrigger>
                             </Card>
@@ -656,7 +661,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                           }
                                         }}
                                         key={rowKey}
-                                        className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-2 p-2 md:px-4 flex-row items-center cursor-pointer`}
+                                        className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-2 p-2 md:px-4 flex-row items-center cursor-pointer`}
+                                        style={spellCardRingStyle}
                                         role="button"
                                         tabIndex={0}
                                         aria-pressed={selectedSpell === spell}
@@ -696,7 +702,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                                         }
                                       }}
                                       key={rowKey}
-                                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-2 py-2 pl-2 pr-2 md:pl-3 md:pr-3 flex-row items-center cursor-pointer`}
+                                      className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-2 py-2 pl-2 pr-2 md:pl-3 md:pr-3 flex-row items-center cursor-pointer`}
+                                      style={spellCardRingStyle}
                                       role="button"
                                       tabIndex={0}
                                       aria-pressed={selectedSpell === spell}
@@ -772,6 +779,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                   character={character as Player | NPC}
                   spellcasting={activeSpellcasting}
                   selectedSpell={selectedSpell}
+                  accentColor={accentColor}
                   onCharacterUpdate={onCharacterUpdate}
                 />
               ) : undefined

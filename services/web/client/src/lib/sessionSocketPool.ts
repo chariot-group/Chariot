@@ -12,6 +12,7 @@ type PoolEntry = {
 };
 
 let pool: PoolEntry | null = null;
+let lastSessionEndNoticeKey: string | null = null;
 
 function baseWsUrl(): string {
     return process.env.NEXT_PUBLIC_SESSION_WS_URL ?? "http://localhost:9002";
@@ -55,4 +56,19 @@ export function releaseSessionSocket(): void {
         pool.socket.disconnect();
         pool = null;
     }
+}
+
+export function destroySessionSocket(): void {
+    if (!pool) return;
+    pool.socket.disconnect();
+    pool = null;
+}
+
+export function shouldShowSessionEndNotice(sessionCode: string, reason: "closed" | "expired"): boolean {
+    const key = `${sessionCode.trim()}::${reason}`;
+    if (lastSessionEndNoticeKey === key) {
+        return false;
+    }
+    lastSessionEndNoticeKey = key;
+    return true;
 }

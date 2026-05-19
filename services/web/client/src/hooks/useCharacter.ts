@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useState, useEffect, useCallback, useMemo, type Dispatch, type SetStateAction } from 'react';
 import CharacterService from '@/services/CharacterService';
 import { Character } from '@/types/character';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -117,7 +117,20 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
 export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFetch?: boolean } = {}): UsePlayersWithoutGroupReturn {
     const { autoFetch = true } = options;
     const dispatch = useAppDispatch();
-    const characters = useAppSelector(selectCharactersWithoutGroup);
+    const rawCharacters = useAppSelector(selectCharactersWithoutGroup);
+    // Garde-fou rendu : un état persisté antérieur au dedupe côté reducer peut encore contenir des `_id` dupliqués.
+    // On dédoublonne ici par sécurité pour éviter l'erreur React "two children with the same key".
+    const characters = useMemo<Character[]>(() => {
+        if (rawCharacters.length === 0) return rawCharacters;
+        const seen = new Set<string>();
+        const cleaned: Character[] = [];
+        for (const character of rawCharacters) {
+            if (!character?._id || seen.has(character._id)) continue;
+            seen.add(character._id);
+            cleaned.push(character);
+        }
+        return cleaned.length === rawCharacters.length ? rawCharacters : cleaned;
+    }, [rawCharacters]);
     const loading = useAppSelector(selectCharactersWithoutGroupLoading);
     const loadingMore = useAppSelector(selectCharactersWithoutGroupLoadingMore);
     const error = useAppSelector(selectCharactersWithoutGroupError);

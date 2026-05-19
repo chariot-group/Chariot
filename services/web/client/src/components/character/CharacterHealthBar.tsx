@@ -8,9 +8,11 @@ interface CharacterHealthBarProps {
   currentHP: number;
   maxHP: number;
   tempHP: number;
+  interactive?: boolean;
+  onClick?: () => void;
 }
 
-const CharacterHealthBar = ({ currentHP, maxHP, tempHP }: CharacterHealthBarProps) => {
+const CharacterHealthBar = ({ currentHP, maxHP, tempHP, interactive = false, onClick }: CharacterHealthBarProps) => {
   const t = useTranslations("characterDetail.battle");
   const isFullWithTemp = currentHP === maxHP && tempHP > 0;
   const visualMax = isFullWithTemp ? maxHP + tempHP : maxHP;
@@ -23,9 +25,21 @@ const CharacterHealthBar = ({ currentHP, maxHP, tempHP }: CharacterHealthBarProp
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className="relative h-9 bg-white border border-black rounded-full overflow-hidden cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className={`relative h-9 bg-white border border-black rounded-full overflow-hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2 ${interactive ? "cursor-pointer" : "cursor-help"}`}
           tabIndex={0}
-          role="img"
+          role={interactive ? "button" : "img"}
+          onClick={interactive ? onClick : undefined}
+          onKeyDown={
+            interactive
+              ? (event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onClick?.();
+                  }
+                }
+              : undefined
+          }
+          aria-haspopup={interactive ? "dialog" : undefined}
           aria-label={`${t("healthPoints")}: ${currentHP} ${t("unperformedThrow")} ${maxHP}${tempHP > 0 ? ` (+${tempHP} ${t("hpAbbr")})` : ""}`}>
           {/* HP temporaires */}
           {bluePercent > 0 && (
@@ -81,7 +95,7 @@ const CharacterHealthBar = ({ currentHP, maxHP, tempHP }: CharacterHealthBarProp
           </div>
         </div>
       </TooltipTrigger>
-      <TooltipContent>{t("healthPointsTooltip")}</TooltipContent>
+      <TooltipContent>{interactive ? t("healthPointsSessionTooltip") : t("healthPointsTooltip")}</TooltipContent>
     </Tooltip>
   );
 };
