@@ -273,7 +273,10 @@ export default function DashboardPage() {
                 <XAxis
                   dataKey="date"
                   tick={{ fontSize: 11, fill: "#666" }}
-                  tickFormatter={(v) => v.slice(5)}
+                  tickFormatter={(v) => {
+                    const [, mm, dd] = v.split("-");
+                    return `${dd}-${mm}`;
+                  }}
                 />
                 <YAxis
                   tickFormatter={(v) => `${(v / 100).toFixed(0)}€`}
@@ -282,6 +285,11 @@ export default function DashboardPage() {
                 <Tooltip
                   contentStyle={{ backgroundColor: "#19191c", border: "1px solid #2b2b2b", borderRadius: "8px" }}
                   labelStyle={{ color: "#f7f7f7", fontSize: 12 }}
+                  itemStyle={{ color: "#f7f7f7" }}
+                  labelFormatter={(v) => {
+                    const [yyyy, mm, dd] = v.split("-");
+                    return `${dd}-${mm}-${yyyy}`;
+                  }}
                   formatter={(value: number, name: string) => [
                     formatCents(value),
                     name === "revenue" ? "Revenus" : "Remises",
@@ -342,6 +350,7 @@ export default function DashboardPage() {
                   <Tooltip
                     contentStyle={{ backgroundColor: "#19191c", border: "1px solid #2b2b2b", borderRadius: "8px" }}
                     labelStyle={{ color: "#f7f7f7" }}
+                    itemStyle={{ color: "#f7f7f7" }}
                   />
                   <Legend
                     iconType="circle"
@@ -436,6 +445,8 @@ export default function DashboardPage() {
                 <Tooltip
                   contentStyle={{ backgroundColor: "#19191c", border: "1px solid #2b2b2b", borderRadius: "8px" }}
                   labelStyle={{ color: "#f7f7f7", fontSize: 12 }}
+                  itemStyle={{ color: "#f7f7f7" }}
+                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
                   formatter={(value: number, name: string) => [
                     name === "totalUsages" ? value : formatCents(value),
                     name === "totalUsages" ? "Utilisations" : "Remise totale",
