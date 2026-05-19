@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, RefreshCw, Search, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -42,9 +42,15 @@ const promoSchema = z.object({
   discountType: z.enum(["PERCENTAGE", "FIXED"]),
   discountValue: z.coerce.number().int().min(1),
   isFirstOrderOnly: z.boolean().optional(),
-  minOrderAmount: z.coerce.number().int().min(0).optional().nullable(),
+  minOrderAmount: z.preprocess(
+    (v) => (v === "" || v == null ? null : v),
+    z.coerce.number().int().min(1).nullable().optional(),
+  ),
   expiresAt: z.string().optional().nullable(),
-  maxTotalUses: z.coerce.number().int().min(1).optional().nullable(),
+  maxTotalUses: z.preprocess(
+    (v) => (v === "" || v == null ? null : v),
+    z.coerce.number().int().min(1).nullable().optional(),
+  ),
   maxUsesPerUser: z.coerce.number().int().min(1).optional(),
 });
 type PromoFormData = z.infer<typeof promoSchema>;
@@ -203,6 +209,9 @@ export default function PromoCodesPage() {
   const [total, setTotal] = useState(0);
   const [dialogMode, setDialogMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<PromoCode | null>(null);
+  type SortField = "code" | "name" | "discountValue" | "currentTotalUses" | "expiresAt" | "isActive";
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const limit = 20;
 
   const load = useCallback(async () => {
@@ -283,6 +292,54 @@ export default function PromoCodesPage() {
     (p) => p.code.toLowerCase().includes(search.toLowerCase()) || p.name.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const toggleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDir("asc");
+    }
+  };
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (!sortField) return 0;
+    let cmp = 0;
+    switch (sortField) {
+      case "code":
+        cmp = a.code.localeCompare(b.code);
+        break;
+      case "name":
+        cmp = a.name.localeCompare(b.name);
+        break;
+      case "discountValue":
+        cmp = a.discountValue - b.discountValue;
+        break;
+      case "currentTotalUses":
+        cmp = a.currentTotalUses - b.currentTotalUses;
+        break;
+      case "expiresAt":
+        cmp = (a.expiresAt ?? "9999").localeCompare(b.expiresAt ?? "9999");
+        break;
+      case "isActive":
+        cmp = Number(b.isActive) - Number(a.isActive);
+        break;
+    }
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+
+  function SortableHead({ field, children }: { field: SortField; children: React.ReactNode }) {
+    const active = sortField === field;
+    const Icon = active ? (sortDir === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
+    return (
+      <button
+        className="flex items-center gap-1 hover:text-foreground transition-colors"
+        onClick={() => toggleSort(field)}>
+        {children}
+        <Icon className="h-3 w-3 opacity-60" />
+      </button>
+    );
+  }
+
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -336,12 +393,24 @@ export default function PromoCodesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Nom</TableHead>
-                <TableHead>Réduction</TableHead>
-                <TableHead>Utilisations</TableHead>
-                <TableHead>Expiration</TableHead>
-                <TableHead>Statut</TableHead>
+                <TableHead>
+                  <SortableHead field="code">Code</SortableHead>
+                </TableHead>
+                <TableHead>
+                  <SortableHead field="name">Nom</SortableHead>
+                </TableHead>
+                <TableHead>
+                  <SortableHead field="discountValue">Réduction</SortableHead>
+                </TableHead>
+                <TableHead>
+                  <SortableHead field="currentTotalUses">Utilisations</SortableHead>
+                </TableHead>
+                <TableHead>
+                  <SortableHead field="expiresAt">Expiration</SortableHead>
+                </TableHead>
+                <TableHead>
+                  <SortableHead field="isActive">Statut</SortableHead>
+                </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -363,7 +432,7 @@ export default function PromoCodesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((p) => (
+                sorted.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>
                       <code className="rounded bg-muted/30 px-1.5 py-0.5 text-xs font-mono text-card-foreground">
