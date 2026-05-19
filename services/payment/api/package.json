@@ -23,6 +23,7 @@
     "swagger:generate": "ts-node -r tsconfig-paths/register src/swagger-generator.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "prisma db seed",
     "prisma:studio": "prisma studio"
   },
   "dependencies": {

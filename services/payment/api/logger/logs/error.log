@@ -1,0 +1,13 @@
+2026-05-19 16:15:06.715 - [31merror[39m: [KeycloakAuthGuard] 	[31mNo authorization header[39m
+2026-05-19 16:46:22.650 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-19 16:46:22.651 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-19 16:46:22.670 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-19 16:46:22.670 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-19 16:46:25.471 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-19 16:46:25.471 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-19 16:46:25.477 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-19 16:46:25.477 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-19 16:46:27.030 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-19 16:46:27.031 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-19 16:46:27.036 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-19 16:46:27.036 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m

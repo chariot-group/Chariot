@@ -52,7 +52,9 @@ export class AnalyticsController {
         @Query('to') to?: string,
     ) {
         const fromDate = from ? new Date(from) : undefined;
-        const toDate = to ? new Date(to) : undefined;
+        // Ensure the `to` date covers the entire day (23:59:59.999) so that
+        // payments made on the boundary day are not excluded.
+        const toDate = to ? new Date(`${to}T23:59:59.999Z`) : undefined;
         return this.analyticsService.getDashboard(period, fromDate, toDate);
     }
 }
