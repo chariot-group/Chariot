@@ -174,9 +174,9 @@ const ActionUpdateSection = ({
 
   return (
     <section className="flex flex-col gap-2 w-full">
-      <Card className="gap-3 p-4 md:px-6 h-fit justify-between flex-row items-center">
-        <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{title}</h2>
-        <div className="flex items-center gap-2">
+      <Card className="gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between">
+        <h2 className={`min-w-0 flex-1 text-xl sm:text-2xl font-semibold ${accentColor}`}>{title}</h2>
+        <div className="flex shrink-0 items-center gap-2">
           <Button
             type="button"
             variant="ghost"
@@ -299,7 +299,7 @@ const ActionUpdateSection = ({
                         )}
                       />
                     </Card>
-                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                    <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
                       <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("usageType")}</span>
                       <Controller
                         name={`${fieldArrayName}.${index}.usageType`}
@@ -308,7 +308,7 @@ const ActionUpdateSection = ({
                           <Select
                             value={normalizeUsageType(usageTypeField.value)}
                             onValueChange={usageTypeField.onChange}>
-                            <SelectTrigger className="w-full sm:w-45">
+                            <SelectTrigger className="w-full sm:max-w-45">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -385,7 +385,7 @@ const ActionUpdateSection = ({
                         })}
                       </div>
                     </Card>
-                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                    <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
                       <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                         {t("damageType")}
                       </span>
@@ -421,61 +421,74 @@ const ActionUpdateSection = ({
                           };
 
                           return (
-                            <div className="flex flex-col gap-2 w-full sm:w-auto">
+                            <div className="flex flex-col gap-3 w-full min-w-0">
                               {damages.map((damage, damageIndex) => (
                                 <div
                                   key={damageIndex}
-                                  className="flex items-center gap-2 w-full">
-                                  <Input
-                                    value={damage?.dice ?? ""}
-                                    onChange={(event) => updateDamage(damageIndex, "dice", event.target.value)}
-                                    placeholder="1d6"
-                                    className="w-24"
-                                  />
-                                  <DamageTypeInput
-                                    id={`${fieldArrayName}.${index}.damage.${damageIndex}.type`}
-                                    value={damage?.type ?? ""}
-                                    onChange={(value) => updateDamage(damageIndex, "type", value)}
-                                    placeholder={tEdit("damageTypePlaceholder")}
-                                    customDamageTypes={existingDamageTypes}
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant={damage?.applyAbilityBonus ? "default" : "outline"}
-                                    size="sm"
-                                    disabled={!hasSelectedAttackAbility}
-                                    onClick={() => {
-                                      const updatedDamages = [...damages];
-                                      const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
-                                      const applyAbilityBonus = !Boolean(currentDamage.applyAbilityBonus);
-                                      const nextDice = applyAbilityBonus && hasSelectedAttackAbility
-                                        ? applyAbilityModifierToDice(currentDamage.dice ?? "", selectedDamageModifier)
-                                        : stripTrailingDamageBonus(currentDamage.dice ?? "");
+                                  className="flex flex-col gap-3 w-full min-w-0 rounded-[20px] border border-white/10 bg-white/3 p-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                      {`${t("type")} ${damageIndex + 1}`}
+                                    </span>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        damageField.onChange(damages.filter((_: unknown, i: number) => i !== damageIndex));
+                                      }}
+                                      aria-label={`${tCommon("delete")} ${damageIndex + 1}`}
+                                      className="text-red-500 shrink-0">
+                                      <Trash2 className="size-4" />
+                                    </Button>
+                                  </div>
+                                  <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-end gap-3">
+                                    <div className="flex flex-col gap-1 min-w-0">
+                                      <span className="text-xs font-medium text-muted-foreground">{tEdit("spellDamage")}</span>
+                                      <Input
+                                        value={damage?.dice ?? ""}
+                                        onChange={(event) => updateDamage(damageIndex, "dice", event.target.value)}
+                                        placeholder="1d6"
+                                        className="w-full"
+                                      />
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant={damage?.applyAbilityBonus ? "default" : "outline"}
+                                      size="sm"
+                                      disabled={!hasSelectedAttackAbility}
+                                      onClick={() => {
+                                        const updatedDamages = [...damages];
+                                        const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
+                                        const applyAbilityBonus = !Boolean(currentDamage.applyAbilityBonus);
+                                        const nextDice = applyAbilityBonus && hasSelectedAttackAbility
+                                          ? applyAbilityModifierToDice(currentDamage.dice ?? "", selectedDamageModifier)
+                                          : stripTrailingDamageBonus(currentDamage.dice ?? "");
 
-                                      updatedDamages[damageIndex] = {
-                                        ...currentDamage,
-                                        applyAbilityBonus,
-                                        dice: nextDice,
-                                      };
-                                      damageField.onChange(updatedDamages);
-                                    }}
-                                    title={hasSelectedAttackAbility && selectedAttackSuggestion
-                                      ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
-                                      : t("attackDC")}
-                                    className="h-8 px-2 text-xs shrink-0">
-                                    AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                      damageField.onChange(damages.filter((_: unknown, i: number) => i !== damageIndex));
-                                    }}
-                                    aria-label={`${tCommon("delete")} ${damageIndex + 1}`}
-                                    className="text-red-500 shrink-0">
-                                    <Trash2 className="size-4" />
-                                  </Button>
+                                        updatedDamages[damageIndex] = {
+                                          ...currentDamage,
+                                          applyAbilityBonus,
+                                          dice: nextDice,
+                                        };
+                                        damageField.onChange(updatedDamages);
+                                      }}
+                                      title={hasSelectedAttackAbility && selectedAttackSuggestion
+                                        ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
+                                        : t("attackDC")}
+                                      className="h-9 w-22 px-0 text-xs shrink-0 justify-center self-end">
+                                      AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
+                                    </Button>
+                                  </div>
+                                  <div className="w-full min-w-0">
+                                    <span className="mb-1 block text-xs font-medium text-muted-foreground">{tEdit("damageType")}</span>
+                                    <DamageTypeInput
+                                      id={`${fieldArrayName}.${index}.damage.${damageIndex}.type`}
+                                      value={damage?.type ?? ""}
+                                      onChange={(value) => updateDamage(damageIndex, "type", value)}
+                                      placeholder={tEdit("damageTypePlaceholder")}
+                                      customDamageTypes={existingDamageTypes}
+                                    />
+                                  </div>
                                 </div>
                               ))}
                               <Button

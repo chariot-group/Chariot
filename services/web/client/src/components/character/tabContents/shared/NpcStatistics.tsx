@@ -1,10 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Image from "next/image";
-import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
+import { Bird, Dices, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
-import FeatherIcon from "@public/assets/icons/feather-icon.svg";
 import { NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
@@ -119,13 +118,10 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
               tabIndex={0}
               role="img"
               aria-label={`${t("initiativeTooltip")} ${npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}`}>
-              <Image
-                src={FeatherIcon}
-                alt=""
+              <Dices
+                size={30}
+                className="text-black shrink-0"
                 aria-hidden="true"
-                width={20}
-                height={20}
-                className="size-5"
               />
               <span aria-hidden="true">
                 {npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}

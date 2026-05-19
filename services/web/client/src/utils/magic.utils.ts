@@ -221,6 +221,18 @@ export function getSpellSlotEntry(
     return { total: slot.total ?? 0, used: slot.used ?? 0 };
 }
 
+export function getRemainingSpellSlots(
+    spellcasting: Spellcasting,
+    level: number,
+): { current: number; total: number } | null {
+    const slot = getSpellSlotEntry(spellcasting, level);
+    if (!slot) return null;
+    return {
+        current: Math.max(0, (slot.total ?? 0) - (slot.used ?? 0)),
+        total: slot.total ?? 0,
+    };
+}
+
 export function hasAvailableSpellSlot(spellcasting: Spellcasting, level: number): boolean {
     const s = getSpellSlotEntry(spellcasting, level);
     if (!s) return false;

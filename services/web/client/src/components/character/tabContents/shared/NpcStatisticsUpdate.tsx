@@ -3,8 +3,7 @@ import Image from "next/image";
 
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
-import FeatherIcon from "@public/assets/icons/feather-icon.svg";
-import { Bird, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
+import { Bird, Dices, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
@@ -132,13 +131,10 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                 {tEdit("initiative")}
               </label>
               <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                <Image
-                  src={FeatherIcon}
-                  alt=""
+                <Dices
+                  size={20}
+                  className="size-5 text-white shrink-0"
                   aria-hidden="true"
-                  width={20}
-                  height={20}
-                  className="size-5 brightness-0 invert"
                 />
                 <Input
                   {...field}
@@ -148,7 +144,6 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   aria-describedby={fieldState.error ? "initiative-error" : undefined}
                   placeholder={tEdit("initiative")}
                   type="number"
-                  min={0}
                 />
               </div>
               {fieldState.error && (
@@ -242,6 +237,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     value={field.value ?? ""}
                     id="speed-walk"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     min={0}
                     className="text-sm"
                   />
@@ -273,6 +270,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     value={field.value ?? ""}
                     id="speed-climb"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     className="text-sm"
                     min={0}
                   />
@@ -304,6 +303,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     value={field.value ?? ""}
                     id="speed-swim"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     min={0}
                     className="text-sm"
                   />
@@ -335,6 +336,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     value={field.value ?? ""}
                     id="speed-fly"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     className="text-sm"
                     min={0}
                   />
@@ -366,6 +369,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     value={field.value ?? ""}
                     id="speed-burrow"
                     type="number"
+                    inputMode="decimal"
+                    step="any"
                     className="text-sm"
                     min={0}
                   />
@@ -380,7 +385,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
       {/* Points de Vie */}
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-medium">{t("healthPoints")}</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 items-center">
           <Controller
             name="stats.currentHitPoints"
             control={form.control}
