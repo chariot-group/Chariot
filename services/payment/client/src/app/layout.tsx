@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { KeycloakProvider } from "@/providers/KeycloakProvider";
+import { SidebarProvider } from "@/providers/SidebarContext";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { ToastContainer } from "react-toastify";
@@ -24,13 +25,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${interTight.variable} antialiased font-sans`}>
         <KeycloakProvider>
           <AdminGuard>
-            <div className="flex h-screen overflow-hidden">
-              <Sidebar />
-              <div className="flex flex-1 flex-col overflow-hidden">
-                <Header />
-                <main className="flex-1 overflow-y-auto p-6">{children}</main>
+            <SidebarProvider>
+              <div className="flex h-screen overflow-hidden">
+                <Sidebar />
+                <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+                  <Header />
+                  <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+                </div>
               </div>
-            </div>
+            </SidebarProvider>
           </AdminGuard>
         </KeycloakProvider>
         <ToastContainer

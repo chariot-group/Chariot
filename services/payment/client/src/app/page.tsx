@@ -153,20 +153,22 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-2">
-        {PERIOD_PRESETS.map((p, i) => (
-          <button
-            key={i}
-            onClick={() => setPreset(i)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              preset === i
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-card-foreground"
-            }`}>
-            {p.label}
-          </button>
-        ))}
-        <div className="ml-auto flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="flex flex-wrap gap-2">
+          {PERIOD_PRESETS.map((p, i) => (
+            <button
+              key={i}
+              onClick={() => setPreset(i)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                preset === i
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-card-foreground"
+              }`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 sm:ml-auto">
           <Select
             value={period}
             onValueChange={(v) => setPeriod(v as Period)}>
@@ -190,7 +192,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Revenus totaux"
           value={data ? formatCents(data.kpis.totalRevenue) : "—"}
