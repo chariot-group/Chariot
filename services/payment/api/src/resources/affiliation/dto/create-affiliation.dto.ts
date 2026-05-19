@@ -7,6 +7,7 @@ import {
     Min,
     Max,
     Matches,
+    IsOptional,
 } from 'class-validator';
 
 export class CreateAffiliationDto {
@@ -32,12 +33,14 @@ export class CreateAffiliationDto {
     name: string;
 
     @ApiProperty({
-        description: 'Keycloak ID du créateur bénéficiaire des commissions',
+        description: 'Keycloak ID du créateur bénéficiaire des commissions (optionnel si le créateur n\'a pas de compte Chariot)',
         example: '123e4567-e89b-12d3-a456-426614174000',
+        required: false,
     })
+    @IsOptional()
     @IsString()
     @MinLength(1)
-    creatorUserId: string;
+    creatorUserId?: string;
 
     @ApiProperty({
         description: 'Nom affiché du créateur (pseudo, chaîne YouTube, etc.)',

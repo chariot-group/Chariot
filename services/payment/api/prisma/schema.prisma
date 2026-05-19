@@ -63,7 +63,7 @@ model Affiliation {
   code String @unique
   name String
 
-  creatorUserId            String @map("creator_user_id") // keycloakId du créateur
+  creatorUserId            String? @map("creator_user_id") // keycloakId du créateur (optionnel)
   creatorName              String @map("creator_name") // nom affiché du créateur
   creatorCommissionPercent Int    @map("creator_commission_percent") // % reversé au créateur (0-100)
   userDiscountPercent      Int    @map("user_discount_percent") // % de réduction pour l'utilisateur (0-100)

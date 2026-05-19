@@ -32,7 +32,7 @@ export interface AffiliationStat {
     code: string;
     name: string;
     creatorName: string;
-    creatorUserId: string;
+    creatorUserId: string | null;
     totalUsages: number;
     totalCommission: number;
     totalRevenue: number;

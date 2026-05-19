@@ -19,7 +19,6 @@ interface Affiliation {
   id: string;
   code: string;
   name: string;
-  creatorUserId: string;
   creatorName: string;
   creatorCommissionPercent: number;
   userDiscountPercent: number;
@@ -36,7 +35,7 @@ const affiliationSchema = z.object({
     .max(32)
     .regex(/^[A-Z0-9_-]+$/, "Majuscules, chiffres, tirets uniquement"),
   name: z.string().min(2).max(100),
-  creatorUserId: z.string().min(1, "Keycloak ID requis"),
+
   creatorName: z.string().min(1).max(100),
   creatorCommissionPercent: z.coerce.number().int().min(0).max(100),
   userDiscountPercent: z.coerce.number().int().min(0).max(100),
@@ -92,23 +91,13 @@ function AffiliationForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Keycloak ID du créateur *</label>
-          <Input
-            {...register("creatorUserId")}
-            placeholder="uuid-du-créateur"
-          />
-          {errors.creatorUserId && <p className="text-xs text-destructive">{errors.creatorUserId.message}</p>}
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Nom affiché du créateur *</label>
-          <Input
-            {...register("creatorName")}
-            placeholder="HugoCreates"
-          />
-          {errors.creatorName && <p className="text-xs text-destructive">{errors.creatorName.message}</p>}
-        </div>
+      <div className="space-y-1">
+        <label className="text-xs text-muted-foreground">Nom affiché du créateur *</label>
+        <Input
+          {...register("creatorName")}
+          placeholder="HugoCreates"
+        />
+        {errors.creatorName && <p className="text-xs text-destructive">{errors.creatorName.message}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -397,7 +386,6 @@ export default function AffiliationsPage() {
                     <TableCell>
                       <div>
                         <p className="text-sm font-medium text-card-foreground">{a.creatorName}</p>
-                        <p className="text-xs text-muted-foreground truncate max-w-32">{a.creatorUserId}</p>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{a.creatorCommissionPercent}%</TableCell>
@@ -502,7 +490,6 @@ export default function AffiliationsPage() {
               defaultValues={{
                 code: editTarget.code,
                 name: editTarget.name,
-                creatorUserId: editTarget.creatorUserId,
                 creatorName: editTarget.creatorName,
                 creatorCommissionPercent: editTarget.creatorCommissionPercent,
                 userDiscountPercent: editTarget.userDiscountPercent,

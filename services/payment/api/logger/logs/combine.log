@@ -815,3 +815,138 @@
 2026-05-19 16:46:27.031 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
 2026-05-19 16:46:27.036 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
 2026-05-19 16:46:27.036 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-19 19:38:43.652 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-05-19 19:38:43.665 - [32minfo[39m: [InstanceLoader] 	[32mPrismaModule dependencies initialized[39m
+2026-05-19 19:38:43.666 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-05-19 19:38:43.666 - [32minfo[39m: [InstanceLoader] 	[32mPrometheusModule dependencies initialized[39m
+2026-05-19 19:38:43.666 - [32minfo[39m: [InstanceLoader] 	[32mPrometheusModule dependencies initialized[39m
+2026-05-19 19:38:43.667 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-05-19 19:38:43.667 - [32minfo[39m: [InstanceLoader] 	[32mMetricsModule dependencies initialized[39m
+2026-05-19 19:38:43.668 - [32minfo[39m: [InstanceLoader] 	[32mAnalyticsModule dependencies initialized[39m
+2026-05-19 19:38:43.668 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-05-19 19:38:43.668 - [32minfo[39m: [InstanceLoader] 	[32mPromoCodeModule dependencies initialized[39m
+2026-05-19 19:38:43.668 - [32minfo[39m: [InstanceLoader] 	[32mAffiliationModule dependencies initialized[39m
+2026-05-19 19:38:43.668 - [32minfo[39m: [InstanceLoader] 	[32mPaymentModule dependencies initialized[39m
+2026-05-19 19:38:43.692 - [32minfo[39m: [RoutesResolver] 	[32mAppController {/}:[39m
+2026-05-19 19:38:43.693 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/, GET} route[39m
+2026-05-19 19:38:43.693 - [32minfo[39m: [RoutesResolver] 	[32mMetricsController {/}:[39m
+2026-05-19 19:38:43.693 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:38:43.693 - [32minfo[39m: [RoutesResolver] 	[32mPrometheusController {/metrics}:[39m
+2026-05-19 19:38:43.694 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:38:43.694 - [32minfo[39m: [RoutesResolver] 	[32mPrometheusController {/metrics}:[39m
+2026-05-19 19:38:43.694 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:38:43.694 - [32minfo[39m: [RoutesResolver] 	[32mPromoCodeController {/promo-codes}:[39m
+2026-05-19 19:38:43.694 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes, POST} route[39m
+2026-05-19 19:38:43.694 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes, GET} route[39m
+2026-05-19 19:38:43.695 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, GET} route[39m
+2026-05-19 19:38:43.695 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, PATCH} route[39m
+2026-05-19 19:38:43.695 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id/deactivate, PATCH} route[39m
+2026-05-19 19:38:43.696 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, DELETE} route[39m
+2026-05-19 19:38:43.696 - [32minfo[39m: [RoutesResolver] 	[32mAffiliationController {/affiliations}:[39m
+2026-05-19 19:38:43.696 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations, POST} route[39m
+2026-05-19 19:38:43.696 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations, GET} route[39m
+2026-05-19 19:38:43.696 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, GET} route[39m
+2026-05-19 19:38:43.696 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id/usages, GET} route[39m
+2026-05-19 19:38:43.696 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, PATCH} route[39m
+2026-05-19 19:38:43.696 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id/deactivate, PATCH} route[39m
+2026-05-19 19:38:43.697 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, DELETE} route[39m
+2026-05-19 19:38:43.697 - [32minfo[39m: [RoutesResolver] 	[32mPaymentController {/payments}:[39m
+2026-05-19 19:38:43.697 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments, POST} route[39m
+2026-05-19 19:38:43.697 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments, GET} route[39m
+2026-05-19 19:38:43.697 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/:id, GET} route[39m
+2026-05-19 19:38:43.697 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/stripe-session/:sessionId, GET} route[39m
+2026-05-19 19:38:43.698 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/:id/status, PATCH} route[39m
+2026-05-19 19:38:43.698 - [32minfo[39m: [RoutesResolver] 	[32mAnalyticsController {/analytics}:[39m
+2026-05-19 19:38:43.698 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/analytics/dashboard, GET} route[39m
+2026-05-19 19:38:43.755 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-05-19 19:38:43.757 - [32minfo[39m: [undefined] 	[32mChariot Payment API running on port 9003[39m
+2026-05-19 19:42:42.095 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-05-19 19:42:42.104 - [32minfo[39m: [InstanceLoader] 	[32mPrismaModule dependencies initialized[39m
+2026-05-19 19:42:42.104 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-05-19 19:42:42.104 - [32minfo[39m: [InstanceLoader] 	[32mPrometheusModule dependencies initialized[39m
+2026-05-19 19:42:42.104 - [32minfo[39m: [InstanceLoader] 	[32mPrometheusModule dependencies initialized[39m
+2026-05-19 19:42:42.105 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-05-19 19:42:42.105 - [32minfo[39m: [InstanceLoader] 	[32mMetricsModule dependencies initialized[39m
+2026-05-19 19:42:42.105 - [32minfo[39m: [InstanceLoader] 	[32mAnalyticsModule dependencies initialized[39m
+2026-05-19 19:42:42.106 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-05-19 19:42:42.106 - [32minfo[39m: [InstanceLoader] 	[32mPromoCodeModule dependencies initialized[39m
+2026-05-19 19:42:42.106 - [32minfo[39m: [InstanceLoader] 	[32mAffiliationModule dependencies initialized[39m
+2026-05-19 19:42:42.106 - [32minfo[39m: [InstanceLoader] 	[32mPaymentModule dependencies initialized[39m
+2026-05-19 19:42:42.123 - [32minfo[39m: [RoutesResolver] 	[32mAppController {/}:[39m
+2026-05-19 19:42:42.124 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/, GET} route[39m
+2026-05-19 19:42:42.124 - [32minfo[39m: [RoutesResolver] 	[32mMetricsController {/}:[39m
+2026-05-19 19:42:42.124 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:42:42.124 - [32minfo[39m: [RoutesResolver] 	[32mPrometheusController {/metrics}:[39m
+2026-05-19 19:42:42.124 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:42:42.124 - [32minfo[39m: [RoutesResolver] 	[32mPrometheusController {/metrics}:[39m
+2026-05-19 19:42:42.124 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:42:42.124 - [32minfo[39m: [RoutesResolver] 	[32mPromoCodeController {/promo-codes}:[39m
+2026-05-19 19:42:42.125 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes, POST} route[39m
+2026-05-19 19:42:42.125 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes, GET} route[39m
+2026-05-19 19:42:42.125 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, GET} route[39m
+2026-05-19 19:42:42.125 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, PATCH} route[39m
+2026-05-19 19:42:42.126 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id/deactivate, PATCH} route[39m
+2026-05-19 19:42:42.126 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, DELETE} route[39m
+2026-05-19 19:42:42.126 - [32minfo[39m: [RoutesResolver] 	[32mAffiliationController {/affiliations}:[39m
+2026-05-19 19:42:42.126 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations, POST} route[39m
+2026-05-19 19:42:42.127 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations, GET} route[39m
+2026-05-19 19:42:42.127 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, GET} route[39m
+2026-05-19 19:42:42.127 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id/usages, GET} route[39m
+2026-05-19 19:42:42.127 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, PATCH} route[39m
+2026-05-19 19:42:42.127 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id/deactivate, PATCH} route[39m
+2026-05-19 19:42:42.127 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, DELETE} route[39m
+2026-05-19 19:42:42.127 - [32minfo[39m: [RoutesResolver] 	[32mPaymentController {/payments}:[39m
+2026-05-19 19:42:42.127 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments, POST} route[39m
+2026-05-19 19:42:42.128 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments, GET} route[39m
+2026-05-19 19:42:42.128 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/:id, GET} route[39m
+2026-05-19 19:42:42.128 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/stripe-session/:sessionId, GET} route[39m
+2026-05-19 19:42:42.128 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/:id/status, PATCH} route[39m
+2026-05-19 19:42:42.128 - [32minfo[39m: [RoutesResolver] 	[32mAnalyticsController {/analytics}:[39m
+2026-05-19 19:42:42.128 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/analytics/dashboard, GET} route[39m
+2026-05-19 19:42:42.185 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-05-19 19:42:42.186 - [32minfo[39m: [undefined] 	[32mChariot Payment API running on port 9003[39m
+2026-05-19 19:42:49.431 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-05-19 19:42:49.439 - [32minfo[39m: [InstanceLoader] 	[32mPrismaModule dependencies initialized[39m
+2026-05-19 19:42:49.440 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-05-19 19:42:49.440 - [32minfo[39m: [InstanceLoader] 	[32mPrometheusModule dependencies initialized[39m
+2026-05-19 19:42:49.440 - [32minfo[39m: [InstanceLoader] 	[32mPrometheusModule dependencies initialized[39m
+2026-05-19 19:42:49.440 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-05-19 19:42:49.441 - [32minfo[39m: [InstanceLoader] 	[32mMetricsModule dependencies initialized[39m
+2026-05-19 19:42:49.441 - [32minfo[39m: [InstanceLoader] 	[32mAnalyticsModule dependencies initialized[39m
+2026-05-19 19:42:49.441 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-05-19 19:42:49.441 - [32minfo[39m: [InstanceLoader] 	[32mPromoCodeModule dependencies initialized[39m
+2026-05-19 19:42:49.441 - [32minfo[39m: [InstanceLoader] 	[32mAffiliationModule dependencies initialized[39m
+2026-05-19 19:42:49.441 - [32minfo[39m: [InstanceLoader] 	[32mPaymentModule dependencies initialized[39m
+2026-05-19 19:42:49.457 - [32minfo[39m: [RoutesResolver] 	[32mAppController {/}:[39m
+2026-05-19 19:42:49.458 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/, GET} route[39m
+2026-05-19 19:42:49.459 - [32minfo[39m: [RoutesResolver] 	[32mMetricsController {/}:[39m
+2026-05-19 19:42:49.459 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:42:49.459 - [32minfo[39m: [RoutesResolver] 	[32mPrometheusController {/metrics}:[39m
+2026-05-19 19:42:49.459 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:42:49.459 - [32minfo[39m: [RoutesResolver] 	[32mPrometheusController {/metrics}:[39m
+2026-05-19 19:42:49.459 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-19 19:42:49.459 - [32minfo[39m: [RoutesResolver] 	[32mPromoCodeController {/promo-codes}:[39m
+2026-05-19 19:42:49.459 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes, POST} route[39m
+2026-05-19 19:42:49.460 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes, GET} route[39m
+2026-05-19 19:42:49.460 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, GET} route[39m
+2026-05-19 19:42:49.460 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, PATCH} route[39m
+2026-05-19 19:42:49.460 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id/deactivate, PATCH} route[39m
+2026-05-19 19:42:49.461 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, DELETE} route[39m
+2026-05-19 19:42:49.461 - [32minfo[39m: [RoutesResolver] 	[32mAffiliationController {/affiliations}:[39m
+2026-05-19 19:42:49.461 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations, POST} route[39m
+2026-05-19 19:42:49.461 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations, GET} route[39m
+2026-05-19 19:42:49.461 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, GET} route[39m
+2026-05-19 19:42:49.461 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id/usages, GET} route[39m
+2026-05-19 19:42:49.461 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, PATCH} route[39m
+2026-05-19 19:42:49.461 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id/deactivate, PATCH} route[39m
+2026-05-19 19:42:49.462 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, DELETE} route[39m
+2026-05-19 19:42:49.462 - [32minfo[39m: [RoutesResolver] 	[32mPaymentController {/payments}:[39m
+2026-05-19 19:42:49.462 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments, POST} route[39m
+2026-05-19 19:42:49.462 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments, GET} route[39m
+2026-05-19 19:42:49.462 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/:id, GET} route[39m
+2026-05-19 19:42:49.462 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/stripe-session/:sessionId, GET} route[39m
+2026-05-19 19:42:49.463 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/:id/status, PATCH} route[39m
+2026-05-19 19:42:49.463 - [32minfo[39m: [RoutesResolver] 	[32mAnalyticsController {/analytics}:[39m
+2026-05-19 19:42:49.463 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/analytics/dashboard, GET} route[39m
+2026-05-19 19:42:49.510 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-05-19 19:42:49.511 - [32minfo[39m: [undefined] 	[32mChariot Payment API running on port 9003[39m
