@@ -107,7 +107,7 @@ export const SkillSchema = z.object({
 
 export const SenseSchema = z.object({
     name: z.string().optional(),
-    value: numericInput(true),
+    value: z.preprocess((value) => (value === '' ? null : value), z.coerce.number().nullable().optional()),
 });
 
 // ===== Stats =====
