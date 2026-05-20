@@ -70,6 +70,7 @@ export default function Shop({ open, onOpenChange }: ShopProps) {
       window.location.href = checkoutUrl;
     } catch {
       toast.error(tShop("checkoutError"));
+    } finally {
       setCheckoutLoading(null);
     }
   }

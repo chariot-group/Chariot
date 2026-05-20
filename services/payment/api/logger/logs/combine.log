@@ -2046,3 +2046,76 @@
 2026-05-20 09:05:11.476 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-grace-0007: Request failed with status code 404[39m
 2026-05-20 11:38:23.455 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
 2026-05-20 11:38:23.456 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-20 12:03:30.085 - [33mwarn[39m: [StripeService] 	[33mUnhandled Stripe event type: charge.succeeded[39m
+2026-05-20 12:03:30.194 - [33mwarn[39m: [StripeService] 	[33mUnhandled Stripe event type: payment_intent.succeeded[39m
+2026-05-20 12:03:30.328 - [33mwarn[39m: [StripeService] 	[33mUnhandled Stripe event type: payment_intent.created[39m
+2026-05-20 12:03:32.616 - [33mwarn[39m: [StripeService] 	[33mUnhandled Stripe event type: charge.updated[39m
+2026-05-20 12:03:41.497 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-grace-0007: Request failed with status code 404[39m
+2026-05-20 12:03:41.497 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-eve-0005: Request failed with status code 404[39m
+2026-05-20 12:03:41.497 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-iris-0009: Request failed with status code 404[39m
+2026-05-20 12:03:41.509 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-jack-0010: Request failed with status code 404[39m
+2026-05-20 12:03:41.509 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-bob-0002: Request failed with status code 404[39m
+2026-05-20 12:03:41.513 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-hugo-0008: Request failed with status code 404[39m
+2026-05-20 12:03:41.516 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-frank-0006: Request failed with status code 404[39m
+2026-05-20 12:03:41.529 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-iris-0009: Request failed with status code 404[39m
+2026-05-20 12:03:41.530 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-grace-0007: Request failed with status code 404[39m
+2026-05-20 12:03:41.530 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-frank-0006: Request failed with status code 404[39m
+2026-05-20 12:03:41.530 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-jack-0010: Request failed with status code 404[39m
+2026-05-20 12:03:41.531 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-bob-0002: Request failed with status code 404[39m
+2026-05-20 12:03:41.531 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-eve-0005: Request failed with status code 404[39m
+2026-05-20 12:03:41.531 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-hugo-0008: Request failed with status code 404[39m
+2026-05-20 12:04:41.162 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-05-20 12:04:41.175 - [32minfo[39m: [InstanceLoader] 	[32mPrismaModule dependencies initialized[39m
+2026-05-20 12:04:41.176 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-05-20 12:04:41.176 - [32minfo[39m: [InstanceLoader] 	[32mPrometheusModule dependencies initialized[39m
+2026-05-20 12:04:41.176 - [32minfo[39m: [InstanceLoader] 	[32mPrometheusModule dependencies initialized[39m
+2026-05-20 12:04:41.177 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-05-20 12:04:41.177 - [32minfo[39m: [InstanceLoader] 	[32mMetricsModule dependencies initialized[39m
+2026-05-20 12:04:41.177 - [32minfo[39m: [InstanceLoader] 	[32mAnalyticsModule dependencies initialized[39m
+2026-05-20 12:04:41.178 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-05-20 12:04:41.179 - [32minfo[39m: [InstanceLoader] 	[32mPromoCodeModule dependencies initialized[39m
+2026-05-20 12:04:41.179 - [32minfo[39m: [InstanceLoader] 	[32mAffiliationModule dependencies initialized[39m
+2026-05-20 12:04:41.179 - [32minfo[39m: [InstanceLoader] 	[32mStripeModule dependencies initialized[39m
+2026-05-20 12:04:41.179 - [32minfo[39m: [InstanceLoader] 	[32mPaymentModule dependencies initialized[39m
+2026-05-20 12:04:41.195 - [32minfo[39m: [RoutesResolver] 	[32mAppController {/}:[39m
+2026-05-20 12:04:41.197 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/, GET} route[39m
+2026-05-20 12:04:41.197 - [32minfo[39m: [RoutesResolver] 	[32mMetricsController {/}:[39m
+2026-05-20 12:04:41.197 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-20 12:04:41.197 - [32minfo[39m: [RoutesResolver] 	[32mPrometheusController {/metrics}:[39m
+2026-05-20 12:04:41.197 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-20 12:04:41.197 - [32minfo[39m: [RoutesResolver] 	[32mPrometheusController {/metrics}:[39m
+2026-05-20 12:04:41.197 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/metrics, GET} route[39m
+2026-05-20 12:04:41.197 - [32minfo[39m: [RoutesResolver] 	[32mPromoCodeController {/promo-codes}:[39m
+2026-05-20 12:04:41.198 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes, POST} route[39m
+2026-05-20 12:04:41.198 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes, GET} route[39m
+2026-05-20 12:04:41.198 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, GET} route[39m
+2026-05-20 12:04:41.198 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, PATCH} route[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id/deactivate, PATCH} route[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/promo-codes/:id, DELETE} route[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RoutesResolver] 	[32mAffiliationController {/affiliations}:[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations, POST} route[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations, GET} route[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, GET} route[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id/usages, GET} route[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, PATCH} route[39m
+2026-05-20 12:04:41.199 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id/deactivate, PATCH} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/affiliations/:id, DELETE} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RoutesResolver] 	[32mPaymentController {/payments}:[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments, POST} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments, GET} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/:id, GET} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/stripe-session/:sessionId, GET} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/:id/status, PATCH} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/payments/internal/complete, POST} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RoutesResolver] 	[32mAnalyticsController {/analytics}:[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/analytics/dashboard, GET} route[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RoutesResolver] 	[32mStripeController {/stripe}:[39m
+2026-05-20 12:04:41.200 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/stripe/checkout, POST} route[39m
+2026-05-20 12:04:41.201 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/stripe/webhook, POST} route[39m
+2026-05-20 12:04:41.201 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/stripe/products, GET} route[39m
+2026-05-20 12:04:41.266 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-05-20 12:04:41.267 - [32minfo[39m: [undefined] 	[32mChariot Payment API running on port 9003[39m
+2026-05-20 12:07:49.002 - [33mwarn[39m: [StripeService] 	[33mUnhandled Stripe event type: charge.succeeded[39m
+2026-05-20 12:07:49.064 - [33mwarn[39m: [StripeService] 	[33mUnhandled Stripe event type: payment_intent.succeeded[39m
+2026-05-20 12:07:49.246 - [33mwarn[39m: [StripeService] 	[33mUnhandled Stripe event type: payment_intent.created[39m
+2026-05-20 12:07:51.552 - [33mwarn[39m: [StripeService] 	[33mUnhandled Stripe event type: charge.updated[39m
