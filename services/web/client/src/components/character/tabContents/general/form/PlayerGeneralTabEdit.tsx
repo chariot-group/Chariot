@@ -17,6 +17,7 @@ import Column2Edit from "@/components/character/tabContents/general/form/Column2
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
+import SensesUpdateSection from "@/components/character/tabContents/general/shared/SensesUpdateSection";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -693,6 +694,15 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   </Field>
                 )}
               />
+
+              <div className="flex flex-col gap-2">
+                <h3 className="text-sm font-medium">{t("senses")}</h3>
+                <SensesUpdateSection
+                  form={form}
+                  accentColor={accentColor}
+                  embedded
+                />
+              </div>
 
               {/* Tools */}
               <Controller

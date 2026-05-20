@@ -203,10 +203,14 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
       },
       senses: monster.stats?.senses
         ? monster.stats.senses.map((sense) => {
-            const normalizedSense = sense as { name?: string; type?: string; value?: number | string };
+            const normalizedSense = sense as { name?: string; type?: string; value?: number | string | null };
+            const parsedValue =
+              normalizedSense.value === null || normalizedSense.value === undefined || normalizedSense.value === ""
+                ? null
+                : Number(normalizedSense.value);
             return {
               name: normalizedSense.name || normalizedSense.type || "",
-              value: typeof normalizedSense.value === "number" ? normalizedSense.value : 0,
+              value: Number.isFinite(parsedValue) ? parsedValue : null,
             };
           })
         : [],

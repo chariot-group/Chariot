@@ -5,6 +5,7 @@ import AbilityScores from "@/components/character/tabContents/general/shared/Abi
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import NpcColumn2 from "@/components/character/tabContents/general/view/NpcColumn2";
 import NpcStatistics from "@/components/character/tabContents/shared/NpcStatistics";
+import SensesSection from "@/components/character/tabContents/general/shared/SensesSection";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -89,18 +90,29 @@ export default function NpcGeneralTabContent({ npc, accentColor, onCharacterUpda
           <Card
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
-            aria-labelledby="languages-heading">
+            aria-labelledby="proficiencies-heading">
             <h2
-              id="languages-heading"
+              id="proficiencies-heading"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("languages")}
+              {t("proficiencies")}
             </h2>
             <dl className="flex flex-col gap-2">
               <div className="flex flex-col">
+                <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
                 <dd
                   className="text-sm sm:text-base"
                   aria-label={`${t("languages")} : ${npc?.stats?.languages?.length > 0 ? npc.stats.languages.join(", ") : t("noLanguages")}`}>
                   {npc?.stats?.languages?.length > 0 ? npc.stats.languages.join(", ") : t("noLanguages")}
+                </dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="text-sm sm:text-base font-semibold">{t("senses")} :</dt>
+                <dd>
+                  <SensesSection
+                    senses={npc?.stats?.senses}
+                    accentColor={accentColor}
+                    embedded
+                  />
                 </dd>
               </div>
             </dl>
