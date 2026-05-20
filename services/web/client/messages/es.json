@@ -147,6 +147,19 @@
     "reloadSuccessUnknown": "Tu pago está confirmado, la recarga de tu cuenta está en curso.",
     "reloadPending": "Pago confirmado, actualización del saldo en curso."
   },
+  "shop": {
+    "pageTitle": "Tienda",
+    "pageSubtitle": "Recarga tu cuenta con tokens para crear personajes y unirte a sesiones.",
+    "tokensUnit": "tokens",
+    "buyButton": "Comprar",
+    "loadingProducts": "Cargando ofertas...",
+    "errorProducts": "No se pueden cargar las ofertas. Por favor, inténtalo de nuevo.",
+    "noProducts": "No hay ofertas disponibles en este momento.",
+    "redirecting": "Redirigiendo al pago...",
+    "checkoutError": "No se puede iniciar el pago. Por favor, inténtalo de nuevo.",
+    "back": "Volver",
+    "close": "Cerrar"
+  },
   "ProfilePage": {
     "pageTitle": "Perfil de usuario",
     "changePasswordTitle": "Cambiar contraseña",

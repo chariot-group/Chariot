@@ -10,8 +10,11 @@ import { ErrorDetailsFilter } from '@/common/filters/errors.filter';
 import { setupSwagger } from '@/config/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
 
+type RawBodyRequest = express.Request & { rawBody?: Buffer };
+
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
+        rawBody: true,
         logger: WinstonModule.createLogger({
             instance: instance,
         }),
@@ -27,8 +30,21 @@ async function bootstrap() {
         exposedHeaders: ['Authorization'],
     });
 
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
+    app.use(
+        express.json({
+            verify: (req: RawBodyRequest, _res, buf) => {
+                req.rawBody = buf;
+            },
+        }),
+    );
+    app.use(
+        express.urlencoded({
+            extended: true,
+            verify: (req: RawBodyRequest, _res, buf) => {
+                req.rawBody = buf;
+            },
+        }),
+    );
     app.use(cookieParser());
 
     app.useGlobalFilters(new ErrorDetailsFilter());

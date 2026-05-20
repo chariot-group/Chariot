@@ -10,8 +10,10 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { IResponse, IPaginatedResponse } from '@/common/dtos/response.dto';
 import { CreatePaymentDto } from '@/resources/payment/dto/create-payment.dto';
 import { UpdatePaymentStatusDto } from '@/resources/payment/dto/update-payment-status.dto';
+import { CompletePaymentDto } from '@/resources/payment/dto/complete-payment.dto';
 import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
 import { AffiliationService } from '@/resources/affiliation/affiliation.service';
+import { KeycloakAdminService } from '@/common/services/keycloak-admin.service';
 import { Payment, DiscountType } from '@prisma/client';
 
 export type PaymentWithDiscount = Payment & {
@@ -32,6 +34,7 @@ export class PaymentService {
         private readonly prisma: PrismaService,
         private readonly promoCodeService: PromoCodeService,
         private readonly affiliationService: AffiliationService,
+        private readonly keycloakAdminService: KeycloakAdminService,
     ) { }
 
     /**
@@ -268,12 +271,25 @@ export class PaymentService {
                 this.prisma.payment.count({ where }),
             ]);
 
+            const userIds = payments.map((p) => p.userId);
+            const usersMap = await this.keycloakAdminService.getUsersByIds(userIds);
+
+            const enrichedPayments = payments.map((p) => {
+                const user = usersMap.get(p.userId);
+                return {
+                    ...p,
+                    userDisplayName: user
+                        ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username || null
+                        : null,
+                };
+            });
+
             const message = `${payments.length} payments found in ${Date.now() - start}ms`;
             this.logger.verbose(message, this.SERVICE_NAME);
 
             return {
                 message,
-                data: payments,
+                data: enrichedPayments,
                 pagination: { page, offset: limit, totalItems },
             };
         } catch (error) {
@@ -335,6 +351,36 @@ export class PaymentService {
         } catch (error) {
             if (error instanceof HttpException) throw error;
             const message = `Error while fetching payment by session '${sessionId}': ${error.message}`;
+            this.logger.error(message, error.stack, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    async createCompleted(dto: CompletePaymentDto): Promise<IResponse<Payment>> {
+        try {
+            const start = Date.now();
+
+            const payment = await this.prisma.payment.create({
+                data: {
+                    userId: dto.userId,
+                    amount: dto.amount,
+                    discountAmount: 0,
+                    finalAmount: dto.amount,
+                    currency: dto.currency ?? 'eur',
+                    stripeSessionId: dto.stripeSessionId ?? null,
+                    stripePaymentIntentId: dto.stripePaymentIntentId ?? null,
+                    status: 'COMPLETED',
+                    ...(dto.tokenCount !== undefined && { tokenCount: dto.tokenCount }),
+                },
+            });
+
+            const message = `Completed payment recorded for user ${dto.userId} in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+
+            return { message, data: payment };
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            const message = `Error while recording completed payment: ${error.message}`;
             this.logger.error(message, error.stack, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }

@@ -64,3 +64,10 @@ export const dbQueryDurationProvider = makeHistogramProvider({
     labelNames: ['table', 'operation'],
     buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1],
 });
+
+// 8. COMPTEUR: Paiements Stripe
+export const stripePaymentsCounterProvider = makeCounterProvider({
+    name: 'chariot_stripe_payments_total',
+    help: 'Total number of Stripe payments',
+    labelNames: ['status'],
+});

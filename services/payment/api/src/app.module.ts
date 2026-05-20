@@ -11,6 +11,7 @@ import { PromoCodeModule } from '@/resources/promo-code/promo-code.module';
 import { AffiliationModule } from '@/resources/affiliation/affiliation.module';
 import { PaymentModule } from '@/resources/payment/payment.module';
 import { AnalyticsModule } from '@/resources/analytics/analytics.module';
+import { StripeModule } from '@/resources/stripe/stripe.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { AnalyticsModule } from '@/resources/analytics/analytics.module';
         AffiliationModule,
         PaymentModule,
         AnalyticsModule,
+        StripeModule,
     ],
     controllers: [AppController],
     providers: [

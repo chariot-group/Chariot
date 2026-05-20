@@ -5,9 +5,14 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Post,
   Put,
   Req,
+  UseGuards,
 } from '@nestjs/common';
+import { InternalGuard } from '@/common/guards/internal.guard';
+import { Public } from '@/common/decorators/public.decorator';
+import { IsString, IsNumber, Min } from 'class-validator';
 import {
   ApiExtraModels,
   ApiOperation,
@@ -32,7 +37,7 @@ import { AddHistoryDto } from '@/resources/user/dto/add-history.dto';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('me')
   @ApiOperation({ summary: 'Get current authenticated user information' })
@@ -199,5 +204,17 @@ export class UserController {
       request.user.keycloakId,
       updateUserProfileDto,
     );
+  }
+
+  @Post('internal/tokens')
+  @Public()
+  @UseGuards(InternalGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Internal: add tokens to a user (service-to-service only)' })
+  @ApiResponse({ status: 200, description: 'Tokens added successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden – invalid internal secret' })
+  async addTokensInternal(@Body() body: { userId: string; amount: number }) {
+    await this.userService.addTokens(body.userId, body.amount);
+    return { message: `Added ${body.amount} tokens to user ${body.userId}` };
   }
 }

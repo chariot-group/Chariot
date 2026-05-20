@@ -17,12 +17,14 @@ type PaymentStatus = "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
 interface Payment {
   id: string;
   userId: string;
+  userDisplayName: string | null;
   stripeSessionId: string | null;
   amount: number;
   discountAmount: number;
   finalAmount: number;
   currency: string;
   status: PaymentStatus;
+  tokenCount: number | null;
   promoCode?: { code: string } | null;
   affiliation?: { code: string; creatorName: string } | null;
   createdAt: string;
@@ -90,6 +92,7 @@ export default function PaymentsPage() {
             className="pl-8"
           />
         </div>
+
         <Select
           value={statusFilter}
           onValueChange={(v) => {
@@ -129,6 +132,7 @@ export default function PaymentsPage() {
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Utilisateur</TableHead>
+                <TableHead>Tokens achetés</TableHead>
                 <TableHead>Montant brut</TableHead>
                 <TableHead>Réduction</TableHead>
                 <TableHead>Montant final</TableHead>
@@ -141,7 +145,7 @@ export default function PaymentsPage() {
               {loading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="text-center text-muted-foreground py-8">
                     Chargement…
                   </TableCell>
@@ -149,7 +153,7 @@ export default function PaymentsPage() {
               ) : payments.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="text-center text-muted-foreground py-8">
                     Aucun paiement trouvé
                   </TableCell>
@@ -161,7 +165,21 @@ export default function PaymentsPage() {
                       {formatDate(p.createdAt)}
                     </TableCell>
                     <TableCell>
-                      <code className="text-xs text-muted-foreground truncate block max-w-28">{p.userId}</code>
+                      {p.userDisplayName ? (
+                        <div>
+                          <span className="text-sm text-card-foreground">{p.userDisplayName}</span>
+                          <code className="text-xs text-muted-foreground truncate block max-w-36">{p.userId}</code>
+                        </div>
+                      ) : (
+                        <code className="text-xs text-muted-foreground truncate block max-w-28">{p.userId}</code>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-card-foreground">
+                      {p.tokenCount != null ? (
+                        <span className="font-medium">{p.tokenCount.toLocaleString()}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm">{formatCents(p.amount)}</TableCell>
                     <TableCell className="text-sm text-[var(--yellow)]">

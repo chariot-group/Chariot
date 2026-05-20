@@ -103,6 +103,7 @@ model Payment {
   finalAmount           Int           @map("final_amount") // montant payé = amount - discountAmount
   currency              String        @default("eur")
   status                PaymentStatus @default(PENDING)
+  tokenCount            Int?          @map("token_count") // nombre total de tokens achetés
 
   promoCode   PromoCode? @relation(fields: [promoCodeId], references: [id])
   promoCodeId String?    @map("promo_code_id")

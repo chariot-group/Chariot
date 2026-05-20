@@ -5,6 +5,9 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import Stripe from 'stripe';
+import axios from 'axios';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter } from 'prom-client';
 import { UserService } from '@/resources/user/user.service';
 import { IResponse } from '@/common/dtos/reponse.dto';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
@@ -12,7 +15,11 @@ import { StripeProductWithPrices } from '@/resources/stripe/types/stripe.type';
 
 @Injectable()
 export class StripeService {
-  constructor(private readonly userService: UserService) {
+  constructor(
+    private readonly userService: UserService,
+    @InjectMetric('chariot_stripe_payments_total')
+    private readonly stripePaymentsCounter: Counter,
+  ) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: '2026-02-25.clover',
     });
@@ -192,10 +199,63 @@ export class StripeService {
       const purchasedQuantity = await this.getPurchasedQuantity(session);
       const totalTokens = tokenAmountPerPack * purchasedQuantity;
       await this.userService.addTokens(userId, totalTokens);
+
+      this.stripePaymentsCounter.inc({ status: 'success' });
+
+      await this.notifyPaymentService(session, userId);
     } catch (error) {
+      this.stripePaymentsCounter.inc({ status: 'failed' });
       const errorMessage: string = `Error fulfilling order: ${error.message}`;
       this.logger.error(errorMessage, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(errorMessage);
+    }
+  }
+
+  private async notifyPaymentService(
+    session: Stripe.Checkout.Session,
+    userId: string,
+  ): Promise<void> {
+    const paymentServiceUrl = process.env.PAYMENT_SERVICE_URL;
+    const internalSecret = process.env.INTERNAL_SERVICE_SECRET;
+
+    if (!paymentServiceUrl || !internalSecret) {
+      this.logger.warn(
+        'PAYMENT_SERVICE_URL or INTERNAL_SERVICE_SECRET not set — skipping payment record creation',
+        this.SERVICE_NAME,
+      );
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${paymentServiceUrl}/internal/payments/complete`,
+        {
+          userId,
+          amount: session.amount_total ?? 0,
+          currency: session.currency ?? 'eur',
+          stripeSessionId: session.id,
+          stripePaymentIntentId:
+            typeof session.payment_intent === 'string'
+              ? session.payment_intent
+              : null,
+        },
+        {
+          headers: { 'x-internal-service-secret': internalSecret },
+          timeout: 5000,
+        },
+      );
+
+      this.logger.verbose(
+        `Payment record created in payment service for session ${session.id}`,
+        this.SERVICE_NAME,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to notify payment service for session ${session.id}: ${error.message}`,
+        null,
+        this.SERVICE_NAME,
+      );
+      // Non-blocking: token credit already done, just log the failure
     }
   }
 

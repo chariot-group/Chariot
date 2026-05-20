@@ -9,6 +9,7 @@ import {
     Logger,
     ParseIntPipe,
     DefaultValuePipe,
+    UseGuards,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -16,11 +17,15 @@ import {
     ApiResponse,
     ApiParam,
     ApiQuery,
+    ApiExcludeEndpoint,
 } from '@nestjs/swagger';
 import { PaymentService } from '@/resources/payment/payment.service';
 import { CreatePaymentDto } from '@/resources/payment/dto/create-payment.dto';
 import { UpdatePaymentStatusDto } from '@/resources/payment/dto/update-payment-status.dto';
+import { CompletePaymentDto } from '@/resources/payment/dto/complete-payment.dto';
 import { IsAdmin } from '@/common/decorators/is-admin.decorator';
+import { Public } from '@/common/decorators/public.decorator';
+import { InternalGuard } from '@/common/guards/internal.guard';
 
 @ApiTags('Payments (Admin)')
 @IsAdmin()
@@ -105,5 +110,13 @@ export class PaymentController {
         @Body() dto: UpdatePaymentStatusDto,
     ) {
         return this.paymentService.updateStatus(id, dto);
+    }
+
+    @Post('internal/complete')
+    @Public()
+    @UseGuards(InternalGuard)
+    @ApiExcludeEndpoint()
+    async createCompleted(@Body() dto: CompletePaymentDto) {
+        return this.paymentService.createCompleted(dto);
     }
 }

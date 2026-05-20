@@ -148,6 +148,19 @@
     "reloadSuccessUnknown": "Votre paiement est validé, le rechargement de votre compte est en cours.",
     "reloadPending": "Paiement confirmé, mise à jour du solde en cours."
   },
+  "shop": {
+    "pageTitle": "Boutique",
+    "pageSubtitle": "Rechargez votre compte en tokens pour créer des personnages et participer à des sessions.",
+    "tokensUnit": "tokens",
+    "buyButton": "Acheter",
+    "loadingProducts": "Chargement des offres...",
+    "errorProducts": "Impossible de charger les offres. Veuillez réessayer.",
+    "noProducts": "Aucune offre disponible pour le moment.",
+    "redirecting": "Redirection vers le paiement...",
+    "checkoutError": "Impossible de démarrer le paiement. Veuillez réessayer.",
+    "back": "Retour",
+    "close": "Fermer"
+  },
   "ProfilePage": {
     "pageTitle": "Profil utilisateur",
     "changePasswordTitle": "Changer de mot de passe",

@@ -11,3 +11,93 @@
 2026-05-19 16:46:27.031 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
 2026-05-19 16:46:27.036 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
 2026-05-19 16:46:27.036 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-19 21:29:03.343 - [31merror[39m: [StripeService] 	[31mError fulfilling order: Invalid token amount in webhook metadata: undefined[39m
+2026-05-19 21:29:03.344 - [31merror[39m: [StripeService] 	[31mError handling Stripe webhook: Error fulfilling order: Invalid token amount in webhook metadata: undefined[39m
+2026-05-19 21:54:49.765 - [31merror[39m: [PaymentService] 	[31mError while recording completed payment: [39m
+[31mInvalid `this.prisma.payment.create()` invocation in[39m
+[31m/app/src/resources/payment/payment.service.ts:363:55[39m
+
+[31m  360 try {[39m
+[31m  361     const start = Date.now();[39m
+[31m  362 [39m
+[31m→ 363     const payment = await this.prisma.payment.create({[39m
+[31m            data: {[39m
+[31m              userId: "c35a089e-2653-4e66-811f-cf6b36f90298",[39m
+[31m              amount: 3999,[39m
+[31m              discountAmount: 0,[39m
+[31m              finalAmount: 3999,[39m
+[31m              currency: "eur",[39m
+[31m              stripeSessionId: "cs_test_a1RZaruFEU67l2qUriWWX5ZDBJ35RIIhLo2ftxLvoCYIdnn6Ly5OUWa63T",[39m
+[31m              stripePaymentIntentId: "pi_3TYvb9QCTCYypKV71UCOt4n9",[39m
+[31m              status: "COMPLETED",[39m
+[31m              tokenCount: 20,[39m
+[31m              ~~~~~~~~~~[39m
+[31m          ?   id?: String,[39m
+[31m          ?   createdAt?: DateTime,[39m
+[31m          ?   updatedAt?: DateTime,[39m
+[31m          ?   promoCode?: PromoCodeCreateNestedOneWithoutPaymentsInput,[39m
+[31m          ?   affiliation?: AffiliationCreateNestedOneWithoutPaymentsInput[39m
+[31m            }[39m
+[31m          })[39m
+
+[31mUnknown argument `tokenCount`. Available options are marked with ?.[39m
+2026-05-19 21:54:49.766 - [31merror[39m: [StripeService] 	[31mError fulfilling order: Error while recording completed payment: [39m
+[31mInvalid `this.prisma.payment.create()` invocation in[39m
+[31m/app/src/resources/payment/payment.service.ts:363:55[39m
+
+[31m  360 try {[39m
+[31m  361     const start = Date.now();[39m
+[31m  362 [39m
+[31m→ 363     const payment = await this.prisma.payment.create({[39m
+[31m            data: {[39m
+[31m              userId: "c35a089e-2653-4e66-811f-cf6b36f90298",[39m
+[31m              amount: 3999,[39m
+[31m              discountAmount: 0,[39m
+[31m              finalAmount: 3999,[39m
+[31m              currency: "eur",[39m
+[31m              stripeSessionId: "cs_test_a1RZaruFEU67l2qUriWWX5ZDBJ35RIIhLo2ftxLvoCYIdnn6Ly5OUWa63T",[39m
+[31m              stripePaymentIntentId: "pi_3TYvb9QCTCYypKV71UCOt4n9",[39m
+[31m              status: "COMPLETED",[39m
+[31m              tokenCount: 20,[39m
+[31m              ~~~~~~~~~~[39m
+[31m          ?   id?: String,[39m
+[31m          ?   createdAt?: DateTime,[39m
+[31m          ?   updatedAt?: DateTime,[39m
+[31m          ?   promoCode?: PromoCodeCreateNestedOneWithoutPaymentsInput,[39m
+[31m          ?   affiliation?: AffiliationCreateNestedOneWithoutPaymentsInput[39m
+[31m            }[39m
+[31m          })[39m
+
+[31mUnknown argument `tokenCount`. Available options are marked with ?.[39m
+2026-05-19 21:54:49.766 - [31merror[39m: [StripeService] 	[31mError handling Stripe webhook: Error fulfilling order: Error while recording completed payment: [39m
+[31mInvalid `this.prisma.payment.create()` invocation in[39m
+[31m/app/src/resources/payment/payment.service.ts:363:55[39m
+
+[31m  360 try {[39m
+[31m  361     const start = Date.now();[39m
+[31m  362 [39m
+[31m→ 363     const payment = await this.prisma.payment.create({[39m
+[31m            data: {[39m
+[31m              userId: "c35a089e-2653-4e66-811f-cf6b36f90298",[39m
+[31m              amount: 3999,[39m
+[31m              discountAmount: 0,[39m
+[31m              finalAmount: 3999,[39m
+[31m              currency: "eur",[39m
+[31m              stripeSessionId: "cs_test_a1RZaruFEU67l2qUriWWX5ZDBJ35RIIhLo2ftxLvoCYIdnn6Ly5OUWa63T",[39m
+[31m              stripePaymentIntentId: "pi_3TYvb9QCTCYypKV71UCOt4n9",[39m
+[31m              status: "COMPLETED",[39m
+[31m              tokenCount: 20,[39m
+[31m              ~~~~~~~~~~[39m
+[31m          ?   id?: String,[39m
+[31m          ?   createdAt?: DateTime,[39m
+[31m          ?   updatedAt?: DateTime,[39m
+[31m          ?   promoCode?: PromoCodeCreateNestedOneWithoutPaymentsInput,[39m
+[31m          ?   affiliation?: AffiliationCreateNestedOneWithoutPaymentsInput[39m
+[31m            }[39m
+[31m          })[39m
+
+[31mUnknown argument `tokenCount`. Available options are marked with ?.[39m
+2026-05-20 08:05:26.868 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-20 08:05:26.869 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-05-20 08:05:26.874 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-20 08:05:26.874 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m

@@ -380,9 +380,9 @@ stripe-login: ## Authentifie Stripe CLI (navigateur) pour les tests webhooks loc
 stripe-listen: ## Démarre Stripe CLI et forward les webhooks vers le gateway local
 	@echo "$(YELLOW)Démarrage de Stripe CLI listener...$(NC)"
 	@if [ -n "$(STRIPE_CLI_API_KEY)" ]; then \
-		STRIPE_API_KEY=$(STRIPE_CLI_API_KEY) stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/api/stripe/webhook}; \
+		STRIPE_API_KEY=$(STRIPE_CLI_API_KEY) stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/payment/stripe/webhook}; \
 	else \
-		env -u STRIPE_API_KEY stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/api/stripe/webhook}; \
+		env -u STRIPE_API_KEY stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/payment/stripe/webhook}; \
 	fi
 
 stripe-trigger-checkout: ## Déclenche un event Stripe checkout.session.completed en local

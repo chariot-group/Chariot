@@ -4,16 +4,17 @@ import { UserService } from '@/resources/user/user.service';
 import { UserController } from '@/resources/user/user.controller';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { User, UserSchema } from '@/resources/user/schemas/user.schema';
+import { InternalGuard } from '@/common/guards/internal.guard';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [UserController],
-  providers: [UserService, KeycloakService],
+  providers: [UserService, KeycloakService, InternalGuard],
   exports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     UserService,
   ],
 })
-export class UserModule {}
+export class UserModule { }

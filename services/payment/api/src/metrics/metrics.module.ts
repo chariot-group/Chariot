@@ -11,6 +11,7 @@ import {
     promoCodeUsagesCounterProvider,
     affiliationUsagesCounterProvider,
     dbQueryDurationProvider,
+    stripePaymentsCounterProvider,
 } from '@/metrics/metrics.service';
 
 @Module({
@@ -40,6 +41,7 @@ import {
         promoCodeUsagesCounterProvider,
         affiliationUsagesCounterProvider,
         dbQueryDurationProvider,
+        stripePaymentsCounterProvider,
     ],
     exports: [
         MetricsService,
@@ -51,6 +53,7 @@ import {
         promoCodeUsagesCounterProvider,
         affiliationUsagesCounterProvider,
         dbQueryDurationProvider,
+        stripePaymentsCounterProvider,
     ],
 })
 export class MetricsModule { }

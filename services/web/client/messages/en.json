@@ -147,6 +147,19 @@
     "reloadSuccessUnknown": "Your payment is confirmed, your account reload is in progress.",
     "reloadPending": "Payment confirmed, balance update in progress."
   },
+  "shop": {
+    "pageTitle": "Shop",
+    "pageSubtitle": "Top up your account with tokens to create characters and join sessions.",
+    "tokensUnit": "tokens",
+    "buyButton": "Buy",
+    "loadingProducts": "Loading offers...",
+    "errorProducts": "Unable to load offers. Please try again.",
+    "noProducts": "No offers available at the moment.",
+    "redirecting": "Redirecting to payment...",
+    "checkoutError": "Unable to start payment. Please try again.",
+    "back": "Back",
+    "close": "Close"
+  },
   "ProfilePage": {
     "pageTitle": "User Profile",
     "changePasswordTitle": "Change Password",

@@ -6,18 +6,20 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
-import { ArrowLeft, Eye, EyeOff, ShoppingCart, SquarePen } from "lucide-react";
+import { ArrowLeft, Coins, Eye, EyeOff, Loader2, ShoppingCart, SquarePen } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useProfileForm } from "@/hooks/useProfileForm";
 import ReadProfile from "@/components/profile/ReadProfile";
 import UpdateProfile from "@/components/profile/UpdateProfile";
 import { isEnterWithModifiers, isEnterWithoutModifiers } from "@/utils/keyboard.utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import paymentService, { StripeProduct } from "@/services/PaymentService";
+import { useToast } from "@/hooks/useToast";
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -41,7 +43,53 @@ export default function ProfilePage() {
     onCancel,
   } = useProfileForm();
 
+  const [showShopDialog, setShowShopDialog] = useState<boolean>(false);
+  const [shopProducts, setShopProducts] = useState<StripeProduct[]>([]);
+  const [shopLoading, setShopLoading] = useState<boolean>(false);
+  const [shopError, setShopError] = useState<boolean>(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const toast = useToast();
+  const tShop = useTranslations("shop");
+
   const { form: formPassword, onSubmit, isLoading: isLoadingPassword } = usePasswordForm();
+
+  useEffect(() => {
+    if (!showShopDialog) return;
+    let cancelled = false;
+    setShopLoading(true);
+    setShopError(false);
+    paymentService
+      .getProducts()
+      .then((data) => {
+        if (cancelled) return;
+        const sorted = [...data].sort((a, b) => {
+          const priceA = a.prices[0]?.unit_amount ?? 0;
+          const priceB = b.prices[0]?.unit_amount ?? 0;
+          return priceA - priceB;
+        });
+        setShopProducts(sorted);
+      })
+      .catch(() => {
+        if (!cancelled) setShopError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setShopLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showShopDialog]);
+
+  async function handleBuy(product: StripeProduct) {
+    setCheckoutLoading(product.id);
+    try {
+      const checkoutUrl = await paymentService.createCheckoutSession(product.id, product.name);
+      window.location.href = checkoutUrl;
+    } catch {
+      toast.error(tShop("checkoutError"));
+      setCheckoutLoading(null);
+    }
+  }
 
   useEffect(() => {
     // Ne pas rediriger pendant la transition utilisateur ou le chargement
@@ -387,18 +435,119 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Link
-              href={"#"}
-              className="w-full sm:w-auto"
+            <Button
+              className="rounded-[15px] w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
+              onClick={() => setShowShopDialog(true)}
               aria-label={t("reloadTokens")}>
-              <Button className="rounded-[15px] w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2">
-                <ShoppingCart
-                  className="h-4 w-4 sm:h-5 sm:w-5"
-                  aria-hidden="true"
-                />
-                <span>{t("reloadTokens")}</span>
-              </Button>
-            </Link>
+              <ShoppingCart
+                className="h-4 w-4 sm:h-5 sm:w-5"
+                aria-hidden="true"
+              />
+              <span>{t("reloadTokens")}</span>
+            </Button>
+
+            <Dialog
+              open={showShopDialog}
+              onOpenChange={setShowShopDialog}>
+              <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>{tShop("pageTitle")}</DialogTitle>
+                  <p className="text-sm text-muted-foreground">{tShop("pageSubtitle")}</p>
+                </DialogHeader>
+
+                {shopLoading && (
+                  <div
+                    className="flex items-center justify-center gap-2 py-10 text-muted-foreground"
+                    role="status"
+                    aria-live="polite">
+                    <Loader2
+                      className="h-5 w-5 animate-spin"
+                      aria-hidden="true"
+                    />
+                    <span>{tShop("loadingProducts")}</span>
+                  </div>
+                )}
+
+                {!shopLoading && shopError && (
+                  <div
+                    className="flex flex-col items-center gap-3 py-10"
+                    role="alert">
+                    <p className="text-destructive text-sm">{tShop("errorProducts")}</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowShopDialog(false)}>
+                      {tShop("close")}
+                    </Button>
+                  </div>
+                )}
+
+                {!shopLoading && !shopError && shopProducts.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8 text-sm">{tShop("noProducts")}</p>
+                )}
+
+                {!shopLoading && !shopError && shopProducts.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {shopProducts.map((product) => {
+                      const price = product.prices[0];
+                      const tokenCount = product.metadata?.token_number
+                        ? parseInt(product.metadata.token_number, 10)
+                        : null;
+                      const isLoading = checkoutLoading === product.id;
+
+                      return (
+                        <Card
+                          key={product.id}
+                          className="flex flex-col gap-3 p-4 rounded-[15px]">
+                          <div className="flex items-center gap-2">
+                            <Coins
+                              className="h-5 w-5 text-yellow-500"
+                              aria-hidden="true"
+                            />
+                            <span className="font-semibold text-sm">{product.name}</span>
+                          </div>
+                          {product.description && (
+                            <p className="text-xs text-muted-foreground">{product.description}</p>
+                          )}
+                          <div className="flex items-center justify-between mt-auto">
+                            {tokenCount !== null && (
+                              <span className="flex items-center gap-1 text-sm font-bold">
+                                {tokenCount}
+                                <Image
+                                  src={Token}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="w-4 h-4"
+                                />
+                              </span>
+                            )}
+                            {price && (
+                              <span className="text-sm font-semibold">
+                                {((price.unit_amount ?? 0) / 100).toFixed(2)} {price.currency.toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            className="rounded-2xl w-full text-sm mt-1"
+                            disabled={!!checkoutLoading}
+                            onClick={() => handleBuy(product)}
+                            aria-busy={isLoading}>
+                            {isLoading ? (
+                              <Loader2
+                                className="h-4 w-4 animate-spin"
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              tShop("buyButton")
+                            )}
+                          </Button>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </Card>
       </div>
