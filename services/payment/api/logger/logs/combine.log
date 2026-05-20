@@ -2016,3 +2016,33 @@
 2026-05-20 08:54:56.544 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-bob-0002: Request failed with status code 404[39m
 2026-05-20 08:54:56.545 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-jack-0010: Request failed with status code 404[39m
 2026-05-20 08:54:56.545 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-frank-0006: Request failed with status code 404[39m
+2026-05-20 09:05:08.363 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-eve-0005: Request failed with status code 404[39m
+2026-05-20 09:05:08.365 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-hugo-0008: Request failed with status code 404[39m
+2026-05-20 09:05:08.365 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-grace-0007: Request failed with status code 404[39m
+2026-05-20 09:05:08.367 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-jack-0010: Request failed with status code 404[39m
+2026-05-20 09:05:08.407 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-frank-0006: Request failed with status code 404[39m
+2026-05-20 09:05:08.408 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-iris-0009: Request failed with status code 404[39m
+2026-05-20 09:05:08.413 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-bob-0002: Request failed with status code 404[39m
+2026-05-20 09:05:08.433 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-bob-0002: Request failed with status code 404[39m
+2026-05-20 09:05:08.433 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-frank-0006: Request failed with status code 404[39m
+2026-05-20 09:05:08.433 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-hugo-0008: Request failed with status code 404[39m
+2026-05-20 09:05:08.433 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-eve-0005: Request failed with status code 404[39m
+2026-05-20 09:05:08.434 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-grace-0007: Request failed with status code 404[39m
+2026-05-20 09:05:08.434 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-jack-0010: Request failed with status code 404[39m
+2026-05-20 09:05:08.434 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-iris-0009: Request failed with status code 404[39m
+2026-05-20 09:05:11.455 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-eve-0005: Request failed with status code 404[39m
+2026-05-20 09:05:11.455 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-hugo-0008: Request failed with status code 404[39m
+2026-05-20 09:05:11.455 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-bob-0002: Request failed with status code 404[39m
+2026-05-20 09:05:11.456 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-jack-0010: Request failed with status code 404[39m
+2026-05-20 09:05:11.456 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-frank-0006: Request failed with status code 404[39m
+2026-05-20 09:05:11.456 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-iris-0009: Request failed with status code 404[39m
+2026-05-20 09:05:11.457 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-grace-0007: Request failed with status code 404[39m
+2026-05-20 09:05:11.475 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-hugo-0008: Request failed with status code 404[39m
+2026-05-20 09:05:11.475 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-eve-0005: Request failed with status code 404[39m
+2026-05-20 09:05:11.475 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-iris-0009: Request failed with status code 404[39m
+2026-05-20 09:05:11.475 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-frank-0006: Request failed with status code 404[39m
+2026-05-20 09:05:11.476 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-jack-0010: Request failed with status code 404[39m
+2026-05-20 09:05:11.476 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-bob-0002: Request failed with status code 404[39m
+2026-05-20 09:05:11.476 - [33mwarn[39m: [KeycloakAdminService] 	[33mFailed to fetch Keycloak user kc-user-grace-0007: Request failed with status code 404[39m
+2026-05-20 11:38:23.455 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
+2026-05-20 11:38:23.456 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
