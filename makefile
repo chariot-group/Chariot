@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-web lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-web
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-web lint-fix-admin
 
 # Configuration
 SERVICES_DIR := services
@@ -193,8 +193,10 @@ ifdef SERVICE
 		$(MAKE) --no-print-directory lint-payment; \
 	elif [ "$(SERVICE)" = "web" ]; then \
 		$(MAKE) --no-print-directory lint-web; \
+	elif [ "$(SERVICE)" = "admin" ]; then \
+		$(MAKE) --no-print-directory lint-admin; \
 	else \
-		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|web$(NC)"; \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|web|admin$(NC)"; \
 		exit 1; \
 	fi
 else
@@ -217,6 +219,9 @@ lint-status: ## Affiche l'état du lint de chaque service (adventure, gateway, s
 	echo ""; \
 	echo "$(BLUE)=== Lint status: web ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-web || status=1; \
+	echo ""; \
+	echo "$(BLUE)=== Lint status: admin ===$(NC)"; \
+	$(MAKE) --no-print-directory lint-admin || status=1; \
 	echo ""; \
 	if [ $$status -ne 0 ]; then \
 		echo "$(RED)✗ Au moins un service a des erreurs lint$(NC)"; \
@@ -244,6 +249,10 @@ lint-web: ## Lance le lint du service web
 	@echo "$(YELLOW)Lint web/client...$(NC)"
 	@cd $(SERVICES_DIR)/web/client && npm run lint
 
+lint-admin: ## Lance le lint du service admin
+	@echo "$(YELLOW)Lint admin/client...$(NC)"
+	@cd $(SERVICES_DIR)/admin/client && npm run lint
+
 lint-fix: ## Lance l'auto-fix lint (SERVICE requis: adventure|gateway|web)
 ifndef SERVICE
 	@echo "$(RED)Veuillez spécifier un SERVICE: make lint-fix SERVICE=web$(NC)"
@@ -259,8 +268,10 @@ else
 		$(MAKE) --no-print-directory lint-fix-payment; \
 	elif [ "$(SERVICE)" = "web" ]; then \
 		$(MAKE) --no-print-directory lint-fix-web; \
+	elif [ "$(SERVICE)" = "admin" ]; then \
+		$(MAKE) --no-print-directory lint-fix-admin; \
 	else \
-		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|web$(NC)"; \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|web|admin$(NC)"; \
 		exit 1; \
 	fi
 endif
@@ -284,6 +295,10 @@ lint-fix-payment: ## Lance le lint --fix du service payment
 lint-fix-web: ## Lance le lint --fix du service web
 	@echo "$(YELLOW)Lint fix web/client...$(NC)"
 	@cd $(SERVICES_DIR)/web/client && npm run lint:fix
+
+lint-fix-admin: ## Lance le lint --fix du service admin
+	@echo "$(YELLOW)Lint fix admin/client...$(NC)"
+	@cd $(SERVICES_DIR)/admin/client && npm run lint:fix
 
 clean: down-volumes ## Nettoie tout (conteneurs, volumes, images)
 	@echo "$(YELLOW)Nettoyage des images non utilisées...$(NC)"

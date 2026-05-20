@@ -58,35 +58,9 @@ services:
     extra_hosts:
       - "localhost:host-gateway"
 
-  chariot-payment-admin:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: chariot-payment-admin
-    restart: unless-stopped
-    working_dir: /app
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./client:/app
-      - payment_admin_node_modules:/app/node_modules
-      - payment_admin_next_cache:/app/.next
-    environment:
-      NODE_ENV: development
-      NEXT_PUBLIC_PAYMENT_API_URL: ${GATEWAY_URL:-http://localhost:8082}/payment
-      NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
-      NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-chariot-app}
-    networks:
-      - payment-network
-      - chariot-group-network
-    command: ["npm", "run", "dev"]
-
 volumes:
   chariot_payment_postgres_data:
   chariot_payment_logs:
-  payment_admin_node_modules:
-  payment_admin_next_cache:
 
 networks:
   payment-network:
