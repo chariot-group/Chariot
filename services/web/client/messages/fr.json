@@ -159,7 +159,11 @@
     "redirecting": "Redirection vers le paiement...",
     "checkoutError": "Impossible de démarrer le paiement. Veuillez réessayer.",
     "back": "Retour",
-    "close": "Fermer"
+    "close": "Fermer",
+    "codePlaceholder": "Code promo ou d'affiliation",
+    "applyCode": "Appliquer",
+    "removeCode": "Retirer le code",
+    "codeNotFound": "Ce code est introuvable ou n'est plus actif."
   },
   "ProfilePage": {
     "pageTitle": "Profil utilisateur",

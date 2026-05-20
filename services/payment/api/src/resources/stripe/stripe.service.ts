@@ -3,20 +3,25 @@ import {
     BadRequestException,
     Logger,
     InternalServerErrorException,
+    NotFoundException,
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import axios from 'axios';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter } from 'prom-client';
 import { PaymentService } from '@/resources/payment/payment.service';
+import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
+import { AffiliationService } from '@/resources/affiliation/affiliation.service';
 import { IResponse } from '@/common/dtos/response.dto';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
-import { StripeProductWithPrices } from '@/resources/stripe/types/stripe.type';
+import { ResolvedCode, StripeProductWithPrices } from '@/resources/stripe/types/stripe.type';
 
 @Injectable()
 export class StripeService {
     constructor(
         private readonly paymentService: PaymentService,
+        private readonly promoCodeService: PromoCodeService,
+        private readonly affiliationService: AffiliationService,
         @InjectMetric('chariot_stripe_payments_total')
         private readonly stripePaymentsCounter: Counter,
     ) {
@@ -34,7 +39,7 @@ export class StripeService {
         userId: string,
     ): Promise<IResponse<string>> {
         try {
-            const { packId, displayName } = dto;
+            const { packId, displayName, promoCode, affiliationCode } = dto;
             const start = Date.now();
 
             const product = await this.findProductWithPriceById(packId);
@@ -43,6 +48,55 @@ export class StripeService {
                 this.logger.error(errorMessage, null, this.SERVICE_NAME);
                 throw new BadRequestException(errorMessage);
             }
+
+            const originalUnitAmount = product.prices[0].unit_amount!;
+            let discountAmountPerUnit = 0;
+            let affiliationDiscountPerUnit = 0;
+            let promoCodeId: string | undefined;
+            let affiliationId: string | undefined;
+
+            // Appliquer l'affiliation en premier (priorité basse)
+            if (affiliationCode) {
+                const affiliationResult = await this.affiliationService.findByCode(affiliationCode);
+                const affiliation = affiliationResult.data;
+
+                if (!affiliation.isActive) {
+                    throw new BadRequestException(
+                        `Le code d'affiliation '${affiliationCode}' est désactivé`,
+                    );
+                }
+
+                affiliationDiscountPerUnit = Math.floor(
+                    (originalUnitAmount * affiliation.userDiscountPercent) / 100,
+                );
+                discountAmountPerUnit += affiliationDiscountPerUnit;
+                affiliationId = affiliation.id;
+            }
+
+            // Appliquer le code promo par-dessus l'affiliation
+            if (promoCode) {
+                const isFirstOrder = !(await this.paymentService.hasCompletedPayment(userId));
+                const promoResult = await this.promoCodeService.validate(
+                    promoCode,
+                    userId,
+                    originalUnitAmount,
+                    isFirstOrder,
+                );
+                const promo = promoResult.data;
+                const amountAfterAffiliation = originalUnitAmount - affiliationDiscountPerUnit;
+
+                if (promo.discountType === 'PERCENTAGE') {
+                    discountAmountPerUnit += Math.floor(
+                        (amountAfterAffiliation * promo.discountValue) / 100,
+                    );
+                } else {
+                    discountAmountPerUnit += Math.min(promo.discountValue, amountAfterAffiliation);
+                }
+
+                promoCodeId = promo.id;
+            }
+
+            const discountedUnitAmount = Math.max(0, originalUnitAmount - discountAmountPerUnit);
 
             const session = await this.stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
@@ -57,7 +111,7 @@ export class StripeService {
                             product_data: {
                                 name: `${displayName} (${product.metadata?.token_number || '0'} chars)`,
                             },
-                            unit_amount: product.prices[0].unit_amount!,
+                            unit_amount: discountedUnitAmount,
                         },
                         quantity: 1,
                     },
@@ -69,6 +123,10 @@ export class StripeService {
                     userId,
                     packId,
                     tokenAmount: product.metadata?.token_number || '0',
+                    originalUnitAmount: String(originalUnitAmount),
+                    discountAmountPerUnit: String(discountAmountPerUnit),
+                    ...(promoCodeId && { promoCode, promoCodeId }),
+                    ...(affiliationId && { affiliationCode, affiliationId }),
                 },
             });
 
@@ -111,6 +169,64 @@ export class StripeService {
             const errorMessage = `Error handling Stripe webhook: ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
             throw new BadRequestException(errorMessage);
+        }
+    }
+
+    async resolveCode(code: string): Promise<IResponse<ResolvedCode>> {
+        try {
+            const start = Date.now();
+
+            // Essayer d'abord en tant que code promo
+            try {
+                const promoResult = await this.promoCodeService.findByCode(code);
+                const promo = promoResult.data;
+
+                if (
+                    promo.isActive &&
+                    (!promo.expiresAt || new Date() < new Date(promo.expiresAt))
+                ) {
+                    const message = `Code '${code}' resolved as promo in ${Date.now() - start}ms`;
+                    this.logger.verbose(message, this.SERVICE_NAME);
+                    return {
+                        message,
+                        data: {
+                            type: 'promo',
+                            discountType: promo.discountType as 'PERCENTAGE' | 'FIXED',
+                            discountValue: promo.discountValue,
+                        },
+                    };
+                }
+            } catch {
+                // Pas un code promo, on essaie l'affiliation
+            }
+
+            // Essayer en tant que code d'affiliation
+            try {
+                const affiliationResult = await this.affiliationService.findByCode(code);
+                const affiliation = affiliationResult.data;
+
+                if (affiliation.isActive) {
+                    const message = `Code '${code}' resolved as affiliation in ${Date.now() - start}ms`;
+                    this.logger.verbose(message, this.SERVICE_NAME);
+                    return {
+                        message,
+                        data: {
+                            type: 'affiliation',
+                            discountType: 'PERCENTAGE',
+                            discountValue: affiliation.userDiscountPercent,
+                        },
+                    };
+                }
+            } catch {
+                // Pas un code d'affiliation non plus
+            }
+
+            throw new NotFoundException(`Code '${code}' introuvable ou inactif`);
+        } catch (error) {
+            if (error instanceof NotFoundException) throw error;
+            const errorMessage = `Error resolving code '${code}': ${error.message}`;
+            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(errorMessage);
         }
     }
 
@@ -165,7 +281,15 @@ export class StripeService {
                 throw new BadRequestException('Webhook metadata required to fulfill order');
             }
 
-            const { userId, tokenAmount } = session.metadata as Record<string, string>;
+            const {
+                userId,
+                tokenAmount,
+                originalUnitAmount,
+                discountAmountPerUnit,
+                promoCodeId,
+                affiliationId,
+            } = session.metadata as Record<string, string>;
+
             const tokenAmountPerPack = parseInt(tokenAmount, 10);
             if (Number.isNaN(tokenAmountPerPack)) {
                 throw new BadRequestException(
@@ -176,10 +300,13 @@ export class StripeService {
             const purchasedQuantity = await this.getPurchasedQuantity(session);
             const totalTokens = tokenAmountPerPack * purchasedQuantity;
 
+            const originalTotal = parseInt(originalUnitAmount ?? '0', 10) * purchasedQuantity;
+            const totalDiscountAmount = parseInt(discountAmountPerUnit ?? '0', 10) * purchasedQuantity;
+
             // 1. Record the payment in this service's database
             await this.paymentService.createCompleted({
                 userId,
-                amount: session.amount_total ?? 0,
+                amount: originalTotal || (session.amount_total ?? 0),
                 currency: session.currency ?? 'eur',
                 stripeSessionId: session.id,
                 stripePaymentIntentId:
@@ -187,6 +314,9 @@ export class StripeService {
                         ? session.payment_intent
                         : null,
                 tokenCount: totalTokens,
+                ...(totalDiscountAmount > 0 && { discountAmount: totalDiscountAmount }),
+                ...(promoCodeId && { promoCodeId }),
+                ...(affiliationId && { affiliationId }),
             });
 
             // 2. Call adventure service to credit tokens to the user

@@ -158,7 +158,11 @@
     "redirecting": "Redirigiendo al pago...",
     "checkoutError": "No se puede iniciar el pago. Por favor, inténtalo de nuevo.",
     "back": "Volver",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "codePlaceholder": "Código promocional o de afiliación",
+    "applyCode": "Aplicar",
+    "removeCode": "Quitar código",
+    "codeNotFound": "Este código no existe o ya no está activo."
   },
   "ProfilePage": {
     "pageTitle": "Perfil de usuario",

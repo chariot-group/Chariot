@@ -6,6 +6,7 @@ import {
     Headers,
     HttpCode,
     Logger,
+    Param,
     Post,
     Req,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import {
     ApiBody,
     ApiHeader,
     ApiOperation,
+    ApiParam,
     ApiResponse,
     ApiTags,
     getSchemaPath,
@@ -22,7 +24,7 @@ import { StripeService } from '@/resources/stripe/stripe.service';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
 import { Public } from '@/common/decorators/public.decorator';
 import { IResponse } from '@/common/dtos/response.dto';
-import type { StripeProductWithPrices } from '@/resources/stripe/types/stripe.type';
+import type { ResolvedCode, StripeProductWithPrices } from '@/resources/stripe/types/stripe.type';
 
 @ApiTags('Stripe')
 @Controller('stripe')
@@ -76,5 +78,14 @@ export class StripeController {
     })
     async getProducts(): Promise<IResponse<StripeProductWithPrices[]>> {
         return this.stripeService.getAllProducts();
+    }
+
+    @Get('resolve-code/:code')
+    @ApiOperation({ summary: 'Resolve a promo or affiliation code and return its discount info' })
+    @ApiParam({ name: 'code', description: 'The promo or affiliation code to resolve' })
+    @ApiResponse({ status: 200, description: 'Code resolved successfully' })
+    @ApiResponse({ status: 404, description: 'Code not found or inactive' })
+    async resolveCode(@Param('code') code: string): Promise<IResponse<ResolvedCode>> {
+        return this.stripeService.resolveCode(code);
     }
 }

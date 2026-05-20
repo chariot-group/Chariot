@@ -49,4 +49,29 @@ export class CompletePaymentDto {
     @IsInt()
     @Min(0)
     tokenCount?: number;
+
+    @ApiPropertyOptional({
+        description: 'ID du code promo utilisé',
+        example: 'uuid-...',
+    })
+    @IsOptional()
+    @IsString()
+    promoCodeId?: string;
+
+    @ApiPropertyOptional({
+        description: "ID de l'affiliation utilisée",
+        example: 'uuid-...',
+    })
+    @IsOptional()
+    @IsString()
+    affiliationId?: string;
+
+    @ApiPropertyOptional({
+        description: 'Montant de la réduction en centimes',
+        example: 100,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    discountAmount?: number;
 }

@@ -13,12 +13,20 @@ interface ShopProductCardProps {
   isLoading: boolean;
   disabled: boolean;
   onBuy: (product: StripeProduct) => void;
+  discountedUnitAmount?: number;
 }
 
-export default function ShopProductCard({ product, isLoading, disabled, onBuy }: ShopProductCardProps) {
+export default function ShopProductCard({
+  product,
+  isLoading,
+  disabled,
+  onBuy,
+  discountedUnitAmount,
+}: ShopProductCardProps) {
   const tShop = useTranslations("shop");
   const price = product.prices[0];
   const tokenCount = product.metadata?.token_number ? parseInt(product.metadata.token_number, 10) : null;
+  const hasDiscount = discountedUnitAmount !== undefined && price && discountedUnitAmount < (price.unit_amount ?? 0);
 
   return (
     <Card className="flex flex-col gap-3 p-4 rounded-[15px]">
@@ -43,9 +51,17 @@ export default function ShopProductCard({ product, isLoading, disabled, onBuy }:
           </span>
         )}
         {price && (
-          <span className="text-sm font-semibold">
-            {((price.unit_amount ?? 0) / 100).toFixed(2)} {price.currency.toUpperCase()}
-          </span>
+          <div className="flex flex-col items-end">
+            {hasDiscount && (
+              <span className="text-xs text-muted-foreground line-through">
+                {((price.unit_amount ?? 0) / 100).toFixed(2)} {price.currency.toUpperCase()}
+              </span>
+            )}
+            <span className={`text-sm font-semibold${hasDiscount ? " text-green-500" : ""}`}>
+              {((hasDiscount ? discountedUnitAmount! : (price.unit_amount ?? 0)) / 100).toFixed(2)}{" "}
+              {price.currency.toUpperCase()}
+            </span>
+          </div>
         )}
       </div>
       <Button

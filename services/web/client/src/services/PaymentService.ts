@@ -23,6 +23,12 @@ export interface StripeProduct {
     prices: StripePrice[];
 }
 
+export interface ResolvedCode {
+    type: 'promo' | 'affiliation';
+    discountType: 'PERCENTAGE' | 'FIXED';
+    discountValue: number;
+}
+
 class PaymentService {
     private readonly STRIPE_PATH = '/stripe';
 
@@ -33,10 +39,27 @@ class PaymentService {
         return response.data.data;
     }
 
-    async createCheckoutSession(packId: string, displayName: string): Promise<string> {
+    async createCheckoutSession(
+        packId: string,
+        displayName: string,
+        promoCode?: string,
+        affiliationCode?: string,
+    ): Promise<string> {
         const response = await createPaymentApiClient().post<IResponse<string>>(
             `${this.STRIPE_PATH}/checkout`,
-            { packId, displayName },
+            {
+                packId,
+                displayName,
+                ...(promoCode && { promoCode }),
+                ...(affiliationCode && { affiliationCode }),
+            },
+        );
+        return response.data.data;
+    }
+
+    async resolveCode(code: string): Promise<ResolvedCode> {
+        const response = await createPaymentApiClient().get<IResponse<ResolvedCode>>(
+            `${this.STRIPE_PATH}/resolve-code/${encodeURIComponent(code)}`,
         );
         return response.data.data;
     }

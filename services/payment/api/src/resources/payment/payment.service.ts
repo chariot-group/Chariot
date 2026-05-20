@@ -356,22 +356,74 @@ export class PaymentService {
         }
     }
 
+    async hasCompletedPayment(userId: string): Promise<boolean> {
+        const count = await this.prisma.payment.count({
+            where: { userId, status: 'COMPLETED' },
+        });
+        return count > 0;
+    }
+
     async createCompleted(dto: CompletePaymentDto): Promise<IResponse<Payment>> {
         try {
             const start = Date.now();
+            const discountAmount = dto.discountAmount ?? 0;
+            const finalAmount = dto.amount - discountAmount;
 
-            const payment = await this.prisma.payment.create({
-                data: {
-                    userId: dto.userId,
-                    amount: dto.amount,
-                    discountAmount: 0,
-                    finalAmount: dto.amount,
-                    currency: dto.currency ?? 'eur',
-                    stripeSessionId: dto.stripeSessionId ?? null,
-                    stripePaymentIntentId: dto.stripePaymentIntentId ?? null,
-                    status: 'COMPLETED',
-                    ...(dto.tokenCount !== undefined && { tokenCount: dto.tokenCount }),
-                },
+            const payment = await this.prisma.$transaction(async (tx) => {
+                const created = await tx.payment.create({
+                    data: {
+                        userId: dto.userId,
+                        amount: dto.amount,
+                        discountAmount,
+                        finalAmount,
+                        currency: dto.currency ?? 'eur',
+                        stripeSessionId: dto.stripeSessionId ?? null,
+                        stripePaymentIntentId: dto.stripePaymentIntentId ?? null,
+                        status: 'COMPLETED',
+                        promoCodeId: dto.promoCodeId ?? null,
+                        affiliationId: dto.affiliationId ?? null,
+                        ...(dto.tokenCount !== undefined && { tokenCount: dto.tokenCount }),
+                    },
+                });
+
+                if (dto.promoCodeId) {
+                    await tx.promoCodeUsage.create({
+                        data: {
+                            promoCodeId: dto.promoCodeId,
+                            userId: dto.userId,
+                            orderId: dto.stripeSessionId ?? created.id,
+                        },
+                    });
+
+                    await tx.promoCode.update({
+                        where: { id: dto.promoCodeId },
+                        data: { currentTotalUses: { increment: 1 } },
+                    });
+                }
+
+                if (dto.affiliationId) {
+                    const affiliation = await tx.affiliation.findUnique({
+                        where: { id: dto.affiliationId },
+                    });
+
+                    if (affiliation) {
+                        const commissionAmount = Math.floor(
+                            (finalAmount * affiliation.creatorCommissionPercent) / 100,
+                        );
+
+                        await tx.affiliationUsage.create({
+                            data: {
+                                affiliationId: dto.affiliationId,
+                                userId: dto.userId,
+                                orderId: dto.stripeSessionId ?? created.id,
+                                orderAmount: finalAmount,
+                                commissionAmount,
+                            },
+                        });
+                    }
+                }
+
+                return created;
             });
 
             const message = `Completed payment recorded for user ${dto.userId} in ${Date.now() - start}ms`;

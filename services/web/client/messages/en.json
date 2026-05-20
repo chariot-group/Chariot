@@ -158,7 +158,11 @@
     "redirecting": "Redirecting to payment...",
     "checkoutError": "Unable to start payment. Please try again.",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "codePlaceholder": "Promo or affiliate code",
+    "applyCode": "Apply",
+    "removeCode": "Remove code",
+    "codeNotFound": "This code was not found or is no longer active."
   },
   "ProfilePage": {
     "pageTitle": "User Profile",
