@@ -17,23 +17,31 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import groupService from "@/services/GroupService";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectCurrentSession, setSessionInitBattleDraft } from "@/store/slices/sessionSlice";
+import { selectCurrentSession, setInitiativeTrackerRows, setSessionInitBattleDraft } from "@/store/slices/sessionSlice";
 import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2, Skull, Star, Swords, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionParticipant } from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
-import { Player } from "@/types/character";
+import type { Character, Player } from "@/types/character";
 
 type BattleGroupCharacter = {
   _id: string;
   firstname?: string;
   lastname?: string;
   surname?: string;
+  avatar?: string;
   createdBy?: string;
+  stats?: {
+    currentHitPoints?: number;
+    maxHitPoints?: number;
+    armorClass?: number;
+    initiative?: number;
+  };
   challenge?: {
     challengeRating?: number | string;
   };
@@ -199,6 +207,8 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const t = useTranslations("initTracker");
   const tCommon = useTranslations("common");
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const session = useAppSelector(selectCurrentSession);
 
@@ -209,6 +219,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const [selectedGroupIds, setSelectedGroupIds] = React.useState<string[]>([]);
   const [expandedGroupIds, setExpandedGroupIds] = React.useState<string[]>([]);
   const [excludedMembersByGroup, setExcludedMembersByGroup] = React.useState<Record<string, string[]>>({});
+  const [isValidating, setIsValidating] = React.useState(false);
 
   const persistInitBattleDraft = React.useCallback(
     (partial: {
@@ -406,6 +417,74 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
     setOpen(nextOpen);
   };
 
+  const handleValidateConfiguration = async () => {
+    if (!canValidate || isValidating) return;
+
+    setIsValidating(true);
+    try {
+      const detailsById = new Map<string, Character>();
+      const uniqueMembers = new Map<string, BattleGroupCharacter>();
+      selectedGroups.forEach((group) => {
+        (group.characters ?? []).forEach((member) => {
+          uniqueMembers.set(member._id, member);
+        });
+      });
+
+      const details = await Promise.allSettled(
+        Array.from(uniqueMembers.values()).map(async (member) => {
+          if (member.stats) return member as Character;
+          return characterService.getCharacterById(member._id, { sessionCode: session?.code });
+        }),
+      );
+
+      details.forEach((result) => {
+        if (result.status === "fulfilled") {
+          detailsById.set(result.value._id, result.value);
+        }
+      });
+
+      const rows = selectedGroups.flatMap((group) => {
+        const excludedMembers = new Set(excludedMembersByGroup[group._id] ?? []);
+
+        return (group.characters ?? [])
+          .filter((member) => !excludedMembers.has(member._id))
+          .map((member) => {
+            const character = detailsById.get(member._id) ?? member;
+            const stats = character.stats;
+            const firstname = character.firstname ?? "";
+            const lastname = character.lastname ?? "";
+            const surname = character.surname ?? "";
+
+            return {
+              id: `${group._id}:${member._id}`,
+              characterId: member._id,
+              firstname,
+              lastname,
+              surname,
+              avatar: character.avatar ?? "",
+              initiative: 0,
+              hitPoints: Number.isFinite(stats?.currentHitPoints)
+                ? Number(stats?.currentHitPoints)
+                : Number(stats?.maxHitPoints ?? 0),
+              armorClass: Number.isFinite(stats?.armorClass) ? Number(stats?.armorClass) : 0,
+              conditions: [],
+              groupId: group._id,
+              groupLabel: group.label,
+              visible: true,
+            };
+          });
+      });
+
+      dispatch(setInitiativeTrackerRows(rows));
+      setOpen(false);
+
+      const locale = pathname.split("/")[1] || "fr";
+      router.push(`/${locale}/initiativeTracker`);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -596,9 +675,12 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           <DialogClose asChild>
             <Button variant="outline">{tCommon("cancel")}</Button>
           </DialogClose>
-          <DialogClose asChild>
-            <Button disabled={!canValidate}>{t("initBattleValidateSelection")}</Button>
-          </DialogClose>
+          <Button
+            disabled={!canValidate || isValidating}
+            onClick={handleValidateConfiguration}>
+            {isValidating && <Loader2 className="size-4 animate-spin" />}
+            {t("initBattleValidateSelection")}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

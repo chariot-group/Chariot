@@ -132,6 +132,12 @@ const sessionTransform = createTransform(
             expandedGroupIds: outbound?.initBattleDraft?.expandedGroupIds ?? [],
             excludedMembersByGroup: outbound?.initBattleDraft?.excludedMembersByGroup ?? {},
         },
+        initiativeTrackerRows: (outbound?.initiativeTrackerRows ?? []).map((row) => ({
+            ...row,
+            conditions: row.conditions ?? ("condition" in row && row.condition && row.condition !== "none" ? [row.condition] : []),
+        })),
+        battleInitialized: outbound?.battleInitialized ?? (outbound?.initiativeTrackerRows?.length ?? 0) > 0,
+        battleStarted: outbound?.battleStarted ?? false,
         characterSheetRemoteVersions:
             outbound?.characterSheetRemoteVersions && typeof outbound.characterSheetRemoteVersions === 'object'
                 ? outbound.characterSheetRemoteVersions

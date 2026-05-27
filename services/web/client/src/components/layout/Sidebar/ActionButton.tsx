@@ -12,8 +12,11 @@ import { setContextMode } from "@/store/slices/environmentSlice";
 import {
   selectCurrentSession,
   selectCurrentUserParticipant,
+  selectBattleInitialized,
+  selectBattleStarted,
   selectIsInSession,
   selectSessionStatus,
+  resetInitiativeTracker,
 } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { InitBattleDialog } from "@/components/dialogs/InitBattleDialog";
@@ -49,6 +52,7 @@ export function ActionButton() {
   const router = useRouter();
   const contextMode = useAppSelector((state) => state.environment.contextMode);
   const currentPage = usePathname() || "/";
+  const locale = currentPage.split("/")[1] || "fr";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
@@ -66,9 +70,9 @@ export function ActionButton() {
 
   const isJoinSessionDisabled = loadingCharactersWithoutGroup || charactersWithoutGroup.length === 0;
 
-  // TODO
-  const battleInitialized: boolean = false;
-  const battleStarted: boolean = false;
+  const battleInitialized = useAppSelector(selectBattleInitialized);
+  const battleStarted = useAppSelector(selectBattleStarted);
+  const isInitiativeTrackerPage = currentPage.endsWith("/initiativeTracker");
 
   const navigateToSession = (nextContextMode?: "player" | "gm") => {
     if (nextContextMode) {
@@ -144,31 +148,33 @@ export function ActionButton() {
         };
       }
 
-      // GM: Start battle (battle initialized but not started)
-      if (battleInitialized && !battleStarted) {
-        return {
-          label: t("startBattle"),
-          state: "startBattle",
-          action: () => {},
-          disabled: true,
-          icon: <LucideSwords className="size-6" />,
-          tooltip: t("comingSoon"),
-          backgroundColor: "bg-pink",
-          textColor: "text-black",
-        };
-      }
-
-      // GM: Reset (battle started + on initiativeTracker page)
-      if (battleStarted && currentPage === "/initiativeTracker") {
+      // GM: Reset (battle initialized/started + on initiativeTracker page)
+      if ((battleStarted || battleInitialized) && isInitiativeTrackerPage) {
         return {
           label: t("reset"),
           state: "reset",
-          action: () => {},
-          disabled: true,
-          tooltip: t("comingSoon"),
+          action: () => {
+            dispatch(resetInitiativeTracker());
+          },
+          disabled: false,
           icon: <RotateCcw className="size-6" />,
           backgroundColor: "bg-gray-600",
           textColor: "text-white",
+        };
+      }
+
+      // GM: Return to battle (battle initialized but not started)
+      if (battleInitialized && !battleStarted) {
+        return {
+          label: t("returnToBattle"),
+          state: "returnToBattle",
+          action: () => {
+            router.push(`/${locale}/initiativeTracker`);
+          },
+          disabled: false,
+          icon: <LucideSwords className="size-6" />,
+          backgroundColor: "bg-pink",
+          textColor: "text-black",
         };
       }
 

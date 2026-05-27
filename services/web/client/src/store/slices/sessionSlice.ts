@@ -9,6 +9,39 @@ export interface SessionInitBattleDraft {
     excludedMembersByGroup: Record<string, string[]>;
 }
 
+export type InitiativeTrackerCondition =
+    | 'none'
+    | 'prone'
+    | 'grappled'
+    | 'deafened'
+    | 'blinded'
+    | 'charmed'
+    | 'frightened'
+    | 'poisoned'
+    | 'restrained'
+    | 'stunned'
+    | 'incapacitated'
+    | 'unconscious'
+    | 'invisible'
+    | 'paralyzed'
+    | 'petrified';
+
+export interface InitiativeTrackerRow {
+    id: string;
+    characterId: string;
+    firstname: string;
+    lastname: string;
+    surname: string;
+    avatar: string;
+    initiative: number;
+    hitPoints: number;
+    armorClass: number;
+    conditions: InitiativeTrackerCondition[];
+    groupId: string;
+    groupLabel: string;
+    visible: boolean;
+}
+
 const initialInitBattleDraft: SessionInitBattleDraft = {
     showAllOpponents: false,
     selectedGroupIds: [],
@@ -25,6 +58,9 @@ export interface CurrentSessionState {
     participants: SessionParticipant[];
     tokensByUser: Record<string, number>;
     initBattleDraft: SessionInitBattleDraft;
+    initiativeTrackerRows: InitiativeTrackerRow[];
+    battleInitialized: boolean;
+    battleStarted: boolean;
     /** Incrémenté à chaque synchro WS distante pour une fiche (temps réel hors rechargement). */
     characterSheetRemoteVersions: Record<string, number>;
 }
@@ -38,6 +74,9 @@ const initialState: CurrentSessionState = {
     participants: [],
     tokensByUser: {},
     initBattleDraft: initialInitBattleDraft,
+    initiativeTrackerRows: [],
+    battleInitialized: false,
+    battleStarted: false,
     characterSheetRemoteVersions: {},
 };
 
@@ -59,6 +98,9 @@ const sessionSlice = createSlice({
             state.participants = [];
             state.tokensByUser = {};
             state.initBattleDraft = initialInitBattleDraft;
+            state.initiativeTrackerRows = [];
+            state.battleInitialized = false;
+            state.battleStarted = false;
             state.characterSheetRemoteVersions = {};
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
@@ -87,6 +129,24 @@ const sessionSlice = createSlice({
         resetSessionInitBattleDraft: (state) => {
             state.initBattleDraft = initialInitBattleDraft;
         },
+        setInitiativeTrackerRows: (state, action: PayloadAction<InitiativeTrackerRow[]>) => {
+            state.initiativeTrackerRows = action.payload;
+            state.battleInitialized = action.payload.length > 0;
+            state.battleStarted = false;
+        },
+        updateInitiativeTrackerRow: (
+            state,
+            action: PayloadAction<{ id: string; changes: Partial<Omit<InitiativeTrackerRow, 'id'>> }>,
+        ) => {
+            const row = state.initiativeTrackerRows.find((item) => item.id === action.payload.id);
+            if (!row) return;
+            Object.assign(row, action.payload.changes);
+        },
+        resetInitiativeTracker: (state) => {
+            state.initiativeTrackerRows = [];
+            state.battleInitialized = false;
+            state.battleStarted = false;
+        },
         touchRemoteCharacterSheet: (state, action: PayloadAction<string>) => {
             if (!state.characterSheetRemoteVersions) {
                 state.characterSheetRemoteVersions = {};
@@ -108,6 +168,9 @@ export const {
     setSessionTokensByUser,
     setSessionInitBattleDraft,
     resetSessionInitBattleDraft,
+    setInitiativeTrackerRows,
+    updateInitiativeTrackerRow,
+    resetInitiativeTracker,
     touchRemoteCharacterSheet,
 } = sessionSlice.actions;
 
@@ -119,6 +182,9 @@ export const selectSessionStatus = (state: RootState) => state.session.status;
 export const selectSessionExpiresAt = (state: RootState) => state.session.expiresAt;
 export const selectSessionParticipants = (state: RootState) => state.session.participants;
 export const selectSessionInitBattleDraft = (state: RootState) => state.session.initBattleDraft;
+export const selectInitiativeTrackerRows = (state: RootState) => state.session.initiativeTrackerRows;
+export const selectBattleInitialized = (state: RootState) => state.session.battleInitialized;
+export const selectBattleStarted = (state: RootState) => state.session.battleStarted;
 
 export const selectCurrentUserParticipant = (state: RootState, userId: string) =>
     state.session.participants.find((participant: SessionParticipant) => participant.userId === userId) || null;
