@@ -20,6 +20,11 @@ type InitiativeTrackerRowProps = {
   row: InitiativeTrackerRowType;
   isActiveTurn?: boolean;
   initiativeLocked?: boolean;
+  selectionEnabled?: boolean;
+  isSelected?: boolean;
+  onSelectionChange?: (selected: boolean) => void;
+  selectRowLabel?: string;
+  gridTemplateColumns?: string;
   getSheetHref: (characterId: string) => string;
   onUpdateRow: (id: string, changes: Partial<Omit<InitiativeTrackerRowType, "id">>) => void;
   onAddCondition: (
@@ -59,6 +64,11 @@ export function InitiativeTrackerRow({
   row,
   isActiveTurn = false,
   initiativeLocked = false,
+  selectionEnabled = false,
+  isSelected = false,
+  onSelectionChange,
+  selectRowLabel,
+  gridTemplateColumns = TRACKER_GRID_TEMPLATE_COLUMNS,
   getSheetHref,
   onUpdateRow,
   onAddCondition,
@@ -89,10 +99,18 @@ export function InitiativeTrackerRow({
 
   return (
     <div
-      className={`grid items-center rounded-[22px] px-5 py-3 text-base text-white shadow-lg transition-colors ${
+      className={`grid w-full min-w-0 items-center rounded-[22px] px-5 py-3 text-base text-white shadow-lg transition-colors ${
         isActiveTurn ? "bg-blue/35 ring-2 ring-blue/60" : "bg-gray"
       }`}
-      style={{ gridTemplateColumns: TRACKER_GRID_TEMPLATE_COLUMNS }}>
+      style={{ gridTemplateColumns }}>
+      {selectionEnabled ? (
+        <Checkbox
+          checked={isSelected}
+          aria-label={selectRowLabel}
+          onCheckedChange={(checked) => onSelectionChange?.(Boolean(checked))}
+          className="size-5 cursor-pointer justify-self-center"
+        />
+      ) : null}
       <div className="w-[88px]">
         <Input
           type="number"

@@ -121,6 +121,7 @@ export default function InitiativeTrackerPage() {
       conditionDurationAmount: t("conditionDurationAmount"),
       conditionRoundHint: t("conditionRoundHint", { seconds: ROUND_DURATION_SECONDS }),
       visibleFor: t("visibleFor", { name }),
+      selectRowFor: t("selectRowFor", { name }),
       hitPointsFor: t("hitPointsFor", { name }),
       hitPointsSessionTooltip: tBattle("healthPointsSessionTooltip"),
       hpAbbr: tBattle("hpAbbr"),
@@ -192,6 +193,15 @@ export default function InitiativeTrackerPage() {
           onClearConditions={clearConditions}
           onHitPointsClick={isInSession ? (row) => setHealthDialogRow(row) : undefined}
           getRowLabels={getRowLabels}
+          groupedInitiativeLabels={{
+            enableMode: t("groupedInitiativeEnable"),
+            disableMode: t("groupedInitiativeDisable"),
+            getSelectedCountLabel: (count) => t("groupedInitiativeSelectedCount", { count }),
+            initiativePlaceholder: t("groupedInitiativePlaceholder"),
+            apply: t("groupedInitiativeApply"),
+            clearSelection: t("groupedInitiativeClearSelection"),
+            selectAllRows: t("selectAllRows"),
+          }}
           turnControls={
             <InitiativeTrackerTurnControls
               battleStarted={battleStarted}
