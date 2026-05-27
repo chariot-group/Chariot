@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { InitiativeTrackerHealthDialog } from "@/components/initiativeTracker/InitiativeTrackerHealthDialog";
 import { InitiativeTrackerTable } from "@/components/initiativeTracker/InitiativeTrackerTable";
 import { InitiativeTrackerTurnControls, type PreviousTurnState } from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
@@ -26,6 +27,7 @@ import {
   selectCurrentRound,
   selectTurnsWithActions,
   selectInitiativeTrackerRows,
+  selectIsInSession,
   selectSessionCode,
   startBattle,
   updateInitiativeTrackerRow,
@@ -34,9 +36,12 @@ import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
 
 export default function InitiativeTrackerPage() {
   const t = useTranslations("initTracker.tracker");
+  const tBattle = useTranslations("characterDetail.battle");
   const dispatch = useAppDispatch();
   const { locale } = useParams<{ locale: string }>();
   const sessionCode = useAppSelector(selectSessionCode);
+  const isInSession = useAppSelector(selectIsInSession);
+  const [healthDialogRow, setHealthDialogRow] = React.useState<InitiativeTrackerRow | null>(null);
   const rows = useAppSelector(selectInitiativeTrackerRows);
   const battleStarted = useAppSelector(selectBattleStarted);
   const activeTurnRowId = useAppSelector(selectActiveTurnRowId);
@@ -116,6 +121,9 @@ export default function InitiativeTrackerPage() {
       conditionDurationAmount: t("conditionDurationAmount"),
       conditionRoundHint: t("conditionRoundHint", { seconds: ROUND_DURATION_SECONDS }),
       visibleFor: t("visibleFor", { name }),
+      hitPointsFor: t("hitPointsFor", { name }),
+      hitPointsSessionTooltip: tBattle("healthPointsSessionTooltip"),
+      hpAbbr: tBattle("hpAbbr"),
       getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => t(`conditions.${condition}`),
       getConditionDescription: (condition: ActiveInitiativeTrackerCondition) =>
         t(`conditionDescriptions.${condition}`),
@@ -182,6 +190,7 @@ export default function InitiativeTrackerPage() {
           onAddCondition={addCondition}
           onRemoveCondition={removeCondition}
           onClearConditions={clearConditions}
+          onHitPointsClick={isInSession ? (row) => setHealthDialogRow(row) : undefined}
           getRowLabels={getRowLabels}
           turnControls={
             <InitiativeTrackerTurnControls
@@ -207,6 +216,20 @@ export default function InitiativeTrackerPage() {
             />
           }
         />
+
+        {isInSession ? (
+          <InitiativeTrackerHealthDialog
+            row={healthDialogRow}
+            open={healthDialogRow != null}
+            onOpenChange={(open) => {
+              if (!open) {
+                setHealthDialogRow(null);
+              }
+            }}
+            sessionCode={sessionCode}
+            onTrackerRowUpdate={(rowId, changes) => updateRow(rowId, changes)}
+          />
+        ) : null}
       </div>
     </main>
   );

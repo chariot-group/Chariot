@@ -15,6 +15,7 @@ import { selectIsInSession } from "@/store/slices/sessionSlice";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 import { SessionHealthDialog } from "@/components/character/session/SessionHealthDialog";
 import { useState } from "react";
+import { isPlayer } from "@/utils/global.utils";
 
 interface StatisticsProps {
   player: Player;
@@ -233,7 +234,8 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
         <SessionHealthDialog
           open={healthDialogOpen}
           onOpenChange={setHealthDialogOpen}
-          player={player}
+          character={player}
+          characterType={isPlayer(player) ? "players" : "npcs"}
           sessionCode={sessionCode}
           onCharacterUpdate={onCharacterUpdate}
         />

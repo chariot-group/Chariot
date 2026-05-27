@@ -98,6 +98,8 @@ export interface InitiativeTrackerRow {
     avatar: string;
     initiative: number;
     hitPoints: number;
+    maxHitPoints: number;
+    tempHitPoints: number;
     armorClass: number;
     conditions: InitiativeTrackerConditionEntry[];
     groupId: string;

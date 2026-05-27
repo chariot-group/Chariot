@@ -30,6 +30,7 @@ type InitiativeTrackerTableProps = {
   ) => void;
   onRemoveCondition: (row: InitiativeTrackerRow, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions: (row: InitiativeTrackerRow) => void;
+  onHitPointsClick?: (row: InitiativeTrackerRow) => void;
   getRowLabels: (row: InitiativeTrackerRow) => {
     initiativeFor: string;
     viewSheetFor: string;
@@ -63,6 +64,7 @@ export function InitiativeTrackerTable({
   onAddCondition,
   onRemoveCondition,
   onClearConditions,
+  onHitPointsClick,
   getRowLabels,
   activeTurnRowId = null,
   initiativeLocked = false,
@@ -94,6 +96,7 @@ export function InitiativeTrackerTable({
             onAddCondition={onAddCondition}
             onRemoveCondition={onRemoveCondition}
             onClearConditions={onClearConditions}
+            onHitPointsClick={onHitPointsClick}
             labels={getRowLabels(row)}
           />
         ))}

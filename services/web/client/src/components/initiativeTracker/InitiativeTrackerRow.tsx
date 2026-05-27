@@ -29,6 +29,7 @@ type InitiativeTrackerRowProps = {
   ) => void;
   onRemoveCondition: (row: InitiativeTrackerRowType, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions: (row: InitiativeTrackerRowType) => void;
+  onHitPointsClick?: (row: InitiativeTrackerRowType) => void;
   labels: {
     initiativeFor: string;
     viewSheetFor: string;
@@ -44,6 +45,9 @@ type InitiativeTrackerRowProps = {
     conditionDurationAmount: string;
     conditionRoundHint: string;
     visibleFor: string;
+    hitPointsFor: string;
+    hitPointsSessionTooltip: string;
+    hpAbbr: string;
     getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => string;
     getConditionDescription: (condition: ActiveInitiativeTrackerCondition) => string;
     formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => string | null;
@@ -60,9 +64,28 @@ export function InitiativeTrackerRow({
   onAddCondition,
   onRemoveCondition,
   onClearConditions,
+  onHitPointsClick,
   labels,
 }: InitiativeTrackerRowProps) {
   const name = characterName(row.firstname, row.lastname, row.surname);
+  const hasTempHp = (row.tempHitPoints ?? 0) > 0;
+  const hpCellClassName = `flex w-full max-w-full flex-col items-center justify-center gap-0 overflow-hidden rounded-[15px] bg-gray-middle-light px-1 text-center tabular-nums ${
+    hasTempHp ? "min-h-10 py-0.5" : "h-9"
+  }`;
+
+  const hpCellContent = (
+    <>
+      <span className="text-sm font-medium leading-tight text-white">
+        {row.hitPoints}/{row.maxHitPoints ?? 0}
+      </span>
+      {hasTempHp ? (
+        <span className="text-[10px] font-semibold leading-none text-blue-300">
+          +{row.tempHitPoints}
+          {labels.hpAbbr}
+        </span>
+      ) : null}
+    </>
+  );
 
   return (
     <div
@@ -101,11 +124,23 @@ export function InitiativeTrackerRow({
         </Tooltip>
       </div>
 
-      <div className="flex h-9 w-[58px] items-center justify-center rounded-[15px] bg-gray-middle-light text-sm font-medium">
-        {row.hitPoints}
+      <div className="flex min-w-0 justify-center self-center">
+        {onHitPointsClick ? (
+          <button
+            type="button"
+            onClick={() => onHitPointsClick(row)}
+            aria-label={labels.hitPointsFor}
+            aria-haspopup="dialog"
+            title={labels.hitPointsSessionTooltip}
+            className={`${hpCellClassName} cursor-pointer transition-colors hover:bg-gray-middle-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40`}>
+            {hpCellContent}
+          </button>
+        ) : (
+          <div className={`${hpCellClassName} text-sm font-medium`}>{hpCellContent}</div>
+        )}
       </div>
 
-      <div className="text-sm font-semibold text-white/90">{row.armorClass}</div>
+      <div className="min-w-0 text-center text-sm font-semibold tabular-nums text-white/90">{row.armorClass}</div>
 
       <ConditionSelect
         row={row}

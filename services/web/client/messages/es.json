@@ -113,6 +113,7 @@
       "initiativeFor": "Iniciativa de {name}",
       "conditionFor": "Estado de {name}",
       "visibleFor": "Mostrar {name}",
+      "hitPointsFor": "Editar puntos de golpe de {name}",
       "emptyTitle": "No hay iniciativa configurada",
       "emptyDescription": "Confirma la configuración del combate para mostrar el tracker.",
       "roundIndicator": "Turno {round}",

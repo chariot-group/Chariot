@@ -1,4 +1,18 @@
+import type { Character } from "@/types/character";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
+
+export function trackerHpFromCharacter(
+  character: Character,
+): Pick<InitiativeTrackerRow, "hitPoints" | "maxHitPoints" | "tempHitPoints"> {
+  const stats = character.stats;
+  return {
+    hitPoints: Number.isFinite(stats?.currentHitPoints)
+      ? Number(stats.currentHitPoints)
+      : Number(stats?.maxHitPoints ?? 0),
+    maxHitPoints: Number.isFinite(stats?.maxHitPoints) ? Number(stats.maxHitPoints) : 0,
+    tempHitPoints: Number.isFinite(stats?.tempHitPoints) ? Number(stats.tempHitPoints) : 0,
+  };
+}
 
 export function characterName(firstname: string, lastname: string, surname: string): string {
   const fullName = `${firstname ?? ""} ${lastname ?? ""}`.trim();

@@ -466,6 +466,8 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               hitPoints: Number.isFinite(stats?.currentHitPoints)
                 ? Number(stats?.currentHitPoints)
                 : Number(stats?.maxHitPoints ?? 0),
+              maxHitPoints: Number.isFinite(stats?.maxHitPoints) ? Number(stats.maxHitPoints) : 0,
+              tempHitPoints: Number.isFinite(stats?.tempHitPoints) ? Number(stats.tempHitPoints) : 0,
               armorClass: Number.isFinite(stats?.armorClass) ? Number(stats?.armorClass) : 0,
               conditions: [],
               groupId: group._id,

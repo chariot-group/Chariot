@@ -113,6 +113,7 @@
       "initiativeFor": "Initiative for {name}",
       "conditionFor": "Condition for {name}",
       "visibleFor": "Show {name}",
+      "hitPointsFor": "Edit hit points for {name}",
       "emptyTitle": "No initiative configured",
       "emptyDescription": "Confirm the battle configuration to display the tracker.",
       "roundIndicator": "Round {round}",

@@ -143,6 +143,8 @@ const sessionTransform = createTransform(
 
             return {
                 ...row,
+                maxHitPoints: Number.isFinite(row.maxHitPoints) ? row.maxHitPoints : row.hitPoints ?? 0,
+                tempHitPoints: Number.isFinite(row.tempHitPoints) ? row.tempHitPoints : 0,
                 conditions: rawConditions
                     .map((entry) => normalizeInitiativeTrackerConditionEntry(entry))
                     .filter((entry): entry is NonNullable<typeof entry> => entry != null)
