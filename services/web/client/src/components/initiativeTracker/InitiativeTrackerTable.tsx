@@ -36,6 +36,9 @@ type InitiativeTrackerTableProps = {
     visibleFor: string;
     getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => string;
   };
+  activeTurnRowId?: string | null;
+  initiativeLocked?: boolean;
+  turnControls?: React.ReactNode;
 };
 
 export function InitiativeTrackerTable({
@@ -46,6 +49,9 @@ export function InitiativeTrackerTable({
   onToggleCondition,
   onClearConditions,
   getRowLabels,
+  activeTurnRowId = null,
+  initiativeLocked = false,
+  turnControls,
 }: InitiativeTrackerTableProps) {
   return (
     <div className="min-w-[1080px]">
@@ -66,6 +72,8 @@ export function InitiativeTrackerTable({
           <InitiativeTrackerRowComponent
             key={row.id}
             row={row}
+            isActiveTurn={activeTurnRowId != null && row.id === activeTurnRowId}
+            initiativeLocked={initiativeLocked}
             getSheetHref={getSheetHref}
             onUpdateRow={onUpdateRow}
             onToggleCondition={onToggleCondition}
@@ -74,6 +82,8 @@ export function InitiativeTrackerTable({
           />
         ))}
       </div>
+
+      {turnControls}
     </div>
   );
 }

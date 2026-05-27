@@ -13,6 +13,8 @@ import { characterName } from "./utils";
 
 type InitiativeTrackerRowProps = {
   row: InitiativeTrackerRowType;
+  isActiveTurn?: boolean;
+  initiativeLocked?: boolean;
   getSheetHref: (characterId: string) => string;
   onUpdateRow: (id: string, changes: Partial<Omit<InitiativeTrackerRowType, "id">>) => void;
   onToggleCondition: (
@@ -37,6 +39,8 @@ type InitiativeTrackerRowProps = {
 
 export function InitiativeTrackerRow({
   row,
+  isActiveTurn = false,
+  initiativeLocked = false,
   getSheetHref,
   onUpdateRow,
   onToggleCondition,
@@ -47,7 +51,9 @@ export function InitiativeTrackerRow({
 
   return (
     <div
-      className="grid items-center rounded-[22px] bg-gray px-5 py-3 text-base text-white shadow-lg"
+      className={`grid items-center rounded-[22px] px-5 py-3 text-base text-white shadow-lg transition-colors ${
+        isActiveTurn ? "bg-blue/35 ring-2 ring-blue/60" : "bg-gray"
+      }`}
       style={{ gridTemplateColumns: TRACKER_GRID_TEMPLATE_COLUMNS }}>
       <div className="w-[88px]">
         <Input
@@ -55,11 +61,14 @@ export function InitiativeTrackerRow({
           step={1}
           value={row.initiative}
           aria-label={labels.initiativeFor}
+          disabled={initiativeLocked}
+          readOnly={initiativeLocked}
           onChange={(event) => {
+            if (initiativeLocked) return;
             const nextValue = Number.parseInt(event.target.value, 10);
             onUpdateRow(row.id, { initiative: Number.isFinite(nextValue) ? nextValue : 0 });
           }}
-          className="h-9 w-full rounded-[15px] bg-gray-middle-light px-3 pr-7 text-center text-sm text-white"
+          className="h-9 w-full rounded-[15px] bg-gray-middle-light px-3 pr-7 text-center text-sm text-white disabled:cursor-not-allowed disabled:opacity-70"
         />
       </div>
 

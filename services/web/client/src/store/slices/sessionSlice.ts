@@ -61,6 +61,10 @@ export interface CurrentSessionState {
     initiativeTrackerRows: InitiativeTrackerRow[];
     battleInitialized: boolean;
     battleStarted: boolean;
+    /** Id de la ligne dont c'est le tour (null tant que le combat n'est pas lancé). */
+    activeTurnRowId: string | null;
+    /** Numéro de tour de combat (incrémenté quand tous les participants ont joué). */
+    currentRound: number;
     /** Incrémenté à chaque synchro WS distante pour une fiche (temps réel hors rechargement). */
     characterSheetRemoteVersions: Record<string, number>;
 }
@@ -77,7 +81,15 @@ const initialState: CurrentSessionState = {
     initiativeTrackerRows: [],
     battleInitialized: false,
     battleStarted: false,
+    activeTurnRowId: null,
+    currentRound: 1,
     characterSheetRemoteVersions: {},
+};
+
+const resetBattleTurnState = (state: CurrentSessionState) => {
+    state.battleStarted = false;
+    state.activeTurnRowId = null;
+    state.currentRound = 1;
 };
 
 const sessionSlice = createSlice({
@@ -100,7 +112,7 @@ const sessionSlice = createSlice({
             state.initBattleDraft = initialInitBattleDraft;
             state.initiativeTrackerRows = [];
             state.battleInitialized = false;
-            state.battleStarted = false;
+            resetBattleTurnState(state);
             state.characterSheetRemoteVersions = {};
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
@@ -132,7 +144,7 @@ const sessionSlice = createSlice({
         setInitiativeTrackerRows: (state, action: PayloadAction<InitiativeTrackerRow[]>) => {
             state.initiativeTrackerRows = action.payload;
             state.battleInitialized = action.payload.length > 0;
-            state.battleStarted = false;
+            resetBattleTurnState(state);
         },
         updateInitiativeTrackerRow: (
             state,
@@ -145,7 +157,52 @@ const sessionSlice = createSlice({
         resetInitiativeTracker: (state) => {
             state.initiativeTrackerRows = [];
             state.battleInitialized = false;
-            state.battleStarted = false;
+            resetBattleTurnState(state);
+        },
+        startBattle: (state) => {
+            if (state.initiativeTrackerRows.length === 0) return;
+            state.battleStarted = true;
+            state.currentRound = 1;
+            const sorted = [...state.initiativeTrackerRows].sort(
+                (a, b) => b.initiative - a.initiative || a.groupLabel.localeCompare(b.groupLabel),
+            );
+            state.activeTurnRowId = sorted[0]?.id ?? null;
+        },
+        endBattle: (state) => {
+            resetBattleTurnState(state);
+        },
+        nextBattleTurn: (state) => {
+            if (!state.battleStarted || state.initiativeTrackerRows.length === 0) return;
+
+            const sorted = [...state.initiativeTrackerRows].sort(
+                (a, b) => b.initiative - a.initiative || a.groupLabel.localeCompare(b.groupLabel),
+            );
+            const currentIndex = sorted.findIndex((row) => row.id === state.activeTurnRowId);
+            const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+
+            if (safeIndex >= sorted.length - 1) {
+                state.activeTurnRowId = sorted[0]?.id ?? null;
+                state.currentRound += 1;
+            } else {
+                state.activeTurnRowId = sorted[safeIndex + 1]?.id ?? null;
+            }
+        },
+        previousBattleTurn: (state) => {
+            if (!state.battleStarted || state.initiativeTrackerRows.length === 0) return;
+
+            const sorted = [...state.initiativeTrackerRows].sort(
+                (a, b) => b.initiative - a.initiative || a.groupLabel.localeCompare(b.groupLabel),
+            );
+            const currentIndex = sorted.findIndex((row) => row.id === state.activeTurnRowId);
+            const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+
+            if (safeIndex <= 0) {
+                if (state.currentRound <= 1) return;
+                state.activeTurnRowId = sorted[sorted.length - 1]?.id ?? null;
+                state.currentRound -= 1;
+            } else {
+                state.activeTurnRowId = sorted[safeIndex - 1]?.id ?? null;
+            }
         },
         touchRemoteCharacterSheet: (state, action: PayloadAction<string>) => {
             if (!state.characterSheetRemoteVersions) {
@@ -171,6 +228,10 @@ export const {
     setInitiativeTrackerRows,
     updateInitiativeTrackerRow,
     resetInitiativeTracker,
+    startBattle,
+    endBattle,
+    nextBattleTurn,
+    previousBattleTurn,
     touchRemoteCharacterSheet,
 } = sessionSlice.actions;
 
@@ -185,6 +246,8 @@ export const selectSessionInitBattleDraft = (state: RootState) => state.session.
 export const selectInitiativeTrackerRows = (state: RootState) => state.session.initiativeTrackerRows;
 export const selectBattleInitialized = (state: RootState) => state.session.battleInitialized;
 export const selectBattleStarted = (state: RootState) => state.session.battleStarted;
+export const selectActiveTurnRowId = (state: RootState) => state.session.activeTurnRowId;
+export const selectCurrentRound = (state: RootState) => state.session.currentRound;
 
 export const selectCurrentUserParticipant = (state: RootState, userId: string) =>
     state.session.participants.find((participant: SessionParticipant) => participant.userId === userId) || null;

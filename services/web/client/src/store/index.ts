@@ -138,6 +138,8 @@ const sessionTransform = createTransform(
         })),
         battleInitialized: outbound?.battleInitialized ?? (outbound?.initiativeTrackerRows?.length ?? 0) > 0,
         battleStarted: outbound?.battleStarted ?? false,
+        activeTurnRowId: outbound?.activeTurnRowId ?? null,
+        currentRound: outbound?.currentRound ?? 1,
         characterSheetRemoteVersions:
             outbound?.characterSheetRemoteVersions && typeof outbound.characterSheetRemoteVersions === 'object'
                 ? outbound.characterSheetRemoteVersions
