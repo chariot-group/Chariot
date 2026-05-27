@@ -118,13 +118,38 @@
       "roundIndicator": "Turno {round}",
       "startCombat": "Iniciar combate",
       "endCombat": "Cerrar combate",
-      "previousTurn": "Anterior",
+      "previousTurn": "Volver al turno anterior",
       "nextTurn": "Siguiente",
+      "previousTurnHintAvailable": "Ninguna acción registrada en este turno — puedes corregir el avance.",
+      "previousTurnHintLocked": "Se realizó una acción.",
+      "previousTurnHintNoPrevious": "No hay turno anterior.",
+      "turnUndoAvailable": "Este turno aún puede deshacerse.",
+      "turnCurrentLocked": "Este turno está bloqueado.",
+      "turnPreviousBlocked": "Un turno anterior contiene acciones.",
       "conditionsCount": "{count} estados",
       "conditionSearchPlaceholder": "Buscar un estado",
       "conditionSearchEmpty": "No se encontró ningún estado.",
       "conditionSearchClear": "Borrar búsqueda",
       "conditionClearAll": "Borrar todo",
+      "conditionAddBack": "Volver",
+      "conditionAddConfirm": "Añadir estado",
+      "conditionDurationEnable": "Definir una duración",
+      "conditionDurationAmount": "Duración",
+      "conditionRoundHint": "1 asalto = {seconds} segundos",
+      "conditionDurationUntilCombatEnd": "fin del combate",
+      "conditionDurationUnitLabels": {
+        "seconds": "Segundos",
+        "minutes": "Minutos",
+        "hours": "Horas",
+        "rounds": "Asaltos",
+        "untilCombatEnd": "Hasta el fin del combate"
+      },
+      "conditionDurationUnits": {
+        "seconds": "{amount} s",
+        "minutes": "{amount} min",
+        "hours": "{amount} h",
+        "rounds": "{amount, plural, one {# asalto} other {# asaltos}}"
+      },
       "conditions": {
         "none": "Ninguno",
         "prone": "Derribado",
@@ -141,6 +166,22 @@
         "invisible": "Invisible",
         "paralyzed": "Paralizado",
         "petrified": "Petrificado"
+      },
+      "conditionDescriptions": {
+        "prone": "La única opción de movimiento para una criatura derribada es arrastrarse, a menos que se ponga de pie y termine así el estado.\nLa criatura tiene desventaja en las tiradas de ataque.\nUna tirada de ataque contra la criatura tiene ventaja si el atacante está a 1,50 metros o menos de la criatura. En caso contrario, la tirada de ataque tiene desventaja.",
+        "grappled": "La velocidad de una criatura agarrada pasa a 0 y no puede beneficiarse de ninguna bonificación a su velocidad.\nEl estado termina si la criatura que agarra queda incapacitada.\nEl estado también termina si un efecto saca a la criatura agarrada del alcance de la criatura o del efecto que la agarra, como cuando una criatura es arrojada por el conjuro ola atronadora.",
+        "deafened": "Una criatura ensordecida no oye y falla automáticamente cualquier prueba de característica que requiera oído.",
+        "blinded": "Una criatura cegada no ve y falla automáticamente cualquier prueba de característica que requiera vista.\nLas tiradas de ataque contra la criatura tienen ventaja, y las tiradas de ataque de la criatura tienen desventaja.",
+        "charmed": "Una criatura hechizada no puede atacar al hechizador ni apuntarlo con habilidades o efectos mágicos dañinos.\nEl hechizador tiene ventaja en las pruebas de característica para interactuar socialmente con la criatura.",
+        "frightened": "Una criatura asustada tiene desventaja en las pruebas de característica y en las tiradas de ataque mientras la fuente de su miedo esté a la vista.\nLa criatura no puede acercarse voluntariamente a la fuente de su miedo.",
+        "poisoned": "Una criatura envenenada tiene desventaja en las tiradas de ataque y en las pruebas de característica.",
+        "restrained": "La velocidad de una criatura restringida pasa a 0 y no puede beneficiarse de ninguna bonificación a su velocidad.\nLas tiradas de ataque contra la criatura tienen ventaja, y las tiradas de ataque de la criatura tienen desventaja.\nLa criatura tiene desventaja en las tiradas de salvación de Destreza.",
+        "stunned": "Una criatura aturdida está incapacitada, no puede moverse y solo puede hablar de forma entrecortada.\nLa criatura falla automáticamente las tiradas de salvación de Fuerza y Destreza.\nLas tiradas de ataque contra la criatura tienen ventaja.",
+        "incapacitated": "Una criatura incapacitada no puede realizar acciones ni reacciones.",
+        "unconscious": "Una criatura inconsciente está incapacitada, no puede moverse ni hablar y no es consciente de lo que la rodea.\nLa criatura suelta lo que sostiene y cae derribada.\nLa criatura falla automáticamente las tiradas de salvación de Fuerza y Destreza.\nLas tiradas de ataque contra la criatura tienen ventaja.\nCualquier ataque que impacte a la criatura es un golpe crítico si el atacante está a 1,50 metros o menos de la criatura.",
+        "invisible": "Una criatura invisible no puede verse sin la ayuda de la magia o un sentido especial. A efectos de ocultarse, la criatura se considera en una zona de visibilidad nula. Su ubicación puede detectarse por el ruido que hace o las huellas que deja.\nLas tiradas de ataque contra la criatura tienen desventaja, y las tiradas de ataque de la criatura tienen ventaja.",
+        "paralyzed": "Una criatura paralizada está incapacitada y no puede moverse ni hablar.\nLa criatura falla automáticamente las tiradas de salvación de Fuerza y Destreza.\nLas tiradas de ataque contra la criatura tienen ventaja.\nCualquier ataque que impacte a la criatura es un golpe crítico si el atacante está a 1,50 metros o menos de la criatura.",
+        "petrified": "Una criatura petrificada se transforma, junto con cualquier objeto no mágico que lleve, en una sustancia inanimada sólida (normalmente piedra). Su peso se multiplica por diez y deja de envejecer.\nLa criatura está incapacitada, no puede moverse ni hablar y no es consciente de lo que la rodea.\nLas tiradas de ataque contra la criatura tienen ventaja.\nLa criatura falla automáticamente las tiradas de salvación de Fuerza y Destreza.\nLa criatura obtiene resistencia a todo tipo de daño.\nLa criatura es inmune al veneno y a las enfermedades, aunque un veneno o enfermedad ya presente en su organismo queda suspendido, no neutralizado."
       }
     }
   },

@@ -1,4 +1,7 @@
 import type { ActiveInitiativeTrackerCondition } from "./types";
+import { ROUND_DURATION_SECONDS } from "./conditionDuration";
+
+export { ROUND_DURATION_SECONDS };
 
 export const CONDITIONS: ActiveInitiativeTrackerCondition[] = [
   "prone",

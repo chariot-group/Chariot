@@ -1,6 +1,11 @@
 "use client";
 
-import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
+import type {
+  InitiativeTrackerConditionDuration,
+  InitiativeTrackerConditionDurationUnit,
+  InitiativeTrackerConditionEntry,
+  InitiativeTrackerRow,
+} from "@/store/slices/sessionSlice";
 import { InitiativeTrackerRow as InitiativeTrackerRowComponent } from "./InitiativeTrackerRow";
 import { TRACKER_GRID_TEMPLATE_COLUMNS } from "./constants";
 import type { ActiveInitiativeTrackerCondition } from "./types";
@@ -18,11 +23,12 @@ type InitiativeTrackerTableProps = {
   };
   getSheetHref: (characterId: string) => string;
   onUpdateRow: (id: string, changes: Partial<Omit<InitiativeTrackerRow, "id">>) => void;
-  onToggleCondition: (
+  onAddCondition: (
     row: InitiativeTrackerRow,
     condition: ActiveInitiativeTrackerCondition,
-    checked: boolean,
+    duration?: InitiativeTrackerConditionDuration,
   ) => void;
+  onRemoveCondition: (row: InitiativeTrackerRow, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions: (row: InitiativeTrackerRow) => void;
   getRowLabels: (row: InitiativeTrackerRow) => {
     initiativeFor: string;
@@ -33,8 +39,16 @@ type InitiativeTrackerTableProps = {
     conditionSearchClear: string;
     conditionClearAll: string;
     conditionSearchEmpty: string;
+    conditionAddBack: string;
+    conditionAddConfirm: string;
+    conditionDurationEnable: string;
+    conditionDurationAmount: string;
+    conditionRoundHint: string;
     visibleFor: string;
     getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => string;
+    getConditionDescription: (condition: ActiveInitiativeTrackerCondition) => string;
+    formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => string | null;
+    getConditionDurationUnits: () => { value: InitiativeTrackerConditionDurationUnit; label: string }[];
   };
   activeTurnRowId?: string | null;
   initiativeLocked?: boolean;
@@ -46,7 +60,8 @@ export function InitiativeTrackerTable({
   columnLabels,
   getSheetHref,
   onUpdateRow,
-  onToggleCondition,
+  onAddCondition,
+  onRemoveCondition,
   onClearConditions,
   getRowLabels,
   activeTurnRowId = null,
@@ -76,7 +91,8 @@ export function InitiativeTrackerTable({
             initiativeLocked={initiativeLocked}
             getSheetHref={getSheetHref}
             onUpdateRow={onUpdateRow}
-            onToggleCondition={onToggleCondition}
+            onAddCondition={onAddCondition}
+            onRemoveCondition={onRemoveCondition}
             onClearConditions={onClearConditions}
             labels={getRowLabels(row)}
           />

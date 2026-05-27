@@ -1,6 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
+import {
+    ROUND_DURATION_SECONDS,
+    durationToRemainingSeconds,
+    removeUntilCombatEndConditions,
+    tickConditionEntries,
+} from '@/components/initiativeTracker/conditionDuration';
+import { buildBattleTurnKey, canUndoBattleTurn, sortInitiativeTrackerRows } from '@/components/initiativeTracker/utils';
 
 export interface SessionInitBattleDraft {
     showAllOpponents: boolean;
@@ -26,6 +33,62 @@ export type InitiativeTrackerCondition =
     | 'paralyzed'
     | 'petrified';
 
+export type InitiativeTrackerConditionDurationUnit =
+    | 'seconds'
+    | 'minutes'
+    | 'hours'
+    | 'rounds'
+    | 'untilCombatEnd';
+
+export interface InitiativeTrackerConditionDuration {
+    amount: number;
+    unit: InitiativeTrackerConditionDurationUnit;
+}
+
+export interface InitiativeTrackerConditionEntry {
+    condition: Exclude<InitiativeTrackerCondition, 'none'>;
+    duration?: InitiativeTrackerConditionDuration;
+    /** Temps restant en secondes de jeu (minimum 6 s). */
+    remainingSeconds?: number;
+}
+
+export function normalizeInitiativeTrackerConditionEntry(
+    entry: unknown,
+): InitiativeTrackerConditionEntry | null {
+    if (typeof entry === 'string' && entry !== 'none') {
+        return { condition: entry as Exclude<InitiativeTrackerCondition, 'none'> };
+    }
+
+    if (!entry || typeof entry !== 'object' || !('condition' in entry)) {
+        return null;
+    }
+
+    const candidate = entry as InitiativeTrackerConditionEntry;
+    if (!candidate.condition) {
+        return null;
+    }
+
+    if (!candidate.duration) {
+        return { condition: candidate.condition };
+    }
+
+    const { amount, unit } = candidate.duration;
+    if (unit === 'untilCombatEnd') {
+        return { condition: candidate.condition, duration: { amount: 1, unit } };
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        return { condition: candidate.condition };
+    }
+
+    const duration = { amount, unit };
+    return {
+        condition: candidate.condition,
+        duration,
+        remainingSeconds: durationToRemainingSeconds(duration),
+    };
+}
+
 export interface InitiativeTrackerRow {
     id: string;
     characterId: string;
@@ -36,7 +99,7 @@ export interface InitiativeTrackerRow {
     initiative: number;
     hitPoints: number;
     armorClass: number;
-    conditions: InitiativeTrackerCondition[];
+    conditions: InitiativeTrackerConditionEntry[];
     groupId: string;
     groupLabel: string;
     visible: boolean;
@@ -65,6 +128,8 @@ export interface CurrentSessionState {
     activeTurnRowId: string | null;
     /** Numéro de tour de combat (incrémenté quand tous les participants ont joué). */
     currentRound: number;
+    /** Clés `${round}:${rowId}` des tours où une action tracker a été effectuée. */
+    turnsWithActions: string[];
     /** Incrémenté à chaque synchro WS distante pour une fiche (temps réel hors rechargement). */
     characterSheetRemoteVersions: Record<string, number>;
 }
@@ -83,6 +148,7 @@ const initialState: CurrentSessionState = {
     battleStarted: false,
     activeTurnRowId: null,
     currentRound: 1,
+    turnsWithActions: [],
     characterSheetRemoteVersions: {},
 };
 
@@ -90,6 +156,28 @@ const resetBattleTurnState = (state: CurrentSessionState) => {
     state.battleStarted = false;
     state.activeTurnRowId = null;
     state.currentRound = 1;
+    state.turnsWithActions = [];
+};
+
+const markActiveTurnWithActions = (state: CurrentSessionState) => {
+    if (!state.battleStarted || !state.activeTurnRowId) return;
+
+    const turnKey = buildBattleTurnKey(state.currentRound, state.activeTurnRowId);
+    if (!state.turnsWithActions.includes(turnKey)) {
+        state.turnsWithActions.push(turnKey);
+    }
+};
+
+const tickAllInitiativeTrackerConditions = (state: CurrentSessionState, deltaSeconds: number) => {
+    for (const row of state.initiativeTrackerRows) {
+        row.conditions = tickConditionEntries(row.conditions ?? [], deltaSeconds);
+    }
+};
+
+const clearUntilCombatEndConditions = (state: CurrentSessionState) => {
+    for (const row of state.initiativeTrackerRows) {
+        row.conditions = removeUntilCombatEndConditions(row.conditions ?? []);
+    }
 };
 
 const sessionSlice = createSlice({
@@ -153,6 +241,9 @@ const sessionSlice = createSlice({
             const row = state.initiativeTrackerRows.find((item) => item.id === action.payload.id);
             if (!row) return;
             Object.assign(row, action.payload.changes);
+            if (state.battleStarted) {
+                markActiveTurnWithActions(state);
+            }
         },
         resetInitiativeTracker: (state) => {
             state.initiativeTrackerRows = [];
@@ -163,26 +254,25 @@ const sessionSlice = createSlice({
             if (state.initiativeTrackerRows.length === 0) return;
             state.battleStarted = true;
             state.currentRound = 1;
-            const sorted = [...state.initiativeTrackerRows].sort(
-                (a, b) => b.initiative - a.initiative || a.groupLabel.localeCompare(b.groupLabel),
-            );
+            state.turnsWithActions = [];
+            const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
             state.activeTurnRowId = sorted[0]?.id ?? null;
         },
         endBattle: (state) => {
+            clearUntilCombatEndConditions(state);
             resetBattleTurnState(state);
         },
         nextBattleTurn: (state) => {
             if (!state.battleStarted || state.initiativeTrackerRows.length === 0) return;
 
-            const sorted = [...state.initiativeTrackerRows].sort(
-                (a, b) => b.initiative - a.initiative || a.groupLabel.localeCompare(b.groupLabel),
-            );
+            const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
             const currentIndex = sorted.findIndex((row) => row.id === state.activeTurnRowId);
             const safeIndex = currentIndex >= 0 ? currentIndex : 0;
 
             if (safeIndex >= sorted.length - 1) {
                 state.activeTurnRowId = sorted[0]?.id ?? null;
                 state.currentRound += 1;
+                tickAllInitiativeTrackerConditions(state, -ROUND_DURATION_SECONDS);
             } else {
                 state.activeTurnRowId = sorted[safeIndex + 1]?.id ?? null;
             }
@@ -190,9 +280,11 @@ const sessionSlice = createSlice({
         previousBattleTurn: (state) => {
             if (!state.battleStarted || state.initiativeTrackerRows.length === 0) return;
 
-            const sorted = [...state.initiativeTrackerRows].sort(
-                (a, b) => b.initiative - a.initiative || a.groupLabel.localeCompare(b.groupLabel),
-            );
+            const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
+            if (!canUndoBattleTurn(sorted, state.currentRound, state.activeTurnRowId, state.turnsWithActions)) {
+                return;
+            }
+
             const currentIndex = sorted.findIndex((row) => row.id === state.activeTurnRowId);
             const safeIndex = currentIndex >= 0 ? currentIndex : 0;
 
@@ -200,6 +292,7 @@ const sessionSlice = createSlice({
                 if (state.currentRound <= 1) return;
                 state.activeTurnRowId = sorted[sorted.length - 1]?.id ?? null;
                 state.currentRound -= 1;
+                tickAllInitiativeTrackerConditions(state, ROUND_DURATION_SECONDS);
             } else {
                 state.activeTurnRowId = sorted[safeIndex - 1]?.id ?? null;
             }
@@ -248,6 +341,12 @@ export const selectBattleInitialized = (state: RootState) => state.session.battl
 export const selectBattleStarted = (state: RootState) => state.session.battleStarted;
 export const selectActiveTurnRowId = (state: RootState) => state.session.activeTurnRowId;
 export const selectCurrentRound = (state: RootState) => state.session.currentRound;
+export const selectTurnsWithActions = (state: RootState) => state.session.turnsWithActions ?? [];
+export const selectCurrentTurnHasActions = (state: RootState) => {
+    const { currentRound, activeTurnRowId, battleStarted, turnsWithActions } = state.session;
+    if (!battleStarted || !activeTurnRowId) return false;
+    return (turnsWithActions ?? []).includes(buildBattleTurnKey(currentRound, activeTurnRowId));
+};
 
 export const selectCurrentUserParticipant = (state: RootState, userId: string) =>
     state.session.participants.find((participant: SessionParticipant) => participant.userId === userId) || null;

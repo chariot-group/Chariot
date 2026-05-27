@@ -4,9 +4,18 @@ import * as React from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { InitiativeTrackerTable } from "@/components/initiativeTracker/InitiativeTrackerTable";
-import { InitiativeTrackerTurnControls } from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
+import { InitiativeTrackerTurnControls, type PreviousTurnState } from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
-import { characterName, sortInitiativeTrackerRows } from "@/components/initiativeTracker/utils";
+import { characterName, canUndoBattleTurn, isBattleTurnLocked, buildBattleTurnKey, sortInitiativeTrackerRows } from "@/components/initiativeTracker/utils";
+import {
+  buildConditionEntry,
+  formatRemainingConditionDuration,
+} from "@/components/initiativeTracker/conditionDuration";
+import { ROUND_DURATION_SECONDS } from "@/components/initiativeTracker/constants";
+import type {
+  InitiativeTrackerConditionDurationUnit,
+  InitiativeTrackerConditionEntry,
+} from "@/store/slices/sessionSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   endBattle,
@@ -15,6 +24,7 @@ import {
   selectActiveTurnRowId,
   selectBattleStarted,
   selectCurrentRound,
+  selectTurnsWithActions,
   selectInitiativeTrackerRows,
   selectSessionCode,
   startBattle,
@@ -31,6 +41,7 @@ export default function InitiativeTrackerPage() {
   const battleStarted = useAppSelector(selectBattleStarted);
   const activeTurnRowId = useAppSelector(selectActiveTurnRowId);
   const currentRound = useAppSelector(selectCurrentRound);
+  const turnsWithActions = useAppSelector(selectTurnsWithActions);
 
   const sortedRows = React.useMemo(() => sortInitiativeTrackerRows(rows), [rows]);
 
@@ -39,7 +50,21 @@ export default function InitiativeTrackerPage() {
     return sortedRows.findIndex((row) => row.id === activeTurnRowId);
   }, [activeTurnRowId, sortedRows]);
 
-  const canGoPrevious = battleStarted && (activeTurnIndex > 0 || currentRound > 1);
+  const hasPreviousTurn = activeTurnIndex > 0 || currentRound > 1;
+
+  const previousTurnState = React.useMemo((): PreviousTurnState => {
+    if (!battleStarted || !hasPreviousTurn || !activeTurnRowId) return "noPreviousTurn";
+
+    const currentKey = buildBattleTurnKey(currentRound, activeTurnRowId);
+    if (isBattleTurnLocked(currentKey, turnsWithActions)) return "currentTurnLocked";
+    if (!canUndoBattleTurn(sortedRows, currentRound, activeTurnRowId, turnsWithActions)) {
+      return "previousTurnBlocked";
+    }
+
+    return "available";
+  }, [activeTurnRowId, battleStarted, currentRound, hasPreviousTurn, sortedRows, turnsWithActions]);
+
+  const canGoPrevious = previousTurnState === "available";
 
   const updateRow = (id: string, changes: Partial<Omit<InitiativeTrackerRow, "id">>) => {
     dispatch(updateInitiativeTrackerRow({ id, changes }));
@@ -50,18 +75,22 @@ export default function InitiativeTrackerPage() {
     return `/${locale}/characters/${encodeURIComponent(characterId)}${query}`;
   };
 
-  const toggleCondition = (
+  const addCondition = (
     row: InitiativeTrackerRow,
     condition: ActiveInitiativeTrackerCondition,
-    checked: boolean,
+    duration?: Parameters<typeof buildConditionEntry>[1],
   ) => {
-    const currentConditions = (row.conditions ?? []).filter(
-      (value): value is ActiveInitiativeTrackerCondition => value !== "none",
-    );
-    const nextConditions = checked
-      ? [...currentConditions, condition].filter((value, index, list) => list.indexOf(value) === index)
-      : currentConditions.filter((value) => value !== condition);
+    const currentConditions = row.conditions ?? [];
+    const nextConditions = [
+      ...currentConditions.filter((entry) => entry.condition !== condition),
+      buildConditionEntry(condition, duration),
+    ];
 
+    updateRow(row.id, { conditions: nextConditions });
+  };
+
+  const removeCondition = (row: InitiativeTrackerRow, condition: ActiveInitiativeTrackerCondition) => {
+    const nextConditions = (row.conditions ?? []).filter((entry) => entry.condition !== condition);
     updateRow(row.id, { conditions: nextConditions });
   };
 
@@ -81,8 +110,35 @@ export default function InitiativeTrackerPage() {
       conditionSearchClear: t("conditionSearchClear"),
       conditionClearAll: t("conditionClearAll"),
       conditionSearchEmpty: t("conditionSearchEmpty"),
+      conditionAddBack: t("conditionAddBack"),
+      conditionAddConfirm: t("conditionAddConfirm"),
+      conditionDurationEnable: t("conditionDurationEnable"),
+      conditionDurationAmount: t("conditionDurationAmount"),
+      conditionRoundHint: t("conditionRoundHint", { seconds: ROUND_DURATION_SECONDS }),
       visibleFor: t("visibleFor", { name }),
       getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => t(`conditions.${condition}`),
+      getConditionDescription: (condition: ActiveInitiativeTrackerCondition) =>
+        t(`conditionDescriptions.${condition}`),
+      formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => {
+        if (entry.duration?.unit === "untilCombatEnd") {
+          return t("conditionDurationUntilCombatEnd");
+        }
+
+        if (entry.remainingSeconds != null) {
+          return formatRemainingConditionDuration(entry.remainingSeconds, (unit, amount) =>
+            t(`conditionDurationUnits.${unit}`, { amount }),
+          );
+        }
+
+        return null;
+      },
+      getConditionDurationUnits: (): { value: InitiativeTrackerConditionDurationUnit; label: string }[] => [
+        { value: "seconds", label: t("conditionDurationUnitLabels.seconds") },
+        { value: "minutes", label: t("conditionDurationUnitLabels.minutes") },
+        { value: "hours", label: t("conditionDurationUnitLabels.hours") },
+        { value: "rounds", label: t("conditionDurationUnitLabels.rounds") },
+        { value: "untilCombatEnd", label: t("conditionDurationUnitLabels.untilCombatEnd") },
+      ],
     };
   };
 
@@ -123,18 +179,26 @@ export default function InitiativeTrackerPage() {
           }}
           getSheetHref={getSheetHref}
           onUpdateRow={updateRow}
-          onToggleCondition={toggleCondition}
+          onAddCondition={addCondition}
+          onRemoveCondition={removeCondition}
           onClearConditions={clearConditions}
           getRowLabels={getRowLabels}
           turnControls={
             <InitiativeTrackerTurnControls
               battleStarted={battleStarted}
               canGoPrevious={canGoPrevious}
+              previousTurnState={previousTurnState}
               labels={{
                 startCombat: t("startCombat"),
                 endCombat: t("endCombat"),
                 previous: t("previousTurn"),
                 next: t("nextTurn"),
+                previousHintAvailable: t("previousTurnHintAvailable"),
+                previousHintLocked: t("previousTurnHintLocked"),
+                previousHintNoPrevious: t("previousTurnHintNoPrevious"),
+                turnUndoAvailable: t("turnUndoAvailable"),
+                turnCurrentLocked: t("turnCurrentLocked"),
+                turnPreviousBlocked: t("turnPreviousBlocked"),
               }}
               onStartCombat={() => dispatch(startBattle())}
               onEndCombat={() => dispatch(endBattle())}

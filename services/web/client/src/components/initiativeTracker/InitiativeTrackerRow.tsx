@@ -5,7 +5,12 @@ import { Layers2, Users } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { InitiativeTrackerRow as InitiativeTrackerRowType } from "@/store/slices/sessionSlice";
+import type {
+  InitiativeTrackerConditionDuration,
+  InitiativeTrackerConditionDurationUnit,
+  InitiativeTrackerConditionEntry,
+  InitiativeTrackerRow as InitiativeTrackerRowType,
+} from "@/store/slices/sessionSlice";
 import { ConditionSelect } from "./ConditionSelect";
 import { SESSION_PARTICIPANTS_GROUP_ID, TRACKER_GRID_TEMPLATE_COLUMNS } from "./constants";
 import type { ActiveInitiativeTrackerCondition } from "./types";
@@ -17,11 +22,12 @@ type InitiativeTrackerRowProps = {
   initiativeLocked?: boolean;
   getSheetHref: (characterId: string) => string;
   onUpdateRow: (id: string, changes: Partial<Omit<InitiativeTrackerRowType, "id">>) => void;
-  onToggleCondition: (
+  onAddCondition: (
     row: InitiativeTrackerRowType,
     condition: ActiveInitiativeTrackerCondition,
-    checked: boolean,
+    duration?: InitiativeTrackerConditionDuration,
   ) => void;
+  onRemoveCondition: (row: InitiativeTrackerRowType, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions: (row: InitiativeTrackerRowType) => void;
   labels: {
     initiativeFor: string;
@@ -32,8 +38,16 @@ type InitiativeTrackerRowProps = {
     conditionSearchClear: string;
     conditionClearAll: string;
     conditionSearchEmpty: string;
+    conditionAddBack: string;
+    conditionAddConfirm: string;
+    conditionDurationEnable: string;
+    conditionDurationAmount: string;
+    conditionRoundHint: string;
     visibleFor: string;
     getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => string;
+    getConditionDescription: (condition: ActiveInitiativeTrackerCondition) => string;
+    formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => string | null;
+    getConditionDurationUnits: () => { value: InitiativeTrackerConditionDurationUnit; label: string }[];
   };
 };
 
@@ -43,7 +57,8 @@ export function InitiativeTrackerRow({
   initiativeLocked = false,
   getSheetHref,
   onUpdateRow,
-  onToggleCondition,
+  onAddCondition,
+  onRemoveCondition,
   onClearConditions,
   labels,
 }: InitiativeTrackerRowProps) {
@@ -99,8 +114,17 @@ export function InitiativeTrackerRow({
         searchClearLabel={labels.conditionSearchClear}
         clearAllConditionsLabel={labels.conditionClearAll}
         emptyText={labels.conditionSearchEmpty}
+        addBackLabel={labels.conditionAddBack}
+        addConfirmLabel={labels.conditionAddConfirm}
+        durationEnableLabel={labels.conditionDurationEnable}
+        durationAmountLabel={labels.conditionDurationAmount}
+        roundHintLabel={labels.conditionRoundHint}
         getConditionLabel={labels.getConditionLabel}
-        onToggleCondition={onToggleCondition}
+        getConditionDescription={labels.getConditionDescription}
+        formatConditionEntryDuration={labels.formatConditionEntryDuration}
+        getConditionDurationUnits={labels.getConditionDurationUnits}
+        onAddCondition={onAddCondition}
+        onRemoveCondition={onRemoveCondition}
         onClearConditions={onClearConditions}
       />
 
