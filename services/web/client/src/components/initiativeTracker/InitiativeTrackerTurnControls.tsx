@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export type PreviousTurnState = "available" | "noPreviousTurn" | "currentTurnLocked" | "previousTurnBlocked";
+export type PreviousTurnState = "available" | "noPreviousTurn" | "currentTurnLocked";
 
 type InitiativeTrackerTurnControlsProps = {
   battleStarted: boolean;
@@ -20,7 +20,6 @@ type InitiativeTrackerTurnControlsProps = {
     previousHintNoPrevious: string;
     turnUndoAvailable: string;
     turnCurrentLocked: string;
-    turnPreviousBlocked: string;
   };
   onStartCombat: () => void;
   onEndCombat: () => void;
@@ -33,7 +32,6 @@ function getPreviousHint(previousTurnState: PreviousTurnState, labels: Initiativ
     case "available":
       return labels.previousHintAvailable;
     case "currentTurnLocked":
-    case "previousTurnBlocked":
       return labels.previousHintLocked;
     case "noPreviousTurn":
       return labels.previousHintNoPrevious;
@@ -56,9 +54,7 @@ export function InitiativeTrackerTurnControls({
       ? labels.turnUndoAvailable
       : previousTurnState === "currentTurnLocked"
         ? labels.turnCurrentLocked
-        : previousTurnState === "previousTurnBlocked"
-          ? labels.turnPreviousBlocked
-          : null;
+        : null;
 
   return (
     <div className="mt-4 flex flex-col items-center gap-2">

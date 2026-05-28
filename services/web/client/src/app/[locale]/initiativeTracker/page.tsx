@@ -62,11 +62,10 @@ export default function InitiativeTrackerPage() {
 
     const currentKey = buildBattleTurnKey(currentRound, activeTurnRowId);
     if (isBattleTurnLocked(currentKey, turnsWithActions)) return "currentTurnLocked";
-    if (!canUndoBattleTurn(sortedRows, currentRound, activeTurnRowId, turnsWithActions)) {
-      return "previousTurnBlocked";
-    }
 
-    return "available";
+    return canUndoBattleTurn(sortedRows, currentRound, activeTurnRowId, turnsWithActions)
+      ? "available"
+      : "noPreviousTurn";
   }, [activeTurnRowId, battleStarted, currentRound, hasPreviousTurn, sortedRows, turnsWithActions]);
 
   const canGoPrevious = previousTurnState === "available";
@@ -217,7 +216,6 @@ export default function InitiativeTrackerPage() {
                 previousHintNoPrevious: t("previousTurnHintNoPrevious"),
                 turnUndoAvailable: t("turnUndoAvailable"),
                 turnCurrentLocked: t("turnCurrentLocked"),
-                turnPreviousBlocked: t("turnPreviousBlocked"),
               }}
               onStartCombat={() => dispatch(startBattle())}
               onEndCombat={() => dispatch(endBattle())}

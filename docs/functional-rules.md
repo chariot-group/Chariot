@@ -10,11 +10,13 @@ Each rule has a unique identifier and must be tested.
 **Rule**: Use Winston logger exclusively with NestJS injection and explicit context.
 
 **Requirements**:
+
 - Injection via `private readonly logger = new Logger(ClassName.name)`
 - Appropriate levels: `debug`, `info`, `warn`, `error` (with stack trace)
 - Log critical events: auth, startup, errors
 
 **Prohibitions**:
+
 - Use `console.log`, `console.error`, `console.warn`, `console.debug`
 - Log passwords, complete tokens, or sensitive data
 
@@ -27,19 +29,23 @@ Each rule has a unique identifier and must be tested.
 **Rule**: All character types (Player, NPC, etc.) must include shared narrative and economic fields at the base `Character` level.
 
 **Requirements**:
+
 - `appearance`: age, height, weight, eyes, skin, hair, description
 - `background`: personalityTraits, ideals, bonds, flaws, alliesAndOrgs, backstory
 - `treasure`: cp, sp, ep, gp, pp, notes
 - Exposed in Swagger on all endpoints that accept `Character` derivatives
 
 **Prohibitions**:
+
 - Duplicating these fields in discriminators (e.g., `Player`, `NPC`) when they already exist on `Character`
 
 **Tests**:
+
 - DTO validation accepts these nested structures on `CreateCharacterDto`
 - Invalid types in nested DTOs are rejected
 
 **References**:
+
 - `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
 - `services/adventure/api/src/resources/character/core/dto/create-character.dto.ts`
 
@@ -52,6 +58,7 @@ Each rule has a unique identifier and must be tested.
 **Requirements**:
 
 **Standard Conditions** (boolean) - Available for ALL characters (Player & NPC):
+
 - `blinded`: Character is blinded
 - `charmed`: Character is charmed
 - `deafened`: Character is deafened
@@ -68,6 +75,7 @@ Each rule has a unique identifier and must be tested.
 - `unconscious`: Character is unconscious
 
 **Exhaustion** (Player-specific only):
+
 - Type: `exhaustionLevel` (integer, 0-6)
 - Only available on Player characters, NOT on NPCs
 - Level 0: No exhaustion (default)
@@ -79,6 +87,7 @@ Each rule has a unique identifier and must be tested.
 - Level 6: Death
 
 **Validation Rules**:
+
 - All standard conditions default to `false`
 - Standard conditions are available on both Player and NPC
 - `exhaustionLevel` is ONLY available on Player schema
@@ -87,11 +96,13 @@ Each rule has a unique identifier and must be tested.
 - Invalid exhaustion levels must be rejected
 
 **Prohibitions**:
+
 - Setting exhaustion level on NPCs
 - Setting exhaustion level outside 0-6 range
 - Using non-boolean values for standard conditions
 
 **Tests**:
+
 - DTO validation accepts valid conditions structure for all characters
 - Player DTO accepts exhaustionLevel
 - NPC DTO does NOT accept exhaustionLevel
@@ -100,6 +111,7 @@ Each rule has a unique identifier and must be tested.
 - Default values are correctly applied
 
 **References**:
+
 - `services/adventure/api/src/resources/character/core/schemas/conditions/conditions.schema.ts`
 - `services/adventure/api/src/resources/character/core/dto/conditions/conditions.dto.ts`
 - `services/adventure/api/src/resources/character/player/schemas/player.schema.ts`
@@ -114,6 +126,7 @@ Each rule has a unique identifier and must be tested.
 **Requirements**:
 
 **Sidebar Structure**:
+
 - Fixed sidebar on the left with 280px width
 - Collapsible/expandable functionality stored in Redux
 - User profile section at the bottom
@@ -122,6 +135,7 @@ Each rule has a unique identifier and must be tested.
 - Navigation items reference Figma design specifications
 
 **Redux Architecture**:
+
 - Redux Toolkit with TypeScript for complete type safety
 - Three state slices:
   - `uiSlice`: UI state (sidebar collapsed state, theme preferences)
@@ -132,6 +146,7 @@ Each rule has a unique identifier and must be tested.
 - Memoized selectors using `createSelector` for performance
 
 **Context Mode Management**:
+
 - Context is **NOT** determined by URL patterns or prefixes
 - Context mode (Player/GM) is stored in `userSlice.contextMode`
 - Context switch triggered by a navbar button that dispatches Redux action
@@ -140,6 +155,7 @@ Each rule has a unique identifier and must be tested.
 - Context mode persists across route changes until explicitly toggled
 
 **Accessibility Requirements**:
+
 - Keyboard navigation support: Tab for focus navigation, Escape to close sidebar
 - ARIA attributes: `role="navigation"`, `aria-label="Main navigation"`, `aria-expanded`, `aria-current="page"`
 - Focus trap when sidebar is open in overlay mode (mobile viewport)
@@ -148,17 +164,20 @@ Each rule has a unique identifier and must be tested.
 - Visible focus indicators for all interactive elements
 
 **SSR and Next.js Compatibility**:
+
 - All Redux-connected components must use `'use client'` directive
 - Store initialization compatible with Next.js App Router SSR
 - No hydration mismatches between server and client Redux state
 - Redux Provider wrapped in client component before injection in layout
 
 **Navigation Structure** (examples based on context mode):
+
 - Player mode: Campaigns list, Campaign groups, Battle selection, Character sheets
 - GM mode: Campaign management, NPC management, Encounter builder, World settings
 - Shared: User profile, Settings, Logout
 
 **Prohibitions**:
+
 - Using global variables or React Context for navigation state (Redux is mandatory)
 - Hardcoding user roles or context mode without Keycloak validation
 - Detecting context from URL patterns or prefixes
@@ -167,6 +186,7 @@ Each rule has a unique identifier and must be tested.
 - Using `console.log` in production code (respect FR-001)
 
 **Tests**:
+
 - Redux slices unit tests (actions, reducers, selectors with all edge cases)
 - Context mode toggle action and state updates
 - Sidebar component rendering in both Player and GM contexts
@@ -175,6 +195,7 @@ Each rule has a unique identifier and must be tested.
 - SSR hydration without Redux state mismatches
 
 **References**:
+
 - `services/web/client/src/store/` (Redux architecture)
 - `services/web/client/src/components/layout/Sidebar/` (Sidebar components)
 - `services/web/client/src/app/[locale]/layout.tsx` (Redux Provider integration)
@@ -186,6 +207,7 @@ Each rule has a unique identifier and must be tested.
 **Rule**: Player characters can be created and exist without being assigned to any group. A paginated route must be available to retrieve all player characters that are not currently assigned to any group and that were created by the authenticated user.
 
 **Requirements**:
+
 - Player characters can have an empty `groups` array (`[]`)
 - `groups` field is optional (not required) for all character types
 - A dedicated endpoint `GET /characters/players/without-group` must return paginated results of player characters with empty `groups` array created by the authenticated user
@@ -197,6 +219,7 @@ Each rule has a unique identifier and must be tested.
 - Returns `IPaginatedResponse` with `pagination` metadata (page, offset, totalItems)
 
 **Validation Rules**:
+
 - Creating a player character with `groups: []` is valid
 - Creating a player character without specifying `groups` defaults to `[]`
 - The route must filter by discriminator `kind: 'player'`, `groups: []`, and `createdBy: userId`
@@ -204,12 +227,14 @@ Each rule has a unique identifier and must be tested.
 - Offset parameter must be between 1 and 100
 
 **Prohibitions**:
+
 - Including NPC characters in the without-group endpoint
 - Returning soft-deleted characters (`deletedAt !== null`)
 - Returning characters created by other users
 - Allowing group assignment validation to fail when `groups` is empty
 
 **Tests**:
+
 - Player can be created with empty groups array
 - Player can be created without specifying groups (defaults to empty)
 - Route returns paginated players with empty groups created by the authenticated user
@@ -221,6 +246,7 @@ Each rule has a unique identifier and must be tested.
 - Service method correctly queries MongoDB for players without groups filtered by createdBy
 
 **References**:
+
 - `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
 - `services/adventure/api/src/resources/character/player/player.controller.ts`
 - `services/adventure/api/src/resources/character/player/player.service.ts`
@@ -232,17 +258,20 @@ Each rule has a unique identifier and must be tested.
 **Rule**: On user logout, all persisted application state (Redux Persist) must be completely purged to prevent data leakage between different user sessions.
 
 **Context**: When a user logs out and another user logs in on the same browser/device, any persisted data from the previous user could cause:
+
 - Permission errors (403) when the new user tries to access cached data they don't have rights to
 - Data contamination between user sessions
 - Security and privacy violations
 
 **Requirements**:
+
 - On logout action, Redux Persist state **must be purged** before the Keycloak logout redirect
 - The purge operation must be awaited to ensure completion before redirect
 - Purge must clear all whitelisted slices: `environment`, `campaignContext`, `sidebar`, `group`, `actionButton`, `campaign`, `character`
 - Any error during purge must be logged but not block the logout process
 
 **Expected Behavior**:
+
 1. User clicks logout
 2. Redux persisted state is purged from localStorage
 3. Keycloak logout is triggered
@@ -250,16 +279,19 @@ Each rule has a unique identifier and must be tested.
 5. On new login, application starts with empty state (no cached data from previous user)
 
 **Prohibitions**:
+
 - Skipping the purge step during logout
 - Allowing persisted state to survive across different user sessions
 - Assuming cache data belongs to the current user without validation
 
 **Tests**:
+
 - Manual test: Logout with user A, login with user B, verify no cached data from user A remains
 - Verify localStorage key `persist:chariot` is removed on logout
 - Verify no 403 errors on new user login due to cached data
 
 **References**:
+
 - `services/web/client/src/store/index.ts` - `purgePersistedState()` function
 - `services/web/client/src/providers/KeycloakProvider.tsx` - logout function with purge
 
@@ -270,11 +302,13 @@ Each rule has a unique identifier and must be tested.
 **Rule**: Upon successful authentication, the application must automatically redirect the user to the most relevant page based on their existing data. The redirection follows a strict priority hierarchy to ensure optimal user experience.
 
 **Priority Hierarchy**:
+
 1. **First Priority - Characters Without Group**: If the user has at least one player character without any group assignment, redirect to that character's page
 2. **Second Priority - Characters in Campaigns**: If no characters without group exist, but the user has at least one character within a campaign/group, redirect to the first character found in any campaign
 3. **Fallback - Welcome Page**: If the user has no characters at all, redirect to the welcome page (`/welcome`)
 
 **Requirements**:
+
 - Redirection logic executes **only once** immediately after successful authentication (`authenticated === true`)
 - Must check characters without group first by calling `GET /characters/players/without-group`
 - If no characters without group, fetch campaigns with `GET /campaigns` and extract the first character from the first campaign's first group
@@ -284,17 +318,20 @@ Each rule has a unique identifier and must be tested.
 - Loading state should be maintained during data fetching to avoid flickering
 
 **URL Patterns**:
+
 - Character without group: `/{locale}/characters/{characterId}`
 - Character in campaign: `/{locale}/campaigns/{campaignId}/groups/{groupId}/characters/{characterId}`
 - Welcome page: `/{locale}/welcome`
 
 **Validation Rules**:
+
 - Only consider player characters (exclude NPCs)
 - Only consider characters created by the authenticated user (`createdBy` matches `keycloakId`)
 - Only consider non-deleted characters (`deletedAt === null`)
 - Skip redirection if user is already on a character or campaign page
 
 **Prohibitions**:
+
 - Redirecting on every route change (must be post-authentication only)
 - Ignoring locale prefix in redirect URLs
 - Hardcoding redirect URLs without considering user data
@@ -302,6 +339,7 @@ Each rule has a unique identifier and must be tested.
 - Exposing navigation logic errors to the user (must fail gracefully to welcome page)
 
 **Tests**:
+
 - User with characters without group redirects to first character without group
 - User with only characters in campaigns redirects to first character in campaign
 - User with no characters redirects to welcome page
@@ -310,6 +348,7 @@ Each rule has a unique identifier and must be tested.
 - Navigation logic executes only once per authentication
 
 **References**:
+
 - `services/web/client/src/providers/KeycloakProvider.tsx` - Authentication flow
 - `services/web/client/src/services/CharacterService.ts` - Character data fetching
 - `services/web/client/src/services/CampaignService.ts` - Campaign data fetching
@@ -323,16 +362,19 @@ Each rule has a unique identifier and must be tested.
 **Requirements**:
 
 **User Schema**:
+
 - `keycloakId`: UUID v4 linking to Keycloak user (required, unique)
 - `balance`: Numeric value representing user's current balance (required, default: 0)
 - `history`: Array of transaction records
 
 **History Entry Structure**:
+
 - `date`: Timestamp of the transaction (required)
 - `campaignName`: Name of the campaign associated with the transaction (required)
 - `value`: Numeric value of the transaction, positive or negative (required)
 
 **Validation Rules**:
+
 - `keycloakId` must be a valid UUID v4 format
 - `keycloakId` must be unique across all users
 - `balance` must be a number
@@ -340,12 +382,14 @@ Each rule has a unique identifier and must be tested.
 - History is immutable once created (no updates or deletions of history entries)
 
 **Prohibitions**:
+
 - Creating a user without a valid Keycloak ID
 - Modifying `keycloakId` after user creation
 - Deleting history entries
 - Creating history entries without all required fields
 
 **Tests**:
+
 - DTO validation accepts valid User structure with all fields
 - Invalid Keycloak ID format is rejected
 - Duplicate Keycloak ID is rejected
@@ -354,11 +398,11 @@ Each rule has a unique identifier and must be tested.
 - Default balance is 0 for new users
 
 **References**:
+
 - `services/adventure/api/src/resources/user/schemas/user.schema.ts`
 - `services/adventure/api/src/resources/user/schemas/sub/history.schema.ts`
 - `services/adventure/api/src/resources/user/dto/create-user.dto.ts`
 - `services/adventure/api/src/resources/user/dto/history.dto.ts`
-
 
 ---
 
@@ -369,6 +413,7 @@ Each rule has a unique identifier and must be tested.
 **Requirements**:
 
 **Page Structure**:
+
 - Full-screen layout with tabbed navigation interface
 - Fixed header section containing character identity and navigation tabs
 - Content area displaying tab-specific information
@@ -376,6 +421,7 @@ Each rule has a unique identifier and must be tested.
 - Maximum content width of 480px centered on screen with appropriate padding
 
 **Tab Navigation System**:
+
 - Five mandatory tabs with fixed color scheme:
   - **Général** (General): Blue accent (`bg-blue`)
   - **Combat** (Combat): Red accent (`bg-red`, white text)
@@ -390,12 +436,14 @@ Each rule has a unique identifier and must be tested.
 **Character Header Information**:
 
 **For Player Characters**:
+
 - Character name (prominent display)
 - Class(es) with level(s) in format: "ClassName Niv X" (e.g., "Guerrier Niv 5 / Magicien Niv 3")
 - Multi-class support with "/" separator
 - Group label if character belongs to a group (first group only)
 
 **For NPC Characters**:
+
 - Character name (prominent display)
 - Challenge Rating (CR) with abbreviated label "ID" and tooltip "Indice de dangerosité"
 - Fractional CR display for values < 1:
@@ -406,6 +454,7 @@ Each rule has a unique identifier and must be tested.
 - Group label if character belongs to a group (first group only)
 
 **Character Avatar**:
+
 - Placeholder icon (User icon from Lucide) when no image is available
 - Fixed dimensions: 16x20 (mobile), 20x24 (sm), 24x28 (md+)
 - Rounded corners (`rounded-[18px]`)
@@ -413,6 +462,7 @@ Each rule has a unique identifier and must be tested.
 - Positioned to the right of character information
 
 **Accessibility Requirements**:
+
 - ARIA role `tablist` on tab container with descriptive `aria-label`
 - ARIA role `tab` on each tab trigger with `aria-selected` and `aria-controls` attributes
 - ARIA role `tabpanel` on each content panel with corresponding `id` and `aria-labelledby`
@@ -423,11 +473,13 @@ Each rule has a unique identifier and must be tested.
 - Tab index management for sequential keyboard navigation
 
 **Type Discrimination**:
+
 - TypeScript type guard function `isPlayer()` to differentiate Player from NPC
 - Type guard checks for presence of `progression` property
 - Proper TypeScript typing for all props and return types
 
 **Internationalization (i18n)**:
+
 - All labels, tabs, and tooltips must use translation keys
 - Translation namespace: `characterDetail`
 - Supported languages: English (en), Spanish (es), French (fr)
@@ -438,6 +490,7 @@ Each rule has a unique identifier and must be tested.
   - `characterDetail.placeholder.noImage`
 
 **Routing Support**:
+
 - Two routes must display character detail view:
   - Standalone character: `/[locale]/characters/[idCharacters]`
   - Character in campaign: `/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]`
@@ -447,12 +500,14 @@ Each rule has a unique identifier and must be tested.
 - Error state displays centered error message in red
 
 **Component Architecture**:
+
 - **CharacterDetailView**: Main component accepting `Player | NPC` prop
 - **TabContentPlaceholder**: Temporary placeholder for tab content implementation
 - Uses Shadcn/UI Tabs component for tab functionality
 - Client-side component (`"use client"` directive)
 
 **Prohibitions**:
+
 - Displaying NPC-specific fields (challenge rating, XP) for Player characters
 - Displaying Player-specific fields (class, level, exhaustion) for NPCs
 - Hardcoding labels or text without internationalization
@@ -462,11 +517,13 @@ Each rule has a unique identifier and must be tested.
 - Creating separate components for Player and NPC views (must use discriminated union)
 
 **Tab Content Status**:
+
 - All five tabs currently display placeholder content
 - Final tab content implementation is pending and not covered by this rule
 - Placeholder displays tab name in large text with accent color
 
 **Tests**:
+
 - Component renders correctly with Player character data
 - Component renders correctly with NPC character data
 - Type guard correctly identifies Player vs NPC
@@ -482,6 +539,7 @@ Each rule has a unique identifier and must be tested.
 - Focus indicators are visible and meet WCAG standards
 
 **References**:
+
 - `services/web/client/src/components/character/CharacterDetailView.tsx` - Main component
 - `services/web/client/src/components/character/TabContentPlaceholder.tsx` - Placeholder component
 - `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx` - Standalone route
@@ -498,6 +556,7 @@ Each rule has a unique identifier and must be tested.
 **Context**: When a session expires and a user reconnects (same or different account), the frontend may attempt to access cached resources from the previous user, causing 404 errors and infinite redirect loops.
 
 **Requirements**:
+
 - **Cache Versioning by User**: Redux persist cache key must include the user ID (`chariot_user_${userId}`)
 - **Transition State Management**: Add `userTransitioning` boolean state in `KeycloakContext` to signal user changes
 - **Store Recreation**: Automatically recreate Redux store with the correct cache when user changes
@@ -506,30 +565,29 @@ Each rule has a unique identifier and must be tested.
 - **Loading State Respect**: Pages must not redirect while `loading` or `userTransitioning` is true
 
 **Implementation Details**:
+
 1. **Store Configuration**:
-   - `makeStore(userId)` accepts optional userId parameter
-   - `getCurrentUserId()` retrieves userId from localStorage
-   - `makePersistConfig(userId)` creates user-specific persist configuration
-   - `isStoreForCurrentUser(userId)` checks if current store matches userId
-
+  - `makeStore(userId)` accepts optional userId parameter
+  - `getCurrentUserId()` retrieves userId from localStorage
+  - `makePersistConfig(userId)` creates user-specific persist configuration
+  - `isStoreForCurrentUser(userId)` checks if current store matches userId
 2. **User Change Detection** (KeycloakProvider):
-   - Compare `kc.tokenParsed.sub` with stored `chariot_user_id`
-   - If different, set `userTransitioning = true`
-   - Dispatch `chariot:user-changed` event with new userId
-   - Reset `userTransitioning = false` after 300ms
-
+  - Compare `kc.tokenParsed.sub` with stored `chariot_user_id`
+  - If different, set `userTransitioning = true`
+  - Dispatch `chariot:user-changed` event with new userId
+  - Reset `userTransitioning = false` after 300ms
 3. **Store Recreation** (ReduxProvider):
-   - Listen to `chariot:user-changed` events
-   - Purge old persistor
-   - Create new store with new userId
-   - Force re-render with updated store
-
+  - Listen to `chariot:user-changed` events
+  - Purge old persistor
+  - Create new store with new userId
+  - Force re-render with updated store
 4. **404 Redirect Protection**:
-   - Check `loading` state before redirecting
-   - Use `setTimeout` with 500ms grace period
-   - Fallback to welcome page instead of generic 404 when appropriate
+  - Check `loading` state before redirecting
+  - Use `setTimeout` with 500ms grace period
+  - Fallback to welcome page instead of generic 404 when appropriate
 
 **Benefits**:
+
 - ✅ Eliminates 404 redirect loops on user change
 - ✅ Prevents data leakage between users
 - ✅ No need to manually purge cache (automatic isolation)
@@ -537,6 +595,7 @@ Each rule has a unique identifier and must be tested.
 - ✅ Graceful handling of expired sessions
 
 **Prohibitions**:
+
 - Using `window.location.href` for redirects without grace period
 - Redirecting during `loading` or `userTransitioning` states
 - Sharing cache between different users
@@ -545,6 +604,7 @@ Each rule has a unique identifier and must be tested.
 - Using single global cache key for all users
 
 **Tests**:
+
 - User A logs in → cache uses `chariot_user_${userA_id}`
 - User A logs out, User B logs in → cache switches to `chariot_user_${userB_id}`
 - User A's cached data is not accessible by User B
@@ -556,12 +616,14 @@ Each rule has a unique identifier and must be tested.
 - Multiple browser tabs maintain correct user isolation
 
 **References**:
+
 - `services/web/client/src/store/index.ts` - Redux store with user versioning
 - `services/web/client/src/providers/KeycloakProvider.tsx` - User transition state management
 - `services/web/client/src/providers/ReduxProvider.tsx` - Store recreation on user change
 - `services/web/client/src/app/[locale]/profile/page.tsx` - Protected redirect example
 - `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx` - Grace period implementation
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx` - Grace period implementation
+
 ---
 
 ## FR-009: User Password Change
@@ -573,6 +635,7 @@ Each rule has a unique identifier and must be tested.
 **Requirements**:
 
 **Backend API**:
+
 - Route: `PUT /users/me/password`
 - Request body: `{ currentPassword: string, newPassword: string }`
 - Authentication: JWT token with Keycloak user ID
@@ -591,6 +654,7 @@ Each rule has a unique identifier and must be tested.
   - Never log passwords or tokens
 
 **Frontend Hook**:
+
 - Hook: `usePasswordForm()` in `src/hooks/usePasswordForm.ts`
 - Form state management with react-hook-form and Zod validation
 - States:
@@ -615,6 +679,7 @@ Each rule has a unique identifier and must be tested.
   - `validation.passwordMismatch`: "Passwords do not match"
 
 **Keycloak Integration**:
+
 - Backend service: `KeycloakService.changeUserPassword(keycloakId, currentPassword, newPassword)`
 - API endpoint: `adminClient.users.resetPassword()` (requires valid current password verification first)
 - Verify current password by attempting authentication before changing
@@ -624,6 +689,7 @@ Each rule has a unique identifier and must be tested.
   - Account locked or disabled
 
 **User Experience**:
+
 - User remains authenticated after successful password change
 - Form resets after successful submission
 - Toast notification displays for 3 seconds
@@ -631,12 +697,14 @@ Each rule has a unique identifier and must be tested.
 - Password visibility toggle for all password fields
 
 **Security Requirements**:
+
 - Passwords never logged in plain text
 - Passwords never stored in Redux or localStorage
 - No password sent in GET requests or URL parameters
 - HTTPS required for all password-related requests (enforced by API)
 
 **Benefits**:
+
 - ✅ Secure password change through Keycloak
 - ✅ User-friendly validation with clear error messages
 - ✅ Internationalized error messages
@@ -644,6 +712,7 @@ Each rule has a unique identifier and must be tested.
 - ✅ No passwords leaked in logs or client-side storage
 
 **Prohibitions**:
+
 - Storing passwords in Redux, localStorage, or any client-side cache
 - Logging passwords in Winston logs (even on error)
 - Allowing password change without current password verification
@@ -654,6 +723,7 @@ Each rule has a unique identifier and must be tested.
 **Tests**:
 
 **Backend Tests**:
+
 - DTO validation accepts valid password change data
 - DTO validation rejects invalid data (empty, too short, etc.)
 - Controller returns 401 when current password is incorrect
@@ -663,6 +733,7 @@ Each rule has a unique identifier and must be tested.
 - Service logs success when password changed (without password in log)
 
 **Frontend Tests**:
+
 - Hook validates form data with Zod schema
 - Hook rejects passwords shorter than 8 characters
 - Hook rejects mismatched password confirmation
@@ -672,6 +743,7 @@ Each rule has a unique identifier and must be tested.
 - Hook returns react-hook-form instance
 
 **References**:
+
 - `services/adventure/api/src/resources/user/dto/change-password.dto.ts` - Backend DTO
 - `services/adventure/api/src/resources/user/user.controller.ts` - PUT /users/me/password route
 - `services/adventure/api/src/resources/user/user.service.ts` - Password change business logic
@@ -680,6 +752,7 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/types/user.ts` - PasswordChangeDto type
 - `services/web/client/src/services/UserService.ts` - API client method
 - `services/web/client/messages/{en|fr|es}.json` - Internationalization
+
 ---
 
 ## FR-010: User Profile Update via Keycloak
@@ -689,6 +762,7 @@ Each rule has a unique identifier and must be tested.
 **Requirements**:
 
 **Backend (Adventure API)**:
+
 - Endpoint `PUT /users/me` accepts partial updates to user profile
 - DTO `UpdateUserProfileDto` with optional fields: `firstName`, `lastName`, `email`
 - Validation rules:
@@ -701,6 +775,7 @@ Each rule has a unique identifier and must be tested.
 - Authentication required via Keycloak JWT Guard
 
 **Frontend (Web Client)**:
+
 - Hook `useProfileForm()` centralizes profile update logic
 - React Hook Form with Zod resolver for client-side validation
 - Zod schema validation:
@@ -716,6 +791,7 @@ Each rule has a unique identifier and must be tested.
 - Network error handling with translated messages
 
 **Validation Rules**:
+
 - All field updates are optional (partial update)
 - Empty strings are rejected (must be min 2 characters or omitted)
 - Email format must be standard RFC 5322
@@ -724,6 +800,7 @@ Each rule has a unique identifier and must be tested.
 - Updates are applied atomically in Keycloak
 
 **Prohibitions**:
+
 - Updating username via this endpoint
 - Updating other users' profiles (only `user.keycloakId` from JWT)
 - Bypassing Keycloak for user data persistence
@@ -733,6 +810,7 @@ Each rule has a unique identifier and must be tested.
 - Missing toast feedback after save attempt
 
 **Error Handling**:
+
 - 400 Bad Request: Invalid data format or validation failure
 - 401 Unauthorized: Missing or invalid JWT token
 - 404 Not Found: User not found in Keycloak
@@ -741,6 +819,7 @@ Each rule has a unique identifier and must be tested.
 - Logs include full error stack trace (backend) for debugging
 
 **Frontend Hook Behavior** (`useProfileForm`):
+
 - Loads user data on mount via `useUser({ autoFetch: true })`
 - Resets form when user data changes
 - `onUpdate`: Validates → API call → Redux update → Toast → Form reset to new values
@@ -751,11 +830,13 @@ Each rule has a unique identifier and must be tested.
 - `success`: True after successful update (resets after 3s or new action)
 
 **TypeScript Types**:
+
 - Backend: `UpdateUserProfileDto` (PartialType with firstName, lastName, email)
 - Frontend: `UpdateUserDto` mirrors backend DTO structure
 - Both use strict TypeScript without `any` types
 
 **Internationalization (i18n)**:
+
 - Translation namespace: `ProfilePage.editProfile`
 - Required keys in `messages/{en|fr|es}.json`:
   - `editProfile.successMessage`: "Profile updated successfully"
@@ -769,6 +850,7 @@ Each rule has a unique identifier and must be tested.
   - `editProfile.cancel`: "Cancel"
 
 **Tests**:
+
 - **Backend**:
   - Unit: UserService calls KeycloakService with correct parameters
   - Unit: Validation rejects firstName/lastName < 2 characters
@@ -779,7 +861,6 @@ Each rule has a unique identifier and must be tested.
   - E2E: PUT /users/me returns 400 with invalid data
   - E2E: Partial update (only firstName) works correctly
   - Mock: KeycloakService.updateUser is called with merged data
-  
 - **Frontend**:
   - Unit: useProfileForm validates form data with Zod
   - Unit: useProfileForm calls UserService.updateCurrentUser
@@ -792,6 +873,7 @@ Each rule has a unique identifier and must be tested.
   - Integration: Network error displays translated error message
 
 **References**:
+
 - `services/adventure/api/src/resources/user/user.controller.ts` - PUT /users/me endpoint
 - `services/adventure/api/src/resources/user/user.service.ts` - updateUser method
 - `services/adventure/api/src/resources/user/keycloak.service.ts` - updateUser method
@@ -808,6 +890,7 @@ Each rule has a unique identifier and must be tested.
 **Rule**: Stripe checkout creation must be restricted to authenticated users, while webhook processing must be publicly accessible only through Stripe signature validation.
 
 **Requirements**:
+
 - Endpoint `POST /stripe/checkout` requires authenticated user context from Keycloak guard
 - `userId` must be sourced from `request.user.keycloakId` only
 - `userId` must not be provided in checkout request body DTO
@@ -815,17 +898,162 @@ Each rule has a unique identifier and must be tested.
 - Webhook requests must be validated with Stripe signature header and webhook secret before processing
 
 **Prohibitions**:
+
 - Accepting `userId` from checkout body payload
 - Requiring user JWT authentication on webhook endpoint
 - Processing webhook event without Stripe signature validation
 
 **Tests**:
+
 - Controller unit test verifies checkout calls service with `request.user.keycloakId`
 - Controller unit test verifies webhook route is marked public
 - Controller unit test verifies missing raw body is rejected
 
 **References**:
+
 - `services/adventure/api/src/resources/stripe/stripe.controller.ts`
 - `services/adventure/api/src/resources/stripe/stripe.service.ts`
 - `services/adventure/api/src/resources/stripe/dto/checkout.dto.ts`
 - `services/adventure/api/src/resources/stripe/stripe.controller.spec.ts`
+
+---
+
+## FR-012: Combat Module - Configuration and Initiative Tracker
+
+**Rule**: The combat module must provide a stable Game Master workflow from battle setup to turn-by-turn tracking, with recoverable local state and explicit guardrails on turn rollback.
+
+**Scope**:
+
+- GM flow only for setup and tracker control (players consume session and character views)
+- Two sub-modules: **battle configuration dialog** and **initiative tracker**
+- Source of truth on frontend: `session` Redux slice (persisted)
+
+**Preconditions**:
+
+- User is in GM context
+- A session exists and is launched
+- At least one campaign group (or session participant) provides at least one combatant
+
+**Battle Configuration (InitBattleDialog)**:
+
+- Available when session is launched and battle is not initialized
+- Builds selectable groups from campaign active groups and adds a mandatory virtual group for current session participants
+- Session participants group is always forced in selected groups when it has members
+- GM can:
+  - select/deselect eligible groups
+  - expand/collapse groups to inspect members
+  - include/exclude members per group
+- Validation is allowed only if:
+  - at least one non-participant group is selected
+  - each selected group still has at least one included member
+- On validation:
+  - selected members are transformed into tracker rows
+  - each row starts with initiative `0`, `visible: true`, empty conditions, and HP/AC from character stats
+  - battle state is initialized (not started), and user is redirected to `/{locale}/initiativeTracker`
+
+**Draft Persistence (Setup UX continuity)**:
+
+- Setup choices are persisted in `session.initBattleDraft`:
+  - `selectedGroupIds`
+  - `expandedGroupIds`
+  - `excludedMembersByGroup`
+  - `showAllOpponents`
+- Draft is restored when reopening configuration
+- Invalid/stale group references are sanitized during restore
+
+**Initiative Tracker - Core Behavior**:
+
+- Tracker list is always displayed sorted by:
+  1. initiative descending
+  2. group label ascending (tie-breaker)
+- Before combat start:
+  - initiatives are editable
+  - grouped initiative edit mode is available (bulk apply to selected rows)
+- On combat start:
+  - active turn is set to first row in sorted order
+  - initiatives become locked
+  - grouped initiative mode is disabled
+
+**Turn and Round Lifecycle**:
+
+- `next`:
+  - moves to next row
+  - if last row finished, wraps to first row and increments round by 1
+- `previous` (undo progression) is allowed only if:
+  - a previous turn exists
+  - current turn has no recorded tracker action
+  - global round index does not affect eligibility by itself
+- Clarification of scope:
+  - `turn` = current character turn in initiative order
+  - `round` = global cycle incremented after all characters have played
+  - rollback eligibility is evaluated on current character turn state, not on global round state
+- Any tracker edit during combat (HP, AC, visibility, conditions, etc.) marks current turn as having actions and can lock rollback
+
+**Conditions Management**:
+
+- Supported conditions follow the D&D list used by tracker constants
+- Per character:
+  - add/remove one condition
+  - clear all conditions
+  - one active entry per condition key (re-adding replaces previous entry)
+- Optional duration on add:
+  - `seconds`, `minutes`, `hours`, `rounds`, `untilCombatEnd`
+- Duration runtime behavior:
+  - stored as `remainingSeconds` except `untilCombatEnd`
+  - decremented by one full round on round advance
+  - restored by one full round when valid rollback crosses a round boundary
+  - removed automatically when `remainingSeconds <= 0`
+  - all `untilCombatEnd` conditions are removed on combat end
+
+**HP Session Interaction**:
+
+- In-session tracker HP cell opens session health dialog
+- Saving HP updates both backend character state (through session flow) and tracker row mirror (`hitPoints`, `maxHitPoints`, `tempHitPoints`)
+
+**Reset and End States**:
+
+- `End combat`:
+  - keeps configured rows
+  - resets turn engine (`battleStarted=false`, round 1, no active row, no action locks)
+  - removes conditions scoped to `untilCombatEnd`
+- `Reset` (sidebar action on tracker page):
+  - clears all tracker rows
+  - clears initialized/started combat state
+  - requires a new battle configuration
+
+**Persistence and Recovery**:
+
+- Tracker rows and combat state are persisted per user in Redux persist (`session` slice)
+- On rehydration:
+  - legacy condition formats are normalized
+  - missing HP derivative fields are repaired (`maxHitPoints`, `tempHitPoints`)
+
+**Functional Guardrails / Current Limitations**:
+
+- `showAllOpponents` is persisted in setup draft but currently has no functional impact on tracker generation
+- Validation currently enforces at least one selected non-participant group, even if session participants exist
+- Turn rollback lock is based on tracker actions only, not on external game events
+
+**Prohibitions**:
+
+- Starting combat with zero tracker rows
+- Allowing turn rollback when current turn has registered tracker actions
+- Keeping `untilCombatEnd` conditions after combat is ended
+
+**Tests**:
+
+- Setup validation matrix (group/member selections, mandatory participant group behavior)
+- Row generation integrity (identity, stats fallback, visibility, dedupe behavior)
+- Turn lifecycle (start, next wrap, round increment, previous constraints)
+- Action lock behavior on rollback after row update
+- Condition lifecycle for each duration type and combat end cleanup
+- Persist/rehydration normalization of session tracker state
+
+**References**:
+
+- `services/web/client/src/components/dialogs/InitBattleDialog.tsx`
+- `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
+- `services/web/client/src/components/initiativeTracker/`
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/store/index.ts`
+

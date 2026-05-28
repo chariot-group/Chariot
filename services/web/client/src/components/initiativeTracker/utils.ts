@@ -68,10 +68,8 @@ export function canUndoBattleTurn(
   if (!previousTurn || !activeTurnRowId) return false;
 
   const currentKey = buildBattleTurnKey(currentRound, activeTurnRowId);
-  const previousKey = buildBattleTurnKey(previousTurn.round, previousTurn.rowId);
 
   if (isBattleTurnLocked(currentKey, turnsWithActions)) return false;
-  if (isBattleTurnLocked(previousKey, turnsWithActions)) return false;
 
   return true;
 }

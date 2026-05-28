@@ -24,3 +24,8 @@ security/reports/*
 *.sarif
 
 .github/copilot-instructions.md
+
+# Local AI workflow and Cursor rules
+AGENTS.md
+.cursorrules
+.cursor/rules/
