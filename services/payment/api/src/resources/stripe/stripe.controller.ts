@@ -22,9 +22,15 @@ import {
 } from '@nestjs/swagger';
 import { StripeService } from '@/resources/stripe/stripe.service';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
+import { EmbeddedCheckoutDto } from '@/resources/stripe/dto/embedded-checkout.dto';
 import { Public } from '@/common/decorators/public.decorator';
 import { IResponse } from '@/common/dtos/response.dto';
-import type { ResolvedCode, StripeProductWithPrices } from '@/resources/stripe/types/stripe.type';
+import type {
+    CheckoutSessionStatus,
+    EmbeddedCheckoutResult,
+    ResolvedCode,
+    StripeProductWithPrices,
+} from '@/resources/stripe/types/stripe.type';
 
 @ApiTags('Stripe')
 @Controller('stripe')
@@ -43,6 +49,33 @@ export class StripeController {
     @ApiResponse({ status: 500, description: 'Internal error while creating Stripe session' })
     async createCheckout(@Req() request, @Body() dto: CheckoutDto) {
         return this.stripeService.createCheckoutSession(dto, request.user.keycloakId);
+    }
+
+    @Post('checkout/embedded')
+    @ApiOperation({ summary: 'Create an embedded Stripe checkout session (CHARIOT-hosted checkout page)' })
+    @ApiBody({ type: EmbeddedCheckoutDto })
+    @ApiResponse({ status: 201, description: 'Embedded checkout session created successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid checkout request payload' })
+    @ApiResponse({ status: 401, description: 'User not authenticated' })
+    @ApiResponse({ status: 500, description: 'Internal error while creating Stripe session' })
+    async createEmbeddedCheckout(
+        @Req() request,
+        @Body() dto: EmbeddedCheckoutDto,
+    ): Promise<IResponse<EmbeddedCheckoutResult>> {
+        return this.stripeService.createEmbeddedCheckoutSession(dto, request.user.keycloakId);
+    }
+
+    @Get('checkout/status/:sessionId')
+    @ApiOperation({ summary: 'Get the status of a Stripe checkout session (owned by the authenticated user)' })
+    @ApiParam({ name: 'sessionId', description: 'The Stripe checkout session ID' })
+    @ApiResponse({ status: 200, description: 'Status retrieved successfully' })
+    @ApiResponse({ status: 400, description: 'Session does not belong to the current user' })
+    @ApiResponse({ status: 401, description: 'User not authenticated' })
+    async getCheckoutStatus(
+        @Req() request,
+        @Param('sessionId') sessionId: string,
+    ): Promise<IResponse<CheckoutSessionStatus>> {
+        return this.stripeService.getCheckoutStatus(sessionId, request.user.keycloakId);
     }
 
     @Post('webhook')

@@ -9,3 +9,12 @@ export interface ResolvedCode {
     discountType: 'PERCENTAGE' | 'FIXED';
     discountValue: number;
 }
+
+export interface CheckoutSessionStatus {
+    status: 'complete' | 'expired' | 'open';
+    paymentStatus: string;
+}
+
+export interface EmbeddedCheckoutResult {
+    clientSecret: string;
+}

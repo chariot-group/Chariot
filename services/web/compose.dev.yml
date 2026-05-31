@@ -25,6 +25,7 @@ services:
       NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
       # File watching optimizations (no polling needed on modern Docker Desktop)
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
       WATCHPACK_POLLING: "false"
       CHOKIDAR_USEPOLLING: "false"
     shm_size: 512mb

@@ -147,6 +147,28 @@
     "reloadSuccessUnknown": "Your payment is confirmed, your account reload is in progress.",
     "reloadPending": "Payment confirmed, balance update in progress."
   },
+  "checkout": {
+    "title": "Your order",
+    "back": "Back",
+    "loading": "Loading…",
+    "verifying": "Verifying payment…",
+    "productError": "Unable to load this product. Please try again.",
+    "orderSummary": "Order summary",
+    "promoTitle": "Promo or affiliate code",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "total": "Total",
+    "payButton": "Pay {amount}",
+    "preparing": "Preparing payment…",
+    "payError": "Unable to initialise payment. Please try again.",
+    "securedByStripe": "Payment secured by Stripe",
+    "successTitle": "Payment successful!",
+    "successDescription": "Your tokens have been added to your account. Enjoy Chariot!",
+    "failureTitle": "Payment not completed",
+    "failureDescription": "The payment did not go through. You can try again from your profile.",
+    "retryButton": "Back to profile",
+    "backToApp": "Back to the app"
+  },
   "shop": {
     "pageTitle": "Shop",
     "pageSubtitle": "Top up your account with tokens to create characters and join sessions.",

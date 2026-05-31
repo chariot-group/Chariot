@@ -29,6 +29,11 @@ export interface ResolvedCode {
     discountValue: number;
 }
 
+export interface CheckoutSessionStatus {
+    status: 'complete' | 'expired' | 'open';
+    paymentStatus: string;
+}
+
 class PaymentService {
     private readonly STRIPE_PATH = '/stripe';
 
@@ -53,6 +58,33 @@ class PaymentService {
                 ...(promoCode && { promoCode }),
                 ...(affiliationCode && { affiliationCode }),
             },
+        );
+        return response.data.data;
+    }
+
+    async createEmbeddedCheckoutSession(
+        packId: string,
+        displayName: string,
+        locale: string,
+        promoCode?: string,
+        affiliationCode?: string,
+    ): Promise<string> {
+        const response = await createPaymentApiClient().post<IResponse<{ clientSecret: string }>>(
+            `${this.STRIPE_PATH}/checkout/embedded`,
+            {
+                packId,
+                displayName,
+                locale,
+                ...(promoCode && { promoCode }),
+                ...(affiliationCode && { affiliationCode }),
+            },
+        );
+        return response.data.data.clientSecret;
+    }
+
+    async getCheckoutStatus(sessionId: string): Promise<CheckoutSessionStatus> {
+        const response = await createPaymentApiClient().get<IResponse<CheckoutSessionStatus>>(
+            `${this.STRIPE_PATH}/checkout/status/${encodeURIComponent(sessionId)}`,
         );
         return response.data.data;
     }

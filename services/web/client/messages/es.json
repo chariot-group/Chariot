@@ -147,6 +147,28 @@
     "reloadSuccessUnknown": "Tu pago está confirmado, la recarga de tu cuenta está en curso.",
     "reloadPending": "Pago confirmado, actualización del saldo en curso."
   },
+  "checkout": {
+    "title": "Tu pedido",
+    "back": "Volver",
+    "loading": "Cargando…",
+    "verifying": "Verificando pago…",
+    "productError": "No se puede cargar este producto. Por favor, inténtalo de nuevo.",
+    "orderSummary": "Resumen del pedido",
+    "promoTitle": "Código promocional o de afiliación",
+    "subtotal": "Subtotal",
+    "discount": "Descuento",
+    "total": "Total",
+    "payButton": "Pagar {amount}",
+    "preparing": "Preparando el pago…",
+    "payError": "No se puede iniciar el pago. Por favor, inténtalo de nuevo.",
+    "securedByStripe": "Pago protegido por Stripe",
+    "successTitle": "¡Pago exitoso!",
+    "successDescription": "Tus tokens han sido añadidos a tu cuenta. ¡Disfruta de Chariot!",
+    "failureTitle": "Pago no completado",
+    "failureDescription": "El pago no se procesó correctamente. Puedes intentarlo de nuevo desde tu perfil.",
+    "retryButton": "Volver al perfil",
+    "backToApp": "Volver a la aplicación"
+  },
   "shop": {
     "pageTitle": "Tienda",
     "pageSubtitle": "Recarga tu cuenta con tokens para crear personajes y unirte a sesiones.",

@@ -14,7 +14,13 @@ import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
 import { AffiliationService } from '@/resources/affiliation/affiliation.service';
 import { IResponse } from '@/common/dtos/response.dto';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
-import { ResolvedCode, StripeProductWithPrices } from '@/resources/stripe/types/stripe.type';
+import { EmbeddedCheckoutDto } from '@/resources/stripe/dto/embedded-checkout.dto';
+import {
+    CheckoutSessionStatus,
+    EmbeddedCheckoutResult,
+    ResolvedCode,
+    StripeProductWithPrices,
+} from '@/resources/stripe/types/stripe.type';
 
 @Injectable()
 export class StripeService {
@@ -135,6 +141,181 @@ export class StripeService {
             return { message, data: session.url };
         } catch (error) {
             const errorMessage = `Error creating Stripe checkout session: ${error.message}`;
+            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(errorMessage);
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Private helper: shared discount/product resolution logic
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    private async computeDiscount(dto: CheckoutDto, userId: string): Promise<{
+        product: StripeProductWithPrices;
+        originalUnitAmount: number;
+        discountedUnitAmount: number;
+        discountAmountPerUnit: number;
+        promoCodeId?: string;
+        affiliationId?: string;
+    }> {
+        const { packId, promoCode, affiliationCode } = dto;
+
+        const product = await this.findProductWithPriceById(packId);
+        if (!product) {
+            const errorMessage = `Stripe product with ID #${packId} not found`;
+            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            throw new BadRequestException(errorMessage);
+        }
+
+        const originalUnitAmount = product.prices[0].unit_amount!;
+        let discountAmountPerUnit = 0;
+        let affiliationDiscountPerUnit = 0;
+        let promoCodeId: string | undefined;
+        let affiliationId: string | undefined;
+
+        if (affiliationCode) {
+            const affiliationResult = await this.affiliationService.findByCode(affiliationCode);
+            const affiliation = affiliationResult.data;
+
+            if (!affiliation.isActive) {
+                throw new BadRequestException(
+                    `Le code d'affiliation '${affiliationCode}' est désactivé`,
+                );
+            }
+
+            affiliationDiscountPerUnit = Math.floor(
+                (originalUnitAmount * affiliation.userDiscountPercent) / 100,
+            );
+            discountAmountPerUnit += affiliationDiscountPerUnit;
+            affiliationId = affiliation.id;
+        }
+
+        if (promoCode) {
+            const isFirstOrder = !(await this.paymentService.hasCompletedPayment(userId));
+            const promoResult = await this.promoCodeService.validate(
+                promoCode,
+                userId,
+                originalUnitAmount,
+                isFirstOrder,
+            );
+            const promo = promoResult.data;
+            const amountAfterAffiliation = originalUnitAmount - affiliationDiscountPerUnit;
+
+            if (promo.discountType === 'PERCENTAGE') {
+                discountAmountPerUnit += Math.floor(
+                    (amountAfterAffiliation * promo.discountValue) / 100,
+                );
+            } else {
+                discountAmountPerUnit += Math.min(promo.discountValue, amountAfterAffiliation);
+            }
+
+            promoCodeId = promo.id;
+        }
+
+        return {
+            product,
+            originalUnitAmount,
+            discountedUnitAmount: Math.max(0, originalUnitAmount - discountAmountPerUnit),
+            discountAmountPerUnit,
+            promoCodeId,
+            affiliationId,
+        };
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // Embedded checkout (CHARIOT-hosted checkout page)
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    async createEmbeddedCheckoutSession(
+        dto: EmbeddedCheckoutDto,
+        userId: string,
+    ): Promise<IResponse<EmbeddedCheckoutResult>> {
+        try {
+            const { packId, displayName, promoCode, affiliationCode, locale = 'fr' } = dto;
+            const start = Date.now();
+
+            const {
+                product,
+                originalUnitAmount,
+                discountedUnitAmount,
+                discountAmountPerUnit,
+                promoCodeId,
+                affiliationId,
+            } = await this.computeDiscount(dto, userId);
+
+            const returnUrl = `${process.env.FRONTEND_URL}/${locale}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
+
+            const session = await this.stripe.checkout.sessions.create({
+                ui_mode: 'embedded',
+                payment_method_types: ['card'],
+                line_items: [
+                    {
+                        adjustable_quantity: {
+                            enabled: true,
+                            minimum: 1,
+                        },
+                        price_data: {
+                            currency: product.prices[0].currency,
+                            product_data: {
+                                name: `${displayName} (${product.metadata?.token_number || '0'} chars)`,
+                            },
+                            unit_amount: discountedUnitAmount,
+                        },
+                        quantity: 1,
+                    },
+                ],
+                mode: 'payment',
+                return_url: returnUrl,
+                metadata: {
+                    userId,
+                    packId,
+                    tokenAmount: product.metadata?.token_number || '0',
+                    originalUnitAmount: String(originalUnitAmount),
+                    discountAmountPerUnit: String(discountAmountPerUnit),
+                    ...(promoCodeId && { promoCode, promoCodeId }),
+                    ...(affiliationId && { affiliationCode, affiliationId }),
+                },
+            });
+
+            if (!session.client_secret) {
+                throw new InternalServerErrorException('Stripe session client_secret is missing');
+            }
+
+            const message = `Embedded checkout session created in ${Date.now() - start} ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: { clientSecret: session.client_secret } };
+        } catch (error) {
+            const errorMessage = `Error creating embedded checkout session: ${error.message}`;
+            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            throw error instanceof BadRequestException
+                ? error
+                : new InternalServerErrorException(errorMessage);
+        }
+    }
+
+    async getCheckoutStatus(
+        sessionId: string,
+        userId: string,
+    ): Promise<IResponse<CheckoutSessionStatus>> {
+        try {
+            const session = await this.stripe.checkout.sessions.retrieve(sessionId);
+
+            if (session.metadata?.userId !== userId) {
+                throw new BadRequestException('Cette session de paiement ne vous appartient pas');
+            }
+
+            const message = `Checkout status retrieved for session ${sessionId}`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return {
+                message,
+                data: {
+                    status: (session.status ?? 'open') as CheckoutSessionStatus['status'],
+                    paymentStatus: session.payment_status,
+                },
+            };
+        } catch (error) {
+            if (error instanceof BadRequestException) throw error;
+            const errorMessage = `Error retrieving checkout status: ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(errorMessage);
         }
