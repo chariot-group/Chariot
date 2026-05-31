@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, RefreshCw, Search, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
@@ -42,15 +42,9 @@ const promoSchema = z.object({
   discountType: z.enum(["PERCENTAGE", "FIXED"]),
   discountValue: z.coerce.number().int().min(1),
   isFirstOrderOnly: z.boolean().optional(),
-  minOrderAmount: z.preprocess(
-    (v) => (v === "" || v == null ? null : v),
-    z.coerce.number().int().min(1).nullable().optional(),
-  ),
+  minOrderAmount: z.coerce.number().int().min(1).nullable().optional().catch(undefined),
   expiresAt: z.string().optional().nullable(),
-  maxTotalUses: z.preprocess(
-    (v) => (v === "" || v == null ? null : v),
-    z.coerce.number().int().min(1).nullable().optional(),
-  ),
+  maxTotalUses: z.coerce.number().int().min(1).nullable().optional().catch(undefined),
   maxUsesPerUser: z.coerce.number().int().min(1).optional(),
 });
 type PromoFormData = z.infer<typeof promoSchema>;
@@ -71,7 +65,7 @@ function PromoForm({
     setValue,
     formState: { errors },
   } = useForm<PromoFormData>({
-    resolver: zodResolver(promoSchema),
+    resolver: zodResolver(promoSchema) as unknown as Resolver<PromoFormData>,
     defaultValues: {
       discountType: "PERCENTAGE",
       maxUsesPerUser: 1,
