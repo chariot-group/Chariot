@@ -161,6 +161,7 @@
     "total": "Total",
     "payButton": "Payer {amount}",
     "preparing": "Préparation du paiement…",
+    "paymentDetails": "Informations de paiement",
     "payError": "Impossible d'initialiser le paiement. Veuillez réessayer.",
     "securedByStripe": "Paiement sécurisé par Stripe",
     "successTitle": "Paiement réussi !",

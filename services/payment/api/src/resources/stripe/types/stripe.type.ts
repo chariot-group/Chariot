@@ -18,3 +18,8 @@ export interface CheckoutSessionStatus {
 export interface EmbeddedCheckoutResult {
     clientSecret: string;
 }
+
+export interface PaymentIntentResult {
+    clientSecret: string;
+    paymentIntentId: string;
+}

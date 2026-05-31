@@ -28,6 +28,7 @@ import { IResponse } from '@/common/dtos/response.dto';
 import type {
     CheckoutSessionStatus,
     EmbeddedCheckoutResult,
+    PaymentIntentResult,
     ResolvedCode,
     StripeProductWithPrices,
 } from '@/resources/stripe/types/stripe.type';
@@ -39,6 +40,20 @@ export class StripeController {
 
     private readonly CONTROLLER_NAME = StripeController.name;
     private readonly logger = new Logger(this.CONTROLLER_NAME);
+
+    @Post('payment-intent')
+    @ApiOperation({ summary: 'Create a Stripe PaymentIntent for the single-page PaymentElement checkout' })
+    @ApiBody({ type: CheckoutDto })
+    @ApiResponse({ status: 201, description: 'PaymentIntent created successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid request payload' })
+    @ApiResponse({ status: 401, description: 'User not authenticated' })
+    @ApiResponse({ status: 500, description: 'Internal error while creating PaymentIntent' })
+    async createPaymentIntent(
+        @Req() request,
+        @Body() dto: CheckoutDto,
+    ): Promise<IResponse<PaymentIntentResult>> {
+        return this.stripeService.createPaymentIntent(dto, request.user.keycloakId);
+    }
 
     @Post('checkout')
     @ApiOperation({ summary: 'Create a Stripe checkout session for the authenticated user' })

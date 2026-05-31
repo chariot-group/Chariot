@@ -160,6 +160,7 @@
     "total": "Total",
     "payButton": "Pay {amount}",
     "preparing": "Preparing payment…",
+    "paymentDetails": "Payment details",
     "payError": "Unable to initialise payment. Please try again.",
     "securedByStripe": "Payment secured by Stripe",
     "successTitle": "Payment successful!",

@@ -160,6 +160,7 @@
     "total": "Total",
     "payButton": "Pagar {amount}",
     "preparing": "Preparando el pago…",
+    "paymentDetails": "Detalles de pago",
     "payError": "No se puede iniciar el pago. Por favor, inténtalo de nuevo.",
     "securedByStripe": "Pago protegido por Stripe",
     "successTitle": "¡Pago exitoso!",

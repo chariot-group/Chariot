@@ -16,6 +16,7 @@ function ReturnContent() {
   const locale = pathname.split("/")[1] || "fr";
   const t = useTranslations("checkout");
 
+  const redirectStatus = searchParams.get("redirect_status");
   const sessionId = searchParams.get("session_id") ?? "";
 
   const [status, setStatus] = useState<CheckoutSessionStatus | null>(null);
@@ -23,6 +24,13 @@ function ReturnContent() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    // New PaymentElement flow: redirect_status comes directly from Stripe or our router.push
+    if (redirectStatus !== null) {
+      setLoading(false);
+      return;
+    }
+
+    // Legacy EmbeddedCheckout flow: check session via API
     if (!sessionId) {
       setError(true);
       setLoading(false);
@@ -43,9 +51,13 @@ function ReturnContent() {
     return () => {
       cancelled = true;
     };
-  }, [sessionId]);
+  }, [sessionId, redirectStatus]);
 
-  const isSuccess = status?.status === "complete";
+  // Determine success: either from redirect_status param (PI flow) or API (session flow)
+  const isSuccess =
+    redirectStatus !== null
+      ? redirectStatus === "succeeded" || redirectStatus === "processing"
+      : status?.status === "complete";
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-[#0c0c0c] bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat px-4">

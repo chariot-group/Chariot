@@ -95,6 +95,24 @@ class PaymentService {
         );
         return response.data.data;
     }
+
+    async createPaymentIntent(
+        packId: string,
+        displayName: string,
+        promoCode?: string,
+        affiliationCode?: string,
+    ): Promise<{ clientSecret: string; paymentIntentId: string }> {
+        const response = await createPaymentApiClient().post<IResponse<{ clientSecret: string; paymentIntentId: string }>>(
+            `${this.STRIPE_PATH}/payment-intent`,
+            {
+                packId,
+                displayName,
+                ...(promoCode && { promoCode }),
+                ...(affiliationCode && { affiliationCode }),
+            },
+        );
+        return response.data.data;
+    }
 }
 
 const paymentService = new PaymentService();

@@ -18,6 +18,7 @@ import { EmbeddedCheckoutDto } from '@/resources/stripe/dto/embedded-checkout.dt
 import {
     CheckoutSessionStatus,
     EmbeddedCheckoutResult,
+    PaymentIntentResult,
     ResolvedCode,
     StripeProductWithPrices,
 } from '@/resources/stripe/types/stripe.type';
@@ -336,6 +337,11 @@ export class StripeService {
             if (event.type === 'checkout.session.completed') {
                 const session = event.data.object as Stripe.Checkout.Session;
                 await this.fulfillOrder(session);
+            } else if (event.type === 'payment_intent.succeeded') {
+                const paymentIntent = event.data.object as Stripe.PaymentIntent;
+                if (paymentIntent.metadata?.source === 'payment_element') {
+                    await this.fulfillPaymentIntentOrder(paymentIntent);
+                }
             } else {
                 this.logger.warn(
                     `Unhandled Stripe event type: ${event.type}`,
@@ -453,6 +459,115 @@ export class StripeService {
             const errorMessage = `Error retrieving products from Stripe: ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
             throw new BadRequestException(errorMessage);
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // PaymentElement flow (single-page checkout)
+    // ──────────────────────────────────────────────────────────────────────────────
+
+    async createPaymentIntent(
+        dto: CheckoutDto,
+        userId: string,
+    ): Promise<IResponse<PaymentIntentResult>> {
+        try {
+            const { packId, displayName } = dto;
+            const start = Date.now();
+
+            const {
+                product,
+                originalUnitAmount,
+                discountedUnitAmount,
+                discountAmountPerUnit,
+                promoCodeId,
+                affiliationId,
+            } = await this.computeDiscount(dto, userId);
+
+            const paymentIntent = await this.stripe.paymentIntents.create({
+                amount: discountedUnitAmount,
+                currency: product.prices[0].currency,
+                automatic_payment_methods: { enabled: true },
+                description: `${displayName} (${product.metadata?.token_number || '0'} chars)`,
+                metadata: {
+                    source: 'payment_element',
+                    userId,
+                    packId,
+                    tokenAmount: product.metadata?.token_number || '0',
+                    originalUnitAmount: String(originalUnitAmount),
+                    discountAmountPerUnit: String(discountAmountPerUnit),
+                    ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
+                    ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
+                },
+            });
+
+            if (!paymentIntent.client_secret) {
+                throw new InternalServerErrorException('PaymentIntent client_secret is missing');
+            }
+
+            const message = `PaymentIntent created in ${Date.now() - start} ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return {
+                message,
+                data: { clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id },
+            };
+        } catch (error) {
+            const errorMessage = `Error creating PaymentIntent: ${error.message}`;
+            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            throw error instanceof BadRequestException
+                ? error
+                : new InternalServerErrorException(errorMessage);
+        }
+    }
+
+    private async fulfillPaymentIntentOrder(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+        try {
+            if (!paymentIntent.metadata) {
+                throw new BadRequestException('Webhook metadata required to fulfill order');
+            }
+
+            const {
+                userId,
+                tokenAmount,
+                originalUnitAmount,
+                discountAmountPerUnit,
+                promoCodeId,
+                affiliationId,
+            } = paymentIntent.metadata as Record<string, string>;
+
+            const tokenAmountPerPack = parseInt(tokenAmount, 10);
+            if (Number.isNaN(tokenAmountPerPack)) {
+                throw new BadRequestException(
+                    `Invalid token amount in webhook metadata: ${tokenAmount}`,
+                );
+            }
+
+            const originalTotal = parseInt(originalUnitAmount ?? '0', 10);
+            const totalDiscountAmount = parseInt(discountAmountPerUnit ?? '0', 10);
+
+            await this.paymentService.createCompleted({
+                userId,
+                amount: originalTotal || paymentIntent.amount,
+                currency: paymentIntent.currency,
+                stripeSessionId: paymentIntent.id,
+                stripePaymentIntentId: paymentIntent.id,
+                tokenCount: tokenAmountPerPack,
+                ...(totalDiscountAmount > 0 && { discountAmount: totalDiscountAmount }),
+                ...(promoCodeId && { promoCodeId }),
+                ...(affiliationId && { affiliationId }),
+            });
+
+            await this.creditTokensToUser(userId, tokenAmountPerPack, paymentIntent.id);
+
+            this.stripePaymentsCounter.inc({ status: 'success' });
+            this.logger.verbose(
+                `Order fulfilled via PaymentIntent: ${tokenAmountPerPack} tokens for user ${userId}`,
+                this.SERVICE_NAME,
+            );
+        } catch (error) {
+            this.stripePaymentsCounter.inc({ status: 'failed' });
+            const errorMessage = `Error fulfilling PaymentIntent order: ${error.message}`;
+            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(errorMessage);
         }
     }
 
