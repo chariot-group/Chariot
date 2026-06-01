@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, RefreshCw, Search, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCents, formatDate } from "@/lib/utils";
+import { extractApiError } from "@/lib/api-error";
+import { SortableHead } from "@/components/ui/SortableHead";
 import getApiClient from "@/services/ApiService";
 
 interface Affiliation {
@@ -188,8 +190,7 @@ export default function AffiliationsPage() {
       setDialogMode(null);
       load();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error(msg ?? "Erreur lors de la création");
+      toast.error(extractApiError(err, "Erreur lors de la création"));
     } finally {
       setSaving(false);
     }
@@ -205,8 +206,7 @@ export default function AffiliationsPage() {
       setEditTarget(null);
       load();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error(msg ?? "Erreur lors de la mise à jour");
+      toast.error(extractApiError(err, "Erreur lors de la mise à jour"));
     } finally {
       setSaving(false);
     }
@@ -268,19 +268,6 @@ export default function AffiliationsPage() {
     return sortDir === "asc" ? cmp : -cmp;
   });
 
-  function SortableHead({ field, children }: { field: SortField; children: React.ReactNode }) {
-    const active = sortField === field;
-    const Icon = active ? (sortDir === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
-    return (
-      <button
-        className="flex items-center gap-1 hover:text-foreground transition-colors"
-        onClick={() => toggleSort(field)}>
-        {children}
-        <Icon className="h-3 w-3 opacity-60" />
-      </button>
-    );
-  }
-
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -335,25 +322,67 @@ export default function AffiliationsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <SortableHead field="code">Code</SortableHead>
+                  <SortableHead
+                    field="code"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Code
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="creatorName">Créateur</SortableHead>
+                  <SortableHead
+                    field="creatorName"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Créateur
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="creatorCommissionPercent">Commission</SortableHead>
+                  <SortableHead
+                    field="creatorCommissionPercent"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Commission
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="userDiscountPercent">Réduction user</SortableHead>
+                  <SortableHead
+                    field="userDiscountPercent"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Réduction user
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="totalUsages">Utilisations</SortableHead>
+                  <SortableHead
+                    field="totalUsages"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Utilisations
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="totalCommissionAmount">Commissions versées</SortableHead>
+                  <SortableHead
+                    field="totalCommissionAmount"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Commissions versées
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="isActive">Statut</SortableHead>
+                  <SortableHead
+                    field="isActive"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Statut
+                  </SortableHead>
                 </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>

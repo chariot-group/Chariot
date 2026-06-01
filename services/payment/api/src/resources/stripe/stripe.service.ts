@@ -46,73 +46,23 @@ export class StripeService {
         userId: string,
     ): Promise<IResponse<string>> {
         try {
-            const { packId, displayName, promoCode, affiliationCode } = dto;
+            const { displayName } = dto;
             const start = Date.now();
 
-            const product = await this.findProductWithPriceById(packId);
-            if (!product) {
-                const errorMessage = `Stripe product with ID #${packId} not found`;
-                this.logger.error(errorMessage, null, this.SERVICE_NAME);
-                throw new BadRequestException(errorMessage);
-            }
-
-            const originalUnitAmount = product.prices[0].unit_amount!;
-            let discountAmountPerUnit = 0;
-            let affiliationDiscountPerUnit = 0;
-            let promoCodeId: string | undefined;
-            let affiliationId: string | undefined;
-
-            // Appliquer l'affiliation en premier (priorité basse)
-            if (affiliationCode) {
-                const affiliationResult = await this.affiliationService.findByCode(affiliationCode);
-                const affiliation = affiliationResult.data;
-
-                if (!affiliation.isActive) {
-                    throw new BadRequestException(
-                        `Le code d'affiliation '${affiliationCode}' est désactivé`,
-                    );
-                }
-
-                affiliationDiscountPerUnit = Math.floor(
-                    (originalUnitAmount * affiliation.userDiscountPercent) / 100,
-                );
-                discountAmountPerUnit += affiliationDiscountPerUnit;
-                affiliationId = affiliation.id;
-            }
-
-            // Appliquer le code promo par-dessus l'affiliation
-            if (promoCode) {
-                const isFirstOrder = !(await this.paymentService.hasCompletedPayment(userId));
-                const promoResult = await this.promoCodeService.validate(
-                    promoCode,
-                    userId,
-                    originalUnitAmount,
-                    isFirstOrder,
-                );
-                const promo = promoResult.data;
-                const amountAfterAffiliation = originalUnitAmount - affiliationDiscountPerUnit;
-
-                if (promo.discountType === 'PERCENTAGE') {
-                    discountAmountPerUnit += Math.floor(
-                        (amountAfterAffiliation * promo.discountValue) / 100,
-                    );
-                } else {
-                    discountAmountPerUnit += Math.min(promo.discountValue, amountAfterAffiliation);
-                }
-
-                promoCodeId = promo.id;
-            }
-
-            const discountedUnitAmount = Math.max(0, originalUnitAmount - discountAmountPerUnit);
+            const {
+                product,
+                originalUnitAmount,
+                discountedUnitAmount,
+                discountAmountPerUnit,
+                promoCodeId,
+                affiliationId,
+            } = await this.computeDiscount(dto, userId);
 
             const session = await this.stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
                 line_items: [
                     {
-                        adjustable_quantity: {
-                            enabled: true,
-                            minimum: 1,
-                        },
+                        adjustable_quantity: { enabled: true, minimum: 1 },
                         price_data: {
                             currency: product.prices[0].currency,
                             product_data: {
@@ -128,12 +78,12 @@ export class StripeService {
                 cancel_url: `${process.env.SHOWCASE_URL}`,
                 metadata: {
                     userId,
-                    packId,
+                    packId: dto.packId,
                     tokenAmount: product.metadata?.token_number || '0',
                     originalUnitAmount: String(originalUnitAmount),
                     discountAmountPerUnit: String(discountAmountPerUnit),
-                    ...(promoCodeId && { promoCode, promoCodeId }),
-                    ...(affiliationId && { affiliationCode, affiliationId }),
+                    ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
+                    ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
                 },
             });
 
@@ -141,6 +91,7 @@ export class StripeService {
             this.logger.verbose(message, this.SERVICE_NAME);
             return { message, data: session.url };
         } catch (error) {
+            if (error instanceof BadRequestException) throw error;
             const errorMessage = `Error creating Stripe checkout session: ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(errorMessage);

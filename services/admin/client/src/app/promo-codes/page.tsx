@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, RefreshCw, Search, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCents, formatDate } from "@/lib/utils";
+import { extractApiError } from "@/lib/api-error";
+import { SortableHead } from "@/components/ui/SortableHead";
 import getApiClient from "@/services/ApiService";
 
 interface PromoCode {
@@ -241,8 +243,7 @@ export default function PromoCodesPage() {
       setDialogMode(null);
       load();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error(msg ?? "Erreur lors de la création");
+      toast.error(extractApiError(err, "Erreur lors de la création"));
     } finally {
       setSaving(false);
     }
@@ -264,8 +265,7 @@ export default function PromoCodesPage() {
       setEditTarget(null);
       load();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error(msg ?? "Erreur lors de la mise à jour");
+      toast.error(extractApiError(err, "Erreur lors de la mise à jour"));
     } finally {
       setSaving(false);
     }
@@ -321,19 +321,6 @@ export default function PromoCodesPage() {
     return sortDir === "asc" ? cmp : -cmp;
   });
 
-  function SortableHead({ field, children }: { field: SortField; children: React.ReactNode }) {
-    const active = sortField === field;
-    const Icon = active ? (sortDir === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
-    return (
-      <button
-        className="flex items-center gap-1 hover:text-foreground transition-colors"
-        onClick={() => toggleSort(field)}>
-        {children}
-        <Icon className="h-3 w-3 opacity-60" />
-      </button>
-    );
-  }
-
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -388,22 +375,58 @@ export default function PromoCodesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <SortableHead field="code">Code</SortableHead>
+                  <SortableHead
+                    field="code"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Code
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="name">Nom</SortableHead>
+                  <SortableHead
+                    field="name"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Nom
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="discountValue">Réduction</SortableHead>
+                  <SortableHead
+                    field="discountValue"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Réduction
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="currentTotalUses">Utilisations</SortableHead>
+                  <SortableHead
+                    field="currentTotalUses"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Utilisations
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="expiresAt">Expiration</SortableHead>
+                  <SortableHead
+                    field="expiresAt"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Expiration
+                  </SortableHead>
                 </TableHead>
                 <TableHead>
-                  <SortableHead field="isActive">Statut</SortableHead>
+                  <SortableHead
+                    field="isActive"
+                    sortField={sortField}
+                    sortDir={sortDir}
+                    onToggle={toggleSort}>
+                    Statut
+                  </SortableHead>
                 </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
