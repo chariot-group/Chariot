@@ -187,6 +187,7 @@
     "removeCode": "Remove code",
     "codeNotFound": "This code was not found or is no longer active.",
     "recommended": "Recommended",
+    "payPerUnit": "Pay per unit ({price}€)",
     "custom": {
       "name": "OUR 3 PACKS",
       "description": "Each of our offers is specially designed for the most epic adventure.",

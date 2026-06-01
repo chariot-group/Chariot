@@ -188,6 +188,7 @@
     "removeCode": "Retirer le code",
     "codeNotFound": "Ce code est introuvable ou n'est plus actif.",
     "recommended": "Recommandé",
+    "payPerUnit": "Payer à l'unité ({price}€)",
     "custom": {
       "name": "NOS 3 PACKS",
       "description": "Chacune de nos offres est conçue spécialement pour la plus épique des aventures.",

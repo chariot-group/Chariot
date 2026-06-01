@@ -136,7 +136,7 @@ export default function Shop({ open, onOpenChange }: ShopProps) {
                   className="w-fit self-end"
                   variant="link"
                   onClick={() => handleBuy(product)}>
-                  Payer à l'unité
+                  {tShop("payPerUnit", { price: ((product.prices[0]?.unit_amount ?? 0) / 100).toFixed(2) })}
                 </Button>
               ))}
           </div>
