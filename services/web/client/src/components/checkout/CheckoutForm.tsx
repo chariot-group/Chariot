@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { CheckCircle2, Coins, Loader2, Tag, XCircle } from "lucide-react";
+import { CheckCircle2, Coins, Loader2, Minus, Plus, Tag, XCircle } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,9 +36,20 @@ export interface CheckoutFormProps {
   promoCode: PromoCodeState;
   piRefreshing: boolean;
   locale: string;
+  quantity: number;
+  onQuantityChange: (quantity: number) => void;
 }
 
-export function CheckoutForm({ product, tokenCount, pricing, promoCode, piRefreshing, locale }: CheckoutFormProps) {
+export function CheckoutForm({
+  product,
+  tokenCount,
+  pricing,
+  promoCode,
+  piRefreshing,
+  locale,
+  quantity,
+  onQuantityChange,
+}: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -78,21 +89,12 @@ export function CheckoutForm({ product, tokenCount, pricing, promoCode, piRefres
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             {t("paymentDetails")}
           </h2>
-          {piRefreshing ? (
-            <div className="flex justify-center py-4">
-              <Loader2
-                className="h-5 w-5 animate-spin text-primary"
-                aria-hidden="true"
-              />
-            </div>
-          ) : (
-            <PaymentElement
-              options={{
-                paymentMethodOrder: ["card"],
-                layout: { type: "accordion", defaultCollapsed: false },
-              }}
-            />
-          )}
+          <PaymentElement
+            options={{
+              paymentMethodOrder: ["card"],
+              layout: { type: "accordion", defaultCollapsed: false },
+            }}
+          />
         </Card>
       </div>
 
@@ -112,35 +114,91 @@ export function CheckoutForm({ product, tokenCount, pricing, promoCode, piRefres
               {product.description && <p className="text-xs text-muted-foreground truncate">{product.description}</p>}
             </div>
             {tokenCount !== null && (
-              <span className="flex items-center gap-1 text-sm font-bold text-card-foreground shrink-0">
-                {tokenCount}
-                <Image
-                  src={Token}
-                  alt={`${tokenCount} tokens`}
-                  className="w-4 h-4"
-                />
-              </span>
+              <div className="flex flex-col items-end gap-0.5 shrink-0">
+                <span className="flex items-center gap-1 text-sm font-bold text-card-foreground">
+                  {tokenCount * quantity}
+                  <Image
+                    src={Token}
+                    alt={`${tokenCount * quantity} tokens`}
+                    className="w-4 h-4"
+                  />
+                </span>
+                {quantity > 1 && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    {tokenCount}
+                    <Image
+                      src={Token}
+                      alt={`${tokenCount} tokens`}
+                      className="w-3 h-3 opacity-60"
+                    />
+                    <span>/ {t("pack")}</span>
+                  </span>
+                )}
+              </div>
             )}
+          </div>
+
+          {/* Quantity selector */}
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-sm text-muted-foreground">{t("quantity")}</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onQuantityChange(quantity - 1)}
+                disabled={quantity <= 1 || piRefreshing}
+                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                aria-label={t("quantityDecrement")}>
+                <Minus
+                  className="h-3 w-3"
+                  aria-hidden="true"
+                />
+              </button>
+              <span
+                className="w-6 text-center text-sm font-semibold text-card-foreground"
+                aria-live="polite">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                onClick={() => onQuantityChange(quantity + 1)}
+                disabled={quantity >= 10 || piRefreshing}
+                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                aria-label={t("quantityIncrement")}>
+                <Plus
+                  className="h-3 w-3"
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
           </div>
 
           {/* Price breakdown */}
           <div className="space-y-1.5 pt-1 border-t border-border/40">
+            {quantity > 1 && (
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>{t("unitPrice")}</span>
+                <span>{formatPrice(discountedAmount, currency)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>{t("subtotal")}</span>
-              <span>{formatPrice(originalAmount, currency)}</span>
+              <span>
+                {t("subtotal")}
+                {quantity > 1 && ` ×${quantity}`}
+              </span>
+              <span>{formatPrice(originalAmount * quantity, currency)}</span>
             </div>
             {discountAmount > 0 && promoCode.applied && (
               <div className="flex justify-between text-sm text-green-500">
                 <span>
                   {t("discount")} ({promoCode.applied.raw})
                 </span>
-                <span>-{formatPrice(discountAmount, currency)}</span>
+                <span>-{formatPrice(discountAmount * quantity, currency)}</span>
               </div>
             )}
             <div className="flex justify-between text-base font-bold text-card-foreground pt-1 border-t border-border/40">
               <span>{t("total")}</span>
               <span className={discountAmount > 0 ? "text-green-400" : ""}>
-                {formatPrice(discountedAmount, currency)}
+                {formatPrice(discountedAmount * quantity, currency)}
               </span>
             </div>
           </div>
@@ -236,7 +294,7 @@ export function CheckoutForm({ product, tokenCount, pricing, promoCode, piRefres
               {t("preparing")}
             </>
           ) : (
-            t("payButton", { amount: formatPrice(discountedAmount, currency) })
+            t("payButton", { amount: formatPrice(discountedAmount * quantity, currency) })
           )}
         </Button>
 

@@ -103,3 +103,6 @@
 2026-05-20 08:05:26.874 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
 2026-05-20 11:38:23.455 - [31merror[39m: [KeycloakAuthGuard] 	[31mJWT verify error: jwt expired[39m
 2026-05-20 11:38:23.456 - [31merror[39m: [KeycloakAuthGuard] 	[31mToken validation failed: JWT verify error: jwt expired[39m
+2026-06-01 18:24:32.452 - [31merror[39m: [StripeService] 	[31mError updating PaymentIntent: Vous avez déjà utilisé le code 'CODEPOURC' le nombre maximum de fois autorisé[39m
+2026-06-01 18:24:38.747 - [31merror[39m: [StripeService] 	[31mError updating PaymentIntent: Vous avez déjà utilisé le code 'CODEPOURC' le nombre maximum de fois autorisé[39m
+2026-06-01 18:24:41.450 - [31merror[39m: [StripeService] 	[31mError updating PaymentIntent: Vous avez déjà utilisé le code 'CODEPOURC' le nombre maximum de fois autorisé[39m

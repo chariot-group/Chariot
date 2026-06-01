@@ -63,6 +63,7 @@ class PaymentService {
         displayName: string,
         promoCode?: string,
         affiliationCode?: string,
+        quantity?: number,
     ): Promise<{ clientSecret: string; paymentIntentId: string }> {
         const response = await createPaymentApiClient().post<IResponse<{ clientSecret: string; paymentIntentId: string }>>(
             `${this.STRIPE_PATH}/payment-intent`,
@@ -71,9 +72,26 @@ class PaymentService {
                 displayName,
                 ...(promoCode && { promoCode }),
                 ...(affiliationCode && { affiliationCode }),
+                ...(quantity && quantity > 1 && { quantity }),
             },
         );
         return response.data.data;
+    }
+
+    async updatePaymentIntent(
+        piId: string,
+        quantity?: number,
+        promoCode?: string,
+        affiliationCode?: string,
+    ): Promise<void> {
+        await createPaymentApiClient().patch(
+            `${this.STRIPE_PATH}/payment-intent/${encodeURIComponent(piId)}`,
+            {
+                ...(quantity && quantity > 1 && { quantity }),
+                ...(promoCode && { promoCode }),
+                ...(affiliationCode && { affiliationCode }),
+            },
+        );
     }
 }
 

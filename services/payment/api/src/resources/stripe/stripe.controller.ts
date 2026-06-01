@@ -7,6 +7,7 @@ import {
     HttpCode,
     Logger,
     Param,
+    Patch,
     Post,
     Req,
 } from '@nestjs/common';
@@ -22,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { StripeService } from '@/resources/stripe/stripe.service';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
+import { UpdatePaymentIntentDto } from '@/resources/stripe/dto/update-payment-intent.dto';
 import { EmbeddedCheckoutDto } from '@/resources/stripe/dto/embedded-checkout.dto';
 import { Public } from '@/common/decorators/public.decorator';
 import { IResponse } from '@/common/dtos/response.dto';
@@ -53,6 +55,22 @@ export class StripeController {
         @Body() dto: CheckoutDto,
     ): Promise<IResponse<PaymentIntentResult>> {
         return this.stripeService.createPaymentIntent(dto, request.user.keycloakId);
+    }
+
+    @Patch('payment-intent/:id')
+    @ApiOperation({ summary: 'Update an existing PaymentIntent amount (quantity / promo code change)' })
+    @ApiParam({ name: 'id', description: 'The Stripe PaymentIntent ID' })
+    @ApiBody({ type: UpdatePaymentIntentDto })
+    @ApiResponse({ status: 200, description: 'PaymentIntent updated successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid payload or PI does not belong to user' })
+    @ApiResponse({ status: 401, description: 'User not authenticated' })
+    @ApiResponse({ status: 500, description: 'Internal error while updating PaymentIntent' })
+    async updatePaymentIntent(
+        @Req() request,
+        @Param('id') piId: string,
+        @Body() dto: UpdatePaymentIntentDto,
+    ): Promise<IResponse<void>> {
+        return this.stripeService.updatePaymentIntent(piId, dto, request.user.keycloakId);
     }
 
     @Post('checkout')

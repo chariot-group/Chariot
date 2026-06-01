@@ -14,6 +14,7 @@ import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
 import { AffiliationService } from '@/resources/affiliation/affiliation.service';
 import { IResponse } from '@/common/dtos/response.dto';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
+import { UpdatePaymentIntentDto } from '@/resources/stripe/dto/update-payment-intent.dto';
 import { EmbeddedCheckoutDto } from '@/resources/stripe/dto/embedded-checkout.dto';
 import {
     CheckoutSessionStatus,
@@ -423,6 +424,7 @@ export class StripeService {
     ): Promise<IResponse<PaymentIntentResult>> {
         try {
             const { packId, displayName } = dto;
+            const quantity = Math.max(1, Math.min(10, dto.quantity ?? 1));
             const start = Date.now();
 
             const {
@@ -434,18 +436,21 @@ export class StripeService {
                 affiliationId,
             } = await this.computeDiscount(dto, userId);
 
+            const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
+
             const paymentIntent = await this.stripe.paymentIntents.create({
-                amount: discountedUnitAmount,
+                amount: discountedUnitAmount * quantity,
                 currency: product.prices[0].currency,
                 automatic_payment_methods: { enabled: true },
-                description: `${displayName} (${product.metadata?.token_number || '0'} chars)`,
+                description: `${displayName} (${product.metadata?.token_number || '0'} chars) x${quantity}`,
                 metadata: {
                     source: 'payment_element',
                     userId,
                     packId,
-                    tokenAmount: product.metadata?.token_number || '0',
-                    originalUnitAmount: String(originalUnitAmount),
-                    discountAmountPerUnit: String(discountAmountPerUnit),
+                    displayName,
+                    tokenAmount: String(tokenAmountPerPack * quantity),
+                    originalUnitAmount: String(originalUnitAmount * quantity),
+                    discountAmountPerUnit: String(discountAmountPerUnit * quantity),
                     ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
                     ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
                 },
@@ -463,6 +468,74 @@ export class StripeService {
             };
         } catch (error) {
             const errorMessage = `Error creating PaymentIntent: ${error.message}`;
+            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            throw error instanceof BadRequestException
+                ? error
+                : new InternalServerErrorException(errorMessage);
+        }
+    }
+
+    async updatePaymentIntent(
+        piId: string,
+        dto: UpdatePaymentIntentDto,
+        userId: string,
+    ): Promise<IResponse<void>> {
+        try {
+            const start = Date.now();
+
+            const existingPI = await this.stripe.paymentIntents.retrieve(piId);
+
+            if (existingPI.metadata?.userId !== userId) {
+                throw new BadRequestException('Ce PaymentIntent ne vous appartient pas');
+            }
+
+            const packId = existingPI.metadata?.packId;
+            if (!packId) {
+                throw new BadRequestException('packId manquant dans les metadata du PaymentIntent');
+            }
+
+            const displayName = existingPI.metadata?.displayName ?? existingPI.description?.replace(/ \(.*$/, '') ?? '';
+
+            const checkoutDto: CheckoutDto = {
+                packId,
+                displayName,
+                promoCode: dto.promoCode,
+                affiliationCode: dto.affiliationCode,
+                quantity: dto.quantity,
+            };
+
+            const {
+                product,
+                originalUnitAmount,
+                discountedUnitAmount,
+                discountAmountPerUnit,
+                promoCodeId,
+                affiliationId,
+            } = await this.computeDiscount(checkoutDto, userId);
+
+            const quantity = Math.max(1, Math.min(10, dto.quantity ?? 1));
+            const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
+
+            await this.stripe.paymentIntents.update(piId, {
+                amount: discountedUnitAmount * quantity,
+                description: `${displayName} (${product.metadata?.token_number || '0'} chars) x${quantity}`,
+                metadata: {
+                    ...existingPI.metadata,
+                    tokenAmount: String(tokenAmountPerPack * quantity),
+                    originalUnitAmount: String(originalUnitAmount * quantity),
+                    discountAmountPerUnit: String(discountAmountPerUnit * quantity),
+                    promoCode: promoCodeId ? (dto.promoCode ?? '') : '',
+                    promoCodeId: promoCodeId ?? '',
+                    affiliationCode: affiliationId ? (dto.affiliationCode ?? '') : '',
+                    affiliationId: affiliationId ?? '',
+                },
+            });
+
+            const message = `PaymentIntent ${piId} updated in ${Date.now() - start} ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+            return { message, data: undefined };
+        } catch (error) {
+            const errorMessage = `Error updating PaymentIntent: ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
             throw error instanceof BadRequestException
                 ? error

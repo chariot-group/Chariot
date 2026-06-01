@@ -24,6 +24,9 @@ interface UseCheckoutReturn {
         currency: string;
     };
     tokenCount: number | null;
+    // Quantity
+    quantity: number;
+    onQuantityChange: (quantity: number) => void;
     // Promo code
     promoCode: PromoCodeState;
 }
@@ -50,8 +53,12 @@ export function useCheckout(): UseCheckoutReturn {
     const [codeError, setCodeError] = useState<string | null>(null);
     const codeInputRef = useRef<HTMLInputElement>(null);
 
+    // Quantity
+    const [quantity, setQuantity] = useState(1);
+
     // PaymentIntent
     const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
     const [piRefreshing, setPiRefreshing] = useState(false);
     const [piError, setPiError] = useState<string | null>(null);
 
@@ -82,9 +89,9 @@ export function useCheckout(): UseCheckoutReturn {
         };
     }, [packId]);
 
-    // ── Create / refresh PaymentIntent ─────────────────────────────────────────
-    const refreshPaymentIntent = useCallback(
-        async (promoCode?: string, affiliationCode?: string) => {
+    // ── Create initial PaymentIntent (once, on product load) ──────────────────
+    const createInitialPaymentIntent = useCallback(
+        async () => {
             if (!product) return;
             setPiRefreshing(true);
             setPiError(null);
@@ -92,10 +99,9 @@ export function useCheckout(): UseCheckoutReturn {
                 const result = await paymentService.createPaymentIntent(
                     packId,
                     displayName || product.name,
-                    promoCode,
-                    affiliationCode,
                 );
                 setClientSecret(result.clientSecret);
+                setPaymentIntentId(result.paymentIntentId);
             } catch {
                 setPiError(t("payError"));
             } finally {
@@ -105,9 +111,32 @@ export function useCheckout(): UseCheckoutReturn {
         [packId, displayName, product, t],
     );
 
+    // ── Update existing PaymentIntent amount (quantity / promo changes) ────────
+    const updatePaymentIntentAmount = useCallback(
+        async (promoCode?: string, affiliationCode?: string, qty?: number) => {
+            if (!paymentIntentId) return;
+            setPiRefreshing(true);
+            setPiError(null);
+            try {
+                await paymentService.updatePaymentIntent(
+                    paymentIntentId,
+                    qty,
+                    promoCode,
+                    affiliationCode,
+                );
+            } catch {
+                setPiError(t("payError"));
+            } finally {
+                setPiRefreshing(false);
+            }
+        },
+        [paymentIntentId, t],
+    );
+
     useEffect(() => {
-        if (product) void refreshPaymentIntent();
-    }, [product, refreshPaymentIntent]);
+        if (product) void createInitialPaymentIntent();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [product, createInitialPaymentIntent]);
 
     // ── Promo code handlers ─────────────────────────────────────────────────────
     const handleApplyCode = useCallback(async () => {
@@ -133,15 +162,15 @@ export function useCheckout(): UseCheckoutReturn {
         setCodeInput("");
         setCodeLoading(false);
 
-        void refreshPaymentIntent(promoCode, affiliationCode);
-    }, [codeInput, refreshPaymentIntent, tShop]);
+        void updatePaymentIntentAmount(promoCode, affiliationCode, quantity);
+    }, [codeInput, quantity, updatePaymentIntentAmount, tShop]);
 
     const handleRemoveCode = useCallback(() => {
         setAppliedCode(null);
         setCodeError(null);
-        void refreshPaymentIntent();
+        void updatePaymentIntentAmount(undefined, undefined, quantity);
         setTimeout(() => codeInputRef.current?.focus(), 50);
-    }, [refreshPaymentIntent]);
+    }, [updatePaymentIntentAmount, quantity]);
 
     // ── Pricing ─────────────────────────────────────────────────────────────────
     const price = product?.prices[0];
@@ -150,6 +179,15 @@ export function useCheckout(): UseCheckoutReturn {
         appliedCode && originalAmount > 0 ? computeDiscountedAmount(originalAmount, appliedCode.resolved) : originalAmount;
     const discountAmount = originalAmount - discountedAmount;
     const tokenCount = product?.metadata?.token_number ? parseInt(product.metadata.token_number, 10) : null;
+
+    const handleQuantityChange = useCallback((newQuantity: number) => {
+        const clamped = Math.max(1, Math.min(10, newQuantity));
+        setQuantity(clamped);
+        const currentApplied = appliedCode;
+        const promoArg = currentApplied?.resolved.type === "promo" ? currentApplied.raw : undefined;
+        const affiliationArg = currentApplied?.resolved.type === "affiliation" ? currentApplied.raw : undefined;
+        void updatePaymentIntentAmount(promoArg, affiliationArg, clamped);
+    }, [appliedCode, updatePaymentIntentAmount]);
 
     return {
         locale,
@@ -167,6 +205,8 @@ export function useCheckout(): UseCheckoutReturn {
             currency: price?.currency ?? "eur",
         },
         tokenCount,
+        quantity,
+        onQuantityChange: handleQuantityChange,
         promoCode: {
             input: codeInput,
             loading: codeLoading,

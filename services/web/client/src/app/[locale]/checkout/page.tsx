@@ -29,6 +29,8 @@ function CheckoutContent() {
     piError,
     pricing,
     tokenCount,
+    quantity,
+    onQuantityChange,
     promoCode,
   } = useCheckout();
 
@@ -115,6 +117,8 @@ function CheckoutContent() {
                     promoCode={promoCode}
                     piRefreshing={piRefreshing}
                     locale={locale}
+                    quantity={quantity}
+                    onQuantityChange={onQuantityChange}
                   />
                 </Elements>
               </div>
