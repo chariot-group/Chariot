@@ -143,7 +143,7 @@
     "logout": "Log Out"
   },
   "payment": {
-    "reloadSuccess": "Your account was reloaded with {chars} chars.",
+    "reloadSuccess": "Your account was reloaded with {chars} wheels.",
     "reloadSuccessUnknown": "Your payment is confirmed, your account reload is in progress.",
     "reloadPending": "Payment confirmed, balance update in progress."
   },
@@ -172,8 +172,8 @@
   },
   "shop": {
     "pageTitle": "Shop",
-    "pageSubtitle": "Top up your account with tokens to create characters and join sessions.",
-    "tokensUnit": "tokens",
+    "pageSubtitle": "Top up your account with wheels to join sessions.",
+    "tokensUnit": "wheels",
     "buyButton": "Buy",
     "loadingProducts": "Loading offers...",
     "errorProducts": "Unable to load offers. Please try again.",
@@ -185,7 +185,25 @@
     "codePlaceholder": "Promo or affiliate code",
     "applyCode": "Apply",
     "removeCode": "Remove code",
-    "codeNotFound": "This code was not found or is no longer active."
+    "codeNotFound": "This code was not found or is no longer active.",
+    "recommended": "Recommended",
+    "custom": {
+      "name": "OUR 3 PACKS",
+      "description": "Each of our offers is specially designed for the most epic adventure.",
+      "cta": "Custom amount"
+    },
+    "explorator": {
+      "name": "EXPLORER PACK",
+      "description": "Ideal for players who are new to Dungeons & Dragons."
+    },
+    "legendary": {
+      "name": "LEGENDARY PACK",
+      "description": "For experienced players seeking the ultimate power for their D&D campaigns."
+    },
+    "aventurer": {
+      "name": "ADVENTURER PACK",
+      "description": "The best pack for an optimal role-playing experience. Simply."
+    }
   },
   "ProfilePage": {
     "pageTitle": "User Profile",

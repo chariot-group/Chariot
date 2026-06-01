@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import paymentService, { StripeProduct } from "@/services/PaymentService";
 import ShopProductCard from "@/components/profile/ShopProductCard";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface ShopProps {
   open: boolean;
@@ -105,16 +106,39 @@ export default function Shop({ open, onOpenChange }: ShopProps) {
         )}
 
         {!loading && !error && products.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {products.map((product) => (
-              <ShopProductCard
-                key={product.id}
-                product={product}
-                isLoading={false}
-                disabled={false}
-                onBuy={handleBuy}
-              />
-            ))}
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-3 gap-3">
+              {products
+                .filter((product) => {
+                  const tokenPrice = product.metadata?.token_number
+                    ? parseInt(product.metadata.token_number, 10)
+                    : null;
+                  return tokenPrice !== null && tokenPrice > 1;
+                })
+                .map((product) => (
+                  <ShopProductCard
+                    key={product.id}
+                    product={product}
+                    isLoading={false}
+                    disabled={false}
+                    onBuy={handleBuy}
+                  />
+                ))}
+            </div>
+            {products
+              .filter((product) => {
+                const tokenPrice = product.metadata?.token_number ? parseInt(product.metadata.token_number, 10) : null;
+                return tokenPrice !== null && tokenPrice === 1;
+              })
+              .map((product) => (
+                <Button
+                  key={product.id}
+                  className="w-fit self-end"
+                  variant="link"
+                  onClick={() => handleBuy(product)}>
+                  Payer à l'unité
+                </Button>
+              ))}
           </div>
         )}
       </DialogContent>

@@ -143,7 +143,7 @@
     "logout": "Cerrar sesión"
   },
   "payment": {
-    "reloadSuccess": "Tu cuenta se recargó con {chars} chars.",
+    "reloadSuccess": "Tu cuenta se recargó con {chars} wheels.",
     "reloadSuccessUnknown": "Tu pago está confirmado, la recarga de tu cuenta está en curso.",
     "reloadPending": "Pago confirmado, actualización del saldo en curso."
   },
@@ -172,8 +172,8 @@
   },
   "shop": {
     "pageTitle": "Tienda",
-    "pageSubtitle": "Recarga tu cuenta con tokens para crear personajes y unirte a sesiones.",
-    "tokensUnit": "tokens",
+    "pageSubtitle": "Recarga tu cuenta con wheels para participar en sesiones.",
+    "tokensUnit": "wheels",
     "buyButton": "Comprar",
     "loadingProducts": "Cargando ofertas...",
     "errorProducts": "No se pueden cargar las ofertas. Por favor, inténtalo de nuevo.",
@@ -185,7 +185,25 @@
     "codePlaceholder": "Código promocional o de afiliación",
     "applyCode": "Aplicar",
     "removeCode": "Quitar código",
-    "codeNotFound": "Este código no existe o ya no está activo."
+    "codeNotFound": "Este código no existe o ya no está activo.",
+    "recommended": "Recomendado",
+    "custom": {
+      "name": "NUESTROS 3 PACKS",
+      "description": "Cada una de nuestras ofertas está diseñada especialmente para la aventura más épica.",
+      "cta": "Monto personalizado"
+    },
+    "explorator": {
+      "name": "PACK EXPLORADOR",
+      "description": "Ideal para los jugadores que comienzan en Dungeons & Dragons."
+    },
+    "legendary": {
+      "name": "PACK LEGENDARIO",
+      "description": "Para los jugadores experimentados en busca del poder máximo para sus campañas de D&D."
+    },
+    "aventurer": {
+      "name": "PACK AVENTURERO",
+      "description": "El mejor pack para una experiencia de juego de rol óptima. Simplemente."
+    }
   },
   "ProfilePage": {
     "pageTitle": "Perfil de usuario",
