@@ -11,6 +11,7 @@ const titles: Record<string, string> = {
   "/promo-codes": "Codes promo",
   "/affiliations": "Affiliations",
   "/payments": "Paiements",
+  "/referrals": "Parrainage",
 };
 
 export function Header() {

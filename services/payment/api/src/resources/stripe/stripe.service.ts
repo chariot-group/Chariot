@@ -12,6 +12,7 @@ import { Counter } from 'prom-client';
 import { PaymentService } from '@/resources/payment/payment.service';
 import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
 import { AffiliationService } from '@/resources/affiliation/affiliation.service';
+import { ReferralService } from '@/resources/referral/referral.service';
 import { IResponse } from '@/common/dtos/response.dto';
 import { CheckoutDto } from '@/resources/stripe/dto/checkout.dto';
 import { UpdatePaymentIntentDto } from '@/resources/stripe/dto/update-payment-intent.dto';
@@ -30,6 +31,7 @@ export class StripeService {
         private readonly paymentService: PaymentService,
         private readonly promoCodeService: PromoCodeService,
         private readonly affiliationService: AffiliationService,
+        private readonly referralService: ReferralService,
         @InjectMetric('chariot_stripe_payments_total')
         private readonly stripePaymentsCounter: Counter,
     ) {
@@ -57,6 +59,9 @@ export class StripeService {
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
+                referralId,
+                referralDiscountType,
+                referralDiscountPercent,
             } = await this.computeDiscount(dto, userId);
 
             const session = await this.stripe.checkout.sessions.create({
@@ -85,6 +90,7 @@ export class StripeService {
                     discountAmountPerUnit: String(discountAmountPerUnit),
                     ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
                     ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
+                    ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
                 },
             });
 
@@ -110,6 +116,9 @@ export class StripeService {
         discountAmountPerUnit: number;
         promoCodeId?: string;
         affiliationId?: string;
+        referralId?: string;
+        referralDiscountType?: 'referee' | 'referrer';
+        referralDiscountPercent?: number;
     }> {
         const { packId, promoCode, affiliationCode } = dto;
 
@@ -125,6 +134,9 @@ export class StripeService {
         let affiliationDiscountPerUnit = 0;
         let promoCodeId: string | undefined;
         let affiliationId: string | undefined;
+        let referralId: string | undefined;
+        let referralDiscountType: 'referee' | 'referrer' | undefined;
+        let referralDiscountPercent: number | undefined;
 
         if (affiliationCode) {
             const affiliationResult = await this.affiliationService.findByCode(affiliationCode);
@@ -165,6 +177,20 @@ export class StripeService {
             promoCodeId = promo.id;
         }
 
+        // Referral discount applies automatically only when no promo/affiliation code is used
+        if (!promoCodeId && !affiliationId) {
+            const referralDiscount = await this.referralService.checkUserReferralDiscount(userId);
+            if (referralDiscount) {
+                const referralDiscountAmount = Math.floor(
+                    (originalUnitAmount * referralDiscount.discountPercent) / 100,
+                );
+                discountAmountPerUnit += referralDiscountAmount;
+                referralId = referralDiscount.referralId;
+                referralDiscountType = referralDiscount.discountType;
+                referralDiscountPercent = referralDiscount.discountPercent;
+            }
+        }
+
         return {
             product,
             originalUnitAmount,
@@ -172,6 +198,9 @@ export class StripeService {
             discountAmountPerUnit,
             promoCodeId,
             affiliationId,
+            referralId,
+            referralDiscountType,
+            referralDiscountPercent,
         };
     }
 
@@ -194,6 +223,9 @@ export class StripeService {
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
+                referralId,
+                referralDiscountType,
+                referralDiscountPercent,
             } = await this.computeDiscount(dto, userId);
 
             const returnUrl = `${process.env.FRONTEND_URL}/${locale}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
@@ -227,6 +259,7 @@ export class StripeService {
                     discountAmountPerUnit: String(discountAmountPerUnit),
                     ...(promoCodeId && { promoCode, promoCodeId }),
                     ...(affiliationId && { affiliationCode, affiliationId }),
+                    ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
                 },
             });
 
@@ -434,6 +467,9 @@ export class StripeService {
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
+                referralId,
+                referralDiscountType,
+                referralDiscountPercent,
             } = await this.computeDiscount(dto, userId);
 
             const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
@@ -453,6 +489,7 @@ export class StripeService {
                     discountAmountPerUnit: String(discountAmountPerUnit * quantity),
                     ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
                     ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
+                    ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
                 },
             });
 
@@ -511,6 +548,9 @@ export class StripeService {
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
+                referralId,
+                referralDiscountType,
+                referralDiscountPercent,
             } = await this.computeDiscount(checkoutDto, userId);
 
             const quantity = Math.max(1, Math.min(10, dto.quantity ?? 1));
@@ -528,6 +568,9 @@ export class StripeService {
                     promoCodeId: promoCodeId ?? '',
                     affiliationCode: affiliationId ? (dto.affiliationCode ?? '') : '',
                     affiliationId: affiliationId ?? '',
+                    referralId: referralId ?? '',
+                    referralDiscountType: referralDiscountType ?? '',
+                    referralDiscountPercent: referralId ? String(referralDiscountPercent) : '',
                 },
             });
 
@@ -556,6 +599,9 @@ export class StripeService {
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
+                referralId,
+                referralDiscountType,
+                referralDiscountPercent,
             } = paymentIntent.metadata as Record<string, string>;
 
             const tokenAmountPerPack = parseInt(tokenAmount, 10);
@@ -579,6 +625,19 @@ export class StripeService {
                 ...(promoCodeId && { promoCodeId }),
                 ...(affiliationId && { affiliationId }),
             });
+
+            // Mark referral discount as used if applicable
+            if (referralId && referralDiscountType && (referralDiscountType === 'referee' || referralDiscountType === 'referrer')) {
+                await this.referralService.markReferralDiscountUsed(
+                    userId,
+                    referralId,
+                    referralDiscountType,
+                    paymentIntent.id,
+                    originalTotal || paymentIntent.amount,
+                    totalDiscountAmount,
+                    parseInt(referralDiscountPercent ?? '0', 10),
+                );
+            }
 
             await this.creditTokensToUser(userId, tokenAmountPerPack, paymentIntent.id);
 
@@ -608,6 +667,9 @@ export class StripeService {
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
+                referralId,
+                referralDiscountType,
+                referralDiscountPercent,
             } = session.metadata as Record<string, string>;
 
             const tokenAmountPerPack = parseInt(tokenAmount, 10);
@@ -638,6 +700,19 @@ export class StripeService {
                 ...(promoCodeId && { promoCodeId }),
                 ...(affiliationId && { affiliationId }),
             });
+
+            // Mark referral discount as used if applicable
+            if (referralId && referralDiscountType && (referralDiscountType === 'referee' || referralDiscountType === 'referrer')) {
+                await this.referralService.markReferralDiscountUsed(
+                    userId,
+                    referralId,
+                    referralDiscountType,
+                    session.id,
+                    originalTotal || (session.amount_total ?? 0),
+                    totalDiscountAmount,
+                    parseInt(referralDiscountPercent ?? '0', 10),
+                );
+            }
 
             // 2. Call adventure service to credit tokens to the user
             await this.creditTokensToUser(userId, totalTokens, session.id);

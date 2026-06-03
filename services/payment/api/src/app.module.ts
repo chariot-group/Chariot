@@ -12,6 +12,7 @@ import { AffiliationModule } from '@/resources/affiliation/affiliation.module';
 import { PaymentModule } from '@/resources/payment/payment.module';
 import { AnalyticsModule } from '@/resources/analytics/analytics.module';
 import { StripeModule } from '@/resources/stripe/stripe.module';
+import { ReferralModule } from '@/resources/referral/referral.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { StripeModule } from '@/resources/stripe/stripe.module';
         PaymentModule,
         AnalyticsModule,
         StripeModule,
+        ReferralModule,
     ],
     controllers: [AppController],
     providers: [

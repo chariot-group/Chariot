@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Tag, Users, CreditCard, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Tag, Users, CreditCard, ChevronRight, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/providers/SidebarContext";
 
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/promo-codes", label: "Codes promo", icon: Tag },
   { href: "/affiliations", label: "Affiliations", icon: Users },
   { href: "/payments", label: "Paiements", icon: CreditCard },
+  { href: "/referrals", label: "Parrainage", icon: Heart },
 ];
 
 export function Sidebar() {

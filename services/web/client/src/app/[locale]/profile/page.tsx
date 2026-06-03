@@ -6,7 +6,7 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
-import { ArrowLeft, Eye, EyeOff, ShoppingCart, SquarePen } from "lucide-react";
+import { ArrowLeft, Check, Copy, Eye, EyeOff, ShoppingCart, SquarePen, Users } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
@@ -18,6 +18,7 @@ import ReadProfile from "@/components/profile/ReadProfile";
 import UpdateProfile from "@/components/profile/UpdateProfile";
 import { isEnterWithModifiers, isEnterWithoutModifiers } from "@/utils/keyboard.utils";
 import ShopDialog from "@/components/dialogs/Shop";
+import referralService, { type ReferralInfo } from "@/services/ReferralService";
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -42,6 +43,24 @@ export default function ProfilePage() {
   } = useProfileForm();
 
   const [showShopDialog, setShowShopDialog] = useState<boolean>(false);
+  const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
+
+  const copyReferralCode = () => {
+    if (!referralInfo) return;
+    const shareUrl = `${window.location.origin}?ref=${referralInfo.code}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    });
+  };
+
+  useEffect(() => {
+    referralService
+      .getMyReferral()
+      .then(setReferralInfo)
+      .catch(() => {});
+  }, []);
 
   const { form: formPassword, onSubmit, isLoading: isLoadingPassword } = usePasswordForm();
   useEffect(() => {
@@ -406,6 +425,90 @@ export default function ProfilePage() {
           </div>
         </Card>
       </div>
+      {referralInfo && (
+        <div className="w-full max-w-7xl mt-2">
+          <Card
+            className="gap-4 sm:gap-6"
+            role="region"
+            aria-labelledby="referral-heading">
+            <div className="flex flex-row items-center gap-3">
+              <Users
+                className="h-5 w-5 shrink-0"
+                aria-hidden="true"
+              />
+              <h2
+                id="referral-heading"
+                className="text-lg sm:text-xl font-bold">
+                {t("referral.title")}
+              </h2>
+            </div>
+
+            {/* Referral code + copy */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">{t("referral.yourCode")}</span>
+                <span className="text-2xl font-mono font-bold tracking-widest">{referralInfo.code}</span>
+              </div>
+              <Button
+                variant="outline"
+                onClick={copyReferralCode}
+                className="w-full sm:w-auto flex items-center gap-2"
+                aria-label={t("referral.copyCode")}>
+                {codeCopied ? (
+                  <Check
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Copy
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  />
+                )}
+                <span>{codeCopied ? t("referral.codeCopied") : t("referral.copyCode")}</span>
+              </Button>
+            </div>
+
+            {/* Parrain tier info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Card className="bg-gray-middle-light px-3 py-2.5 rounded-[15px]">
+                <p className="text-xs text-muted-foreground mb-1">{t("referral.referrerTier")}</p>
+                {referralInfo.pendingReferralsCount > 0 ? (
+                  <>
+                    <p className="text-lg font-bold">
+                      {referralInfo.currentDiscountPercent}% {t("referral.off")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("referral.pendingReferrals", { count: referralInfo.pendingReferralsCount })}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t("referral.noDiscount")}</p>
+                )}
+              </Card>
+
+              {/* Filleul discount status */}
+              <Card className="bg-gray-middle-light px-3 py-2.5 rounded-[15px]">
+                <p className="text-xs text-muted-foreground mb-1">{t("referral.refereeDiscount")}</p>
+                {referralInfo.myRefereeDiscount?.available ? (
+                  <p className="text-lg font-bold">
+                    {referralInfo.myRefereeDiscount.discountPercent}% {t("referral.off")}
+                  </p>
+                ) : referralInfo.myRefereeDiscount && !referralInfo.myRefereeDiscount.available ? (
+                  <p className="text-sm text-muted-foreground">{t("referral.refereeDiscountUsed")}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t("referral.noRefereeDiscount")}</p>
+                )}
+              </Card>
+            </div>
+
+            {/* Total filleuls */}
+            <p className="text-sm text-muted-foreground">
+              {t("referral.totalReferees", { count: referralInfo.refereeCount })}
+            </p>
+          </Card>
+        </div>
+      )}
       <div className="w-full max-w-7xl flex flex-row-reverse py-2 sm:py-4 md:py-6 lg:py-8">
         {isUpdating ? (
           <div className="flex gap-2">

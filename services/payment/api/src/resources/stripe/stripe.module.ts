@@ -5,9 +5,10 @@ import { PaymentModule } from '@/resources/payment/payment.module';
 import { MetricsModule } from '@/metrics/metrics.module';
 import { PromoCodeModule } from '@/resources/promo-code/promo-code.module';
 import { AffiliationModule } from '@/resources/affiliation/affiliation.module';
+import { ReferralModule } from '@/resources/referral/referral.module';
 
 @Module({
-    imports: [PaymentModule, MetricsModule, PromoCodeModule, AffiliationModule],
+    imports: [PaymentModule, MetricsModule, PromoCodeModule, AffiliationModule, ReferralModule],
     controllers: [StripeController],
     providers: [StripeService],
 })

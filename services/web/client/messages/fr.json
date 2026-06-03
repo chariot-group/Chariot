@@ -247,6 +247,20 @@
       "updateProfile": "Mettre à jour le profil",
       "cancelUpdate": "Annuler",
       "formLabel": "Formulaire de modification du profil"
+    },
+    "referral": {
+      "title": "Parrainage",
+      "yourCode": "Votre code parrain",
+      "copyCode": "Copier le lien",
+      "codeCopied": "Lien copié !",
+      "off": "de réduction",
+      "referrerTier": "Votre réduction parrain",
+      "pendingReferrals": "{count, plural, one {# filleul depuis votre dernière commande} other {# filleuls depuis votre dernière commande}}",
+      "noDiscount": "Aucune réduction disponible pour l'instant",
+      "refereeDiscount": "Votre réduction filleul",
+      "refereeDiscountUsed": "Réduction déjà utilisée",
+      "noRefereeDiscount": "Pas de réduction filleul",
+      "totalReferees": "{count, plural, one {# personne parrainée au total} other {# personnes parrainées au total}}"
     }
   },
   "welcome": {

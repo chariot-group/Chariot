@@ -93,6 +93,55 @@ model AffiliationUsage {
   @@map("affiliation_usages")
 }
 
+model Referral {
+  id     String @id @default(uuid())
+  code   String @unique
+  userId String @unique @map("user_id") // keycloakId du parrain
+
+  pendingReferralsCount Int @default(0) @map("pending_referrals_count") // nb filleuls depuis dernière commande avec réduction
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  referees  ReferralReferee[]
+  payments  ReferralPayment[]
+  orders    Payment[]
+
+  @@map("referrals")
+}
+
+model ReferralReferee {
+  id            String   @id @default(uuid())
+  refereeUserId String   @unique @map("referee_user_id") // keycloakId du filleul
+  registeredAt  DateTime @default(now()) @map("registered_at")
+
+  // Suivi de l'utilisation de la réduction filleul (15%)
+  discountUsed    Boolean   @default(false) @map("discount_used")
+  discountUsedAt  DateTime? @map("discount_used_at")
+  discountOrderId String?   @map("discount_order_id")
+
+  referral   Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  referralId String   @map("referral_id")
+
+  @@map("referral_referees")
+}
+
+model ReferralPayment {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")        // keycloakId de l'utilisateur ayant bénéficié de la réduction
+  discountType    String   @map("discount_type")  // 'referee' | 'referrer'
+  discountPercent Int      @map("discount_percent")
+  orderId         String   @map("order_id")       // Stripe session/paymentIntent ID
+  orderAmount     Int      @map("order_amount")   // montant avant réduction (centimes)
+  discountAmount  Int      @map("discount_amount") // réduction appliquée (centimes)
+  usedAt          DateTime @default(now()) @map("used_at")
+
+  referral   Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  referralId String   @map("referral_id")
+
+  @@map("referral_payments")
+}
+
 model Payment {
   id                    String        @id @default(uuid())
   userId                String        @map("user_id") // keycloakId
@@ -110,6 +159,9 @@ model Payment {
 
   affiliation   Affiliation? @relation(fields: [affiliationId], references: [id])
   affiliationId String?      @map("affiliation_id")
+
+  referral   Referral? @relation(fields: [referralId], references: [id])
+  referralId String?   @map("referral_id")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

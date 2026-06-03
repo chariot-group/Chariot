@@ -246,6 +246,20 @@
       "updateProfile": "Actualizar perfil",
       "cancelUpdate": "Cancelar",
       "formLabel": "Formulario de actualización de perfil"
+    },
+    "referral": {
+      "title": "Programa de referidos",
+      "yourCode": "Tu código de referido",
+      "copyCode": "Copiar enlace",
+      "codeCopied": "¡Enlace copiado!",
+      "off": "de descuento",
+      "referrerTier": "Tu descuento como referidor",
+      "pendingReferrals": "{count, plural, one {# referido desde tu último pedido} other {# referidos desde tu último pedido}}",
+      "noDiscount": "Sin descuento disponible por ahora",
+      "refereeDiscount": "Tu descuento como referido",
+      "refereeDiscountUsed": "Descuento ya utilizado",
+      "noRefereeDiscount": "Sin descuento de referido",
+      "totalReferees": "{count, plural, one {# persona referida en total} other {# personas referidas en total}}"
     }
   },
   "welcome": {
