@@ -222,6 +222,14 @@
     "yourTokens": "Your tokens:",
     "noHistory": "No history available",
     "reloadTokens": "Reload your tokens",
+    "back": "Back",
+    "showNewPassword": "Show new password",
+    "hideNewPassword": "Hide new password",
+    "showConfirmPassword": "Show password confirmation",
+    "hideConfirmPassword": "Hide password confirmation",
+    "tokenBalanceAria": "Current token balance: {balance} tokens",
+    "sessionItemEarned": "Session on {date} in {campaign}, earned {amount} tokens",
+    "sessionItemSpent": "Session on {date} in {campaign}, spent {amount} tokens",
     "changePassword": {
       "successMessage": "Password changed successfully",
       "errorMessage": "Failed to change password",
@@ -248,18 +256,20 @@
       "formLabel": "Profile update form"
     },
     "referral": {
-      "title": "Referral Program",
       "yourCode": "Your referral code",
-      "copyCode": "Copy link",
-      "codeCopied": "Link copied!",
-      "off": "off",
-      "referrerTier": "Your referrer discount",
+      "copyCode": "Copy code",
+      "codeCopied": "Code copied!",
+      "copyAriaLabel": "Copy referral code",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied!",
+      "copyLinkAriaLabel": "Copy referral link",
       "pendingReferrals": "{count, plural, one {# referral since your last order} other {# referrals since your last order}}",
-      "noDiscount": "No discount available yet",
-      "refereeDiscount": "Your referee discount",
-      "refereeDiscountUsed": "Discount already used",
-      "noRefereeDiscount": "No referee discount",
-      "totalReferees": "{count, plural, one {# person referred in total} other {# people referred in total}}"
+      "noDiscount": "Refer friends to unlock your discounts",
+      "totalReferees": "{count, plural, one {# person referred in total} other {# people referred in total}}",
+      "tiersTitle": "Referral tiers",
+      "tiersSubtitle": "The more you refer, the more you save",
+      "tierReferral": "referral",
+      "tierReferrals": "referrals"
     }
   },
   "welcome": {

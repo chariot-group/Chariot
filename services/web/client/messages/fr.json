@@ -223,6 +223,14 @@
     "yourTokens": "Vos tokens :",
     "noHistory": "Aucun historique disponible",
     "reloadTokens": "Recharger vos tokens",
+    "back": "Retour",
+    "showNewPassword": "Afficher le nouveau mot de passe",
+    "hideNewPassword": "Masquer le nouveau mot de passe",
+    "showConfirmPassword": "Afficher la confirmation du mot de passe",
+    "hideConfirmPassword": "Masquer la confirmation du mot de passe",
+    "tokenBalanceAria": "Solde de tokens actuel : {balance} tokens",
+    "sessionItemEarned": "Session du {date} dans {campaign}, gagné {amount} tokens",
+    "sessionItemSpent": "Session du {date} dans {campaign}, dépensé {amount} tokens",
     "changePassword": {
       "successMessage": "Mot de passe modifié avec succès",
       "errorMessage": "Échec de la modification du mot de passe",
@@ -249,18 +257,20 @@
       "formLabel": "Formulaire de modification du profil"
     },
     "referral": {
-      "title": "Parrainage",
       "yourCode": "Votre code parrain",
-      "copyCode": "Copier le lien",
-      "codeCopied": "Lien copié !",
-      "off": "de réduction",
-      "referrerTier": "Votre réduction parrain",
+      "copyCode": "Copier le code",
+      "codeCopied": "Code copié !",
+      "copyAriaLabel": "Copier le code parrain",
+      "copyLink": "Copier le lien",
+      "linkCopied": "Lien copié !",
+      "copyLinkAriaLabel": "Copier le lien de parrainage",
       "pendingReferrals": "{count, plural, one {# filleul depuis votre dernière commande} other {# filleuls depuis votre dernière commande}}",
-      "noDiscount": "Aucune réduction disponible pour l'instant",
-      "refereeDiscount": "Votre réduction filleul",
-      "refereeDiscountUsed": "Réduction déjà utilisée",
-      "noRefereeDiscount": "Pas de réduction filleul",
-      "totalReferees": "{count, plural, one {# personne parrainée au total} other {# personnes parrainées au total}}"
+      "noDiscount": "Parrainez pour débloquer vos réductions",
+      "totalReferees": "{count, plural, one {# personne parrainée au total} other {# personnes parrainées au total}}",
+      "tiersTitle": "Paliers de parrainage",
+      "tiersSubtitle": "Plus vous parrainez, plus vous économisez",
+      "tierReferral": "filleul",
+      "tierReferrals": "filleuls"
     }
   },
   "welcome": {

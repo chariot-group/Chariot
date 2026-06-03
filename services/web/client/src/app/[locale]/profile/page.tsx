@@ -6,9 +6,23 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
-import { ArrowLeft, Check, Copy, Eye, EyeOff, ShoppingCart, SquarePen, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Copy,
+  DotIcon,
+  Eye,
+  EyeOff,
+  Link,
+  Link2,
+  Loader2,
+  ShoppingCart,
+  SquarePen,
+  Users,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";
@@ -19,6 +33,20 @@ import UpdateProfile from "@/components/profile/UpdateProfile";
 import { isEnterWithModifiers, isEnterWithoutModifiers } from "@/utils/keyboard.utils";
 import ShopDialog from "@/components/dialogs/Shop";
 import referralService, { type ReferralInfo } from "@/services/ReferralService";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "react-toastify";
+import { useToast } from "@/hooks/useToast";
+
+const REFERRAL_TIERS = [
+  { minPending: 8, discount: 50 },
+  { minPending: 7, discount: 45 },
+  { minPending: 6, discount: 40 },
+  { minPending: 5, discount: 35 },
+  { minPending: 4, discount: 30 },
+  { minPending: 3, discount: 25 },
+  { minPending: 2, discount: 20 },
+  { minPending: 1, discount: 15 },
+] as const;
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -29,6 +57,7 @@ export default function ProfilePage() {
   const [viewConfirmNewPassword, setViewConfirmNewPassword] = useState<boolean>(false);
   const t = useTranslations("ProfilePage");
   const router = useRouter();
+  const toast = useToast();
 
   const tEdit = useTranslations("ProfilePage.editProfile");
   const tAuth = useTranslations("auth");
@@ -44,16 +73,8 @@ export default function ProfilePage() {
 
   const [showShopDialog, setShowShopDialog] = useState<boolean>(false);
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
-  const [codeCopied, setCodeCopied] = useState(false);
-
-  const copyReferralCode = () => {
-    if (!referralInfo) return;
-    const shareUrl = `${window.location.origin}?ref=${referralInfo.code}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      setCodeCopied(true);
-      setTimeout(() => setCodeCopied(false), 2000);
-    });
-  };
+  const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
+  const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
 
   useEffect(() => {
     referralService
@@ -85,6 +106,23 @@ export default function ProfilePage() {
     });
   }, [loading, refreshUser, user]);
 
+  const copy = (text: string, setState: Dispatch<SetStateAction<"idle" | "loading" | "success">>): void => {
+    setState("loading");
+    if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          setState("success");
+          setTimeout(() => setState("idle"), 1000);
+        })
+        .catch(() => {
+          setState("idle");
+        });
+    } else {
+      setState("idle");
+    }
+  };
+
   return (
     <main
       className="flex flex-col items-center pt-4 sm:pt-6 md:pt-8 px-3 sm:px-4 md:px-6 lg:px-8 overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
@@ -97,7 +135,7 @@ export default function ProfilePage() {
           onClick={() => router.back()}>
           <div className="flex flex-row gap-1 items-center">
             <ArrowLeft />
-            <span>Retour</span>
+            <span>{t("back")}</span>
           </div>
         </Button>
       </div>
@@ -196,7 +234,7 @@ export default function ProfilePage() {
                                 setViewNewPassword(!viewNewPassword);
                               }
                             }}
-                            aria-label={viewNewPassword ? "Hide new password" : "Show new password"}
+                            aria-label={viewNewPassword ? t("hideNewPassword") : t("showNewPassword")}
                             aria-pressed={viewNewPassword}
                             aria-controls="newPassword"
                             tabIndex={0}
@@ -256,9 +294,7 @@ export default function ProfilePage() {
                                 setViewConfirmNewPassword(!viewConfirmNewPassword);
                               }
                             }}
-                            aria-label={
-                              viewConfirmNewPassword ? "Hide password confirmation" : "Show password confirmation"
-                            }
+                            aria-label={viewConfirmNewPassword ? t("hideConfirmPassword") : t("showConfirmPassword")}
                             aria-pressed={viewConfirmNewPassword}
                             aria-controls="confirmNewPassword"
                             tabIndex={0}
@@ -323,7 +359,7 @@ export default function ProfilePage() {
               className="bg-gray-middle-light px-2 sm:px-3 py-1.5 sm:py-2 rounded-[15px] flex flex-row items-center gap-2 sm:gap-4 lg:gap-6 justify-between self-start sm:self-auto"
               role="status"
               aria-live="polite"
-              aria-label={`Current token balance: ${user?.balance ?? 0} tokens`}>
+              aria-label={t("tokenBalanceAria", { balance: user?.balance ?? 0 })}>
               <span
                 className="font-bold text-xs sm:text-sm hidden xl:inline"
                 aria-hidden="true">
@@ -366,7 +402,19 @@ export default function ProfilePage() {
                       <Card
                         key={index}
                         role="listitem"
-                        aria-label={`Session on ${formattedDate} in ${entry.campaignName}, ${entry.value > 0 ? "earned" : "spent"} ${Math.abs(entry.value)} tokens`}
+                        aria-label={
+                          entry.value > 0
+                            ? t("sessionItemEarned", {
+                                date: formattedDate,
+                                campaign: entry.campaignName,
+                                amount: Math.abs(entry.value),
+                              })
+                            : t("sessionItemSpent", {
+                                date: formattedDate,
+                                campaign: entry.campaignName,
+                                amount: Math.abs(entry.value),
+                              })
+                        }
                         className="bg-gray-middle-light px-2 sm:px-3 py-2 sm:py-2.5 rounded-[15px] flex flex-row items-center gap-2 sm:gap-6 justify-between">
                         <div className="flex flex-row items-center gap-1 sm:gap-4 md:gap-8 xl:gap-20 flex-1 min-w-0">
                           <span
@@ -427,86 +475,105 @@ export default function ProfilePage() {
       </div>
       {referralInfo && (
         <div className="w-full max-w-7xl mt-2">
-          <Card
-            className="gap-4 sm:gap-6"
-            role="region"
-            aria-labelledby="referral-heading">
-            <div className="flex flex-row items-center gap-3">
-              <Users
-                className="h-5 w-5 shrink-0"
-                aria-hidden="true"
-              />
-              <h2
-                id="referral-heading"
-                className="text-lg sm:text-xl font-bold">
-                {t("referral.title")}
-              </h2>
-            </div>
-
-            {/* Referral code + copy */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-muted-foreground">{t("referral.yourCode")}</span>
-                <span className="text-2xl font-mono font-bold tracking-widest">{referralInfo.code}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-start">
+            <Card
+              className="flex flex-col gap-4 lg:col-span-2"
+              role="region"
+              aria-labelledby="referral-tiers-heading">
+              <div>
+                <h2
+                  id="referral-tiers-heading"
+                  className="text-lg sm:text-xl font-bold">
+                  {t("referral.tiersTitle")}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">{t("referral.tiersSubtitle")}</p>
               </div>
-              <Button
-                variant="outline"
-                onClick={copyReferralCode}
-                className="w-full sm:w-auto flex items-center gap-2"
-                aria-label={t("referral.copyCode")}>
-                {codeCopied ? (
-                  <Check
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <Copy
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  />
-                )}
-                <span>{codeCopied ? t("referral.codeCopied") : t("referral.copyCode")}</span>
-              </Button>
-            </div>
 
-            {/* Parrain tier info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Card className="bg-gray-middle-light px-3 py-2.5 rounded-[15px]">
-                <p className="text-xs text-muted-foreground mb-1">{t("referral.referrerTier")}</p>
-                {referralInfo.pendingReferralsCount > 0 ? (
-                  <>
-                    <p className="text-lg font-bold">
-                      {referralInfo.currentDiscountPercent}% {t("referral.off")}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {t("referral.pendingReferrals", { count: referralInfo.pendingReferralsCount })}
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground">{t("referral.noDiscount")}</p>
-                )}
-              </Card>
+              <div
+                className="flex flex-col items-center gap-1.5 w-full"
+                role="list"
+                aria-label={t("referral.tiersTitle")}>
+                {REFERRAL_TIERS.map((tier, idx) => {
+                  const widthPercent = 30 + Math.round((idx / (REFERRAL_TIERS.length - 1)) * 70);
+                  const isReached = referralInfo.pendingReferralsCount >= tier.minPending;
+                  const isCurrentTier =
+                    isReached && (idx === 0 || referralInfo.pendingReferralsCount < REFERRAL_TIERS[idx - 1].minPending);
+                  return (
+                    <div
+                      key={tier.minPending}
+                      role="listitem"
+                      style={{ width: `${widthPercent}%` }}
+                      className={cn(
+                        "flex justify-between items-center px-3 py-2 rounded-[10px] transition-all duration-300",
+                        isCurrentTier
+                          ? "bg-primary text-primary-foreground shadow-md scale-[1.02]"
+                          : isReached
+                            ? "bg-primary/40 text-foreground"
+                            : "bg-gray-middle-light text-muted-foreground opacity-70",
+                      )}>
+                      <span className="text-xs font-medium">
+                        {tier.minPending}+{" "}
+                        {tier.minPending === 1 ? t("referral.tierReferral") : t("referral.tierReferrals")}
+                      </span>
+                      <span className="text-sm font-bold">{tier.discount}%</span>
+                    </div>
+                  );
+                })}
+              </div>
 
-              {/* Filleul discount status */}
-              <Card className="bg-gray-middle-light px-3 py-2.5 rounded-[15px]">
-                <p className="text-xs text-muted-foreground mb-1">{t("referral.refereeDiscount")}</p>
-                {referralInfo.myRefereeDiscount?.available ? (
-                  <p className="text-lg font-bold">
-                    {referralInfo.myRefereeDiscount.discountPercent}% {t("referral.off")}
-                  </p>
-                ) : referralInfo.myRefereeDiscount && !referralInfo.myRefereeDiscount.available ? (
-                  <p className="text-sm text-muted-foreground">{t("referral.refereeDiscountUsed")}</p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">{t("referral.noRefereeDiscount")}</p>
-                )}
-              </Card>
-            </div>
+              <span className="flex flex-row items-center gap-2 mt-auto justify-center">
+                <p className="text-xs text-muted-foreground">
+                  {referralInfo.pendingReferralsCount > 0
+                    ? t("referral.pendingReferrals", { count: referralInfo.pendingReferralsCount })
+                    : t("referral.noDiscount")}{" "}
+                </p>
+                <DotIcon className="text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">
+                  {t("referral.totalReferees", { count: referralInfo.refereeCount })}
+                </p>
+              </span>
+            </Card>
 
-            {/* Total filleuls */}
-            <p className="text-sm text-muted-foreground">
-              {t("referral.totalReferees", { count: referralInfo.refereeCount })}
-            </p>
-          </Card>
+            <Card className="flex flex-col gap-0 p-4 sm:p-6">
+              <h2
+                id="referral-code-heading"
+                className="text-base sm:text-lg font-bold mb-4">
+                {t("referral.yourCode")}
+              </h2>
+              <p className="w-full text-xl text-center">{referralInfo.code}</p>
+              <div className="gap-3 items-center grid grid-cols-5">
+                <Button
+                  variant="outline"
+                  className={`mt-4 w-full transition-colors col-span-4 ${
+                    codeCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                  }`}
+                  aria-label={t("referral.copyAriaLabel")}
+                  disabled={codeCopyState !== "idle"}
+                  onClick={() => copy(referralInfo.code, setCodeCopyState)}>
+                  {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
+                  {codeCopyState === "success" && <Check />}
+                  {codeCopyState === "idle" && <Copy />}
+                  {codeCopyState === "success" ? t("referral.codeCopied") : t("referral.copyCode")}
+                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      aria-label={t("referral.copyLinkAriaLabel")}
+                      className={`mt-4 transition-colors ${
+                        linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
+                      }`}
+                      disabled={linkCopyState !== "idle"}
+                      onClick={() => copy(`${window.location.origin}?ref=${referralInfo.code}`, setLinkCopyState)}>
+                      {linkCopyState === "success" ? <Check /> : <Link />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {linkCopyState === "success" ? t("referral.linkCopied") : t("referral.copyLink")}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </Card>
+          </div>
         </div>
       )}
       <div className="w-full max-w-7xl flex flex-row-reverse py-2 sm:py-4 md:py-6 lg:py-8">

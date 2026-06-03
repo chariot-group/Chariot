@@ -222,6 +222,14 @@
     "yourTokens": "Tus tokens:",
     "noHistory": "No hay historial disponible",
     "reloadTokens": "Recargar tus tokens",
+    "back": "Volver",
+    "showNewPassword": "Mostrar nueva contraseña",
+    "hideNewPassword": "Ocultar nueva contraseña",
+    "showConfirmPassword": "Mostrar confirmación de contraseña",
+    "hideConfirmPassword": "Ocultar confirmación de contraseña",
+    "tokenBalanceAria": "Saldo de tokens actual: {balance} tokens",
+    "sessionItemEarned": "Sesión del {date} en {campaign}, ganado {amount} tokens",
+    "sessionItemSpent": "Sesión del {date} en {campaign}, gastado {amount} tokens",
     "changePassword": {
       "successMessage": "Contraseña cambiada correctamente",
       "errorMessage": "Error al cambiar la contraseña",
@@ -248,18 +256,20 @@
       "formLabel": "Formulario de actualización de perfil"
     },
     "referral": {
-      "title": "Programa de referidos",
       "yourCode": "Tu código de referido",
-      "copyCode": "Copiar enlace",
-      "codeCopied": "¡Enlace copiado!",
-      "off": "de descuento",
-      "referrerTier": "Tu descuento como referidor",
+      "copyCode": "Copiar código",
+      "codeCopied": "¡Código copiado!",
+      "copyAriaLabel": "Copiar código de referido",
+      "copyLink": "Copiar enlace",
+      "linkCopied": "¡Enlace copiado!",
+      "copyLinkAriaLabel": "Copiar enlace de referido",
       "pendingReferrals": "{count, plural, one {# referido desde tu último pedido} other {# referidos desde tu último pedido}}",
-      "noDiscount": "Sin descuento disponible por ahora",
-      "refereeDiscount": "Tu descuento como referido",
-      "refereeDiscountUsed": "Descuento ya utilizado",
-      "noRefereeDiscount": "Sin descuento de referido",
-      "totalReferees": "{count, plural, one {# persona referida en total} other {# personas referidas en total}}"
+      "noDiscount": "Invita amigos para desbloquear tus descuentos",
+      "totalReferees": "{count, plural, one {# persona referida en total} other {# personas referidas en total}}",
+      "tiersTitle": "Niveles de referidos",
+      "tiersSubtitle": "Cuanto más refieras, más ahorras",
+      "tierReferral": "referido",
+      "tierReferrals": "referidos"
     }
   },
   "welcome": {
