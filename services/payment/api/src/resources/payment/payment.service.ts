@@ -14,7 +14,12 @@ import { CompletePaymentDto } from '@/resources/payment/dto/complete-payment.dto
 import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
 import { AffiliationService } from '@/resources/affiliation/affiliation.service';
 import { KeycloakAdminService } from '@/common/services/keycloak-admin.service';
-import { Payment, DiscountType } from '@prisma/client';
+import { Payment } from '@prisma/client';
+import {
+    calculateAffiliationDiscount,
+    calculateCommissionAmount,
+    calculateDiscount,
+} from '@/resources/payment/PaymentCalculationService';
 
 export type PaymentWithDiscount = Payment & {
     appliedDiscount: {
@@ -36,21 +41,6 @@ export class PaymentService {
         private readonly affiliationService: AffiliationService,
         private readonly keycloakAdminService: KeycloakAdminService,
     ) { }
-
-    /**
-     * Calcule le montant de la réduction en centimes.
-     */
-    private calculateDiscount(
-        amount: number,
-        discountType: DiscountType,
-        discountValue: number,
-    ): number {
-        if (discountType === DiscountType.PERCENTAGE) {
-            return Math.floor((amount * discountValue) / 100);
-        }
-        // FIXED: la réduction ne peut pas dépasser le montant total
-        return Math.min(discountValue, amount);
-    }
 
     async create(
         dto: CreatePaymentDto,
@@ -77,8 +67,9 @@ export class PaymentService {
                     );
                 }
 
-                const affiliationDiscount = Math.floor(
-                    (dto.amount * affiliation.userDiscountPercent) / 100,
+                const affiliationDiscount = calculateAffiliationDiscount(
+                    dto.amount,
+                    affiliation.userDiscountPercent,
                 );
                 discountAmount += affiliationDiscount;
                 affiliationId = affiliation.id;
@@ -96,7 +87,7 @@ export class PaymentService {
                 );
                 const promoCode = promoResult.data;
 
-                const promoDiscount = this.calculateDiscount(
+                const promoDiscount = calculateDiscount(
                     amountAfterAffiliation,
                     promoCode.discountType,
                     promoCode.discountValue,
@@ -209,10 +200,9 @@ export class PaymentService {
                         });
 
                         if (affiliation) {
-                            const commissionAmount = Math.floor(
-                                (payment.finalAmount *
-                                    affiliation.creatorCommissionPercent) /
-                                100,
+                            const commissionAmount = calculateCommissionAmount(
+                                payment.finalAmount,
+                                affiliation.creatorCommissionPercent,
                             );
 
                             await tx.affiliationUsage.create({

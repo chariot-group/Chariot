@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "react-toastify";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,40 +15,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatCents, formatDate } from "@/lib/utils";
 import { extractApiError } from "@/lib/api-error";
 import { SortableHead } from "@/components/ui/SortableHead";
-import getApiClient from "@/services/ApiService";
-
-interface PromoCode {
-  id: string;
-  code: string;
-  name: string;
-  discountType: "PERCENTAGE" | "FIXED";
-  discountValue: number;
-  isFirstOrderOnly: boolean;
-  minOrderAmount: number | null;
-  expiresAt: string | null;
-  maxTotalUses: number | null;
-  maxUsesPerUser: number;
-  currentTotalUses: number;
-  isActive: boolean;
-  createdAt: string;
-}
-
-const promoSchema = z.object({
-  code: z
-    .string()
-    .min(3)
-    .max(32)
-    .regex(/^[A-Z0-9_-]+$/, "Majuscules, chiffres, tirets uniquement"),
-  name: z.string().min(2).max(100),
-  discountType: z.enum(["PERCENTAGE", "FIXED"]),
-  discountValue: z.coerce.number().int().min(1),
-  isFirstOrderOnly: z.boolean().optional(),
-  minOrderAmount: z.coerce.number().int().min(1).nullable().optional().catch(undefined),
-  expiresAt: z.string().optional().nullable(),
-  maxTotalUses: z.coerce.number().int().min(1).nullable().optional().catch(undefined),
-  maxUsesPerUser: z.coerce.number().int().min(1).optional(),
-});
-type PromoFormData = z.infer<typeof promoSchema>;
+import {
+  filterPromoCodes,
+  getApiClient,
+  PROMO_FORM_DEFAULT_VALUES,
+  promoSchema,
+  sortPromoCodes,
+  toPromoPayload,
+  type PromoCode,
+  type PromoFormData,
+  type PromoSortField,
+} from "@/services";
 
 function PromoForm({
   defaultValues,
@@ -69,9 +45,7 @@ function PromoForm({
   } = useForm<PromoFormData>({
     resolver: zodResolver(promoSchema) as unknown as Resolver<PromoFormData>,
     defaultValues: {
-      discountType: "PERCENTAGE",
-      maxUsesPerUser: 1,
-      isFirstOrderOnly: false,
+      ...PROMO_FORM_DEFAULT_VALUES,
       ...defaultValues,
     },
   });
@@ -208,8 +182,7 @@ export default function PromoCodesPage() {
   const [total, setTotal] = useState(0);
   const [dialogMode, setDialogMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<PromoCode | null>(null);
-  type SortField = "code" | "name" | "discountValue" | "currentTotalUses" | "expiresAt" | "isActive";
-  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortField, setSortField] = useState<PromoSortField | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const limit = 20;
 
@@ -239,12 +212,7 @@ export default function PromoCodesPage() {
   const handleCreate = async (data: PromoFormData) => {
     setSaving(true);
     try {
-      const payload = {
-        ...data,
-        minOrderAmount: data.minOrderAmount ?? undefined,
-        expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString() : undefined,
-        maxTotalUses: data.maxTotalUses ?? undefined,
-      };
+      const payload = toPromoPayload(data);
       await getApiClient().post("/promo-codes", payload);
       toast.success("Code promo créé !");
       setDialogMode(null);
@@ -260,12 +228,7 @@ export default function PromoCodesPage() {
     if (!editTarget) return;
     setSaving(true);
     try {
-      const payload = {
-        ...data,
-        minOrderAmount: data.minOrderAmount ?? undefined,
-        expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString() : undefined,
-        maxTotalUses: data.maxTotalUses ?? undefined,
-      };
+      const payload = toPromoPayload(data);
       await getApiClient().patch(`/promo-codes/${editTarget.id}`, payload);
       toast.success("Code promo mis à jour !");
       setDialogMode(null);
@@ -289,11 +252,9 @@ export default function PromoCodesPage() {
     }
   };
 
-  const filtered = promoCodes.filter(
-    (p) => p.code.toLowerCase().includes(search.toLowerCase()) || p.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = filterPromoCodes(promoCodes, search);
 
-  const toggleSort = (field: SortField) => {
+  const toggleSort = (field: PromoSortField) => {
     if (sortField === field) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
@@ -302,31 +263,7 @@ export default function PromoCodesPage() {
     }
   };
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (!sortField) return 0;
-    let cmp = 0;
-    switch (sortField) {
-      case "code":
-        cmp = a.code.localeCompare(b.code);
-        break;
-      case "name":
-        cmp = a.name.localeCompare(b.name);
-        break;
-      case "discountValue":
-        cmp = a.discountValue - b.discountValue;
-        break;
-      case "currentTotalUses":
-        cmp = a.currentTotalUses - b.currentTotalUses;
-        break;
-      case "expiresAt":
-        cmp = (a.expiresAt ?? "9999").localeCompare(b.expiresAt ?? "9999");
-        break;
-      case "isActive":
-        cmp = Number(b.isActive) - Number(a.isActive);
-        break;
-    }
-    return sortDir === "asc" ? cmp : -cmp;
-  });
+  const sorted = sortPromoCodes(filtered, sortField, sortDir);
 
   const totalPages = Math.ceil(total / limit);
 

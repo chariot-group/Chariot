@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "react-toastify";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,34 +14,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatCents } from "@/lib/utils";
 import { extractApiError } from "@/lib/api-error";
 import { SortableHead } from "@/components/ui/SortableHead";
-import getApiClient from "@/services/ApiService";
-
-interface Affiliation {
-  id: string;
-  code: string;
-  name: string;
-  creatorName: string;
-  creatorCommissionPercent: number;
-  userDiscountPercent: number;
-  totalUsages: number;
-  totalCommissionAmount: number;
-  isActive: boolean;
-  createdAt: string;
-}
-
-const affiliationSchema = z.object({
-  code: z
-    .string()
-    .min(3)
-    .max(32)
-    .regex(/^[A-Z0-9_-]+$/, "Majuscules, chiffres, tirets uniquement"),
-  name: z.string().min(2).max(100),
-
-  creatorName: z.string().min(1).max(100),
-  creatorCommissionPercent: z.coerce.number().int().min(0).max(100),
-  userDiscountPercent: z.coerce.number().int().min(0).max(100),
-});
-type AffiliationFormData = z.infer<typeof affiliationSchema>;
+import {
+  AFFILIATION_FORM_DEFAULT_VALUES,
+  affiliationSchema,
+  filterAffiliations,
+  getApiClient,
+  sortAffiliations,
+  type Affiliation,
+  type AffiliationFormData,
+  type AffiliationSortField,
+} from "@/services";
 
 function AffiliationForm({
   defaultValues,
@@ -58,10 +39,9 @@ function AffiliationForm({
     handleSubmit,
     formState: { errors },
   } = useForm<AffiliationFormData>({
-    resolver: zodResolver(affiliationSchema),
+    resolver: zodResolver(affiliationSchema) as unknown as Resolver<AffiliationFormData>,
     defaultValues: {
-      creatorCommissionPercent: 10,
-      userDiscountPercent: 5,
+      ...AFFILIATION_FORM_DEFAULT_VALUES,
       ...defaultValues,
     },
   });
@@ -151,15 +131,7 @@ export default function AffiliationsPage() {
   const [total, setTotal] = useState(0);
   const [dialogMode, setDialogMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<Affiliation | null>(null);
-  type SortField =
-    | "code"
-    | "creatorName"
-    | "creatorCommissionPercent"
-    | "userDiscountPercent"
-    | "totalUsages"
-    | "totalCommissionAmount"
-    | "isActive";
-  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortField, setSortField] = useState<AffiliationSortField | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const limit = 20;
 
@@ -227,14 +199,9 @@ export default function AffiliationsPage() {
     }
   };
 
-  const filtered = affiliations.filter(
-    (a) =>
-      a.code.toLowerCase().includes(search.toLowerCase()) ||
-      a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.creatorName.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = filterAffiliations(affiliations, search);
 
-  const toggleSort = (field: SortField) => {
+  const toggleSort = (field: AffiliationSortField) => {
     if (sortField === field) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
@@ -243,34 +210,7 @@ export default function AffiliationsPage() {
     }
   };
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (!sortField) return 0;
-    let cmp = 0;
-    switch (sortField) {
-      case "code":
-        cmp = a.code.localeCompare(b.code);
-        break;
-      case "creatorName":
-        cmp = a.creatorName.localeCompare(b.creatorName);
-        break;
-      case "creatorCommissionPercent":
-        cmp = a.creatorCommissionPercent - b.creatorCommissionPercent;
-        break;
-      case "userDiscountPercent":
-        cmp = a.userDiscountPercent - b.userDiscountPercent;
-        break;
-      case "totalUsages":
-        cmp = a.totalUsages - b.totalUsages;
-        break;
-      case "totalCommissionAmount":
-        cmp = a.totalCommissionAmount - b.totalCommissionAmount;
-        break;
-      case "isActive":
-        cmp = Number(b.isActive) - Number(a.isActive);
-        break;
-    }
-    return sortDir === "asc" ? cmp : -cmp;
-  });
+  const sorted = sortAffiliations(filtered, sortField, sortDir);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -424,9 +364,7 @@ export default function AffiliationsPage() {
                     <TableCell className="text-sm">{a.creatorCommissionPercent}%</TableCell>
                     <TableCell className="text-sm">{a.userDiscountPercent}%</TableCell>
                     <TableCell className="text-sm">{a.totalUsages}</TableCell>
-                    <TableCell className="text-sm text-[var(--green)]">
-                      {formatCents(a.totalCommissionAmount)}
-                    </TableCell>
+                    <TableCell className="text-sm text-(--green)">{formatCents(a.totalCommissionAmount)}</TableCell>
                     <TableCell>
                       <Badge variant={a.isActive ? "success" : "secondary"}>{a.isActive ? "Actif" : "Inactif"}</Badge>
                     </TableCell>

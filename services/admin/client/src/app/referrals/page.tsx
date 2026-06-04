@@ -9,26 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import getApiClient from "@/services/ApiService";
-
-interface ReferralItem {
-  id: string;
-  code: string;
-  userId: string;
-  username: string | null;
-  pendingReferralsCount: number;
-  currentDiscountPercent: number;
-  refereeCount: number;
-  validatedRefereeCount: number;
-  nonPayingRefereesCount: number;
-  createdAt: string;
-}
-
-interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-}
+import { type PaginatedResponse, type ReferralItem } from "@/app/referrals/referrals.types";
 
 export default function ReferralsPage() {
   const [referrals, setReferrals] = useState<ReferralItem[]>([]);

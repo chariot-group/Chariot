@@ -10,41 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCents, formatDate } from "@/lib/utils";
-import getApiClient from "@/services/ApiService";
-
-type PaymentStatus = "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
-
-interface Payment {
-  id: string;
-  userId: string;
-  userDisplayName: string | null;
-  stripeOrderId: string | null;
-  referralDiscountType: "referee" | "referrer" | null;
-  stripeSessionId: string | null;
-  amount: number;
-  discountAmount: number;
-  finalAmount: number;
-  currency: string;
-  status: PaymentStatus;
-  tokenCount: number | null;
-  promoCode?: { code: string } | null;
-  affiliation?: { code: string; creatorName: string } | null;
-  createdAt: string;
-}
-
-const STATUS_VARIANT: Record<PaymentStatus, "success" | "warning" | "destructive" | "secondary"> = {
-  COMPLETED: "success",
-  PENDING: "warning",
-  FAILED: "destructive",
-  REFUNDED: "secondary",
-};
-
-const STATUS_LABELS: Record<PaymentStatus, string> = {
-  COMPLETED: "Complété",
-  PENDING: "En attente",
-  FAILED: "Échoué",
-  REFUNDED: "Remboursé",
-};
+import {
+  buildPaymentsParams,
+  getApiClient,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUS_VARIANT,
+  type Payment,
+} from "@/services";
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -58,10 +30,7 @@ export default function PaymentsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, unknown> = { page, limit };
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (search.trim()) params.userId = search.trim();
-
+      const params = buildPaymentsParams(page, limit, statusFilter, search);
       const res = await getApiClient().get("/payments", { params });
       setPayments(res.data.data ?? []);
       setTotal(res.data.pagination?.totalItems ?? 0);
@@ -190,7 +159,7 @@ export default function PaymentsPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-sm">{formatCents(p.amount)}</TableCell>
-                    <TableCell className="text-sm text-[var(--yellow)]">
+                    <TableCell className="text-sm text-(--yellow)">
                       {p.discountAmount > 0 ? `-${formatCents(p.discountAmount)}` : "—"}
                     </TableCell>
                     <TableCell>
@@ -230,7 +199,7 @@ export default function PaymentsPage() {
                       {p.stripeOrderId ?? "—"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_VARIANT[p.status]}>{STATUS_LABELS[p.status]}</Badge>
+                      <Badge variant={PAYMENT_STATUS_VARIANT[p.status]}>{PAYMENT_STATUS_LABELS[p.status]}</Badge>
                     </TableCell>
                   </TableRow>
                 ))
