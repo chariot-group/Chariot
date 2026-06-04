@@ -18,6 +18,8 @@ interface Payment {
   id: string;
   userId: string;
   userDisplayName: string | null;
+  stripeOrderId: string | null;
+  referralDiscountType: "referee" | "referrer" | null;
   stripeSessionId: string | null;
   amount: number;
   discountAmount: number;
@@ -135,9 +137,11 @@ export default function PaymentsPage() {
                 <TableHead>Tokens achetés</TableHead>
                 <TableHead>Montant brut</TableHead>
                 <TableHead>Réduction</TableHead>
+                <TableHead>Parrainage</TableHead>
                 <TableHead>Montant final</TableHead>
                 <TableHead>Code promo</TableHead>
                 <TableHead>Affiliation</TableHead>
+                <TableHead>Order ID Stripe</TableHead>
                 <TableHead>Statut</TableHead>
               </TableRow>
             </TableHeader>
@@ -145,7 +149,7 @@ export default function PaymentsPage() {
               {loading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={11}
                     className="text-center text-muted-foreground py-8">
                     Chargement…
                   </TableCell>
@@ -153,7 +157,7 @@ export default function PaymentsPage() {
               ) : payments.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={11}
                     className="text-center text-muted-foreground py-8">
                     Aucun paiement trouvé
                   </TableCell>
@@ -185,6 +189,15 @@ export default function PaymentsPage() {
                     <TableCell className="text-sm text-[var(--yellow)]">
                       {p.discountAmount > 0 ? `-${formatCents(p.discountAmount)}` : "—"}
                     </TableCell>
+                    <TableCell>
+                      {p.referralDiscountType ? (
+                        <Badge variant={p.referralDiscountType === "referee" ? "secondary" : "outline"}>
+                          {p.referralDiscountType === "referee" ? "Filleul" : "Parrain"}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-sm font-medium text-card-foreground">
                       {formatCents(p.finalAmount)}
                     </TableCell>
@@ -208,6 +221,9 @@ export default function PaymentsPage() {
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground max-w-40 truncate">
+                      {p.stripeOrderId ?? "—"}
                     </TableCell>
                     <TableCell>
                       <Badge variant={STATUS_VARIANT[p.status]}>{STATUS_LABELS[p.status]}</Badge>

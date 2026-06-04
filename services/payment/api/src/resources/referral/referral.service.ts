@@ -10,6 +10,7 @@ import {
 import { PrismaService } from '@/prisma/prisma.service';
 import { IResponse, IPaginatedResponse } from '@/common/dtos/response.dto';
 import { Referral, ReferralReferee, ReferralPayment } from '@prisma/client';
+import { KeycloakAdminService } from '@/common/services/keycloak-admin.service';
 
 const REFEREE_DISCOUNT_PERCENT = 15;
 const REFERRER_BASE_DISCOUNT_PERCENT = 10;
@@ -32,7 +33,10 @@ export type ReferralInfo = Referral & {
 };
 
 export type ReferralWithStats = Referral & {
+    username: string | null;
     refereeCount: number;
+    validatedRefereeCount: number;
+    nonPayingRefereesCount: number;
     currentDiscountPercent: number;
     usedDiscountsCount: number;
 };
@@ -42,7 +46,10 @@ export class ReferralService {
     private readonly logger = new Logger(ReferralService.name);
     private readonly SERVICE_NAME = ReferralService.name;
 
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly keycloakAdminService: KeycloakAdminService,
+    ) { }
 
     // ─────────────────────────────────────────────────────────────────
     // Compute referrer discount from pending referrals count
@@ -376,7 +383,7 @@ export class ReferralService {
             const start = Date.now();
             const skip = (page - 1) * limit;
 
-            const [referrals, totalItems] = await Promise.all([
+            const [referrals, totalItems, validatedCounts] = await Promise.all([
                 this.prisma.referral.findMany({
                     skip,
                     take: limit,
@@ -386,14 +393,34 @@ export class ReferralService {
                     },
                 }),
                 this.prisma.referral.count(),
+                this.prisma.referralReferee.groupBy({
+                    by: ['referralId'],
+                    where: { firstPurchaseValidatedAt: { not: null } },
+                    _count: true,
+                }),
             ]);
 
-            const data: ReferralWithStats[] = referrals.map((r) => ({
-                ...r,
-                refereeCount: r._count.referees,
-                currentDiscountPercent: ReferralService.computeReferrerDiscount(r.pendingReferralsCount),
-                usedDiscountsCount: r._count.payments,
-            }));
+            const validatedMap = new Map(validatedCounts.map((v) => [v.referralId, v._count]));
+
+            const userIds = referrals.map((r) => r.userId);
+            const usersMap = await this.keycloakAdminService.getUsersByIds(userIds);
+
+            const data: ReferralWithStats[] = referrals.map((r) => {
+                const user = usersMap.get(r.userId);
+                const validatedRefereeCount = validatedMap.get(r.id) ?? 0;
+                const userDisplayName = user
+                    ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username || null
+                    : null;
+                return {
+                    ...r,
+                    username: userDisplayName,
+                    refereeCount: r._count.referees,
+                    validatedRefereeCount,
+                    nonPayingRefereesCount: r._count.referees - validatedRefereeCount,
+                    currentDiscountPercent: ReferralService.computeReferrerDiscount(r.pendingReferralsCount),
+                    usedDiscountsCount: r._count.payments,
+                };
+            });
 
             const message = `${referrals.length} referrals found in ${Date.now() - start}ms`;
             this.logger.verbose(message, this.SERVICE_NAME);

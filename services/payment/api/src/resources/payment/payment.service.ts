@@ -271,13 +271,31 @@ export class PaymentService {
                 this.prisma.payment.count({ where }),
             ]);
 
+            // Collect stripe IDs to look up referral discount types
+            const stripeIds = payments
+                .flatMap((p) => [p.stripeSessionId, p.stripePaymentIntentId])
+                .filter(Boolean) as string[];
+
+            const referralPayments = stripeIds.length > 0
+                ? await this.prisma.referralPayment.findMany({
+                    where: { orderId: { in: stripeIds } },
+                    select: { orderId: true, discountType: true },
+                })
+                : [];
+            const referralDiscountMap = new Map(referralPayments.map((rp) => [rp.orderId, rp.discountType]));
+
             const userIds = payments.map((p) => p.userId);
             const usersMap = await this.keycloakAdminService.getUsersByIds(userIds);
 
             const enrichedPayments = payments.map((p) => {
                 const user = usersMap.get(p.userId);
+                const stripeOrderId = p.stripeSessionId ?? p.stripePaymentIntentId ?? null;
+                const referralDiscountType =
+                    (stripeOrderId && referralDiscountMap.get(stripeOrderId)) || null;
                 return {
                     ...p,
+                    stripeOrderId,
+                    referralDiscountType,
                     userDisplayName: user
                         ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username || null
                         : null,
