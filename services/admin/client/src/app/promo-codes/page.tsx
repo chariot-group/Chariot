@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
@@ -63,7 +63,7 @@ function PromoForm({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<PromoFormData>({
@@ -76,7 +76,10 @@ function PromoForm({
     },
   });
 
-  const discountType = watch("discountType");
+  const discountType = useWatch({
+    control,
+    name: "discountType",
+  });
 
   return (
     <form
@@ -226,7 +229,11 @@ export default function PromoCodesPage() {
   }, [page, includeInactive]);
 
   useEffect(() => {
-    load();
+    const timeoutId = setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [load]);
 
   const handleCreate = async (data: PromoFormData) => {

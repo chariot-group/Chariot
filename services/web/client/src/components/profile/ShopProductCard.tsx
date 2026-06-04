@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StripeProduct } from "@/services/PaymentService";
-import { ArrowDown, ArrowUpRight, Coins, Loader2 } from "lucide-react";
+import { ArrowDown, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";

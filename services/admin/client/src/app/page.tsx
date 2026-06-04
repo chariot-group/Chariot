@@ -136,13 +136,12 @@ export default function DashboardPage() {
   }, [preset, period]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    const timeoutId = setTimeout(() => {
+      void load();
+    }, 0);
 
-  // Sync period with preset default
-  useEffect(() => {
-    setPeriod(PERIOD_PRESETS[preset].period);
-  }, [preset]);
+    return () => clearTimeout(timeoutId);
+  }, [load]);
 
   const pieData = data
     ? Object.entries(data.paymentStatusBreakdown)
@@ -158,7 +157,10 @@ export default function DashboardPage() {
           {PERIOD_PRESETS.map((p, i) => (
             <button
               key={i}
-              onClick={() => setPreset(i)}
+              onClick={() => {
+                setPreset(i);
+                setPeriod(PERIOD_PRESETS[i].period);
+              }}
               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 preset === i
                   ? "bg-primary text-primary-foreground"

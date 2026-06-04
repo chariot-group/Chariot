@@ -17,4 +17,4 @@ import { InternalGuard } from '@/common/guards/internal.guard';
     UserService,
   ],
 })
-export class UserModule { }
+export class UserModule {}

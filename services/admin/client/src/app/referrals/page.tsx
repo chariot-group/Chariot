@@ -47,7 +47,11 @@ export default function ReferralsPage() {
   }, []);
 
   useEffect(() => {
-    fetchReferrals();
+    const timeoutId = setTimeout(() => {
+      void fetchReferrals();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [fetchReferrals]);
 
   return (

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import paymentService, { StripeProduct } from "@/services/PaymentService";
 import ShopProductCard from "@/components/profile/ShopProductCard";
 import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
 
 interface ShopProps {
   open: boolean;

@@ -73,7 +73,11 @@ export default function PaymentsPage() {
   }, [page, statusFilter, search]);
 
   useEffect(() => {
-    load();
+    const timeoutId = setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [load]);
 
   const totalPages = Math.ceil(total / limit);

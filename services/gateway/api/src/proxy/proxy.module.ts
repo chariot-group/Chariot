@@ -13,4 +13,4 @@ import { ProxyService } from "@/proxy/proxy.service";
   controllers: [ProxyController, SessionProxyController, PaymentProxyController],
   providers: [ProxyService],
 })
-export class ProxyModule { }
+export class ProxyModule {}

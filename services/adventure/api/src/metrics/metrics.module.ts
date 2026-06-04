@@ -69,4 +69,4 @@ import {
     mongoConnectionsGaugeProvider,
   ],
 })
-export class MetricsModule { }
+export class MetricsModule {}

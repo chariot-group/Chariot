@@ -42,4 +42,4 @@ import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

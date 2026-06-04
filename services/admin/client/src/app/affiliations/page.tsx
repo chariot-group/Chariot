@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCents, formatDate } from "@/lib/utils";
+import { formatCents } from "@/lib/utils";
 import { extractApiError } from "@/lib/api-error";
 import { SortableHead } from "@/components/ui/SortableHead";
 import getApiClient from "@/services/ApiService";
@@ -179,7 +179,11 @@ export default function AffiliationsPage() {
   }, [page, includeInactive]);
 
   useEffect(() => {
-    load();
+    const timeoutId = setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [load]);
 
   const handleCreate = async (data: AffiliationFormData) => {

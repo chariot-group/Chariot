@@ -146,7 +146,6 @@ export function useCheckout(): UseCheckoutReturn {
 
     useEffect(() => {
         if (product) void createInitialPaymentIntent();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [product, createInitialPaymentIntent]);
 
     // ── Fetch referral discount (auto-applied when no manual code) ─────────────

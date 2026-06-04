@@ -6,20 +6,7 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
-import {
-  ArrowLeft,
-  Check,
-  Copy,
-  DotIcon,
-  Eye,
-  EyeOff,
-  Link,
-  Link2,
-  Loader2,
-  ShoppingCart,
-  SquarePen,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Check, Copy, DotIcon, Eye, EyeOff, Link, Loader2, ShoppingCart, SquarePen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
@@ -34,8 +21,6 @@ import { isEnterWithModifiers, isEnterWithoutModifiers } from "@/utils/keyboard.
 import ShopDialog from "@/components/dialogs/Shop";
 import referralService, { type ReferralInfo } from "@/services/ReferralService";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { toast } from "react-toastify";
-import { useToast } from "@/hooks/useToast";
 import { REFERRAL_TIERS } from "@/lib/referral";
 
 export default function ProfilePage() {
@@ -47,7 +32,6 @@ export default function ProfilePage() {
   const [viewConfirmNewPassword, setViewConfirmNewPassword] = useState<boolean>(false);
   const t = useTranslations("ProfilePage");
   const router = useRouter();
-  const toast = useToast();
 
   const tEdit = useTranslations("ProfilePage.editProfile");
   const tAuth = useTranslations("auth");

@@ -80,7 +80,7 @@ async function handleProxy(
 export class ProxyController {
   private readonly logger = new Logger(ProxyController.name);
 
-  constructor(private readonly proxyService: ProxyService) { }
+  constructor(private readonly proxyService: ProxyService) {}
 
   @All("*")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
@@ -92,7 +92,7 @@ export class ProxyController {
 export class SessionProxyController {
   private readonly logger = new Logger(SessionProxyController.name);
 
-  constructor(private readonly proxyService: ProxyService) { }
+  constructor(private readonly proxyService: ProxyService) {}
 
   @All("*")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
@@ -104,7 +104,7 @@ export class SessionProxyController {
 export class PaymentProxyController {
   private readonly logger = new Logger(PaymentProxyController.name);
 
-  constructor(private readonly proxyService: ProxyService) { }
+  constructor(private readonly proxyService: ProxyService) {}
 
   @All("*")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
