@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { LucideSwords, PlayCircle, Users, RotateCcw, ArrowLeft, UserCircle } from "lucide-react";
+import { LucideSwords, PlayCircle, Users, ArrowLeft, UserCircle, Eye } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -16,7 +16,7 @@ import {
   selectBattleStarted,
   selectIsInSession,
   selectSessionStatus,
-  resetInitiativeTracker,
+  selectLastConsultedSheetPath,
 } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { InitBattleDialog } from "@/components/dialogs/InitBattleDialog";
@@ -40,9 +40,9 @@ type ActionButtonState =
   | "launchSession"
   | "joinSession"
   | "startBattle"
-  | "reset"
   | "returnToBattle"
   | "returnToSheet"
+  | "viewCombat"
   | "returnToSession";
 
 export function ActionButton() {
@@ -58,6 +58,7 @@ export function ActionButton() {
   const session = useAppSelector(selectCurrentSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
   const user = useUser();
+  const lastConsultedSheetPath = useAppSelector(selectLastConsultedSheetPath);
 
   const currentParticipant = useAppSelector((state) =>
     selectCurrentUserParticipant(state, user.user?.keycloakId || ""),
@@ -73,19 +74,34 @@ export function ActionButton() {
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const battleStarted = useAppSelector(selectBattleStarted);
   const isInitiativeTrackerPage = currentPage.endsWith("/initiativeTracker");
+  const isCharacterPage =
+    currentPage.includes("/characters/") && !currentPage.includes("/characters/new");
 
   const navigateToSession = (nextContextMode?: "player" | "gm") => {
     if (nextContextMode) {
       dispatch(setContextMode(nextContextMode));
     }
-    router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
+    router.push(`/${locale}/campaigns/${session?.campaignId}/session/${session?.code}`);
   };
 
-  /**
-   * Determine button state based on context and workflow state
-   * GM workflow: launchSession → initBattle → startBattle → (reset | returnToBattle)
-   * Player workflow: joinSession → returnToSheet
-   */
+  const navigateToInitiativeTracker = () => {
+    router.push(`/${locale}/initiativeTracker`);
+  };
+
+  const navigateToPlayerCharacter = () => {
+    const characterId = currentParticipant?.characterId;
+    if (characterId) {
+      const query = session?.code ? `?sessionCode=${encodeURIComponent(session.code)}` : "";
+      router.push(`/${locale}/characters/${encodeURIComponent(characterId)}${query}`);
+    }
+  };
+
+  const navigateToLastConsultedSheet = () => {
+    if (lastConsultedSheetPath) {
+      router.push(lastConsultedSheetPath);
+    }
+  };
+
   const getButtonState = (): ActionButtonConfig => {
     if (currentParticipant === null || isInSession === null || session === null) {
       if (contextMode === "gm") {
@@ -102,22 +118,22 @@ export function ActionButton() {
           textColor: "text-black",
           tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
         };
-      } else {
-        return {
-          label: t("joinSession"),
-          state: "joinSession",
-          action: () => {
-            if (isInSession) {
-              window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
-            }
-          },
-          icon: <Users className="size-6" />,
-          disabled: isJoinSessionDisabled,
-          backgroundColor: "bg-green",
-          textColor: "text-black",
-          tooltip: isJoinSessionDisabled ? tWelcome("session.noCharacterWithoutGroup") : undefined,
-        };
       }
+
+      return {
+        label: t("joinSession"),
+        state: "joinSession",
+        action: () => {
+          if (isInSession) {
+            window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+          }
+        },
+        icon: <Users className="size-6" />,
+        disabled: isJoinSessionDisabled,
+        backgroundColor: "bg-green",
+        textColor: "text-black",
+        tooltip: isJoinSessionDisabled ? tWelcome("session.noCharacterWithoutGroup") : undefined,
+      };
     }
 
     if (currentParticipant?.status === "gameMaster") {
@@ -125,9 +141,7 @@ export function ActionButton() {
         return {
           label: t("returnToSession"),
           state: "returnToSession",
-          action: () => {
-            navigateToSession();
-          },
+          action: () => navigateToSession(),
           disabled: false,
           icon: <PlayCircle className="size-6" />,
           backgroundColor: "bg-yellow",
@@ -135,7 +149,6 @@ export function ActionButton() {
         };
       }
 
-      // GM: Initialize battle (session started, battle not initialized)
       if (sessionStarted && !battleInitialized) {
         return {
           label: t("initBattle"),
@@ -148,58 +161,37 @@ export function ActionButton() {
         };
       }
 
-      // GM: Reset (battle initialized/started + on initiativeTracker page)
-      if ((battleStarted || battleInitialized) && isInitiativeTrackerPage) {
+      // FR-015 — combat initialisé : retour fiche sur le tracker, retour combat ailleurs
+      if (battleInitialized && isInitiativeTrackerPage) {
         return {
-          label: t("reset"),
-          state: "reset",
-          action: () => {
-            dispatch(resetInitiativeTracker());
-          },
-          disabled: false,
-          icon: <RotateCcw className="size-6" />,
-          backgroundColor: "bg-gray-600",
-          textColor: "text-white",
+          label: t("returnToSheet"),
+          state: "returnToSheet",
+          action: navigateToLastConsultedSheet,
+          disabled: !lastConsultedSheetPath,
+          icon: <UserCircle className="size-6" />,
+          backgroundColor: "bg-yellow",
+          textColor: "text-black",
+          tooltip: !lastConsultedSheetPath ? t("noLastSheet") : undefined,
         };
       }
 
-      // GM: Return to battle (battle initialized but not started)
-      if (battleInitialized && !battleStarted) {
+      if (battleInitialized && !isInitiativeTrackerPage) {
         return {
           label: t("returnToBattle"),
           state: "returnToBattle",
-          action: () => {
-            router.push(`/${locale}/initiativeTracker`);
-          },
+          action: navigateToInitiativeTracker,
           disabled: false,
           icon: <LucideSwords className="size-6" />,
           backgroundColor: "bg-pink",
           textColor: "text-black",
         };
       }
-
-      // GM: Return to battle (battle started + on character page)
-      if (battleStarted && currentPage.includes("/characters/")) {
-        return {
-          label: t("returnToBattle"),
-          state: "returnToBattle",
-          action: () => {},
-          disabled: true,
-          tooltip: t("comingSoon"),
-          icon: <ArrowLeft className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
-        };
-      }
     } else {
-      // Player: Join session (initial state)
       if (!sessionStarted) {
         return {
           label: t("returnToSession"),
           state: "returnToSession",
-          action: () => {
-            navigateToSession("player");
-          },
+          action: () => navigateToSession("player"),
           disabled: false,
           icon: <PlayCircle className="size-6" />,
           backgroundColor: "bg-yellow",
@@ -207,21 +199,38 @@ export function ActionButton() {
         };
       }
 
-      // Player: Return to character sheet (session started)
-      if (sessionStarted) {
+      // FR-015 — joueur : bascule combat ↔ fiche
+      if (battleInitialized && isInitiativeTrackerPage) {
         return {
           label: t("returnToSheet"),
           state: "returnToSheet",
-          action: () => {
-            const currentParticipant = session?.participants.find(
-              (p: SessionParticipant) => p.userId === user.user?.keycloakId,
-            );
-            const characterId = currentParticipant?.characterId;
-            if (isInSession && characterId) {
-              window.location.href = `/characters/${characterId}`;
-            }
-          },
+          action: navigateToPlayerCharacter,
+          disabled: !currentParticipant?.characterId,
+          icon: <UserCircle className="size-6" />,
+          backgroundColor: "bg-yellow",
+          textColor: "text-black",
+          tooltip: !currentParticipant?.characterId ? t("noPlayerCharacter") : undefined,
+        };
+      }
+
+      if (battleInitialized && !isInitiativeTrackerPage) {
+        return {
+          label: t("viewCombat"),
+          state: "viewCombat",
+          action: navigateToInitiativeTracker,
           disabled: false,
+          icon: <Eye className="size-6" />,
+          backgroundColor: "bg-red",
+          textColor: "text-white",
+        };
+      }
+
+      if (sessionStarted && isCharacterPage) {
+        return {
+          label: t("returnToSheet"),
+          state: "returnToSheet",
+          action: navigateToPlayerCharacter,
+          disabled: !currentParticipant?.characterId,
           icon: <UserCircle className="size-6" />,
           backgroundColor: "bg-yellow",
           textColor: "text-black",
@@ -229,7 +238,6 @@ export function ActionButton() {
       }
     }
 
-    // Default fallback state
     return {
       label: t("launchSession"),
       state: "launchSession",

@@ -1010,6 +1010,18 @@ Each rule has a unique identifier and must be tested.
 - In-session tracker HP cell opens session health dialog
 - Saving HP updates both backend character state (through session flow) and tracker row mirror (`hitPoints`, `maxHitPoints`, `tempHitPoints`)
 
+**Mid-Combat Roster (GM)**:
+
+- While a battle is initialized, the GM MUST be able to **add combatants** from the initiative tracker page:
+  - any campaign group not yet represented in the roster, and/or
+  - individual members from groups already in the roster whose `characterId` is not yet present.
+- New rows follow the same generation rules as battle configuration (stats, visibility defaults, dedupe by `characterId`).
+- Adding combatants MUST NOT reset turn engine state (`battleStarted`, active turn, round, action locks) except when the add mutates the roster during started combat (registers a tracker action on the active turn per FR-012).
+- The GM MUST be able to **remove a row** (“leave initiative”) without ending the whole battle:
+  - if the removed row was the active turn, advance to the next alive row in sorted order (or clear active turn if none remain);
+  - purge turn-action keys tied to the removed row;
+  - if no rows remain, clear `battleInitialized` and reset turn engine.
+
 **Reset and End States**:
 
 - `End combat`:
@@ -1056,4 +1068,233 @@ Each rule has a unique identifier and must be tested.
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
 - `services/web/client/src/store/index.ts`
+
+---
+
+## FR-013: Frontend Design Governance and Responsive Baseline
+
+**Rule**: The frontend must maintain a documented design baseline built from the implemented UI, and any new frontend feature must be aligned with that baseline before implementation.
+
+**Requirements**:
+
+- A dedicated design rules document must exist under `docs/` and centralize:
+  - spacing conventions (padding, margin, gaps)
+  - recurring color tokens and usage patterns
+  - typography and sizing patterns used in UI components
+  - responsive behaviors and breakpoints observed in the application
+- The document must be produced from a project-wide analysis of existing frontend code (components, pages, layout primitives, shared styles)
+- The document must describe current conventions as observable facts before proposing standardization guidance
+- Agent workflow rules (`AGENTS.md`) must explicitly require consulting the design rules document before any frontend feature implementation
+- The design document should be updated when major UI conventions change
+
+**Prohibitions**:
+
+- Implementing new frontend features without checking documented design conventions first
+- Introducing ad-hoc spacing/color patterns that conflict with documented baseline without explicit decision
+- Keeping design governance rules only implicit or oral (must be written and versioned)
+
+**Tests**:
+
+- Manual verification that the design rules document exists and covers spacing, colors, and responsive behavior
+- Manual verification that `AGENTS.md` includes an explicit pre-implementation consultation gate for frontend features
+
+**References**:
+
+- `services/web/client/src/` (frontend source of truth)
+- `docs/` (design governance documentation)
+- `AGENTS.md` (agent workflow gate)
+
+---
+
+## FR-014: Initiative Tracker - Automatic Dead and Unconscious States
+
+**Rule**: Each initiative tracker row must reflect the character's vital status (alive, unconscious, dead) automatically derived from current HP and (for player characters) death save failures. Visual treatment, accessible name, and turn-order behavior depend on this status.
+
+**Scope**:
+
+- Applies to the GM Initiative Tracker (FR-012) only.
+- Source of truth on frontend: `session.initiativeTrackerRows`.
+- Complements FR-012 without overriding any of its existing behaviors (turn lifecycle, conditions, persistence).
+
+**Status Derivation**:
+
+- `dead`:
+  - NPC row when `hitPoints <= 0`
+  - Player row when `hitPoints <= 0` AND player's `deathSaves.failures >= 3`
+- `unconscious`:
+  - Player row when `hitPoints <= 0` AND player's `deathSaves.failures < 3`
+- `alive`: any row that does not match `dead` or `unconscious`.
+
+**Tracker Row Data Requirements**:
+
+- Each row must carry the character `kind` (`player` | `npc`) so the tracker can apply the right rule.
+- For player rows, the row must mirror `deathSaves.failures` (`deathSavesFailures: number`, default `0`) so the status can be evaluated without re-fetching the character.
+- Mirror values must be initialized when the battle is configured (from the latest character snapshot).
+- Mirror values must be refreshed:
+  - When the underlying character is updated through the session HP dialog (HP edit also pulls fresh death saves).
+  - On real-time character sheet sync (FR-012 `characterSheetRemoteVersions`) when the affected row is a player AND its current `hitPoints <= 0` (death saves are only meaningful at 0 HP, so we avoid refetching for cosmetic sheet edits).
+- Persisted shape must be backwards compatible (rehydration adds `kind: 'npc'` and `deathSavesFailures: 0` to legacy rows lacking these fields).
+
+**Visual Treatment (FR-013 compliance)**:
+
+- Dead row:
+  - Background: explicit red surface using the project palette (`--red`, e.g. `bg-red/35` with `ring-2 ring-red/60` on the row container) preserving WCAG AA contrast against white text.
+  - A `Skull` icon (lucide-react) is rendered immediately after the HP value inside the HP cell of the tracker row, with `aria-hidden="true"`. Status text is exposed at the row level for screen readers.
+- Unconscious row:
+  - Background: explicit yellow/amber surface using the project palette (`--yellow`, e.g. `bg-yellow/30` with `ring-2 ring-yellow/60`) preserving WCAG AA contrast against white text.
+  - A `HeartCrack` icon (lucide-react) is rendered immediately after the HP value inside the HP cell of the tracker row, with `aria-hidden="true"`. Status text is exposed at the row level.
+- Alive row keeps the current visual baseline (no extra icon).
+- Active turn highlight (current FR-012 styling) MUST remain visible on top of dead/unconscious states (combined ring/background, never replaced).
+- Status MUST never be conveyed by color alone: an icon (skull/heart-crack) and an accessible label are mandatory companion channels.
+
+**Turn Order Behavior**:
+
+- `nextBattleTurn` and `previousBattleTurn` MUST skip rows in the `dead` state.
+  - Skipping over a dead row MUST NOT register a tracker action on the skipped row (FR-012 turn-lock semantics unchanged for non-skipped rows).
+  - When advancing past the last alive row, the round counter increments by 1 exactly once and condition durations tick by one round (FR-012 condition lifecycle preserved).
+  - When all rows are dead, the active turn becomes `null` and no advancement happens.
+- `unconscious` rows are NOT skipped; they keep their normal place in the initiative order.
+- Eligibility for `previousBattleTurn` (turn-lock guard from FR-012) is unchanged; among eligible rollbacks, dead rows are skipped.
+
+**Accessibility (FR-013)**:
+
+- Dead/unconscious status MUST be exposed via accessible text on the row (e.g. visually hidden status label inside the row container) so screen readers announce the state.
+- Color contrast for the new red and yellow backgrounds against the existing white text MUST meet WCAG AA for normal text (4.5:1).
+- Skull/HeartCrack icons MUST be `aria-hidden="true"`; semantic information is carried by the textual status.
+- Keyboard navigation behavior of the row is unchanged (no new focusable elements introduced by status indicators).
+
+**Prohibitions**:
+
+- Marking a player as dead solely on `hitPoints <= 0` without checking death save failures.
+- Skipping unconscious players in the turn rotation.
+- Using color alone as the only signal for dead or unconscious states (icon + accessible text mandatory).
+- Hardcoding new colors outside the documented palette (FR-013).
+- Polling the character API to refresh death saves (must rely on session HP dialog updates and `characterSheetRemoteVersions` events; refetch only for player rows currently at `hitPoints <= 0`).
+
+**Tests**:
+
+- Status derivation:
+  - NPC at 0 HP -> `dead`
+  - Player at 0 HP with `failures < 3` -> `unconscious`
+  - Player at 0 HP with `failures >= 3` -> `dead`
+  - Any character with HP > 0 -> `alive` (regardless of failures)
+- Turn rotation:
+  - `nextBattleTurn` skips a dead row in the middle of the order
+  - `nextBattleTurn` skips a dead row at the end and increments round once
+  - `nextBattleTurn` returns active row to `null` when all rows are dead
+  - Unconscious rows are visited normally
+  - `previousBattleTurn` skips dead rows symmetrically while respecting FR-012 turn-lock rules
+- Visual:
+  - Dead row renders red background and `Skull` icon after HP
+  - Unconscious row renders yellow background and `HeartCrack` icon after HP
+  - Alive row renders neither icon
+  - Active turn highlight is preserved on top of dead/unconscious states
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts` (turn engine, row shape, persistence transform)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx`
+- `services/web/client/src/components/initiativeTracker/utils.ts` (sort, turn helpers, status helper, HP mirror)
+- `services/web/client/src/components/dialogs/InitBattleDialog.tsx` (row construction with kind + deathSaves mirror)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerHealthDialog.tsx` (sync after HP edit)
+- `services/web/client/src/app/[locale]/initiativeTracker/page.tsx` (remote sync refresh for player rows at 0 HP)
+
+---
+
+## FR-015: Session Combat Navigation and Player Initiative Visibility
+
+**Rule**: During an active session combat, Game Masters and players must have contextual sidebar navigation between character sheets and the initiative tracker. The GM controls per-row and per-field visibility broadcast to players in real time via the session WebSocket.
+
+**Scope**:
+
+- Applies when a session is launched and a battle is initialized (`battleInitialized === true`).
+- Complements FR-012 (GM tracker control) and FR-014 (vital status) without overriding turn lifecycle or GM-only controls.
+- Player initiative view is read-only; turn controls remain GM-only.
+
+**Sidebar Navigation — Game Master**:
+
+- When the GM is on the initiative tracker page and a battle is initialized or started, the sidebar footer MUST show **Return to Character Sheet** (not **Reset**).
+- **Return to Character Sheet** navigates to the last character sheet path consulted by the GM during the current session (`lastConsultedSheetPath`). If none is recorded, the button is disabled with an explanatory tooltip.
+- When the GM is on a character sheet and a battle is initialized or started, the sidebar footer MUST show **Return to Battle**, navigating to `/{locale}/initiativeTracker`.
+- **Reset** (clear tracker rows) MUST NOT appear in the sidebar while a battle is initialized or started. Reset remains available only through in-page GM controls when applicable (FR-012).
+
+**Sidebar Navigation — Player**:
+
+- When a battle is initialized or started and the player is not on the initiative tracker page, the sidebar footer MUST show **View Combat**, navigating to `/{locale}/initiativeTracker`.
+- When the player is on the initiative tracker page, the sidebar footer MUST show **View Character Sheet**, navigating to their session character sheet.
+- If the player has no assigned character, **View Character Sheet** is disabled with an explanatory tooltip.
+
+**Last Consulted Sheet Tracking**:
+
+- `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
+- Updated when the GM navigates to any character detail route during an active session.
+- Cleared when the session ends (`clearCurrentSession`).
+
+**Player Visibility Model**:
+
+Each initiative tracker row carries:
+
+- `visible: boolean` — whether the row is shown to players at all.
+- `playerFieldVisibility` — granular field flags:
+  - `initiative`, `name`, `hitPoints`, `armorClass`, `conditions`, `groupLabel` (all boolean).
+
+**Default visibility on battle configuration**:
+
+- **NPC rows**: `visible: true`; field defaults — `name: true`, all other fields `false` (initiative, HP, AC, conditions, group hidden).
+- **Player rows in the session participants group** (`__session_participants__`): `visible: true`; all fields `true`; not maskable by the GM.
+- **Other player rows** (PJ outside session group): same defaults and maskability as NPC rows; `visible` can be set to `false`.
+
+**GM Visibility Tool**:
+
+- On the GM initiative tracker, the **Show** column opens a per-row configuration dialog (not a simple checkbox).
+- The dialog allows toggling row visibility and each field flag independently.
+- Changes apply immediately to the GM view and are broadcast to connected players.
+
+**Player Display Name (alias)**:
+
+- Each row carries `playerDisplayName` used when the real name is hidden from players (FR-015).
+- On row creation (battle setup or mid-combat add), the default MUST be the character’s real tracker name (`firstname` / `lastname` / `surname` rule).
+- Legacy rows with an empty alias MUST be normalized to that default on load.
+- Saving the visibility dialog with an empty alias MUST persist the real name as the alias.
+- On the **GM** tracker, the real name is shown prominently; when the alias differs from the real name, the alias is also shown in subdued typography so the GM sees what players will read when the name field is hidden.
+
+**Player Initiative Tracker View**:
+
+- Same route as GM: `/{locale}/initiativeTracker`.
+- Read-only: no HP edit dialog, no condition edit, no initiative edit, no turn controls, no visibility column.
+- Rows filtered to `visible === true`, plus any row in the session participants group (always shown to connected players).
+- Field values masked when the corresponding `playerFieldVisibility` flag is `false` (display placeholder `—`; hidden name displays a generic hidden label).
+- Active turn highlight and round indicator reflect GM broadcast state.
+- Vital status visuals (FR-014) apply on visible HP when HP is shown.
+
+**Real-Time Sync (WebSocket)**:
+
+- GM emits `session:battle-state-updated` with a snapshot: `initiativeTrackerRows`, `battleInitialized`, `battleStarted`, `activeTurnRowId`, `currentRound`.
+- Gateway validates emitter is session GM, then broadcasts to other participants (`client.to`).
+- Players apply via `applyRemoteBattleState` (does not register GM turn-lock actions).
+- On `session:request-battle-state`, the gateway relays to the session room; GM clients respond by emitting the current snapshot (handles late join / reconnect).
+- GM also rebroadcasts after `session:participant-joined` when a battle is active.
+
+**Prohibitions**:
+
+- Showing GM-only controls (turn engine, reset, visibility editor) to players.
+- Persisting player-local edits to battle state (players are consumers only).
+- Broadcasting battle state from non-GM participants.
+- Using sidebar **Reset** during an initialized or started battle.
+
+**Tests**:
+
+- Sidebar state matrix (GM/player × page × battle state).
+- Default `playerFieldVisibility` per kind (NPC vs player).
+- Player view filters hidden rows and masks hidden fields.
+- `applyRemoteBattleState` replaces battle fields without touching `turnsWithActions`.
+- Rehydration adds default `playerFieldVisibility` to legacy rows.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerVisibilityDialog.tsx`
+- `services/web/client/src/lib/sessionBattleSyncBridge.ts`
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`
 

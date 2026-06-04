@@ -7,7 +7,15 @@ import {
     removeUntilCombatEndConditions,
     tickConditionEntries,
 } from '@/components/initiativeTracker/conditionDuration';
-import { buildBattleTurnKey, canUndoBattleTurn, sortInitiativeTrackerRows } from '@/components/initiativeTracker/utils';
+import { SESSION_PARTICIPANTS_GROUP_ID } from '@/components/initiativeTracker/constants';
+import {
+    buildBattleTurnKey,
+    canUndoBattleTurn,
+    defaultPlayerDisplayNameForRow,
+    getInitiativeTrackerRowStatus,
+    isSessionParticipantTrackerRow,
+    sortInitiativeTrackerRows,
+} from '@/components/initiativeTracker/utils';
 
 export interface SessionInitBattleDraft {
     showAllOpponents: boolean;
@@ -89,6 +97,90 @@ export function normalizeInitiativeTrackerConditionEntry(
     };
 }
 
+export type InitiativeTrackerRowKind = 'player' | 'npc';
+
+/** FR-015 — champs visibles pour les joueurs sur une ligne du tracker. */
+export interface InitiativeTrackerPlayerFieldVisibility {
+    initiative: boolean;
+    name: boolean;
+    hitPoints: boolean;
+    armorClass: boolean;
+    conditions: boolean;
+    groupLabel: boolean;
+}
+
+export const DEFAULT_NPC_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFieldVisibility = {
+    initiative: false,
+    name: true,
+    hitPoints: false,
+    armorClass: false,
+    conditions: false,
+    groupLabel: false,
+};
+
+export const DEFAULT_PLAYER_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFieldVisibility = {
+    initiative: true,
+    name: true,
+    hitPoints: true,
+    armorClass: true,
+    conditions: true,
+    groupLabel: true,
+};
+
+export function defaultPlayerFieldVisibilityForKind(
+    kind: InitiativeTrackerRowKind,
+    groupId?: string,
+): InitiativeTrackerPlayerFieldVisibility {
+    if (kind === 'player' && groupId === SESSION_PARTICIPANTS_GROUP_ID) {
+        return { ...DEFAULT_PLAYER_PLAYER_FIELD_VISIBILITY };
+    }
+    return { ...DEFAULT_NPC_PLAYER_FIELD_VISIBILITY };
+}
+
+export function normalizePlayerFieldVisibility(
+    value: Partial<InitiativeTrackerPlayerFieldVisibility> | undefined,
+    kind: InitiativeTrackerRowKind,
+    groupId: string = '',
+): InitiativeTrackerPlayerFieldVisibility {
+    if (kind === 'player' && groupId === SESSION_PARTICIPANTS_GROUP_ID) {
+        return { ...DEFAULT_PLAYER_PLAYER_FIELD_VISIBILITY };
+    }
+
+    const defaults = defaultPlayerFieldVisibilityForKind(kind, groupId);
+    if (!value || typeof value !== 'object') {
+        return defaults;
+    }
+    return {
+        initiative: typeof value.initiative === 'boolean' ? value.initiative : defaults.initiative,
+        name: typeof value.name === 'boolean' ? value.name : defaults.name,
+        hitPoints: typeof value.hitPoints === 'boolean' ? value.hitPoints : defaults.hitPoints,
+        armorClass: typeof value.armorClass === 'boolean' ? value.armorClass : defaults.armorClass,
+        conditions: typeof value.conditions === 'boolean' ? value.conditions : defaults.conditions,
+        groupLabel: typeof value.groupLabel === 'boolean' ? value.groupLabel : defaults.groupLabel,
+    };
+}
+
+/** FR-015 — seuls les PJ du groupe « participants session » restent visibles et non masquables. */
+export function applyPlayerRowVisibilityRules(row: InitiativeTrackerRow): InitiativeTrackerRow {
+    if (!isSessionParticipantTrackerRow(row)) {
+        return row;
+    }
+    return {
+        ...row,
+        visible: true,
+        playerFieldVisibility: { ...DEFAULT_PLAYER_PLAYER_FIELD_VISIBILITY },
+    };
+}
+
+/** FR-015 — snapshot diffusé par le MJ aux joueurs via WebSocket. */
+export interface BattleStateSnapshot {
+    initiativeTrackerRows: InitiativeTrackerRow[];
+    battleInitialized: boolean;
+    battleStarted: boolean;
+    activeTurnRowId: string | null;
+    currentRound: number;
+}
+
 export interface InitiativeTrackerRow {
     id: string;
     characterId: string;
@@ -105,6 +197,63 @@ export interface InitiativeTrackerRow {
     groupId: string;
     groupLabel: string;
     visible: boolean;
+    /** FR-015 — alias affiché aux joueurs quand le vrai nom est masqué (non persisté sur la fiche). */
+    playerDisplayName: string;
+    /** FR-015 — visibilité granulaire des champs pour la vue joueur. */
+    playerFieldVisibility: InitiativeTrackerPlayerFieldVisibility;
+    /** FR-014 — discriminant pour appliquer la règle de mort/inconscience adaptée. */
+    kind: InitiativeTrackerRowKind;
+    /** FR-014 — miroir de `deathSaves.failures` (uniquement pertinent pour `kind === 'player'`). */
+    deathSavesFailures: number;
+}
+
+/** FR-012 / FR-015 — fabrique une ligne tracker (setup ou ajout en cours de combat). */
+export function createInitiativeTrackerRow(input: {
+    groupId: string;
+    groupLabel: string;
+    characterId: string;
+    firstname: string;
+    lastname: string;
+    surname: string;
+    avatar?: string;
+    initiative?: number;
+    hitPoints: number;
+    maxHitPoints: number;
+    tempHitPoints?: number;
+    armorClass: number;
+    kind: InitiativeTrackerRowKind;
+    deathSavesFailures?: number;
+    visible?: boolean;
+    playerFieldVisibility?: InitiativeTrackerPlayerFieldVisibility;
+}): InitiativeTrackerRow {
+    const firstname = input.firstname ?? '';
+    const lastname = input.lastname ?? '';
+    const surname = input.surname ?? '';
+    const gmName = defaultPlayerDisplayNameForRow({ firstname, lastname, surname });
+
+    return {
+        id: `${input.groupId}:${input.characterId}`,
+        characterId: input.characterId,
+        firstname,
+        lastname,
+        surname,
+        avatar: input.avatar ?? '',
+        initiative: input.initiative ?? 0,
+        hitPoints: input.hitPoints,
+        maxHitPoints: input.maxHitPoints,
+        tempHitPoints: input.tempHitPoints ?? 0,
+        armorClass: input.armorClass,
+        conditions: [],
+        groupId: input.groupId,
+        groupLabel: input.groupLabel,
+        visible: input.visible ?? true,
+        playerDisplayName: gmName,
+        playerFieldVisibility:
+            input.playerFieldVisibility ??
+            defaultPlayerFieldVisibilityForKind(input.kind, input.groupId),
+        kind: input.kind,
+        deathSavesFailures: input.deathSavesFailures ?? 0,
+    };
 }
 
 const initialInitBattleDraft: SessionInitBattleDraft = {
@@ -134,6 +283,8 @@ export interface CurrentSessionState {
     turnsWithActions: string[];
     /** Incrémenté à chaque synchro WS distante pour une fiche (temps réel hors rechargement). */
     characterSheetRemoteVersions: Record<string, number>;
+    /** FR-015 — dernière fiche consultée par le MJ pendant la session (chemin absolu avec locale). */
+    lastConsultedSheetPath: string | null;
 }
 
 const initialState: CurrentSessionState = {
@@ -152,6 +303,29 @@ const initialState: CurrentSessionState = {
     currentRound: 1,
     turnsWithActions: [],
     characterSheetRemoteVersions: {},
+    lastConsultedSheetPath: null,
+};
+
+const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow => {
+    const kind = row.kind === 'player' || row.kind === 'npc' ? row.kind : 'npc';
+    const gmName = defaultPlayerDisplayNameForRow(row);
+    const rawAlias = typeof row.playerDisplayName === 'string' ? row.playerDisplayName.trim() : '';
+    return applyPlayerRowVisibilityRules({
+        ...row,
+        kind,
+        playerDisplayName: rawAlias.length > 0 ? rawAlias : gmName,
+        playerFieldVisibility: normalizePlayerFieldVisibility(
+            row.playerFieldVisibility,
+            kind,
+            row.groupId,
+        ),
+        visible: row.visible,
+    });
+};
+
+const purgeTurnKeysForRow = (turnsWithActions: string[], rowId: string): string[] => {
+    const suffix = `:${rowId}`;
+    return turnsWithActions.filter((key) => !key.endsWith(suffix));
 };
 
 const resetBattleTurnState = (state: CurrentSessionState) => {
@@ -182,6 +356,71 @@ const clearUntilCombatEndConditions = (state: CurrentSessionState) => {
     }
 };
 
+const isRowDead = (row: InitiativeTrackerRow): boolean => getInitiativeTrackerRowStatus(row) === 'dead';
+
+const findFirstAliveRowId = (sortedRows: InitiativeTrackerRow[]): string | null => {
+    const alive = sortedRows.find((row) => !isRowDead(row));
+    return alive?.id ?? null;
+};
+
+/**
+ * FR-014 — retourne le prochain tour vivant en respectant l'ordre tri\u00e9 et le wrap.
+ * `wrapped: true` indique qu'au moins un wrap a eu lieu et qu'un seul tick de round doit \u00eatre appliqu\u00e9.
+ */
+const findNextAliveTurn = (
+    sortedRows: InitiativeTrackerRow[],
+    activeTurnRowId: string | null,
+): { rowId: string; wrapped: boolean } | null => {
+    if (sortedRows.length === 0) return null;
+    if (sortedRows.every(isRowDead)) return null;
+
+    const currentIndex = sortedRows.findIndex((row) => row.id === activeTurnRowId);
+    const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+
+    let wrapped = false;
+    for (let offset = 1; offset <= sortedRows.length; offset += 1) {
+        const rawIndex = safeIndex + offset;
+        const wrappedIndex = rawIndex % sortedRows.length;
+        if (rawIndex >= sortedRows.length) {
+            wrapped = true;
+        }
+        const candidate = sortedRows[wrappedIndex];
+        if (candidate && !isRowDead(candidate)) {
+            return { rowId: candidate.id, wrapped };
+        }
+    }
+
+    return null;
+};
+
+const findPreviousAliveTurn = (
+    sortedRows: InitiativeTrackerRow[],
+    activeTurnRowId: string | null,
+    currentRound: number,
+): { rowId: string; wrapped: boolean } | null => {
+    if (sortedRows.length === 0 || !activeTurnRowId) return null;
+    if (sortedRows.every(isRowDead)) return null;
+
+    const currentIndex = sortedRows.findIndex((row) => row.id === activeTurnRowId);
+    const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+
+    let wrapped = false;
+    for (let offset = 1; offset <= sortedRows.length; offset += 1) {
+        const rawIndex = safeIndex - offset;
+        if (rawIndex < 0) {
+            wrapped = true;
+            if (currentRound <= 1) return null;
+        }
+        const wrappedIndex = ((rawIndex % sortedRows.length) + sortedRows.length) % sortedRows.length;
+        const candidate = sortedRows[wrappedIndex];
+        if (candidate && !isRowDead(candidate)) {
+            return { rowId: candidate.id, wrapped };
+        }
+    }
+
+    return null;
+};
+
 const sessionSlice = createSlice({
     name: 'session',
     initialState,
@@ -204,6 +443,7 @@ const sessionSlice = createSlice({
             state.battleInitialized = false;
             resetBattleTurnState(state);
             state.characterSheetRemoteVersions = {};
+            state.lastConsultedSheetPath = null;
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
             state.status = action.payload;
@@ -232,9 +472,50 @@ const sessionSlice = createSlice({
             state.initBattleDraft = initialInitBattleDraft;
         },
         setInitiativeTrackerRows: (state, action: PayloadAction<InitiativeTrackerRow[]>) => {
-            state.initiativeTrackerRows = action.payload;
+            state.initiativeTrackerRows = action.payload.map(normalizeTrackerRow);
             state.battleInitialized = action.payload.length > 0;
             resetBattleTurnState(state);
+        },
+        appendInitiativeTrackerRows: (state, action: PayloadAction<InitiativeTrackerRow[]>) => {
+            const existingCharacterIds = new Set(
+                state.initiativeTrackerRows.map((row) => row.characterId),
+            );
+            const incoming = action.payload
+                .map(normalizeTrackerRow)
+                .filter((row) => !existingCharacterIds.has(row.characterId));
+            if (incoming.length === 0) return;
+
+            state.initiativeTrackerRows.push(...incoming);
+            state.battleInitialized = true;
+            if (state.battleStarted) {
+                markActiveTurnWithActions(state);
+            }
+        },
+        removeInitiativeTrackerRow: (state, action: PayloadAction<string>) => {
+            const rowId = action.payload;
+            const index = state.initiativeTrackerRows.findIndex((row) => row.id === rowId);
+            if (index < 0) return;
+
+            const wasActiveTurn = state.activeTurnRowId === rowId;
+            state.initiativeTrackerRows.splice(index, 1);
+            state.turnsWithActions = purgeTurnKeysForRow(state.turnsWithActions, rowId);
+
+            if (state.initiativeTrackerRows.length === 0) {
+                state.battleInitialized = false;
+                resetBattleTurnState(state);
+                return;
+            }
+
+            if (state.battleStarted) {
+                const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
+                const activeStillPresent = state.activeTurnRowId
+                    ? sorted.some((row) => row.id === state.activeTurnRowId)
+                    : false;
+                if (wasActiveTurn || !activeStillPresent) {
+                    state.activeTurnRowId = findFirstAliveRowId(sorted);
+                }
+                markActiveTurnWithActions(state);
+            }
         },
         updateInitiativeTrackerRow: (
             state,
@@ -243,9 +524,32 @@ const sessionSlice = createSlice({
             const row = state.initiativeTrackerRows.find((item) => item.id === action.payload.id);
             if (!row) return;
             Object.assign(row, action.payload.changes);
+            if (action.payload.changes.playerFieldVisibility || action.payload.changes.kind) {
+                row.playerFieldVisibility = normalizePlayerFieldVisibility(
+                    row.playerFieldVisibility,
+                    row.kind,
+                    row.groupId,
+                );
+            }
+            const normalized = applyPlayerRowVisibilityRules(row);
+            row.visible = normalized.visible;
+            row.playerFieldVisibility = normalized.playerFieldVisibility;
             if (state.battleStarted) {
                 markActiveTurnWithActions(state);
             }
+        },
+        /** FR-015 — état combat reçu du MJ (joueurs) : remplace sans toucher au turn-lock GM. */
+        applyRemoteBattleState: (state, action: PayloadAction<BattleStateSnapshot>) => {
+            const payload = action.payload;
+            state.initiativeTrackerRows = (payload.initiativeTrackerRows ?? []).map(normalizeTrackerRow);
+            state.battleInitialized = payload.battleInitialized ?? state.initiativeTrackerRows.length > 0;
+            state.battleStarted = payload.battleStarted ?? false;
+            state.activeTurnRowId = payload.activeTurnRowId ?? null;
+            state.currentRound = payload.currentRound ?? 1;
+        },
+        setLastConsultedSheetPath: (state, action: PayloadAction<string | null>) => {
+            const path = action.payload?.trim() ?? '';
+            state.lastConsultedSheetPath = path.length > 0 ? path : null;
         },
         resetInitiativeTracker: (state) => {
             state.initiativeTrackerRows = [];
@@ -258,7 +562,7 @@ const sessionSlice = createSlice({
             state.currentRound = 1;
             state.turnsWithActions = [];
             const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
-            state.activeTurnRowId = sorted[0]?.id ?? null;
+            state.activeTurnRowId = findFirstAliveRowId(sorted);
         },
         endBattle: (state) => {
             clearUntilCombatEndConditions(state);
@@ -268,16 +572,20 @@ const sessionSlice = createSlice({
             if (!state.battleStarted || state.initiativeTrackerRows.length === 0) return;
 
             const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
-            const currentIndex = sorted.findIndex((row) => row.id === state.activeTurnRowId);
-            const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+            // FR-014 — un personnage `dead` est ignoré ; tout passage qui traverse la fin du
+            // tableau incrémente d'un cran l'horloge des conditions, peu importe combien de
+            // morts ont été sautés sur le chemin.
+            const next = findNextAliveTurn(sorted, state.activeTurnRowId);
+            if (!next) {
+                state.activeTurnRowId = null;
+                return;
+            }
 
-            if (safeIndex >= sorted.length - 1) {
-                state.activeTurnRowId = sorted[0]?.id ?? null;
+            if (next.wrapped) {
                 state.currentRound += 1;
                 tickAllInitiativeTrackerConditions(state, -ROUND_DURATION_SECONDS);
-            } else {
-                state.activeTurnRowId = sorted[safeIndex + 1]?.id ?? null;
             }
+            state.activeTurnRowId = next.rowId;
         },
         previousBattleTurn: (state) => {
             if (!state.battleStarted || state.initiativeTrackerRows.length === 0) return;
@@ -287,17 +595,14 @@ const sessionSlice = createSlice({
                 return;
             }
 
-            const currentIndex = sorted.findIndex((row) => row.id === state.activeTurnRowId);
-            const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+            const previous = findPreviousAliveTurn(sorted, state.activeTurnRowId, state.currentRound);
+            if (!previous) return;
 
-            if (safeIndex <= 0) {
-                if (state.currentRound <= 1) return;
-                state.activeTurnRowId = sorted[sorted.length - 1]?.id ?? null;
+            if (previous.wrapped) {
                 state.currentRound -= 1;
                 tickAllInitiativeTrackerConditions(state, ROUND_DURATION_SECONDS);
-            } else {
-                state.activeTurnRowId = sorted[safeIndex - 1]?.id ?? null;
             }
+            state.activeTurnRowId = previous.rowId;
         },
         touchRemoteCharacterSheet: (state, action: PayloadAction<string>) => {
             if (!state.characterSheetRemoteVersions) {
@@ -321,6 +626,8 @@ export const {
     setSessionInitBattleDraft,
     resetSessionInitBattleDraft,
     setInitiativeTrackerRows,
+    appendInitiativeTrackerRows,
+    removeInitiativeTrackerRow,
     updateInitiativeTrackerRow,
     resetInitiativeTracker,
     startBattle,
@@ -328,6 +635,8 @@ export const {
     nextBattleTurn,
     previousBattleTurn,
     touchRemoteCharacterSheet,
+    applyRemoteBattleState,
+    setLastConsultedSheetPath,
 } = sessionSlice.actions;
 
 export const selectCurrentSession = (state: RootState) => state.session;
@@ -356,5 +665,16 @@ export const selectCurrentUserParticipant = (state: RootState, userId: string) =
 export const selectSessionTokensByUser = (state: RootState) => state.session.tokensByUser;
 export const selectCharacterSheetRemoteVersions = (state: RootState) =>
     state.session.characterSheetRemoteVersions ?? {};
+
+export const selectLastConsultedSheetPath = (state: RootState) =>
+    state.session.lastConsultedSheetPath ?? null;
+
+export const selectBattleStateSnapshot = (state: RootState): BattleStateSnapshot => ({
+    initiativeTrackerRows: state.session.initiativeTrackerRows,
+    battleInitialized: state.session.battleInitialized,
+    battleStarted: state.session.battleStarted,
+    activeTurnRowId: state.session.activeTurnRowId,
+    currentRound: state.session.currentRound,
+});
 
 export default sessionSlice.reducer;

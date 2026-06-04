@@ -7,7 +7,7 @@ import CharacterService from "@/services/CharacterService";
 import type { NPC, Player } from "@/types/character";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import { isPlayer } from "@/utils/global.utils";
-import { trackerHpFromCharacter } from "./utils";
+import { trackerStatusFieldsFromCharacter } from "./utils";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,10 @@ type InitiativeTrackerHealthDialogProps = {
   sessionCode: string | null;
   onTrackerRowUpdate: (
     rowId: string,
-    changes: Pick<InitiativeTrackerRow, "hitPoints" | "maxHitPoints" | "tempHitPoints">,
+    changes: Pick<
+      InitiativeTrackerRow,
+      "hitPoints" | "maxHitPoints" | "tempHitPoints" | "kind" | "deathSavesFailures"
+    >,
   ) => void;
 };
 
@@ -105,7 +108,7 @@ export function InitiativeTrackerHealthDialog({
       characterType={characterType}
       sessionCode={sessionCode}
       onCharacterUpdate={(updated) => {
-        onTrackerRowUpdate(row.id, trackerHpFromCharacter(updated));
+        onTrackerRowUpdate(row.id, trackerStatusFieldsFromCharacter(updated));
         setCharacter(updated);
       }}
     />

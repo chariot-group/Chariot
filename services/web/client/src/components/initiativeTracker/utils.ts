@@ -1,5 +1,14 @@
-import type { Character } from "@/types/character";
+import type { Character, Player } from "@/types/character";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
+import { isPlayer } from "@/utils/global.utils";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "./constants";
+
+/**
+ * FR-014 — seuil d'\u00e9checs aux jets de mort \u00e0 partir duquel un PJ \u00e0 0 PV est consid\u00e9r\u00e9 mort.
+ */
+export const DEATH_SAVES_FAILURE_THRESHOLD = 3;
+
+export type InitiativeTrackerRowStatus = "alive" | "unconscious" | "dead";
 
 export function trackerHpFromCharacter(
   character: Character,
@@ -11,6 +20,58 @@ export function trackerHpFromCharacter(
       : Number(stats?.maxHitPoints ?? 0),
     maxHitPoints: Number.isFinite(stats?.maxHitPoints) ? Number(stats.maxHitPoints) : 0,
     tempHitPoints: Number.isFinite(stats?.tempHitPoints) ? Number(stats.tempHitPoints) : 0,
+  };
+}
+
+/**
+ * FR-014 — calcule l'\u00e9tat vital d'une ligne tracker \u00e0 partir des PV et des death saves miroir\u00e9s.
+ * - NPC \u00e0 0 PV \u2192 dead.
+ * - PJ \u00e0 0 PV avec failures >= 3 \u2192 dead.
+ * - PJ \u00e0 0 PV avec failures < 3 \u2192 unconscious.
+ * - Tout le reste \u2192 alive.
+ */
+export function getInitiativeTrackerRowStatus(
+  row: Pick<InitiativeTrackerRow, "hitPoints" | "kind" | "deathSavesFailures">,
+): InitiativeTrackerRowStatus {
+  const hp = Number.isFinite(row.hitPoints) ? Number(row.hitPoints) : 0;
+  if (hp > 0) return "alive";
+
+  if (row.kind === "player") {
+    const failures = Number.isFinite(row.deathSavesFailures) ? Number(row.deathSavesFailures) : 0;
+    return failures >= DEATH_SAVES_FAILURE_THRESHOLD ? "dead" : "unconscious";
+  }
+
+  return "dead";
+}
+
+/**
+ * FR-014 — extrait `deathSavesFailures` d'un personnage si c'est un PJ, sinon retourne `0`.
+ * Sert au seed initial et aux refresh post HP/remote sync.
+ */
+export function trackerDeathSavesFailuresFromCharacter(character: Character): number {
+  if (!isPlayer(character)) return 0;
+  const failures = (character as Player).deathSaves?.failures;
+  return Number.isFinite(failures) ? Math.max(0, Math.floor(Number(failures))) : 0;
+}
+
+/**
+ * FR-014 — d\u00e9termine le `kind` d'une ligne tracker pour un personnage charg\u00e9.
+ */
+export function trackerKindFromCharacter(character: Character): InitiativeTrackerRow["kind"] {
+  return isPlayer(character) ? "player" : "npc";
+}
+
+/**
+ * FR-014 — calcule l'ensemble des champs miroir pertinents pour le statut vital d'une ligne tracker
+ * (HP + d\u00e9rivation mort/inconscient). Utilis\u00e9 apr\u00e8s un refetch personnage (HP dialog ou WS sync).
+ */
+export function trackerStatusFieldsFromCharacter(
+  character: Character,
+): Pick<InitiativeTrackerRow, "hitPoints" | "maxHitPoints" | "tempHitPoints" | "kind" | "deathSavesFailures"> {
+  return {
+    ...trackerHpFromCharacter(character),
+    kind: trackerKindFromCharacter(character),
+    deathSavesFailures: trackerDeathSavesFailuresFromCharacter(character),
   };
 }
 
@@ -72,4 +133,47 @@ export function canUndoBattleTurn(
   if (isBattleTurnLocked(currentKey, turnsWithActions)) return false;
 
   return true;
+}
+
+/** FR-015 — groupe virtuel des joueurs connectés à la session. */
+export function isSessionParticipantTrackerRow(
+  row: Pick<InitiativeTrackerRow, 'groupId'>,
+): boolean {
+  return row.groupId === SESSION_PARTICIPANTS_GROUP_ID;
+}
+
+/** FR-015 — lignes visibles pour la vue joueur (participants session toujours inclus). */
+export function filterRowsForPlayerView(rows: InitiativeTrackerRow[]): InitiativeTrackerRow[] {
+  return rows.filter((row) => row.visible || isSessionParticipantTrackerRow(row));
+}
+
+/** FR-015 — alias par défaut = nom réel du personnage sur la ligne tracker. */
+export function defaultPlayerDisplayNameForRow(
+  row: Pick<InitiativeTrackerRow, "firstname" | "lastname" | "surname">,
+): string {
+  return characterName(row.firstname, row.lastname, row.surname);
+}
+
+/** FR-015 — valeur persistée à l'enregistrement (vide → nom réel). */
+export function resolvePlayerDisplayNameForSave(raw: string, gmName: string): string {
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : gmName;
+}
+
+/** FR-015 — sous-titre MJ lorsque l'alias joueur diffère du nom réel. */
+export function shouldShowGmPlayerAliasSubtitle(gmName: string, playerDisplayName: string): boolean {
+  const alias = playerDisplayName.trim();
+  return alias.length > 0 && alias !== gmName.trim();
+}
+
+/** FR-015 — nom affiché côté joueur selon visibilité et alias MJ. */
+export function resolvePlayerTrackerDisplayName(
+  row: Pick<InitiativeTrackerRow, 'firstname' | 'lastname' | 'surname' | 'playerDisplayName' | 'playerFieldVisibility'>,
+): string | null {
+  const realName = characterName(row.firstname, row.lastname, row.surname);
+  if (row.playerFieldVisibility.name) {
+    return realName;
+  }
+  const alias = row.playerDisplayName?.trim();
+  return alias.length > 0 ? alias : null;
 }

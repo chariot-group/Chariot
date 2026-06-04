@@ -17,7 +17,12 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import groupService from "@/services/GroupService";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectCurrentSession, setInitiativeTrackerRows, setSessionInitBattleDraft } from "@/store/slices/sessionSlice";
+import {
+  selectCurrentSession,
+  setInitiativeTrackerRows,
+  setSessionInitBattleDraft,
+  createInitiativeTrackerRow,
+} from "@/store/slices/sessionSlice";
 import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2, Skull, Star, Swords, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -28,6 +33,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { SessionParticipant } from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 import type { Character, Player } from "@/types/character";
+import {
+  trackerDeathSavesFailuresFromCharacter,
+  trackerKindFromCharacter,
+} from "@/components/initiativeTracker/utils";
 
 type BattleGroupCharacter = {
   _id: string;
@@ -454,26 +463,36 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
             const firstname = character.firstname ?? "";
             const lastname = character.lastname ?? "";
             const surname = character.surname ?? "";
+            // FR-014 — `kind` et death saves proviennent de la fiche hydratée quand disponible (source fiable).
+            // Sinon repli sur l'heuristique groupe (CR / createdBy / profile).
+            const hydrated = detailsById.get(member._id);
+            const isHydratedCharacter = hydrated != null && "stats" in hydrated && hydrated.stats != null;
+            const kind: "player" | "npc" = isHydratedCharacter
+              ? trackerKindFromCharacter(hydrated as Character)
+              : isNpcCharacter(member)
+                ? "npc"
+                : "player";
+            const deathSavesFailures = isHydratedCharacter
+              ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
+              : 0;
 
-            return {
-              id: `${group._id}:${member._id}`,
+            return createInitiativeTrackerRow({
+              groupId: group._id,
+              groupLabel: group.label,
               characterId: member._id,
               firstname,
               lastname,
               surname,
               avatar: character.avatar ?? "",
-              initiative: 0,
               hitPoints: Number.isFinite(stats?.currentHitPoints)
                 ? Number(stats?.currentHitPoints)
                 : Number(stats?.maxHitPoints ?? 0),
               maxHitPoints: Number.isFinite(stats?.maxHitPoints) ? Number(stats.maxHitPoints) : 0,
               tempHitPoints: Number.isFinite(stats?.tempHitPoints) ? Number(stats.tempHitPoints) : 0,
               armorClass: Number.isFinite(stats?.armorClass) ? Number(stats?.armorClass) : 0,
-              conditions: [],
-              groupId: group._id,
-              groupLabel: group.label,
-              visible: true,
-            };
+              kind,
+              deathSavesFailures,
+            });
           });
       });
 

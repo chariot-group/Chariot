@@ -25,6 +25,7 @@ import sessionService, {
 } from "@/services/SessionService";
 import { selectUser } from "@/store/slices/userSlice";
 import {
+    registerLocalCharacterSheetUpdatedListener,
     registerSessionRosterHttpSyncScheduler,
     registerSessionSyncSocket,
     requestSessionRosterHttpSync,
@@ -123,6 +124,21 @@ export default function SessionCharacterSyncClient() {
     useEffect(() => {
         setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
     }, [isInSession, code]);
+
+    /** FR-014 — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
+    useEffect(() => {
+        if (!isInSession) {
+            registerLocalCharacterSheetUpdatedListener(null);
+            return;
+        }
+        registerLocalCharacterSheetUpdatedListener((characterId) => {
+            const cid = characterId.trim();
+            if (cid) {
+                dispatch(touchRemoteCharacterSheet(cid));
+            }
+        });
+        return () => registerLocalCharacterSheetUpdatedListener(null);
+    }, [dispatch, isInSession]);
 
     useEffect(() => {
         if (!shouldConnect || !code || !token) {
