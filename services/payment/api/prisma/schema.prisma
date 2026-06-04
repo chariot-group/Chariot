@@ -115,6 +115,9 @@ model ReferralReferee {
   refereeUserId String   @unique @map("referee_user_id") // keycloakId du filleul
   registeredAt  DateTime @default(now()) @map("registered_at")
 
+  // Validation : le filleul est comptabilisé côté parrain seulement après son 1er achat
+  firstPurchaseValidatedAt DateTime? @map("first_purchase_validated_at")
+
   // Suivi de l'utilisation de la réduction filleul (15%)
   discountUsed    Boolean   @default(false) @map("discount_used")
   discountUsedAt  DateTime? @map("discount_used_at")

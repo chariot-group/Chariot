@@ -24,6 +24,7 @@ export type ReferralDiscount = {
 
 export type ReferralInfo = Referral & {
     refereeCount: number;
+    validatedRefereeCount: number; // filleuls who made at least 1 purchase
     currentDiscountPercent: number;
     pendingReferralsCount: number;
     referees: ReferralReferee[];
@@ -119,18 +120,12 @@ export class ReferralService {
                     throw new NotFoundException(`Code de parrainage '${normalizedCode}' introuvable`);
                 }
 
-                await this.prisma.$transaction([
-                    this.prisma.referralReferee.create({
-                        data: {
-                            refereeUserId: userId,
-                            referralId: referrerReferral.id,
-                        },
-                    }),
-                    this.prisma.referral.update({
-                        where: { id: referrerReferral.id },
-                        data: { pendingReferralsCount: { increment: 1 } },
-                    }),
-                ]);
+                await this.prisma.referralReferee.create({
+                    data: {
+                        refereeUserId: userId,
+                        referralId: referrerReferral.id,
+                    },
+                });
 
                 refereeDiscountApplied = true;
             }
@@ -163,6 +158,9 @@ export class ReferralService {
             }
 
             const refereeCount = referral.referees.length;
+            const validatedRefereeCount = referral.referees.filter(
+                (r) => r.firstPurchaseValidatedAt !== null,
+            ).length;
             const currentDiscountPercent = ReferralService.computeReferrerDiscount(
                 referral.pendingReferralsCount,
             );
@@ -186,6 +184,7 @@ export class ReferralService {
                 data: {
                     ...referral,
                     refereeCount,
+                    validatedRefereeCount,
                     currentDiscountPercent,
                     pendingReferralsCount: referral.pendingReferralsCount,
                     myRefereeDiscount,
@@ -205,18 +204,20 @@ export class ReferralService {
     // ─────────────────────────────────────────────────────────────────
     async checkUserReferralDiscount(userId: string): Promise<ReferralDiscount | null> {
         try {
-            // Check filleul discount first (15% unused)
+            const candidates: ReferralDiscount[] = [];
+
+            // Check filleul discount (15% if unused)
             const referee = await this.prisma.referralReferee.findUnique({
                 where: { refereeUserId: userId },
                 include: { referral: true },
             });
 
             if (referee && !referee.discountUsed) {
-                return {
+                candidates.push({
                     discountPercent: REFEREE_DISCOUNT_PERCENT,
                     discountType: 'referee',
                     referralId: referee.referral.id,
-                };
+                });
             }
 
             // Check parrain discount
@@ -225,16 +226,21 @@ export class ReferralService {
             });
 
             if (referral && referral.pendingReferralsCount > 0) {
-                return {
+                candidates.push({
                     discountPercent: ReferralService.computeReferrerDiscount(
                         referral.pendingReferralsCount,
                     ),
                     discountType: 'referrer',
                     referralId: referral.id,
-                };
+                });
             }
 
-            return null;
+            if (candidates.length === 0) return null;
+
+            // Return the highest discount
+            return candidates.reduce((best, c) =>
+                c.discountPercent > best.discountPercent ? c : best,
+            );
         } catch (error) {
             this.logger.error(
                 `Error checking referral discount for user ${userId}: ${error.message}`,
@@ -316,6 +322,43 @@ export class ReferralService {
             // Don't throw — payment is already completed, this is a post-payment side effect
             this.logger.error(
                 `Error marking referral discount as used: ${error.message}`,
+                error.stack,
+                this.SERVICE_NAME,
+            );
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Validate filleul's first purchase → credit the parrain
+    // Called after every completed payment; idempotent via firstPurchaseValidatedAt
+    // ─────────────────────────────────────────────────────────────────
+    async validateRefereeFirstPurchase(userId: string): Promise<void> {
+        try {
+            const referee = await this.prisma.referralReferee.findUnique({
+                where: { refereeUserId: userId },
+            });
+
+            if (!referee || referee.firstPurchaseValidatedAt) return;
+
+            await this.prisma.$transaction([
+                this.prisma.referralReferee.update({
+                    where: { refereeUserId: userId },
+                    data: { firstPurchaseValidatedAt: new Date() },
+                }),
+                this.prisma.referral.update({
+                    where: { id: referee.referralId },
+                    data: { pendingReferralsCount: { increment: 1 } },
+                }),
+            ]);
+
+            this.logger.verbose(
+                `Filleul ${userId} validated — parrain referral ${referee.referralId} pending count incremented`,
+                this.SERVICE_NAME,
+            );
+        } catch (error) {
+            // Non-blocking: payment is already completed
+            this.logger.error(
+                `Error validating referee first purchase for user ${userId}: ${error.message}`,
                 error.stack,
                 this.SERVICE_NAME,
             );

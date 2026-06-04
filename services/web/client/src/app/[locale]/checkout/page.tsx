@@ -32,6 +32,7 @@ function CheckoutContent() {
     quantity,
     onQuantityChange,
     promoCode,
+    referralDiscount,
   } = useCheckout();
 
   return (
@@ -119,6 +120,7 @@ function CheckoutContent() {
                     locale={locale}
                     quantity={quantity}
                     onQuantityChange={onQuantityChange}
+                    referralDiscount={referralDiscount}
                   />
                 </Elements>
               </div>

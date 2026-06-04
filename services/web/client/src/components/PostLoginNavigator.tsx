@@ -44,6 +44,7 @@ export default function PostLoginNavigator() {
     if (!authenticated || loading || hasInitReferralRef.current) return;
 
     const alreadyInitialized = localStorage.getItem(REFERRAL_INIT_STORAGE_KEY);
+    console.warn("Initializing referral for user. Already initialized on this device?", alreadyInitialized);
     if (alreadyInitialized) return;
 
     hasInitReferralRef.current = true;

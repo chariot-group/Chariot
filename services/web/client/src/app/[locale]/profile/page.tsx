@@ -36,17 +36,7 @@ import referralService, { type ReferralInfo } from "@/services/ReferralService";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "react-toastify";
 import { useToast } from "@/hooks/useToast";
-
-const REFERRAL_TIERS = [
-  { minPending: 8, discount: 50 },
-  { minPending: 7, discount: 45 },
-  { minPending: 6, discount: 40 },
-  { minPending: 5, discount: 35 },
-  { minPending: 4, discount: 30 },
-  { minPending: 3, discount: 25 },
-  { minPending: 2, discount: 20 },
-  { minPending: 1, discount: 15 },
-] as const;
+import { REFERRAL_TIERS } from "@/lib/referral";
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -80,7 +70,9 @@ export default function ProfilePage() {
     referralService
       .getMyReferral()
       .then(setReferralInfo)
-      .catch(() => {});
+      .catch((error) => {
+        console.error("Failed to fetch referral info", error);
+      });
   }, []);
 
   const { form: formPassword, onSubmit, isLoading: isLoadingPassword } = usePasswordForm();
@@ -495,12 +487,13 @@ export default function ProfilePage() {
                 aria-label={t("referral.tiersTitle")}>
                 {REFERRAL_TIERS.map((tier, idx) => {
                   const widthPercent = 30 + Math.round((idx / (REFERRAL_TIERS.length - 1)) * 70);
-                  const isReached = referralInfo.pendingReferralsCount >= tier.minPending;
+                  const isReached = referralInfo.pendingReferralsCount >= tier.minReferees;
                   const isCurrentTier =
-                    isReached && (idx === 0 || referralInfo.pendingReferralsCount < REFERRAL_TIERS[idx - 1].minPending);
+                    isReached &&
+                    (idx === 0 || referralInfo.pendingReferralsCount < REFERRAL_TIERS[idx - 1].minReferees);
                   return (
                     <div
-                      key={tier.minPending}
+                      key={tier.minReferees}
                       role="listitem"
                       style={{ width: `${widthPercent}%` }}
                       className={cn(
@@ -512,8 +505,8 @@ export default function ProfilePage() {
                             : "bg-gray-middle-light text-muted-foreground opacity-70",
                       )}>
                       <span className="text-xs font-medium">
-                        {tier.minPending}+{" "}
-                        {tier.minPending === 1 ? t("referral.tierReferral") : t("referral.tierReferrals")}
+                        {tier.minReferees}+{" "}
+                        {tier.minReferees === 1 ? t("referral.tierReferral") : t("referral.tierReferrals")}
                       </span>
                       <span className="text-sm font-bold">{tier.discount}%</span>
                     </div>
@@ -521,15 +514,15 @@ export default function ProfilePage() {
                 })}
               </div>
 
-              <span className="flex flex-row items-center gap-2 mt-auto justify-center">
-                <p className="text-xs text-muted-foreground">
-                  {referralInfo.pendingReferralsCount > 0
-                    ? t("referral.pendingReferrals", { count: referralInfo.pendingReferralsCount })
-                    : t("referral.noDiscount")}{" "}
+              <span className="flex flex-row items-center gap-2 mt-auto justify-center flex-wrap">
+                <p className="text-xs text-green-400">
+                  {t("referral.validatedReferees", { count: referralInfo.validatedRefereeCount ?? 0 })}
                 </p>
                 <DotIcon className="text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">
-                  {t("referral.totalReferees", { count: referralInfo.refereeCount })}
+                <p className="text-xs text-amber-400">
+                  {t("referral.pendingFirstPurchase", {
+                    count: (referralInfo.refereeCount ?? 0) - (referralInfo.validatedRefereeCount ?? 0),
+                  })}
                 </p>
               </span>
             </Card>

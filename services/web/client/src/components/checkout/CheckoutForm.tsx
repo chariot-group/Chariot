@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import type { ResolvedCode, StripeProduct } from "@/services/PaymentService";
 import { formatDiscount, formatPrice } from "@/lib/checkout-utils";
 import Token from "@public/assets/token.svg";
+import type { ReferralDiscount } from "@/hooks/useCheckout";
 
 export interface PricingContext {
   originalAmount: number;
@@ -38,6 +39,7 @@ export interface CheckoutFormProps {
   locale: string;
   quantity: number;
   onQuantityChange: (quantity: number) => void;
+  referralDiscount: ReferralDiscount | null;
 }
 
 export function CheckoutForm({
@@ -49,6 +51,7 @@ export function CheckoutForm({
   locale,
   quantity,
   onQuantityChange,
+  referralDiscount,
 }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -187,11 +190,9 @@ export function CheckoutForm({
               </span>
               <span>{formatPrice(originalAmount * quantity, currency)}</span>
             </div>
-            {discountAmount > 0 && promoCode.applied && (
+            {discountAmount > 0 && (promoCode.applied || referralDiscount) && (
               <div className="flex justify-between text-sm text-green-500">
-                <span>
-                  {t("discount")} ({promoCode.applied.raw})
-                </span>
+                <span>{promoCode.applied ? `${t("discount")} (${promoCode.applied.raw})` : t("referralDiscount")}</span>
                 <span>-{formatPrice(discountAmount * quantity, currency)}</span>
               </div>
             )}
@@ -207,6 +208,16 @@ export function CheckoutForm({
         {/* Promo code */}
         <Card className="gap-3 p-5">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t("promoTitle")}</h2>
+          {referralDiscount && !promoCode.applied && (
+            <div className="flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-sm">
+              <CheckCircle2
+                className="h-4 w-4 text-primary shrink-0"
+                aria-hidden="true"
+              />
+              <span className="font-medium text-card-foreground">{t("referralDiscount")}</span>
+              <span className="text-green-400">-{referralDiscount.discountPercent} %</span>
+            </div>
+          )}
           {promoCode.applied ? (
             <div className="flex items-center justify-between rounded-xl border border-green-500/40 bg-green-500/10 px-3 py-2 text-sm">
               <div className="flex items-center gap-2">
@@ -242,14 +253,14 @@ export function CheckoutForm({
                   value={promoCode.input}
                   onChange={(e) => promoCode.onChange(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === "Enter" && promoCode.onApply()}
-                  disabled={promoCode.loading || piRefreshing}
+                  disabled={promoCode.loading || piRefreshing || !!referralDiscount}
                   aria-label={tShop("codePlaceholder")}
                 />
               </div>
               <Button
                 variant="outline"
                 onClick={promoCode.onApply}
-                disabled={!promoCode.input.trim() || promoCode.loading || piRefreshing}
+                disabled={!promoCode.input.trim() || promoCode.loading || piRefreshing || !!referralDiscount}
                 aria-label={tShop("applyCode")}>
                 {promoCode.loading ? (
                   <Loader2
@@ -261,6 +272,9 @@ export function CheckoutForm({
                 )}
               </Button>
             </div>
+          )}
+          {referralDiscount && !promoCode.applied && (
+            <p className="text-xs text-muted-foreground">{t("referralNotCumulable")}</p>
           )}
           {promoCode.error && (
             <p

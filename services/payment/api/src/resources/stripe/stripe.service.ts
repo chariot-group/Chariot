@@ -639,6 +639,9 @@ export class StripeService {
                 );
             }
 
+            // Validate filleul's first purchase → credit the parrain (idempotent)
+            await this.referralService.validateRefereeFirstPurchase(userId);
+
             await this.creditTokensToUser(userId, tokenAmountPerPack, paymentIntent.id);
 
             this.stripePaymentsCounter.inc({ status: 'success' });
@@ -713,6 +716,9 @@ export class StripeService {
                     parseInt(referralDiscountPercent ?? '0', 10),
                 );
             }
+
+            // Validate filleul's first purchase → credit the parrain (idempotent)
+            await this.referralService.validateRefereeFirstPurchase(userId);
 
             // 2. Call adventure service to credit tokens to the user
             await this.creditTokensToUser(userId, totalTokens, session.id);

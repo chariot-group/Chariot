@@ -4,6 +4,12 @@ import { useTranslations } from "next-intl";
 import paymentService, { ResolvedCode, StripeProduct } from "@/services/PaymentService";
 import { computeDiscountedAmount } from "@/lib/checkout-utils";
 import type { PromoCodeState } from "@/components/checkout/CheckoutForm";
+import referralService from "@/services/ReferralService";
+
+export type ReferralDiscount = {
+    discountPercent: number;
+    discountType: 'referee' | 'referrer';
+};
 
 interface UseCheckoutReturn {
     locale: string;
@@ -29,6 +35,8 @@ interface UseCheckoutReturn {
     onQuantityChange: (quantity: number) => void;
     // Promo code
     promoCode: PromoCodeState;
+    // Referral discount (auto-applied when no manual code)
+    referralDiscount: ReferralDiscount | null;
 }
 
 export function useCheckout(): UseCheckoutReturn {
@@ -55,6 +63,9 @@ export function useCheckout(): UseCheckoutReturn {
 
     // Quantity
     const [quantity, setQuantity] = useState(1);
+
+    // Referral discount
+    const [referralDiscount, setReferralDiscount] = useState<ReferralDiscount | null>(null);
 
     // PaymentIntent
     const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -138,6 +149,23 @@ export function useCheckout(): UseCheckoutReturn {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [product, createInitialPaymentIntent]);
 
+    // ── Fetch referral discount (auto-applied when no manual code) ─────────────
+    useEffect(() => {
+        referralService.getMyReferral().then((info) => {
+            const refereePercent = info.myRefereeDiscount?.available ? info.myRefereeDiscount.discountPercent : 0;
+            const referrerPercent = info.currentDiscountPercent;
+            if (refereePercent === 0 && referrerPercent === 0) {
+                setReferralDiscount(null);
+                return;
+            }
+            const bestPercent = Math.max(refereePercent, referrerPercent);
+            const discountType: 'referee' | 'referrer' = refereePercent >= referrerPercent ? 'referee' : 'referrer';
+            setReferralDiscount({ discountPercent: bestPercent, discountType });
+        }).catch(() => {
+            setReferralDiscount(null);
+        });
+    }, []);
+
     // ── Promo code handlers ─────────────────────────────────────────────────────
     const handleApplyCode = useCallback(async () => {
         const trimmed = codeInput.trim().toUpperCase();
@@ -175,8 +203,14 @@ export function useCheckout(): UseCheckoutReturn {
     // ── Pricing ─────────────────────────────────────────────────────────────────
     const price = product?.prices[0];
     const originalAmount = price?.unit_amount ?? 0;
-    const discountedAmount =
-        appliedCode && originalAmount > 0 ? computeDiscountedAmount(originalAmount, appliedCode.resolved) : originalAmount;
+    let discountedAmount = originalAmount;
+    if (originalAmount > 0) {
+        if (appliedCode) {
+            discountedAmount = computeDiscountedAmount(originalAmount, appliedCode.resolved);
+        } else if (referralDiscount) {
+            discountedAmount = Math.max(0, originalAmount - Math.floor((originalAmount * referralDiscount.discountPercent) / 100));
+        }
+    }
     const discountAmount = originalAmount - discountedAmount;
     const tokenCount = product?.metadata?.token_number ? parseInt(product.metadata.token_number, 10) : null;
 
@@ -207,6 +241,7 @@ export function useCheckout(): UseCheckoutReturn {
         tokenCount,
         quantity,
         onQuantityChange: handleQuantityChange,
+        referralDiscount,
         promoCode: {
             input: codeInput,
             loading: codeLoading,

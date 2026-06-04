@@ -11,7 +11,8 @@ export interface ReferralInfo {
     userId: string;
     pendingReferralsCount: number;
     currentDiscountPercent: number; // discount % available as parrain (0 if none)
-    refereeCount: number;           // total filleuls ever
+    refereeCount: number;           // total filleuls ever (registered)
+    validatedRefereeCount: number;  // filleuls who made at least 1 purchase
     createdAt: string;
     referees: Array<{
         id: string;
