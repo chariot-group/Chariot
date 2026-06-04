@@ -516,7 +516,7 @@ export default function ProfilePage() {
 
               <span className="flex flex-row items-center gap-2 mt-auto justify-center flex-wrap">
                 <p className="text-xs text-green-400">
-                  {t("referral.validatedReferees", { count: referralInfo.validatedRefereeCount ?? 0 })}
+                  {t("referral.validatedReferees", { count: referralInfo.pendingReferralsCount ?? 0 })}
                 </p>
                 <DotIcon className="text-muted-foreground" />
                 <p className="text-xs text-amber-400">
