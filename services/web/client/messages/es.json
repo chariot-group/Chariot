@@ -46,7 +46,6 @@
     "comingSoon": "Próximamente",
     "alreadyInSession": "No es posible realizar esta acción, ya estás conectado.",
     "returnToSheet": "Volver a la hoja de personaje",
-    "viewCombat": "Ver el combate",
     "noLastSheet": "Ninguna hoja consultada por el momento",
     "noPlayerCharacter": "Ningún personaje seleccionado en la sesión",
     "returnToSession": "Volver a la sesión",
@@ -79,7 +78,7 @@
   "initTracker": {
     "noCharacters": "Sin personajes",
     "initBattleDialogTitle": "Inicializar batalla",
-    "initBattleSelectedGroups": "Jugadores en la iniciativa",
+    "initBattleSelectedGroups": "Grupos en el orden de iniciativa",
     "initBattleLoadingGroups": "Cargando grupos...",
     "initBattleNoGroupSelected": "Ningún grupo seleccionado.",
     "initBattleSearchAndSelectGroups": "Buscar y seleccionar grupos",
@@ -92,7 +91,7 @@
     "initBattleGroupStats": "Miembros: {members}",
     "initBattleNpcCrLabel": "CR",
     "initBattleNpcAvgCr": "CR prom PNJ: {cr}",
-    "initBattleNpcTotalCr": "total PNJ: {cr}",
+    "initBattleNpcTotalCr": "CR total PNJ: {cr}",
     "initBattlePlayerAvgLevel": "Nivel prom jugadores: {level}",
     "initBattleIncludedMembers": "Miembros en iniciativa: {included}/{total}",
     "initBattleExpandGroup": "Mostrar miembros del grupo",
@@ -166,7 +165,7 @@
           "groupLabel": "Nombre del grupo"
         }
       },
-      "roundIndicator": "Turno {round}",
+      "roundIndicator": "Ronda {round}",
       "startCombat": "Iniciar combate",
       "endCombat": "Cerrar combate",
       "previousTurn": "Volver al turno anterior",
@@ -567,7 +566,7 @@
       "actions": "Acciones",
       "legendaryActions": "Acciones Legendarias",
       "lairActions": "Acciones de guarida",
-      "actionDetails": "Detalles de la acción",
+      "actionDetails": "Detalles de la acción:",
       "attackDC": "Ataque/CD:",
       "damageType": "Daño/Tipo:",
       "range": "Alcance",
@@ -581,8 +580,6 @@
         "reaction": "Reacción"
       },
       "usageTypeUnavailableTooltip": "No hay {type} disponible para este personaje.",
-      "prioritizeByUsage": "Priorizar",
-      "all": "Todo",
       "name": "Nombre",
       "descriptionPrefix": "descripción",
       "armorClass": "Clase de Armadura",
@@ -613,6 +610,8 @@
       "statsRegion": "Estadísticas de combate",
       "healthPoints": "Puntos de Golpe",
       "healthPointsTooltip": "PG actuales / PG máximos (PG temporales)",
+      "healthPointsAria": "{current} de {max} puntos de golpe",
+      "healthPointsAriaWithTemp": "{current} de {max} puntos de golpe (+{temp} PG temporales)",
       "healthPointsSessionTooltip": "Haz clic para editar los puntos de golpe durante la sesión",
       "sessionHpDialogTitle": "Editar puntos de golpe",
       "sessionCurrentHpSection": "Puntos de golpe actuales",
@@ -630,11 +629,11 @@
       "feetAbbr": "ft",
       "affinities": "Afinidades",
       "resistances": "Resistencias",
-      "resistancesPlaceholder": "Fuego, Frio...",
+      "resistancesPlaceholder": "Fuego, Frío...",
       "vulnerabilities": "Vulnerabilidades",
-      "vulnerabilitiesPlaceholder": "Fuego, Frio...",
+      "vulnerabilitiesPlaceholder": "Fuego, Frío...",
       "immunities": "Inmunidades",
-      "immunitiesPlaceholder": "Fuego, Frio..."
+      "immunitiesPlaceholder": "Fuego, Frío..."
     },
     "history": {
       "appearance": "Apariencia",

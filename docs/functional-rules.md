@@ -1215,12 +1215,12 @@ Each rule has a unique identifier and must be tested.
 
 - When the GM is on the initiative tracker page and a battle is initialized or started, the sidebar footer MUST show **Return to Character Sheet** (not **Reset**).
 - **Return to Character Sheet** navigates to the last character sheet path consulted by the GM during the current session (`lastConsultedSheetPath`). If none is recorded, the button is disabled with an explanatory tooltip.
-- When the GM is on a character sheet and a battle is initialized or started, the sidebar footer MUST show **Return to Battle**, navigating to `/{locale}/initiativeTracker`.
+- When the GM is on a character sheet and a battle is initialized or started, the sidebar footer MUST show **Return to Battle**, navigating to `/{locale}/initiativeTracker`. Styling: red background, white text, swords icon.
 - **Reset** (clear tracker rows) MUST NOT appear in the sidebar while a battle is initialized or started. Reset remains available only through in-page GM controls when applicable (FR-012).
 
 **Sidebar Navigation — Player**:
 
-- When a battle is initialized or started and the player is not on the initiative tracker page, the sidebar footer MUST show **View Combat**, navigating to `/{locale}/initiativeTracker`.
+- When a battle is initialized or started and the player is not on the initiative tracker page, the sidebar footer MUST show **Return to Battle** (same label, icon, and styling as the GM), navigating to `/{locale}/initiativeTracker`.
 - When the player is on the initiative tracker page, the sidebar footer MUST show **View Character Sheet**, navigating to their session character sheet.
 - If the player has no assigned character, **View Character Sheet** is disabled with an explanatory tooltip.
 

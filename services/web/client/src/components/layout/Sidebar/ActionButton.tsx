@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { LucideSwords, PlayCircle, Users, ArrowLeft, UserCircle, Eye } from "lucide-react";
+import { LucideSwords, PlayCircle, Users, UserCircle } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -42,7 +42,6 @@ type ActionButtonState =
   | "startBattle"
   | "returnToBattle"
   | "returnToSheet"
-  | "viewCombat"
   | "returnToSession";
 
 export function ActionButton() {
@@ -182,8 +181,8 @@ export function ActionButton() {
           action: navigateToInitiativeTracker,
           disabled: false,
           icon: <LucideSwords className="size-6" />,
-          backgroundColor: "bg-pink",
-          textColor: "text-black",
+          backgroundColor: "bg-red",
+          textColor: "text-white",
         };
       }
     } else {
@@ -215,11 +214,11 @@ export function ActionButton() {
 
       if (battleInitialized && !isInitiativeTrackerPage) {
         return {
-          label: t("viewCombat"),
-          state: "viewCombat",
+          label: t("returnToBattle"),
+          state: "returnToBattle",
           action: navigateToInitiativeTracker,
           disabled: false,
-          icon: <Eye className="size-6" />,
+          icon: <LucideSwords className="size-6" />,
           backgroundColor: "bg-red",
           textColor: "text-white",
         };
