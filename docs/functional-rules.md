@@ -803,16 +803,26 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-011: Stripe Checkout and Webhook Access Control
+## FR-011: Stripe Checkout, Webhook Access Control, and Referral System
 
-**Rule**: Stripe checkout creation must be restricted to authenticated users, while webhook processing must be publicly accessible only through Stripe signature validation.
+**Rule**: Stripe checkout creation must be restricted to authenticated users, while webhook processing must be publicly accessible only through Stripe signature validation. The payment service handles all Stripe interactions and applies a referral discount system (parrainage) automatically at checkout.
+
+---
+
+### FR-011-A: Checkout and Webhook Access Control
 
 **Requirements**:
-- Endpoint `POST /stripe/checkout` requires authenticated user context from Keycloak guard
+- All checkout endpoints (`POST /stripe/checkout`, `POST /stripe/checkout/embedded`, `POST /stripe/payment-intent`) require authenticated user context from Keycloak guard
 - `userId` must be sourced from `request.user.keycloakId` only
 - `userId` must not be provided in checkout request body DTO
 - Endpoint `POST /stripe/webhook` must be marked public (`@Public()`) to allow Stripe callbacks
 - Webhook requests must be validated with Stripe signature header and webhook secret before processing
+- The payment service (port 9003) handles all Stripe operations; the gateway proxies `/payment/*` routes to it
+
+**Checkout Modes**:
+- **Standard session** (`POST /stripe/checkout`): redirects to Stripe-hosted checkout page
+- **Embedded session** (`POST /stripe/checkout/embedded`): returns a `clientSecret` for in-app rendering
+- **PaymentIntent** (`POST /stripe/payment-intent`): for single-page PaymentElement flow; amount updatable via `PATCH /stripe/payment-intent/:id`
 
 **Prohibitions**:
 - Accepting `userId` from checkout body payload
@@ -824,8 +834,78 @@ Each rule has a unique identifier and must be tested.
 - Controller unit test verifies webhook route is marked public
 - Controller unit test verifies missing raw body is rejected
 
+---
+
+### FR-011-B: Referral System (Parrainage)
+
+**Rule**: A tier-based referral discount system automatically applies discounts at checkout for both the referrer (parrain) and the referee (filleul). Referral discounts apply only when no promo code or affiliation code is provided.
+
+#### Referee (Filleul) Rules
+
+- A user becomes a filleul by registering with a referral code during account initialization
+- The filleul receives a **15% discount** on their next order
+- This discount is **one-time use**: once used at checkout, it is permanently consumed
+- A filleul is considered **validated** (and credited to their parrain) only after completing their **first payment**
+- A user cannot use their own referral code
+
+#### Referrer (Parrain) Tier System
+
+- The parrain earns **1 tier per validated filleul** (i.e., a filleul who has completed at least one payment)
+- Tiers and corresponding discounts:
+
+  | Tier | Validated filleuls | Discount |
+  |------|--------------------|----------|
+  | 0    | 0                  | 0% (no discount) |
+  | 1    | 1                  | 10% |
+  | 2    | 2                  | 15% |
+  | 3    | 3                  | 20% |
+  | …    | …                  | … (+5% per tier) |
+  | max  | ≥ 9                | 50% (capped) |
+
+- The discount represents a **reduction on the next order** only
+- After the parrain uses their discount at checkout, their tier **resets to 0** (pending count reset to 0)
+- Pending filleuls who have not yet made a purchase do not contribute to the discount tier
+
+#### Discount Application Rules
+
+- Referral discounts are applied **automatically** — no code entry required by the user
+- Referral discount applies **only when no promo code and no affiliation code is provided** in the checkout request
+- If a user simultaneously qualifies as both parrain (referrer) and filleul (referee), **only the highest discount is applied** (not cumulative)
+- Referral discounts apply to the total unit price after no other discount is in effect
+
+#### Discount Resolution Priority (full order)
+
+1. **Affiliation code** — applied first to the original unit price
+2. **Promo code** — applied on top of the affiliation discount (on the remaining amount)
+3. **Referral discount** — applied automatically, but **only if neither a promo code nor affiliation code is provided**
+
+**Prohibitions**:
+- Applying referral discount when a promo or affiliation code is present
+- Cumulating parrain and filleul discounts simultaneously
+- Counting a filleul toward the parrain's tier before the filleul's first payment is completed
+- Allowing a user to use their own referral code
+- Applying a parrain discount without resetting the tier to 0 afterward
+- Applying the filleul discount more than once
+
+**Tests**:
+- Filleul receives 15% discount on next order after registering with a valid code
+- Filleul discount is consumed after first use and not applied again
+- Parrain with 1 validated filleul receives 10% discount
+- Parrain with 2 validated filleuls receives 15% discount
+- Parrain with ≥ 9 validated filleuls is capped at 50%
+- Unvalidated filleuls (no payment yet) do not contribute to parrain tier
+- After parrain uses discount, tier resets to 0
+- User qualifying as both parrain and filleul receives only the highest discount
+- Referral discount is NOT applied when a promo or affiliation code is provided
+- User cannot register with their own referral code
+- `checkUserReferralDiscount` returns null when no discount is available
+- `checkUserReferralDiscount` fails gracefully (returns null) without blocking checkout
+
 **References**:
-- `services/adventure/api/src/resources/stripe/stripe.controller.ts`
-- `services/adventure/api/src/resources/stripe/stripe.service.ts`
-- `services/adventure/api/src/resources/stripe/dto/checkout.dto.ts`
-- `services/adventure/api/src/resources/stripe/stripe.controller.spec.ts`
+- `services/payment/api/src/resources/stripe/stripe.controller.ts`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `services/payment/api/src/resources/stripe/dto/checkout.dto.ts`
+- `services/payment/api/src/resources/referral/referral.service.ts`
+- `services/payment/api/src/resources/referral/referral.controller.ts`
+- `services/payment/api/src/resources/affiliation/affiliation.service.ts`
+- `services/payment/api/src/resources/promo-code/promo-code.service.ts`
