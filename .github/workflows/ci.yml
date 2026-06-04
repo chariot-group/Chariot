@@ -135,6 +135,72 @@ jobs:
         working-directory: ./services/gateway/api
         run: npm run build
 
+  # Job CI pour le service payment
+  ci-payment:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js for payment
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/payment/api/package-lock.json
+
+      - name: Install dependencies for payment
+        run: |
+          cd services/payment/api
+          npm ci
+
+      - name: Run lint for payment
+        working-directory: ./services/payment/api
+        run: npm run lint
+
+      - name: Format check for payment
+        working-directory: ./services/payment/api
+        run: npm run format
+
+      - name: Run unit tests for payment
+        working-directory: ./services/payment/api
+        run: npm test
+
+      - name: Build payment
+        working-directory: ./services/payment/api
+        run: npm run build
+
+  # Job CI pour le service admin
+  ci-admin:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js for admin
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/admin/client/package-lock.json
+
+      - name: Install dependencies for admin
+        run: |
+          cd services/admin/client
+          npm ci
+
+      - name: Run lint for admin
+        working-directory: ./services/admin/client
+        run: npm run lint
+
+      - name: Build admin
+        working-directory: ./services/admin/client
+        run: npm run build
+
   # Job CD pour déployer le frontend (sur push main/integ ou workflow_dispatch)
   deploy-web:
     runs-on: ubuntu-latest
