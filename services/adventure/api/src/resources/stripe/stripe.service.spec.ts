@@ -11,6 +11,9 @@ jest.mock('@/resources/user/user.service', () => ({
 describe('StripeService', () => {
   let service: StripeService;
   let userService: UserService;
+  const stripePaymentsCounter = {
+    inc: jest.fn(),
+  };
 
   beforeEach(async () => {
     process.env.STRIPE_SECRET_KEY =
@@ -24,6 +27,10 @@ describe('StripeService', () => {
         {
           provide: UserService,
           useClass: UserService,
+        },
+        {
+          provide: 'PROM_METRIC_CHARIOT_STRIPE_PAYMENTS_TOTAL',
+          useValue: stripePaymentsCounter,
         },
       ],
     }).compile();
