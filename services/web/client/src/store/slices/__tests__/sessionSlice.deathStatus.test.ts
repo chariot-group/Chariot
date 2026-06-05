@@ -8,7 +8,7 @@ import sessionReducer, {
   defaultPlayerFieldVisibilityForKind,
   type CurrentSessionState,
   type InitiativeTrackerRow,
-} from "../sessionSlice";
+} from "@/store/slices/sessionSlice";
 
 const buildRow = (overrides: Partial<InitiativeTrackerRow> & { id: string; initiative: number }): InitiativeTrackerRow => ({
   id: overrides.id,

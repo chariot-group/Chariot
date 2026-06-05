@@ -17,7 +17,7 @@ import type {
   InitiativeTrackerPlayerFieldVisibility,
   InitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
-import { isSessionParticipantTrackerRow } from "./utils";
+import { isSessionParticipantTrackerRow } from "@/components/initiativeTracker/utils";
 
 type FieldKey = keyof InitiativeTrackerPlayerFieldVisibility;
 

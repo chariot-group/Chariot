@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { InitiativeTrackerRow } from "../InitiativeTrackerRow";
+import { InitiativeTrackerRow } from "@/components/initiativeTracker/InitiativeTrackerRow";
 import type { InitiativeTrackerRow as InitiativeTrackerRowType } from "@/store/slices/sessionSlice";
 
 const labels = {

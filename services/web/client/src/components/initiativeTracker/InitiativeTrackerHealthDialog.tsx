@@ -7,7 +7,7 @@ import CharacterService from "@/services/CharacterService";
 import type { NPC, Player } from "@/types/character";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import { isPlayer } from "@/utils/global.utils";
-import { trackerStatusFieldsFromCharacter } from "./utils";
+import { trackerStatusFieldsFromCharacter } from "@/components/initiativeTracker/utils";
 import {
   Dialog,
   DialogContent,

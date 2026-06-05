@@ -13,8 +13,8 @@ import {
   trackerKindFromCharacter,
   trackerMirrorFieldsFromCharacter,
   trackerStatusFieldsFromCharacter,
-} from "../utils";
-import { SESSION_PARTICIPANTS_GROUP_ID } from "../constants";
+} from "@/components/initiativeTracker/utils";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import type { Character, NPC, Player } from "@/types/character";
 

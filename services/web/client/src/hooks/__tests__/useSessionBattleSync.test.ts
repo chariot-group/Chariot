@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shouldBroadcastBattleStateSnapshot } from "../useSessionBattleSync";
+import { shouldBroadcastBattleStateSnapshot } from "@/hooks/useSessionBattleSync";
 
 describe("FR-015 / FR-017 — battle state realtime broadcast gate", () => {
   it("edge: keeps initialized-but-not-started combat GM-only", () => {

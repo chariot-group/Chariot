@@ -13,19 +13,19 @@ import type {
   InitiativeTrackerConditionEntry,
   InitiativeTrackerRow as InitiativeTrackerRowType,
 } from "@/store/slices/sessionSlice";
-import { ConditionSelect } from "./ConditionSelect";
-import { HiddenFieldPlaceholder } from "./HiddenFieldPlaceholder";
+import { ConditionSelect } from "@/components/initiativeTracker/ConditionSelect";
+import { HiddenFieldPlaceholder } from "@/components/initiativeTracker/HiddenFieldPlaceholder";
 import {
   InitiativeTrackerVisibilityDialog,
   VisibilityTriggerButton,
-} from "./InitiativeTrackerVisibilityDialog";
+} from "@/components/initiativeTracker/InitiativeTrackerVisibilityDialog";
 import {
   SESSION_PARTICIPANTS_GROUP_ID,
   TRACKER_CELL_ALIGN,
   TRACKER_GRID_TEMPLATE_COLUMNS,
-} from "./constants";
-import { CONDITION_META } from "./conditionMeta";
-import type { ActiveInitiativeTrackerCondition } from "./types";
+} from "@/components/initiativeTracker/constants";
+import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
+import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import {
   characterName,
   getInitiativeTrackerRowStatus,
@@ -33,8 +33,8 @@ import {
   resolvePlayerTrackerDisplayName,
   shouldShowGmPlayerAliasSubtitle,
   type InitiativeTrackerRowStatus,
-} from "./utils";
-import { InitiativeNumberInput } from "./InitiativeNumberInput";
+} from "@/components/initiativeTracker/utils";
+import { InitiativeNumberInput } from "@/components/initiativeTracker/InitiativeNumberInput";
 
 type InitiativeTrackerRowProps = {
   row: InitiativeTrackerRowType;

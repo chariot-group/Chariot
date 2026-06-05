@@ -1,7 +1,7 @@
 import type { Character, Player } from "@/types/character";
 import type { BattleStateSnapshot, InitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import { isPlayer } from "@/utils/global.utils";
-import { SESSION_PARTICIPANTS_GROUP_ID } from "./constants";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 
 /**
  * FR-014 — seuil d'\u00e9checs aux jets de mort \u00e0 partir duquel un PJ \u00e0 0 PV est consid\u00e9r\u00e9 mort.

@@ -3,7 +3,7 @@ import {
   emitCharacterSheetUpdated,
   registerLocalCharacterSheetUpdatedListener,
   registerSessionSyncSocket,
-} from "../sessionCharacterSyncBridge";
+} from "@/lib/sessionCharacterSyncBridge";
 
 describe("sessionCharacterSyncBridge — local sheet sync (FR-016)", () => {
   it("nominal: notifies the local listener when the GM saves a player sheet", () => {

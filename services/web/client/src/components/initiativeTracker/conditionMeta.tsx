@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import type { LucideProps } from "lucide-react";
 import { spiderWeb } from "@lucide/lab";
-import type { ActiveInitiativeTrackerCondition } from "./types";
+import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 
 export type ConditionMeta = {
   Icon: React.ComponentType<LucideProps>;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { useInitiativeTextInput } from "./useInitiativeTextInput";
+import { useInitiativeTextInput } from "@/components/initiativeTracker/useInitiativeTextInput";
 
 const INITIATIVE_INPUT_CLASS =
   "h-9 w-full max-w-[88px] rounded-[15px] bg-gray-middle-light px-3 text-center text-sm font-normal tabular-nums text-white";

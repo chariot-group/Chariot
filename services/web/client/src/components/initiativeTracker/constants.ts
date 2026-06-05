@@ -1,5 +1,5 @@
-import type { ActiveInitiativeTrackerCondition } from "./types";
-import { ROUND_DURATION_SECONDS } from "./conditionDuration";
+import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
+import { ROUND_DURATION_SECONDS } from "@/components/initiativeTracker/conditionDuration";
 
 export { ROUND_DURATION_SECONDS };
 

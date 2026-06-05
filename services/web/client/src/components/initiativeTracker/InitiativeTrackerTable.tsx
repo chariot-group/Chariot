@@ -13,17 +13,17 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { InitiativeTrackerBulkVisibilityDialog } from "./InitiativeTrackerBulkVisibilityDialog";
-import { InitiativeTrackerGroupedInitiativeBar } from "./InitiativeTrackerGroupedInitiativeBar";
-import { InitiativeTrackerRow as InitiativeTrackerRowComponent } from "./InitiativeTrackerRow";
+import { InitiativeTrackerBulkVisibilityDialog } from "@/components/initiativeTracker/InitiativeTrackerBulkVisibilityDialog";
+import { InitiativeTrackerGroupedInitiativeBar } from "@/components/initiativeTracker/InitiativeTrackerGroupedInitiativeBar";
+import { InitiativeTrackerRow as InitiativeTrackerRowComponent } from "@/components/initiativeTracker/InitiativeTrackerRow";
 import {
   TRACKER_GRID_TEMPLATE_COLUMNS,
   TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION,
   PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS,
   TRACKER_HEADER_ALIGN,
-} from "./constants";
-import type { ActiveInitiativeTrackerCondition } from "./types";
-import type { InitiativeTrackerRowStatus } from "./utils";
+} from "@/components/initiativeTracker/constants";
+import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
+import type { InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
 
 type InitiativeTrackerTableProps = {
   rows: InitiativeTrackerRow[];

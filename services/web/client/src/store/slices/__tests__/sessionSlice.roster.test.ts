@@ -8,7 +8,7 @@ import sessionReducer, {
   setInitiativeTrackerRows,
   startBattle,
   type InitiativeTrackerRow,
-} from "../sessionSlice";
+} from "@/store/slices/sessionSlice";
 
 const buildRow = (overrides: Partial<InitiativeTrackerRow> & { id: string }): InitiativeTrackerRow =>
   createInitiativeTrackerRow({

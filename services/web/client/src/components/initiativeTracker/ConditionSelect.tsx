@@ -25,10 +25,10 @@ import type {
   InitiativeTrackerConditionEntry,
   InitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
-import { CONDITIONS } from "./constants";
-import { CONDITION_META } from "./conditionMeta";
-import type { ActiveInitiativeTrackerCondition } from "./types";
-import { clampConditionIndex } from "./utils";
+import { CONDITIONS } from "@/components/initiativeTracker/constants";
+import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
+import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
+import { clampConditionIndex } from "@/components/initiativeTracker/utils";
 
 type ConditionSelectProps = {
   row: InitiativeTrackerRow;

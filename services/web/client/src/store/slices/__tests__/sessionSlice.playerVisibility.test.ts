@@ -11,7 +11,7 @@ import sessionReducer, {
   updateInitiativeTrackerRow,
   updateInitiativeTrackerRowsBulk,
   type InitiativeTrackerRow,
-} from "../sessionSlice";
+} from "@/store/slices/sessionSlice";
 import { filterRowsForPlayerView } from "@/components/initiativeTracker/utils";
 
 const buildRow = (
