@@ -113,8 +113,10 @@ export function CheckoutForm({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-card-foreground truncate">{product.name}</p>
-              {product.description && <p className="text-xs text-muted-foreground truncate">{product.description}</p>}
+              <p className="font-semibold text-card-foreground truncate">{tShop(product.name)}</p>
+              {product.description && (
+                <p className="text-xs text-muted-foreground truncate">{tShop(product.description)}</p>
+              )}
             </div>
             {tokenCount !== null && (
               <div className="flex flex-col items-end gap-0.5 shrink-0">

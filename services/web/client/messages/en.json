@@ -196,9 +196,8 @@
     "recommended": "Recommended",
     "payPerUnit": "Pay per unit ({price}€)",
     "custom": {
-      "name": "OUR 3 PACKS",
-      "description": "Each of our offers is specially designed for the most epic adventure.",
-      "cta": "Custom amount"
+      "name": "CUSTOM PACK",
+      "description": "Create your own token pack by choosing the quantity that suits you best."
     },
     "explorator": {
       "name": "EXPLORER PACK",

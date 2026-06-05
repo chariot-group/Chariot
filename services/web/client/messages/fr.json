@@ -197,9 +197,8 @@
     "recommended": "Recommandé",
     "payPerUnit": "Payer à l'unité ({price}€)",
     "custom": {
-      "name": "NOS 3 PACKS",
-      "description": "Chacune de nos offres est conçue spécialement pour la plus épique des aventures.",
-      "cta": "Montant personnalisé"
+      "name": "PACK PERSONNALISÉ",
+      "description": "Créer votre propre pack de tokens en choisissant la quantité qui vous convient le mieux."
     },
     "explorator": {
       "name": "PACK EXPLORATEUR",
