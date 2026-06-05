@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, RefreshCw, Search, RotateCcw } from "lucide-react";
+import { Plus, Pencil, Power, PowerOff, RefreshCw, Search } from "lucide-react";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
@@ -447,7 +447,7 @@ export default function PromoCodesPage() {
                             className="h-7 w-7 text-destructive hover:text-destructive"
                             aria-label={`Désactiver le code promo ${p.code}`}
                             onClick={() => handleDeactivate(p.id, p.code)}>
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <PowerOff className="h-3.5 w-3.5" />
                           </Button>
                         ) : (
                           <Button
@@ -456,7 +456,7 @@ export default function PromoCodesPage() {
                             className="h-7 w-7 text-(--green) hover:text-(--green)"
                             aria-label={`Réactiver le code promo ${p.code}`}
                             onClick={() => handleReactivate(p.id, p.code)}>
-                            <RotateCcw className="h-3.5 w-3.5" />
+                            <Power className="h-3.5 w-3.5" />
                           </Button>
                         )}
                       </div>

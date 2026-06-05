@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, RefreshCw, Search, RotateCcw } from "lucide-react";
+import { Plus, Pencil, Power, PowerOff, RefreshCw, Search } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
@@ -403,7 +403,7 @@ export default function AffiliationsPage() {
                             className="h-7 w-7 text-destructive hover:text-destructive"
                             aria-label={`Désactiver l'affiliation ${a.code}`}
                             onClick={() => handleDeactivate(a.id, a.code)}>
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <PowerOff className="h-3.5 w-3.5" />
                           </Button>
                         ) : (
                           <Button
@@ -412,7 +412,7 @@ export default function AffiliationsPage() {
                             className="h-7 w-7 text-(--green) hover:text-(--green)"
                             aria-label={`Réactiver l'affiliation ${a.code}`}
                             onClick={() => handleReactivate(a.id, a.code)}>
-                            <RotateCcw className="h-3.5 w-3.5" />
+                            <Power className="h-3.5 w-3.5" />
                           </Button>
                         )}
                       </div>
