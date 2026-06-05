@@ -23,14 +23,14 @@ export const CONDITIONS: ActiveInitiativeTrackerCondition[] = [
 export const SESSION_PARTICIPANTS_GROUP_ID = "__session_participants__";
 
 export const TRACKER_GRID_TEMPLATE_COLUMNS =
-  "88px minmax(160px, 1.25fr) 96px 56px minmax(130px, 0.85fr) minmax(120px, 0.75fr) 72px";
+  "minmax(52px, 72px) minmax(92px, 1.15fr) minmax(72px, 88px) minmax(40px, 48px) minmax(96px, 0.95fr) minmax(0, 0.9fr) 44px";
 
 export const TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION =
-  "40px 88px minmax(160px, 1.25fr) 96px 56px minmax(130px, 0.85fr) minmax(120px, 0.75fr) 72px";
+  "32px minmax(52px, 72px) minmax(92px, 1.15fr) minmax(72px, 88px) minmax(40px, 48px) minmax(96px, 0.95fr) minmax(0, 0.9fr) 44px";
 
 /** FR-015 — grille sans colonne visibilité MJ (vue joueur). */
 export const PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS =
-  "88px minmax(160px, 1.25fr) 96px 56px minmax(130px, 0.85fr) minmax(120px, 0.75fr)";
+  "minmax(52px, 72px) minmax(92px, 1.15fr) minmax(72px, 88px) minmax(40px, 48px) minmax(96px, 0.95fr) minmax(0, 0.9fr)";
 
 /** Classes d'alignement par colonne (initiative, perso, pv, ca, état, groupe [, visibilité]). */
 export const TRACKER_CELL_ALIGN = {
@@ -52,4 +52,3 @@ export const TRACKER_HEADER_ALIGN = {
   group: "text-left",
   visible: "text-center",
 } as const;
-

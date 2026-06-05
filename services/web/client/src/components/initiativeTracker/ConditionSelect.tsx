@@ -237,7 +237,7 @@ export function ConditionSelect({
   const pendingDescription = pendingCondition ? getConditionDescription(pendingCondition) : "";
 
   return (
-    <div className="flex min-w-0 items-center gap-2 pr-3">
+    <div className="flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden pr-0 sm:pr-2">
       <DropdownMenu onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button
@@ -251,7 +251,7 @@ export function ConditionSelect({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-80 border-white/10 bg-card p-3 text-white">
+          className="w-[min(calc(100vw-2rem),20rem)] border-white/10 bg-card p-3 text-white">
           {pendingCondition && pendingMeta ? (
             <div className="flex flex-col gap-3">
               <button
@@ -447,11 +447,11 @@ export function ConditionSelect({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 overflow-hidden">
         {rowConditions.length === 0 ? (
-          <span className="text-sm text-white/70">{getConditionLabel("none")}</span>
+          <span className="block min-w-0 truncate text-sm text-white/70">{getConditionLabel("none")}</span>
         ) : (
-          rowConditions.map((entry) => {
+          rowConditions.map((entry, index) => {
             const { Icon, badgeClassName } = CONDITION_META[entry.condition];
             const conditionLabel = getConditionLabel(entry.condition);
             const conditionDescription = getConditionDescription(entry.condition);
@@ -461,7 +461,8 @@ export function ConditionSelect({
               <span
                 key={entry.condition}
                 className={cn(
-                  "inline-flex max-w-[220px] items-center gap-1 rounded-full border py-1 pl-2 pr-1 text-xs font-medium",
+                  "inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border py-1 pl-2 pr-1 text-xs font-medium md:max-w-[8.5rem] lg:max-w-[11rem] xl:max-w-[13rem]",
+                  index > 0 && "md:hidden lg:inline-flex",
                   badgeClassName,
                 )}
                 title={badgeText}>
@@ -469,16 +470,25 @@ export function ConditionSelect({
                   aria-hidden="true"
                   className="size-3.5 shrink-0"
                 />
-                <span className="min-w-0 flex-1 truncate">{badgeText}</span>
+                <span className={cn("min-w-0 flex-1 truncate", rowConditions.length > 1 && "md:sr-only lg:not-sr-only")}>
+                  {badgeText}
+                </span>
                 <ConditionInfoButton
                   label={conditionLabel}
                   description={conditionDescription}
-                  className="size-5"
+                  className={cn("size-5", rowConditions.length > 1 && "md:hidden lg:inline-flex")}
                 />
               </span>
             );
           })
         )}
+        {rowConditions.length > 1 ? (
+          <span
+            className="hidden size-6 items-center justify-center rounded-full border border-white/15 bg-white/5 text-xs font-semibold leading-none text-white/60 md:inline-flex lg:hidden"
+            aria-label="Plus d'états">
+            <span aria-hidden="true">...</span>
+          </span>
+        ) : null}
       </div>
     </div>
   );

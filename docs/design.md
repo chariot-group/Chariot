@@ -186,6 +186,18 @@ Breakpoints observed in most UI areas:
   - Container padding scales (`px-3 sm:px-5 lg:px-8`)
   - Table width is constrained (`max-w-[1520px]`)
 
+## 6.4 Overflow and Text Containment
+
+Responsive layouts must never allow visible text or controls to escape their parent container.
+
+- Dense rows, tables, cards, toolbars, and dialogs must define explicit min/max constraints for each column or region (`minmax(0, 1fr)`, bounded fixed columns, `max-w-full`, `min-w-0`).
+- Long names, labels, translated strings, and dynamic user content must use a deliberate strategy per context:
+  - `truncate` for single-line scan fields such as table cells, headers, names, groups, and compact metadata.
+  - `break-words` or wrapping badges for detail panels, expanded cards, and places where complete content is more important than row height.
+  - Icon-only responsive buttons with accessible names when mobile width cannot support visible labels.
+- Horizontal scrolling is a last resort for intentionally wide inspection surfaces only. Primary workflows such as combat rows, forms, and action controls must reflow, truncate, or collapse details instead of creating accidental page-level horizontal scroll.
+- Responsive verification must include the smallest supported mobile width and tablet widths with long translated labels and long dynamic content.
+
 ## 7. Observed Visual Accessibility Patterns
 
 - Visible focus styling exists on interactive primitives (`focus-visible:ring-*`, `focus-visible:border-*`)
@@ -200,7 +212,8 @@ Breakpoints observed in most UI areas:
 4. Preserve the established typography hierarchy (`text-xs` to `text-3xl`) with progressive breakpoint scaling.
 5. Preserve the rounded corner language (`rounded-[13px]`/`rounded-[15px]`) for interactive controls.
 6. For every new page/feature, explicitly define responsive behavior across `sm`, `md`, `lg`, and `xl` when relevant.
-7. If a deliberate deviation from this baseline is required, document the exception in this file before generalizing it.
+7. Prevent horizontal overflow and text escape by design: define column bounds, use `min-w-0`, apply `truncate`/wrapping intentionally, and verify long content at mobile and tablet widths.
+8. If a deliberate deviation from this baseline is required, document the exception in this file before generalizing it.
 
 ## 9. Frontend Accessibility Baseline (Mandatory for Every Front Ticket)
 
@@ -270,4 +283,3 @@ Use this checklist as a completion gate for every frontend ticket.
 Recommended final note format in ticket completion:
 
 `Frontend DoD passed: design baseline, accessibility checks, and responsive validation completed.`
-

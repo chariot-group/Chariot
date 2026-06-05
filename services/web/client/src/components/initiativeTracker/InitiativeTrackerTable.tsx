@@ -14,7 +14,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { InitiativeTrackerGroupedInitiativeBar } from "./InitiativeTrackerGroupedInitiativeBar";
 import { InitiativeTrackerRow as InitiativeTrackerRowComponent } from "./InitiativeTrackerRow";
-import { TRACKER_GRID_TEMPLATE_COLUMNS, TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION, PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS, TRACKER_HEADER_ALIGN } from "./constants";
+import {
+  TRACKER_GRID_TEMPLATE_COLUMNS,
+  TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION,
+  PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS,
+  TRACKER_HEADER_ALIGN,
+} from "./constants";
 import type { ActiveInitiativeTrackerCondition } from "./types";
 import type { InitiativeTrackerRowStatus } from "./utils";
 
@@ -57,10 +62,17 @@ type InitiativeTrackerTableProps = {
     conditionRoundHint: string;
     visibleFor: string;
     playerDisplayNameSubtitle: string;
+    hitPointsFor: string;
+    hitPointsSessionTooltip: string;
+    hpAbbr: string;
     hiddenField: string;
     otherGroup: string;
     viewOwnSheet: string;
     onlyOwnCharacterSheet: string;
+    expandDetails: string;
+    collapseDetails: string;
+    detailsFor: string;
+    activeTurn: string;
     visibilityDialog: {
       title: string;
       showToPlayers: string;
@@ -78,6 +90,8 @@ type InitiativeTrackerTableProps = {
       apply: string;
       cancel: string;
       configureFor: string;
+      leaveInitiative: string;
+      playerRowVisibilityHint: string;
     };
     selectRowFor: string;
     getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => string;
@@ -124,6 +138,7 @@ export function InitiativeTrackerTable({
   const isPlayerView = mode === "player";
   const [groupedInitiativeActive, setGroupedInitiativeActive] = React.useState(false);
   const [selectedRowIds, setSelectedRowIds] = React.useState<Set<string>>(() => new Set());
+  const [expandedRowIds, setExpandedRowIds] = React.useState<Set<string>>(() => new Set());
   const groupedInitiativeAvailable = !isPlayerView && !initiativeLocked && groupedInitiativeLabels != null;
   const selectionEnabled = groupedInitiativeAvailable && groupedInitiativeActive;
   const gridTemplateColumns = isPlayerView
@@ -137,12 +152,6 @@ export function InitiativeTrackerTable({
     setSelectedRowIds(new Set());
   }, []);
 
-  React.useEffect(() => {
-    if (!groupedInitiativeAvailable) {
-      exitGroupedInitiativeMode();
-    }
-  }, [groupedInitiativeAvailable, exitGroupedInitiativeMode]);
-
   const toggleRowSelection = (rowId: string, selected: boolean) => {
     setSelectedRowIds((current) => {
       const next = new Set(current);
@@ -150,6 +159,18 @@ export function InitiativeTrackerTable({
         next.add(rowId);
       } else {
         next.delete(rowId);
+      }
+      return next;
+    });
+  };
+
+  const toggleRowExpanded = (rowId: string) => {
+    setExpandedRowIds((current) => {
+      const next = new Set(current);
+      if (next.has(rowId)) {
+        next.delete(rowId);
+      } else {
+        next.add(rowId);
       }
       return next;
     });
@@ -203,14 +224,14 @@ export function InitiativeTrackerTable({
 
   return (
     <div className="w-full min-w-0">
-      <div className="w-full overflow-hidden rounded-[24px] bg-card text-lg font-bold text-white shadow-xl">
+      <div className="hidden w-full max-w-full min-w-0 overflow-hidden rounded-[24px] bg-card text-sm font-bold text-white shadow-xl lg:text-lg md:block">
         <div
-          className="grid w-full items-center gap-x-3 px-5 py-3"
+          className="grid w-full max-w-full min-w-0 items-center gap-x-2 px-3 py-3 lg:gap-x-3 lg:px-5"
           style={{ gridTemplateColumns }}>
           {selectionEnabled ? (
             <Checkbox
               checked={allRowsSelected ? true : someRowsSelected ? "indeterminate" : false}
-              aria-label={groupedInitiativeLabels.selectAllRows}
+              aria-label={groupedInitiativeLabels?.selectAllRows ?? ""}
               onCheckedChange={(checked) => {
                 if (checked === true) {
                   setSelectedRowIds(new Set(rows.map((row) => row.id)));
@@ -221,19 +242,21 @@ export function InitiativeTrackerTable({
               className="size-5 cursor-pointer justify-self-center"
             />
           ) : null}
-          <span className={`flex items-center justify-center gap-1.5 ${TRACKER_HEADER_ALIGN.initiative}`}>
-            <span>{columnLabels.initiative}</span>
+          <span className={`flex min-w-0 items-center justify-center gap-1.5 ${TRACKER_HEADER_ALIGN.initiative}`}>
+            <span className="min-w-0 truncate">{columnLabels.initiative}</span>
             {groupedInitiativeToggle}
           </span>
-          <span className={TRACKER_HEADER_ALIGN.character}>{columnLabels.character}</span>
-          <span className={TRACKER_HEADER_ALIGN.hitPoints}>{columnLabels.hitPoints}</span>
-          <span className={TRACKER_HEADER_ALIGN.armorClass}>{columnLabels.armorClass}</span>
-          <span className={TRACKER_HEADER_ALIGN.condition}>{columnLabels.condition}</span>
-          <span className={TRACKER_HEADER_ALIGN.group}>{columnLabels.group}</span>
-          {!isPlayerView ? <span className={TRACKER_HEADER_ALIGN.visible}>{columnLabels.visible}</span> : null}
+          <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.character}`}>{columnLabels.character}</span>
+          <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.hitPoints}`}>{columnLabels.hitPoints}</span>
+          <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.armorClass}`}>{columnLabels.armorClass}</span>
+          <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.condition}`}>{columnLabels.condition}</span>
+          <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.group}`}>{columnLabels.group}</span>
+          {!isPlayerView ? (
+            <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.visible}`}>{columnLabels.visible}</span>
+          ) : null}
         </div>
 
-        {groupedInitiativeActive ? (
+        {groupedInitiativeActive && groupedInitiativeLabels ? (
           <div className="w-full border-t border-white/10 px-5 py-2.5">
             <InitiativeTrackerGroupedInitiativeBar
               active={groupedInitiativeActive}
@@ -265,6 +288,8 @@ export function InitiativeTrackerTable({
             isSelected={selectedRowIds.has(row.id)}
             onSelectionChange={(selected) => toggleRowSelection(row.id, selected)}
             selectRowLabel={selectionEnabled ? getRowLabels(row).selectRowFor : undefined}
+            isExpanded={expandedRowIds.has(row.id)}
+            onToggleExpanded={() => toggleRowExpanded(row.id)}
             gridTemplateColumns={gridTemplateColumns}
             getSheetHref={isPlayerView ? undefined : getSheetHref}
             onUpdateRow={isPlayerView ? undefined : onUpdateRow}

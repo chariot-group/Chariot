@@ -217,6 +217,10 @@ export default function InitiativeTrackerPage() {
       playerDisplayNameSubtitle: t("playerDisplayNameSubtitle"),
       hiddenField: t("hiddenField"),
       otherGroup: t("otherGroup"),
+      expandDetails: t("expandDetails", { name }),
+      collapseDetails: t("collapseDetails", { name }),
+      detailsFor: t("detailsFor", { name }),
+      activeTurn: t("activeTurn"),
       visibilityDialog: {
         title: t("visibilityDialog.title"),
         showToPlayers: t("visibilityDialog.showToPlayers"),
@@ -282,7 +286,7 @@ export default function InitiativeTrackerPage() {
   }
 
   return (
-    <main className="flex-1 overflow-auto px-3 py-3 sm:px-5 lg:px-8">
+    <main className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 sm:px-5 lg:px-8">
       <div className="mx-auto flex w-full max-w-[1520px] flex-col gap-3">
         {!isGameMaster ? (
           <p
@@ -292,28 +296,31 @@ export default function InitiativeTrackerPage() {
           </p>
         ) : null}
 
-        {battleStarted && (
-          <div className="flex justify-center">
-            <div className="rounded-full bg-card px-5 py-2 text-base font-bold text-white shadow-lg">
-              {t("roundIndicator", { round: currentRound })}
-            </div>
-          </div>
-        )}
+        {(battleStarted || isGameMaster) ? (
+          <div className="flex min-w-0 items-center justify-between gap-2">
+            {battleStarted ? (
+              <div className="min-w-0 rounded-full bg-card px-4 py-2 text-sm font-bold text-white shadow-lg sm:px-5 sm:text-base">
+                <span className="block truncate">{t("roundIndicator", { round: currentRound })}</span>
+              </div>
+            ) : (
+              <span aria-hidden="true" />
+            )}
 
-        {isGameMaster ? (
-          <div className="flex justify-end">
-            <AddCombatantsDialog>
-              <Button
-                type="button"
-                variant="outline"
-                className="gap-2 rounded-[15px]">
-                <UserPlus
-                  className="size-4"
-                  aria-hidden="true"
-                />
-                {tInit("addCombatants")}
-              </Button>
-            </AddCombatantsDialog>
+            {isGameMaster ? (
+              <AddCombatantsDialog>
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-label={tInit("addCombatants")}
+                  className="gap-2 rounded-[15px] px-3 sm:px-4">
+                  <UserPlus
+                    className="size-4"
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only sm:not-sr-only">{tInit("addCombatants")}</span>
+                </Button>
+              </AddCombatantsDialog>
+            ) : null}
           </div>
         ) : null}
 
@@ -370,8 +377,6 @@ export default function InitiativeTrackerPage() {
                   previousHintAvailable: t("previousTurnHintAvailable"),
                   previousHintLocked: t("previousTurnHintLocked"),
                   previousHintNoPrevious: t("previousTurnHintNoPrevious"),
-                  turnUndoAvailable: t("turnUndoAvailable"),
-                  turnCurrentLocked: t("turnCurrentLocked"),
                 }}
                 onStartCombat={() => dispatch(startBattle())}
                 onEndCombat={() => dispatch(endBattle())}

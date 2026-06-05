@@ -63,14 +63,14 @@ export function AddCombatantsGroupMembers({
   return (
     <div className="mt-3 flex flex-col gap-2.5">
       <div
-        className="grid items-center gap-x-3 px-1 text-xs font-semibold uppercase tracking-wide text-white/55"
-        style={{ gridTemplateColumns: ADD_COMBATANTS_MEMBER_GRID }}>
+        className="hidden items-center gap-x-3 px-1 text-xs font-semibold uppercase tracking-wide text-white/55 sm:grid sm:grid-cols-[var(--member-grid)]"
+        style={{ "--member-grid": ADD_COMBATANTS_MEMBER_GRID } as React.CSSProperties}>
         <span className="text-center">{labels.initiative}</span>
         <span className="text-left">{labels.character}</span>
         <span aria-hidden="true" />
       </div>
 
-      <div className="rounded-[22px] bg-gray-middle-light/40 px-4 py-3">
+      <div className="rounded-[22px] bg-gray-middle-light/40 px-3 py-3 sm:px-4">
         <InitiativeTrackerGroupedInitiativeBar
           active
           canApply={includedCount > 0}
@@ -93,9 +93,18 @@ export function AddCombatantsGroupMembers({
           return (
             <div
               key={member._id}
-              className="grid w-full min-w-0 items-center gap-x-3 rounded-[22px] bg-gray px-4 py-2.5 text-white shadow-lg"
-              style={{ gridTemplateColumns: ADD_COMBATANTS_MEMBER_GRID }}>
-              <div className="flex w-full justify-center">
+              className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 rounded-[22px] bg-gray px-3 py-3 text-white shadow-lg sm:grid-cols-[var(--member-grid)] sm:items-center sm:px-4 sm:py-2.5"
+              style={{ "--member-grid": ADD_COMBATANTS_MEMBER_GRID } as React.CSSProperties}>
+              <span className="min-w-0 break-words text-base font-semibold sm:hidden">{memberName}</span>
+
+              <Checkbox
+                checked={included}
+                aria-label={memberName}
+                onCheckedChange={(checked) => onToggleMember(member._id, Boolean(checked))}
+                className="size-5 cursor-pointer justify-self-end sm:hidden"
+              />
+
+              <div className="col-span-2 flex w-full justify-start sm:col-span-1 sm:justify-center">
                 {included ? (
                   <InitiativeNumberInput
                     value={resolveInitiative(member._id)}
@@ -113,13 +122,13 @@ export function AddCombatantsGroupMembers({
                 )}
               </div>
 
-              <span className="min-w-0 truncate text-base font-semibold">{memberName}</span>
+              <span className="hidden min-w-0 truncate text-base font-semibold sm:block">{memberName}</span>
 
               <Checkbox
                 checked={included}
                 aria-label={memberName}
                 onCheckedChange={(checked) => onToggleMember(member._id, Boolean(checked))}
-                className="size-5 cursor-pointer justify-self-center"
+                className="hidden size-5 cursor-pointer justify-self-center sm:block"
               />
             </div>
           );

@@ -30,11 +30,7 @@ export function InitiativeTrackerGroupedInitiativeBar({
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (!active) {
-      setValue("");
-      return;
-    }
-    inputRef.current?.focus();
+    if (active) inputRef.current?.focus();
   }, [active]);
 
   const handleApply = () => {
@@ -46,10 +42,10 @@ export function InitiativeTrackerGroupedInitiativeBar({
   };
 
   return (
-    <div className="flex w-full min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-      <span className="shrink-0 text-sm font-medium text-white/85">{labels.selectedCount}</span>
-      <div className="flex shrink-0 items-center gap-1.5">
-        <div className="w-[88px] shrink-0">
+    <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+      <span className="min-w-0 text-sm font-medium text-white/85 sm:shrink-0">{labels.selectedCount}</span>
+      <div className="flex min-w-0 items-center gap-1.5">
+        <div className="w-[88px] shrink-0 max-[360px]:w-[76px]">
           <Input
             ref={inputRef}
             type="number"

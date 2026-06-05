@@ -48,6 +48,7 @@ type BattleGroupCharacter = {
   stats?: {
     currentHitPoints?: number;
     maxHitPoints?: number;
+    tempHitPoints?: number;
     armorClass?: number;
     initiative?: number;
   };
@@ -460,6 +461,10 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           .map((member) => {
             const character = detailsById.get(member._id) ?? member;
             const stats = character.stats;
+            const currentHitPoints = stats?.currentHitPoints;
+            const maxHitPoints = stats?.maxHitPoints;
+            const tempHitPoints = stats?.tempHitPoints;
+            const armorClass = stats?.armorClass;
             const firstname = character.firstname ?? "";
             const lastname = character.lastname ?? "";
             const surname = character.surname ?? "";
@@ -484,12 +489,12 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               lastname,
               surname,
               avatar: character.avatar ?? "",
-              hitPoints: Number.isFinite(stats?.currentHitPoints)
-                ? Number(stats?.currentHitPoints)
-                : Number(stats?.maxHitPoints ?? 0),
-              maxHitPoints: Number.isFinite(stats?.maxHitPoints) ? Number(stats.maxHitPoints) : 0,
-              tempHitPoints: Number.isFinite(stats?.tempHitPoints) ? Number(stats.tempHitPoints) : 0,
-              armorClass: Number.isFinite(stats?.armorClass) ? Number(stats?.armorClass) : 0,
+              hitPoints: Number.isFinite(currentHitPoints)
+                ? Number(currentHitPoints)
+                : Number(maxHitPoints ?? 0),
+              maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
+              tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
+              armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
               kind,
               deathSavesFailures,
             });
@@ -511,14 +516,14 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
       open={open}
       onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-4xl h-[85vh] !flex flex-col">
+      <DialogContent className="!flex h-[min(90dvh,820px)] flex-col p-4 sm:max-w-4xl sm:p-6">
         <DialogHeader>
           <DialogTitle>{t("initBattleDialogTitle")}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <div className="grid gap-4 grid-cols-1 items-start h-full">
-            <Card className="gap-4 p-4 sm:p-5 h-full bg-transparent !flex !flex-col">
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="grid h-full grid-cols-1 items-start gap-4">
+            <Card className="!flex h-full gap-4 bg-transparent p-3 sm:p-5">
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                   <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
@@ -554,7 +559,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                 />
               </div>
 
-              <div className="space-y-2 h-full">
+              <div className="min-h-0 space-y-2">
                 {isLoading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="size-4 animate-spin" />
@@ -563,7 +568,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                 ) : selectedGroups.length === 0 ? (
                   <p className="text-sm text-muted-foreground">{t("initBattleNoGroupSelected")}</p>
                 ) : (
-                  <div className="max-h-[40vh] sm:max-h-[55vh] space-y-2 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                  <div className="max-h-[min(48dvh,24rem)] space-y-2 overflow-y-auto pr-2 scroll-smooth sm:max-h-[min(58dvh,32rem)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50">
                     {selectedGroups.map((group) => {
                       const members = group.characters ?? [];
                       const npcMembers = members.filter(isNpcCharacter);
@@ -635,9 +640,9 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                   return (
                                     <label
                                       key={member._id}
-                                      className="flex flex-col cursor-pointer">
-                                      <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-sm">
-                                        <span className="truncate">
+                                      className="flex cursor-pointer flex-col">
+                                      <div className="flex flex-col gap-2 px-2 py-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+                                        <span className="min-w-0 break-words sm:truncate">
                                           {formatCharacterName(member)}
                                           {isNpcCharacter(member) && getNpcCr(member) > 0 && (
                                             <span className="ml-1 text-xs text-muted-foreground">
@@ -661,7 +666,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                             </span>
                                           )}
                                         </span>
-                                        <span className="flex shrink-0 items-center gap-2">
+                                        <span className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
                                           <span className="text-xs text-muted-foreground">
                                             {t("initBattleInInitiative")}
                                           </span>

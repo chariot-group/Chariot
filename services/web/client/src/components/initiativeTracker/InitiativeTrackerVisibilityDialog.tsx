@@ -23,7 +23,6 @@ type FieldKey = keyof InitiativeTrackerPlayerFieldVisibility;
 
 type InitiativeTrackerVisibilityDialogProps = {
   row: InitiativeTrackerRow;
-  characterName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   labels: {
@@ -58,7 +57,6 @@ const FIELD_KEYS: FieldKey[] = [
 
 export function InitiativeTrackerVisibilityDialog({
   row,
-  characterName,
   open,
   onOpenChange,
   labels,

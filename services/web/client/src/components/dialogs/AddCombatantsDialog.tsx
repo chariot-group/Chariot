@@ -350,6 +350,10 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
           .map((member) => {
             const character = detailsById.get(member._id) ?? member;
             const stats = character.stats;
+            const currentHitPoints = stats?.currentHitPoints;
+            const maxHitPoints = stats?.maxHitPoints;
+            const tempHitPoints = stats?.tempHitPoints;
+            const armorClass = stats?.armorClass;
             const hydrated = detailsById.get(member._id);
             const isHydrated = hydrated != null && "stats" in hydrated && hydrated.stats != null;
             const kind = isHydrated
@@ -367,12 +371,12 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
               surname: character.surname ?? "",
               avatar: character.avatar ?? "",
               initiative: resolveMemberInitiative(member._id),
-              hitPoints: Number.isFinite(stats?.currentHitPoints)
-                ? Number(stats.currentHitPoints)
-                : Number(stats?.maxHitPoints ?? 0),
-              maxHitPoints: Number.isFinite(stats?.maxHitPoints) ? Number(stats.maxHitPoints) : 0,
-              tempHitPoints: Number.isFinite(stats?.tempHitPoints) ? Number(stats.tempHitPoints) : 0,
-              armorClass: Number.isFinite(stats?.armorClass) ? Number(stats.armorClass) : 0,
+              hitPoints: Number.isFinite(currentHitPoints)
+                ? Number(currentHitPoints)
+                : Number(maxHitPoints ?? 0),
+              maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
+              tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
+              armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
               kind,
               deathSavesFailures: isHydrated
                 ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
@@ -393,7 +397,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
       open={open}
       onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-3xl h-[80vh] !flex flex-col">
+      <DialogContent className="!flex h-[min(88dvh,760px)] flex-col p-4 sm:max-w-3xl sm:p-6">
         <DialogHeader>
           <DialogTitle>{t("addCombatantsDialogTitle")}</DialogTitle>
           {groupIdsInInitiative.size > 0 ? (
@@ -401,7 +405,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
           ) : null}
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col gap-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
           {eligibleGroups.length === 0 && !isLoading ? (
             <p className="text-sm text-muted-foreground">{t("addCombatantsNoEligible")}</p>
           ) : (
@@ -416,7 +420,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                 selectAllLabel={t("addCombatantsSelectAllGroups")}
               />
 
-              <div className="min-h-0 flex-1 overflow-y-auto space-y-2 pr-1">
+              <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
                 {isLoading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="size-4 animate-spin" />
