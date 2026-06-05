@@ -10,12 +10,16 @@ import {
     selectSessionCode,
     selectSessionCampaignId,
     selectSessionParticipants,
+    selectBattleInitialized,
+    selectInitiativeTrackerRows,
+    selectCharacterSheetRemoteVersions,
     clearCurrentSession,
     removeSessionParticipantByUserId,
     setSessionParticipants,
     setSessionExpiresAt,
     setSessionStatus,
     touchRemoteCharacterSheet,
+    updateInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
 import sessionService, {
     type ParticipantStatus,
@@ -23,8 +27,10 @@ import sessionService, {
     mapParticipantsFromSessionLaunchedPayload,
     parseExpiresAtFromLaunchedPayload,
 } from "@/services/SessionService";
+import CharacterService from "@/services/CharacterService";
 import { selectUser } from "@/store/slices/userSlice";
 import {
+    registerLocalCharacterSheetUpdatedListener,
     registerSessionRosterHttpSyncScheduler,
     registerSessionSyncSocket,
     requestSessionRosterHttpSync,
@@ -40,6 +46,7 @@ import {
 } from "@/lib/sessionSocketPool";
 import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
 import { useToast } from "@/hooks/useToast";
+import { trackerMirrorFieldsFromCharacter } from "@/components/initiativeTracker/utils";
 
 /** Évite les rafales HTTP lors des reconnexions Socket.IO rapprochées. */
 const ROSTER_HTTP_SYNC_DEBOUNCE_MS = 600;
@@ -72,6 +79,9 @@ export default function SessionCharacterSyncClient() {
     const code = useAppSelector(selectSessionCode);
     const campaignId = useAppSelector(selectSessionCampaignId);
     const participants = useAppSelector(selectSessionParticipants);
+    const battleInitialized = useAppSelector(selectBattleInitialized);
+    const initiativeTrackerRows = useAppSelector(selectInitiativeTrackerRows);
+    const remoteCharacterVersions = useAppSelector(selectCharacterSheetRemoteVersions);
     const user = useAppSelector(selectUser);
 
     const participantsRef = useRef(participants);
@@ -83,6 +93,7 @@ export default function SessionCharacterSyncClient() {
     const routerRef = useRef(router);
     const tRef = useRef(t);
     const hasProcessedSessionEndRef = useRef(false);
+    const lastSyncedVersionsRef = useRef<Map<string, number>>(new Map());
 
     useEffect(() => {
         participantsRef.current = participants;
@@ -100,6 +111,60 @@ export default function SessionCharacterSyncClient() {
             hasProcessedSessionEndRef.current = false;
         }
     }, [isInSession, code]);
+
+    useEffect(() => {
+        if (!isInSession || !code) {
+            lastSyncedVersionsRef.current.clear();
+            return;
+        }
+        const isGameMaster = participants.some(
+            (participant) => participant.userId === user?.keycloakId && participant.status === "gameMaster",
+        );
+        if (!isGameMaster || !battleInitialized || initiativeTrackerRows.length === 0) {
+            return;
+        }
+
+        const rowIdsByCharacterId = new Map<string, string[]>();
+        for (const row of initiativeTrackerRows) {
+            const rowIds = rowIdsByCharacterId.get(row.characterId) ?? [];
+            rowIds.push(row.id);
+            rowIdsByCharacterId.set(row.characterId, rowIds);
+        }
+
+        let cancelled = false;
+
+        rowIdsByCharacterId.forEach((rowIds, characterId) => {
+            const remoteVersion = remoteCharacterVersions[characterId] ?? 0;
+            const lastSeen = lastSyncedVersionsRef.current.get(characterId) ?? 0;
+            if (remoteVersion <= lastSeen) return;
+            lastSyncedVersionsRef.current.set(characterId, remoteVersion);
+
+            void CharacterService.getCharacterById(characterId, { sessionCode: code })
+                .then((character) => {
+                    if (cancelled) return;
+                    const changes = trackerMirrorFieldsFromCharacter(character);
+                    rowIds.forEach((rowId) => {
+                        dispatch(updateInitiativeTrackerRow({ id: rowId, changes }));
+                    });
+                })
+                .catch(() => {
+                    lastSyncedVersionsRef.current.set(characterId, lastSeen);
+                });
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        battleInitialized,
+        code,
+        dispatch,
+        initiativeTrackerRows,
+        isInSession,
+        participants,
+        remoteCharacterVersions,
+        user?.keycloakId,
+    ]);
 
     const isCurrentUserGameMaster = useEffectEvent(() => {
         const userId = userIdRef.current;
@@ -123,6 +188,21 @@ export default function SessionCharacterSyncClient() {
     useEffect(() => {
         setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
     }, [isInSession, code]);
+
+    /** FR-022 — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
+    useEffect(() => {
+        if (!isInSession) {
+            registerLocalCharacterSheetUpdatedListener(null);
+            return;
+        }
+        registerLocalCharacterSheetUpdatedListener((characterId) => {
+            const cid = characterId.trim();
+            if (cid) {
+                dispatch(touchRemoteCharacterSheet(cid));
+            }
+        });
+        return () => registerLocalCharacterSheetUpdatedListener(null);
+    }, [dispatch, isInSession]);
 
     useEffect(() => {
         if (!shouldConnect || !code || !token) {

@@ -1,0 +1,243 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { RefreshCw, Search } from "lucide-react";
+import { toast } from "react-toastify";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { KeycloakUserId } from "@/components/KeycloakUserId";
+import { StripeOrderId } from "@/components/StripeOrderId";
+import { formatCents, formatDate } from "@/lib/utils";
+import {
+  buildPaymentsParams,
+  getApiClient,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUS_VARIANT,
+  type Payment,
+} from "@/services";
+
+export default function PaymentsPage() {
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 25;
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = buildPaymentsParams(page, limit, statusFilter, search);
+      const res = await getApiClient().get("/payments", { params });
+      setPayments(res.data.data ?? []);
+      setTotal(res.data.pagination?.totalItems ?? 0);
+    } catch {
+      toast.error("Erreur lors du chargement des paiements", { toastId: "payments-load-error" });
+    } finally {
+      setLoading(false);
+    }
+  }, [page, statusFilter, search]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [load]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return (
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative flex-1 min-w-0 sm:min-w-48">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Filtrer par Keycloak ID utilisateur…"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="pl-8"
+          />
+        </div>
+
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v);
+            setPage(1);
+          }}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Tous les statuts" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les statuts</SelectItem>
+            <SelectItem value="COMPLETED">Complétés</SelectItem>
+            <SelectItem value="PENDING">En attente</SelectItem>
+            <SelectItem value="FAILED">Échoués</SelectItem>
+            <SelectItem value="REFUNDED">Remboursés</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={load}
+          disabled={loading}>
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+
+      {/* Table */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">
+            {total} paiement{total > 1 ? "s" : ""}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Utilisateur</TableHead>
+                <TableHead>Tokens achetés</TableHead>
+                <TableHead>Montant brut</TableHead>
+                <TableHead>Réduction</TableHead>
+                <TableHead>Parrainage</TableHead>
+                <TableHead>Montant final</TableHead>
+                <TableHead>Code promo</TableHead>
+                <TableHead>Affiliation</TableHead>
+                <TableHead>Order ID Stripe</TableHead>
+                <TableHead>Statut</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={11}
+                    className="text-center text-muted-foreground py-8">
+                    Chargement…
+                  </TableCell>
+                </TableRow>
+              ) : payments.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={11}
+                    className="text-center text-muted-foreground py-8">
+                    Aucun paiement trouvé
+                  </TableCell>
+                </TableRow>
+              ) : (
+                payments.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                      {formatDate(p.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      {p.userDisplayName ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm text-card-foreground">{p.userDisplayName}</span>
+                          <KeycloakUserId userId={p.userId} />
+                        </div>
+                      ) : (
+                        <KeycloakUserId
+                          userId={p.userId}
+                          className="max-w-28"
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-card-foreground">
+                      {p.tokenCount != null ? (
+                        <span className="font-medium">{p.tokenCount.toLocaleString()}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">{formatCents(p.amount)}</TableCell>
+                    <TableCell className="text-sm text-(--yellow)">
+                      {p.discountAmount > 0 ? `-${formatCents(p.discountAmount)}` : "—"}
+                    </TableCell>
+                    <TableCell>
+                      {p.referralDiscountType ? (
+                        <Badge variant={p.referralDiscountType === "referee" ? "secondary" : "outline"}>
+                          {p.referralDiscountType === "referee" ? "Filleul" : "Parrain"}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm font-medium text-card-foreground">
+                      {formatCents(p.finalAmount)}
+                    </TableCell>
+                    <TableCell>
+                      {p.promoCode ? (
+                        <code className="rounded bg-muted/30 px-1.5 py-0.5 text-xs font-mono text-card-foreground">
+                          {p.promoCode.code}
+                        </code>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {p.affiliation ? (
+                        <div>
+                          <code className="rounded bg-muted/30 px-1.5 py-0.5 text-xs font-mono text-card-foreground">
+                            {p.affiliation.code}
+                          </code>
+                          <p className="text-xs text-muted-foreground mt-0.5">{p.affiliation.creatorName}</p>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {p.stripeOrderId ? <StripeOrderId orderId={p.stripeOrderId} /> : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={PAYMENT_STATUS_VARIANT[p.status]}>{PAYMENT_STATUS_LABELS[p.status]}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs text-muted-foreground">
+          <span>
+            Page {page} sur {totalPages} — {total} résultat{total > 1 ? "s" : ""}
+          </span>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}>
+              Précédent
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}>
+              Suivant
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

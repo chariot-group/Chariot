@@ -96,14 +96,7 @@ export const emailsSentCounterProvider = makeCounterProvider({
   labelNames: ['type', 'status'], // type: 'welcome', 'reset-password', etc.
 });
 
-// 12. COMPTEUR: Paiements Stripe
-export const stripePaymentsCounterProvider = makeCounterProvider({
-  name: 'chariot_stripe_payments_total',
-  help: 'Total number of Stripe payments',
-  labelNames: ['status'], // 'success', 'failed', 'pending'
-});
-
-// 13. GAUGE: Connexions MongoDB
+// 12. GAUGE: Connexions MongoDB
 export const mongoConnectionsGaugeProvider = makeGaugeProvider({
   name: 'chariot_mongo_connections',
   help: 'Number of active MongoDB connections',

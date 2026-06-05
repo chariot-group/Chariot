@@ -68,11 +68,9 @@ class CharacterService {
                 { params: code ? { sessionCode: code } : undefined },
             );
             const updated = response.data.data as Player | NPC;
-            if (type === 'players') {
-                const snap = getSessionSnapshotForBroadcast();
-                if (snap) {
-                    emitCharacterSheetUpdated(snap.code, characterId);
-                }
+            const snap = getSessionSnapshotForBroadcast();
+            if (snap) {
+                emitCharacterSheetUpdated(snap.code, characterId);
             }
             return updated;
         } catch (error) {

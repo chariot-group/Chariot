@@ -1,0 +1,494 @@
+import {
+    Injectable,
+    Logger,
+    NotFoundException,
+    InternalServerErrorException,
+    HttpException,
+    BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from '@/prisma/prisma.service';
+import { IResponse, IPaginatedResponse } from '@/common/dtos/response.dto';
+import { CreatePaymentDto } from '@/resources/payment/dto/create-payment.dto';
+import { UpdatePaymentStatusDto } from '@/resources/payment/dto/update-payment-status.dto';
+import { CompletePaymentDto } from '@/resources/payment/dto/complete-payment.dto';
+import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
+import { AffiliationService } from '@/resources/affiliation/affiliation.service';
+import { KeycloakAdminService } from '@/common/services/keycloak-admin.service';
+import { Payment } from '@prisma/client';
+import {
+    calculateAffiliationDiscount,
+    calculateCommissionAmount,
+    calculateDiscount,
+} from '@/resources/payment/PaymentCalculationService';
+
+export type PaymentWithDiscount = Payment & {
+    appliedDiscount: {
+        promoCode?: { code: string; discountType: string; discountValue: number } | null;
+        affiliation?: { code: string; userDiscountPercent: number } | null;
+        discountAmount: number;
+        finalAmount: number;
+    };
+};
+
+@Injectable()
+export class PaymentService {
+    private readonly logger = new Logger(PaymentService.name);
+    private readonly SERVICE_NAME = PaymentService.name;
+
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly promoCodeService: PromoCodeService,
+        private readonly affiliationService: AffiliationService,
+        private readonly keycloakAdminService: KeycloakAdminService,
+    ) { }
+
+    async create(
+        dto: CreatePaymentDto,
+    ): Promise<IResponse<PaymentWithDiscount>> {
+        try {
+            const start = Date.now();
+
+            let promoCodeId: string | null = null;
+            let affiliationId: string | null = null;
+            let discountAmount = 0;
+            let promoCodeData = null;
+            let affiliationData = null;
+
+            // Vérifier et appliquer l'affiliation (priorité basse, appliquée en premier)
+            if (dto.affiliationCode) {
+                const affiliationResult = await this.affiliationService.findByCode(
+                    dto.affiliationCode,
+                );
+                const affiliation = affiliationResult.data;
+
+                if (!affiliation.isActive) {
+                    throw new BadRequestException(
+                        `Le code d'affiliation '${dto.affiliationCode}' est désactivé`,
+                    );
+                }
+
+                const affiliationDiscount = calculateAffiliationDiscount(
+                    dto.amount,
+                    affiliation.userDiscountPercent,
+                );
+                discountAmount += affiliationDiscount;
+                affiliationId = affiliation.id;
+                affiliationData = affiliation;
+            }
+
+            // Vérifier et appliquer le code promo (peut s'ajouter à l'affiliation)
+            if (dto.promoCode) {
+                const amountAfterAffiliation = dto.amount - discountAmount;
+                const promoResult = await this.promoCodeService.validate(
+                    dto.promoCode,
+                    dto.userId,
+                    dto.amount,
+                    dto.isFirstOrder ?? false,
+                );
+                const promoCode = promoResult.data;
+
+                const promoDiscount = calculateDiscount(
+                    amountAfterAffiliation,
+                    promoCode.discountType,
+                    promoCode.discountValue,
+                );
+                discountAmount += promoDiscount;
+                promoCodeId = promoCode.id;
+                promoCodeData = promoCode;
+            }
+
+            const finalAmount = Math.max(0, dto.amount - discountAmount);
+
+            const payment = await this.prisma.payment.create({
+                data: {
+                    userId: dto.userId,
+                    amount: dto.amount,
+                    discountAmount,
+                    finalAmount,
+                    currency: dto.currency ?? 'eur',
+                    stripeSessionId: dto.stripeSessionId ?? null,
+                    promoCodeId,
+                    affiliationId,
+                },
+            });
+
+            const message = `Payment created for user ${dto.userId} in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+
+            return {
+                message,
+                data: {
+                    ...payment,
+                    appliedDiscount: {
+                        promoCode: promoCodeData
+                            ? {
+                                code: promoCodeData.code,
+                                discountType: promoCodeData.discountType,
+                                discountValue: promoCodeData.discountValue,
+                            }
+                            : null,
+                        affiliation: affiliationData
+                            ? {
+                                code: affiliationData.code,
+                                userDiscountPercent:
+                                    affiliationData.userDiscountPercent,
+                            }
+                            : null,
+                        discountAmount,
+                        finalAmount,
+                    },
+                },
+            };
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            const message = `Error while creating payment: ${error.message}`;
+            this.logger.error(message, error.stack, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    async updateStatus(
+        id: string,
+        dto: UpdatePaymentStatusDto,
+    ): Promise<IResponse<Payment>> {
+        try {
+            const start = Date.now();
+
+            const existing = await this.prisma.payment.findUnique({
+                where: { id },
+            });
+
+            if (!existing) {
+                const message = `Payment #${id} not found`;
+                this.logger.warn(message, this.SERVICE_NAME);
+                throw new NotFoundException(message);
+            }
+
+            const updated = await this.prisma.$transaction(async (tx) => {
+                const payment = await tx.payment.update({
+                    where: { id },
+                    data: {
+                        status: dto.status,
+                        ...(dto.stripePaymentIntentId && {
+                            stripePaymentIntentId: dto.stripePaymentIntentId,
+                        }),
+                    },
+                });
+
+                // Lorsque le paiement devient COMPLETED pour la première fois, enregistrer les usages
+                if (dto.status === 'COMPLETED' && existing.status !== 'COMPLETED') {
+                    if (payment.promoCodeId) {
+                        await tx.promoCodeUsage.create({
+                            data: {
+                                promoCodeId: payment.promoCodeId,
+                                userId: payment.userId,
+                                orderId: payment.stripeSessionId ?? id,
+                            },
+                        });
+
+                        await tx.promoCode.update({
+                            where: { id: payment.promoCodeId },
+                            data: {
+                                currentTotalUses: { increment: 1 },
+                            },
+                        });
+                    }
+
+                    if (payment.affiliationId) {
+                        const affiliation = await tx.affiliation.findUnique({
+                            where: { id: payment.affiliationId },
+                        });
+
+                        if (affiliation) {
+                            const commissionAmount = calculateCommissionAmount(
+                                payment.finalAmount,
+                                affiliation.creatorCommissionPercent,
+                            );
+
+                            await tx.affiliationUsage.create({
+                                data: {
+                                    affiliationId: payment.affiliationId,
+                                    userId: payment.userId,
+                                    orderId: payment.stripeSessionId ?? id,
+                                    orderAmount: payment.finalAmount,
+                                    commissionAmount,
+                                },
+                            });
+                        }
+                    }
+                }
+
+                return payment;
+            });
+
+            const message = `Payment #${id} status updated to ${dto.status} in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+
+            return { message, data: updated };
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            const message = `Error while updating payment #${id} status: ${error.message}`;
+            this.logger.error(message, error.stack, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    async findAll(
+        page = 1,
+        limit = 20,
+        userId?: string,
+        status?: string,
+    ): Promise<IPaginatedResponse<Payment[]>> {
+        try {
+            const start = Date.now();
+            const skip = (page - 1) * limit;
+
+            const where: any = {};
+            if (userId) where.userId = userId;
+            if (status) where.status = status;
+
+            const [payments, totalItems] = await Promise.all([
+                this.prisma.payment.findMany({
+                    where,
+                    skip,
+                    take: limit,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        promoCode: { select: { code: true, discountType: true, discountValue: true } },
+                        affiliation: { select: { code: true, userDiscountPercent: true, creatorName: true } },
+                    },
+                }),
+                this.prisma.payment.count({ where }),
+            ]);
+
+            // Collect stripe IDs to look up referral discount types
+            const stripeIds = payments
+                .flatMap((p) => [p.stripeSessionId, p.stripePaymentIntentId])
+                .filter(Boolean) as string[];
+
+            const referralPayments = stripeIds.length > 0
+                ? await this.prisma.referralPayment.findMany({
+                    where: { orderId: { in: stripeIds } },
+                    select: { orderId: true, discountType: true },
+                })
+                : [];
+            const referralDiscountMap = new Map(referralPayments.map((rp) => [rp.orderId, rp.discountType]));
+
+            const userIds = payments.map((p) => p.userId);
+            const usersMap = await this.keycloakAdminService.getUsersByIds(userIds);
+
+            const enrichedPayments = payments.map((p) => {
+                const user = usersMap.get(p.userId);
+                const stripeOrderId = p.stripeSessionId ?? p.stripePaymentIntentId ?? null;
+                const referralDiscountType =
+                    (stripeOrderId && referralDiscountMap.get(stripeOrderId)) || null;
+                return {
+                    ...p,
+                    stripeOrderId,
+                    referralDiscountType,
+                    userDisplayName: user
+                        ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username || null
+                        : null,
+                };
+            });
+
+            const message = `${payments.length} payments found in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+
+            return {
+                message,
+                data: enrichedPayments,
+                pagination: { page, offset: limit, totalItems },
+            };
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            const message = `Error while fetching payments: ${error.message}`;
+            this.logger.error(message, error.stack, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    async findOne(id: string): Promise<IResponse<Payment>> {
+        try {
+            const start = Date.now();
+
+            const payment = await this.prisma.payment.findUnique({
+                where: { id },
+                include: {
+                    promoCode: { select: { code: true, discountType: true, discountValue: true } },
+                    affiliation: { select: { code: true, userDiscountPercent: true, creatorName: true } },
+                },
+            });
+
+            if (!payment) {
+                const message = `Payment #${id} not found`;
+                this.logger.warn(message, this.SERVICE_NAME);
+                throw new NotFoundException(message);
+            }
+
+            const message = `Payment #${id} found in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+
+            return { message, data: payment };
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            const message = `Error while fetching payment #${id}: ${error.message}`;
+            this.logger.error(message, error.stack, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    async findByStripeSession(sessionId: string): Promise<IResponse<Payment>> {
+        try {
+            const start = Date.now();
+
+            const payment = await this.prisma.payment.findUnique({
+                where: { stripeSessionId: sessionId },
+            });
+
+            if (!payment) {
+                const message = `Payment with Stripe session '${sessionId}' not found`;
+                this.logger.warn(message, this.SERVICE_NAME);
+                throw new NotFoundException(message);
+            }
+
+            const message = `Payment for session '${sessionId}' found in ${Date.now() - start}ms`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+
+            return { message, data: payment };
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            const message = `Error while fetching payment by session '${sessionId}': ${error.message}`;
+            this.logger.error(message, error.stack, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    async hasCompletedPayment(userId: string): Promise<boolean> {
+        const count = await this.prisma.payment.count({
+            where: { userId, status: 'COMPLETED' },
+        });
+        return count > 0;
+    }
+
+    async createCompleted(dto: CompletePaymentDto): Promise<IResponse<Payment>> {
+        try {
+            const start = Date.now();
+            const discountAmount = dto.discountAmount ?? 0;
+            const finalAmount = dto.amount - discountAmount;
+            const completionOrderId =
+                dto.stripeSessionId ?? dto.stripePaymentIntentId;
+
+            const result = await this.prisma.$transaction(async (tx) => {
+                if (dto.stripePaymentIntentId) {
+                    const existingByPaymentIntent = await tx.payment.findUnique({
+                        where: { stripePaymentIntentId: dto.stripePaymentIntentId },
+                    });
+
+                    if (existingByPaymentIntent) {
+                        return { payment: existingByPaymentIntent, created: false };
+                    }
+                }
+
+                if (dto.stripeSessionId) {
+                    const existingBySession = await tx.payment.findUnique({
+                        where: { stripeSessionId: dto.stripeSessionId },
+                    });
+
+                    if (existingBySession) {
+                        return { payment: existingBySession, created: false };
+                    }
+                }
+
+                const created = await tx.payment.create({
+                    data: {
+                        userId: dto.userId,
+                        amount: dto.amount,
+                        discountAmount,
+                        finalAmount,
+                        currency: dto.currency ?? 'eur',
+                        stripeSessionId: dto.stripeSessionId ?? null,
+                        stripePaymentIntentId: dto.stripePaymentIntentId ?? null,
+                        status: 'COMPLETED',
+                        promoCodeId: dto.promoCodeId ?? null,
+                        affiliationId: dto.affiliationId ?? null,
+                        ...(dto.tokenCount !== undefined && { tokenCount: dto.tokenCount }),
+                    },
+                });
+
+                if (!completionOrderId) {
+                    return { payment: created, created: true };
+                }
+
+                if (dto.promoCodeId) {
+                    const existingPromoUsage = await tx.promoCodeUsage.findFirst({
+                        where: {
+                            promoCodeId: dto.promoCodeId,
+                            orderId: completionOrderId,
+                        },
+                    });
+
+                    if (!existingPromoUsage) {
+                        await tx.promoCodeUsage.create({
+                            data: {
+                                promoCodeId: dto.promoCodeId,
+                                userId: dto.userId,
+                                orderId: completionOrderId,
+                            },
+                        });
+
+                        await tx.promoCode.update({
+                            where: { id: dto.promoCodeId },
+                            data: { currentTotalUses: { increment: 1 } },
+                        });
+                    }
+                }
+
+                if (dto.affiliationId) {
+                    const affiliation = await tx.affiliation.findUnique({
+                        where: { id: dto.affiliationId },
+                    });
+
+                    if (affiliation) {
+                        const commissionAmount = Math.floor(
+                            (finalAmount * affiliation.creatorCommissionPercent) / 100,
+                        );
+
+                        const existingAffiliationUsage = await tx.affiliationUsage.findFirst({
+                            where: {
+                                affiliationId: dto.affiliationId,
+                                orderId: completionOrderId,
+                            },
+                        });
+
+                        if (!existingAffiliationUsage) {
+                            await tx.affiliationUsage.create({
+                                data: {
+                                    affiliationId: dto.affiliationId,
+                                    userId: dto.userId,
+                                    orderId: completionOrderId,
+                                    orderAmount: finalAmount,
+                                    commissionAmount,
+                                },
+                            });
+                        }
+                    }
+                }
+
+                return { payment: created, created: true };
+            });
+
+            const message = result.created
+                ? `Completed payment recorded for user ${dto.userId} in ${Date.now() - start}ms`
+                : `Completed payment already recorded for user ${dto.userId} (${Date.now() - start}ms)`;
+            this.logger.verbose(message, this.SERVICE_NAME);
+
+            return { message, data: result.payment };
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            const message = `Error while recording completed payment: ${error.message}`;
+            this.logger.error(message, error.stack, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+}

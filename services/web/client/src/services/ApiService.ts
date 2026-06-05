@@ -124,4 +124,36 @@ const apiClient = (contentType?: string): AxiosInstance => {
   return apiClientInstance;
 };
 
+/**
+ * Creates an axios instance targeting the payment service through the gateway
+ * (/payment prefix instead of /api)
+ */
+export const createPaymentApiClient = (): AxiosInstance => {
+  const url = process.env.NEXT_PUBLIC_API_URL;
+  if (!url) {
+    throw new Error("API URL is not defined. Set NEXT_PUBLIC_API_URL in your environment.");
+  }
+
+  const baseURL = `${url}/payment`;
+
+  const instance = axios.create({
+    baseURL,
+    headers: { "Content-Type": "application/json" },
+    withCredentials: true,
+  });
+
+  instance.interceptors.request.use(
+    async (config) => {
+      const token = keycloakInstance?.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error),
+  );
+
+  return instance;
+};
+
 export default apiClient;

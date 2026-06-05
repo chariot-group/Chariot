@@ -7,6 +7,16 @@ const SessionCharacterSyncClient = dynamic(
   { ssr: false, loading: () => null },
 );
 
+const SessionBattleSyncClient = dynamic(
+  () => import("@/components/SessionBattleSyncClient"),
+  { ssr: false, loading: () => null },
+);
+
 export default function SessionCharacterSyncClientDynamic() {
-  return <SessionCharacterSyncClient />;
+  return (
+    <>
+      <SessionCharacterSyncClient />
+      <SessionBattleSyncClient />
+    </>
+  );
 }
