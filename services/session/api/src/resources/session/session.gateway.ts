@@ -362,6 +362,68 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         }
     }
 
+    /**
+     * FR-021 — diffuse l'état du combat (tracker) du MJ aux joueurs.
+     * Convention : `sessionId` = code OTP (cf. session:join).
+     */
+    @SubscribeMessage('session:battle-state-updated')
+    async handleBattleStateUpdated(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string; state: Record<string, unknown> },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const me = session.participants.find((p) => p.userId === client.user.keycloakId);
+            if (!me || me.status !== 'gameMaster') {
+                client.emit('session:error', { message: 'Only the game master can broadcast battle state' });
+                return;
+            }
+            if (!data.state || typeof data.state !== 'object') {
+                client.emit('session:error', { message: 'Missing battle state payload' });
+                return;
+            }
+            client.to(session.id).emit('session:battle-state-updated', { state: data.state });
+            this.logger.verbose(
+                `${client.user.username} broadcast battle state in session ${session.id}`,
+                this.SERVICE_NAME,
+            );
+        } catch (error: any) {
+            const message: string = `Failed to broadcast battle state: ${error.message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            client.emit('session:error', { message });
+        }
+    }
+
+    /**
+     * FR-021 — un joueur demande le snapshot combat (reconnexion / arrivée tardive).
+     * Relaie à la room ; le client MJ répond via session:battle-state-updated.
+     */
+    @SubscribeMessage('session:request-battle-state')
+    async handleRequestBattleState(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const me = session.participants.find((p) => p.userId === client.user.keycloakId);
+            if (!me) {
+                client.emit('session:error', { message: 'Not a session participant' });
+                return;
+            }
+            client.to(session.id).emit('session:battle-state-requested', {
+                requestedBy: client.user.keycloakId,
+            });
+            this.logger.verbose(
+                `${client.user.username} requested battle state in session ${session.id}`,
+                this.SERVICE_NAME,
+            );
+        } catch (error: any) {
+            const message: string = `Failed to request battle state: ${error.message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            client.emit('session:error', { message });
+        }
+    }
+
     @SubscribeMessage('session:close')
     async handleCloseSession(
         @ConnectedSocket() client: AuthenticatedSocket,

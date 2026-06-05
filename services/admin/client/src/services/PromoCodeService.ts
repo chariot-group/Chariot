@@ -42,12 +42,12 @@ export const PROMO_FORM_DEFAULT_VALUES: Partial<PromoFormData> = {
     isFirstOrderOnly: false,
 };
 
-/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-015. */
+/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-017. */
 export function getPromoCodeDeactivatePath(id: string): string {
     return `/promo-codes/${id}/deactivate`;
 }
 
-/** Path and body for PATCH reactivation. See FR-015. */
+/** Path and body for PATCH reactivation. See FR-017. */
 export function getPromoCodeReactivatePath(id: string): string {
     return `/promo-codes/${id}`;
 }

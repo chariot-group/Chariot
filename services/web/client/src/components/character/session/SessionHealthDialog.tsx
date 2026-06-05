@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Player } from "@/types/character";
+import type { CharacterType } from "@/hooks/useCharacterForm";
+import type { NPC, Player } from "@/types/character";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,10 @@ import {
 interface SessionHealthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  player: Player;
+  character: Player | NPC;
+  characterType: CharacterType;
   sessionCode: string | null;
-  onCharacterUpdate?: (updated: Player) => void;
+  onCharacterUpdate?: (updated: Player | NPC) => void;
 }
 
 type HealthAction = "add" | "subtract" | "set";
@@ -30,10 +32,10 @@ function clampToNonNegative(value: number): number {
   return Math.max(0, Math.floor(value));
 }
 
-function applyCurrentHpAction(player: Player, amount: number, action: HealthAction) {
-  const maxHp = Math.max(0, player.stats.maxHitPoints ?? 0);
-  const currentHp = Math.max(0, player.stats.currentHitPoints ?? 0);
-  const tempHp = Math.max(0, player.stats.tempHitPoints ?? 0);
+function applyCurrentHpAction(character: Player | NPC, amount: number, action: HealthAction) {
+  const maxHp = Math.max(0, character.stats.maxHitPoints ?? 0);
+  const currentHp = Math.max(0, character.stats.currentHitPoints ?? 0);
+  const tempHp = Math.max(0, character.stats.tempHitPoints ?? 0);
 
   if (action === "add") {
     return {
@@ -61,7 +63,8 @@ function applyCurrentHpAction(player: Player, amount: number, action: HealthActi
 export function SessionHealthDialog({
   open,
   onOpenChange,
-  player,
+  character,
+  characterType,
   sessionCode,
   onCharacterUpdate,
 }: SessionHealthDialogProps) {
@@ -90,18 +93,18 @@ export function SessionHealthDialog({
       return;
     }
 
-    const updated = (await CharacterService.updateCharacter(
-      "players",
-      player._id,
+    const updated = await CharacterService.updateCharacter(
+      characterType,
+      character._id,
       {
         stats: {
-          ...player.stats,
+          ...character.stats,
           currentHitPoints: nextCurrentHitPoints,
           tempHitPoints: nextTempHitPoints,
         },
       },
       sessionCode,
-    )) as Player;
+    );
 
     onCharacterUpdate(updated);
   }
@@ -114,7 +117,7 @@ export function SessionHealthDialog({
     setBusyAction("current");
 
     try {
-      const next = applyCurrentHpAction(player, currentAmount, action);
+      const next = applyCurrentHpAction(character, currentAmount, action);
       await persistStats(next.currentHitPoints, next.tempHitPoints);
       setCurrentHpValue("");
       onOpenChange(false);
@@ -134,7 +137,10 @@ export function SessionHealthDialog({
     setBusyAction("temp");
 
     try {
-      await persistStats(player.stats.currentHitPoints, Math.max(0, player.stats.tempHitPoints) + tempAmount);
+      await persistStats(
+        character.stats.currentHitPoints,
+        Math.max(0, character.stats.tempHitPoints) + tempAmount,
+      );
       setTempHpValue("");
       onOpenChange(false);
     } catch (error) {
@@ -164,8 +170,8 @@ export function SessionHealthDialog({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-base font-semibold">{t("sessionCurrentHpSection")}</h3>
             <p className="text-sm text-muted-foreground">
-              {player.stats.currentHitPoints}/{player.stats.maxHitPoints}
-              {player.stats.tempHitPoints > 0 ? ` (+${player.stats.tempHitPoints} ${t("hpAbbr")})` : ""}
+              {character.stats.currentHitPoints}/{character.stats.maxHitPoints}
+              {character.stats.tempHitPoints > 0 ? ` (+${character.stats.tempHitPoints} ${t("hpAbbr")})` : ""}
             </p>
           </div>
 
@@ -230,7 +236,7 @@ export function SessionHealthDialog({
                 aria-hidden="true"
               />
             </div>
-            <p className="text-sm text-muted-foreground">+{player.stats.tempHitPoints} {t("hpAbbr")}</p>
+            <p className="text-sm text-muted-foreground">+{character.stats.tempHitPoints} {t("hpAbbr")}</p>
           </button>
 
           {showTempControls ? (

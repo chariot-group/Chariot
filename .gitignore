@@ -25,4 +25,6 @@ security/reports/*
 
 .github/copilot-instructions.md
 
-.cursor
+# Local AI workflow and Cursor rules
+.cursorrules
+.cursor/rules/

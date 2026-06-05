@@ -13,7 +13,7 @@ const REFERRAL_CODE_STORAGE_KEY = "chariot_referral_code";
 const REFERRAL_INIT_STORAGE_KEY = "chariot_referral_initialized";
 
 /**
- * Component responsible for handling post-login navigation (FR-006)
+ * Component responsible for handling post-login navigation (FR-007)
  * Also handles referral code initialization on first login.
  * Must be rendered INSIDE ReduxProvider to access Redux store
  */

@@ -21,6 +21,11 @@ const CharacterHealthBar = ({ currentHP, maxHP, tempHP, interactive = false, onC
 
   const bluePercent = tempHP > 0 ? Math.min(100 - redPercent, (tempHP / visualMax) * 100) : 0;
 
+  const healthAriaLabel =
+    tempHP > 0
+      ? t("healthPointsAriaWithTemp", { current: currentHP, max: maxHP, temp: tempHP })
+      : t("healthPointsAria", { current: currentHP, max: maxHP });
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -40,7 +45,7 @@ const CharacterHealthBar = ({ currentHP, maxHP, tempHP, interactive = false, onC
               : undefined
           }
           aria-haspopup={interactive ? "dialog" : undefined}
-          aria-label={`${t("healthPoints")}: ${currentHP} ${t("unperformedThrow")} ${maxHP}${tempHP > 0 ? ` (+${tempHP} ${t("hpAbbr")})` : ""}`}>
+          aria-label={`${t("healthPoints")}: ${healthAriaLabel}`}>
           {/* HP temporaires */}
           {bluePercent > 0 && (
             <>

@@ -45,7 +45,7 @@ Before creating any checkout session, the payment service resolves discounts in 
 1. **Affiliation code** (`affiliationCode` in body) — applied first
 2. **Promo code** (`promoCode` in body) — applied on top of affiliation discount
 3. **Referral discount** — applied automatically **only when no promo or affiliation code is provided**  
-   (see FR-011 for referral system rules)
+   (see FR-013 for referral system rules)
 
 ### 3) Stripe payment → webhook
 
@@ -75,10 +75,10 @@ Before creating any checkout session, the payment service resolves discounts in 
 
 ## Related Functional Rules
 
-- Reference: `FR-011` in `docs/functional-rules.md`
+- Reference: `FR-013` in `docs/functional-rules.md`
 - Checkout requires authentication (user from Keycloak context)
 - Webhook is public + Stripe signature validation is mandatory
-- Referral discount rules defined in `FR-011`
+- Referral discount rules defined in `FR-013`
 
 ## Dev Prerequisites
 
