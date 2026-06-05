@@ -909,3 +909,53 @@ Each rule has a unique identifier and must be tested.
 - `services/payment/api/src/resources/referral/referral.controller.ts`
 - `services/payment/api/src/resources/affiliation/affiliation.service.ts`
 - `services/payment/api/src/resources/promo-code/promo-code.service.ts`
+
+---
+
+## FR-012: Admin Sidebar External Navigation Links
+
+**Rule**: The admin client sidebar must expose configurable external links to third-party administration consoles (Keycloak, Stripe). URLs must be defined per environment via environment variables and must not be hardcoded.
+
+**Requirements**:
+
+**Configuration**:
+- Keycloak admin URL via `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL`
+- Stripe dashboard URL via `NEXT_PUBLIC_STRIPE_DASHBOARD_URL`
+- Variables are defined in the admin service `.env` and injected at build time for Next.js client components
+- `NEXT_PUBLIC_KEYCLOAK_URL` remains reserved for SSO authentication and must not be reused for the sidebar admin link
+
+**Navigation Behavior**:
+- External links open in a new browser tab (`target="_blank"`, `rel="noopener noreferrer"`)
+- A sidebar item is displayed only when its corresponding URL is defined and non-empty
+- External links do not use internal active-route highlighting
+- Internal navigation items (payment module routes) keep using Next.js `Link` with existing active-state logic
+
+**Accessibility Requirements**:
+- External links include an accessible indication that they open a new tab (`aria-label` with supplementary text)
+- Visible focus indicators on all interactive sidebar elements
+- Keyboard navigation remains functional for all displayed items
+
+**Prohibitions**:
+- Hardcoding Keycloak or Stripe dashboard URLs in component source code
+- Using `NEXT_PUBLIC_KEYCLOAK_URL` as the sidebar Keycloak admin link
+- Rendering external links without `rel="noopener noreferrer"`
+- Displaying broken links when URL configuration is missing
+
+**Tests**:
+- Sidebar renders Keycloak link when `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL` is set
+- Sidebar renders Stripe link when `NEXT_PUBLIC_STRIPE_DASHBOARD_URL` is set
+- Sidebar omits external links when corresponding env variable is empty or undefined
+- External links use `target="_blank"` and `rel="noopener noreferrer"`
+- Internal routes continue to render and highlight active state correctly
+
+**Deployment Configuration**:
+- Local/dev: values are read from `services/admin/.env` via `compose.dev.yml`
+- Integration/production: values are injected at Docker build time from GitHub secrets (`INTEG_*` / `PROD_*` counterparts of the same variables)
+
+**References**:
+- `services/admin/client/src/components/layout/Sidebar.tsx`
+- `services/admin/client/src/config/navigation.ts`
+- `services/admin/.env.example`
+- `services/admin/compose.dev.yml`
+- `services/admin/client/Dockerfile.prod`
+- `.github/workflows/ci.yml` (job `deploy-admin`)

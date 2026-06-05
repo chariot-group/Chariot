@@ -24,3 +24,5 @@ security/reports/*
 *.sarif
 
 .github/copilot-instructions.md
+
+.cursor

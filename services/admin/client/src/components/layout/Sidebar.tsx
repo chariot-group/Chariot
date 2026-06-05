@@ -2,17 +2,56 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Tag, Users, CreditCard, ChevronRight, Heart } from "lucide-react";
+import { Crown, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { navItems } from "@/config/navigation";
 import { useSidebar } from "@/providers/SidebarContext";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/promo-codes", label: "Codes promo", icon: Tag },
-  { href: "/affiliations", label: "Affiliations", icon: Users },
-  { href: "/payments", label: "Paiements", icon: CreditCard },
-  { href: "/referrals", label: "Parrainage", icon: Heart },
-];
+function NavLink({
+  href,
+  label,
+  icon: Icon,
+  external,
+  active,
+  onNavigate,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  external?: boolean;
+  active: boolean;
+  onNavigate: () => void;
+}) {
+  const className = cn(
+    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+    active
+      ? "bg-primary/15 text-card-foreground"
+      : "text-muted-foreground hover:bg-muted/20 hover:text-card-foreground",
+  );
+
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onNavigate}
+        aria-label={`${label} (ouvre un nouvel onglet)`}
+        className={className}>
+        <Icon className="h-4 w-4 flex-shrink-0" />
+        <span>{label}</span>
+      </a>
+    );
+  }
+
+  return (
+    <Link href={href} onClick={onNavigate} className={className}>
+      <Icon className="h-4 w-4 flex-shrink-0" />
+      <span>{label}</span>
+    </Link>
+  );
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -36,34 +75,66 @@ export function Sidebar() {
         {/* Logo */}
         <div className="flex items-center gap-2 px-4 py-5 border-b border-border">
           <div className="h-7 w-7 rounded-md bg-primary flex items-center justify-center">
-            <CreditCard className="h-4 w-4 text-primary-foreground" />
+            <Crown className="h-4 w-4 text-primary-foreground" />
           </div>
           <div>
             <p className="text-sm font-semibold text-card-foreground leading-none">Chariot</p>
-            <p className="text-xs text-muted-foreground">Paiements Admin</p>
+            <p className="text-xs text-muted-foreground">Gestion Admin</p>
           </div>
         </div>
 
         {/* Nav */}
         <nav className="flex flex-col gap-1 p-3 flex-1">
-          {navItems.map(({ href, label, icon: Icon }) => {
-            const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                onClick={close}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-primary/15 text-card-foreground"
-                    : "text-muted-foreground hover:bg-muted/20 hover:text-card-foreground",
-                )}>
-                <Icon className="h-4 w-4 flex-shrink-0" />
-                <span>{label}</span>
-              </Link>
-            );
-          })}
+          <Accordion
+            type="single"
+            className="flex flex-col gap-1 p-3 flex-1"
+            collapsible>
+            {navItems.map((item) => {
+              if (item.type === "link") {
+                const active = !item.external && (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href));
+                return (
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    icon={item.icon}
+                    external={item.external}
+                    active={active}
+                    onNavigate={close}
+                  />
+                );
+              }
+
+              return (
+                <AccordionItem
+                  className="border-none hover:bg-muted/20 hover:text-card-foreground cursor-pointer rounded-lg px-3"
+                  value={item.label}
+                  key={item.label}>
+                  <AccordionTrigger>
+                    <div className="flex gap-3 text-sm font-medium text-muted-foreground cursor-pointer">
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      {item.label}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {item.children.map((child) => {
+                      const active = child.href === "/" ? pathname === "/" : pathname.startsWith(child.href);
+                      return (
+                        <NavLink
+                          key={child.href}
+                          href={child.href}
+                          label={child.label}
+                          icon={child.icon}
+                          active={active}
+                          onNavigate={close}
+                        />
+                      );
+                    })}
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
         </nav>
       </aside>
     </>

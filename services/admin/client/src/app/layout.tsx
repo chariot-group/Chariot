@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter_Tight } from "next/font/google";
+import { Inter_Tight, Geist } from "next/font/google";
 import "@/app/globals.css";
 import { KeycloakProvider } from "@/providers/KeycloakProvider";
 import { SidebarProvider } from "@/providers/SidebarContext";
@@ -8,6 +8,9 @@ import { Header } from "@/components/layout/Header";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AdminGuard from "@/components/AdminGuard";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -21,8 +24,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
-      <body className={`${interTight.variable} antialiased font-sans`}>
+    <html
+      lang="fr"
+      className={cn("font-sans", geist.variable)}>
+      <body className={`${interTight.variable} antialiased font-sans dark`}>
         <KeycloakProvider>
           <AdminGuard>
             <SidebarProvider>
