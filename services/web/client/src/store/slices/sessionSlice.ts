@@ -566,6 +566,9 @@ const sessionSlice = createSlice({
         },
         endBattle: (state) => {
             clearUntilCombatEndConditions(state);
+            state.initBattleDraft = initialInitBattleDraft;
+            state.initiativeTrackerRows = [];
+            state.battleInitialized = false;
             resetBattleTurnState(state);
         },
         nextBattleTurn: (state) => {

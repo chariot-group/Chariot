@@ -1025,9 +1025,17 @@ Each rule has a unique identifier and must be tested.
 **Reset and End States**:
 
 - `End combat`:
-  - keeps configured rows
-  - resets turn engine (`battleStarted=false`, round 1, no active row, no action locks)
+  - is available to the GM only
+  - MUST first open a confirmation dialog written in functional, non-technical language
+  - dialog intent MUST clearly state that leaving combat returns everyone to their character sheet and that combat progress will no longer be available
+  - dialog copy SHOULD stay concise; recommended confirmation message: `Are you sure you want to leave combat? If you confirm, everyone will return to their character sheet and combat progress will no longer be available.`
+  - on confirmation, returns the GM to the last consulted character sheet path of the current session
+  - on confirmation, returns each player to their session character sheet
+  - clears all tracker rows
+  - clears battle configuration draft (`initBattleDraft`)
+  - clears initialized/started combat state and resets turn engine (`battleStarted=false`, round 1, no active row, no action locks)
   - removes conditions scoped to `untilCombatEnd`
+  - requires a brand new battle configuration before another combat can start
 - `Reset` (sidebar action on tracker page):
   - clears all tracker rows
   - clears initialized/started combat state
@@ -1220,9 +1228,12 @@ Each rule has a unique identifier and must be tested.
 
 **Sidebar Navigation — Player**:
 
-- When a battle is initialized or started and the player is not on the initiative tracker page, the sidebar footer MUST show **Return to Battle** (same label, icon, and styling as the GM), navigating to `/{locale}/initiativeTracker`.
-- When the player is on the initiative tracker page, the sidebar footer MUST show **View Character Sheet**, navigating to their session character sheet.
+- Before the GM has actually started combat, players MUST NOT have access to the initiative tracker.
+- While combat is initialized but not started, the sidebar footer for players MUST NOT show **Return to Battle**.
+- Once combat has started, when the player is not on the initiative tracker page, the sidebar footer MUST show **Return to Battle** (same label, icon, and styling as the GM), navigating to `/{locale}/initiativeTracker`.
+- Once combat has started, when the player is on the initiative tracker page, the sidebar footer MUST show **View Character Sheet**, navigating to their session character sheet.
 - If the player has no assigned character, **View Character Sheet** is disabled with an explanatory tooltip.
+- Once combat has been ended by the GM, the player MUST be redirected to their session character sheet and MUST no longer have access to **Return to Battle** for that finished combat.
 
 **Last Consulted Sheet Tracking**:
 
@@ -1261,6 +1272,8 @@ Each initiative tracker row carries:
 **Player Initiative Tracker View**:
 
 - Same route as GM: `/{locale}/initiativeTracker`.
+- Players can access this route only once combat has started (`battleStarted === true`).
+- If a player tries to access the route before combat starts, they MUST be redirected back to their session character sheet.
 - Read-only: no HP edit dialog, no condition edit, no initiative edit, no turn controls, no visibility column.
 - Rows filtered to `visible === true`, plus any row in the session participants group (always shown to connected players).
 - Field values masked when the corresponding `playerFieldVisibility` flag is `false` (display placeholder `—`; hidden name displays a generic hidden label).
@@ -1272,15 +1285,18 @@ Each initiative tracker row carries:
 - GM emits `session:battle-state-updated` with a snapshot: `initiativeTrackerRows`, `battleInitialized`, `battleStarted`, `activeTurnRowId`, `currentRound`.
 - Gateway validates emitter is session GM, then broadcasts to other participants (`client.to`).
 - Players apply via `applyRemoteBattleState` (does not register GM turn-lock actions).
+- The initiative snapshot MUST become available to players only once combat has started; a merely initialized combat is GM-only.
 - On `session:request-battle-state`, the gateway relays to the session room; GM clients respond by emitting the current snapshot (handles late join / reconnect).
 - GM also rebroadcasts after `session:participant-joined` when a battle is active.
 
 **Prohibitions**:
 
 - Showing GM-only controls (turn engine, reset, visibility editor) to players.
+- Exposing an initialized-but-not-started combat to players.
 - Persisting player-local edits to battle state (players are consumers only).
 - Broadcasting battle state from non-GM participants.
 - Using sidebar **Reset** during an initialized or started battle.
+- Reopening a new combat with rows, setup choices, or turn progress carried over from a previous ended combat.
 
 **Tests**:
 
@@ -1298,3 +1314,101 @@ Each initiative tracker row carries:
 - `services/web/client/src/store/slices/sessionSlice.ts`
 - `services/session/api/src/resources/session/session.gateway.ts`
 
+---
+
+## FR-016: Session Combat Real-Time Synchronization Between Initiative Tracker and Character Sheets
+
+**Rule**: During an active session combat, initiative tracker rows and session character sheets must stay synchronized in real time for all connected participants who are allowed to view the affected data. A change made from either surface must be reflected on the other without requiring a manual page reload.
+
+**Scope**:
+
+- Applies only while a session is active and a combat is initialized or started.
+- Covers synchronization between:
+  - GM initiative tracker
+  - player read-only initiative tracker view
+  - session character sheets opened by the GM or by players
+- Complements FR-012, FR-014, and FR-015 without changing their visibility or turn-control rules.
+
+**Synchronization Model**:
+
+- The character sheet remains the source of truth for persisted character data.
+- The initiative tracker row remains the source of truth for battle-only UI state:
+  - initiative value
+  - tracker-only visibility flags
+  - tracker-only condition entries and durations
+  - active turn / round state
+- When a persisted character field displayed in the tracker changes from a character sheet, all matching tracker rows must refresh in real time.
+- When a tracker action changes persisted character data, all open character sheets for that character must refresh in real time.
+
+**Fields Required to Sync in Real Time**:
+
+- From character sheet to initiative tracker:
+  - current HP state used by the tracker (`hitPoints`, `maxHitPoints`, `tempHitPoints`)
+  - armor class
+  - display identity used by the tracker (`firstname`, `lastname`, `surname`, `avatar`)
+  - player death save failures when applicable
+- From initiative tracker to character sheet:
+  - any persisted HP update performed through the session health flow
+- Tracker-only data MUST NOT be pushed into the character sheet as persisted character edits:
+  - initiative
+  - tracker conditions and durations
+  - row visibility and player field visibility
+  - active turn / round state
+
+**Propagation Rules**:
+
+- A real-time sheet update event emitted for a session character must be processed by:
+  - the emitting client locally
+  - the GM if the GM is not the emitter
+  - all other connected participants allowed to read that character in the session
+- The tracker refresh on sheet updates must not be limited to characters at 0 HP; identity, AC, avatar, and HP changes must propagate for any tracked character.
+- The character-sheet refresh on tracker-originated persisted HP updates must apply to all open viewers of that character in the session, including the editor.
+- If multiple tracker rows reference the same character, all of them must refresh consistently.
+
+**Authorization and Visibility**:
+
+- Only session participants may receive synchronization events for characters on the current session roster.
+- Real-time synchronization must respect existing access rules:
+  - player tracker view remains filtered and masked per FR-015
+  - GM-only tracker controls remain GM-only
+  - players must not gain access to hidden tracker-only fields through sheet synchronization
+- NPC sheet updates made by the GM during session combat must also refresh the initiative tracker in real time when that NPC is on the roster.
+
+**Performance and Robustness**:
+
+- Sync events should carry only the minimum routing payload needed to identify the updated character/session; consumers may refetch the authoritative character payload when necessary.
+- Duplicate or burst updates for the same character should be coalesced on the client when feasible to avoid redundant fetch storms.
+- Reconnect and late-join behavior must converge to the latest valid state without requiring a full browser reload.
+- A failed refresh for one character must not block sync handling for other characters.
+
+**Prohibitions**:
+
+- Requiring a manual refresh to see a tracker-relevant character sheet change during active combat.
+- Limiting tracker refresh to player rows only when an NPC sheet change is relevant to the roster.
+- Limiting tracker refresh to the `hitPoints <= 0` case.
+- Broadcasting tracker-only private state into persisted character records.
+- Broadcasting session character updates for characters that are not on the active session roster.
+
+**Tests**:
+
+- Character sheet -> tracker:
+  - Player HP update refreshes the matching tracker row in real time for GM and players
+  - Player identity/AC update refreshes the matching tracker row in real time
+  - NPC sheet update refreshes the matching tracker row in real time
+  - Multiple rows mapped to the same character refresh consistently
+- Tracker -> character sheet:
+  - HP edit from tracker refreshes the open session character sheet in real time
+  - Local editor also observes the refresh path without waiting for a remote echo
+- Access and resilience:
+  - Hidden player tracker fields remain masked after a sync event
+  - Non-roster character update is ignored
+  - A failed refetch for one character does not break subsequent sync events
+
+**References**:
+
+- `services/web/client/src/lib/sessionCharacterSyncBridge.ts`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/hooks/useCharacter.ts`
+- `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`

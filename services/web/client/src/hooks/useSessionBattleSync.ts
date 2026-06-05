@@ -18,7 +18,7 @@ import {
   respondToBattleStateRequest,
 } from "@/lib/sessionBattleSyncBridge";
 import { getPooledSessionSocket } from "@/lib/sessionSocketPool";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const BATTLE_SYNC_DEBOUNCE_MS = 250;
 
@@ -43,25 +43,32 @@ export function useSessionBattleSync() {
   const snapshot = useAppSelector(selectBattleStateSnapshot);
 
   const snapshotRef = useRef(snapshot);
+  const codeRef = useRef(code);
   const isGmRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasBroadcastStartedBattleRef = useRef(snapshot.battleStarted);
 
   useEffect(() => {
     snapshotRef.current = snapshot;
   }, [snapshot]);
 
   useEffect(() => {
+    codeRef.current = code;
+  }, [code]);
+
+  useEffect(() => {
     isGmRef.current = isGameMaster(participants, user?.keycloakId);
   }, [participants, user?.keycloakId]);
 
-  const broadcastSnapshot = (state: BattleStateSnapshot) => {
+  const broadcastSnapshot = useCallback((state: BattleStateSnapshot) => {
     const socket = getPooledSessionSocket();
-    if (!socket?.connected || !code) return;
+    const sessionCode = codeRef.current;
+    if (!socket?.connected || !sessionCode) return;
     socket.emit("session:battle-state-updated", {
-      sessionId: code,
+      sessionId: sessionCode,
       state,
     });
-  };
+  }, []);
 
   useEffect(() => {
     if (!isInSession) {
@@ -76,7 +83,7 @@ export function useSessionBattleSync() {
     });
 
     registerBattleStateRequestResponder(() => {
-      if (!isGmRef.current || !snapshotRef.current.battleInitialized) return null;
+      if (!isGmRef.current || !snapshotRef.current.battleStarted) return null;
       return snapshotRef.current;
     });
 
@@ -84,16 +91,22 @@ export function useSessionBattleSync() {
       registerBattleStateBroadcastScheduler(null);
       registerBattleStateRequestResponder(null);
     };
-  }, [isInSession, code]);
+  }, [broadcastSnapshot, isInSession]);
 
   const isGm = isGameMaster(participants, user?.keycloakId);
 
   useEffect(() => {
-    if (!isInSession || !isGm || !battleInitialized) return;
+    if (!isInSession || !isGm) return;
+
+    const hasStartedBattle = snapshot.battleStarted;
+    const hadBroadcastStartedBattle = hasBroadcastStartedBattleRef.current;
+    const shouldBroadcast = hasStartedBattle || (!snapshot.battleInitialized && hadBroadcastStartedBattle);
+    if (!shouldBroadcast) return;
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       debounceRef.current = null;
+      hasBroadcastStartedBattleRef.current = snapshotRef.current.battleStarted;
       emitBattleStateUpdate(snapshotRef.current);
     }, BATTLE_SYNC_DEBOUNCE_MS);
 
@@ -115,7 +128,7 @@ export function useSessionBattleSync() {
       socket.emit("session:request-battle-state", { sessionId: code });
     };
 
-    if (!battleInitialized) {
+    if (!battleInitialized && !snapshot.battleStarted) {
       requestState();
     }
 
@@ -131,7 +144,7 @@ export function useSessionBattleSync() {
       socket.off("session:battle-state-updated", onBattleStateUpdated);
       socket.off("connect", requestState);
     };
-  }, [battleInitialized, code, dispatch, isGm, isInSession]);
+  }, [battleInitialized, code, dispatch, isGm, isInSession, snapshot.battleStarted]);
 
   useEffect(() => {
     if (!isInSession || !code || !isGm) return;
@@ -147,7 +160,7 @@ export function useSessionBattleSync() {
     };
 
     const onParticipantJoined = () => {
-      if (snapshotRef.current.battleInitialized) {
+      if (snapshotRef.current.battleStarted) {
         emitBattleStateUpdate(snapshotRef.current);
       }
     };
@@ -159,5 +172,5 @@ export function useSessionBattleSync() {
       socket.off("session:battle-state-requested", onBattleStateRequested);
       socket.off("session:participant-joined", onParticipantJoined);
     };
-  }, [code, isGm, isInSession]);
+  }, [broadcastSnapshot, code, isGm, isInSession]);
 }

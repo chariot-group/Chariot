@@ -6,7 +6,7 @@ import { LucideSwords, PlayCircle, Users, UserCircle } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import sessionService, { SessionParticipant } from "@/services/SessionService";
+import sessionService from "@/services/SessionService";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import {
@@ -102,7 +102,7 @@ export function ActionButton() {
   };
 
   const getButtonState = (): ActionButtonConfig => {
-    if (currentParticipant === null || isInSession === null || session === null) {
+    if (!isInSession) {
       if (contextMode === "gm") {
         return {
           label: t("launchSession"),
@@ -135,6 +135,18 @@ export function ActionButton() {
       };
     }
 
+    if (currentParticipant === null) {
+      return {
+        label: t("returnToSession"),
+        state: "returnToSession",
+        action: () => navigateToSession(contextMode === "player" ? "player" : undefined),
+        disabled: false,
+        icon: <PlayCircle className="size-6" />,
+        backgroundColor: "bg-yellow",
+        textColor: "text-black",
+      };
+    }
+
     if (currentParticipant?.status === "gameMaster") {
       if (!sessionStarted) {
         return {
@@ -161,7 +173,7 @@ export function ActionButton() {
       }
 
       // FR-015 — combat initialisé : retour fiche sur le tracker, retour combat ailleurs
-      if (battleInitialized && isInitiativeTrackerPage) {
+      if (battleStarted && isInitiativeTrackerPage) {
         return {
           label: t("returnToSheet"),
           state: "returnToSheet",
@@ -174,7 +186,7 @@ export function ActionButton() {
         };
       }
 
-      if (battleInitialized && !isInitiativeTrackerPage) {
+      if (battleStarted && !isInitiativeTrackerPage) {
         return {
           label: t("returnToBattle"),
           state: "returnToBattle",
@@ -199,7 +211,7 @@ export function ActionButton() {
       }
 
       // FR-015 — joueur : bascule combat ↔ fiche
-      if (battleInitialized && isInitiativeTrackerPage) {
+      if (battleStarted && isInitiativeTrackerPage) {
         return {
           label: t("returnToSheet"),
           state: "returnToSheet",
@@ -212,7 +224,7 @@ export function ActionButton() {
         };
       }
 
-      if (battleInitialized && !isInitiativeTrackerPage) {
+      if (battleStarted && !isInitiativeTrackerPage) {
         return {
           label: t("returnToBattle"),
           state: "returnToBattle",

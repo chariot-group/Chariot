@@ -154,17 +154,21 @@ export function InitiativeTrackerRow({
     : gmName;
   const displayName = playerResolvedName ?? gmName;
   const showHiddenName = isPlayerView && !isOwnCharacter && playerResolvedName == null;
+  const gmAliasDisplayName = row.playerDisplayName?.trim() ?? "";
   const showGmAliasSubtitle =
-    !isPlayerView && shouldShowGmPlayerAliasSubtitle(gmName, row.playerDisplayName ?? "");
+    !isPlayerView && shouldShowGmPlayerAliasSubtitle(gmName, gmAliasDisplayName);
 
   const renderCharacterNameText = (primary: string, className = "") => (
-    <span className={cn("flex min-w-0 flex-col", className)}>
-      <span className="min-w-0 truncate text-base font-semibold text-white">{primary}</span>
+    <span className={cn("flex w-full max-w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden", className)}>
+      <span className="block w-full min-w-0 max-w-full truncate text-base font-semibold text-white" title={primary}>
+        {primary}
+      </span>
       {showGmAliasSubtitle ? (
         <span
-          className="min-w-0 truncate text-xs font-medium text-white/55"
-          title={labels.playerDisplayNameSubtitle}>
-          {row.playerDisplayName.trim()}
+          className="block w-full min-w-0 max-w-full truncate text-xs font-medium text-white/55"
+          title={gmAliasDisplayName}
+          aria-label={labels.playerDisplayNameSubtitle}>
+          {gmAliasDisplayName}
         </span>
       ) : null}
     </span>
@@ -242,7 +246,7 @@ export function InitiativeTrackerRow({
             <Link
               href={ownCharacterSheetHref}
               aria-label={labels.viewOwnSheet}
-              className="min-w-0 underline decoration-transparent underline-offset-4 hover:text-blue hover:decoration-blue focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+              className="block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden underline decoration-transparent underline-offset-4 hover:text-blue hover:decoration-blue focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
               {renderCharacterNameText(displayName)}
             </Link>
           </TooltipTrigger>
@@ -258,7 +262,7 @@ export function InitiativeTrackerRow({
             <Link
               href={getSheetHref(row.characterId)}
               aria-label={labels.viewSheetFor}
-              className="min-w-0 underline decoration-transparent underline-offset-4 hover:text-blue hover:decoration-blue focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+              className="block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden underline decoration-transparent underline-offset-4 hover:text-blue hover:decoration-blue focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
               {renderCharacterNameText(gmName)}
             </Link>
           </TooltipTrigger>
@@ -272,7 +276,7 @@ export function InitiativeTrackerRow({
         <Tooltip>
           <TooltipTrigger asChild>
             <span
-              className="min-w-0 cursor-not-allowed text-white/85"
+              className="block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden cursor-not-allowed text-white/85"
               aria-disabled="true">
               {renderCharacterNameText(displayName)}
             </span>
@@ -491,7 +495,9 @@ export function InitiativeTrackerRow({
 
         {renderInitiativeCell()}
 
-        <div className={`flex min-w-0 items-center ${TRACKER_CELL_ALIGN.character}`}>{renderCharacterNameNode()}</div>
+        <div className={`flex w-full max-w-full min-w-0 overflow-hidden ${TRACKER_CELL_ALIGN.character}`}>
+          {renderCharacterNameNode()}
+        </div>
 
         {renderHpCell()}
 
@@ -566,7 +572,7 @@ export function InitiativeTrackerRow({
             </Button>
           </div>
 
-          <div className="min-w-0 pt-1 text-left">
+          <div className="min-w-0 max-w-full overflow-hidden pt-1 text-left">
             {renderCharacterNameNode()}
           </div>
 
@@ -632,7 +638,7 @@ export function InitiativeTrackerRow({
               <span className="flex min-w-0 items-start gap-2 overflow-hidden">{renderGroupContent(true)}</span>,
             )}
             {showGmAliasSubtitle
-              ? renderDetailItem(labels.playerDisplayNameSubtitle, row.playerDisplayName.trim())
+              ? renderDetailItem(labels.playerDisplayNameSubtitle, gmAliasDisplayName)
               : null}
           </dl>
 

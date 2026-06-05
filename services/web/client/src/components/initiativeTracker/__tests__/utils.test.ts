@@ -9,6 +9,7 @@ import {
   shouldShowGmPlayerAliasSubtitle,
   trackerDeathSavesFailuresFromCharacter,
   trackerKindFromCharacter,
+  trackerMirrorFieldsFromCharacter,
   trackerStatusFieldsFromCharacter,
 } from "../utils";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "../constants";
@@ -154,6 +155,35 @@ describe("FR-014 — character → tracker mirror helpers", () => {
       tempHitPoints: 4,
       kind: "player",
       deathSavesFailures: 3,
+    });
+  });
+
+  it("nominal: trackerMirrorFieldsFromCharacter also mirrors identity, avatar, and armor class", () => {
+    const player = buildPlayerCharacter({
+      firstname: "Lyra",
+      lastname: "Vale",
+      surname: "The Whisper",
+      avatar: "https://example.test/lyra.png",
+      stats: {
+        maxHitPoints: 22,
+        currentHitPoints: 16,
+        tempHitPoints: 5,
+        armorClass: 17,
+      } as Player["stats"],
+      deathSaves: { successes: 0, failures: 0 },
+    });
+
+    expect(trackerMirrorFieldsFromCharacter(player)).toEqual({
+      firstname: "Lyra",
+      lastname: "Vale",
+      surname: "The Whisper",
+      avatar: "https://example.test/lyra.png",
+      armorClass: 17,
+      hitPoints: 16,
+      maxHitPoints: 22,
+      tempHitPoints: 5,
+      kind: "player",
+      deathSavesFailures: 0,
     });
   });
 

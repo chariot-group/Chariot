@@ -75,6 +75,35 @@ export function trackerStatusFieldsFromCharacter(
   };
 }
 
+/**
+ * FR-016 — miroir complet des champs de fiche affichés dans le tracker.
+ * Utilisé lors d'un refresh temps réel de fiche pour resynchroniser toutes les lignes concernées.
+ */
+export function trackerMirrorFieldsFromCharacter(
+  character: Character,
+): Pick<
+  InitiativeTrackerRow,
+  | "firstname"
+  | "lastname"
+  | "surname"
+  | "avatar"
+  | "armorClass"
+  | "hitPoints"
+  | "maxHitPoints"
+  | "tempHitPoints"
+  | "kind"
+  | "deathSavesFailures"
+> {
+  return {
+    firstname: character.firstname ?? "",
+    lastname: character.lastname ?? "",
+    surname: character.surname ?? "",
+    avatar: character.avatar ?? "",
+    armorClass: Number.isFinite(character.stats?.armorClass) ? Number(character.stats.armorClass) : 0,
+    ...trackerStatusFieldsFromCharacter(character),
+  };
+}
+
 export function characterName(firstname: string, lastname: string, surname: string): string {
   const fullName = `${firstname ?? ""} ${lastname ?? ""}`.trim();
   return fullName || surname || "-";

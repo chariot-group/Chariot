@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
   isBattleTurnLocked,
   buildBattleTurnKey,
   sortInitiativeTrackerRows,
-  trackerStatusFieldsFromCharacter,
+  trackerMirrorFieldsFromCharacter,
   filterRowsForPlayerView,
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
@@ -37,17 +37,19 @@ import {
   nextBattleTurn,
   previousBattleTurn,
   selectActiveTurnRowId,
+  selectBattleInitialized,
   selectBattleStarted,
   selectCharacterSheetRemoteVersions,
   selectCurrentRound,
+  selectLastConsultedSheetPath,
   selectTurnsWithActions,
   selectInitiativeTrackerRows,
   selectIsInSession,
   selectSessionCode,
   selectSessionParticipants,
+  removeInitiativeTrackerRow,
   startBattle,
   updateInitiativeTrackerRow,
-  removeInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
 
@@ -56,6 +58,7 @@ export default function InitiativeTrackerPage() {
   const tInit = useTranslations("initTracker");
   const tBattle = useTranslations("characterDetail.battle");
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
   const sessionCode = useAppSelector(selectSessionCode);
   const isInSession = useAppSelector(selectIsInSession);
@@ -63,11 +66,13 @@ export default function InitiativeTrackerPage() {
   const user = useUser();
   const [healthDialogRow, setHealthDialogRow] = React.useState<InitiativeTrackerRow | null>(null);
   const rows = useAppSelector(selectInitiativeTrackerRows);
+  const battleInitialized = useAppSelector(selectBattleInitialized);
   const battleStarted = useAppSelector(selectBattleStarted);
   const activeTurnRowId = useAppSelector(selectActiveTurnRowId);
   const currentRound = useAppSelector(selectCurrentRound);
   const turnsWithActions = useAppSelector(selectTurnsWithActions);
   const remoteCharacterVersions = useAppSelector(selectCharacterSheetRemoteVersions);
+  const lastConsultedSheetPath = useAppSelector(selectLastConsultedSheetPath);
 
   const isGameMaster = React.useMemo(() => {
     const userId = user.user?.keycloakId;
@@ -76,6 +81,7 @@ export default function InitiativeTrackerPage() {
   }, [participants, user.user?.keycloakId]);
 
   const trackerMode = isGameMaster ? "gm" : "player";
+  const previousBattleInitializedRef = React.useRef(battleInitialized);
 
   const visibleRows = React.useMemo(() => {
     const sorted = sortInitiativeTrackerRows(rows);
@@ -111,20 +117,19 @@ export default function InitiativeTrackerPage() {
   React.useEffect(() => {
     if (!isGameMaster) return;
 
-    const candidates = rows.filter((row) => row.kind === "player" && row.hitPoints <= 0);
-    if (candidates.length === 0) {
+    const rowIdsByCharacterId = new Map<string, string[]>();
+    for (const row of rows) {
+      const list = rowIdsByCharacterId.get(row.characterId) ?? [];
+      list.push(row.id);
+      rowIdsByCharacterId.set(row.characterId, list);
+    }
+
+    if (rowIdsByCharacterId.size === 0) {
       return;
     }
 
     let cancelled = false;
     const refreshes: Promise<void>[] = [];
-
-    const rowIdsByCharacterId = new Map<string, string[]>();
-    for (const row of candidates) {
-      const list = rowIdsByCharacterId.get(row.characterId) ?? [];
-      list.push(row.id);
-      rowIdsByCharacterId.set(row.characterId, list);
-    }
 
     rowIdsByCharacterId.forEach((rowIds, characterId) => {
       const remoteVersion = remoteCharacterVersions[characterId] ?? 0;
@@ -136,7 +141,7 @@ export default function InitiativeTrackerPage() {
         CharacterService.getCharacterById(characterId, { sessionCode })
           .then((character) => {
             if (cancelled) return;
-            const fields = trackerStatusFieldsFromCharacter(character);
+            const fields = trackerMirrorFieldsFromCharacter(character);
             rowIds.forEach((rowId) => {
               dispatch(updateInitiativeTrackerRow({ id: rowId, changes: fields }));
             });
@@ -193,6 +198,37 @@ export default function InitiativeTrackerPage() {
     const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
     return `/${locale}/characters/${encodeURIComponent(ownCharacterId)}${query}`;
   }, [locale, ownCharacterId, sessionCode]);
+
+  React.useEffect(() => {
+    if (!isGameMaster && !battleStarted) {
+      if (ownCharacterSheetHref) {
+        router.replace(ownCharacterSheetHref);
+      }
+      return;
+    }
+
+    const hadBattle = previousBattleInitializedRef.current;
+    previousBattleInitializedRef.current = battleInitialized;
+
+    if (battleInitialized || !hadBattle) {
+      return;
+    }
+
+    if (isGameMaster) {
+      if (lastConsultedSheetPath) {
+        router.replace(lastConsultedSheetPath);
+      }
+      return;
+    }
+
+    if (ownCharacterSheetHref) {
+      router.replace(ownCharacterSheetHref);
+    }
+  }, [battleInitialized, battleStarted, isGameMaster, lastConsultedSheetPath, ownCharacterSheetHref, router]);
+
+  if (!isGameMaster && !battleStarted) {
+    return null;
+  }
 
   const getRowLabels = (row: InitiativeTrackerRow) => {
     const name = characterName(row.firstname, row.lastname, row.surname);
@@ -372,6 +408,10 @@ export default function InitiativeTrackerPage() {
                 labels={{
                   startCombat: t("startCombat"),
                   endCombat: t("endCombat"),
+                  endCombatConfirmTitle: t("endCombatConfirmTitle"),
+                  endCombatConfirmDescription: t("endCombatConfirmDescription"),
+                  endCombatConfirmAction: t("endCombatConfirmAction"),
+                  endCombatCancelAction: t("endCombatCancelAction"),
                   previous: t("previousTurn"),
                   next: t("nextTurn"),
                   previousHintAvailable: t("previousTurnHintAvailable"),

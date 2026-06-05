@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import sessionReducer, {
   appendInitiativeTrackerRows,
   createInitiativeTrackerRow,
+  endBattle,
   removeInitiativeTrackerRow,
+  setSessionInitBattleDraft,
   setInitiativeTrackerRows,
   startBattle,
   type InitiativeTrackerRow,
@@ -86,5 +88,39 @@ describe("FR-015 — playerDisplayName default on create", () => {
       kind: "npc",
     });
     expect(row.playerDisplayName).toBe("Gobelin 1");
+  });
+});
+
+describe("FR-012 — end combat reset", () => {
+  it("nominal: ending combat clears tracker rows and draft state", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([buildRow({ id: "g1:c1", characterId: "c1" })]),
+    );
+    state = sessionReducer(
+      state,
+      setSessionInitBattleDraft({
+        selectedGroupIds: ["g1"],
+        expandedGroupIds: ["g1"],
+        excludedMembersByGroup: { g1: ["c2"] },
+        showAllOpponents: true,
+      }),
+    );
+    state = sessionReducer(state, startBattle());
+
+    state = sessionReducer(state, endBattle());
+
+    expect(state.initiativeTrackerRows).toEqual([]);
+    expect(state.battleInitialized).toBe(false);
+    expect(state.battleStarted).toBe(false);
+    expect(state.activeTurnRowId).toBeNull();
+    expect(state.currentRound).toBe(1);
+    expect(state.turnsWithActions).toEqual([]);
+    expect(state.initBattleDraft).toEqual({
+      selectedGroupIds: [],
+      expandedGroupIds: [],
+      excludedMembersByGroup: {},
+      showAllOpponents: false,
+    });
   });
 });

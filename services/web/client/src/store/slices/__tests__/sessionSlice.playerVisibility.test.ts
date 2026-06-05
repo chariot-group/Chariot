@@ -178,6 +178,43 @@ describe("FR-015 — applyRemoteBattleState", () => {
     expect(state.activeTurnRowId).toBe("b");
   });
 
+  it("edge: initialized but not started snapshot does not count as started combat for players", () => {
+    let state = sessionReducer(undefined, setInitiativeTrackerRows([]));
+    state = sessionReducer(
+      state,
+      applyRemoteBattleState({
+        initiativeTrackerRows: [buildRow({ id: "prep" })],
+        battleInitialized: true,
+        battleStarted: false,
+        activeTurnRowId: null,
+        currentRound: 1,
+      }),
+    );
+
+    expect(state.battleInitialized).toBe(true);
+    expect(state.battleStarted).toBe(false);
+    expect(state.activeTurnRowId).toBeNull();
+  });
+
+  it("edge: ending combat from GM snapshot clears player battle access", () => {
+    let state = sessionReducer(undefined, setInitiativeTrackerRows([buildRow({ id: "a" })]));
+    state = sessionReducer(
+      state,
+      applyRemoteBattleState({
+        initiativeTrackerRows: [],
+        battleInitialized: false,
+        battleStarted: false,
+        activeTurnRowId: null,
+        currentRound: 1,
+      }),
+    );
+
+    expect(state.initiativeTrackerRows).toEqual([]);
+    expect(state.battleInitialized).toBe(false);
+    expect(state.battleStarted).toBe(false);
+    expect(state.activeTurnRowId).toBeNull();
+  });
+
   it("error: partial visibility payload is normalized", () => {
     const row = buildRow({
       id: "c",
