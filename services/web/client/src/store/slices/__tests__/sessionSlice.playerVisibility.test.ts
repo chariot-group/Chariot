@@ -5,8 +5,11 @@ import sessionReducer, {
   applyRemoteBattleState,
   defaultPlayerFieldVisibilityForKind,
   normalizePlayerFieldVisibility,
+  removeInitiativeTrackerRows,
   setInitiativeTrackerRows,
+  startBattle,
   updateInitiativeTrackerRow,
+  updateInitiativeTrackerRowsBulk,
   type InitiativeTrackerRow,
 } from "../sessionSlice";
 import { filterRowsForPlayerView } from "@/components/initiativeTracker/utils";
@@ -67,7 +70,7 @@ describe("FR-015 — player field visibility defaults", () => {
     const legacyRow = {
       ...buildRow({ id: "x", kind: "npc" }),
       playerFieldVisibility: undefined,
-    } as InitiativeTrackerRow;
+    } as unknown as InitiativeTrackerRow;
 
     const state = sessionReducer(undefined, setInitiativeTrackerRows([legacyRow]));
     expect(state.initiativeTrackerRows[0].playerFieldVisibility).toEqual(
@@ -155,6 +158,46 @@ describe("FR-015 — session participant rows not maskable", () => {
     );
     expect(state.initiativeTrackerRows[0].visible).toBe(false);
   });
+
+  it("nominal: session participant display name can change while visibility stays forced", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({
+          id: "pj",
+          kind: "player",
+          groupId: SESSION_PARTICIPANTS_GROUP_ID,
+          visible: true,
+          playerDisplayName: "Original name",
+        }),
+      ]),
+    );
+
+    state = sessionReducer(
+      state,
+      updateInitiativeTrackerRow({
+        id: "pj",
+        changes: {
+          visible: false,
+          playerDisplayName: "Displayed hero",
+          playerFieldVisibility: {
+            initiative: false,
+            name: false,
+            hitPoints: false,
+            armorClass: false,
+            conditions: false,
+            groupLabel: false,
+          },
+        },
+      }),
+    );
+
+    expect(state.initiativeTrackerRows[0].playerDisplayName).toBe("Displayed hero");
+    expect(state.initiativeTrackerRows[0].visible).toBe(true);
+    expect(state.initiativeTrackerRows[0].playerFieldVisibility).toEqual(
+      defaultPlayerFieldVisibilityForKind("player", SESSION_PARTICIPANTS_GROUP_ID),
+    );
+  });
 });
 
 describe("FR-015 — applyRemoteBattleState", () => {
@@ -223,5 +266,122 @@ describe("FR-015 — applyRemoteBattleState", () => {
     const normalized = normalizePlayerFieldVisibility(row.playerFieldVisibility, "npc", row.groupId);
     expect(normalized.name).toBe(true);
     expect(normalized.hitPoints).toBe(false);
+  });
+});
+
+describe("FR-017 — bulk display configuration", () => {
+  it("nominal: applies visibility settings and shared alias to selected rows only", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({ id: "a", playerDisplayName: "A" }),
+        buildRow({ id: "b", playerDisplayName: "B" }),
+        buildRow({ id: "c", playerDisplayName: "C" }),
+      ]),
+    );
+
+    state = sessionReducer(
+      state,
+      updateInitiativeTrackerRowsBulk({
+        ids: ["a", "b"],
+        changes: {
+          visible: false,
+          playerFieldVisibility: {
+            initiative: true,
+            name: false,
+            hitPoints: true,
+            armorClass: false,
+            conditions: true,
+            groupLabel: false,
+          },
+        },
+        playerDisplayName: "Mystery foes",
+      }),
+    );
+
+    expect(state.initiativeTrackerRows.find((row) => row.id === "a")?.visible).toBe(false);
+    expect(state.initiativeTrackerRows.find((row) => row.id === "b")?.playerDisplayName).toBe("Mystery foes");
+    expect(state.initiativeTrackerRows.find((row) => row.id === "c")?.playerDisplayName).toBe("C");
+    expect(state.initiativeTrackerRows.find((row) => row.id === "a")?.playerFieldVisibility.hitPoints).toBe(true);
+  });
+
+  it("edge: empty shared alias preserves existing aliases", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({ id: "a", playerDisplayName: "Alias A" }),
+        buildRow({ id: "b", playerDisplayName: "Alias B" }),
+      ]),
+    );
+
+    state = sessionReducer(
+      state,
+      updateInitiativeTrackerRowsBulk({
+        ids: ["a", "b"],
+        changes: { visible: true },
+        playerDisplayName: "   ",
+      }),
+    );
+
+    expect(state.initiativeTrackerRows.map((row) => row.playerDisplayName)).toEqual(["Alias A", "Alias B"]);
+  });
+
+  it("error: empty selection leaves rows unchanged", () => {
+    const initial = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([buildRow({ id: "a", visible: true, playerDisplayName: "Alias A" })]),
+    );
+
+    const state = sessionReducer(
+      initial,
+      updateInitiativeTrackerRowsBulk({
+        ids: [],
+        changes: { visible: false },
+        playerDisplayName: "Hidden",
+      }),
+    );
+
+    expect(state.initiativeTrackerRows).toEqual(initial.initiativeTrackerRows);
+  });
+
+  it("nominal: bulk change during started combat locks the active turn once", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({ id: "a", initiative: 20 }),
+        buildRow({ id: "b", initiative: 10 }),
+      ]),
+    );
+    state = sessionReducer(state, startBattle());
+
+    state = sessionReducer(
+      state,
+      updateInitiativeTrackerRowsBulk({
+        ids: ["a", "b"],
+        changes: { visible: false },
+      }),
+    );
+
+    expect(state.activeTurnRowId).toBe("a");
+    expect(state.turnsWithActions).toEqual(["1:a"]);
+  });
+
+  it("nominal: bulk leave initiative removes selected rows without ending a non-empty combat", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({ id: "a", initiative: 20 }),
+        buildRow({ id: "b", initiative: 10 }),
+        buildRow({ id: "c", initiative: 5 }),
+      ]),
+    );
+    state = sessionReducer(state, startBattle());
+
+    state = sessionReducer(state, removeInitiativeTrackerRows(["b", "c"]));
+
+    expect(state.initiativeTrackerRows.map((row) => row.id)).toEqual(["a"]);
+    expect(state.battleInitialized).toBe(true);
+    expect(state.battleStarted).toBe(true);
+    expect(state.turnsWithActions).toEqual(["1:a"]);
   });
 });

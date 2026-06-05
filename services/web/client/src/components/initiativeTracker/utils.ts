@@ -1,5 +1,5 @@
 import type { Character, Player } from "@/types/character";
-import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
+import type { BattleStateSnapshot, InitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import { isPlayer } from "@/utils/global.utils";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "./constants";
 
@@ -176,6 +176,40 @@ export function filterRowsForPlayerView(rows: InitiativeTrackerRow[]): Initiativ
   return rows.filter((row) => row.visible || isSessionParticipantTrackerRow(row));
 }
 
+/** FR-015 / FR-016 — retire du snapshot temps réel les données que les joueurs ne peuvent pas voir. */
+export function sanitizeInitiativeTrackerRowForPlayer(row: InitiativeTrackerRow): InitiativeTrackerRow {
+  const fieldVis = row.playerFieldVisibility;
+  return {
+    ...row,
+    firstname: fieldVis.name ? row.firstname : "",
+    lastname: fieldVis.name ? row.lastname : "",
+    surname: fieldVis.name ? row.surname : "",
+    initiative: fieldVis.initiative ? row.initiative : 0,
+    hitPoints: fieldVis.hitPoints ? row.hitPoints : 1,
+    maxHitPoints: fieldVis.hitPoints ? row.maxHitPoints : 0,
+    tempHitPoints: fieldVis.hitPoints ? row.tempHitPoints : 0,
+    armorClass: fieldVis.armorClass ? row.armorClass : 0,
+    conditions: fieldVis.conditions ? row.conditions : [],
+    groupLabel: fieldVis.groupLabel ? row.groupLabel : "",
+    deathSavesFailures: fieldVis.hitPoints ? row.deathSavesFailures : 0,
+  };
+}
+
+export function sanitizeBattleStateSnapshotForPlayers(snapshot: BattleStateSnapshot): BattleStateSnapshot {
+  const initiativeTrackerRows = filterRowsForPlayerView(snapshot.initiativeTrackerRows).map(
+    sanitizeInitiativeTrackerRowForPlayer,
+  );
+  const activeTurnVisible = snapshot.activeTurnRowId
+    ? initiativeTrackerRows.some((row) => row.id === snapshot.activeTurnRowId)
+    : false;
+
+  return {
+    ...snapshot,
+    initiativeTrackerRows,
+    activeTurnRowId: activeTurnVisible ? snapshot.activeTurnRowId : null,
+  };
+}
+
 /** FR-015 — alias par défaut = nom réel du personnage sur la ligne tracker. */
 export function defaultPlayerDisplayNameForRow(
   row: Pick<InitiativeTrackerRow, "firstname" | "lastname" | "surname">,
@@ -195,14 +229,16 @@ export function shouldShowGmPlayerAliasSubtitle(gmName: string, playerDisplayNam
   return alias.length > 0 && alias !== gmName.trim();
 }
 
-/** FR-015 — nom affiché côté joueur selon visibilité et alias MJ. */
+/** FR-015 / FR-017 — nom affiché côté joueur selon visibilité et override MJ. */
 export function resolvePlayerTrackerDisplayName(
   row: Pick<InitiativeTrackerRow, 'firstname' | 'lastname' | 'surname' | 'playerDisplayName' | 'playerFieldVisibility'>,
 ): string | null {
   const realName = characterName(row.firstname, row.lastname, row.surname);
+  const displayName = row.playerDisplayName?.trim();
+
   if (row.playerFieldVisibility.name) {
-    return realName;
+    return displayName.length > 0 ? displayName : realName;
   }
-  const alias = row.playerDisplayName?.trim();
-  return alias.length > 0 ? alias : null;
+
+  return displayName.length > 0 ? displayName : null;
 }

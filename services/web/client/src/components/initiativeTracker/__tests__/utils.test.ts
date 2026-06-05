@@ -6,6 +6,8 @@ import {
   getInitiativeTrackerRowStatus,
   resolvePlayerDisplayNameForSave,
   resolvePlayerTrackerDisplayName,
+  sanitizeBattleStateSnapshotForPlayers,
+  sanitizeInitiativeTrackerRowForPlayer,
   shouldShowGmPlayerAliasSubtitle,
   trackerDeathSavesFailuresFromCharacter,
   trackerKindFromCharacter,
@@ -255,7 +257,17 @@ describe("FR-015 — resolvePlayerTrackerDisplayName", () => {
     },
   };
 
-  it("nominal: returns real name when name visibility is enabled", () => {
+  it("nominal: returns configured display name when name visibility is enabled", () => {
+    expect(
+      resolvePlayerTrackerDisplayName({
+        ...baseRow,
+        playerDisplayName: "Créature des ombres",
+        playerFieldVisibility: { ...baseRow.playerFieldVisibility, name: true },
+      }),
+    ).toBe("Créature des ombres");
+  });
+
+  it("edge: falls back to real name when name is visible and no display name is configured", () => {
     expect(
       resolvePlayerTrackerDisplayName({
         ...baseRow,
@@ -275,5 +287,88 @@ describe("FR-015 — resolvePlayerTrackerDisplayName", () => {
 
   it("error: returns null when name hidden and no alias", () => {
     expect(resolvePlayerTrackerDisplayName(baseRow)).toBeNull();
+  });
+});
+
+describe("FR-015 / FR-016 — player-safe battle snapshots", () => {
+  const visibleRow = {
+    id: "visible",
+    characterId: "c-visible",
+    firstname: "Secret",
+    lastname: "Boss",
+    surname: "",
+    avatar: "",
+    initiative: 18,
+    hitPoints: 44,
+    maxHitPoints: 50,
+    tempHitPoints: 3,
+    armorClass: 17,
+    conditions: [{ condition: "poisoned" }],
+    groupId: "g1",
+    groupLabel: "Hidden lair",
+    visible: true,
+    playerDisplayName: "Masked boss",
+    playerFieldVisibility: {
+      initiative: false,
+      name: false,
+      hitPoints: false,
+      armorClass: false,
+      conditions: false,
+      groupLabel: false,
+    },
+    kind: "npc",
+    deathSavesFailures: 0,
+  } as InitiativeTrackerRow;
+
+  it("nominal: preserves player alias while stripping hidden real fields", () => {
+    const sanitized = sanitizeInitiativeTrackerRowForPlayer(visibleRow);
+
+    expect(sanitized.playerDisplayName).toBe("Masked boss");
+    expect(sanitized.firstname).toBe("");
+    expect(sanitized.lastname).toBe("");
+    expect(sanitized.initiative).toBe(0);
+    expect(sanitized.hitPoints).toBe(1);
+    expect(sanitized.deathSavesFailures).toBe(0);
+    expect(sanitized.armorClass).toBe(0);
+    expect(sanitized.conditions).toEqual([]);
+    expect(sanitized.groupLabel).toBe("");
+  });
+
+  it("edge: keeps fields explicitly visible to players", () => {
+    const sanitized = sanitizeInitiativeTrackerRowForPlayer({
+      ...visibleRow,
+      playerFieldVisibility: {
+        initiative: true,
+        name: true,
+        hitPoints: true,
+        armorClass: true,
+        conditions: true,
+        groupLabel: true,
+      },
+    });
+
+    expect(sanitized.firstname).toBe("Secret");
+    expect(sanitized.initiative).toBe(18);
+    expect(sanitized.hitPoints).toBe(44);
+    expect(sanitized.conditions).toHaveLength(1);
+    expect(sanitized.groupLabel).toBe("Hidden lair");
+  });
+
+  it("error: removes hidden rows and clears active turn when it is not visible", () => {
+    const sanitized = sanitizeBattleStateSnapshotForPlayers({
+      initiativeTrackerRows: [
+        visibleRow,
+        { ...visibleRow, id: "hidden", characterId: "c-hidden", visible: false },
+      ],
+      battleInitialized: true,
+      battleStarted: true,
+      activeTurnRowId: "hidden",
+      currentRound: 2,
+    });
+
+    expect(sanitized.initiativeTrackerRows.map((row) => row.id)).toEqual(["visible"]);
+    expect(sanitized.activeTurnRowId).toBeNull();
+    expect(sanitized.battleStarted).toBe(true);
+    expect(sanitized.currentRound).toBe(2);
   });
 });

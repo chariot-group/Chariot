@@ -31,7 +31,9 @@ import type {
   InitiativeTrackerConditionEntry,
 } from "@/store/slices/sessionSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppStore } from "@/store/hooks";
 import { useUser } from "@/hooks/useUser";
+import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
 import {
   endBattle,
   nextBattleTurn,
@@ -42,14 +44,17 @@ import {
   selectCharacterSheetRemoteVersions,
   selectCurrentRound,
   selectLastConsultedSheetPath,
+  selectBattleStateSnapshot,
   selectTurnsWithActions,
   selectInitiativeTrackerRows,
   selectIsInSession,
   selectSessionCode,
   selectSessionParticipants,
   removeInitiativeTrackerRow,
+  removeInitiativeTrackerRows,
   startBattle,
   updateInitiativeTrackerRow,
+  updateInitiativeTrackerRowsBulk,
 } from "@/store/slices/sessionSlice";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
 
@@ -58,6 +63,7 @@ export default function InitiativeTrackerPage() {
   const tInit = useTranslations("initTracker");
   const tBattle = useTranslations("characterDetail.battle");
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
   const sessionCode = useAppSelector(selectSessionCode);
@@ -108,8 +114,34 @@ export default function InitiativeTrackerPage() {
 
   const canGoPrevious = previousTurnState === "available";
 
+  const broadcastCurrentBattleState = React.useCallback((options?: { includeEnded?: boolean }) => {
+    if (!isGameMaster || !isInSession) return;
+    const snapshot = selectBattleStateSnapshot(
+      store.getState() as Parameters<typeof selectBattleStateSnapshot>[0],
+    );
+    if (!snapshot.battleStarted && !options?.includeEnded) return;
+    emitBattleStateUpdate(snapshot);
+  }, [isGameMaster, isInSession, store]);
+
+  const dispatchTrackerAction = React.useCallback((
+    action: ReturnType<
+      | typeof updateInitiativeTrackerRow
+      | typeof removeInitiativeTrackerRow
+      | typeof removeInitiativeTrackerRows
+      | typeof updateInitiativeTrackerRowsBulk
+      | typeof startBattle
+      | typeof endBattle
+      | typeof nextBattleTurn
+      | typeof previousBattleTurn
+    >,
+    options?: { includeEnded?: boolean },
+  ) => {
+    dispatch(action);
+    broadcastCurrentBattleState(options);
+  }, [broadcastCurrentBattleState, dispatch]);
+
   const updateRow = (id: string, changes: Partial<Omit<InitiativeTrackerRow, "id">>) => {
-    dispatch(updateInitiativeTrackerRow({ id, changes }));
+    dispatchTrackerAction(updateInitiativeTrackerRow({ id, changes }));
   };
 
   const lastSyncedVersionsRef = React.useRef<Map<string, number>>(new Map());
@@ -143,7 +175,7 @@ export default function InitiativeTrackerPage() {
             if (cancelled) return;
             const fields = trackerMirrorFieldsFromCharacter(character);
             rowIds.forEach((rowId) => {
-              dispatch(updateInitiativeTrackerRow({ id: rowId, changes: fields }));
+              dispatchTrackerAction(updateInitiativeTrackerRow({ id: rowId, changes: fields }));
             });
           })
           .catch(() => {
@@ -157,7 +189,7 @@ export default function InitiativeTrackerPage() {
     return () => {
       cancelled = true;
     };
-  }, [dispatch, isGameMaster, remoteCharacterVersions, rows, sessionCode]);
+  }, [dispatchTrackerAction, isGameMaster, remoteCharacterVersions, rows, sessionCode]);
 
   const getSheetHref = (characterId: string) => {
     const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
@@ -278,6 +310,7 @@ export default function InitiativeTrackerPage() {
         },
       },
       selectRowFor: t("selectRowFor", { name }),
+      selectRowForVisibility: t("selectRowForVisibility", { name }),
       hitPointsFor: t("hitPointsFor", { name }),
       hitPointsSessionTooltip: tBattle("healthPointsSessionTooltip"),
       hpAbbr: tBattle("hpAbbr"),
@@ -383,11 +416,20 @@ export default function InitiativeTrackerPage() {
           onClearConditions={isGameMaster ? clearConditions : undefined}
           onHitPointsClick={isGameMaster && isInSession ? (row) => setHealthDialogRow(row) : undefined}
           onRemoveFromInitiative={
-            isGameMaster ? (rowId) => dispatch(removeInitiativeTrackerRow(rowId)) : undefined
+            isGameMaster ? (rowId) => dispatchTrackerAction(removeInitiativeTrackerRow(rowId)) : undefined
+          }
+          onRemoveMultipleFromInitiative={
+            isGameMaster ? (rowIds) => dispatchTrackerAction(removeInitiativeTrackerRows(rowIds)) : undefined
+          }
+          onUpdateMultipleRows={
+            isGameMaster
+              ? (rowIds, changes, playerDisplayName) =>
+                  dispatchTrackerAction(updateInitiativeTrackerRowsBulk({ ids: rowIds, changes, playerDisplayName }))
+              : undefined
           }
           getRowLabels={getRowLabels}
           groupedInitiativeLabels={
-            isGameMaster
+            isGameMaster && !battleStarted
               ? {
                   enableMode: t("groupedInitiativeEnable"),
                   disableMode: t("groupedInitiativeDisable"),
@@ -396,6 +438,36 @@ export default function InitiativeTrackerPage() {
                   apply: t("groupedInitiativeApply"),
                   clearSelection: t("groupedInitiativeClearSelection"),
                   selectAllRows: t("selectAllRows"),
+                }
+              : undefined
+          }
+          bulkVisibilityLabels={
+            isGameMaster
+              ? {
+                  enableMode: t("bulkVisibilityEnable"),
+                  disableMode: t("bulkVisibilityDisable"),
+                  getSelectedCountLabel: (count) => t("groupedInitiativeSelectedCount", { count }),
+                  selectAllRows: t("bulkVisibilitySelectAllRows"),
+                  clearSelection: t("groupedInitiativeClearSelection"),
+                  title: t("bulkVisibilityDialog.title"),
+                  description: t("bulkVisibilityDialog.description"),
+                  showToPlayers: t("visibilityDialog.showToPlayers"),
+                  playerDisplayName: t("bulkVisibilityDialog.playerDisplayName"),
+                  playerDisplayNameHint: t("bulkVisibilityDialog.playerDisplayNameHint"),
+                  playerDisplayNamePlaceholder: t("bulkVisibilityDialog.playerDisplayNamePlaceholder"),
+                  fieldsTitle: t("visibilityDialog.title"),
+                  emptySelection: t("bulkVisibilityDialog.emptySelection"),
+                  apply: t("visibilityDialog.apply"),
+                  cancel: t("visibilityDialog.cancel"),
+                  leaveInitiative: t("bulkVisibilityDialog.leaveInitiative"),
+                  fields: {
+                    initiative: t("visibilityDialog.fields.initiative"),
+                    name: t("visibilityDialog.fields.name"),
+                    hitPoints: t("visibilityDialog.fields.hitPoints"),
+                    armorClass: t("visibilityDialog.fields.armorClass"),
+                    conditions: t("visibilityDialog.fields.conditions"),
+                    groupLabel: t("visibilityDialog.fields.groupLabel"),
+                  },
                 }
               : undefined
           }
@@ -418,10 +490,10 @@ export default function InitiativeTrackerPage() {
                   previousHintLocked: t("previousTurnHintLocked"),
                   previousHintNoPrevious: t("previousTurnHintNoPrevious"),
                 }}
-                onStartCombat={() => dispatch(startBattle())}
-                onEndCombat={() => dispatch(endBattle())}
-                onPrevious={() => dispatch(previousBattleTurn())}
-                onNext={() => dispatch(nextBattleTurn())}
+                onStartCombat={() => dispatchTrackerAction(startBattle())}
+                onEndCombat={() => dispatchTrackerAction(endBattle(), { includeEnded: true })}
+                onPrevious={() => dispatchTrackerAction(previousBattleTurn())}
+                onNext={() => dispatchTrackerAction(nextBattleTurn())}
               />
             ) : null
           }

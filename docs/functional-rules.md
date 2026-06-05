@@ -1412,3 +1412,51 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
 - `services/web/client/src/store/slices/sessionSlice.ts`
 - `services/session/api/src/resources/session/session.gateway.ts`
+
+---
+
+## FR-017: Initiative Tracker - Bulk Display Configuration
+
+**Rule**: The Game Master initiative tracker must support bulk selection of tracker rows from the display-configuration area so shared display parameters can be applied to multiple combatants at once, including during an active combat.
+
+**Requirements**:
+
+- The bulk display-configuration control must be available to the GM whenever a battle is initialized or started.
+- The GM can select multiple tracker rows and apply shared player-facing display parameters in one action.
+- Bulk display configuration must support the same player-facing visibility fields as the per-row display configuration defined in FR-015.
+- Bulk display configuration must support assigning a shared player-facing name/alias to all selected rows.
+- The shared name/alias input is empty by default and must be clearly identified as applying the same name to all selected characters.
+- If the shared name/alias input is left empty, existing row aliases must not be overwritten.
+- Bulk actions that remove rows from initiative must follow the "leave initiative" behavior from FR-012 and must not end the battle.
+- When bulk changes are applied during started combat, the current turn must be marked as having a tracker action according to FR-012 rollback-lock semantics.
+- Player-facing broadcasts and masking must continue to follow FR-015.
+
+**Accessibility Requirements**:
+
+- Bulk-selection controls must be keyboard reachable and operable.
+- The bulk action button must have an explicit accessible name and state when selection mode is active.
+- Selected row state must be perceivable visually and to assistive technologies.
+- Dialog fields must have associated labels, and validation or empty-selection errors must be announced accessibly.
+
+**Prohibitions**:
+
+- Disabling the bulk display-configuration control only because combat has started.
+- Editing locked initiative scores during started combat through this bulk display-configuration workflow.
+- Overwriting existing aliases with an empty shared-name value.
+- Exposing GM-only display controls to player tracker views.
+
+**Tests**:
+
+- Bulk display configuration is available before combat starts and after combat starts.
+- Applying visibility settings updates all selected rows and leaves unselected rows unchanged.
+- Leaving the shared name/alias field empty preserves existing aliases.
+- Entering a shared name/alias applies that same alias to all selected rows.
+- Bulk leave-initiative removes selected rows without ending combat.
+- Applying a bulk change during started combat registers a tracker action on the current turn.
+- Keyboard, focus, accessible names, selected-state, and dialog-label behavior are covered.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
+- `services/web/client/src/components/initiativeTracker/`
+- `services/web/client/src/store/slices/sessionSlice.ts`

@@ -126,6 +126,7 @@
       "viewSheetFor": "Ver la ficha de {name}",
       "initiativeFor": "Iniciativa de {name}",
       "selectRowFor": "Seleccionar {name} para iniciativa agrupada",
+      "selectRowForVisibility": "Seleccionar {name} para visualización agrupada",
       "selectAllRows": "Seleccionar todos los personajes",
       "groupedInitiativeEnable": "Introducir iniciativa agrupada",
       "groupedInitiativeDisable": "Salir del modo de iniciativa agrupada",
@@ -133,6 +134,9 @@
       "groupedInitiativePlaceholder": "Iniciativa",
       "groupedInitiativeApply": "Aplicar a la selección",
       "groupedInitiativeClearSelection": "Borrar selección",
+      "bulkVisibilityEnable": "Configurar la visualización de varios personajes",
+      "bulkVisibilityDisable": "Salir del modo de visualización agrupada",
+      "bulkVisibilitySelectAllRows": "Seleccionar todos los personajes para visualización agrupada",
       "conditionFor": "Estado de {name}",
       "visibleFor": "Mostrar {name}",
       "playerDisplayNameSubtitle": "Nombre mostrado a los jugadores",
@@ -159,7 +163,7 @@
         "apply": "Aplicar",
         "cancel": "Cancelar",
         "leaveInitiative": "Salir de la iniciativa",
-        "playerRowVisibilityHint": "Los jugadores de la sesión siempre permanecen visibles. Los demás personajes pueden ocultarse desde este panel.",
+        "playerRowVisibilityHint": "Los jugadores de la sesión siempre permanecen visibles. Su nombre mostrado puede cambiarse, pero sus campos permanecen visibles.",
         "fields": {
           "initiative": "Puntuación de iniciativa",
           "name": "Nombre",
@@ -168,6 +172,15 @@
           "conditions": "Estados",
           "groupLabel": "Nombre del grupo"
         }
+      },
+      "bulkVisibilityDialog": {
+        "title": "Visualización agrupada",
+        "description": "Selecciona varios personajes y aplica la misma configuración de visualización. El nombre común es opcional y está vacío por defecto.",
+        "playerDisplayName": "Nombre común mostrado a los jugadores",
+        "playerDisplayNameHint": "Vacío por defecto. Si se deja vacío, los nombres ya configurados se conservan.",
+        "playerDisplayNamePlaceholder": "Dejar vacío o introducir un nombre común",
+        "emptySelection": "Selecciona al menos un personaje antes de aplicar una visualización agrupada.",
+        "leaveInitiative": "Sacar la selección de la iniciativa"
       },
       "roundIndicator": "Ronda {round}",
       "startCombat": "Iniciar combate",

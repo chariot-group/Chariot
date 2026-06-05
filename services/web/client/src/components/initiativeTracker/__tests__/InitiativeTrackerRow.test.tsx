@@ -153,4 +153,22 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     expect(html).toContain("block w-full min-w-0 max-w-full truncate text-base font-semibold text-white");
     expect(html).not.toContain("A character with a very long first name");
   });
+
+  it("nominal: visible player name uses the configured display name override", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{
+          ...baseRow,
+          playerDisplayName: "Disguised traveler",
+          playerFieldVisibility: { ...baseRow.playerFieldVisibility, name: true },
+        }}
+        mode="player"
+        ownCharacterId="other-character"
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain("Disguised traveler");
+    expect(html).not.toContain("A character with a very long first name");
+  });
 });

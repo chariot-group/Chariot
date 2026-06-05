@@ -18,9 +18,18 @@ import {
   respondToBattleStateRequest,
 } from "@/lib/sessionBattleSyncBridge";
 import { getPooledSessionSocket } from "@/lib/sessionSocketPool";
+import { sanitizeBattleStateSnapshotForPlayers } from "@/components/initiativeTracker/utils";
+import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useCallback, useEffect, useRef } from "react";
 
 const BATTLE_SYNC_DEBOUNCE_MS = 250;
+
+export function shouldBroadcastBattleStateSnapshot(
+  snapshot: Pick<BattleStateSnapshot, "battleInitialized" | "battleStarted">,
+  hadBroadcastStartedBattle: boolean,
+): boolean {
+  return snapshot.battleStarted || (!snapshot.battleInitialized && hadBroadcastStartedBattle);
+}
 
 function isGameMaster(
   participants: ReturnType<typeof selectSessionParticipants>,
@@ -39,6 +48,8 @@ export function useSessionBattleSync() {
   const code = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const user = useAppSelector(selectUser);
+  const { keycloak } = useKeycloak();
+  const currentUserId = user?.keycloakId ?? keycloak?.tokenParsed?.sub;
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const snapshot = useAppSelector(selectBattleStateSnapshot);
 
@@ -57,8 +68,8 @@ export function useSessionBattleSync() {
   }, [code]);
 
   useEffect(() => {
-    isGmRef.current = isGameMaster(participants, user?.keycloakId);
-  }, [participants, user?.keycloakId]);
+    isGmRef.current = isGameMaster(participants, currentUserId);
+  }, [currentUserId, participants]);
 
   const broadcastSnapshot = useCallback((state: BattleStateSnapshot) => {
     const socket = getPooledSessionSocket();
@@ -66,7 +77,7 @@ export function useSessionBattleSync() {
     if (!socket?.connected || !sessionCode) return;
     socket.emit("session:battle-state-updated", {
       sessionId: sessionCode,
-      state,
+      state: sanitizeBattleStateSnapshotForPlayers(state),
     });
   }, []);
 
@@ -93,14 +104,13 @@ export function useSessionBattleSync() {
     };
   }, [broadcastSnapshot, isInSession]);
 
-  const isGm = isGameMaster(participants, user?.keycloakId);
+  const isGm = isGameMaster(participants, currentUserId);
 
   useEffect(() => {
     if (!isInSession || !isGm) return;
 
-    const hasStartedBattle = snapshot.battleStarted;
     const hadBroadcastStartedBattle = hasBroadcastStartedBattleRef.current;
-    const shouldBroadcast = hasStartedBattle || (!snapshot.battleInitialized && hadBroadcastStartedBattle);
+    const shouldBroadcast = shouldBroadcastBattleStateSnapshot(snapshot, hadBroadcastStartedBattle);
     if (!shouldBroadcast) return;
 
     if (debounceRef.current) clearTimeout(debounceRef.current);

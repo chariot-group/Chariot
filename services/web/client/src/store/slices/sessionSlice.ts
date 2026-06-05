@@ -517,6 +517,37 @@ const sessionSlice = createSlice({
                 markActiveTurnWithActions(state);
             }
         },
+        removeInitiativeTrackerRows: (state, action: PayloadAction<string[]>) => {
+            const rowIds = new Set(action.payload);
+            if (rowIds.size === 0) return;
+
+            const beforeLength = state.initiativeTrackerRows.length;
+            const removedActiveTurn = state.activeTurnRowId != null && rowIds.has(state.activeTurnRowId);
+            state.initiativeTrackerRows = state.initiativeTrackerRows.filter((row) => !rowIds.has(row.id));
+            if (state.initiativeTrackerRows.length === beforeLength) return;
+
+            state.turnsWithActions = state.turnsWithActions.filter((key) => {
+                const rowId = key.slice(key.indexOf(':') + 1);
+                return !rowIds.has(rowId);
+            });
+
+            if (state.initiativeTrackerRows.length === 0) {
+                state.battleInitialized = false;
+                resetBattleTurnState(state);
+                return;
+            }
+
+            if (state.battleStarted) {
+                const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
+                const activeStillPresent = state.activeTurnRowId
+                    ? sorted.some((row) => row.id === state.activeTurnRowId)
+                    : false;
+                if (removedActiveTurn || !activeStillPresent) {
+                    state.activeTurnRowId = findFirstAliveRowId(sorted);
+                }
+                markActiveTurnWithActions(state);
+            }
+        },
         updateInitiativeTrackerRow: (
             state,
             action: PayloadAction<{ id: string; changes: Partial<Omit<InitiativeTrackerRow, 'id'>> }>,
@@ -535,6 +566,44 @@ const sessionSlice = createSlice({
             row.visible = normalized.visible;
             row.playerFieldVisibility = normalized.playerFieldVisibility;
             if (state.battleStarted) {
+                markActiveTurnWithActions(state);
+            }
+        },
+        updateInitiativeTrackerRowsBulk: (
+            state,
+            action: PayloadAction<{
+                ids: string[];
+                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>>;
+                playerDisplayName?: string;
+            }>,
+        ) => {
+            const rowIds = new Set(action.payload.ids);
+            if (rowIds.size === 0) return;
+
+            let changed = false;
+            for (const row of state.initiativeTrackerRows) {
+                if (!rowIds.has(row.id)) continue;
+                Object.assign(row, action.payload.changes);
+                if (typeof action.payload.playerDisplayName === 'string') {
+                    const trimmedDisplayName = action.payload.playerDisplayName.trim();
+                    if (trimmedDisplayName.length > 0) {
+                        row.playerDisplayName = trimmedDisplayName;
+                    }
+                }
+                if (action.payload.changes.playerFieldVisibility || action.payload.changes.kind) {
+                    row.playerFieldVisibility = normalizePlayerFieldVisibility(
+                        row.playerFieldVisibility,
+                        row.kind,
+                        row.groupId,
+                    );
+                }
+                const normalized = applyPlayerRowVisibilityRules(row);
+                row.visible = normalized.visible;
+                row.playerFieldVisibility = normalized.playerFieldVisibility;
+                changed = true;
+            }
+
+            if (changed && state.battleStarted) {
                 markActiveTurnWithActions(state);
             }
         },
@@ -631,7 +700,9 @@ export const {
     setInitiativeTrackerRows,
     appendInitiativeTrackerRows,
     removeInitiativeTrackerRow,
+    removeInitiativeTrackerRows,
     updateInitiativeTrackerRow,
+    updateInitiativeTrackerRowsBulk,
     resetInitiativeTracker,
     startBattle,
     endBattle,

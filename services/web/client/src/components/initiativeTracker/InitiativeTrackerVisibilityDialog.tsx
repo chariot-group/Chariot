@@ -94,7 +94,26 @@ export function InitiativeTrackerVisibilityDialog({
         <div className="flex flex-col gap-4 py-2">
           {isSessionParticipantRow ? (
             <p className="text-sm text-white/65">{labels.playerRowVisibilityHint}</p>
-          ) : (
+          ) : null}
+
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="visibility-player-display-name"
+              className="text-sm font-medium">
+              {labels.playerDisplayName}
+            </Label>
+            <Input
+              id="visibility-player-display-name"
+              value={playerDisplayName}
+              onChange={(event) => setPlayerDisplayName(event.target.value)}
+              placeholder={labels.playerDisplayNamePlaceholder}
+              disabled={!visible}
+              className="rounded-[15px] bg-gray-middle-light text-white"
+            />
+            <p className="text-xs text-white/55">{labels.playerDisplayNameHint}</p>
+          </div>
+
+          {!isSessionParticipantRow ? (
             <>
               <div className="flex items-center gap-3">
                 <Checkbox
@@ -108,23 +127,6 @@ export function InitiativeTrackerVisibilityDialog({
                   className="cursor-pointer text-sm font-medium">
                   {labels.showToPlayers}
                 </Label>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label
-                  htmlFor="visibility-player-display-name"
-                  className="text-sm font-medium">
-                  {labels.playerDisplayName}
-                </Label>
-                <Input
-                  id="visibility-player-display-name"
-                  value={playerDisplayName}
-                  onChange={(event) => setPlayerDisplayName(event.target.value)}
-                  placeholder={labels.playerDisplayNamePlaceholder}
-                  disabled={!visible}
-                  className="rounded-[15px] bg-gray-middle-light text-white"
-                />
-                <p className="text-xs text-white/55">{labels.playerDisplayNameHint}</p>
               </div>
 
               <fieldset
@@ -153,7 +155,7 @@ export function InitiativeTrackerVisibilityDialog({
                 ))}
               </fieldset>
             </>
-          )}
+          ) : null}
 
           {onLeaveInitiative ? (
             <Button
@@ -176,16 +178,14 @@ export function InitiativeTrackerVisibilityDialog({
             onClick={() => onOpenChange(false)}>
             {labels.cancel}
           </Button>
-          {!isSessionParticipantRow ? (
-            <Button
-              type="button"
-              onClick={() => {
-                onApply(visible, fields, playerDisplayName.trim());
-                onOpenChange(false);
-              }}>
-              {labels.apply}
-            </Button>
-          ) : null}
+          <Button
+            type="button"
+            onClick={() => {
+              onApply(visible, fields, playerDisplayName.trim());
+              onOpenChange(false);
+            }}>
+            {labels.apply}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

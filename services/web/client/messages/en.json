@@ -126,6 +126,7 @@
       "viewSheetFor": "View sheet for {name}",
       "initiativeFor": "Initiative for {name}",
       "selectRowFor": "Select {name} for grouped initiative",
+      "selectRowForVisibility": "Select {name} for grouped display",
       "selectAllRows": "Select all characters",
       "groupedInitiativeEnable": "Enter grouped initiative",
       "groupedInitiativeDisable": "Exit grouped initiative mode",
@@ -133,6 +134,9 @@
       "groupedInitiativePlaceholder": "Initiative",
       "groupedInitiativeApply": "Apply to selection",
       "groupedInitiativeClearSelection": "Clear selection",
+      "bulkVisibilityEnable": "Configure display for multiple characters",
+      "bulkVisibilityDisable": "Exit grouped display mode",
+      "bulkVisibilitySelectAllRows": "Select all characters for grouped display",
       "conditionFor": "Condition for {name}",
       "visibleFor": "Show {name}",
       "playerDisplayNameSubtitle": "Name shown to players",
@@ -159,7 +163,7 @@
         "apply": "Apply",
         "cancel": "Cancel",
         "leaveInitiative": "Leave initiative",
-        "playerRowVisibilityHint": "Session players always remain visible. Other characters can be hidden using this panel.",
+        "playerRowVisibilityHint": "Session players always remain visible. Their displayed name can be changed, but their fields stay visible.",
         "fields": {
           "initiative": "Initiative score",
           "name": "Name",
@@ -168,6 +172,15 @@
           "conditions": "Conditions",
           "groupLabel": "Group name"
         }
+      },
+      "bulkVisibilityDialog": {
+        "title": "Grouped display",
+        "description": "Select multiple characters, then apply the same display settings. The shared name is optional and empty by default.",
+        "playerDisplayName": "Shared name shown to players",
+        "playerDisplayNameHint": "Empty by default. If left empty, existing configured names are preserved.",
+        "playerDisplayNamePlaceholder": "Leave empty or enter a shared name",
+        "emptySelection": "Select at least one character before applying grouped display.",
+        "leaveInitiative": "Leave initiative for selection"
       },
       "roundIndicator": "Round {round}",
       "startCombat": "Start combat",

@@ -126,6 +126,7 @@
       "viewSheetFor": "Voir la fiche de {name}",
       "initiativeFor": "Initiative de {name}",
       "selectRowFor": "Sélectionner {name} pour l'initiative groupée",
+      "selectRowForVisibility": "Sélectionner {name} pour l'affichage groupé",
       "selectAllRows": "Sélectionner tous les personnages",
       "groupedInitiativeEnable": "Saisir une initiative groupée",
       "groupedInitiativeDisable": "Quitter le mode initiative groupée",
@@ -133,6 +134,9 @@
       "groupedInitiativePlaceholder": "Initiative",
       "groupedInitiativeApply": "Appliquer à la sélection",
       "groupedInitiativeClearSelection": "Effacer la sélection",
+      "bulkVisibilityEnable": "Paramétrer l'affichage de plusieurs personnages",
+      "bulkVisibilityDisable": "Quitter le mode affichage groupé",
+      "bulkVisibilitySelectAllRows": "Sélectionner tous les personnages pour l'affichage groupé",
       "conditionFor": "État de {name}",
       "visibleFor": "Afficher {name}",
       "playerDisplayNameSubtitle": "Nom affiché aux joueurs",
@@ -159,7 +163,7 @@
         "apply": "Appliquer",
         "cancel": "Annuler",
         "leaveInitiative": "Sortir de l'initiative",
-        "playerRowVisibilityHint": "Les joueurs de la session restent toujours visibles. Les autres personnages peuvent être masqués via ce panneau.",
+        "playerRowVisibilityHint": "Les joueurs de la session restent toujours visibles. Leur nom affiché peut être modifié, mais leurs champs restent visibles.",
         "fields": {
           "initiative": "Score d'initiative",
           "name": "Nom",
@@ -168,6 +172,15 @@
           "conditions": "États",
           "groupLabel": "Nom du groupe"
         }
+      },
+      "bulkVisibilityDialog": {
+        "title": "Affichage groupé",
+        "description": "Sélectionnez plusieurs personnages puis appliquez les mêmes paramètres d'affichage. Le nom commun est optionnel et vide par défaut.",
+        "playerDisplayName": "Nom commun affiché aux joueurs",
+        "playerDisplayNameHint": "Champ vide par défaut. S'il reste vide, les noms déjà configurés ne sont pas remplacés.",
+        "playerDisplayNamePlaceholder": "Laisser vide ou saisir un nom commun",
+        "emptySelection": "Sélectionnez au moins un personnage avant d'appliquer un affichage groupé.",
+        "leaveInitiative": "Sortir la sélection de l'initiative"
       },
       "roundIndicator": "Manche {round}",
       "startCombat": "Lancer le combat",
