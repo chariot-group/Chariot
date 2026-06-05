@@ -59,9 +59,7 @@ export default function PostLoginNavigator() {
       })
       .catch((err) => {
         console.warn("Referral init failed:", err?.response?.data?.message ?? err.message);
-        // Mark initialized to avoid infinite retry on error
-        localStorage.setItem(REFERRAL_INIT_STORAGE_KEY, "1");
-        if (storedCode) localStorage.removeItem(REFERRAL_CODE_STORAGE_KEY);
+        hasInitReferralRef.current = false;
       });
   }, [authenticated, loading]);
 

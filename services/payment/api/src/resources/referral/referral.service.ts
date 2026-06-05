@@ -84,6 +84,16 @@ export class ReferralService {
         throw new InternalServerErrorException('Failed to generate a unique referral code');
     }
 
+    private async getOrCreateOwnReferral(userId: string): Promise<Referral> {
+        const existing = await this.prisma.referral.findUnique({ where: { userId } });
+        if (existing) return existing;
+
+        const code = await this.generateUniqueCode();
+        return this.prisma.referral.create({
+            data: { code, userId },
+        });
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // Init referral for a user on first login
     // Creates the user's referral code and optionally links them as filleul
@@ -95,14 +105,7 @@ export class ReferralService {
         try {
             const start = Date.now();
 
-            // Create the user's own referral record if it doesn't exist
-            let referral = await this.prisma.referral.findUnique({ where: { userId } });
-            if (!referral) {
-                const code = await this.generateUniqueCode();
-                referral = await this.prisma.referral.create({
-                    data: { code, userId },
-                });
-            }
+            const referral = await this.getOrCreateOwnReferral(userId);
 
             let refereeDiscountApplied = false;
 
@@ -153,6 +156,8 @@ export class ReferralService {
     // ─────────────────────────────────────────────────────────────────
     async getMyReferral(userId: string): Promise<IResponse<ReferralInfo>> {
         try {
+            await this.getOrCreateOwnReferral(userId);
+
             const referral = await this.prisma.referral.findUnique({
                 where: { userId },
                 include: {
@@ -161,7 +166,7 @@ export class ReferralService {
             });
 
             if (!referral) {
-                throw new NotFoundException('Aucun code de parrainage trouvé pour cet utilisateur');
+                throw new InternalServerErrorException('Failed to retrieve referral after initialization');
             }
 
             const refereeCount = referral.referees.length;

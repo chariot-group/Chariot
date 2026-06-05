@@ -49,8 +49,10 @@ export class ReferralController {
         summary: 'Obtenir mon code de parrainage et l\'état de mes paliers',
         description: 'Retourne le code de parrainage de l\'utilisateur, le nombre de filleuls, le palier de réduction actuel (parrain), et le statut de sa réduction filleul s\'il en a une.',
     })
-    @ApiResponse({ status: 200, description: 'Informations de parrainage récupérées' })
-    @ApiResponse({ status: 404, description: 'Aucun code de parrainage trouvé' })
+    @ApiResponse({
+        status: 200,
+        description: 'Informations de parrainage récupérées (crée le code automatiquement si absent)',
+    })
     async getMyReferral(@Req() request) {
         return this.referralService.getMyReferral(request.user.keycloakId);
     }
