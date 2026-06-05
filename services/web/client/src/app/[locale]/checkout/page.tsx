@@ -30,6 +30,7 @@ function CheckoutContent() {
     pricing,
     tokenCount,
     quantity,
+    quantitySyncPending,
     onQuantityChange,
     promoCode,
     referralDiscount,
@@ -119,6 +120,7 @@ function CheckoutContent() {
                     piRefreshing={piRefreshing}
                     locale={locale}
                     quantity={quantity}
+                    quantitySyncPending={quantitySyncPending}
                     onQuantityChange={onQuantityChange}
                     referralDiscount={referralDiscount}
                   />

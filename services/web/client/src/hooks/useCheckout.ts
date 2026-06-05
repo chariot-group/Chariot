@@ -32,6 +32,7 @@ interface UseCheckoutReturn {
     tokenCount: number | null;
     // Quantity
     quantity: number;
+    quantitySyncPending: boolean;
     onQuantityChange: (quantity: number) => void;
     // Promo code
     promoCode: PromoCodeState;
@@ -63,6 +64,11 @@ export function useCheckout(): UseCheckoutReturn {
 
     // Quantity
     const [quantity, setQuantity] = useState(1);
+    const [quantitySyncPending, setQuantitySyncPending] = useState(false);
+    const quantityDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const quantityUpdateGenerationRef = useRef(0);
+
+    const QUANTITY_DEBOUNCE_MS = 400;
 
     // Referral discount
     const [referralDiscount, setReferralDiscount] = useState<ReferralDiscount | null>(null);
@@ -148,6 +154,12 @@ export function useCheckout(): UseCheckoutReturn {
         if (product) void createInitialPaymentIntent();
     }, [product, createInitialPaymentIntent]);
 
+    useEffect(() => {
+        return () => {
+            if (quantityDebounceRef.current) clearTimeout(quantityDebounceRef.current);
+        };
+    }, []);
+
     // ── Fetch referral discount (auto-applied when no manual code) ─────────────
     useEffect(() => {
         referralService.getMyReferral().then((info) => {
@@ -214,12 +226,27 @@ export function useCheckout(): UseCheckoutReturn {
     const tokenCount = product?.metadata?.token_number ? parseInt(product.metadata.token_number, 10) : null;
 
     const handleQuantityChange = useCallback((newQuantity: number) => {
-        const clamped = Math.max(1, Math.min(10, newQuantity));
+        const clamped = Math.max(1, newQuantity);
         setQuantity(clamped);
+        setQuantitySyncPending(true);
+
+        if (quantityDebounceRef.current) {
+            clearTimeout(quantityDebounceRef.current);
+        }
+
+        const generation = ++quantityUpdateGenerationRef.current;
         const currentApplied = appliedCode;
         const promoArg = currentApplied?.resolved.type === "promo" ? currentApplied.raw : undefined;
         const affiliationArg = currentApplied?.resolved.type === "affiliation" ? currentApplied.raw : undefined;
-        void updatePaymentIntentAmount(promoArg, affiliationArg, clamped);
+
+        quantityDebounceRef.current = setTimeout(() => {
+            quantityDebounceRef.current = null;
+            void updatePaymentIntentAmount(promoArg, affiliationArg, clamped).finally(() => {
+                if (quantityUpdateGenerationRef.current === generation) {
+                    setQuantitySyncPending(false);
+                }
+            });
+        }, QUANTITY_DEBOUNCE_MS);
     }, [appliedCode, updatePaymentIntentAmount]);
 
     return {
@@ -239,6 +266,7 @@ export function useCheckout(): UseCheckoutReturn {
         },
         tokenCount,
         quantity,
+        quantitySyncPending,
         onQuantityChange: handleQuantityChange,
         referralDiscount,
         promoCode: {

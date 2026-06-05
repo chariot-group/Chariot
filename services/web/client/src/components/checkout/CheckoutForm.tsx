@@ -38,6 +38,7 @@ export interface CheckoutFormProps {
   piRefreshing: boolean;
   locale: string;
   quantity: number;
+  quantitySyncPending: boolean;
   onQuantityChange: (quantity: number) => void;
   referralDiscount: ReferralDiscount | null;
 }
@@ -50,6 +51,7 @@ export function CheckoutForm({
   piRefreshing,
   locale,
   quantity,
+  quantitySyncPending,
   onQuantityChange,
   referralDiscount,
 }: CheckoutFormProps) {
@@ -128,17 +130,17 @@ export function CheckoutForm({
                     className="w-4 h-4"
                   />
                 </span>
-                {quantity > 1 && (
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    {tokenCount}
-                    <Image
-                      src={Token}
-                      alt={`${tokenCount} tokens`}
-                      className="w-3 h-3 opacity-60"
-                    />
-                    <span>/ {t("pack")}</span>
-                  </span>
-                )}
+                <span
+                  className={`flex items-center gap-1 text-xs text-muted-foreground ${quantity <= 1 ? "invisible" : ""}`}
+                  aria-hidden={quantity <= 1}>
+                  {tokenCount}
+                  <Image
+                    src={Token}
+                    alt={`${tokenCount} tokens`}
+                    className="w-3 h-3 opacity-60"
+                  />
+                  <span>/ {t("pack")}</span>
+                </span>
               </div>
             )}
           </div>
@@ -150,7 +152,7 @@ export function CheckoutForm({
               <button
                 type="button"
                 onClick={() => onQuantityChange(quantity - 1)}
-                disabled={quantity <= 1 || piRefreshing}
+                disabled={quantity <= 1}
                 className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                 aria-label={t("quantityDecrement")}>
                 <Minus
@@ -159,14 +161,13 @@ export function CheckoutForm({
                 />
               </button>
               <span
-                className="w-6 text-center text-sm font-semibold text-card-foreground"
+                className="min-w-6 px-1 text-center text-sm font-semibold tabular-nums text-card-foreground"
                 aria-live="polite">
                 {quantity}
               </span>
               <button
                 type="button"
                 onClick={() => onQuantityChange(quantity + 1)}
-                disabled={quantity >= 10 || piRefreshing}
                 className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                 aria-label={t("quantityIncrement")}>
                 <Plus
@@ -179,16 +180,20 @@ export function CheckoutForm({
 
           {/* Price breakdown */}
           <div className="space-y-1.5 pt-1 border-t border-border/40">
-            {quantity > 1 && (
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{t("unitPrice")}</span>
-                <span>{formatPrice(discountedAmount, currency)}</span>
-              </div>
-            )}
+            <div
+              className={`flex justify-between text-sm text-muted-foreground ${quantity <= 1 ? "invisible" : ""}`}
+              aria-hidden={quantity <= 1}>
+              <span>{t("unitPrice")}</span>
+              <span>{formatPrice(discountedAmount, currency)}</span>
+            </div>
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>
                 {t("subtotal")}
-                {quantity > 1 && ` ×${quantity}`}
+                <span
+                  className={quantity <= 1 ? "invisible" : ""}
+                  aria-hidden={quantity <= 1}>
+                  {` ×${quantity}`}
+                </span>
               </span>
               <span>{formatPrice(originalAmount * quantity, currency)}</span>
             </div>
@@ -299,7 +304,7 @@ export function CheckoutForm({
           size="lg"
           className="w-full rounded-2xl font-semibold text-base h-14"
           onClick={handleConfirmPayment}
-          disabled={payLoading || piRefreshing || !stripe || !elements}
+          disabled={payLoading || piRefreshing || quantitySyncPending || !stripe || !elements}
           aria-busy={payLoading}>
           {payLoading ? (
             <>

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min, MinLength } from 'class-validator';
 
 export class CheckoutDto {
     @ApiProperty({ example: '507f1f77bcf86cd799439012' })
@@ -24,10 +24,9 @@ export class CheckoutDto {
     @MinLength(1)
     readonly affiliationCode?: string;
 
-    @ApiPropertyOptional({ example: 2, description: 'Quantité de packs à acheter (1–10)', default: 1 })
+    @ApiPropertyOptional({ example: 2, description: 'Quantité de packs à acheter (minimum 1)', default: 1 })
     @IsOptional()
     @IsInt()
     @Min(1)
-    @Max(10)
     readonly quantity?: number;
 }

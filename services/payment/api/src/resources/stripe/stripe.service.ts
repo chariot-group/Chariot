@@ -457,7 +457,7 @@ export class StripeService {
     ): Promise<IResponse<PaymentIntentResult>> {
         try {
             const { packId, displayName } = dto;
-            const quantity = Math.max(1, Math.min(10, dto.quantity ?? 1));
+            const quantity = Math.max(1, dto.quantity ?? 1);
             const start = Date.now();
 
             const {
@@ -553,7 +553,7 @@ export class StripeService {
                 referralDiscountPercent,
             } = await this.computeDiscount(checkoutDto, userId);
 
-            const quantity = Math.max(1, Math.min(10, dto.quantity ?? 1));
+            const quantity = Math.max(1, dto.quantity ?? 1);
             const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
 
             await this.stripe.paymentIntents.update(piId, {
