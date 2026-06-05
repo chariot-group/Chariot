@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { ArrowUpDown, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatSignedBonus } from "@/utils/attack.utils";
 
 interface ActionSectionProps {
@@ -63,10 +64,10 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
               const count = usageTypeCounts[option];
               const isAvailable = count > 0;
               const isSelected = prioritizeUsageType === option;
+              const usageLabel = t(`usageTypeOptions.${option}`);
 
-              return (
+              const button = (
                 <Button
-                  key={option}
                   type="button"
                   size="sm"
                   className={`h-6 px-2 text-xs ${!isAvailable ? "opacity-45 grayscale cursor-default!" : ""}`}
@@ -77,8 +78,29 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                     setPrioritizeUsageType(option);
                   }}>
                   <ArrowUpDown className="size-3.5" />
-                  {`${t(`usageTypeOptions.${option}`)} (${count})`}
+                  {`${usageLabel} (${count})`}
                 </Button>
+              );
+
+              if (!isAvailable) {
+                return (
+                  <Tooltip key={option}>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex">{button}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t("usageTypeUnavailableTooltip", { type: usageLabel })}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return (
+                <span
+                  key={option}
+                  className="inline-flex">
+                  {button}
+                </span>
               );
             })}
           </div>
