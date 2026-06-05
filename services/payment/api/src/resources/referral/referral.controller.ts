@@ -64,12 +64,14 @@ export class ReferralController {
     @ApiOperation({ summary: '[Admin] Lister tous les parrainages avec statistiques' })
     @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
     @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+    @ApiQuery({ name: 'search', required: false, type: String, description: 'Filtrer par nom affiché ou Keycloak ID utilisateur' })
     @ApiResponse({ status: 200, description: 'Liste des parrainages avec statistiques' })
     async findAll(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
         @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+        @Query('search') search?: string,
     ) {
-        return this.referralService.findAll(page, limit);
+        return this.referralService.findAll(page, limit, search);
     }
 
     @Get('payments')

@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { KeycloakUserId } from "@/components/KeycloakUserId";
+import { StripeOrderId } from "@/components/StripeOrderId";
 import { formatCents, formatDate } from "@/lib/utils";
 import {
   buildPaymentsParams,
@@ -143,12 +145,15 @@ export default function PaymentsPage() {
                     </TableCell>
                     <TableCell>
                       {p.userDisplayName ? (
-                        <div>
+                        <div className="flex flex-col gap-0.5">
                           <span className="text-sm text-card-foreground">{p.userDisplayName}</span>
-                          <code className="text-xs text-muted-foreground truncate block max-w-36">{p.userId}</code>
+                          <KeycloakUserId userId={p.userId} />
                         </div>
                       ) : (
-                        <code className="text-xs text-muted-foreground truncate block max-w-28">{p.userId}</code>
+                        <KeycloakUserId
+                          userId={p.userId}
+                          className="max-w-28"
+                        />
                       )}
                     </TableCell>
                     <TableCell className="text-sm text-card-foreground">
@@ -195,8 +200,8 @@ export default function PaymentsPage() {
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground max-w-40 truncate">
-                      {p.stripeOrderId ?? "—"}
+                    <TableCell>
+                      {p.stripeOrderId ? <StripeOrderId orderId={p.stripeOrderId} /> : "—"}
                     </TableCell>
                     <TableCell>
                       <Badge variant={PAYMENT_STATUS_VARIANT[p.status]}>{PAYMENT_STATUS_LABELS[p.status]}</Badge>

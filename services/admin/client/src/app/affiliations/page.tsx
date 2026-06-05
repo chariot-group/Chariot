@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { KeycloakUserId } from "@/components/KeycloakUserId";
 import { formatCents } from "@/lib/utils";
 import { extractApiError } from "@/lib/api-error";
 import { SortableHead } from "@/components/ui/SortableHead";
@@ -357,8 +358,9 @@ export default function AffiliationsPage() {
                       </code>
                     </TableCell>
                     <TableCell>
-                      <div>
+                      <div className="flex flex-col gap-0.5">
                         <p className="text-sm font-medium text-card-foreground">{a.creatorName}</p>
+                        {a.creatorUserId && <KeycloakUserId userId={a.creatorUserId} />}
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{a.creatorCommissionPercent}%</TableCell>

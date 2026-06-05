@@ -386,21 +386,19 @@ export class ReferralService {
     async findAll(
         page = 1,
         limit = 20,
+        search?: string,
     ): Promise<IPaginatedResponse<ReferralWithStats[]>> {
         try {
             const start = Date.now();
             const skip = (page - 1) * limit;
+            const normalizedSearch = search?.trim().toLowerCase();
 
-            const [referrals, totalItems, validatedCounts] = await Promise.all([
+            const [referrals, validatedCounts] = await Promise.all([
                 this.prisma.referral.findMany({
-                    skip,
-                    take: limit,
-                    orderBy: { createdAt: 'desc' },
                     include: {
                         _count: { select: { referees: true, payments: true } },
                     },
                 }),
-                this.prisma.referral.count(),
                 this.prisma.referralReferee.groupBy({
                     by: ['referralId'],
                     where: { firstPurchaseValidatedAt: { not: null } },
@@ -413,7 +411,7 @@ export class ReferralService {
             const userIds = referrals.map((r) => r.userId);
             const usersMap = await this.keycloakAdminService.getUsersByIds(userIds);
 
-            const data: ReferralWithStats[] = referrals.map((r) => {
+            const allData: ReferralWithStats[] = referrals.map((r) => {
                 const user = usersMap.get(r.userId);
                 const validatedRefereeCount = validatedMap.get(r.id) ?? 0;
                 const userDisplayName = user
@@ -430,7 +428,20 @@ export class ReferralService {
                 };
             });
 
-            const message = `${referrals.length} referrals found in ${Date.now() - start}ms`;
+            const filtered = normalizedSearch
+                ? allData.filter(
+                    (r) =>
+                        r.userId.toLowerCase().includes(normalizedSearch) ||
+                        (r.username?.toLowerCase().includes(normalizedSearch) ?? false),
+                )
+                : allData;
+
+            filtered.sort((a, b) => b.validatedRefereeCount - a.validatedRefereeCount);
+
+            const totalItems = filtered.length;
+            const data = filtered.slice(skip, skip + limit);
+
+            const message = `${data.length} referrals found in ${Date.now() - start}ms`;
             this.logger.verbose(message, this.SERVICE_NAME);
             return { message, data, pagination: { page, offset: limit, totalItems } };
         } catch (error) {

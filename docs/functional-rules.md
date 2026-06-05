@@ -959,3 +959,51 @@ Each rule has a unique identifier and must be tested.
 - `services/admin/compose.dev.yml`
 - `services/admin/client/Dockerfile.prod`
 - `.github/workflows/ci.yml` (job `deploy-admin`)
+
+---
+
+## FR-013: Admin Table Deep Links to Keycloak and Stripe
+
+**Rule**: In the admin payment module tables, displayed Keycloak user IDs and Stripe order IDs must be clickable deep links to the corresponding resource in the Keycloak admin console and Stripe dashboard.
+
+**Requirements**:
+
+**URL Construction**:
+- Keycloak user URL built from `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL`, `NEXT_PUBLIC_KEYCLOAK_REALM`, and the user UUID
+- Stripe order URL built from `NEXT_PUBLIC_STRIPE_DASHBOARD_URL` and the order identifier (`cs_*` → checkout session, `pi_*` → payment intent)
+- URLs must not be hardcoded; reuse the same environment variables as FR-012
+- When a required env variable is missing, the identifier is rendered as plain non-clickable text
+
+**Navigation Behavior**:
+- Deep links open in a new browser tab (`target="_blank"`, `rel="noopener noreferrer"`)
+
+**Accessibility Requirements**:
+- Links include an accessible indication that they open a new tab (`aria-label` with supplementary text)
+- Visible focus indicators on all interactive link elements
+
+**Scope**:
+- Paiements: user Keycloak ID and Stripe order ID
+- Parrainage: user Keycloak ID
+- Affiliations: creator Keycloak ID when `creatorUserId` is present
+- Codes promo: no Keycloak ID column in list view (not in scope unless a user ID column is added)
+
+**Prohibitions**:
+- Hardcoding Keycloak or Stripe dashboard URLs in page components
+- Rendering broken links when URL configuration is missing
+- Using `NEXT_PUBLIC_KEYCLOAK_URL` instead of `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL` for admin deep links
+
+**Tests**:
+- URL builder returns correct Keycloak user deep link for configured admin URL and realm
+- URL builder returns null when Keycloak admin URL is missing
+- URL builder returns correct Stripe checkout session and payment intent paths
+- URL builder falls back to Stripe dashboard search for unknown ID prefixes
+- URL builder returns null when Stripe dashboard URL is missing
+
+**References**:
+- `services/admin/client/src/lib/external-links.ts`
+- `services/admin/client/src/components/KeycloakUserId.tsx`
+- `services/admin/client/src/components/StripeOrderId.tsx`
+- `services/admin/client/src/components/ExternalDashboardLink.tsx`
+- `services/admin/client/src/app/payments/page.tsx`
+- `services/admin/client/src/app/referrals/page.tsx`
+- `services/admin/client/src/app/affiliations/page.tsx`

@@ -4,6 +4,7 @@ export interface Affiliation {
     id: string;
     code: string;
     name: string;
+    creatorUserId: string | null;
     creatorName: string;
     creatorCommissionPercent: number;
     userDiscountPercent: number;
