@@ -99,7 +99,7 @@ export function normalizeInitiativeTrackerConditionEntry(
 
 export type InitiativeTrackerRowKind = 'player' | 'npc';
 
-/** FR-015 — champs visibles pour les joueurs sur une ligne du tracker. */
+/** FR-021 — champs visibles pour les joueurs sur une ligne du tracker. */
 export interface InitiativeTrackerPlayerFieldVisibility {
     initiative: boolean;
     name: boolean;
@@ -160,7 +160,7 @@ export function normalizePlayerFieldVisibility(
     };
 }
 
-/** FR-015 — seuls les PJ du groupe « participants session » restent visibles et non masquables. */
+/** FR-021 — seuls les PJ du groupe « participants session » restent visibles et non masquables. */
 export function applyPlayerRowVisibilityRules(row: InitiativeTrackerRow): InitiativeTrackerRow {
     if (!isSessionParticipantTrackerRow(row)) {
         return row;
@@ -172,7 +172,7 @@ export function applyPlayerRowVisibilityRules(row: InitiativeTrackerRow): Initia
     };
 }
 
-/** FR-015 — snapshot diffusé par le MJ aux joueurs via WebSocket. */
+/** FR-021 — snapshot diffusé par le MJ aux joueurs via WebSocket. */
 export interface BattleStateSnapshot {
     initiativeTrackerRows: InitiativeTrackerRow[];
     battleInitialized: boolean;
@@ -197,17 +197,17 @@ export interface InitiativeTrackerRow {
     groupId: string;
     groupLabel: string;
     visible: boolean;
-    /** FR-015 — alias affiché aux joueurs quand le vrai nom est masqué (non persisté sur la fiche). */
+    /** FR-021 — alias affiché aux joueurs quand le vrai nom est masqué (non persisté sur la fiche). */
     playerDisplayName: string;
-    /** FR-015 — visibilité granulaire des champs pour la vue joueur. */
+    /** FR-021 — visibilité granulaire des champs pour la vue joueur. */
     playerFieldVisibility: InitiativeTrackerPlayerFieldVisibility;
-    /** FR-014 — discriminant pour appliquer la règle de mort/inconscience adaptée. */
+    /** FR-020 — discriminant pour appliquer la règle de mort/inconscience adaptée. */
     kind: InitiativeTrackerRowKind;
-    /** FR-014 — miroir de `deathSaves.failures` (uniquement pertinent pour `kind === 'player'`). */
+    /** FR-020 — miroir de `deathSaves.failures` (uniquement pertinent pour `kind === 'player'`). */
     deathSavesFailures: number;
 }
 
-/** FR-012 / FR-015 — fabrique une ligne tracker (setup ou ajout en cours de combat). */
+/** FR-018 / FR-021 — fabrique une ligne tracker (setup ou ajout en cours de combat). */
 export function createInitiativeTrackerRow(input: {
     groupId: string;
     groupLabel: string;
@@ -283,7 +283,7 @@ export interface CurrentSessionState {
     turnsWithActions: string[];
     /** Incrémenté à chaque synchro WS distante pour une fiche (temps réel hors rechargement). */
     characterSheetRemoteVersions: Record<string, number>;
-    /** FR-015 — dernière fiche consultée par le MJ pendant la session (chemin absolu avec locale). */
+    /** FR-021 — dernière fiche consultée par le MJ pendant la session (chemin absolu avec locale). */
     lastConsultedSheetPath: string | null;
 }
 
@@ -364,7 +364,7 @@ const findFirstAliveRowId = (sortedRows: InitiativeTrackerRow[]): string | null 
 };
 
 /**
- * FR-014 — retourne le prochain tour vivant en respectant l'ordre tri\u00e9 et le wrap.
+ * FR-020 — retourne le prochain tour vivant en respectant l'ordre tri\u00e9 et le wrap.
  * `wrapped: true` indique qu'au moins un wrap a eu lieu et qu'un seul tick de round doit \u00eatre appliqu\u00e9.
  */
 const findNextAliveTurn = (
@@ -607,7 +607,7 @@ const sessionSlice = createSlice({
                 markActiveTurnWithActions(state);
             }
         },
-        /** FR-015 — état combat reçu du MJ (joueurs) : remplace sans toucher au turn-lock GM. */
+        /** FR-021 — état combat reçu du MJ (joueurs) : remplace sans toucher au turn-lock GM. */
         applyRemoteBattleState: (state, action: PayloadAction<BattleStateSnapshot>) => {
             const payload = action.payload;
             state.initiativeTrackerRows = (payload.initiativeTrackerRows ?? []).map(normalizeTrackerRow);
@@ -644,7 +644,7 @@ const sessionSlice = createSlice({
             if (!state.battleStarted || state.initiativeTrackerRows.length === 0) return;
 
             const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
-            // FR-014 — un personnage `dead` est ignoré ; tout passage qui traverse la fin du
+            // FR-020 — un personnage `dead` est ignoré ; tout passage qui traverse la fin du
             // tableau incrémente d'un cran l'horloge des conditions, peu importe combien de
             // morts ont été sautés sur le chemin.
             const next = findNextAliveTurn(sorted, state.activeTurnRowId);

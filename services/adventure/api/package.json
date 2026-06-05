@@ -21,7 +21,6 @@
     "seed": "ts-node -r tsconfig-paths/register src/seeder/runner/seeder.ts",
     "seed:clean": "ts-node -r tsconfig-paths/register src/seeder/runner/seeder.ts --clean",
     "format": "prettier --write .",
-    "stripe:checkout": "ts-node -r tsconfig-paths/register src/resources/stripe/runner/createCheckout.ts",
     "swagger:generate": "ts-node -r tsconfig-paths/register src/swagger-generator.ts"
   },
   "dependencies": {

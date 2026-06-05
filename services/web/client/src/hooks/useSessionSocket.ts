@@ -135,8 +135,8 @@ export function useSessionSocket({
                 reason === "expired"
                     ? "sessionEnded.description.expired"
                     : isGameMaster
-                      ? "toast.sessionClosedBySelf"
-                      : "sessionEnded.description.closed";
+                        ? "toast.sessionClosedBySelf"
+                        : "sessionEnded.description.closed";
             toastRef.current.info(tRef.current(toastKey));
         }
         setSessionEndReason(reason);

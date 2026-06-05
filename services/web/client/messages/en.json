@@ -305,9 +305,74 @@
     "logout": "Log Out"
   },
   "payment": {
-    "reloadSuccess": "Your account was reloaded with {chars} chars.",
+    "reloadSuccess": "Your account was reloaded with {chars} wheels.",
     "reloadSuccessUnknown": "Your payment is confirmed, your account reload is in progress.",
     "reloadPending": "Payment confirmed, balance update in progress."
+  },
+  "checkout": {
+    "title": "Your order",
+    "back": "Back",
+    "loading": "Loading…",
+    "verifying": "Verifying payment…",
+    "productError": "Unable to load this product. Please try again.",
+    "orderSummary": "Order summary",
+    "quantity": "Quantity",
+    "quantityDecrement": "Decrease quantity",
+    "quantityIncrement": "Increase quantity",
+    "promoTitle": "Discount code",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "referralDiscount": "Referral discount",
+    "referralNotCumulable": "Cannot be combined with another discount code.",
+    "unitPrice": "Unit price",
+    "pack": "pack",
+    "total": "Total",
+    "payButton": "Pay {amount}",
+    "preparing": "Preparing payment…",
+    "paymentDetails": "Payment details",
+    "payError": "Unable to initialise payment. Please try again.",
+    "securedByStripe": "Payment secured by Stripe",
+    "successTitle": "Payment successful!",
+    "successDescription": "Your tokens have been added to your account. Enjoy Chariot!",
+    "failureTitle": "Payment not completed",
+    "failureDescription": "The payment did not go through. You can try again from your profile.",
+    "retryButton": "Back to profile",
+    "backToApp": "Back to the app"
+  },
+  "shop": {
+    "pageTitle": "Shop",
+    "pageSubtitle": "Top up your account with wheels to join sessions.",
+    "tokensUnit": "wheels",
+    "buyButton": "Buy",
+    "loadingProducts": "Loading offers...",
+    "errorProducts": "Unable to load offers. Please try again.",
+    "noProducts": "No offers available at the moment.",
+    "redirecting": "Redirecting to payment...",
+    "checkoutError": "Unable to start payment. Please try again.",
+    "back": "Back",
+    "close": "Close",
+    "codePlaceholder": "Discount code",
+    "applyCode": "Apply",
+    "removeCode": "Remove code",
+    "codeNotFound": "This code was not found or is no longer active.",
+    "recommended": "Recommended",
+    "payPerUnit": "Pay per unit ({price}€)",
+    "custom": {
+      "name": "CUSTOM PACK",
+      "description": "Create your own token pack by choosing the quantity that suits you best."
+    },
+    "explorator": {
+      "name": "EXPLORER PACK",
+      "description": "Ideal for players who are new to Dungeons & Dragons."
+    },
+    "legendary": {
+      "name": "LEGENDARY PACK",
+      "description": "For experienced players seeking the ultimate power for their D&D campaigns."
+    },
+    "aventurer": {
+      "name": "ADVENTURER PACK",
+      "description": "The best pack for an optimal role-playing experience. Simply."
+    }
   },
   "ProfilePage": {
     "pageTitle": "User Profile",
@@ -320,6 +385,14 @@
     "yourTokens": "Your tokens:",
     "noHistory": "No history available",
     "reloadTokens": "Reload your tokens",
+    "back": "Back",
+    "showNewPassword": "Show new password",
+    "hideNewPassword": "Hide new password",
+    "showConfirmPassword": "Show password confirmation",
+    "hideConfirmPassword": "Hide password confirmation",
+    "tokenBalanceAria": "Current token balance: {balance} tokens",
+    "sessionItemEarned": "Session on {date} in {campaign}, earned {amount} tokens",
+    "sessionItemSpent": "Session on {date} in {campaign}, spent {amount} tokens",
     "changePassword": {
       "successMessage": "Password changed successfully",
       "errorMessage": "Failed to change password",
@@ -344,6 +417,24 @@
       "updateProfile": "Update profile",
       "cancelUpdate": "Cancel",
       "formLabel": "Profile update form"
+    },
+    "referral": {
+      "yourCode": "Your referral code",
+      "copyCode": "Copy code",
+      "codeCopied": "Code copied!",
+      "copyAriaLabel": "Copy referral code",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied!",
+      "copyLinkAriaLabel": "Copy referral link",
+      "pendingReferrals": "{count, plural, one {# referral since your last order} other {# referrals since your last order}}",
+      "noDiscount": "Refer friends to unlock your discounts",
+      "totalReferees": "{count, plural, one {# person referred in total} other {# people referred in total}}",
+      "validatedReferees": "{count, plural, zero {0 referral who purchased} one {# referral who purchased} other {# referrals who purchased}}",
+      "pendingFirstPurchase": "{count, plural, zero {0 referral awaiting 1st purchase} one {# referral awaiting 1st purchase} other {# referrals awaiting 1st purchase}}",
+      "tiersTitle": "Referral tiers",
+      "tiersSubtitle": "The more you refer, the more you save",
+      "tierReferral": "referral",
+      "tierReferrals": "referrals"
     }
   },
   "welcome": {

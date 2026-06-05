@@ -253,7 +253,7 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-005: User Logout Cache Purge
+## FR-006: User Logout Cache Purge
 
 **Rule**: On user logout, all persisted application state (Redux Persist) must be completely purged to prevent data leakage between different user sessions.
 
@@ -297,7 +297,7 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-006: Post-Authentication Navigation Priority
+## FR-007: Post-Authentication Navigation Priority
 
 **Rule**: Upon successful authentication, the application must automatically redirect the user to the most relevant page based on their existing data. The redirection follows a strict priority hierarchy to ensure optimal user experience.
 
@@ -355,7 +355,7 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-006: User Balance and Transaction History
+## FR-008: User Balance and Transaction History
 
 **Rule**: Each user must have a balance tracking system linked to their Keycloak identity, with complete transaction history for audit purposes.
 
@@ -406,7 +406,7 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-007: Character Detail View Display
+## FR-009: Character Detail View Display
 
 **Rule**: The web application must provide a detailed, tabbed view for displaying both Player and NPC characters with appropriate information differentiation and accessibility compliance.
 
@@ -549,7 +549,7 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-008: User Cache Isolation and Session Transition
+## FR-010: User Cache Isolation and Session Transition
 
 **Rule**: Each user must have an isolated cache to prevent data leakage and 404 redirect loops when switching accounts or after session expiration.
 
@@ -626,7 +626,7 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-009: User Password Change
+## FR-011: User Password Change
 
 **Rule**: Authenticated users must be able to change their password through Keycloak SSO integration with validation, error handling, and internationalization.
 
@@ -755,7 +755,7 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-010: User Profile Update via Keycloak
+## FR-012: User Profile Update via Keycloak
 
 **Rule**: Users must be able to update their personal information (firstName, lastName, email) through a dedicated API endpoint that synchronizes changes with Keycloak. Profile updates apply to the authenticated user only and must be traceable.
 
@@ -885,17 +885,27 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-011: Stripe Checkout and Webhook Access Control
+## FR-013: Stripe Checkout, Webhook Access Control, and Referral System
 
-**Rule**: Stripe checkout creation must be restricted to authenticated users, while webhook processing must be publicly accessible only through Stripe signature validation.
+**Rule**: Stripe checkout creation must be restricted to authenticated users, while webhook processing must be publicly accessible only through Stripe signature validation. The payment service handles all Stripe interactions and applies a referral discount system (parrainage) automatically at checkout.
+
+---
+
+### FR-013-A: Checkout and Webhook Access Control
 
 **Requirements**:
 
-- Endpoint `POST /stripe/checkout` requires authenticated user context from Keycloak guard
+- All checkout endpoints (`POST /stripe/checkout`, `POST /stripe/checkout/embedded`, `POST /stripe/payment-intent`) require authenticated user context from Keycloak guard
 - `userId` must be sourced from `request.user.keycloakId` only
 - `userId` must not be provided in checkout request body DTO
 - Endpoint `POST /stripe/webhook` must be marked public (`@Public()`) to allow Stripe callbacks
 - Webhook requests must be validated with Stripe signature header and webhook secret before processing
+- The payment service (port 9003) handles all Stripe operations; the gateway proxies `/payment/*` routes to it
+
+**Checkout Modes**:
+- **Standard session** (`POST /stripe/checkout`): redirects to Stripe-hosted checkout page
+- **Embedded session** (`POST /stripe/checkout/embedded`): returns a `clientSecret` for in-app rendering
+- **PaymentIntent** (`POST /stripe/payment-intent`): for single-page PaymentElement flow; amount updatable via `PATCH /stripe/payment-intent/:id`
 
 **Prohibitions**:
 
@@ -909,16 +919,251 @@ Each rule has a unique identifier and must be tested.
 - Controller unit test verifies webhook route is marked public
 - Controller unit test verifies missing raw body is rejected
 
+---
+
+### FR-013-B: Referral System (Parrainage)
+
+**Rule**: A tier-based referral discount system automatically applies discounts at checkout for both the referrer (parrain) and the referee (filleul). Referral discounts apply only when no promo code or affiliation code is provided.
+
+#### Referee (Filleul) Rules
+
+- A user becomes a filleul by registering with a referral code during account initialization
+- The filleul receives a **15% discount** on their next order
+- This discount is **one-time use**: once used at checkout, it is permanently consumed
+- A filleul is considered **validated** (and credited to their parrain) only after completing their **first payment**
+- A user cannot use their own referral code
+
+#### Referrer (Parrain) Tier System
+
+- The parrain earns **1 tier per validated filleul** (i.e., a filleul who has completed at least one payment)
+- Tiers and corresponding discounts:
+
+  | Tier | Validated filleuls | Discount |
+  |------|--------------------|----------|
+  | 0    | 0                  | 0% (no discount) |
+  | 1    | 1                  | 10% |
+  | 2    | 2                  | 15% |
+  | 3    | 3                  | 20% |
+  | …    | …                  | … (+5% per tier) |
+  | max  | ≥ 9                | 50% (capped) |
+
+- The discount represents a **reduction on the next order** only
+- After the parrain uses their discount at checkout, their tier **resets to 0** (pending count reset to 0)
+- Pending filleuls who have not yet made a purchase do not contribute to the discount tier
+
+#### Discount Application Rules
+
+- Referral discounts are applied **automatically** — no code entry required by the user
+- Referral discount applies **only when no promo code and no affiliation code is provided** in the checkout request
+- If a user simultaneously qualifies as both parrain (referrer) and filleul (referee), **only the highest discount is applied** (not cumulative)
+- Referral discounts apply to the total unit price after no other discount is in effect
+
+#### Discount Resolution Priority (full order)
+
+1. **Affiliation code** — applied first to the original unit price
+2. **Promo code** — applied on top of the affiliation discount (on the remaining amount)
+3. **Referral discount** — applied automatically, but **only if neither a promo code nor affiliation code is provided**
+
+**Prohibitions**:
+- Applying referral discount when a promo or affiliation code is present
+- Cumulating parrain and filleul discounts simultaneously
+- Counting a filleul toward the parrain's tier before the filleul's first payment is completed
+- Allowing a user to use their own referral code
+- Applying a parrain discount without resetting the tier to 0 afterward
+- Applying the filleul discount more than once
+
+**Tests**:
+- Filleul receives 15% discount on next order after registering with a valid code
+- Filleul discount is consumed after first use and not applied again
+- Parrain with 1 validated filleul receives 10% discount
+- Parrain with 2 validated filleuls receives 15% discount
+- Parrain with ≥ 9 validated filleuls is capped at 50%
+- Unvalidated filleuls (no payment yet) do not contribute to parrain tier
+- After parrain uses discount, tier resets to 0
+- User qualifying as both parrain and filleul receives only the highest discount
+- Referral discount is NOT applied when a promo or affiliation code is provided
+- User cannot register with their own referral code
+- `checkUserReferralDiscount` returns null when no discount is available
+- `checkUserReferralDiscount` fails gracefully (returns null) without blocking checkout
+
 **References**:
 
-- `services/adventure/api/src/resources/stripe/stripe.controller.ts`
-- `services/adventure/api/src/resources/stripe/stripe.service.ts`
-- `services/adventure/api/src/resources/stripe/dto/checkout.dto.ts`
-- `services/adventure/api/src/resources/stripe/stripe.controller.spec.ts`
+- `services/payment/api/src/resources/stripe/stripe.controller.ts`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `services/payment/api/src/resources/stripe/dto/checkout.dto.ts`
+- `services/payment/api/src/resources/referral/referral.service.ts`
+- `services/payment/api/src/resources/referral/referral.controller.ts`
+- `services/payment/api/src/resources/affiliation/affiliation.service.ts`
+- `services/payment/api/src/resources/promo-code/promo-code.service.ts`
 
 ---
 
-## FR-012: Combat Module - Configuration and Initiative Tracker
+## FR-014: Admin Sidebar External Navigation Links
+
+**Rule**: The admin client sidebar must expose configurable external links to third-party administration consoles (Keycloak, Stripe). URLs must be defined per environment via environment variables and must not be hardcoded.
+
+**Requirements**:
+
+**Configuration**:
+- Keycloak admin URL via `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL`
+- Stripe dashboard URL via `NEXT_PUBLIC_STRIPE_DASHBOARD_URL`
+- Variables are defined in the admin service `.env` and injected at build time for Next.js client components
+- `NEXT_PUBLIC_KEYCLOAK_URL` remains reserved for SSO authentication and must not be reused for the sidebar admin link
+
+**Navigation Behavior**:
+- External links open in a new browser tab (`target="_blank"`, `rel="noopener noreferrer"`)
+- A sidebar item is displayed only when its corresponding URL is defined and non-empty
+- External links do not use internal active-route highlighting
+- Internal navigation items (payment module routes) keep using Next.js `Link` with existing active-state logic
+
+**Accessibility Requirements**:
+- External links include an accessible indication that they open a new tab (`aria-label` with supplementary text)
+- Visible focus indicators on all interactive sidebar elements
+- Keyboard navigation remains functional for all displayed items
+
+**Prohibitions**:
+- Hardcoding Keycloak or Stripe dashboard URLs in component source code
+- Using `NEXT_PUBLIC_KEYCLOAK_URL` as the sidebar Keycloak admin link
+- Rendering external links without `rel="noopener noreferrer"`
+- Displaying broken links when URL configuration is missing
+
+**Tests**:
+- Sidebar renders Keycloak link when `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL` is set
+- Sidebar renders Stripe link when `NEXT_PUBLIC_STRIPE_DASHBOARD_URL` is set
+- Sidebar omits external links when corresponding env variable is empty or undefined
+- External links use `target="_blank"` and `rel="noopener noreferrer"`
+- Internal routes continue to render and highlight active state correctly
+
+**Deployment Configuration**:
+- Local/dev: values are read from `services/admin/.env` via `compose.dev.yml`
+- Integration/production: values are injected at Docker build time from GitHub secrets (`INTEG_*` / `PROD_*` counterparts of the same variables)
+
+**References**:
+- `services/admin/client/src/components/layout/Sidebar.tsx`
+- `services/admin/client/src/config/navigation.ts`
+- `services/admin/.env.example`
+- `services/admin/compose.dev.yml`
+- `services/admin/client/Dockerfile.prod`
+- `.github/workflows/ci.yml` (job `deploy-admin`)
+
+---
+
+## FR-015: Admin Table Deep Links to Keycloak and Stripe
+
+**Rule**: In the admin payment module tables, displayed Keycloak user IDs and Stripe order IDs must be clickable deep links to the corresponding resource in the Keycloak admin console and Stripe dashboard.
+
+**Requirements**:
+
+**URL Construction**:
+- Keycloak user URL built from `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL`, `NEXT_PUBLIC_KEYCLOAK_REALM`, and the user UUID
+- Stripe order URL built from `NEXT_PUBLIC_STRIPE_DASHBOARD_URL` and the order identifier (`cs_*` → checkout session, `pi_*` → payment intent)
+- URLs must not be hardcoded; reuse the same environment variables as FR-014
+- When a required env variable is missing, the identifier is rendered as plain non-clickable text
+
+**Navigation Behavior**:
+- Deep links open in a new browser tab (`target="_blank"`, `rel="noopener noreferrer"`)
+
+**Accessibility Requirements**:
+- Links include an accessible indication that they open a new tab (`aria-label` with supplementary text)
+- Visible focus indicators on all interactive link elements
+
+**Scope**:
+- Paiements: user Keycloak ID and Stripe order ID
+- Parrainage: user Keycloak ID
+- Affiliations: creator Keycloak ID when `creatorUserId` is present
+- Codes promo: no Keycloak ID column in list view (not in scope unless a user ID column is added)
+
+**Prohibitions**:
+- Hardcoding Keycloak or Stripe dashboard URLs in page components
+- Rendering broken links when URL configuration is missing
+- Using `NEXT_PUBLIC_KEYCLOAK_URL` instead of `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL` for admin deep links
+
+**Tests**:
+- URL builder returns correct Keycloak user deep link for configured admin URL and realm
+- URL builder returns null when Keycloak admin URL is missing
+- URL builder returns correct Stripe checkout session and payment intent paths
+- URL builder falls back to Stripe dashboard search for unknown ID prefixes
+- URL builder returns null when Stripe dashboard URL is missing
+
+**References**:
+- `services/admin/client/src/lib/external-links.ts`
+- `services/admin/client/src/components/KeycloakUserId.tsx`
+- `services/admin/client/src/components/StripeOrderId.tsx`
+- `services/admin/client/src/components/ExternalDashboardLink.tsx`
+- `services/admin/client/src/app/payments/page.tsx`
+- `services/admin/client/src/app/referrals/page.tsx`
+- `services/admin/client/src/app/affiliations/page.tsx`
+
+---
+
+## FR-016: Admin Affiliation Activation Lifecycle
+
+**Rule**: Admin users can deactivate and reactivate affiliation programs without soft-deleting them. Deactivation stops the code from being usable at checkout while preserving history and stats.
+
+**Requirements**:
+- Deactivation sets `isActive` to `false` via `PATCH /affiliations/:id/deactivate`
+- Reactivation sets `isActive` to `true` via `PATCH /affiliations/:id` with body `{ isActive: true }`
+- Deactivated affiliations remain visible when the admin list filter "Inclure inactifs" is enabled
+- Deactivated affiliations are excluded from the default list view (`includeInactive=false`)
+- Inactive affiliation codes must not apply discounts at checkout (enforced by payment service)
+- Admin UI provides a deactivate action only for active affiliations, with user confirmation before the request
+- Admin UI provides a reactivate action only for inactive affiliations, with user confirmation before the request
+- Deactivate and reactivate actions must expose an accessible label (`aria-label`) on the control
+- All clickable admin buttons must use `cursor-pointer`
+
+**Prohibitions**:
+- Using `DELETE /affiliations/:id` for deactivation (that endpoint performs soft delete via `deletedAt`)
+- Allowing checkout with an inactive affiliation code
+
+**Tests**:
+- Deactivate path builder returns `PATCH /affiliations/:id/deactivate` for a valid UUID
+- Reactivate path builder returns `PATCH /affiliations/:id` with `{ isActive: true }`
+- Default affiliation list excludes inactive records
+- List with `includeInactive=true` includes inactive but not soft-deleted records
+
+**References**:
+- `services/payment/api/src/resources/affiliation/affiliation.controller.ts`
+- `services/payment/api/src/resources/affiliation/affiliation.service.ts`
+- `services/payment/api/src/resources/payment/payment.service.ts`
+- `services/admin/client/src/app/affiliations/page.tsx`
+- `services/admin/client/src/services/AffiliationService.ts`
+
+---
+
+## FR-017: Admin Promo Code Activation Lifecycle
+
+**Rule**: Admin users can deactivate and reactivate promo codes without soft-deleting them. Deactivation stops the code from being usable at checkout while preserving usage history.
+
+**Requirements**:
+- Deactivation sets `isActive` to `false` via `PATCH /promo-codes/:id/deactivate`
+- Reactivation sets `isActive` to `true` via `PATCH /promo-codes/:id` with body `{ isActive: true }`
+- Deactivated promo codes remain visible when the admin list filter "Inclure inactifs" is enabled
+- Deactivated promo codes are excluded from the default list view (`includeInactive=false`)
+- Inactive promo codes must not apply discounts at checkout (enforced by payment service)
+- Admin UI provides a deactivate action only for active promo codes, with user confirmation before the request
+- Admin UI provides a reactivate action only for inactive promo codes, with user confirmation before the request
+- Deactivate and reactivate actions must expose an accessible label (`aria-label`) on the control
+- All clickable admin buttons must use `cursor-pointer`
+
+**Prohibitions**:
+- Using `DELETE /promo-codes/:id` for deactivation (that endpoint performs soft delete via `deletedAt`)
+- Allowing checkout with an inactive promo code
+
+**Tests**:
+- Deactivate path builder returns `PATCH /promo-codes/:id/deactivate` for a valid UUID
+- Reactivate path builder returns `PATCH /promo-codes/:id` with `{ isActive: true }`
+- Default promo code list excludes inactive records
+- List with `includeInactive=true` includes inactive but not soft-deleted records
+
+**References**:
+- `services/payment/api/src/resources/promo-code/promo-code.controller.ts`
+- `services/payment/api/src/resources/promo-code/promo-code.service.ts`
+- `services/admin/client/src/app/promo-codes/page.tsx`
+- `services/admin/client/src/services/PromoCodeService.ts`
+
+---
+
+## FR-018: Combat Module - Configuration and Initiative Tracker
 
 **Rule**: The combat module must provide a stable Game Master workflow from battle setup to turn-by-turn tracking, with recoverable local state and explicit guardrails on turn rollback.
 
@@ -1016,7 +1261,7 @@ Each rule has a unique identifier and must be tested.
   - any campaign group not yet represented in the roster, and/or
   - individual members from groups already in the roster whose `characterId` is not yet present.
 - New rows follow the same generation rules as battle configuration (stats, visibility defaults, dedupe by `characterId`).
-- Adding combatants MUST NOT reset turn engine state (`battleStarted`, active turn, round, action locks) except when the add mutates the roster during started combat (registers a tracker action on the active turn per FR-012).
+- Adding combatants MUST NOT reset turn engine state (`battleStarted`, active turn, round, action locks) except when the add mutates the roster during started combat (registers a tracker action on the active turn per FR-018).
 - The GM MUST be able to **remove a row** (“leave initiative”) without ending the whole battle:
   - if the removed row was the active turn, advance to the next alive row in sorted order (or clear active turn if none remain);
   - purge turn-action keys tied to the removed row;
@@ -1079,7 +1324,7 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-013: Frontend Design Governance and Responsive Baseline
+## FR-019: Frontend Design Governance and Responsive Baseline
 
 **Rule**: The frontend must maintain a documented design baseline built from the implemented UI, and any new frontend feature must be aligned with that baseline before implementation.
 
@@ -1114,15 +1359,15 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-014: Initiative Tracker - Automatic Dead and Unconscious States
+## FR-020: Initiative Tracker - Automatic Dead and Unconscious States
 
 **Rule**: Each initiative tracker row must reflect the character's vital status (alive, unconscious, dead) automatically derived from current HP and (for player characters) death save failures. Visual treatment, accessible name, and turn-order behavior depend on this status.
 
 **Scope**:
 
-- Applies to the GM Initiative Tracker (FR-012) only.
+- Applies to the GM Initiative Tracker (FR-018) only.
 - Source of truth on frontend: `session.initiativeTrackerRows`.
-- Complements FR-012 without overriding any of its existing behaviors (turn lifecycle, conditions, persistence).
+- Complements FR-018 without overriding any of its existing behaviors (turn lifecycle, conditions, persistence).
 
 **Status Derivation**:
 
@@ -1140,10 +1385,10 @@ Each rule has a unique identifier and must be tested.
 - Mirror values must be initialized when the battle is configured (from the latest character snapshot).
 - Mirror values must be refreshed:
   - When the underlying character is updated through the session HP dialog (HP edit also pulls fresh death saves).
-  - On real-time character sheet sync (FR-012 `characterSheetRemoteVersions`) when the affected row is a player AND its current `hitPoints <= 0` (death saves are only meaningful at 0 HP, so we avoid refetching for cosmetic sheet edits).
+  - On real-time character sheet sync (FR-022 `characterSheetRemoteVersions`) when the affected row is a player AND its current `hitPoints <= 0` (death saves are only meaningful at 0 HP, so we avoid refetching for cosmetic sheet edits).
 - Persisted shape must be backwards compatible (rehydration adds `kind: 'npc'` and `deathSavesFailures: 0` to legacy rows lacking these fields).
 
-**Visual Treatment (FR-013 compliance)**:
+**Visual Treatment (FR-019 compliance)**:
 
 - Dead row:
   - Background: explicit red surface using the project palette (`--red`, e.g. `bg-red/35` with `ring-2 ring-red/60` on the row container) preserving WCAG AA contrast against white text.
@@ -1152,19 +1397,19 @@ Each rule has a unique identifier and must be tested.
   - Background: explicit yellow/amber surface using the project palette (`--yellow`, e.g. `bg-yellow/30` with `ring-2 ring-yellow/60`) preserving WCAG AA contrast against white text.
   - A `HeartCrack` icon (lucide-react) is rendered immediately after the HP value inside the HP cell of the tracker row, with `aria-hidden="true"`. Status text is exposed at the row level.
 - Alive row keeps the current visual baseline (no extra icon).
-- Active turn highlight (current FR-012 styling) MUST remain visible on top of dead/unconscious states (combined ring/background, never replaced).
+- Active turn highlight (current FR-018 styling) MUST remain visible on top of dead/unconscious states (combined ring/background, never replaced).
 - Status MUST never be conveyed by color alone: an icon (skull/heart-crack) and an accessible label are mandatory companion channels.
 
 **Turn Order Behavior**:
 
 - `nextBattleTurn` and `previousBattleTurn` MUST skip rows in the `dead` state.
-  - Skipping over a dead row MUST NOT register a tracker action on the skipped row (FR-012 turn-lock semantics unchanged for non-skipped rows).
-  - When advancing past the last alive row, the round counter increments by 1 exactly once and condition durations tick by one round (FR-012 condition lifecycle preserved).
+  - Skipping over a dead row MUST NOT register a tracker action on the skipped row (FR-018 turn-lock semantics unchanged for non-skipped rows).
+  - When advancing past the last alive row, the round counter increments by 1 exactly once and condition durations tick by one round (FR-018 condition lifecycle preserved).
   - When all rows are dead, the active turn becomes `null` and no advancement happens.
 - `unconscious` rows are NOT skipped; they keep their normal place in the initiative order.
-- Eligibility for `previousBattleTurn` (turn-lock guard from FR-012) is unchanged; among eligible rollbacks, dead rows are skipped.
+- Eligibility for `previousBattleTurn` (turn-lock guard from FR-018) is unchanged; among eligible rollbacks, dead rows are skipped.
 
-**Accessibility (FR-013)**:
+**Accessibility (FR-019)**:
 
 - Dead/unconscious status MUST be exposed via accessible text on the row (e.g. visually hidden status label inside the row container) so screen readers announce the state.
 - Color contrast for the new red and yellow backgrounds against the existing white text MUST meet WCAG AA for normal text (4.5:1).
@@ -1176,7 +1421,7 @@ Each rule has a unique identifier and must be tested.
 - Marking a player as dead solely on `hitPoints <= 0` without checking death save failures.
 - Skipping unconscious players in the turn rotation.
 - Using color alone as the only signal for dead or unconscious states (icon + accessible text mandatory).
-- Hardcoding new colors outside the documented palette (FR-013).
+- Hardcoding new colors outside the documented palette (FR-019).
 - Polling the character API to refresh death saves (must rely on session HP dialog updates and `characterSheetRemoteVersions` events; refetch only for player rows currently at `hitPoints <= 0`).
 
 **Tests**:
@@ -1191,7 +1436,7 @@ Each rule has a unique identifier and must be tested.
   - `nextBattleTurn` skips a dead row at the end and increments round once
   - `nextBattleTurn` returns active row to `null` when all rows are dead
   - Unconscious rows are visited normally
-  - `previousBattleTurn` skips dead rows symmetrically while respecting FR-012 turn-lock rules
+  - `previousBattleTurn` skips dead rows symmetrically while respecting FR-018 turn-lock rules
 - Visual:
   - Dead row renders red background and `Skull` icon after HP
   - Unconscious row renders yellow background and `HeartCrack` icon after HP
@@ -1209,14 +1454,14 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
-## FR-015: Session Combat Navigation and Player Initiative Visibility
+## FR-021: Session Combat Navigation and Player Initiative Visibility
 
 **Rule**: During an active session combat, Game Masters and players must have contextual sidebar navigation between character sheets and the initiative tracker. The GM controls per-row and per-field visibility broadcast to players in real time via the session WebSocket.
 
 **Scope**:
 
 - Applies when a session is launched and a battle is initialized (`battleInitialized === true`).
-- Complements FR-012 (GM tracker control) and FR-014 (vital status) without overriding turn lifecycle or GM-only controls.
+- Complements FR-018 (GM tracker control) and FR-020 (vital status) without overriding turn lifecycle or GM-only controls.
 - Player initiative view is read-only; turn controls remain GM-only.
 
 **Sidebar Navigation — Game Master**:
@@ -1224,7 +1469,7 @@ Each rule has a unique identifier and must be tested.
 - When the GM is on the initiative tracker page and a battle is initialized or started, the sidebar footer MUST show **Return to Character Sheet** (not **Reset**).
 - **Return to Character Sheet** navigates to the last character sheet path consulted by the GM during the current session (`lastConsultedSheetPath`). If none is recorded, the button is disabled with an explanatory tooltip.
 - When the GM is on a character sheet and a battle is initialized or started, the sidebar footer MUST show **Return to Battle**, navigating to `/{locale}/initiativeTracker`. Styling: red background, white text, swords icon.
-- **Reset** (clear tracker rows) MUST NOT appear in the sidebar while a battle is initialized or started. Reset remains available only through in-page GM controls when applicable (FR-012).
+- **Reset** (clear tracker rows) MUST NOT appear in the sidebar while a battle is initialized or started. Reset remains available only through in-page GM controls when applicable (FR-018).
 
 **Sidebar Navigation — Player**:
 
@@ -1263,7 +1508,7 @@ Each initiative tracker row carries:
 
 **Player Display Name (alias)**:
 
-- Each row carries `playerDisplayName` used when the real name is hidden from players (FR-015).
+- Each row carries `playerDisplayName` used when the real name is hidden from players (FR-021).
 - On row creation (battle setup or mid-combat add), the default MUST be the character’s real tracker name (`firstname` / `lastname` / `surname` rule).
 - Legacy rows with an empty alias MUST be normalized to that default on load.
 - Saving the visibility dialog with an empty alias MUST persist the real name as the alias.
@@ -1278,7 +1523,7 @@ Each initiative tracker row carries:
 - Rows filtered to `visible === true`, plus any row in the session participants group (always shown to connected players).
 - Field values masked when the corresponding `playerFieldVisibility` flag is `false` (display placeholder `—`; hidden name displays a generic hidden label).
 - Active turn highlight and round indicator reflect GM broadcast state.
-- Vital status visuals (FR-014) apply on visible HP when HP is shown.
+- Vital status visuals (FR-020) apply on visible HP when HP is shown.
 
 **Real-Time Sync (WebSocket)**:
 
@@ -1316,7 +1561,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-016: Session Combat Real-Time Synchronization Between Initiative Tracker and Character Sheets
+## FR-022: Session Combat Real-Time Synchronization Between Initiative Tracker and Character Sheets
 
 **Rule**: During an active session combat, initiative tracker rows and session character sheets must stay synchronized in real time for all connected participants who are allowed to view the affected data. A change made from either surface must be reflected on the other without requiring a manual page reload.
 
@@ -1327,7 +1572,7 @@ Each initiative tracker row carries:
   - GM initiative tracker
   - player read-only initiative tracker view
   - session character sheets opened by the GM or by players
-- Complements FR-012, FR-014, and FR-015 without changing their visibility or turn-control rules.
+- Complements FR-018, FR-020, and FR-021 without changing their visibility or turn-control rules.
 
 **Synchronization Model**:
 
@@ -1369,7 +1614,7 @@ Each initiative tracker row carries:
 
 - Only session participants may receive synchronization events for characters on the current session roster.
 - Real-time synchronization must respect existing access rules:
-  - player tracker view remains filtered and masked per FR-015
+  - player tracker view remains filtered and masked per FR-021
   - GM-only tracker controls remain GM-only
   - players must not gain access to hidden tracker-only fields through sheet synchronization
 - NPC sheet updates made by the GM during session combat must also refresh the initiative tracker in real time when that NPC is on the roster.
@@ -1415,7 +1660,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-017: Initiative Tracker - Bulk Display Configuration
+## FR-023: Initiative Tracker - Bulk Display Configuration
 
 **Rule**: The Game Master initiative tracker must support bulk selection of tracker rows from the display-configuration area so shared display parameters can be applied to multiple combatants at once, including during an active combat.
 
@@ -1423,13 +1668,13 @@ Each initiative tracker row carries:
 
 - The bulk display-configuration control must be available to the GM whenever a battle is initialized or started.
 - The GM can select multiple tracker rows and apply shared player-facing display parameters in one action.
-- Bulk display configuration must support the same player-facing visibility fields as the per-row display configuration defined in FR-015.
+- Bulk display configuration must support the same player-facing visibility fields as the per-row display configuration defined in FR-021.
 - Bulk display configuration must support assigning a shared player-facing name/alias to all selected rows.
 - The shared name/alias input is empty by default and must be clearly identified as applying the same name to all selected characters.
 - If the shared name/alias input is left empty, existing row aliases must not be overwritten.
-- Bulk actions that remove rows from initiative must follow the "leave initiative" behavior from FR-012 and must not end the battle.
-- When bulk changes are applied during started combat, the current turn must be marked as having a tracker action according to FR-012 rollback-lock semantics.
-- Player-facing broadcasts and masking must continue to follow FR-015.
+- Bulk actions that remove rows from initiative must follow the "leave initiative" behavior from FR-018 and must not end the battle.
+- When bulk changes are applied during started combat, the current turn must be marked as having a tracker action according to FR-018 rollback-lock semantics.
+- Player-facing broadcasts and masking must continue to follow FR-021.
 
 **Accessibility Requirements**:
 

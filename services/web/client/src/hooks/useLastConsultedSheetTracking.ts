@@ -18,7 +18,7 @@ function isCharacterDetailPath(pathname: string): boolean {
 }
 
 /**
- * FR-015 — enregistre la dernière fiche consultée par le MJ pendant une session active.
+ * FR-021 — enregistre la dernière fiche consultée par le MJ pendant une session active.
  */
 export function useLastConsultedSheetTracking() {
   const pathname = usePathname() ?? "";

@@ -4,7 +4,7 @@ import { isPlayer } from "@/utils/global.utils";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 
 /**
- * FR-014 — seuil d'\u00e9checs aux jets de mort \u00e0 partir duquel un PJ \u00e0 0 PV est consid\u00e9r\u00e9 mort.
+ * FR-020 — seuil d'\u00e9checs aux jets de mort \u00e0 partir duquel un PJ \u00e0 0 PV est consid\u00e9r\u00e9 mort.
  */
 export const DEATH_SAVES_FAILURE_THRESHOLD = 3;
 
@@ -24,7 +24,7 @@ export function trackerHpFromCharacter(
 }
 
 /**
- * FR-014 — calcule l'\u00e9tat vital d'une ligne tracker \u00e0 partir des PV et des death saves miroir\u00e9s.
+ * FR-020 — calcule l'\u00e9tat vital d'une ligne tracker \u00e0 partir des PV et des death saves miroir\u00e9s.
  * - NPC \u00e0 0 PV \u2192 dead.
  * - PJ \u00e0 0 PV avec failures >= 3 \u2192 dead.
  * - PJ \u00e0 0 PV avec failures < 3 \u2192 unconscious.
@@ -45,7 +45,7 @@ export function getInitiativeTrackerRowStatus(
 }
 
 /**
- * FR-014 — extrait `deathSavesFailures` d'un personnage si c'est un PJ, sinon retourne `0`.
+ * FR-020 — extrait `deathSavesFailures` d'un personnage si c'est un PJ, sinon retourne `0`.
  * Sert au seed initial et aux refresh post HP/remote sync.
  */
 export function trackerDeathSavesFailuresFromCharacter(character: Character): number {
@@ -55,14 +55,14 @@ export function trackerDeathSavesFailuresFromCharacter(character: Character): nu
 }
 
 /**
- * FR-014 — d\u00e9termine le `kind` d'une ligne tracker pour un personnage charg\u00e9.
+ * FR-020 — d\u00e9termine le `kind` d'une ligne tracker pour un personnage charg\u00e9.
  */
 export function trackerKindFromCharacter(character: Character): InitiativeTrackerRow["kind"] {
   return isPlayer(character) ? "player" : "npc";
 }
 
 /**
- * FR-014 — calcule l'ensemble des champs miroir pertinents pour le statut vital d'une ligne tracker
+ * FR-020 — calcule l'ensemble des champs miroir pertinents pour le statut vital d'une ligne tracker
  * (HP + d\u00e9rivation mort/inconscient). Utilis\u00e9 apr\u00e8s un refetch personnage (HP dialog ou WS sync).
  */
 export function trackerStatusFieldsFromCharacter(
@@ -76,7 +76,7 @@ export function trackerStatusFieldsFromCharacter(
 }
 
 /**
- * FR-016 — miroir complet des champs de fiche affichés dans le tracker.
+ * FR-022 — miroir complet des champs de fiche affichés dans le tracker.
  * Utilisé lors d'un refresh temps réel de fiche pour resynchroniser toutes les lignes concernées.
  */
 export function trackerMirrorFieldsFromCharacter(
@@ -164,19 +164,19 @@ export function canUndoBattleTurn(
   return true;
 }
 
-/** FR-015 — groupe virtuel des joueurs connectés à la session. */
+/** FR-021 — groupe virtuel des joueurs connectés à la session. */
 export function isSessionParticipantTrackerRow(
   row: Pick<InitiativeTrackerRow, 'groupId'>,
 ): boolean {
   return row.groupId === SESSION_PARTICIPANTS_GROUP_ID;
 }
 
-/** FR-015 — lignes visibles pour la vue joueur (participants session toujours inclus). */
+/** FR-021 — lignes visibles pour la vue joueur (participants session toujours inclus). */
 export function filterRowsForPlayerView(rows: InitiativeTrackerRow[]): InitiativeTrackerRow[] {
   return rows.filter((row) => row.visible || isSessionParticipantTrackerRow(row));
 }
 
-/** FR-015 / FR-016 — retire du snapshot temps réel les données que les joueurs ne peuvent pas voir. */
+/** FR-021 / FR-022 — retire du snapshot temps réel les données que les joueurs ne peuvent pas voir. */
 export function sanitizeInitiativeTrackerRowForPlayer(row: InitiativeTrackerRow): InitiativeTrackerRow {
   const fieldVis = row.playerFieldVisibility;
   return {
@@ -210,26 +210,26 @@ export function sanitizeBattleStateSnapshotForPlayers(snapshot: BattleStateSnaps
   };
 }
 
-/** FR-015 — alias par défaut = nom réel du personnage sur la ligne tracker. */
+/** FR-021 — alias par défaut = nom réel du personnage sur la ligne tracker. */
 export function defaultPlayerDisplayNameForRow(
   row: Pick<InitiativeTrackerRow, "firstname" | "lastname" | "surname">,
 ): string {
   return characterName(row.firstname, row.lastname, row.surname);
 }
 
-/** FR-015 — valeur persistée à l'enregistrement (vide → nom réel). */
+/** FR-021 — valeur persistée à l'enregistrement (vide → nom réel). */
 export function resolvePlayerDisplayNameForSave(raw: string, gmName: string): string {
   const trimmed = raw.trim();
   return trimmed.length > 0 ? trimmed : gmName;
 }
 
-/** FR-015 — sous-titre MJ lorsque l'alias joueur diffère du nom réel. */
+/** FR-021 — sous-titre MJ lorsque l'alias joueur diffère du nom réel. */
 export function shouldShowGmPlayerAliasSubtitle(gmName: string, playerDisplayName: string): boolean {
   const alias = playerDisplayName.trim();
   return alias.length > 0 && alias !== gmName.trim();
 }
 
-/** FR-015 / FR-017 — nom affiché côté joueur selon visibilité et override MJ. */
+/** FR-021 / FR-019 — nom affiché côté joueur selon visibilité et override MJ. */
 export function resolvePlayerTrackerDisplayName(
   row: Pick<InitiativeTrackerRow, 'firstname' | 'lastname' | 'surname' | 'playerDisplayName' | 'playerFieldVisibility'>,
 ): string | null {

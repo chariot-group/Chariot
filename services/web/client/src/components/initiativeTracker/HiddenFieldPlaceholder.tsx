@@ -8,7 +8,7 @@ type HiddenFieldPlaceholderProps = {
   compact?: boolean;
 };
 
-/** FR-015 — indicateur visuel explicite pour une donnée masquée au joueur. */
+/** FR-021 — indicateur visuel explicite pour une donnée masquée au joueur. */
 export function HiddenFieldPlaceholder({ label, className = "", compact = false }: HiddenFieldPlaceholderProps) {
   return (
     <span

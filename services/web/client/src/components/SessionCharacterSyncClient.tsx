@@ -189,7 +189,7 @@ export default function SessionCharacterSyncClient() {
         setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
     }, [isInSession, code]);
 
-    /** FR-014 — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
+    /** FR-022 — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
     useEffect(() => {
         if (!isInSession) {
             registerLocalCharacterSheetUpdatedListener(null);

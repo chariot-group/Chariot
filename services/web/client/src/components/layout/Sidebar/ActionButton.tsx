@@ -172,7 +172,7 @@ export function ActionButton() {
         };
       }
 
-      // FR-015 — combat initialisé : retour fiche sur le tracker, retour combat ailleurs
+      // FR-021 — combat initialisé : retour fiche sur le tracker, retour combat ailleurs
       if (battleStarted && isInitiativeTrackerPage) {
         return {
           label: t("returnToSheet"),
@@ -210,7 +210,7 @@ export function ActionButton() {
         };
       }
 
-      // FR-015 — joueur : bascule combat ↔ fiche
+      // FR-021 — joueur : bascule combat ↔ fiche
       if (battleStarted && isInitiativeTrackerPage) {
         return {
           label: t("returnToSheet"),

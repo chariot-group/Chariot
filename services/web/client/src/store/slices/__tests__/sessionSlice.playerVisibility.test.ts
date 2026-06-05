@@ -43,7 +43,7 @@ const buildRow = (
   };
 };
 
-describe("FR-015 — player field visibility defaults", () => {
+describe("FR-021 — player field visibility defaults", () => {
   it("nominal: NPC defaults hide mechanical fields except name", () => {
     const defaults = defaultPlayerFieldVisibilityForKind("npc");
     expect(defaults).toEqual({
@@ -79,7 +79,7 @@ describe("FR-015 — player field visibility defaults", () => {
   });
 });
 
-describe("FR-015 — player view filtering", () => {
+describe("FR-021 — player view filtering", () => {
   it("nominal: only visible rows are shown to players", () => {
     const rows = [
       buildRow({ id: "a", visible: true }),
@@ -113,7 +113,7 @@ describe("FR-015 — player view filtering", () => {
   });
 });
 
-describe("FR-015 — session participant rows not maskable", () => {
+describe("FR-021 — session participant rows not maskable", () => {
   it("nominal: applyPlayerRowVisibilityRules forces visible for session group only", () => {
     const locked = applyPlayerRowVisibilityRules(
       buildRow({
@@ -200,7 +200,7 @@ describe("FR-015 — session participant rows not maskable", () => {
   });
 });
 
-describe("FR-015 — applyRemoteBattleState", () => {
+describe("FR-021 — applyRemoteBattleState", () => {
   it("nominal: replaces battle fields from GM snapshot", () => {
     let state = sessionReducer(undefined, setInitiativeTrackerRows([buildRow({ id: "a" })]));
     state = sessionReducer(
@@ -269,7 +269,7 @@ describe("FR-015 — applyRemoteBattleState", () => {
   });
 });
 
-describe("FR-017 — bulk display configuration", () => {
+describe("FR-023 — bulk display configuration", () => {
   it("nominal: applies visibility settings and shared alias to selected rows only", () => {
     let state = sessionReducer(
       undefined,

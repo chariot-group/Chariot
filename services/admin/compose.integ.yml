@@ -1,0 +1,31 @@
+name: chariot-admin-integ
+
+services:
+  chariot-admin:
+    image: ghcr.io/chariot-group/chariot-admin-integration:latest
+    container_name: chariot-admin-integ
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3001"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_ENV_NAME: integration
+    networks:
+      - chariot-group-network-integ
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-admin-integ.rule=Host(`${ADMIN_HOST}`)"
+      - "traefik.http.routers.chariot-admin-integ.entrypoints=websecure"
+      - "traefik.http.routers.chariot-admin-integ.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-admin-integ.loadbalancer.server.port=3001"
+      - "traefik.http.routers.chariot-admin-integ.service=chariot-admin-integ"
+      - "traefik.docker.network=traefik-public"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  chariot-group-network-integ:
+    external: true
+  traefik-public:
+    external: true

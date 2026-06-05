@@ -363,7 +363,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     /**
-     * FR-015 — diffuse l'état du combat (tracker) du MJ aux joueurs.
+     * FR-021 — diffuse l'état du combat (tracker) du MJ aux joueurs.
      * Convention : `sessionId` = code OTP (cf. session:join).
      */
     @SubscribeMessage('session:battle-state-updated')
@@ -395,7 +395,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     /**
-     * FR-015 — un joueur demande le snapshot combat (reconnexion / arrivée tardive).
+     * FR-021 — un joueur demande le snapshot combat (reconnexion / arrivée tardive).
      * Relaie à la room ; le client MJ répond via session:battle-state-updated.
      */
     @SubscribeMessage('session:request-battle-state')
