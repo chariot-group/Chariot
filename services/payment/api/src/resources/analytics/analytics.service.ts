@@ -50,12 +50,29 @@ export interface PromoCodeStat {
     isActive: boolean;
 }
 
+export interface ChannelPerformance {
+    revenue: number;
+    loss: number;
+}
+
+export interface AffiliationPerformance extends ChannelPerformance {
+    commissionLoss: number;
+    discountLoss: number;
+}
+
+export interface AcquisitionPerformance {
+    promoCodes: ChannelPerformance;
+    affiliations: AffiliationPerformance;
+    referrals: ChannelPerformance;
+}
+
 export interface DashboardData {
     kpis: DashboardKpis;
     revenueOverTime: RevenueDataPoint[];
     topAffiliations: AffiliationStat[];
     topPromoCodes: PromoCodeStat[];
     paymentStatusBreakdown: Record<PaymentStatus, number>;
+    acquisitionPerformance: AcquisitionPerformance;
 }
 
 @Injectable()
@@ -76,13 +93,14 @@ export class AnalyticsService {
             const dateFrom = from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
             const dateTo = to ?? new Date();
 
-            const [kpis, revenueOverTime, topAffiliations, topPromoCodes, statusBreakdown] =
+            const [kpis, revenueOverTime, topAffiliations, topPromoCodes, statusBreakdown, acquisitionPerformance] =
                 await Promise.all([
                     this.computeKpis(dateFrom, dateTo),
                     this.computeRevenueOverTime(period, dateFrom, dateTo),
                     this.computeTopAffiliations(dateFrom, dateTo),
                     this.computeTopPromoCodes(dateFrom, dateTo),
                     this.computeStatusBreakdown(dateFrom, dateTo),
+                    this.computeAcquisitionPerformance(dateFrom, dateTo),
                 ]);
 
             this.logger.verbose(
@@ -90,10 +108,18 @@ export class AnalyticsService {
                 this.SERVICE_NAME,
             );
 
-            return { kpis, revenueOverTime, topAffiliations, topPromoCodes, paymentStatusBreakdown: statusBreakdown };
+            return {
+                kpis,
+                revenueOverTime,
+                topAffiliations,
+                topPromoCodes,
+                paymentStatusBreakdown: statusBreakdown,
+                acquisitionPerformance,
+            };
         } catch (error) {
-            const message = `Error while computing dashboard: ${error.message}`;
-            this.logger.error(message, error.stack, this.SERVICE_NAME);
+            const err = error instanceof Error ? error : new Error(String(error));
+            const message = `Error while computing dashboard: ${err.message}`;
+            this.logger.error(message, err.stack, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
     }
@@ -113,6 +139,7 @@ export class AnalyticsService {
         const totalDiscounts = completed.reduce((sum, p) => sum + p.discountAmount, 0);
 
         const commissionSum = await this.prisma.affiliationUsage.aggregate({
+            where: { usedAt: { gte: from, lte: to } },
             _sum: { commissionAmount: true },
         });
 
@@ -250,5 +277,64 @@ export class AnalyticsService {
         }
 
         return result;
+    }
+
+    private async computeAcquisitionPerformance(
+        from: Date,
+        to: Date,
+    ): Promise<AcquisitionPerformance> {
+        const [completedPayments, affiliationCommissions] = await Promise.all([
+            this.prisma.payment.findMany({
+                where: {
+                    status: PaymentStatus.COMPLETED,
+                    createdAt: { gte: from, lte: to },
+                },
+                select: {
+                    finalAmount: true,
+                    discountAmount: true,
+                    promoCodeId: true,
+                    affiliationId: true,
+                    referralId: true,
+                },
+            }),
+            this.prisma.affiliationUsage.aggregate({
+                where: { usedAt: { gte: from, lte: to } },
+                _sum: { commissionAmount: true },
+            }),
+        ]);
+
+        const promoCodes: ChannelPerformance = { revenue: 0, loss: 0 };
+        const affiliations: AffiliationPerformance = {
+            revenue: 0,
+            loss: 0,
+            discountLoss: 0,
+            commissionLoss: affiliationCommissions._sum.commissionAmount ?? 0,
+        };
+        const referrals: ChannelPerformance = { revenue: 0, loss: 0 };
+
+        for (const payment of completedPayments) {
+            if (payment.promoCodeId) {
+                promoCodes.revenue += payment.finalAmount;
+                promoCodes.loss += payment.discountAmount;
+            }
+
+            if (payment.affiliationId) {
+                affiliations.revenue += payment.finalAmount;
+                affiliations.discountLoss += payment.discountAmount;
+            }
+
+            if (payment.referralId) {
+                referrals.revenue += payment.finalAmount;
+                referrals.loss += payment.discountAmount;
+            }
+        }
+
+        affiliations.loss = affiliations.discountLoss + affiliations.commissionLoss;
+
+        return {
+            promoCodes,
+            affiliations,
+            referrals,
+        };
     }
 }

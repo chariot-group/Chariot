@@ -61,6 +61,22 @@ interface DashboardData {
     isActive: boolean;
   }[];
   paymentStatusBreakdown: Record<string, number>;
+  acquisitionPerformance: {
+    promoCodes: {
+      revenue: number;
+      loss: number;
+    };
+    affiliations: {
+      revenue: number;
+      loss: number;
+      discountLoss: number;
+      commissionLoss: number;
+    };
+    referrals: {
+      revenue: number;
+      loss: number;
+    };
+  };
 }
 
 const PIE_COLORS: Record<string, string> = {
@@ -149,6 +165,30 @@ export default function DashboardPage() {
         .map(([name, value]) => ({ name, value }))
     : [];
 
+  const getPerformanceRowClass = (revenue: number, loss: number): string => {
+    if (revenue < loss) {
+      return "bg-red-500/10";
+    }
+
+    if (revenue === loss) {
+      return "bg-muted/40";
+    }
+
+    return "bg-green-500/10";
+  };
+
+  const totalAcquisitionRevenue = data
+    ? data.acquisitionPerformance.promoCodes.revenue +
+      data.acquisitionPerformance.affiliations.revenue +
+      data.acquisitionPerformance.referrals.revenue
+    : 0;
+
+  const totalAcquisitionLoss = data
+    ? data.acquisitionPerformance.promoCodes.loss +
+      data.acquisitionPerformance.affiliations.loss +
+      data.acquisitionPerformance.referrals.loss
+    : 0;
+
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -200,7 +240,7 @@ export default function DashboardPage() {
           value={data ? formatCents(data.kpis.totalRevenue) : "—"}
           icon={TrendingUp}
           sub={data ? `${data.kpis.completedPayments} paiements complétés` : undefined}
-          color="text-[var(--green)]"
+          color="text-(--green)"
         />
         <KpiCard
           title="Paiements totaux"
@@ -219,9 +259,94 @@ export default function DashboardPage() {
           value={data ? formatCents(data.kpis.totalDiscounts) : "—"}
           icon={Percent}
           sub={data ? `Commissions: ${formatCents(data.kpis.totalCommissions)}` : undefined}
-          color="text-[var(--yellow)]"
+          color="text-(--yellow)"
         />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Impact promo, affiliation et parrainage</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {data ? (
+            <div className="overflow-x-auto rounded-xl border border-border/70 bg-muted/10 p-2">
+              <table className="w-full border-separate border-spacing-y-2 text-sm">
+                <thead>
+                  <tr className="text-muted-foreground">
+                    <th className="text-left font-medium px-4 py-2">Canal</th>
+                    <th className="text-right font-medium px-4 py-2">Rapporté</th>
+                    <th className="text-right font-medium px-4 py-2">Perdu</th>
+                    <th className="text-right font-medium px-4 py-2">Détail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    className={`shadow-sm ${getPerformanceRowClass(
+                      data.acquisitionPerformance.promoCodes.revenue,
+                      data.acquisitionPerformance.promoCodes.loss,
+                    )}`}>
+                    <td className="px-4 py-3 font-medium rounded-l-lg">Codes promo</td>
+                    <td className="px-4 py-3 text-right text-(--green) font-medium">
+                      {formatCents(data.acquisitionPerformance.promoCodes.revenue)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-(--yellow) font-medium">
+                      {formatCents(data.acquisitionPerformance.promoCodes.loss)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs text-muted-foreground rounded-r-lg">Remises</td>
+                  </tr>
+                  <tr
+                    className={`shadow-sm ${getPerformanceRowClass(
+                      data.acquisitionPerformance.affiliations.revenue,
+                      data.acquisitionPerformance.affiliations.loss,
+                    )}`}>
+                    <td className="px-4 py-3 font-medium rounded-l-lg">Affiliations</td>
+                    <td className="px-4 py-3 text-right text-(--green) font-medium">
+                      {formatCents(data.acquisitionPerformance.affiliations.revenue)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-(--yellow) font-medium">
+                      {formatCents(data.acquisitionPerformance.affiliations.loss)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs text-muted-foreground rounded-r-lg">
+                      Remises: {formatCents(data.acquisitionPerformance.affiliations.discountLoss)} | Commissions:{" "}
+                      {formatCents(data.acquisitionPerformance.affiliations.commissionLoss)}
+                    </td>
+                  </tr>
+                  <tr
+                    className={`shadow-sm ${getPerformanceRowClass(
+                      data.acquisitionPerformance.referrals.revenue,
+                      data.acquisitionPerformance.referrals.loss,
+                    )}`}>
+                    <td className="px-4 py-3 font-medium rounded-l-lg">Parrainage</td>
+                    <td className="px-4 py-3 text-right text-(--green) font-medium">
+                      {formatCents(data.acquisitionPerformance.referrals.revenue)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-(--yellow) font-medium">
+                      {formatCents(data.acquisitionPerformance.referrals.loss)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs text-muted-foreground rounded-r-lg">Remises</td>
+                  </tr>
+                  <tr className={`shadow-sm ${getPerformanceRowClass(totalAcquisitionRevenue, totalAcquisitionLoss)}`}>
+                    <td className="px-4 py-3 font-semibold rounded-l-lg">Total</td>
+                    <td className="px-4 py-3 text-right font-semibold text-(--green)">
+                      {formatCents(totalAcquisitionRevenue)}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-(--yellow)">
+                      {formatCents(totalAcquisitionLoss)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs text-muted-foreground rounded-r-lg">
+                      Période sélectionnée
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex h-24 items-center justify-center text-sm text-muted-foreground">
+              {loading ? "Chargement…" : "Aucune donnée"}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Revenue chart */}
       <Card>
@@ -405,7 +530,7 @@ export default function DashboardPage() {
                           </span>
                         </div>
                       </div>
-                      <span className="text-sm font-semibold text-[var(--green)] shrink-0">
+                      <span className="text-sm font-semibold text-(--green) shrink-0">
                         {formatCents(a.totalRevenue)}
                       </span>
                     </div>
@@ -425,7 +550,7 @@ export default function DashboardPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <CardTitle>Performance des codes promo</CardTitle>
-            <ArrowDownLeft className="h-4 w-4 text-[var(--yellow)]" />
+            <ArrowDownLeft className="h-4 w-4 text-(--yellow)" />
           </div>
         </CardHeader>
         <CardContent>
