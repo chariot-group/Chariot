@@ -5,4 +5,11 @@
 
 */
 -- AlterTable
-ALTER TABLE "affiliations" ADD COLUMN     "creator_name" TEXT NOT NULL;
+ALTER TABLE "affiliations" ADD COLUMN     "creator_name" TEXT;
+
+-- Backfill existing rows before enforcing NOT NULL.
+UPDATE "affiliations"
+SET "creator_name" = "name"
+WHERE "creator_name" IS NULL;
+
+ALTER TABLE "affiliations" ALTER COLUMN "creator_name" SET NOT NULL;

@@ -53,6 +53,16 @@ services:
     networks:
       - chariot-network
       - chariot-group-network-integ
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-payment-integ.rule=Host(`${PAYMENT_HOST}`)"
+      - "traefik.http.routers.chariot-payment-integ.entrypoints=websecure"
+      - "traefik.http.routers.chariot-payment-integ.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-payment-integ.loadbalancer.server.port=9003"
+      - "traefik.http.routers.chariot-payment-integ.service=chariot-payment-integ"
+      - "traefik.docker.network=traefik-public"
+      - "com.centurylinklabs.watchtower.enable=true"
 
 volumes:
   chariot_payment_postgres_data_integ:
@@ -62,4 +72,6 @@ networks:
   chariot-network:
     driver: bridge
   chariot-group-network-integ:
+    external: true
+  traefik-public:
     external: true

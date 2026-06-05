@@ -53,6 +53,7 @@ services:
     networks:
       - chariot-network
       - chariot-group-network-prod
+      - traefik-public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.chariot-payment-prod.rule=Host(`${PAYMENT_HOST}`)"
@@ -71,4 +72,6 @@ networks:
   chariot-network:
     driver: bridge
   chariot-group-network-prod:
+    external: true
+  traefik-public:
     external: true

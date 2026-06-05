@@ -272,6 +272,14 @@ export class ReferralService {
     ): Promise<void> {
         try {
             await this.prisma.$transaction(async (tx) => {
+                const existingReferralPayment = await tx.referralPayment.findFirst({
+                    where: { orderId },
+                });
+
+                if (existingReferralPayment) {
+                    return;
+                }
+
                 await tx.referralPayment.create({
                     data: {
                         userId,

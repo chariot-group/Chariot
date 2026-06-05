@@ -175,8 +175,8 @@ export class PaymentService {
                     },
                 });
 
-                // Lorsque le paiement est COMPLETED, enregistrer les usages
-                if (dto.status === 'COMPLETED') {
+                // Lorsque le paiement devient COMPLETED pour la première fois, enregistrer les usages
+                if (dto.status === 'COMPLETED' && existing.status !== 'COMPLETED') {
                     if (payment.promoCodeId) {
                         await tx.promoCodeUsage.create({
                             data: {
@@ -376,8 +376,30 @@ export class PaymentService {
             const start = Date.now();
             const discountAmount = dto.discountAmount ?? 0;
             const finalAmount = dto.amount - discountAmount;
+            const completionOrderId =
+                dto.stripeSessionId ?? dto.stripePaymentIntentId;
 
-            const payment = await this.prisma.$transaction(async (tx) => {
+            const result = await this.prisma.$transaction(async (tx) => {
+                if (dto.stripePaymentIntentId) {
+                    const existingByPaymentIntent = await tx.payment.findUnique({
+                        where: { stripePaymentIntentId: dto.stripePaymentIntentId },
+                    });
+
+                    if (existingByPaymentIntent) {
+                        return { payment: existingByPaymentIntent, created: false };
+                    }
+                }
+
+                if (dto.stripeSessionId) {
+                    const existingBySession = await tx.payment.findUnique({
+                        where: { stripeSessionId: dto.stripeSessionId },
+                    });
+
+                    if (existingBySession) {
+                        return { payment: existingBySession, created: false };
+                    }
+                }
+
                 const created = await tx.payment.create({
                     data: {
                         userId: dto.userId,
@@ -394,19 +416,32 @@ export class PaymentService {
                     },
                 });
 
+                if (!completionOrderId) {
+                    return { payment: created, created: true };
+                }
+
                 if (dto.promoCodeId) {
-                    await tx.promoCodeUsage.create({
-                        data: {
+                    const existingPromoUsage = await tx.promoCodeUsage.findFirst({
+                        where: {
                             promoCodeId: dto.promoCodeId,
-                            userId: dto.userId,
-                            orderId: dto.stripeSessionId ?? created.id,
+                            orderId: completionOrderId,
                         },
                     });
 
-                    await tx.promoCode.update({
-                        where: { id: dto.promoCodeId },
-                        data: { currentTotalUses: { increment: 1 } },
-                    });
+                    if (!existingPromoUsage) {
+                        await tx.promoCodeUsage.create({
+                            data: {
+                                promoCodeId: dto.promoCodeId,
+                                userId: dto.userId,
+                                orderId: completionOrderId,
+                            },
+                        });
+
+                        await tx.promoCode.update({
+                            where: { id: dto.promoCodeId },
+                            data: { currentTotalUses: { increment: 1 } },
+                        });
+                    }
                 }
 
                 if (dto.affiliationId) {
@@ -419,25 +454,36 @@ export class PaymentService {
                             (finalAmount * affiliation.creatorCommissionPercent) / 100,
                         );
 
-                        await tx.affiliationUsage.create({
-                            data: {
+                        const existingAffiliationUsage = await tx.affiliationUsage.findFirst({
+                            where: {
                                 affiliationId: dto.affiliationId,
-                                userId: dto.userId,
-                                orderId: dto.stripeSessionId ?? created.id,
-                                orderAmount: finalAmount,
-                                commissionAmount,
+                                orderId: completionOrderId,
                             },
                         });
+
+                        if (!existingAffiliationUsage) {
+                            await tx.affiliationUsage.create({
+                                data: {
+                                    affiliationId: dto.affiliationId,
+                                    userId: dto.userId,
+                                    orderId: completionOrderId,
+                                    orderAmount: finalAmount,
+                                    commissionAmount,
+                                },
+                            });
+                        }
                     }
                 }
 
-                return created;
+                return { payment: created, created: true };
             });
 
-            const message = `Completed payment recorded for user ${dto.userId} in ${Date.now() - start}ms`;
+            const message = result.created
+                ? `Completed payment recorded for user ${dto.userId} in ${Date.now() - start}ms`
+                : `Completed payment already recorded for user ${dto.userId} (${Date.now() - start}ms)`;
             this.logger.verbose(message, this.SERVICE_NAME);
 
-            return { message, data: payment };
+            return { message, data: result.payment };
         } catch (error) {
             if (error instanceof HttpException) throw error;
             const message = `Error while recording completed payment: ${error.message}`;
