@@ -60,10 +60,10 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
           <Button
             variant="outline"
             onClick={() => handleSelectType("players")}
-            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-red hover:text-white hover:border-red hover:scale-105 transition-all duration-200 shadow-md hover:shadow-red/50">
-            <div className="p-3 rounded-full bg-blue/10">
+            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2">
+            <div className="p-3 rounded-full bg-card">
               <User
-                className="w-12 h-12 text-blue"
+                className="w-12 h-12"
                 aria-hidden="true"
               />
             </div>
@@ -74,10 +74,10 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
           <Button
             variant="outline"
             onClick={() => handleSelectType("npcs")}
-            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2 hover:bg-red hover:text-white hover:border-red hover:scale-105 transition-all duration-200 shadow-md hover:shadow-red/50">
-            <div className="p-3 rounded-full bg-red/10">
+            className="flex flex-col items-center justify-center h-40 gap-3 rounded-[15px] border-2">
+            <div className="p-3 rounded-full bg-card">
               <Users
-                className="w-12 h-12 text-red"
+                className="w-12 h-12"
                 aria-hidden="true"
               />
             </div>

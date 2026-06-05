@@ -12,6 +12,7 @@ import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { toast } from "react-toastify";
+import SensesSection from "@/components/character/tabContents/general/shared/SensesSection";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -139,6 +140,16 @@ export default function PlayerGeneralTabContent({
               <div className="flex flex-col">
                 <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
                 <dd className="text-sm sm:text-base">{player?.stats?.languages.join(", ")}</dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="text-sm sm:text-base font-semibold">{t("senses")} :</dt>
+                <dd>
+                  <SensesSection
+                    senses={player?.stats?.senses}
+                    accentColor={accentColor}
+                    embedded
+                  />
+                </dd>
               </div>
               <div className="flex flex-col">
                 <dt className="text-sm sm:text-base font-semibold">{t("tools")} :</dt>
