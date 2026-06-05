@@ -42,6 +42,18 @@ export const PROMO_FORM_DEFAULT_VALUES: Partial<PromoFormData> = {
     isFirstOrderOnly: false,
 };
 
+/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-015. */
+export function getPromoCodeDeactivatePath(id: string): string {
+    return `/promo-codes/${id}/deactivate`;
+}
+
+/** Path and body for PATCH reactivation. See FR-015. */
+export function getPromoCodeReactivatePath(id: string): string {
+    return `/promo-codes/${id}`;
+}
+
+export const PROMO_CODE_REACTIVATE_PAYLOAD = { isActive: true } as const;
+
 export function toPromoPayload(data: PromoFormData): Omit<PromoFormData, "expiresAt" | "minOrderAmount" | "maxTotalUses"> & {
     expiresAt?: string;
     minOrderAmount?: number;

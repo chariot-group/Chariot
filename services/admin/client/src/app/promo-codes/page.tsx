@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, RefreshCw, Search, RotateCcw } from "lucide-react";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
@@ -18,6 +18,9 @@ import { SortableHead } from "@/components/ui/SortableHead";
 import {
   filterPromoCodes,
   getApiClient,
+  getPromoCodeDeactivatePath,
+  getPromoCodeReactivatePath,
+  PROMO_CODE_REACTIVATE_PAYLOAD,
   PROMO_FORM_DEFAULT_VALUES,
   promoSchema,
   sortPromoCodes,
@@ -244,11 +247,22 @@ export default function PromoCodesPage() {
   const handleDeactivate = async (id: string, code: string) => {
     if (!confirm(`Désactiver le code "${code}" ?`)) return;
     try {
-      await getApiClient().delete(`/promo-codes/${id}`);
+      await getApiClient().patch(getPromoCodeDeactivatePath(id));
       toast.success("Code promo désactivé");
       load();
-    } catch {
-      toast.error("Erreur lors de la désactivation");
+    } catch (err: unknown) {
+      toast.error(extractApiError(err, "Erreur lors de la désactivation"));
+    }
+  };
+
+  const handleReactivate = async (id: string, code: string) => {
+    if (!confirm(`Réactiver le code "${code}" ?`)) return;
+    try {
+      await getApiClient().patch(getPromoCodeReactivatePath(id), PROMO_CODE_REACTIVATE_PAYLOAD);
+      toast.success("Code promo réactivé");
+      load();
+    } catch (err: unknown) {
+      toast.error(extractApiError(err, "Erreur lors de la réactivation"));
     }
   };
 
@@ -426,13 +440,23 @@ export default function PromoCodesPage() {
                           }}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        {p.isActive && (
+                        {p.isActive ? (
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 text-destructive hover:text-destructive"
+                            aria-label={`Désactiver le code promo ${p.code}`}
                             onClick={() => handleDeactivate(p.id, p.code)}>
                             <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-(--green) hover:text-(--green)"
+                            aria-label={`Réactiver le code promo ${p.code}`}
+                            onClick={() => handleReactivate(p.id, p.code)}>
+                            <RotateCcw className="h-3.5 w-3.5" />
                           </Button>
                         )}
                       </div>

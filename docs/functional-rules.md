@@ -1007,3 +1007,70 @@ Each rule has a unique identifier and must be tested.
 - `services/admin/client/src/app/payments/page.tsx`
 - `services/admin/client/src/app/referrals/page.tsx`
 - `services/admin/client/src/app/affiliations/page.tsx`
+
+---
+
+## FR-014: Admin Affiliation Activation Lifecycle
+
+**Rule**: Admin users can deactivate and reactivate affiliation programs without soft-deleting them. Deactivation stops the code from being usable at checkout while preserving history and stats.
+
+**Requirements**:
+- Deactivation sets `isActive` to `false` via `PATCH /affiliations/:id/deactivate`
+- Reactivation sets `isActive` to `true` via `PATCH /affiliations/:id` with body `{ isActive: true }`
+- Deactivated affiliations remain visible when the admin list filter "Inclure inactifs" is enabled
+- Deactivated affiliations are excluded from the default list view (`includeInactive=false`)
+- Inactive affiliation codes must not apply discounts at checkout (enforced by payment service)
+- Admin UI provides a deactivate action only for active affiliations, with user confirmation before the request
+- Admin UI provides a reactivate action only for inactive affiliations, with user confirmation before the request
+- Deactivate and reactivate actions must expose an accessible label (`aria-label`) on the control
+- All clickable admin buttons must use `cursor-pointer`
+
+**Prohibitions**:
+- Using `DELETE /affiliations/:id` for deactivation (that endpoint performs soft delete via `deletedAt`)
+- Allowing checkout with an inactive affiliation code
+
+**Tests**:
+- Deactivate path builder returns `PATCH /affiliations/:id/deactivate` for a valid UUID
+- Reactivate path builder returns `PATCH /affiliations/:id` with `{ isActive: true }`
+- Default affiliation list excludes inactive records
+- List with `includeInactive=true` includes inactive but not soft-deleted records
+
+**References**:
+- `services/payment/api/src/resources/affiliation/affiliation.controller.ts`
+- `services/payment/api/src/resources/affiliation/affiliation.service.ts`
+- `services/payment/api/src/resources/payment/payment.service.ts`
+- `services/admin/client/src/app/affiliations/page.tsx`
+- `services/admin/client/src/services/AffiliationService.ts`
+
+---
+
+## FR-015: Admin Promo Code Activation Lifecycle
+
+**Rule**: Admin users can deactivate and reactivate promo codes without soft-deleting them. Deactivation stops the code from being usable at checkout while preserving usage history.
+
+**Requirements**:
+- Deactivation sets `isActive` to `false` via `PATCH /promo-codes/:id/deactivate`
+- Reactivation sets `isActive` to `true` via `PATCH /promo-codes/:id` with body `{ isActive: true }`
+- Deactivated promo codes remain visible when the admin list filter "Inclure inactifs" is enabled
+- Deactivated promo codes are excluded from the default list view (`includeInactive=false`)
+- Inactive promo codes must not apply discounts at checkout (enforced by payment service)
+- Admin UI provides a deactivate action only for active promo codes, with user confirmation before the request
+- Admin UI provides a reactivate action only for inactive promo codes, with user confirmation before the request
+- Deactivate and reactivate actions must expose an accessible label (`aria-label`) on the control
+- All clickable admin buttons must use `cursor-pointer`
+
+**Prohibitions**:
+- Using `DELETE /promo-codes/:id` for deactivation (that endpoint performs soft delete via `deletedAt`)
+- Allowing checkout with an inactive promo code
+
+**Tests**:
+- Deactivate path builder returns `PATCH /promo-codes/:id/deactivate` for a valid UUID
+- Reactivate path builder returns `PATCH /promo-codes/:id` with `{ isActive: true }`
+- Default promo code list excludes inactive records
+- List with `includeInactive=true` includes inactive but not soft-deleted records
+
+**References**:
+- `services/payment/api/src/resources/promo-code/promo-code.controller.ts`
+- `services/payment/api/src/resources/promo-code/promo-code.service.ts`
+- `services/admin/client/src/app/promo-codes/page.tsx`
+- `services/admin/client/src/services/PromoCodeService.ts`

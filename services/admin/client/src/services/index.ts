@@ -9,6 +9,9 @@ export {
 
 export {
     filterPromoCodes,
+    getPromoCodeDeactivatePath,
+    getPromoCodeReactivatePath,
+    PROMO_CODE_REACTIVATE_PAYLOAD,
     PROMO_FORM_DEFAULT_VALUES,
     promoSchema,
     sortPromoCodes,
@@ -20,7 +23,10 @@ export {
 
 export {
     AFFILIATION_FORM_DEFAULT_VALUES,
+    AFFILIATION_REACTIVATE_PAYLOAD,
     affiliationSchema,
+    getAffiliationDeactivatePath,
+    getAffiliationReactivatePath,
     filterAffiliations,
     sortAffiliations,
     type Affiliation,

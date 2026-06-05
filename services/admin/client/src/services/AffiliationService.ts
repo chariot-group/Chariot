@@ -43,6 +43,18 @@ export const AFFILIATION_FORM_DEFAULT_VALUES: Partial<AffiliationFormData> = {
     userDiscountPercent: 5,
 };
 
+/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-014. */
+export function getAffiliationDeactivatePath(id: string): string {
+    return `/affiliations/${id}/deactivate`;
+}
+
+/** Path and body for PATCH reactivation. See FR-014. */
+export function getAffiliationReactivatePath(id: string): string {
+    return `/affiliations/${id}`;
+}
+
+export const AFFILIATION_REACTIVATE_PAYLOAD = { isActive: true } as const;
+
 export function filterAffiliations(affiliations: Affiliation[], search: string): Affiliation[] {
     const loweredSearch = search.toLowerCase();
 

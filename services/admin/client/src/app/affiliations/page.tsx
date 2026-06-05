@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, RefreshCw, Search, RotateCcw } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
@@ -17,8 +17,11 @@ import { extractApiError } from "@/lib/api-error";
 import { SortableHead } from "@/components/ui/SortableHead";
 import {
   AFFILIATION_FORM_DEFAULT_VALUES,
+  AFFILIATION_REACTIVATE_PAYLOAD,
   affiliationSchema,
   filterAffiliations,
+  getAffiliationDeactivatePath,
+  getAffiliationReactivatePath,
   getApiClient,
   sortAffiliations,
   type Affiliation,
@@ -192,11 +195,22 @@ export default function AffiliationsPage() {
   const handleDeactivate = async (id: string, code: string) => {
     if (!confirm(`Désactiver l'affiliation "${code}" ?`)) return;
     try {
-      await getApiClient().delete(`/affiliations/${id}`);
+      await getApiClient().patch(getAffiliationDeactivatePath(id));
       toast.success("Affiliation désactivée");
       load();
-    } catch {
-      toast.error("Erreur lors de la désactivation");
+    } catch (err: unknown) {
+      toast.error(extractApiError(err, "Erreur lors de la désactivation"));
+    }
+  };
+
+  const handleReactivate = async (id: string, code: string) => {
+    if (!confirm(`Réactiver l'affiliation "${code}" ?`)) return;
+    try {
+      await getApiClient().patch(getAffiliationReactivatePath(id), AFFILIATION_REACTIVATE_PAYLOAD);
+      toast.success("Affiliation réactivée");
+      load();
+    } catch (err: unknown) {
+      toast.error(extractApiError(err, "Erreur lors de la réactivation"));
     }
   };
 
@@ -382,13 +396,23 @@ export default function AffiliationsPage() {
                           }}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        {a.isActive && (
+                        {a.isActive ? (
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 text-destructive hover:text-destructive"
+                            aria-label={`Désactiver l'affiliation ${a.code}`}
                             onClick={() => handleDeactivate(a.id, a.code)}>
                             <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-(--green) hover:text-(--green)"
+                            aria-label={`Réactiver l'affiliation ${a.code}`}
+                            onClick={() => handleReactivate(a.id, a.code)}>
+                            <RotateCcw className="h-3.5 w-3.5" />
                           </Button>
                         )}
                       </div>
