@@ -1,4 +1,6 @@
 import apiClient from '@/services/ApiService';
+import { emitCharacterSheetUpdated } from '@/lib/sessionCharacterSyncBridge';
+import { getSessionSnapshotForBroadcast } from '@/lib/sessionSnapshot';
 import { Character, PaginatedCharactersResponse, Player, NPC } from '@/types/character';
 
 type CharacterType = 'players' | 'npcs';
@@ -13,10 +15,14 @@ class CharacterService {
 
     /**
      * Récupère un personnage par son ID
+     * @param sessionCode — contexte session (participant ou MJ) pour accès aux fiches non possédées
      */
-    async getCharacterById(characterId: string): Promise<Character> {
+    async getCharacterById(characterId: string, options?: { sessionCode?: string | null }): Promise<Character> {
         try {
-            const response = await apiClient().get<CharacterResponse>(`${this.BASE_PATH}/${characterId}`);
+            const sessionCode = options?.sessionCode?.trim();
+            const response = await apiClient().get<CharacterResponse>(`${this.BASE_PATH}/${characterId}`, {
+                params: sessionCode ? { sessionCode } : undefined,
+            });
             return response.data.data;
         } catch (error) {
             console.error(`Error fetching character ${characterId}:`, error);
@@ -51,14 +57,24 @@ class CharacterService {
     async updateCharacter(
         type: CharacterType,
         characterId: string,
-        data: Partial<Player> | Partial<NPC>
+        data: Partial<Player> | Partial<NPC>,
+        sessionCode?: string | null,
     ): Promise<Player | NPC> {
         try {
+            const code = sessionCode?.trim();
             const response = await apiClient().patch<CharacterResponse>(
                 `${this.BASE_PATH}/${type}/${characterId}`,
-                data
+                data,
+                { params: code ? { sessionCode: code } : undefined },
             );
-            return response.data.data as Player | NPC;
+            const updated = response.data.data as Player | NPC;
+            if (type === 'players') {
+                const snap = getSessionSnapshotForBroadcast();
+                if (snap) {
+                    emitCharacterSheetUpdated(snap.code, characterId);
+                }
+            }
+            return updated;
         } catch (error) {
             console.error(`Error updating ${type} ${characterId}:`, error);
             throw error;

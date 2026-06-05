@@ -9,7 +9,7 @@ import sidebarReducer from '@/store/slices/sidebarSlice';
 import characterReducer from '@/store/slices/characterSlice';
 import userReducer from '@/store/slices/userSlice';
 import codexDraftReducer from '@/store/slices/codexDraftSlice';
-import sessionReducer from '@/store/slices/sessionSlice';
+import sessionReducer, { type CurrentSessionState } from '@/store/slices/sessionSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
 import { UserState } from '@/types/user';
 
@@ -94,6 +94,25 @@ const userTransform = createTransform(
     { whitelist: ['user'] }
 );
 
+/** Données persistées avant l’introduction de characterSheetRemoteVersions : normalisation à la réhydratation. */
+const sessionTransform = createTransform(
+    (inboundState: CurrentSessionState) => inboundState,
+    (outbound: Partial<CurrentSessionState> | undefined): CurrentSessionState => ({
+        code: outbound?.code ?? null,
+        campaignId: outbound?.campaignId ?? null,
+        isInSession: outbound?.isInSession ?? false,
+        status: outbound?.status ?? null,
+        expiresAt: outbound?.expiresAt ?? null,
+        participants: outbound?.participants ?? [],
+        tokensByUser: outbound?.tokensByUser ?? {},
+        characterSheetRemoteVersions:
+            outbound?.characterSheetRemoteVersions && typeof outbound.characterSheetRemoteVersions === 'object'
+                ? outbound.characterSheetRemoteVersions
+                : {},
+    }),
+    { whitelist: ['session'] },
+);
+
 function makePersistConfig(userId: string | null) {
     const storageKey = userId ? `chariot_user_${userId}` : 'chariot_anonymous';
 
@@ -102,7 +121,7 @@ function makePersistConfig(userId: string | null) {
         key: storageKey,
         storage,
         whitelist: ['environment', 'campaignContext', 'sidebar', 'group', 'campaign', 'character', 'user', 'session'],
-        transforms: [campaignTransform, groupTransform, characterTransform, userTransform],
+        transforms: [campaignTransform, groupTransform, characterTransform, userTransform, sessionTransform],
         migrate: (state: unknown) => {
             if (!state || typeof state !== 'object') {
                 return Promise.resolve(state);

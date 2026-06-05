@@ -1,9 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import mongoose from 'mongoose';
-import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import { BaseSchema } from '@/common/schemas/base-schema';
-import { Character } from '@/resources/character/core/schemas/character.schema';
 import { ApiProperty } from '@nestjs/swagger';
 
 export type GroupDocument = Group & Document;
@@ -26,7 +24,7 @@ export class Group extends BaseSchema {
     default: [],
     required: true,
   })
-  characters: Character[];
+  characters: mongoose.Types.ObjectId[];
 
   @ApiProperty({
     example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'],
@@ -36,7 +34,7 @@ export class Group extends BaseSchema {
     default: [],
     required: true,
   })
-  campaigns: Campaign[];
+  campaigns: mongoose.Types.ObjectId[];
 
   @ApiProperty({ example: null })
   @Prop({ default: null })

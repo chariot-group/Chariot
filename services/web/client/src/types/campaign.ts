@@ -40,10 +40,20 @@ export interface Group {
 export interface GroupState {
     activeGroups: Group[];
     archivedGroups: Group[];
+    /** Campagne pour laquelle le cache ci-dessous est valide (null = vide ou incohérent) */
+    groupsCampaignId: string | null;
     loading: boolean;
+    loadingMoreActive: boolean;
+    loadingMoreArchived: boolean;
     error: string | null;
     openGroupId: string[];
     lastFetch: number | null;
+    activePage: number;
+    activeHasMore: boolean;
+    activeTotal: number;
+    archivedPage: number;
+    archivedHasMore: boolean;
+    archivedTotal: number;
 }
 
 export interface CampaignState {
@@ -57,11 +67,13 @@ export interface CampaignState {
     total: number;
 }
 
+/** Réponse brute attendue pour GET /campaigns (service adventure → gateway). */
 export interface PaginatedCampaignsResponse {
     data: Campaign[];
-    meta: {
-        total: number;
+    pagination?: {
+        totalItems: number;
         page: number;
         offset: number;
     };
+    message?: string;
 }

@@ -31,6 +31,12 @@ export class PlayerService {
   private readonly SERVICE_NAME = PlayerService.name;
   private readonly logger = new Logger(this.SERVICE_NAME);
 
+  private groupRefToIdString(
+    ref: Types.ObjectId | Pick<GroupDocument, '_id'>,
+  ): string {
+    return ref instanceof Types.ObjectId ? ref.toString() : ref._id.toString();
+  }
+
   async create(
     createPlayerDto: CreatePlayerDto,
     userId: string,
@@ -123,12 +129,14 @@ export class PlayerService {
           throw new GoneException(message);
         }
       } else {
-        groups = player.groups.map((group) => group._id.toString());
+        groups = player.groups.map((group) => this.groupRefToIdString(group));
       }
 
-      const groupsToRemove: Group[] = player.groups.filter(
+      const groupsToRemove = player.groups.filter(
         (oldGroups) =>
-          !groups.some((newGroups) => newGroups === oldGroups._id.toString()),
+          !groups.some(
+            (newGroups) => newGroups === this.groupRefToIdString(oldGroups),
+          ),
       );
 
       const start: number = Date.now();

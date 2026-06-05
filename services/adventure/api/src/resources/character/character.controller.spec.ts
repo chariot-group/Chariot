@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CharacterController } from '@/resources/character/character.controller';
 import { CharacterService } from '@/resources/character/character.service';
+import { SessionAccessService } from '@/common/session/session-access.service';
 import { Types } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
@@ -22,6 +23,10 @@ describe('CharacterController - findAll', () => {
         {
           provide: getModelToken(Character.name),
           useValue: {},
+        },
+        {
+          provide: SessionAccessService,
+          useValue: { assertRosterRead: jest.fn() },
         },
       ],
     }).compile();
@@ -68,7 +73,14 @@ describe('CharacterController - findOne', () => {
 
     characterModel = {
       findById: jest.fn().mockReturnThis(),
-      exec: jest.fn().mockResolvedValue({ deletedAt: null }),
+      select: jest.fn().mockReturnThis(),
+      exec: jest
+        .fn()
+        .mockResolvedValue({ deletedAt: null, createdBy: 'userId123' }),
+    };
+
+    const sessionAccessService = {
+      assertRosterRead: jest.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -76,6 +88,7 @@ describe('CharacterController - findOne', () => {
       providers: [
         { provide: CharacterService, useValue: characterService },
         { provide: getModelToken(Character.name), useValue: characterModel },
+        { provide: SessionAccessService, useValue: sessionAccessService },
       ],
     }).compile();
 
@@ -85,8 +98,13 @@ describe('CharacterController - findOne', () => {
   it('should return character if found and not deleted', async () => {
     const mockData = { _id: characterId };
     characterService.findOne.mockResolvedValue(mockData);
+    const mockReq = { user: { keycloakId: 'userId123' }, headers: {} };
 
-    const result = await controller.findOne(characterId);
+    const result = await controller.findOne(
+      characterId,
+      mockReq as any,
+      undefined,
+    );
 
     expect(characterModel.findById).toHaveBeenCalled();
     expect(characterService.findOne).toHaveBeenCalledWith(characterId);
@@ -116,6 +134,10 @@ describe('CharacterController - remove', () => {
       providers: [
         { provide: CharacterService, useValue: characterService },
         { provide: getModelToken(Character.name), useValue: characterModel },
+        {
+          provide: SessionAccessService,
+          useValue: { assertRosterRead: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -150,6 +172,10 @@ describe('CharacterController - validateResource', () => {
       providers: [
         { provide: CharacterService, useValue: {} },
         { provide: getModelToken(Character.name), useValue: characterModel },
+        {
+          provide: SessionAccessService,
+          useValue: { assertRosterRead: jest.fn() },
+        },
       ],
     }).compile();
 

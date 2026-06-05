@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Group } from '@/resources/group/schemas/group.schema';
 import mongoose from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -11,7 +10,7 @@ export class Groups {
     default: [],
     required: true,
   })
-  active: Group[];
+  active: mongoose.Types.ObjectId[];
 
   @ApiProperty({ type: [String], example: ['507f1f77bcf86cd799439013'] })
   @Prop({
@@ -19,7 +18,7 @@ export class Groups {
     default: [],
     required: true,
   })
-  archived: Group[];
+  archived: mongoose.Types.ObjectId[];
 }
 
 export const GroupsSchema = SchemaFactory.createForClass(Groups);

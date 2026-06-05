@@ -25,7 +25,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Check if Dockerfile exists
         id: check_dockerfile
@@ -60,7 +60,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner on image
         if: steps.check_dockerfile.outputs.exists == 'true'
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           image-ref: web:scan
@@ -71,7 +71,7 @@ jobs:
 
       - name: Display vulnerabilities summary
         if: steps.check_dockerfile.outputs.exists == 'true'
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           image-ref: web:scan
@@ -115,7 +115,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Check if Dockerfile exists
         id: check_dockerfile
@@ -150,7 +150,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner on image
         if: steps.check_dockerfile.outputs.exists == 'true'
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           image-ref: adventure:scan
@@ -161,7 +161,7 @@ jobs:
 
       - name: Display vulnerabilities summary
         if: steps.check_dockerfile.outputs.exists == 'true'
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           image-ref: adventure:scan

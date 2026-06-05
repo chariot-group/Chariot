@@ -9,12 +9,14 @@ import {
   CharacterSchema,
 } from '@/resources/character/core/schemas/character.schema';
 import { MetricsModule } from '@/metrics/metrics.module';
+import { SessionAccessModule } from '@/common/session/session-access.module';
 
 @Module({
   controllers: [PlayerController],
   providers: [PlayerService, CharacterService],
   imports: [
     MetricsModule,
+    SessionAccessModule,
     MongooseModule.forFeature([
       { name: Group.name, schema: GroupSchema },
       { name: Character.name, schema: CharacterSchema },
