@@ -61,7 +61,6 @@ export function Sidebar() {
                 )}>
                 <Icon className="h-4 w-4 flex-shrink-0" />
                 <span>{label}</span>
-                {active && <ChevronRight className="ml-auto h-3.5 w-3.5 opacity-50" />}
               </Link>
             );
           })}
