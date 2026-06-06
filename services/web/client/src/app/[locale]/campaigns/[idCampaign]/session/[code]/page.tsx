@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { selectSessionStatus } from "@/store/slices/sessionSlice";
 import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
+import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
@@ -51,7 +52,6 @@ export default function SessionPage() {
     participants,
     setParticipants,
     participantNames,
-    setParticipantNames,
     myCharacters,
     fetchCharacterDetails,
     getCharacterLabel,
@@ -73,7 +73,6 @@ export default function SessionPage() {
     currentUser,
     participants,
     setParticipants,
-    setParticipantNames,
     fetchCharacterDetails,
     tokensByUser,
     setTokensByUser,
@@ -171,7 +170,9 @@ export default function SessionPage() {
                         role="listitem"
                         className="bg-gray flex flex-col gap-2 p-3">
                         <div className="flex flex-row justify-between items-center gap-3">
-                          <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
+                          <span className="font-medium">
+                            {participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING}
+                          </span>
                           {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
                           {participant.status === "connected" && (
                             <Badge variant={"secondary"}>{t("players.player")}</Badge>

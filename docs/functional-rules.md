@@ -1740,3 +1740,64 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
+
+---
+
+## FR-024: Session Participant Human-Readable Display Names
+
+**Rule**: Whenever the application displays the identity of a connected session participant to another user (Game Master or player), it MUST show a human-readable label derived from the participant profile. Technical identifiers and private contact data MUST NOT be used as display labels.
+
+**Scope**:
+
+- Session lobby participant list (`/{locale}/campaigns/{campaignId}/session/{code}`)
+- GM sidebar session players section (`Joueurs (session)`)
+- GM character sheet context when showing who plays a character (`playedBy`)
+- Session toasts that name a joining, leaving, or disconnected participant
+- Applies whenever `isInSession === true` and a roster entry references a `userId`
+
+**Label Resolution Priority**:
+
+1. `username` (Keycloak / user profile), when present and not a Keycloak UUID
+2. `firstName` + `lastName` (trimmed, space-separated), when `username` is absent or unusable
+3. Loading placeholder `...` while the label is not yet resolved
+
+**Data Sources** (non-exclusive; client may merge the first valid result):
+
+- WebSocket `session:participant-joined` payload field `username` (`preferred_username` from JWT)
+- Authenticated API `GET /user/{keycloakId}`
+- Redux `session.participantDisplayNames`, cleared on `clearCurrentSession` and pruned when a participant leaves the roster
+
+**Display Requirements**:
+
+- The same participant MUST use the same resolved label across lobby, sidebar, and toasts for the current session context.
+- A resolved label MUST NOT be replaced by a Keycloak UUID if a better source becomes available later (WebSocket username or successful profile fetch).
+- While resolution is pending, UI surfaces MUST show `...`, not the raw `userId`.
+
+**Prohibitions**:
+
+- Displaying a participant email as their session label
+- Displaying a Keycloak `sub` / UUID (`userId`) as a fallback label
+- Treating a UUID-shaped `username` or WebSocket `username` as a valid display label
+- Persisting `participantDisplayNames` across sessions (labels are ephemeral per active session)
+
+**Tests**:
+
+- Nominal: user with `username` shows that username in lobby and GM sidebar
+- Edge: user without `username` but with `firstName` + `lastName` shows the full name
+- Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
+- Edge: initial API failure followed by WebSocket username still updates the displayed label
+- Error: profile fetch failure shows `...`, never UUID or email
+- Regression: `username` equal to Keycloak UUID falls back to `firstName` + `lastName` or `...`
+
+**References**:
+
+- `services/web/client/src/lib/formatSessionParticipantUserLabel.ts`
+- `services/web/client/src/lib/sessionParticipantDisplayNames.ts`
+- `services/web/client/src/store/slices/sessionSlice.ts` (`participantDisplayNames`)
+- `services/web/client/src/hooks/useSessionData.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/session/api/src/resources/session/session.gateway.ts`

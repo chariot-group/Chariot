@@ -185,6 +185,7 @@ const sessionTransform = createTransform(
                 ? outbound.characterSheetRemoteVersions
                 : {},
         lastConsultedSheetPath: outbound?.lastConsultedSheetPath ?? null,
+        participantDisplayNames: {},
     }),
     { whitelist: ['session'] },
 );

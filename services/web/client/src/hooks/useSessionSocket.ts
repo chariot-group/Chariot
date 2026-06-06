@@ -10,9 +10,19 @@ import sessionService, {
     parseExpiresAtFromLaunchedPayload,
 } from "@/services/SessionService";
 import UserService from "@/services/UserService";
+import {
+    formatSessionParticipantLabelFromWsUsername,
+    formatSessionParticipantUserLabel,
+} from "@/lib/formatSessionParticipantUserLabel";
+import {
+    fetchSessionParticipantDisplayName,
+    resolveParticipantToastLabel,
+} from "@/lib/sessionParticipantDisplayNames";
+import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { useAppDispatch, useAppStore } from "@/store/hooks";
 import {
     clearCurrentSession,
+    mergeSessionParticipantDisplayNames,
     selectSessionParticipants,
     setSessionParticipants,
     setSessionStatus,
@@ -27,7 +37,6 @@ import {
     releaseSessionSocket,
     shouldShowSessionEndNotice,
 } from "@/lib/sessionSocketPool";
-import { shouldNotifyPlayerOfGmCharacterSheetUpdate } from "@/lib/shouldNotifyPlayerOfGmCharacterSheetUpdate";
 import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayerFromCampaignGroupsOnSessionLeave";
 import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
 import { invalidateCache as invalidateGroupCache } from "@/store/slices/groupSlice";
@@ -44,7 +53,6 @@ interface UseSessionSocketOptions {
     currentUser: { keycloakId: string; balance: number } | null | undefined;
     participants: SessionParticipant[];
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
-    setParticipantNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
     tokensByUser: Record<string, number>;
     setTokensByUser: React.Dispatch<React.SetStateAction<Record<string, number>>>;
@@ -58,7 +66,6 @@ export function useSessionSocket({
     currentUser,
     participants,
     setParticipants,
-    setParticipantNames,
     fetchCharacterDetails,
     tokensByUser,
     setTokensByUser,
@@ -81,7 +88,6 @@ export function useSessionSocket({
     const toastRef = useRef(toast);
     const tRef = useRef(t);
     const setParticipantsRef = useRef(setParticipants);
-    const setParticipantNamesRef = useRef(setParticipantNames);
     const setTokensByUserRef = useRef(setTokensByUser);
     const hasProcessedSessionEndRef = useRef(false);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
@@ -112,9 +118,8 @@ export function useSessionSocket({
         toastRef.current = toast;
         tRef.current = t;
         setParticipantsRef.current = setParticipants;
-        setParticipantNamesRef.current = setParticipantNames;
         setTokensByUserRef.current = setTokensByUser;
-    }, [locale, router, toast, t, setParticipants, setParticipantNames, setTokensByUser]);
+    }, [locale, router, toast, t, setParticipants, setTokensByUser]);
 
     useEffect(() => {
         hasProcessedSessionEndRef.current = false;
@@ -201,21 +206,6 @@ export function useSessionSocket({
             requestSessionRosterHttpSync();
         };
 
-        const onCharacterSheetUpdated = ({ characterId }: { characterId: string }) => {
-            if (!characterId) return;
-            dispatch(touchRemoteCharacterSheet(characterId));
-            fetchCharacterDetails([characterId]);
-            if (
-                shouldNotifyPlayerOfGmCharacterSheetUpdate(
-                    characterId,
-                    currentUserRef.current?.keycloakId,
-                    participantsRef.current,
-                )
-            ) {
-                toastRef.current.info(tRef.current("toast.sheetEditedByGm"));
-            }
-        };
-
         const onParticipantJoined = async ({
             userId,
             username,
@@ -248,15 +238,18 @@ export function useSessionSocket({
                     },
                 ];
             });
-            setParticipantNamesRef.current((prev) => (prev[userId] ? prev : { ...prev, [userId]: username || userId }));
+            const wsLabel = formatSessionParticipantLabelFromWsUsername(username);
+            if (wsLabel) {
+                dispatch(mergeSessionParticipantDisplayNames({ [userId]: wsLabel }));
+            }
             try {
                 const user = await UserService.getUserById(userId);
-                setParticipantNamesRef.current((prev) => ({
-                    ...prev,
-                    [userId]: user.username?.trim() || userId,
-                }));
+                const apiLabel = formatSessionParticipantUserLabel(user);
+                if (apiLabel) {
+                    dispatch(mergeSessionParticipantDisplayNames({ [userId]: apiLabel }));
+                }
             } catch {
-                // keep the username fallback already set
+                // Le libellé WS ou un fetch ultérieur complètera le store.
             }
             if (characterId) {
                 fetchCharacterDetails([characterId]);
@@ -278,7 +271,7 @@ export function useSessionSocket({
         }) => {
             if (userId === currentUserRef.current?.keycloakId) return;
             setParticipantsRef.current((prev) => prev.filter((p) => p.userId !== userId));
-            const label = username?.trim() || userId;
+            const label = resolveParticipantToastLabel(appStore.getState(), userId, username);
             toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
         };
 
@@ -293,7 +286,7 @@ export function useSessionSocket({
             setParticipantsRef.current((prev) =>
                 prev.map((p) => (p.userId === userId ? { ...p, status: "disconnected" as const } : p)),
             );
-            const label = username?.trim() || userId;
+            const label = resolveParticipantToastLabel(appStore.getState(), userId, username);
             toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
         };
 
@@ -337,6 +330,18 @@ export function useSessionSocket({
                 : null;
             if (mappedParticipants) {
                 setParticipantsRef.current(mappedParticipants);
+                void (async () => {
+                    const nameUpdates: Record<string, string> = {};
+                    for (const participant of mappedParticipants) {
+                        const label = await fetchSessionParticipantDisplayName(participant.userId);
+                        if (label !== SESSION_PARTICIPANT_NAME_LOADING) {
+                            nameUpdates[participant.userId] = label;
+                        }
+                    }
+                    if (Object.keys(nameUpdates).length > 0) {
+                        dispatch(mergeSessionParticipantDisplayNames(nameUpdates));
+                    }
+                })();
             }
 
             toastRef.current.success(tRef.current("toast.sessionLaunched"));
@@ -379,7 +384,6 @@ export function useSessionSocket({
         };
 
         socket.on("session:participant-character-changed", onParticipantCharacterChanged);
-        socket.on("session:character-sheet-updated", onCharacterSheetUpdated);
         socket.on("session:participant-joined", onParticipantJoined);
         socket.on("session:participant-left", onParticipantLeft);
         socket.on("session:participant-disconnected", onParticipantDisconnected);
@@ -390,7 +394,6 @@ export function useSessionSocket({
 
         return () => {
             socket.off("session:participant-character-changed", onParticipantCharacterChanged);
-            socket.off("session:character-sheet-updated", onCharacterSheetUpdated);
             socket.off("session:participant-joined", onParticipantJoined);
             socket.off("session:participant-left", onParticipantLeft);
             socket.off("session:participant-disconnected", onParticipantDisconnected);

@@ -1,14 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { registerRemoteCharacterSheetUpdatedListener } from "@/lib/sessionCharacterSyncBridge";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import campaignService from "@/services/CampaignService";
 import characterService from "@/services/CharacterService";
 import sessionService, { type SessionParticipant } from "@/services/SessionService";
-import UserService from "@/services/UserService";
+import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisplayNames";
+import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setCurrentSession, setSessionStatus, setSessionExpiresAt, selectIsInSession } from "@/store/slices/sessionSlice";
+import {
+    setCurrentSession,
+    setSessionStatus,
+    setSessionExpiresAt,
+    selectIsInSession,
+    selectSessionParticipantDisplayNames,
+    mergeSessionParticipantDisplayNames,
+    pruneSessionParticipantDisplayNames,
+} from "@/store/slices/sessionSlice";
 import { useToast } from "@/hooks/useToast";
 import type { Character } from "@/types/character";
 import type { Campaign } from "@/types/campaign";
@@ -25,7 +35,6 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     participants: SessionParticipant[];
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
     participantNames: Record<string, string>;
-    setParticipantNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
     characterDetails: Record<string, Character>;
     myCharacters: Character[];
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
@@ -41,10 +50,10 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const locale = pathname.split("/")[1] || "fr";
 
     const isInSession = useAppSelector(selectIsInSession);
+    const participantNames = useAppSelector(selectSessionParticipantDisplayNames);
 
     const [campaignLabel, setCampaignLabel] = useState<string | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
-    const [participantNames, setParticipantNames] = useState<Record<string, string>>({});
     const [characterDetails, setCharacterDetails] = useState<Record<string, Character>>({});
     const [myCharacters, setMyCharacters] = useState<Character[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -54,21 +63,28 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     characterDetailsRef.current = characterDetails;
 
     const fetchCharacterDetails = useCallback(async (ids: string[]) => {
-        const missing = ids.filter((id) => id && !characterDetailsRef.current[id]);
-        if (missing.length === 0) return;
+        const targets = ids.filter((id) => Boolean(id?.trim()));
+        if (targets.length === 0) return;
         const results = await Promise.allSettled(
-            missing.map((id) => characterService.getCharacterById(id, { sessionCode: code })),
+            targets.map((id) => characterService.getCharacterById(id, { sessionCode: code })),
         );
         setCharacterDetails((prev) => {
             const next = { ...prev };
             results.forEach((result, i) => {
                 if (result.status === "fulfilled") {
-                    next[missing[i]] = result.value;
+                    next[targets[i]] = result.value;
                 }
             });
             return next;
         });
     }, [code]);
+
+    useEffect(() => {
+        registerRemoteCharacterSheetUpdatedListener((characterId) => {
+            void fetchCharacterDetails([characterId]);
+        });
+        return () => registerRemoteCharacterSheetUpdatedListener(null);
+    }, [fetchCharacterDetails]);
 
     useEffect(() => {
         const init = async () => {
@@ -103,17 +119,19 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
                 const data = await sessionService.getParticipants(code);
                 setParticipants(data.participants);
 
-                const names = await Promise.all(
+                dispatch(pruneSessionParticipantDisplayNames());
+                const nameEntries = await Promise.all(
                     data.participants.map(async (p) => {
-                        try {
-                            const user = await UserService.getUserById(p.userId);
-                            return [p.userId, user.username?.trim() || p.userId] as const;
-                        } catch {
-                            return [p.userId, p.userId] as const;
-                        }
+                        const label = await fetchSessionParticipantDisplayName(p.userId);
+                        return [p.userId, label] as const;
                     }),
                 );
-                setParticipantNames(Object.fromEntries(names));
+                const resolvedNames = Object.fromEntries(
+                    nameEntries.filter(([, label]) => label !== SESSION_PARTICIPANT_NAME_LOADING),
+                );
+                if (Object.keys(resolvedNames).length > 0) {
+                    dispatch(mergeSessionParticipantDisplayNames(resolvedNames));
+                }
 
                 const characterIds = data.participants.map((p) => p.characterId).filter(Boolean) as string[];
                 await fetchCharacterDetails(characterIds);
@@ -148,7 +166,6 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         participants,
         setParticipants,
         participantNames,
-        setParticipantNames,
         characterDetails,
         myCharacters,
         fetchCharacterDetails,

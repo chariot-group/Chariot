@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   emitCharacterSheetUpdated,
+  handleRemoteCharacterSheetUpdated,
   registerLocalCharacterSheetUpdatedListener,
+  registerRemoteCharacterSheetUpdatedListener,
   registerSessionSyncSocket,
 } from "@/lib/sessionCharacterSyncBridge";
 
@@ -66,5 +68,40 @@ describe("sessionCharacterSyncBridge — local sheet sync (FR-022)", () => {
     expect(localListener).not.toHaveBeenCalled();
 
     registerLocalCharacterSheetUpdatedListener(null);
+  });
+});
+
+describe("sessionCharacterSyncBridge — remote sheet sync listener", () => {
+  it("nominal: notifie l'écouteur distant après mise à jour WS", () => {
+    const remoteListener = vi.fn();
+    registerRemoteCharacterSheetUpdatedListener(remoteListener);
+
+    handleRemoteCharacterSheetUpdated("char-42");
+
+    expect(remoteListener).toHaveBeenCalledWith("char-42");
+
+    registerRemoteCharacterSheetUpdatedListener(null);
+  });
+
+  it("edge: trim l'id personnage avant notification", () => {
+    const remoteListener = vi.fn();
+    registerRemoteCharacterSheetUpdatedListener(remoteListener);
+
+    handleRemoteCharacterSheetUpdated("  char-7  ");
+
+    expect(remoteListener).toHaveBeenCalledWith("char-7");
+
+    registerRemoteCharacterSheetUpdatedListener(null);
+  });
+
+  it("error: ignore un characterId vide", () => {
+    const remoteListener = vi.fn();
+    registerRemoteCharacterSheetUpdatedListener(remoteListener);
+
+    handleRemoteCharacterSheetUpdated("   ");
+
+    expect(remoteListener).not.toHaveBeenCalled();
+
+    registerRemoteCharacterSheetUpdatedListener(null);
   });
 });
