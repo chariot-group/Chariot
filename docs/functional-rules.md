@@ -1801,3 +1801,57 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
 - `services/web/client/src/components/character/CharacterDetailView.tsx`
 - `services/session/api/src/resources/session/session.gateway.ts`
+
+---
+
+## FR-023: In-Session Logo and Session Lobby Sidebar Navigation
+
+**Rule**: While a user is connected to an active session, clicking the application logo in the header and the sidebar action button on the session lobby page must provide contextual navigation back to character sheets instead of the generic welcome redirect or an irrelevant session action.
+
+**Scope**:
+
+- Applies when `isInSession === true` and the session record is available in Redux.
+- Complements FR-021 (combat navigation) without overriding combat-specific sidebar rules on other pages.
+- The session lobby page is `/{locale}/campaigns/{campaignId}/session/{sessionCode}`.
+
+**Header Logo — Player**:
+
+- When a connected player clicks the logo, they MUST be redirected to their session character sheet: `/{locale}/characters/{characterId}?sessionCode={sessionCode}` when a character is assigned.
+- If the player has no assigned character, the logo click MUST fall back to `/{locale}/welcome`.
+
+**Header Logo — Game Master**:
+
+- When the connected GM clicks the logo, they MUST be redirected to the first character of the first active group in the session campaign, using the same resolution order as `NavigationService.determineSpaceDestination` (active groups first, then archived groups with characters).
+- If no character exists in the campaign, the logo click MUST fall back to `/{locale}/welcome`.
+
+**Header Logo — Outside Session**:
+
+- When the user is not in a session, logo click behavior is unchanged: redirect to `/{locale}/welcome`.
+
+**Sidebar Action Button — Player on Session Lobby**:
+
+- When the session is launched (`sessionStatus === "launched"`) and the player is on the session lobby page:
+  - If combat has not started, the sidebar footer MUST show **Return to Character Sheet**, navigating to the player's session character sheet.
+  - If combat has started, the sidebar footer MUST show **Return to Battle** (same behavior as FR-021 when the player is outside the initiative tracker).
+- If the player has no assigned character, **Return to Character Sheet** is disabled with an explanatory tooltip.
+
+**Accessibility**:
+
+- The logo button MUST expose an accessible name describing its destination context (home vs character sheet navigation).
+
+**Tests**:
+
+- Nominal: launched session, player on session lobby without combat sees **Return to Character Sheet**.
+- Nominal: player in session clicks logo and lands on their session character sheet URL with `sessionCode`.
+- Nominal: GM in session clicks logo and lands on first character of first campaign group.
+- Edge: player without assigned character cannot use **Return to Character Sheet**; logo falls back to welcome.
+- Edge: combat started, player on session lobby sees **Return to Battle**.
+- Regression: user not in session still redirects logo to welcome.
+
+**References**:
+
+- `services/web/client/src/components/layout/Header.tsx`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/layout/SessionTimer.tsx`
+- `services/web/client/src/services/NavigationService.ts`
+- `services/web/client/src/lib/sessionInAppNavigation.ts`
