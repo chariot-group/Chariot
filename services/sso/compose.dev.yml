@@ -63,7 +63,7 @@ services:
       - sso-network
       - chariot-group-network
     healthcheck:
-      test: ["CMD-SHELL", "/opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user $${KEYCLOAK_ADMIN} --password $${KEYCLOAK_ADMIN_PASSWORD} 2>&1 | grep -q 'Logging into'"]
+      test: ["CMD-SHELL", "/opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $${KEYCLOAK_ADMIN} --password $${KEYCLOAK_ADMIN_PASSWORD} 2>&1 | grep -q 'Logging into'"]
       interval: 10s
       timeout: 5s
       retries: 10
