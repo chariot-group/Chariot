@@ -1,5 +1,84 @@
 # Changelog
 
+## [2.6.0] - 06-06-2026
+
+### Added
+- Added colored status icons with tooltips in the initiative tracker
+- Added visual differentiation for group membership in the initiative tracker (color or equivalent)
+- Added automatic initiative sorting in the initiative tracker
+- Added minimum HP constraint in the initiative tracker (HP cannot go below 0)
+- Added automatic skip for dead combatants in the initiative tracker
+- Added dynamic "View Combat" / "Return to Sheet" button for players during active combat (label and destination switch based on current page)
+- Added searchable effect/condition picker when adding a status effect, with optional description display and optional duration (seconds, minutes, hours, rounds, or until end of combat; 1 round = 6 seconds)
+- Added effect duration display in parentheses
+- Added info icon or tooltip to explain what each effect does
+- Added GM choice of visible fields when showing an NPC to players (name, AC, HP, etc.)
+- Added bulk initiative entry: GM can select multiple characters and enter a single initiative value for all selected
+- Added support for negative initiative values
+- Added senses to the player mastery category
+- Added senses editing in player and NPC forms
+- Added Codex integration for senses (monster preview and autofill on monster selection)
+- Added character class in parentheses in the sidebar
+- Added decimal support for speed values and all relevant numeric fields
+- Added in-session inline editing for coins, HP, and notes without entering full edit mode
+- Added automatic temporary HP handling in the out-of-form HP quick calculator
+- Added sheet access while in session settings
+- Added infinite quantity indicator for cantrips
+- Added "Cast" button on cantrips (no-op, for UI consistency)
+- Added remaining spell slots display in the cast section
+- Added recharge legend at the top of the abilities and traits section when at least one ability recharges on short or long rest
+- Added sort icon on the actions section to clarify sorting behavior
+- Added action counts in parentheses on filter buttons: Action (n), Reaction (n), Bonus Action (n)
+- Added "Add inspiration point" control in edit mode and "Use inspiration point" button in show mode
+- Added icon for archived groups
+
+### Changed
+- Removed "View sheet" row in the initiative tracker; the sheet is accessible by clicking the character
+- Made AC field read-only in the initiative tracker
+- Reused the HP quick calculator tool in the initiative tracker
+- Changed initiative icon to a more representative one
+- Renamed NPC "Languages" category to "Masteries" and moved languages and senses there (aligned with player layout)
+- Improved burger menu UX
+- Refactored rest UX/UI
+- Changed session participant display to use usernames only (not first name + last name)
+- Moved player-to-character mapping from tooltip to parentheses in the GM player group
+- Refactored spells UX/UI:
+	- Improved visual feedback on spell cast
+	- Changed "tour de magie" translation to "sorts mineurs" (cantrips)
+	- Changed spell slot display to count used slots (e.g. 8/8 when 8 slots have been spent, not when 8 remain)
+	- Changed selected spells styling from border to ring
+- Refactored abilities and traits UX/UI:
+	- Removed individual recharge tooltips when section legend is shown
+	- Long ability names are no longer cropped when expanded
+- Refactored actions UX/UI:
+	- "Actions" is now the default sort
+	- Removed tooltips when no actions, reactions, or bonus actions exist
+- Changed all form icons to white to match the new background color
+- Blocked death saving throws outside active sessions
+- Aligned "Cast spell" button and prepared/unprepared badge on the same line
+- Blocked inspiration point edits outside active sessions
+- Refactored characteristics, saving throws, and skills cards to integrate into the title card like other page elements
+- Made button hovers consistent:
+	- Removed pink hover on black secondary buttons
+	- Removed purple hover on the yellow "Return to session" button
+- When a session is launched, the "Launch session" button is replaced by "Close session"
+- Improved session display layout when 4 or more players are connected
+- Changed "Close session" button color to red to signal a non-trivial action
+- Set Codex search language default to the page language (spells and monsters)
+- When searching spells/monsters with the "all languages" filter, multilingual entries now appear as separate results (one per language) instead of a single result with an inline language switcher
+- Moved language selector from search results to the spell/monster preview panel
+- Changed number input spinner arrows appearance
+
+### Fixed
+- Fixed session closure flow: players are now kicked out of the session when the GM closes it, with the same fluidity as session launch (they could previously still use rest actions)
+- Fixed responsive layout for the HP entry menu (current, temporary, and max HP)
+- Fixed visual crop of damage types and action types in forms on laptop viewport only
+- Fixed responsive layout for all three action types on NPCs
+- Fixed prepared spells not appearing in the magic tab for preparation-based spellcasters before saving
+- Fixed prepared spell description card text color (white instead of gray)
+- Fixed combat tab display breaking when adding full abilities/traits or full actions
+- Fixed Codex language-based search
+
 ## [2.5.1] - 09-05-2026
 
 ### Added
