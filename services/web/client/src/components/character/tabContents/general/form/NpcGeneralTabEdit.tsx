@@ -13,6 +13,7 @@ import NpcColumn2Edit from "@/components/character/tabContents/general/form/NpcC
 import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
 import { formatChallengeRating, parseChallengeRatingInput } from "@/utils/challengeRating.utils";
 import { useEffect, useState } from "react";
+import SensesUpdateSection from "@/components/character/tabContents/general/shared/SensesUpdateSection";
 
 interface NpcGeneralTabEditProps {
   npc: NPC;
@@ -365,15 +366,15 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
             <AbilityScoresEdit form={form} />
           </Card>
 
-          {/* Languages */}
+          {/* Maîtrises */}
           <Card
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
-            aria-labelledby="character-languages">
+            aria-labelledby="character-proficiencies">
             <h2
-              id="character-languages-edit"
+              id="character-proficiencies-edit"
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("languages")}
+              {t("proficiencies")}
             </h2>
 
             <div className="flex flex-col gap-4">
@@ -407,6 +408,15 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
                   </Field>
                 )}
               />
+
+              <div className="flex flex-col gap-2">
+                <h3 className="text-sm font-medium">{t("senses")}</h3>
+                <SensesUpdateSection
+                  form={form}
+                  accentColor={accentColor}
+                  embedded
+                />
+              </div>
             </div>
           </Card>
         </section>

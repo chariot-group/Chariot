@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronRight, Layers2, PlusCircleIcon, Loader2 } from "lucide-react";
+import { ChevronRight, Layers2, PlusCircleIcon, Loader2, Archive } from "lucide-react";
 import { useEffect } from "react";
 import { useGroups } from "@/hooks/useGroups";
 import GroupList from "@/components/layout/Sidebar/GroupList";
@@ -99,7 +99,7 @@ export default function SidebarContext() {
               className={`h-4 w-4 shrink-0 transition-colors group-hover/context:text-black ${openActive ? "text-black" : ""}`}
             />
             <span
-              className={`text-sm truncate group-hover/context:font-bold group-hover/context:text-black ${openActive ? "text-black font-bold" : ""}`}>
+              className={`text-sm truncate group-hover/context:text-black ${openActive ? "text-black font-bold" : ""}`}>
               {t("yourGroups")}
             </span>
           </span>
@@ -118,7 +118,7 @@ export default function SidebarContext() {
             <button
               type="button"
               aria-label={t("createGroup")}
-              className="text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+              className="sidebar-btn-white text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
               {t("createGroup")}
               <PlusCircleIcon
                 aria-hidden="true"
@@ -153,7 +153,10 @@ export default function SidebarContext() {
                   aria-label={t("loadMoreGroupsAria")}
                   className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
                   {loadingMoreActive ? (
-                    <Loader2 className="w-4 h-4 animate-spin mx-auto" aria-hidden />
+                    <Loader2
+                      className="w-4 h-4 animate-spin mx-auto"
+                      aria-hidden
+                    />
                   ) : (
                     t("loadMoreGroups")
                   )}
@@ -173,9 +176,14 @@ export default function SidebarContext() {
           aria-expanded={openArchived}
           aria-controls="archived-groups-content"
           className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/context focus-visible:border ${openArchived ? "bg-white" : ""}`}>
-          <span
-            className={`text-sm group-hover/context:font-bold group-hover/context:text-black ${openArchived ? "text-black font-bold" : ""}`}>
-            {t("yourArchives")}
+          <span className="flex min-w-0 items-center gap-2">
+            <Archive
+              aria-hidden="true"
+              className={`h-4 w-4 shrink-0 transition-colors group-hover/context:text-black ${openArchived ? "text-black" : ""}`}
+            />
+            <span className={`text-sm group-hover/context:text-black ${openArchived ? "text-black font-bold" : ""}`}>
+              {t("yourArchives")}
+            </span>
           </span>
           <ChevronRight
             aria-hidden="true"
@@ -217,7 +225,10 @@ export default function SidebarContext() {
                   aria-label={t("loadMoreGroupsAria")}
                   className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
                   {loadingMoreArchived ? (
-                    <Loader2 className="w-4 h-4 animate-spin mx-auto" aria-hidden />
+                    <Loader2
+                      className="w-4 h-4 animate-spin mx-auto"
+                      aria-hidden
+                    />
                   ) : (
                     t("loadMoreGroups")
                   )}

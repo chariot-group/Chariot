@@ -10,7 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
 import * as jwt from 'jsonwebtoken';
-import * as jwksClient from 'jwks-rsa';
+import { JwksClient } from 'jwks-rsa';
 
 type DecodedToken = jwt.JwtPayload & {
   sub?: string;
@@ -23,7 +23,7 @@ type DecodedToken = jwt.JwtPayload & {
 @Injectable()
 export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
   private readonly logger = new Logger(KeycloakAuthGuard.name);
-  private jwksClient: jwksClient.JwksClient;
+  private jwksClient: JwksClient;
   private keycloakInternalUrl: string;
   private keycloakExternalUrl: string;
   private realm: string;
@@ -56,7 +56,7 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
 
     const jwksUri = `${this.keycloakInternalUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
 
-    this.jwksClient = jwksClient({
+    this.jwksClient = new JwksClient({
       jwksUri,
       cache: true,
       cacheMaxAge: 86400000, // 24 heures
@@ -125,8 +125,8 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
       return true;
     } catch (error) {
       this.logger.error(
-        `Token validation failed: ${error.message}`,
-        error.stack,
+        `Token validation failed: ${(error as Error).message}`,
+        (error as Error).stack,
       );
       throw new UnauthorizedException('Invalid token');
     }

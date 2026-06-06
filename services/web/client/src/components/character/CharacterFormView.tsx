@@ -195,6 +195,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           },
           stats: {
             savingThrows: defaultSavingThrows,
+            senses: [],
             masteries: defaultMasteries,
             masteriesAbility: defaultMasteriesAbility,
           },

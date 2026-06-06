@@ -197,7 +197,7 @@ export function QuickNumberCalculator({
           setIsOpen(false);
         }
       }}
-      className="relative">
+      className="relative w-full min-w-0">
       <Input
         {...restInputProps}
         type="number"
@@ -216,7 +216,7 @@ export function QuickNumberCalculator({
 
       {isOpen && (
         <div
-          className="absolute top-full right-0 mt-1 z-50 w-44 rounded-[15px] border bg-card p-2 shadow-lg"
+          className="absolute top-full left-0 mt-1 z-50 w-full min-w-36 max-w-[calc(100vw-2rem)] rounded-[15px] border bg-card p-2 shadow-lg sm:w-44"
           role="dialog"
           aria-label={triggerLabel}>
           <Input

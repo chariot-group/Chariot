@@ -3,7 +3,7 @@ import { AppModule } from "./app.module";
 import { WinstonModule } from "nest-winston";
 import { instance } from "./logger/winston.logger";
 import { ValidationPipe, Logger } from "@nestjs/common";
-import * as cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 import * as express from "express";
 import helmet from "helmet";
 

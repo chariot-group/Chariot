@@ -12,13 +12,12 @@ import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import Column2Edit from "@/components/character/tabContents/general/form/Column2Edit";
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
+import SensesUpdateSection from "@/components/character/tabContents/general/shared/SensesUpdateSection";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -355,7 +354,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
                     if (isSynced) {
                       return (
-                        <div className="flex items-center gap-2 p-2 bg-green/20 rounded text-sm text-green-600 dark:text-green-400">
+                        <div className="flex items-center gap-2 my-2 p-2 bg-green/20 rounded-[23px] text-sm text-green-600 dark:text-green-400">
                           <span>✓ {t("xpLevelSynced")}</span>
                         </div>
                       );
@@ -533,9 +532,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                     let totalNext = 0;
                                     for (let j = 0; j < cls.length; j++) {
                                       const v =
-                                        j === index
-                                          ? clampedLevel
-                                          : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
+                                        j === index ? clampedLevel : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
                                       totalNext += v;
                                     }
                                     const sumOthersNext = totalNext - clampedLevel;
@@ -543,11 +540,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                                     const cap = Math.min(clampedLevel, shareNext);
                                     const remPath = `class.${index}.hitDiceRemaining`;
                                     const remRaw = form.getValues(remPath);
-                                    if (
-                                      typeof remRaw === "number" &&
-                                      !Number.isNaN(remRaw) &&
-                                      remRaw > cap
-                                    ) {
+                                    if (typeof remRaw === "number" && !Number.isNaN(remRaw) && remRaw > cap) {
                                       form.setValue(remPath, cap, {
                                         shouldDirty: true,
                                         shouldValidate: true,
@@ -701,6 +694,15 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   </Field>
                 )}
               />
+
+              <div className="flex flex-col gap-2">
+                <h3 className="text-sm font-medium">{t("senses")}</h3>
+                <SensesUpdateSection
+                  form={form}
+                  accentColor={accentColor}
+                  embedded
+                />
+              </div>
 
               {/* Tools */}
               <Controller
@@ -989,30 +991,45 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="inspiration-heading-edit">
-            <h2
-              id="inspiration-heading-edit"
-              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
-              {t("inspiration")}
-            </h2>
-            <Controller
-              name="inspiration"
-              control={form.control}
-              render={({ field }) => (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="inspiration-checkbox"
-                    className="cursor-pointer"
-                    checked={field.value || false}
-                    onCheckedChange={field.onChange}
-                  />
-                  <Label
-                    htmlFor="inspiration-checkbox"
-                    className="cursor-pointer text-sm">
-                    {field.value ? t("inspirationActive") : t("inspirationInactive")}
-                  </Label>
-                </div>
-              )}
-            />
+            <div className="flex items-center justify-between">
+              <h2
+                id="inspiration-heading-edit"
+                className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+                {t("inspiration")}
+              </h2>
+              <Controller
+                name="inspiration"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center gap-2">
+                    {isInSession ? (
+                      field.value ? (
+                        <span className="text-sm font-medium">{t("inspirationActive")}</span>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => field.onChange(true)}>
+                          {t("inspirationAddButton")}
+                        </Button>
+                      )
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        {field.value ? t("inspirationActive") : t("inspirationInactive")}
+                      </span>
+                    )}
+                  </div>
+                )}
+              />
+            </div>
+            {!isInSession && (
+              <p
+                className="text-xs text-muted-foreground"
+                role="note">
+                {t("inspirationSessionOnlyNote")}
+              </p>
+            )}
           </Card>
 
           {/* Historique */}

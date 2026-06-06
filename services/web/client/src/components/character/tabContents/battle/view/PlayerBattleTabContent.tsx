@@ -27,6 +27,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
         <Statistics
           player={player}
           accentColor={accentColor}
+          onCharacterUpdate={onCharacterUpdate}
         />
         {/* Jet de sauvegarde */}
         <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
@@ -39,22 +40,23 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("savingThrows")}
             </h2>
+
+            <div
+              className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
+              role="list">
+              {player?.stats &&
+                Object.entries(player?.stats?.savingThrows).map(([key]) => {
+                  return (
+                    <Skill
+                      key={key}
+                      skillName={key as keyof typeof player.stats.abilityScores}
+                      accentColor={accentColor}
+                      stats={player?.stats}
+                    />
+                  );
+                })}
+            </div>
           </Card>
-          <div
-            className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
-            role="list">
-            {player?.stats &&
-              Object.entries(player?.stats?.savingThrows).map(([key]) => {
-                return (
-                  <Skill
-                    key={key}
-                    skillName={key as keyof typeof player.stats.abilityScores}
-                    accentColor={accentColor}
-                    stats={player?.stats}
-                  />
-                );
-              })}
-          </div>
         </div>
 
         {/* Jets de sauvegarde contre la mort */}
@@ -146,7 +148,8 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
               )}
               {player?.affinities?.vulnerabilities?.length > 0 && (
                 <p className="text-sm sm:text-base wrap-break-word">
-                  <span className="font-semibold">{t("vulnerabilities")} :</span> {player.affinities.vulnerabilities.join(", ")}
+                  <span className="font-semibold">{t("vulnerabilities")} :</span>{" "}
+                  {player.affinities.vulnerabilities.join(", ")}
                 </p>
               )}
               {player?.affinities?.immunities?.length > 0 && (

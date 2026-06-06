@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-web lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-web
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-web lint-fix-admin
 
 # Configuration
 SERVICES_DIR := services
@@ -57,7 +57,7 @@ else
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Démarrage de $$service...$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up -d && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up -d; cd ../..; \
 		else \
 			echo "$(RED)✗ Fichier $$compose_file introuvable$(NC)"; \
 		fi; \
@@ -77,7 +77,7 @@ else
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Arrêt de $$service...$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml down && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml down; cd ../..; \
 		fi; \
 	done
 	@echo "$(GREEN)✓ Tous les services sont arrêtés$(NC)"
@@ -91,7 +91,7 @@ else
 		service=$$(basename $$dir); \
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml down -v && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml down -v; cd ../..; \
 		fi; \
 	done
 endif
@@ -111,7 +111,7 @@ else
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Rebuild de $$service...$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up --build -d && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up --build -d; cd ../..; \
 		fi; \
 	done
 	@echo "$(GREEN)✓ Tous les services sont rebuilded et démarrés$(NC)"
@@ -129,7 +129,7 @@ else
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Pull de $$service...$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml pull && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml pull; cd ../..; \
 		fi; \
 	done
 	@echo "$(GREEN)✓ Toutes les images sont pullées$(NC)"
@@ -150,7 +150,7 @@ logs-all: ## Affiche les logs de tous les services
 		service=$$(basename $$dir); \
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml logs --tail=50 && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml logs --tail=50; cd ../..; \
 		fi; \
 	done
 
@@ -161,7 +161,7 @@ ps: ## Liste tous les conteneurs en cours d'exécution
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(YELLOW)→ $$service:$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml ps && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml ps; cd ../..; \
 		fi; \
 	done
 
@@ -174,7 +174,7 @@ else
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Build de $$service...$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml build && cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml build; cd ../..; \
 		fi; \
 	done
 	@echo "$(GREEN)✓ Build terminé$(NC)"
@@ -189,17 +189,21 @@ ifdef SERVICE
 		$(MAKE) --no-print-directory lint-gateway; \
 	elif [ "$(SERVICE)" = "session" ]; then \
 		$(MAKE) --no-print-directory lint-session; \
+	elif [ "$(SERVICE)" = "payment" ]; then \
+		$(MAKE) --no-print-directory lint-payment; \
 	elif [ "$(SERVICE)" = "web" ]; then \
 		$(MAKE) --no-print-directory lint-web; \
+	elif [ "$(SERVICE)" = "admin" ]; then \
+		$(MAKE) --no-print-directory lint-admin; \
 	else \
-		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|web$(NC)"; \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|web|admin$(NC)"; \
 		exit 1; \
 	fi
 else
 	@$(MAKE) --no-print-directory lint-status
 endif
 
-lint-status: ## Affiche l'état du lint de chaque service (adventure, gateway, session, web)
+lint-status: ## Affiche l'état du lint de chaque service (adventure, gateway, session, payment, web)
 	@status=0; \
 	echo "$(BLUE)=== Lint status: adventure ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-adventure || status=1; \
@@ -210,8 +214,14 @@ lint-status: ## Affiche l'état du lint de chaque service (adventure, gateway, s
 	echo "$(BLUE)=== Lint status: session ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-session || status=1; \
 	echo ""; \
+	echo "$(BLUE)=== Lint status: payment ===$(NC)"; \
+	$(MAKE) --no-print-directory lint-payment || status=1; \
+	echo ""; \
 	echo "$(BLUE)=== Lint status: web ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-web || status=1; \
+	echo ""; \
+	echo "$(BLUE)=== Lint status: admin ===$(NC)"; \
+	$(MAKE) --no-print-directory lint-admin || status=1; \
 	echo ""; \
 	if [ $$status -ne 0 ]; then \
 		echo "$(RED)✗ Au moins un service a des erreurs lint$(NC)"; \
@@ -231,9 +241,17 @@ lint-session: ## Lance le lint du service session
 	@echo "$(YELLOW)Lint session/api...$(NC)"
 	@cd $(SERVICES_DIR)/session/api && npm run lint
 
+lint-payment: ## Lance le lint du service payment
+	@echo "$(YELLOW)Lint payment/api...$(NC)"
+	@cd $(SERVICES_DIR)/payment/api && npm run lint
+
 lint-web: ## Lance le lint du service web
 	@echo "$(YELLOW)Lint web/client...$(NC)"
 	@cd $(SERVICES_DIR)/web/client && npm run lint
+
+lint-admin: ## Lance le lint du service admin
+	@echo "$(YELLOW)Lint admin/client...$(NC)"
+	@cd $(SERVICES_DIR)/admin/client && npm run lint
 
 lint-fix: ## Lance l'auto-fix lint (SERVICE requis: adventure|gateway|web)
 ifndef SERVICE
@@ -246,10 +264,14 @@ else
 		$(MAKE) --no-print-directory lint-fix-gateway; \
 	elif [ "$(SERVICE)" = "session" ]; then \
 		$(MAKE) --no-print-directory lint-fix-session; \
+	elif [ "$(SERVICE)" = "payment" ]; then \
+		$(MAKE) --no-print-directory lint-fix-payment; \
 	elif [ "$(SERVICE)" = "web" ]; then \
 		$(MAKE) --no-print-directory lint-fix-web; \
+	elif [ "$(SERVICE)" = "admin" ]; then \
+		$(MAKE) --no-print-directory lint-fix-admin; \
 	else \
-		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|web$(NC)"; \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|web|admin$(NC)"; \
 		exit 1; \
 	fi
 endif
@@ -266,9 +288,17 @@ lint-fix-session: ## Lance le lint --fix du service session
 	@echo "$(YELLOW)Lint fix session/api...$(NC)"
 	@cd $(SERVICES_DIR)/session/api && npm run lint:fix
 
+lint-fix-payment: ## Lance le lint --fix du service payment
+	@echo "$(YELLOW)Lint fix payment/api...$(NC)"
+	@cd $(SERVICES_DIR)/payment/api && npm run lint:fix
+
 lint-fix-web: ## Lance le lint --fix du service web
 	@echo "$(YELLOW)Lint fix web/client...$(NC)"
 	@cd $(SERVICES_DIR)/web/client && npm run lint:fix
+
+lint-fix-admin: ## Lance le lint --fix du service admin
+	@echo "$(YELLOW)Lint fix admin/client...$(NC)"
+	@cd $(SERVICES_DIR)/admin/client && npm run lint:fix
 
 clean: down-volumes ## Nettoie tout (conteneurs, volumes, images)
 	@echo "$(YELLOW)Nettoyage des images non utilisées...$(NC)"
@@ -365,9 +395,9 @@ stripe-login: ## Authentifie Stripe CLI (navigateur) pour les tests webhooks loc
 stripe-listen: ## Démarre Stripe CLI et forward les webhooks vers le gateway local
 	@echo "$(YELLOW)Démarrage de Stripe CLI listener...$(NC)"
 	@if [ -n "$(STRIPE_CLI_API_KEY)" ]; then \
-		STRIPE_API_KEY=$(STRIPE_CLI_API_KEY) stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/api/stripe/webhook}; \
+		STRIPE_API_KEY=$(STRIPE_CLI_API_KEY) stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/payment/stripe/webhook}; \
 	else \
-		env -u STRIPE_API_KEY stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/api/stripe/webhook}; \
+		env -u STRIPE_API_KEY stripe listen --forward-to $${WEBHOOK_FORWARD_URL:-http://localhost:8082/payment/stripe/webhook}; \
 	fi
 
 stripe-trigger-checkout: ## Déclenche un event Stripe checkout.session.completed en local

@@ -1,0 +1,70 @@
+services:
+  chariot-payment-postgres:
+    image: postgres:16-alpine
+    container_name: chariot-payment-postgres
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    volumes:
+      - chariot_payment_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${PAYMENT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PAYMENT_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PAYMENT_POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PAYMENT_POSTGRES_USER} -d ${PAYMENT_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - payment-network
+
+  chariot-payment:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: chariot-payment
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npx prisma generate && npm run start:dev"
+    ports:
+      - "9003:9003"
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${PAYMENT_DATABASE_URL}
+      PAYMENT_URL: ${PAYMENT_URL:-http://localhost:9003}
+      PAYMENT_VERSION: ${PAYMENT_VERSION:-dev}
+      FRONTEND_URL: ${FRONTEND_URL}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-chariot-app}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      SHOWCASE_URL: ${SHOWCASE_URL}
+      ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL:-http://chariot-adventure:9000}
+    depends_on:
+      chariot-payment-postgres:
+        condition: service_healthy
+    networks:
+      - payment-network
+      - chariot-group-network
+    extra_hosts:
+      - "localhost:host-gateway"
+
+volumes:
+  chariot_payment_postgres_data:
+  chariot_payment_logs:
+
+networks:
+  payment-network:
+    driver: bridge
+  chariot-group-network:
+    external: true

@@ -82,7 +82,7 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
 
             if (isSynced) {
               return (
-                <div className="flex items-center gap-2 p-2 bg-green/20 rounded text-sm text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-2 p-2 bg-green/20 text-sm text-green-600 dark:text-green-400 rounded-[23px]">
                   <span>✓ {t("proficiencyBonusSynced")}</span>
                 </div>
               );
@@ -119,13 +119,12 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
           className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
           {t("savingThrows")}
         </h2>
-      </Card>
-      <div>
+
         <SavingThrowsEdit
           form={form}
           accentColor={accentColor}
         />
-      </div>
+      </Card>
       {/* Compétences */}
       <Card
         className="flex flex-wrap justify-between gap-3 py-4 px-4 md:px-6"
@@ -167,15 +166,14 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
             </Label>
           </div>
         </div>
-      </Card>
-      <div>
+
         <SkillsEdit
           form={form}
           accentColor={accentColor}
           enableHalfProficiency={enableHalfProficiency}
           enableExpertise={enableExpertise}
         />
-      </div>
+      </Card>
     </section>
   );
 }

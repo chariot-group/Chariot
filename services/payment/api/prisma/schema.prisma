@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model PromoCode {
+  id   String @id @default(uuid())
+  code String @unique
+  name String
+
+  discountType  DiscountType
+  discountValue Int // centimes pour FIXED, entier 0-100 pour PERCENTAGE
+
+  // Options
+  isFirstOrderOnly Boolean   @default(false) @map("is_first_order_only")
+  minOrderAmount   Int?      @map("min_order_amount") // en centimes, null = pas de minimum
+  expiresAt        DateTime? @map("expires_at") // null = pas de limite de date
+  maxTotalUses     Int?      @map("max_total_uses") // null = illimité (option "N premiers")
+  maxUsesPerUser   Int       @default(1) @map("max_uses_per_user") // option "Y fois"
+
+  currentTotalUses Int @default(0) @map("current_total_uses")
+
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  usages   PromoCodeUsage[]
+  payments Payment[]
+
+  @@map("promo_codes")
+}
+
+model PromoCodeUsage {
+  id      String   @id @default(uuid())
+  userId  String   @map("user_id") // keycloakId de l'utilisateur
+  orderId String   @map("order_id") // Stripe session ID ou payment intent ID
+  usedAt  DateTime @default(now()) @map("used_at")
+
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  promoCodeId String    @map("promo_code_id")
+
+  @@map("promo_code_usages")
+}
+
+model Affiliation {
+  id   String @id @default(uuid())
+  code String @unique
+  name String
+
+  creatorUserId            String? @map("creator_user_id") // keycloakId du créateur (optionnel)
+  creatorName              String @map("creator_name") // nom affiché du créateur
+  creatorCommissionPercent Int    @map("creator_commission_percent") // % reversé au créateur (0-100)
+  userDiscountPercent      Int    @map("user_discount_percent") // % de réduction pour l'utilisateur (0-100)
+
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  usages   AffiliationUsage[]
+  payments Payment[]
+
+  @@map("affiliations")
+}
+
+model AffiliationUsage {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id") // keycloakId de l'utilisateur
+  orderId          String   @map("order_id") // Stripe session ID
+  orderAmount      Int      @map("order_amount") // montant de la commande en centimes
+  commissionAmount Int      @map("commission_amount") // commission calculée en centimes
+  usedAt           DateTime @default(now()) @map("used_at")
+
+  affiliation   Affiliation @relation(fields: [affiliationId], references: [id], onDelete: Cascade)
+  affiliationId String      @map("affiliation_id")
+
+  @@map("affiliation_usages")
+}
+
+model Referral {
+  id     String @id @default(uuid())
+  code   String @unique
+  userId String @unique @map("user_id") // keycloakId du parrain
+
+  pendingReferralsCount Int @default(0) @map("pending_referrals_count") // nb filleuls depuis dernière commande avec réduction
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  referees  ReferralReferee[]
+  payments  ReferralPayment[]
+  orders    Payment[]
+
+  @@map("referrals")
+}
+
+model ReferralReferee {
+  id            String   @id @default(uuid())
+  refereeUserId String   @unique @map("referee_user_id") // keycloakId du filleul
+  registeredAt  DateTime @default(now()) @map("registered_at")
+
+  // Validation : le filleul est comptabilisé côté parrain seulement après son 1er achat
+  firstPurchaseValidatedAt DateTime? @map("first_purchase_validated_at")
+
+  // Suivi de l'utilisation de la réduction filleul (15%)
+  discountUsed    Boolean   @default(false) @map("discount_used")
+  discountUsedAt  DateTime? @map("discount_used_at")
+  discountOrderId String?   @map("discount_order_id")
+
+  referral   Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  referralId String   @map("referral_id")
+
+  @@map("referral_referees")
+}
+
+model ReferralPayment {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")        // keycloakId de l'utilisateur ayant bénéficié de la réduction
+  discountType    String   @map("discount_type")  // 'referee' | 'referrer'
+  discountPercent Int      @map("discount_percent")
+  orderId         String   @map("order_id")       // Stripe session/paymentIntent ID
+  orderAmount     Int      @map("order_amount")   // montant avant réduction (centimes)
+  discountAmount  Int      @map("discount_amount") // réduction appliquée (centimes)
+  usedAt          DateTime @default(now()) @map("used_at")
+
+  referral   Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  referralId String   @map("referral_id")
+
+  @@map("referral_payments")
+}
+
+model Payment {
+  id                    String        @id @default(uuid())
+  userId                String        @map("user_id") // keycloakId
+  stripeSessionId       String?       @unique @map("stripe_session_id")
+  stripePaymentIntentId String?       @unique @map("stripe_payment_intent_id")
+  amount                Int           @map("amount") // montant total en centimes (avant réduction)
+  discountAmount        Int           @default(0) @map("discount_amount") // réduction appliquée en centimes
+  finalAmount           Int           @map("final_amount") // montant payé = amount - discountAmount
+  currency              String        @default("eur")
+  status                PaymentStatus @default(PENDING)
+  tokenCount            Int?          @map("token_count") // nombre total de tokens achetés
+
+  promoCode   PromoCode? @relation(fields: [promoCodeId], references: [id])
+  promoCodeId String?    @map("promo_code_id")
+
+  affiliation   Affiliation? @relation(fields: [affiliationId], references: [id])
+  affiliationId String?      @map("affiliation_id")
+
+  referral   Referral? @relation(fields: [referralId], references: [id])
+  referralId String?   @map("referral_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("payments")
+}

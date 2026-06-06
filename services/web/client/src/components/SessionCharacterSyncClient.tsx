@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useKeycloak } from "@/providers/KeycloakProvider";
@@ -10,11 +10,16 @@ import {
     selectSessionCode,
     selectSessionCampaignId,
     selectSessionParticipants,
+    selectBattleInitialized,
+    selectInitiativeTrackerRows,
+    selectCharacterSheetRemoteVersions,
+    clearCurrentSession,
     removeSessionParticipantByUserId,
     setSessionParticipants,
     setSessionExpiresAt,
     setSessionStatus,
     touchRemoteCharacterSheet,
+    updateInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
 import sessionService, {
     type ParticipantStatus,
@@ -22,8 +27,10 @@ import sessionService, {
     mapParticipantsFromSessionLaunchedPayload,
     parseExpiresAtFromLaunchedPayload,
 } from "@/services/SessionService";
+import CharacterService from "@/services/CharacterService";
 import { selectUser } from "@/store/slices/userSlice";
 import {
+    registerLocalCharacterSheetUpdatedListener,
     registerSessionRosterHttpSyncScheduler,
     registerSessionSyncSocket,
     requestSessionRosterHttpSync,
@@ -32,11 +39,14 @@ import { shouldNotifyPlayerOfGmCharacterSheetUpdate } from "@/lib/shouldNotifyPl
 import { setSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 import {
     acquireSessionSocket,
+    destroySessionSocket,
     getPooledSessionSocket,
     releaseSessionSocket,
+    shouldShowSessionEndNotice,
 } from "@/lib/sessionSocketPool";
 import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
 import { useToast } from "@/hooks/useToast";
+import { trackerMirrorFieldsFromCharacter } from "@/components/initiativeTracker/utils";
 
 /** Évite les rafales HTTP lors des reconnexions Socket.IO rapprochées. */
 const ROSTER_HTTP_SYNC_DEBOUNCE_MS = 600;
@@ -69,6 +79,9 @@ export default function SessionCharacterSyncClient() {
     const code = useAppSelector(selectSessionCode);
     const campaignId = useAppSelector(selectSessionCampaignId);
     const participants = useAppSelector(selectSessionParticipants);
+    const battleInitialized = useAppSelector(selectBattleInitialized);
+    const initiativeTrackerRows = useAppSelector(selectInitiativeTrackerRows);
+    const remoteCharacterVersions = useAppSelector(selectCharacterSheetRemoteVersions);
     const user = useAppSelector(selectUser);
 
     const participantsRef = useRef(participants);
@@ -79,6 +92,8 @@ export default function SessionCharacterSyncClient() {
     const toastRef = useRef(toast);
     const routerRef = useRef(router);
     const tRef = useRef(t);
+    const hasProcessedSessionEndRef = useRef(false);
+    const lastSyncedVersionsRef = useRef<Map<string, number>>(new Map());
 
     useEffect(() => {
         participantsRef.current = participants;
@@ -91,11 +106,103 @@ export default function SessionCharacterSyncClient() {
         tRef.current = t;
     }, [participants, user?.keycloakId, pathname, campaignId, code, toast, router, t]);
 
+    useEffect(() => {
+        if (isInSession && code) {
+            hasProcessedSessionEndRef.current = false;
+        }
+    }, [isInSession, code]);
+
+    useEffect(() => {
+        if (!isInSession || !code) {
+            lastSyncedVersionsRef.current.clear();
+            return;
+        }
+        const isGameMaster = participants.some(
+            (participant) => participant.userId === user?.keycloakId && participant.status === "gameMaster",
+        );
+        if (!isGameMaster || !battleInitialized || initiativeTrackerRows.length === 0) {
+            return;
+        }
+
+        const rowIdsByCharacterId = new Map<string, string[]>();
+        for (const row of initiativeTrackerRows) {
+            const rowIds = rowIdsByCharacterId.get(row.characterId) ?? [];
+            rowIds.push(row.id);
+            rowIdsByCharacterId.set(row.characterId, rowIds);
+        }
+
+        let cancelled = false;
+
+        rowIdsByCharacterId.forEach((rowIds, characterId) => {
+            const remoteVersion = remoteCharacterVersions[characterId] ?? 0;
+            const lastSeen = lastSyncedVersionsRef.current.get(characterId) ?? 0;
+            if (remoteVersion <= lastSeen) return;
+            lastSyncedVersionsRef.current.set(characterId, remoteVersion);
+
+            void CharacterService.getCharacterById(characterId, { sessionCode: code })
+                .then((character) => {
+                    if (cancelled) return;
+                    const changes = trackerMirrorFieldsFromCharacter(character);
+                    rowIds.forEach((rowId) => {
+                        dispatch(updateInitiativeTrackerRow({ id: rowId, changes }));
+                    });
+                })
+                .catch(() => {
+                    lastSyncedVersionsRef.current.set(characterId, lastSeen);
+                });
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        battleInitialized,
+        code,
+        dispatch,
+        initiativeTrackerRows,
+        isInSession,
+        participants,
+        remoteCharacterVersions,
+        user?.keycloakId,
+    ]);
+
+    const isCurrentUserGameMaster = useEffectEvent(() => {
+        const userId = userIdRef.current;
+        if (!userId) return false;
+        return participantsRef.current.some((participant) => participant.userId === userId && participant.status === "gameMaster");
+    });
+
+    const endSessionLocally = useEffectEvent(() => {
+        if (hasProcessedSessionEndRef.current) return;
+        hasProcessedSessionEndRef.current = true;
+        destroySessionSocket();
+        dispatch(clearCurrentSession());
+
+        const path = pathnameRef.current;
+        const locale = path.split("/")[1] || "fr";
+        routerRef.current.push(`/${locale}/welcome`);
+    });
+
     const shouldConnect = Boolean(isInSession && code && token);
 
     useEffect(() => {
         setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
     }, [isInSession, code]);
+
+    /** FR-022 — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
+    useEffect(() => {
+        if (!isInSession) {
+            registerLocalCharacterSheetUpdatedListener(null);
+            return;
+        }
+        registerLocalCharacterSheetUpdatedListener((characterId) => {
+            const cid = characterId.trim();
+            if (cid) {
+                dispatch(touchRemoteCharacterSheet(cid));
+            }
+        });
+        return () => registerLocalCharacterSheetUpdatedListener(null);
+    }, [dispatch, isInSession]);
 
     useEffect(() => {
         if (!shouldConnect || !code || !token) {
@@ -155,8 +262,28 @@ export default function SessionCharacterSyncClient() {
             scheduleRosterHttpSync();
         };
 
+        const onSessionEnded = (reason: "closed" | "expired") => {
+            const sessionCode = codeRef.current;
+            if (sessionCode && shouldShowSessionEndNotice(sessionCode, reason)) {
+                const isGameMaster = isCurrentUserGameMaster();
+                const toastKey =
+                    reason === "expired"
+                        ? "sessionEnded.description.expired"
+                        : isGameMaster
+                          ? "toast.sessionClosedBySelf"
+                          : "sessionEnded.description.closed";
+                toastRef.current.info(tRef.current(toastKey));
+            }
+            endSessionLocally();
+        };
+
+        const onSessionClosed = () => onSessionEnded("closed");
+        const onSessionExpired = () => onSessionEnded("expired");
+
         socket.on("connect", onConnect);
         socket.on("session:launched", onSessionLaunched);
+        socket.on("session:closed", onSessionClosed);
+        socket.on("session:expired", onSessionExpired);
         if (socket.connected) {
             onConnect();
         }
@@ -170,6 +297,8 @@ export default function SessionCharacterSyncClient() {
             }
             socket.off("connect", onConnect);
             socket.off("session:launched", onSessionLaunched);
+            socket.off("session:closed", onSessionClosed);
+            socket.off("session:expired", onSessionExpired);
             registerSessionSyncSocket(null);
             releaseSessionSocket();
         };

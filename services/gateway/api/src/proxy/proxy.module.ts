@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { HttpModule } from "@nestjs/axios";
-import { ProxyController, SessionProxyController } from "@/proxy/proxy.controller";
+import { ProxyController, SessionProxyController, PaymentProxyController } from "@/proxy/proxy.controller";
 import { ProxyService } from "@/proxy/proxy.service";
 
 @Module({
@@ -10,7 +10,7 @@ import { ProxyService } from "@/proxy/proxy.service";
       maxRedirects: 5,
     }),
   ],
-  controllers: [ProxyController, SessionProxyController],
+  controllers: [ProxyController, SessionProxyController, PaymentProxyController],
   providers: [ProxyService],
 })
 export class ProxyModule {}

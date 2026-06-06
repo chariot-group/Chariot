@@ -11,6 +11,7 @@ import CharacterInventoryTabContent from "@/components/character/tabContents/inv
 import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { FieldValues, UseFormReturn } from "react-hook-form";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface MonsterPreviewProps {
   monster: Partial<NPC>;
@@ -30,6 +31,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
   const tNpc = useTranslations("characterDetail.npc");
   const tEdit = useTranslations("characterDetail.edit");
   const tPreview = useTranslations("characterDetail.magic.monsterCodexDialog.preview");
+  const tCommon = useTranslations("common");
   const [activeTab, setActiveTab] = useState<CharacterTab>("general");
 
   const abilityModifier = (value?: number) => Math.floor(((value ?? 10) - 10) / 2);
@@ -201,10 +203,14 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
       },
       senses: monster.stats?.senses
         ? monster.stats.senses.map((sense) => {
-            const normalizedSense = sense as { name?: string; type?: string; value?: number | string };
+            const normalizedSense = sense as { name?: string; type?: string; value?: number | string | null };
+            const parsedValue =
+              normalizedSense.value === null || normalizedSense.value === undefined || normalizedSense.value === ""
+                ? null
+                : Number(normalizedSense.value);
             return {
               name: normalizedSense.name || normalizedSense.type || "",
-              value: typeof normalizedSense.value === "number" ? normalizedSense.value : 0,
+              value: Number.isFinite(parsedValue) ? parsedValue : null,
             };
           })
         : [],
@@ -292,8 +298,28 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
 
           <div className="flex flex-col gap-2 text-sm sm:text-base xl:border-l xl:pl-6 border-border/60">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold">{tPreview("challengeRatingShort")} :</span>
-              <span>CR {formatChallengeRating(normalizedMonster.challenge.challengeRating)}</span>
+              <span className="font-semibold">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <abbr className="no-underline cursor-help">{tPreview("challengeRatingShort")}</abbr>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tCommon("challengeRatingTooltip")}</p>
+                  </TooltipContent>
+                </Tooltip>
+                {" :"}
+              </span>
+              <span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <abbr className="no-underline cursor-help">CR</abbr>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tCommon("challengeRatingTooltip")}</p>
+                  </TooltipContent>
+                </Tooltip>{" "}
+                {formatChallengeRating(normalizedMonster.challenge.challengeRating)}
+              </span>
               <span className="text-gray-middle-light">
                 ({normalizedMonster.challenge.experiencePoints} {tPreview("experiencePointsShort")})
               </span>

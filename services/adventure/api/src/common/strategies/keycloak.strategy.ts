@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
-import * as KeycloakBearerStrategy from 'passport-keycloak-bearer';
+import KeycloakBearerStrategy from 'passport-keycloak-bearer';
 
 type KeycloakPayload = {
   sub?: string;

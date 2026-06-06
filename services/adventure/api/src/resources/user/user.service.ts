@@ -87,7 +87,7 @@ export class UserService {
    * @param newPassword New password to set
    * @throws UnauthorizedException if current password is incorrect
    * @throws ForbiddenException if new password doesn't meet policy
-   * @see FR-009: User Password Change
+   * @see FR-011: User Password Change
    */
   async changePassword(
     keycloakId: string,

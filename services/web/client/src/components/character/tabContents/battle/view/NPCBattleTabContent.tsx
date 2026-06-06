@@ -34,23 +34,23 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("savingThrows")}
             </h2>
-          </Card>
 
-          <div
-            className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
-            role="list">
-            {npc?.stats &&
-              Object.entries(npc?.stats?.savingThrows).map(([key]) => {
-                return (
-                  <SavingThrow
-                    key={key}
-                    skillName={key as keyof typeof npc.stats.abilityScores}
-                    accentColor={accentColor}
-                    stats={npc.stats}
-                  />
-                );
-              })}
-          </div>
+            <div
+              className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
+              role="list">
+              {npc?.stats &&
+                Object.entries(npc?.stats?.savingThrows).map(([key]) => {
+                  return (
+                    <SavingThrow
+                      key={key}
+                      skillName={key as keyof typeof npc.stats.abilityScores}
+                      accentColor={accentColor}
+                      stats={npc.stats}
+                    />
+                  );
+                })}
+            </div>
+          </Card>
         </div>
         {/* Capacités et traits */}
         <AbilitiesSection
@@ -62,7 +62,6 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
           characterKind="npcs"
           onAfterAbilityUse={onCharacterUpdate}
         />
-
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
         <Card
@@ -82,7 +81,8 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
             )}
             {npc?.affinities?.vulnerabilities?.length > 0 && (
               <p className="text-sm sm:text-base wrap-break-word">
-                <span className="font-semibold">{t("vulnerabilities")} :</span> {npc.affinities.vulnerabilities.join(", ")}
+                <span className="font-semibold">{t("vulnerabilities")} :</span>{" "}
+                {npc.affinities.vulnerabilities.join(", ")}
               </p>
             )}
             {npc?.affinities?.immunities?.length > 0 && (
@@ -95,7 +95,7 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
       </div>
 
       {/* Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 w-full">
         {/* Actions Standards */}
         <ActionSection
           title={t("actions")}

@@ -7,11 +7,15 @@ import NavigationService from "@/services/NavigationService";
 import { useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store";
 import { useStore } from "react-redux";
+import referralService from "@/services/ReferralService";
+
+const REFERRAL_CODE_STORAGE_KEY = "chariot_referral_code";
+const REFERRAL_INIT_STORAGE_KEY = "chariot_referral_initialized";
 
 /**
- * Component responsible for handling post-login navigation (FR-006)
+ * Component responsible for handling post-login navigation (FR-007)
+ * Also handles referral code initialization on first login.
  * Must be rendered INSIDE ReduxProvider to access Redux store
- * Listens to authentication state from KeycloakContext
  */
 export default function PostLoginNavigator() {
   const pathname = usePathname();
@@ -22,16 +26,45 @@ export default function PostLoginNavigator() {
 
   const store = useStore<RootState>();
 
-  // Ref to track if we've already handled initial auth redirect
   const hasHandledAuthRef = useRef(false);
+  const hasInitReferralRef = useRef(false);
+
+  // Capture ?ref=CODE from URL into localStorage (runs once on mount, client-side only)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get("ref");
+    if (refCode) {
+      localStorage.setItem(REFERRAL_CODE_STORAGE_KEY, refCode.toUpperCase().trim());
+    }
+  }, []);
+
+  // Initialize referral on first login (once per device)
+  useEffect(() => {
+    if (!authenticated || loading || hasInitReferralRef.current) return;
+
+    const alreadyInitialized = localStorage.getItem(REFERRAL_INIT_STORAGE_KEY);
+    console.warn("Initializing referral for user. Already initialized on this device?", alreadyInitialized);
+    if (alreadyInitialized) return;
+
+    hasInitReferralRef.current = true;
+
+    const storedCode = localStorage.getItem(REFERRAL_CODE_STORAGE_KEY) ?? undefined;
+
+    referralService
+      .init(storedCode)
+      .then(() => {
+        localStorage.setItem(REFERRAL_INIT_STORAGE_KEY, "1");
+        if (storedCode) localStorage.removeItem(REFERRAL_CODE_STORAGE_KEY);
+      })
+      .catch((err) => {
+        console.warn("Referral init failed:", err?.response?.data?.message ?? err.message);
+        hasInitReferralRef.current = false;
+      });
+  }, [authenticated, loading]);
 
   useEffect(() => {
     const handlePostLoginNavigation = async () => {
-      // Ne rediriger que si:
-      // 1. L'utilisateur est authentifié
-      // 2. Le chargement est terminé
-      // 3. On n'a pas déjà géré la redirection
-      // 4. L'utilisateur est sur une page qui nécessite une redirection
       if (authenticated && !loading && !hasHandledAuthRef.current) {
         if (NavigationService.shouldRedirectAfterLogin(pathname)) {
           hasHandledAuthRef.current = true;
@@ -45,7 +78,6 @@ export default function PostLoginNavigator() {
             router.push(destination.path);
           } catch (error) {
             console.error("Failed to determine post-login destination:", error);
-            // Fallback vers welcome en cas d'erreur
             router.push(`/${locale}/welcome`);
           }
         }
@@ -55,6 +87,5 @@ export default function PostLoginNavigator() {
     handlePostLoginNavigation();
   }, [authenticated, loading, pathname, locale, router, dispatch, store]);
 
-  // Ce composant ne rend rien, il gère uniquement la navigation
   return null;
 }

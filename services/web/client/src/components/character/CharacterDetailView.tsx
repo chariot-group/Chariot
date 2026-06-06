@@ -7,8 +7,6 @@ import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useMemo, useState } from "react";
 import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
-import { LongRestButton } from "@/components/character/LongRestButton";
-import { ShortRestButton } from "@/components/character/ShortRestButton";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
@@ -39,6 +37,7 @@ export default function CharacterDetailView({
 }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
+  const tCommon = useTranslations("common");
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -56,8 +55,7 @@ export default function CharacterDetailView({
     character.createdBy != null &&
     character.createdBy !== currentUserKeycloakId;
 
-  const playedBySubjectId =
-    isGmViewingPlayerSheet && character.createdBy != null ? String(character.createdBy) : null;
+  const playedBySubjectId = isGmViewingPlayerSheet && character.createdBy != null ? String(character.createdBy) : null;
 
   const [resolvedPlayedBy, setResolvedPlayedBy] = useState<{
     createdByKey: string;
@@ -65,18 +63,12 @@ export default function CharacterDetailView({
   } | null>(null);
 
   const playedByLabel =
-    playedBySubjectId != null &&
-    resolvedPlayedBy != null &&
-    resolvedPlayedBy.createdByKey === playedBySubjectId
+    playedBySubjectId != null && resolvedPlayedBy != null && resolvedPlayedBy.createdByKey === playedBySubjectId
       ? resolvedPlayedBy.label
       : null;
 
   const canEditAsGm = useMemo(
-    () =>
-      isGmViewingPlayerSheet &&
-      isInSession &&
-      !!sessionCodeFromUrl &&
-      sessionCodeFromUrl === sessionCodeRedux,
+    () => isGmViewingPlayerSheet && isInSession && !!sessionCodeFromUrl && sessionCodeFromUrl === sessionCodeRedux,
     [isGmViewingPlayerSheet, isInSession, sessionCodeFromUrl, sessionCodeRedux],
   );
 
@@ -123,7 +115,7 @@ export default function CharacterDetailView({
     void UserService.getUserById(playedBySubjectId)
       .then((u) => {
         if (!cancelled) {
-          const label = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.username;
+          const label = u.username?.trim() || playedBySubjectId;
           setResolvedPlayedBy({ createdByKey: playedBySubjectId, label });
         }
       })
@@ -230,8 +222,7 @@ export default function CharacterDetailView({
                       <TooltipContent>
                         <div className="flex flex-col gap-1">
                           <span>
-                            {character.firstname} {character.lastname}{" "}
-                            {character.surname && `(${character.surname})`}
+                            {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
                           </span>
                           {isGmViewingPlayerSheet && playedByLabel ? (
                             <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
@@ -239,20 +230,6 @@ export default function CharacterDetailView({
                         </div>
                       </TooltipContent>
                     </Tooltip>
-                    {isPlayer(character) && !isEditing && onCharacterUpdate && !isGmViewingPlayerSheet && (
-                      <span className="inline-flex items-center gap-1 shrink-0">
-                        <ShortRestButton
-                          player={character}
-                          isInSession={isInSession}
-                          onApplied={(updated) => onCharacterUpdate(updated)}
-                        />
-                        <LongRestButton
-                          player={character}
-                          isInSession={isInSession}
-                          onApplied={(updated) => onCharacterUpdate(updated)}
-                        />
-                      </span>
-                    )}
                   </div>
 
                   {/* Ligne 2: Surnom + Classe/CR + Groupe */}
@@ -268,7 +245,9 @@ export default function CharacterDetailView({
                           ))}
                         </div>
                         {isGmViewingPlayerSheet && playedByLabel ? (
-                          <span className="text-xs font-normal text-gray-light">{t("playedBy", { name: playedByLabel })}</span>
+                          <span className="text-xs font-normal text-gray-light">
+                            {t("playedBy", { name: playedByLabel })}
+                          </span>
                         ) : null}
                       </div>
                     ) : (
@@ -280,11 +259,14 @@ export default function CharacterDetailView({
 
                           return (
                             <React.Fragment>
-                              <abbr
-                                title={t("npc.challengeRating")}
-                                className="no-underline cursor-help">
-                                {t("npc.challengeRatingAbbr")}
-                              </abbr>{" "}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{tCommon("challengeRatingTooltip")}</p>
+                                </TooltipContent>
+                              </Tooltip>{" "}
                               {displayChallengeRating} ({experiencePoints} XP)
                             </React.Fragment>
                           );
@@ -321,87 +303,87 @@ export default function CharacterDetailView({
 
         {/* Footer avec boutons - fixe en bas */}
         {showEditControls ? (
-        <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 border-t border-transparent">
-          <div className="w-full mx-auto flex flex-row-reverse gap-2">
-            {isEditing ? (
-              <React.Fragment>
-                {/* Mode édition : boutons Annuler et Sauvegarder */}
-                <Button
-                  type="submit"
-                  form="character-update-form"
-                  disabled={isSaving || !isDirty}
-                  tabIndex={0}
-                  className={`
+          <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 border-t border-transparent">
+            <div className="w-full mx-auto flex flex-row-reverse gap-2">
+              {isEditing ? (
+                <React.Fragment>
+                  {/* Mode édition : boutons Annuler et Sauvegarder */}
+                  <Button
+                    type="submit"
+                    form="character-update-form"
+                    disabled={isSaving || !isDirty}
+                    tabIndex={0}
+                    className={`
                   lg:text-sm text-xs font-semibold
-                  ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
-                  ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
-                  ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
-                  ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
-                  ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
+                  ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+                  ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+                  ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+                  ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+                  ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
                 `}
-                  aria-label={t("saveChanges")}
-                  aria-busy={isSaving}>
-                  <Save
-                    className="lg:size-5 size-4"
-                    aria-hidden="true"
-                  />
-                  {isSaving ? t("saving") : t("saveChanges")}
-                </Button>
+                    aria-label={t("saveChanges")}
+                    aria-busy={isSaving}>
+                    <Save
+                      className="lg:size-5 size-4"
+                      aria-hidden="true"
+                    />
+                    {isSaving ? t("saving") : t("saveChanges")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      onCancel();
+                      setIsEditing(false);
+                    }}
+                    disabled={isSaving}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onCancel();
+                        setIsEditing(false);
+                      }
+                    }}
+                    className="lg:text-sm text-xs font-semibold"
+                    aria-label={t("cancel")}>
+                    <X
+                      className="lg:size-5 size-4"
+                      aria-hidden="true"
+                    />
+                    {t("cancel")}
+                  </Button>
+                </React.Fragment>
+              ) : (
+                /* Mode lecture : bouton Modifier */
                 <Button
                   type="button"
-                  variant="outline"
-                  onClick={() => {
-                    onCancel();
-                    setIsEditing(false);
-                  }}
-                  disabled={isSaving}
+                  onClick={() => setIsEditing(true)}
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      onCancel();
-                      setIsEditing(false);
+                      setIsEditing(true);
                     }
                   }}
-                  className="lg:text-sm text-xs font-semibold"
-                  aria-label={t("cancel")}>
-                  <X
+                  className={`
+                lg:text-sm text-xs font-semibold
+                ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+                ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+                ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+                ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+                ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+              `}
+                  aria-label={t("editCharacter")}>
+                  <SquarePen
                     className="lg:size-5 size-4"
                     aria-hidden="true"
                   />
-                  {t("cancel")}
+                  {t("editCharacter")}
                 </Button>
-              </React.Fragment>
-            ) : (
-              /* Mode lecture : bouton Modifier */
-              <Button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setIsEditing(true);
-                  }
-                }}
-                className={`
-                lg:text-sm text-xs font-semibold
-                ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
-                ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
-                ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
-                ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
-                ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
-              `}
-                aria-label={t("editCharacter")}>
-                <SquarePen
-                  className="lg:size-5 size-4"
-                  aria-hidden="true"
-                />
-                {t("editCharacter")}
-              </Button>
-            )}
+              )}
+            </div>
           </div>
-        </div>
         ) : null}
       </form>
     </main>

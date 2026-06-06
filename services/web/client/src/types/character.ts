@@ -70,7 +70,7 @@ export interface Skills {
 
 export interface Sense {
     name: string;
-    value: number;
+    value: number | null;
 }
 
 export interface SavingThrows {
@@ -378,4 +378,3 @@ export interface PaginatedCharactersResponse {
         totalItems: number;
     };
 }
-

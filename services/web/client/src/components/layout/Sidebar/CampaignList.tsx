@@ -65,7 +65,7 @@ export default function CampaignList() {
             aria-pressed={isSelected}
             aria-label={`${isSelected ? t("selectedCampaign") : t("selectCampaign")} ${campaign.label}`}
             className={`text-sm cursor-pointer rounded-[12px] py-1.5 px-3 text-white text-left transition-all duration-100 w-full shrink-0 focus-visible:border truncate ${
-              isSelected ? "bg-card font-bold" : "hover:bg-card hover:font-bold"
+              isSelected ? "bg-card font-bold" : "hover:bg-card"
             }`}>
             {campaign.label}
           </button>
@@ -81,7 +81,14 @@ export default function CampaignList() {
           aria-busy={loadingMore}
           aria-label={t("loadMoreCampaignsAria")}
           className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
-          {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mx-auto" aria-hidden /> : t("loadMoreCampaigns")}
+          {loadingMore ? (
+            <Loader2
+              className="w-4 h-4 animate-spin mx-auto"
+              aria-hidden
+            />
+          ) : (
+            t("loadMoreCampaigns")
+          )}
         </button>
       )}
     </div>

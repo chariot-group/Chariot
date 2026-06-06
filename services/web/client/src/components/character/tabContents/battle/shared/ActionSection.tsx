@@ -3,7 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Action, ActionUsageType } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { ArrowUpDown, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatSignedBonus } from "@/utils/attack.utils";
@@ -28,24 +28,22 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
   const tMagic = useTranslations("characterDetail.magic");
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
-  const [prioritizeUsageType, setPrioritizeUsageType] = useState<ActionUsageType | null>(null);
+  const [prioritizeUsageType, setPrioritizeUsageType] = useState<ActionUsageType>("action");
+  const usageTypeCounts = ACTION_USAGE_OPTIONS.reduce<Record<ActionUsageType, number>>((counts, usageType) => {
+    counts[usageType] = 0;
+    return counts;
+  }, { action: 0, bonus_action: 0, reaction: 0 });
 
-  const availableUsageTypes = new Set(actions.map((action) => normalizeUsageType(action.usageType)));
-  const orderedUsageOptions = [...ACTION_USAGE_OPTIONS].sort((a, b) => {
-    const aAvailable = availableUsageTypes.has(a);
-    const bAvailable = availableUsageTypes.has(b);
-    if (aAvailable === bAvailable) return 0;
-    return aAvailable ? -1 : 1;
+  actions.forEach((action) => {
+    usageTypeCounts[normalizeUsageType(action.usageType)] += 1;
   });
 
-  const displayedActions = prioritizeUsageType
-    ? [...actions].sort((a, b) => {
-      const aIsPriority = normalizeUsageType(a.usageType) === prioritizeUsageType;
-      const bIsPriority = normalizeUsageType(b.usageType) === prioritizeUsageType;
-      if (aIsPriority === bIsPriority) return 0;
-      return aIsPriority ? -1 : 1;
-    })
-    : actions;
+  const displayedActions = [...actions].sort((a, b) => {
+    const aIsPriority = normalizeUsageType(a.usageType) === prioritizeUsageType;
+    const bIsPriority = normalizeUsageType(b.usageType) === prioritizeUsageType;
+    if (aIsPriority === bIsPriority) return 0;
+    return aIsPriority ? -1 : 1;
+  });
   const hasActions = displayedActions.length > 0;
 
   if (actions.length === 0) return null;
@@ -54,20 +52,22 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
     <section
       className="flex flex-col gap-2 w-full"
       aria-labelledby={`${title.toLowerCase().replace(/\s+/g, "-")}-heading`}>
-      <Card className="gap-3 p-4 md:px-6 h-fit justify-between flex-row items-center">
-        <div className="flex flex-col gap-2 w-full">
+      <Card className="gap-3 p-4 md:px-6 h-fit flex-col items-stretch xl:flex-row xl:items-start xl:justify-between">
+        <div className="flex flex-col gap-2 min-w-0 flex-1">
           <h2
             id={`${title.toLowerCase().replace(/\s+/g, "-")}-heading`}
             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {title}
           </h2>
           <div className="flex flex-wrap items-center gap-1">
-            {orderedUsageOptions.map((option) => {
-              const isAvailable = availableUsageTypes.has(option);
+            {ACTION_USAGE_OPTIONS.map((option) => {
+              const count = usageTypeCounts[option];
+              const isAvailable = count > 0;
               const isSelected = prioritizeUsageType === option;
+              const usageLabel = t(`usageTypeOptions.${option}`);
+
               const button = (
                 <Button
-                  key={option}
                   type="button"
                   size="sm"
                   className={`h-6 px-2 text-xs ${!isAvailable ? "opacity-45 grayscale cursor-default!" : ""}`}
@@ -77,24 +77,35 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                     if (!isAvailable) return;
                     setPrioritizeUsageType(option);
                   }}>
-                  {t(`usageTypeOptions.${option}`)}
+                  <ArrowUpDown className="size-3.5" />
+                  {`${usageLabel} (${count})`}
                 </Button>
               );
 
-              if (isAvailable) return button;
+              if (!isAvailable) {
+                return (
+                  <Tooltip key={option}>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex">{button}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t("usageTypeUnavailableTooltip", { type: usageLabel })}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
 
               return (
-                <Tooltip key={option}>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex">{button}</span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">{t("usageTypeUnavailableTooltip", { type: t(`usageTypeOptions.${option}`) })}</TooltipContent>
-                </Tooltip>
+                <span
+                  key={option}
+                  className="inline-flex">
+                  {button}
+                </span>
               );
             })}
           </div>
         </div>
-        <div className="flex justify-end shrink-0 self-start">
+        <div className="flex justify-end shrink-0 self-end xl:self-start">
           <button
             type="button"
             onClick={() => {

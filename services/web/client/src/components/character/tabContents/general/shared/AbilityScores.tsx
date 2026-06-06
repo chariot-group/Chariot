@@ -26,30 +26,30 @@ export default function AbilityScores({ character, accentColor }: AbilityScoresP
           className={`text-2xl font-semibold truncate ${accentColor}`}>
           {t("characteristics")}
         </h2>
+        <div
+          className="grid grid-cols-2 gap-2"
+          role="list"
+          aria-label={t("characteristics")}>
+          {character?.stats &&
+            Object.entries(character?.stats?.abilityScores).map(([key, value]) => {
+              const abilityName = t(`abilities.${key}`);
+              const modifier = calculateModifier(value);
+              return (
+                <div
+                  key={key}
+                  className="p-2"
+                  role="listitem">
+                  <p
+                    className="text-sm flex items-center gap-2"
+                    aria-label={`${abilityName} : ${value} (${modifier})`}>
+                    <span className="truncate">{abilityName}</span> <span className="italic">{value}</span>{" "}
+                    <span className="font-bold">({modifier})</span>
+                  </p>
+                </div>
+              );
+            })}
+        </div>
       </Card>
-      <div
-        className="grid grid-cols-2 gap-2"
-        role="list"
-        aria-label={t("characteristics")}>
-        {character?.stats &&
-          Object.entries(character?.stats?.abilityScores).map(([key, value]) => {
-            const abilityName = t(`abilities.${key}`);
-            const modifier = calculateModifier(value);
-            return (
-              <Card
-                key={key}
-                className="p-2"
-                role="listitem">
-                <p
-                  className="text-sm flex items-center gap-2"
-                  aria-label={`${abilityName} : ${value} (${modifier})`}>
-                  <span className="truncate">{abilityName}</span> <span className="italic">{value}</span>{" "}
-                  <span className="font-bold">({modifier})</span>
-                </p>
-              </Card>
-            );
-          })}
-      </div>
     </div>
   );
 }
