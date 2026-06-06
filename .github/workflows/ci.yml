@@ -229,12 +229,14 @@ jobs:
             echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
             echo "session_ws_url=${{ secrets.PROD_SESSION_WS_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.PROD_CODEX_URL }}" >> $GITHUB_OUTPUT
+            echo "stripe_publishable_key=${{ secrets.PROD_STRIPE_PUBLISHABLE_KEY }}" >> $GITHUB_OUTPUT
             echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           else
             echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
             echo "session_ws_url=${{ secrets.INTEG_SESSION_WS_URL }}" >> $GITHUB_OUTPUT
             echo "codex_url=${{ secrets.INTEG_CODEX_URL }}" >> $GITHUB_OUTPUT
+            echo "stripe_publishable_key=${{ secrets.INTEG_STRIPE_PUBLISHABLE_KEY }}" >> $GITHUB_OUTPUT
             echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
           fi
 
@@ -270,6 +272,7 @@ jobs:
             NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
             NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
             NEXT_PUBLIC_SESSION_WS_URL=${{ steps.env.outputs.session_ws_url }}
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ steps.env.outputs.stripe_publishable_key }}
 
       - name: Output image tags
         run: |
