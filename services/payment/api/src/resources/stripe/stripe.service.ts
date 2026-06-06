@@ -557,9 +557,7 @@ export class StripeService {
             const totalDiscountPerUnit = discountAmountPerUnit + giftAmountPerUnit;
 
             if (isStripeFreeOrder(chargeableUnitAmount)) {
-                if (existingPI.status !== 'canceled') {
-                    await this.stripe.paymentIntents.cancel(piId);
-                }
+                await this.stripe.paymentIntents.cancel(piId);
 
                 const message = `PaymentIntent ${piId} cancelled for free order in ${Date.now() - start} ms`;
                 this.logger.verbose(message, this.SERVICE_NAME);

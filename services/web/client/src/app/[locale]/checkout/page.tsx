@@ -8,7 +8,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { CheckoutForm } from "@/components/checkout/CheckoutForm";
+import { CheckoutFreeForm, CheckoutPaidForm } from "@/components/checkout/CheckoutForm";
 import { useCheckout } from "@/hooks/useCheckout";
 import Logo from "@public/logo.svg";
 
@@ -106,7 +106,7 @@ function CheckoutContent() {
               </div>
             ) : isFreeOrder ? (
               <div className="flex-1 min-h-0 flex justify-center">
-                <CheckoutForm
+                <CheckoutFreeForm
                   product={product}
                   tokenCount={tokenCount}
                   pricing={pricing}
@@ -132,7 +132,7 @@ function CheckoutContent() {
                     appearance: { theme: "night" },
                     locale: locale as import("@stripe/stripe-js").StripeElementLocale,
                   }}>
-                  <CheckoutForm
+                  <CheckoutPaidForm
                     product={product}
                     tokenCount={tokenCount}
                     pricing={pricing}

@@ -330,6 +330,7 @@
     "total": "Total",
     "payButton": "Pagar {amount}",
     "freeOrderButton": "Obtener gratis",
+    "freeOrderNotice": "No se requiere pago para este pedido.",
     "preparing": "Preparando el pago…",
     "paymentDetails": "Detalles de pago",
     "payError": "No se puede iniciar el pago. Por favor, inténtalo de nuevo.",

@@ -330,6 +330,7 @@
     "total": "Total",
     "payButton": "Pay {amount}",
     "freeOrderButton": "Get for free",
+    "freeOrderNotice": "No payment required for this order.",
     "preparing": "Preparing payment…",
     "paymentDetails": "Payment details",
     "payError": "Unable to initialise payment. Please try again.",
