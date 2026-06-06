@@ -61,9 +61,7 @@ function CheckoutFormContent({
   pricing,
   promoCode,
   piRefreshing,
-  locale,
   quantity,
-  quantitySyncPending,
   onQuantityChange,
   referralDiscount,
   piError,
@@ -326,12 +324,8 @@ function CheckoutFormContent({
           )}
         </Button>
 
-        {!showPaymentPanel && (
-          <p className="text-center text-xs text-muted-foreground">{t("freeOrderNotice")}</p>
-        )}
-        {showPaymentPanel && (
-          <p className="text-center text-xs text-muted-foreground">{t("securedByStripe")}</p>
-        )}
+        {!showPaymentPanel && <p className="text-center text-xs text-muted-foreground">{t("freeOrderNotice")}</p>}
+        {showPaymentPanel && <p className="text-center text-xs text-muted-foreground">{t("securedByStripe")}</p>}
       </div>
     </div>
   );
