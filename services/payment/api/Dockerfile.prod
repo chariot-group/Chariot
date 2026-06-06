@@ -49,6 +49,9 @@ COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nestjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
+RUN mkdir -p /app/logger/logs \
+ && chown -R nestjs:nodejs /app/logger
+
 USER nestjs
 
 EXPOSE 9003
