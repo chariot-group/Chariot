@@ -45,6 +45,7 @@ import {
     getPooledSessionSocket,
     releaseSessionSocket,
     shouldShowSessionEndNotice,
+    syncSessionSocketAuth,
 } from "@/lib/sessionSocketPool";
 import { formatSessionParticipantLabelFromWsUsername } from "@/lib/formatSessionParticipantUserLabel";
 import { resolveParticipantToastLabel } from "@/lib/sessionParticipantDisplayNames";
@@ -193,6 +194,12 @@ export default function SessionCharacterSyncClient() {
     const shouldConnect = Boolean(isInSession && code && token);
 
     useEffect(() => {
+        if (token) {
+            syncSessionSocketAuth(token);
+        }
+    }, [token]);
+
+    useEffect(() => {
         setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
     }, [isInSession, code]);
 
@@ -309,7 +316,7 @@ export default function SessionCharacterSyncClient() {
             registerSessionSyncSocket(null);
             releaseSessionSocket();
         };
-    }, [shouldConnect, code, token, dispatch]);
+    }, [shouldConnect, code, dispatch]);
 
     const isOnSessionLobbyPage = /\/campaigns\/[^/]+\/session\/[^/]+(?:\/|$)/.test(pathname ?? "");
 
@@ -501,7 +508,7 @@ export default function SessionCharacterSyncClient() {
             if (onParticipantLeft) socket.off("session:participant-left", onParticipantLeft);
             if (onParticipantDisconnected) socket.off("session:participant-disconnected", onParticipantDisconnected);
         };
-    }, [shouldConnect, code, token, isOnSessionLobbyPage, dispatch]);
+    }, [shouldConnect, code, isOnSessionLobbyPage, dispatch]);
 
     return null;
 }

@@ -320,6 +320,14 @@ describe('SessionGateway', () => {
     // ── handleDisconnect ──────────────────────────────────────────────────────
 
     describe('handleDisconnect', () => {
+        beforeEach(() => {
+            jest.useFakeTimers();
+        });
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
         it('should log when the disconnected client has a user', () => {
             const client = makeSocket();
             // Should not throw
@@ -331,17 +339,18 @@ describe('SessionGateway', () => {
             expect(() => gateway.handleDisconnect(client)).not.toThrow();
         });
 
-        it('should emit participant-disconnected immediately via server.to and persist async', () => {
-            let resolveDisconnect: () => void = () => {};
-            const disconnectPromise = new Promise<void>((res) => {
-                resolveDisconnect = res;
-            });
-            mockSessionService.disconnectParticipant.mockReturnValue(disconnectPromise);
+        it('should defer participant-disconnected until the grace period elapses', async () => {
+            mockSessionService.disconnectParticipant.mockResolvedValue(undefined);
 
             const sessionRoomIds = new Set<string>(['sess-uuid-1']);
             const client = makeSocket({ sessionRoomIds });
 
             gateway.handleDisconnect(client);
+
+            expect(mockRoomEmit).not.toHaveBeenCalled();
+            expect(mockSessionService.disconnectParticipant).not.toHaveBeenCalled();
+
+            jest.advanceTimersByTime(3000);
 
             expect(mockServer.to).toHaveBeenCalledWith('sess-uuid-1');
             expect(mockRoomEmit).toHaveBeenCalledWith('session:participant-disconnected', {
@@ -349,8 +358,26 @@ describe('SessionGateway', () => {
                 username: 'testuser',
             });
             expect(mockSessionService.disconnectParticipant).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1');
+        });
 
-            resolveDisconnect();
+        it('should cancel pending disconnect when the participant rejoins quickly', async () => {
+            const session = makeSession();
+            mockSessionService.join.mockResolvedValue(session);
+            mockSessionService.disconnectParticipant.mockResolvedValue(undefined);
+
+            const sessionRoomIds = new Set<string>(['sess-uuid-1']);
+            const client = makeSocket({ sessionRoomIds });
+
+            gateway.handleDisconnect(client);
+            await gateway.handleJoinSession(client, { sessionId: 'sess-uuid-1', characterId: 'char-uuid-1' });
+
+            jest.advanceTimersByTime(3000);
+
+            expect(mockRoomEmit).not.toHaveBeenCalledWith(
+                'session:participant-disconnected',
+                expect.any(Object),
+            );
+            expect(mockSessionService.disconnectParticipant).not.toHaveBeenCalled();
         });
     });
 

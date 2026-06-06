@@ -36,6 +36,7 @@ import {
     destroySessionSocket,
     releaseSessionSocket,
     shouldShowSessionEndNotice,
+    syncSessionSocketAuth,
 } from "@/lib/sessionSocketPool";
 import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayerFromCampaignGroupsOnSessionLeave";
 import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
@@ -166,7 +167,15 @@ export function useSessionSocket({
     }, [tokensByUser, dispatch]);
 
     useEffect(() => {
-        if (!token) return;
+        if (token) {
+            syncSessionSocketAuth(token);
+        }
+    }, [token]);
+
+    const shouldConnectSocket = Boolean(token && code);
+
+    useEffect(() => {
+        if (!shouldConnectSocket || !token) return;
 
         console.info("Attaching to shared session WebSocket pool");
 
@@ -404,7 +413,7 @@ export function useSessionSocket({
             releaseSessionSocket();
             socketRef.current = null;
         };
-    }, [token, code, fetchCharacterDetails, dispatch, appStore, campaignId]);
+    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId]);
 
     const handleCharacterChange = (characterId: string) => {
         const socket = socketRef.current;

@@ -45,6 +45,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
     private readonly logger = new Logger(SessionGateway.name);
     private readonly SERVICE_NAME = SessionGateway.name;
+    /** Délai avant de notifier une déconnexion WS (reconnexion rapide / refresh client). */
+    private static readonly DISCONNECT_NOTIFY_MS = 3_000;
+    private readonly pendingDisconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
     private jwksClient: jwksRsa.JwksClient;
     private keycloakInternalUrl: string;
@@ -147,12 +150,33 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         };
 
         for (const sessionId of sessionIds) {
-            /* Immédiat : ne pas attendre la persistance, sinon le toast côté clients n'arrive qu'avec retard. */
-            this.server.to(sessionId).emit('session:participant-disconnected', payload);
-            this.sessionService.disconnectParticipant(sessionId, client.user.keycloakId).catch((err: any) => {
+            this.scheduleParticipantDisconnected(sessionId, payload.userId, payload.username);
+        }
+    }
+
+    private disconnectTimerKey(sessionId: string, userId: string): string {
+        return `${sessionId}:${userId}`;
+    }
+
+    private cancelPendingParticipantDisconnect(sessionId: string, userId: string): void {
+        const key = this.disconnectTimerKey(sessionId, userId);
+        const timer = this.pendingDisconnectTimers.get(key);
+        if (!timer) return;
+        clearTimeout(timer);
+        this.pendingDisconnectTimers.delete(key);
+    }
+
+    private scheduleParticipantDisconnected(sessionId: string, userId: string, username: string): void {
+        this.cancelPendingParticipantDisconnect(sessionId, userId);
+        const key = this.disconnectTimerKey(sessionId, userId);
+        const timer = setTimeout(() => {
+            this.pendingDisconnectTimers.delete(key);
+            this.server.to(sessionId).emit('session:participant-disconnected', { userId, username });
+            this.sessionService.disconnectParticipant(sessionId, userId).catch((err: any) => {
                 this.logger.error(`Error handling disconnect for session ${sessionId}: ${err.message}`, null, this.SERVICE_NAME);
             });
-        }
+        }, SessionGateway.DISCONNECT_NOTIFY_MS);
+        this.pendingDisconnectTimers.set(key, timer);
     }
 
     /** Extracts SessionWithParticipants from either a raw session or an IResponse wrapper. */
@@ -201,6 +225,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         try {
             let start: number = Date.now();
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.join(data.sessionId, data, client.user.keycloakId));
+            this.cancelPendingParticipantDisconnect(session.id, client.user.keycloakId);
 
             client.join(session.id);
             this.trackSessionRoom(client, session.id);
@@ -245,6 +270,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const leavingParticipant = preDetails.data.participants.find(
                 (p) => p.userId === client.user.keycloakId,
             );
+            if (leavingParticipant?.sessionId) {
+                this.cancelPendingParticipantDisconnect(leavingParticipant.sessionId, client.user.keycloakId);
+            }
             const leavingCharacterId: string | null = leavingParticipant?.characterId ?? null;
 
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.leave(data.sessionId, client.user.keycloakId));
