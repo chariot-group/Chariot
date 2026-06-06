@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/useToast";
 import { useSessionData } from "@/hooks/useSessionData";
 import type { SessionParticipant } from "@/services/SessionService";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
+import { useUser } from "@/hooks/useUser";
 import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useAppSelector } from "@/store/hooks";
 import { selectCampaigns } from "@/store/slices/campaignSlice";
@@ -37,6 +38,7 @@ export default function SessionPage() {
   const campaigns = useAppSelector(selectCampaigns);
   const campaign = campaigns.find((c) => c._id === idCampaign);
   const { token } = useKeycloak();
+  useUser({ autoFetch: true, forceRefresh: true });
   const currentUser = useAppSelector(selectUser);
   const toast = useToast();
 

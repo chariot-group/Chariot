@@ -24,6 +24,8 @@ import { useSessionValidation } from "@/hooks/useSessionValidation";
 import { useUser } from "@/hooks/useUser";
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import {
+  shouldGmShowReturnToBattle,
+  shouldGmShowReturnToSheet,
   shouldPlayerShowReturnToBattleOnSessionLobby,
   shouldPlayerShowReturnToSheetOnSessionLobby,
 } from "@/lib/sessionInAppNavigation";
@@ -176,8 +178,14 @@ export function ActionButton() {
         };
       }
 
-      // FR-021 — combat initialisé : retour fiche sur le tracker, retour combat ailleurs
-      if (battleStarted && isInitiativeTrackerPage) {
+      // FR-021 — combat initialisé ou démarré : retour fiche sur le tracker, retour combat ailleurs
+      if (
+        shouldGmShowReturnToSheet({
+          sessionStarted: Boolean(sessionStarted),
+          battleInitialized,
+          pathname: currentPage,
+        })
+      ) {
         return {
           label: t("returnToSheet"),
           state: "returnToSheet",
@@ -190,7 +198,13 @@ export function ActionButton() {
         };
       }
 
-      if (battleStarted && !isInitiativeTrackerPage) {
+      if (
+        shouldGmShowReturnToBattle({
+          sessionStarted: Boolean(sessionStarted),
+          battleInitialized,
+          pathname: currentPage,
+        })
+      ) {
         return {
           label: t("returnToBattle"),
           state: "returnToBattle",
@@ -281,14 +295,25 @@ export function ActionButton() {
       }
     }
 
+    if (isInSession) {
+      return {
+        label: t("returnToSession"),
+        state: "returnToSession",
+        action: () =>
+          navigateToSession(
+            currentParticipant?.status !== "gameMaster" ? "player" : undefined,
+          ),
+        disabled: false,
+        icon: <PlayCircle className="size-6" />,
+        backgroundColor: "bg-yellow",
+        textColor: "text-black",
+      };
+    }
+
     return {
       label: t("launchSession"),
       state: "launchSession",
       action: () => {
-        if (isInSession) {
-          window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
-          return;
-        }
         if (!selectedCampaignId) return;
         sessionService.createSession(selectedCampaignId);
       },
@@ -296,7 +321,7 @@ export function ActionButton() {
       icon: <PlayCircle className="size-6" />,
       backgroundColor: "bg-yellow",
       textColor: "text-black",
-      tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
+      tooltip: t("comingSoon"),
     };
   };
 

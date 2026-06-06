@@ -4,6 +4,7 @@ import { SessionStatus } from '@prisma/client';
 import { SessionGateway } from '@/resources/session/session.gateway';
 import { SessionService } from '@/resources/session/session.service';
 import { RedisService } from '@/redis/redis.service';
+import { AdventureUserService } from '@/common/adventure/adventure-user.service';
 
 // ─── Module mocks (hoisted before imports) ───────────────────────────────────
 
@@ -69,6 +70,7 @@ const mockSessionService = {
     expireSession: jest.fn(),
     disconnectParticipant: jest.fn(),
     findParticipants: jest.fn(),
+    findOne: jest.fn(),
 };
 
 const mockRedisService = {
@@ -78,6 +80,12 @@ const mockRedisService = {
     onEmptySessionExpired: jest.fn(),
     clearTokens: jest.fn(),
     getTokens: jest.fn(),
+    addToken: jest.fn(),
+    addTokens: jest.fn(),
+};
+
+const mockAdventureUserService = {
+    getBalance: jest.fn(),
 };
 
 const mockConfigService = {
@@ -121,6 +129,7 @@ describe('SessionGateway', () => {
                 SessionGateway,
                 { provide: SessionService, useValue: mockSessionService },
                 { provide: RedisService, useValue: mockRedisService },
+                { provide: AdventureUserService, useValue: mockAdventureUserService },
                 { provide: ConfigService, useValue: mockConfigService },
             ],
         }).compile();
@@ -606,6 +615,72 @@ describe('SessionGateway', () => {
                 'session:error',
                 expect.objectContaining({ message: expect.stringContaining('Launch failed') }),
             );
+        });
+    });
+
+    // ── handleAddToken / handleAddTokens ─────────────────────────────────────
+
+    describe('handleAddToken', () => {
+        const session = makeSession({
+            id: 'sess-uuid-1',
+            participants: [{ id: 'p1' }, { id: 'p2' }],
+        });
+
+        beforeEach(() => {
+            mockSessionService.findOne.mockResolvedValue(session);
+        });
+
+        it('should add a token when balance is sufficient', async () => {
+            mockRedisService.getTokens.mockResolvedValue({});
+            mockAdventureUserService.getBalance.mockResolvedValue(1);
+            mockRedisService.addToken.mockResolvedValue({ 'user-uuid-1': 1 });
+            const client = makeSocket();
+
+            await gateway.handleAddToken(client, { sessionId: 'sess-uuid-1' });
+
+            expect(mockRedisService.addToken).toHaveBeenCalledWith('sess-uuid-1', 'user-uuid-1', 2);
+            expect(mockRoomEmit).toHaveBeenCalledWith('session:token-updated', {
+                tokensByUser: { 'user-uuid-1': 1 },
+            });
+        });
+
+        it('should reject deposit when balance is insufficient', async () => {
+            mockRedisService.getTokens.mockResolvedValue({ 'user-uuid-1': 0 });
+            mockAdventureUserService.getBalance.mockResolvedValue(0);
+            const client = makeSocket();
+
+            await gateway.handleAddToken(client, { sessionId: 'sess-uuid-1' });
+
+            expect(mockRedisService.addToken).not.toHaveBeenCalled();
+            expect(client.emit).toHaveBeenCalledWith('session:error', {
+                code: 'INSUFFICIENT_TOKEN_BALANCE',
+                message: 'Insufficient token balance',
+            });
+        });
+    });
+
+    describe('handleAddTokens', () => {
+        const session = makeSession({
+            id: 'sess-uuid-1',
+            participants: [{ id: 'p1' }, { id: 'p2' }, { id: 'p3' }],
+        });
+
+        beforeEach(() => {
+            mockSessionService.findOne.mockResolvedValue(session);
+        });
+
+        it('should reject bulk deposit when balance is insufficient', async () => {
+            mockRedisService.getTokens.mockResolvedValue({ 'user-uuid-1': 1 });
+            mockAdventureUserService.getBalance.mockResolvedValue(1);
+            const client = makeSocket();
+
+            await gateway.handleAddTokens(client, { sessionId: 'sess-uuid-1', amount: 1 });
+
+            expect(mockRedisService.addTokens).not.toHaveBeenCalled();
+            expect(client.emit).toHaveBeenCalledWith('session:error', {
+                code: 'INSUFFICIENT_TOKEN_BALANCE',
+                message: 'Insufficient token balance',
+            });
         });
     });
 

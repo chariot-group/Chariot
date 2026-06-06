@@ -205,6 +205,21 @@ export class UserController {
     );
   }
 
+  @Get('internal/:userId/balance')
+  @Public()
+  @UseGuards(InternalGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Internal: get token balance for a user (service-to-service only)',
+  })
+  @ApiResponse({ status: 200, description: 'Balance retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden – invalid internal secret' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getBalanceInternal(@Param('userId') userId: string) {
+    const balance = await this.userService.getBalance(userId);
+    return { balance };
+  }
+
   @Post('internal/tokens')
   @Public()
   @UseGuards(InternalGuard)

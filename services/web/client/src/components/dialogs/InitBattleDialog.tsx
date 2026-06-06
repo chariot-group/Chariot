@@ -19,10 +19,16 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import {
   selectCurrentSession,
+  selectSessionParticipantDisplayNames,
   setInitiativeTrackerRows,
   setSessionInitBattleDraft,
   createInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
+import {
+  buildSessionParticipantsGroup,
+  type SessionParticipantsGroupCharacter,
+} from "@/lib/buildSessionParticipantsGroup";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2, Skull, Star, Swords, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -30,45 +36,18 @@ import { usePathname, useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { SessionParticipant } from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
-import type { Character, Player } from "@/types/character";
+import type { Character } from "@/types/character";
 import {
   trackerDeathSavesFailuresFromCharacter,
   trackerKindFromCharacter,
 } from "@/components/initiativeTracker/utils";
 
-type BattleGroupCharacter = {
-  _id: string;
-  firstname?: string;
-  lastname?: string;
-  surname?: string;
-  avatar?: string;
-  createdBy?: string;
-  stats?: {
-    currentHitPoints?: number;
-    maxHitPoints?: number;
-    tempHitPoints?: number;
-    armorClass?: number;
-    initiative?: number;
-  };
-  challenge?: {
-    challengeRating?: number | string;
-  };
-  profile?: {
-    type?: string;
-  };
-  progression?: {
-    level?: number;
-  };
-};
+type BattleGroupCharacter = SessionParticipantsGroupCharacter;
 
 type BattleGroup = Omit<Group, "characters"> & {
   characters: BattleGroupCharacter[];
 };
-
-const SESSION_PARTICIPANTS_GROUP_ID = "__session_participants__";
-const SESSION_PARTICIPANTS_GROUP_LABEL = "Participants session";
 
 const sanitizeGroupIds = (nextGroupIds: string[], allGroups: BattleGroup[], mandatoryIds: string[]): string[] => {
   const validGroupIds = new Set(
@@ -143,76 +122,6 @@ interface InitBattleDialogProps {
   children: React.ReactNode;
 }
 
-const buildSessionParticipantsGroup = async (
-  allGroups: BattleGroup[],
-  participants: SessionParticipant[],
-  campaignId: string,
-  sessionCode?: string | null,
-): Promise<BattleGroup> => {
-  const nonGameMasterParticipants = participants.filter((participant) => participant.status !== "gameMaster");
-
-  const characterById = new Map<string, BattleGroupCharacter>();
-  allGroups.forEach((group) => {
-    (group.characters ?? []).forEach((character) => {
-      characterById.set(character._id, character);
-    });
-  });
-
-  const missingCharacterIds = Array.from(
-    new Set(
-      nonGameMasterParticipants
-        .map((participant) => participant.characterId)
-        .filter((characterId): characterId is string => Boolean(characterId && !characterById.has(characterId))),
-    ),
-  );
-
-  const fetchedCharacters = await Promise.allSettled(
-    missingCharacterIds.map((characterId) => characterService.getCharacterById(characterId, { sessionCode })),
-  );
-
-  const fetchedCharacterById = new Map<string, BattleGroupCharacter>();
-  fetchedCharacters.forEach((result) => {
-    if (result.status !== "fulfilled") return;
-
-    const character = result.value;
-    fetchedCharacterById.set(character._id, {
-      _id: character._id,
-      firstname: character.firstname,
-      lastname: character.lastname,
-      surname: character.surname,
-      createdBy: character.createdBy,
-      progression: (character as Player).progression,
-    });
-  });
-
-  const uniqueCharacters = new Map<string, BattleGroupCharacter>();
-  nonGameMasterParticipants.forEach((participant) => {
-    const characterId = participant.characterId ?? `session-participant-${participant.id}`;
-    const existingCharacter = participant.characterId
-      ? (characterById.get(participant.characterId) ?? fetchedCharacterById.get(participant.characterId))
-      : undefined;
-    uniqueCharacters.set(
-      characterId,
-      existingCharacter ?? {
-        _id: characterId,
-        surname: "Participant",
-        createdBy: participant.userId,
-      },
-    );
-  });
-
-  const now = new Date().toISOString();
-
-  return {
-    _id: SESSION_PARTICIPANTS_GROUP_ID,
-    label: SESSION_PARTICIPANTS_GROUP_LABEL,
-    campaignId,
-    createdAt: now,
-    updatedAt: now,
-    characters: Array.from(uniqueCharacters.values()),
-  };
-};
-
 export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const t = useTranslations("initTracker");
   const tCommon = useTranslations("common");
@@ -221,6 +130,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const pathname = usePathname();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const session = useAppSelector(selectCurrentSession);
+  const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
 
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -272,6 +182,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           allGroups,
           session?.participants ?? [],
           selectedCampaignId,
+          participantDisplayNames,
           session?.code,
         );
 
@@ -314,7 +225,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initBattleDraft is only read once on open to restore draft state; including it would retrigger loadGroups on every user interaction
-  }, [open, selectedCampaignId, session?.code, session?.participants]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, participantDisplayNames]);
 
   const selectedGroups = React.useMemo(() => {
     const selectedIds = new Set(selectedGroupIds);

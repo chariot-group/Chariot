@@ -378,8 +378,11 @@ Each rule has a unique identifier and must be tested.
 - `keycloakId` must be a valid UUID v4 format
 - `keycloakId` must be unique across all users
 - `balance` must be a number
+- `balance` MUST NOT become negative after any debit operation
 - History entries must contain all three fields: date, campaignName, value
 - History is immutable once created (no updates or deletions of history entries)
+- Session lobby token deposits (`session:add-token`, `session:add-tokens`) MUST be rejected server-side when `alreadyDepositedInSession + requestedAmount > user.balance`
+- Session launch debits (`PUT /user/me/history`) MUST be rejected when `value > user.balance`
 
 **Prohibitions**:
 
@@ -387,6 +390,8 @@ Each rule has a unique identifier and must be tested.
 - Modifying `keycloakId` after user creation
 - Deleting history entries
 - Creating history entries without all required fields
+- Allowing a session token deposit or launch debit that would make `balance` negative
+- Relying on frontend-only balance checks for session token deposits
 
 **Tests**:
 
@@ -396,6 +401,8 @@ Each rule has a unique identifier and must be tested.
 - History entries can be added to existing users
 - Balance updates are properly tracked in history
 - Default balance is 0 for new users
+- `addHistory` rejects debits that would make balance negative
+- Session gateway rejects token deposits when balance is insufficient
 
 **References**:
 
@@ -1753,6 +1760,7 @@ Each initiative tracker row carries:
 - GM sidebar session players section (`Joueurs (session)`)
 - GM character sheet context when showing who plays a character (`playedBy`)
 - Session toasts that name a joining, leaving, or disconnected participant
+- Initiative tracker session-participant rows when no character sheet is available at battle setup or add-combatants time (fallback label before hydration)
 - Applies whenever `isInSession === true` and a roster entry references a `userId`
 
 **Label Resolution Priority**:
@@ -1769,7 +1777,7 @@ Each initiative tracker row carries:
 
 **Display Requirements**:
 
-- The same participant MUST use the same resolved label across lobby, sidebar, and toasts for the current session context.
+- The same participant MUST use the same resolved label across lobby, sidebar, initiative tracker fallbacks, and toasts for the current session context.
 - A resolved label MUST NOT be replaced by a Keycloak UUID if a better source becomes available later (WebSocket username or successful profile fetch).
 - While resolution is pending, UI surfaces MUST show `...`, not the raw `userId`.
 
@@ -1782,7 +1790,7 @@ Each initiative tracker row carries:
 
 **Tests**:
 
-- Nominal: user with `username` shows that username in lobby and GM sidebar
+- Nominal: user with `username` shows that username in lobby, GM sidebar, and initiative tracker when character sheet is unavailable
 - Edge: user without `username` but with `firstName` + `lastName` shows the full name
 - Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
 - Edge: initial API failure followed by WebSocket username still updates the displayed label
@@ -1798,6 +1806,7 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useSessionSocket.ts`
 - `services/web/client/src/components/SessionCharacterSyncClient.tsx`
 - `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
 - `services/web/client/src/components/character/CharacterDetailView.tsx`
 - `services/session/api/src/resources/session/session.gateway.ts`

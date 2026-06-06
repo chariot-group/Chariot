@@ -43,6 +43,7 @@ import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
 import { invalidateCache as invalidateGroupCache } from "@/store/slices/groupSlice";
 import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
 import { setContextMode } from "@/store/slices/environmentSlice";
+import { updateUser } from "@/store/slices/userSlice";
 import NavigationService from "@/services/NavigationService";
 
 interface UseSessionSocketOptions {
@@ -358,9 +359,10 @@ export function useSessionSocket({
             const myTokens = userId ? (tokensByUserRef.current[userId] ?? 0) : 0;
             if (userId && myTokens >= 1) {
                 try {
-                    await UserService.addHistory(campaignNameRef.current, myTokens);
+                    const updatedUser = await UserService.addHistory(campaignNameRef.current, myTokens);
+                    dispatch(updateUser({ balance: updatedUser.balance, history: updatedUser.history }));
                 } catch {
-                    // history update failure should not block navigation
+                    toastRef.current.error(tRef.current("toast.tokenDebitError"));
                 }
             }
 
@@ -482,7 +484,15 @@ export function useSessionSocket({
         const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
         if (totalTokens >= participantsRef.current.length) return;
         const myDeposited = tokensByUserRef.current[userId] ?? 0;
-        if (myDeposited >= (currentUser?.balance ?? 0)) return;
+        const balance = currentUser?.balance ?? 0;
+        if (myDeposited + 1 > balance) return;
+        socket.once("session:error", (error: { code?: string }) => {
+            if (error?.code === "INSUFFICIENT_TOKEN_BALANCE") {
+                toast.error(t("toast.insufficientTokenBalance"));
+                return;
+            }
+            toast.error(t("toast.addTokenError"));
+        });
         socket.emit("session:add-token", { sessionId: code });
     };
 
@@ -506,6 +516,13 @@ export function useSessionSocket({
         );
         const actualAmount = Math.min(amount, maxAdd);
         if (actualAmount <= 0) return;
+        socket.once("session:error", (error: { code?: string }) => {
+            if (error?.code === "INSUFFICIENT_TOKEN_BALANCE") {
+                toast.error(t("toast.insufficientTokenBalance"));
+                return;
+            }
+            toast.error(t("toast.addTokenError"));
+        });
         socket.emit("session:add-tokens", { sessionId: code, amount: actualAmount });
     };
 

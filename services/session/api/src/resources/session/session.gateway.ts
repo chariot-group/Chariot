@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { InternalServerErrorException, Logger, UnauthorizedException } from '@nestjs/common';
 import { SessionService } from '@/resources/session/session.service';
 import { RedisService } from '@/redis/redis.service';
+import { AdventureUserService } from '@/common/adventure/adventure-user.service';
 import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { SessionWithParticipants } from '@/resources/session/entities/session.model';
@@ -57,6 +58,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     constructor(
         private readonly sessionService: SessionService,
         private readonly redisService: RedisService,
+        private readonly adventureUserService: AdventureUserService,
         private readonly configService: ConfigService,
     ) {
         this.keycloakInternalUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL');
@@ -483,7 +485,13 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         try {
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
             const maxTokens = session.participants.length;
-            const updated = await this.redisService.addToken(data.sessionId, client.user.keycloakId, maxTokens);
+            const userId = client.user.keycloakId;
+            const balanceError = await this.getInsufficientBalanceError(data.sessionId, userId, 1);
+            if (balanceError) {
+                client.emit('session:error', balanceError);
+                return;
+            }
+            const updated = await this.redisService.addToken(data.sessionId, userId, maxTokens);
             if (updated === null) {
                 client.emit('session:error', { message: 'Token limit reached' });
                 return;
@@ -522,7 +530,18 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         try {
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
             const maxTokens = session.participants.length;
-            const result = await this.redisService.addTokens(data.sessionId, client.user.keycloakId, maxTokens, data.amount);
+            const userId = client.user.keycloakId;
+            const requestedAmount = Math.max(0, Math.floor(data.amount ?? 0));
+            if (requestedAmount <= 0) {
+                client.emit('session:error', { message: 'Invalid token amount' });
+                return;
+            }
+            const balanceError = await this.getInsufficientBalanceError(data.sessionId, userId, requestedAmount);
+            if (balanceError) {
+                client.emit('session:error', balanceError);
+                return;
+            }
+            const result = await this.redisService.addTokens(data.sessionId, userId, maxTokens, requestedAmount);
             if (result === null) {
                 client.emit('session:error', { message: 'Token limit reached' });
                 return;
@@ -551,6 +570,23 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             this.logger.error(`Failed to remove tokens: ${error.message}`, null, this.SERVICE_NAME);
             client.emit('session:error', { message: `Failed to remove tokens: ${error.message}` });
         }
+    }
+
+    private async getInsufficientBalanceError(
+        sessionId: string,
+        userId: string,
+        amount: number,
+    ): Promise<{ code: string; message: string } | null> {
+        const tokens = await this.redisService.getTokens(sessionId);
+        const currentDeposited = tokens[userId] ?? 0;
+        const balance = await this.adventureUserService.getBalance(userId);
+        if (currentDeposited + amount > balance) {
+            return {
+                code: 'INSUFFICIENT_TOKEN_BALANCE',
+                message: 'Insufficient token balance',
+            };
+        }
+        return null;
     }
 
     private async verifyToken(token: string): Promise<any> {

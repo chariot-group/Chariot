@@ -23,41 +23,27 @@ import {
   createInitiativeTrackerRow,
   selectCurrentSession,
   selectInitiativeTrackerRows,
+  selectSessionParticipantDisplayNames,
 } from "@/store/slices/sessionSlice";
+import {
+  buildSessionParticipantsGroup,
+  type SessionParticipantsGroupCharacter,
+} from "@/lib/buildSessionParticipantsGroup";
 import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { Character, Player } from "@/types/character";
-import type { SessionParticipant } from "@/services/SessionService";
+import type { Character } from "@/types/character";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import {
   trackerDeathSavesFailuresFromCharacter,
   trackerKindFromCharacter,
 } from "@/components/initiativeTracker/utils";
 
-type BattleGroupCharacter = {
-  _id: string;
-  firstname?: string;
-  lastname?: string;
-  surname?: string;
-  avatar?: string;
-  createdBy?: string;
-  stats?: {
-    currentHitPoints?: number;
-    maxHitPoints?: number;
-    tempHitPoints?: number;
-    armorClass?: number;
-  };
-  challenge?: { challengeRating?: number | string };
-  profile?: { type?: string };
-  progression?: { level?: number };
-};
+type BattleGroupCharacter = SessionParticipantsGroupCharacter;
 
 type BattleGroup = Omit<Group, "characters"> & {
   characters: BattleGroupCharacter[];
 };
-
-const SESSION_PARTICIPANTS_GROUP_LABEL = "Participants session";
 
 const parseChallengeRating = (value: unknown): number => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -80,68 +66,6 @@ const isNpcCharacter = (character: BattleGroupCharacter): boolean => {
   return cr > 0 || !character.createdBy || !!character.profile?.type;
 };
 
-const buildSessionParticipantsGroup = async (
-  allGroups: BattleGroup[],
-  participants: SessionParticipant[],
-  campaignId: string,
-  sessionCode?: string | null,
-): Promise<BattleGroup> => {
-  const nonGameMasterParticipants = participants.filter((p) => p.status !== "gameMaster");
-  const characterById = new Map<string, BattleGroupCharacter>();
-  allGroups.forEach((group) => {
-    (group.characters ?? []).forEach((character) => {
-      characterById.set(character._id, character);
-    });
-  });
-
-  const missingCharacterIds = Array.from(
-    new Set(
-      nonGameMasterParticipants
-        .map((p) => p.characterId)
-        .filter((id): id is string => Boolean(id && !characterById.has(id))),
-    ),
-  );
-
-  const fetched = await Promise.allSettled(
-    missingCharacterIds.map((id) => characterService.getCharacterById(id, { sessionCode })),
-  );
-  const fetchedById = new Map<string, BattleGroupCharacter>();
-  fetched.forEach((result) => {
-    if (result.status !== "fulfilled") return;
-    const c = result.value;
-    fetchedById.set(c._id, {
-      _id: c._id,
-      firstname: c.firstname,
-      lastname: c.lastname,
-      surname: c.surname,
-      createdBy: c.createdBy,
-      progression: (c as Player).progression,
-    });
-  });
-
-  const uniqueCharacters = new Map<string, BattleGroupCharacter>();
-  nonGameMasterParticipants.forEach((participant) => {
-    const characterId = participant.characterId ?? `session-participant-${participant.id}`;
-    const existing = participant.characterId
-      ? (characterById.get(participant.characterId) ?? fetchedById.get(participant.characterId))
-      : undefined;
-    uniqueCharacters.set(
-      characterId,
-      existing ?? { _id: characterId, surname: "Participant", createdBy: participant.userId },
-    );
-  });
-
-  const now = new Date().toISOString();
-  return {
-    _id: SESSION_PARTICIPANTS_GROUP_ID,
-    label: SESSION_PARTICIPANTS_GROUP_LABEL,
-    campaignId,
-    createdAt: now,
-    updatedAt: now,
-    characters: Array.from(uniqueCharacters.values()),
-  };
-};
-
 interface AddCombatantsDialogProps {
   children: React.ReactNode;
 }
@@ -153,6 +77,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const dispatch = useAppDispatch();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const session = useAppSelector(selectCurrentSession);
+  const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
 
   const inCombatCharacterIds = React.useMemo(
@@ -227,6 +152,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
           allGroups,
           session?.participants ?? [],
           selectedCampaignId,
+          participantDisplayNames,
           session?.code,
         );
         setGroups([...allGroups, sessionGroup]);
@@ -239,7 +165,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     return () => {
       mounted = false;
     };
-  }, [open, selectedCampaignId, session?.code, session?.participants]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, participantDisplayNames]);
 
   React.useEffect(() => {
     if (!open) {
