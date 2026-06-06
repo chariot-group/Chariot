@@ -1804,7 +1804,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-023: In-Session Logo and Session Lobby Sidebar Navigation
+## FR-025: In-Session Logo and Session Lobby Sidebar Navigation
 
 **Rule**: While a user is connected to an active session, clicking the application logo in the header and the sidebar action button on the session lobby page must provide contextual navigation back to character sheets instead of the generic welcome redirect or an irrelevant session action.
 
@@ -1855,3 +1855,78 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/layout/SessionTimer.tsx`
 - `services/web/client/src/services/NavigationService.ts`
 - `services/web/client/src/lib/sessionInAppNavigation.ts`
+
+---
+
+## FR-026: Session WebSocket Connection Lifecycle and Reconnection Resilience
+
+**Rule**: The application MUST maintain exactly one active Socket.IO connection per browser tab per active session OTP code. Transient disconnections (JWT refresh, client navigation, React lifecycle) MUST NOT cause spurious participant-disconnected notifications, duplicate connections, or loss of roster state.
+
+**Scope**:
+
+- Applies whenever `isInSession === true` or a session-aware client component holds an active session OTP code.
+- Complements FR-021 (combat sync), FR-022 (character sheet sync), and FR-024 (display names) without overriding their domain-specific rules.
+- Covers client connection pooling, JWT refresh handling, gateway disconnect grace period, and HTTP/WebSocket roster convergence.
+
+**Client Connection Pool**:
+
+- Exactly one pooled Socket.IO connection per session OTP code (`sessionSocketPool`).
+- Multiple subscribers (layout `SessionCharacterSyncClient`, session lobby `useSessionSocket`, battle sync hooks) MUST share the connection via acquire/release refCount.
+- JWT refresh MUST update `socket.auth.token` without disconnecting or recreating the socket.
+- The pool connection key MUST be the session OTP code only — the JWT MUST NOT be part of the key.
+- Changing the session OTP code MUST disconnect the previous socket and create a new connection.
+- Socket effect dependencies MUST NOT include the JWT token when only auth sync is required; token changes update auth in a separate effect.
+
+**Gateway Disconnect Grace Period**:
+
+- On Socket.IO disconnect, the gateway MUST wait a grace period (currently 3 seconds) before emitting `session:participant-disconnected` and persisting disconnected status.
+- A successful `session:join` from the same user within the grace period MUST cancel the pending disconnect notification.
+- An explicit `session:leave` MUST cancel any pending disconnect notification for that user.
+- The gateway MUST track session room membership independently of `client.rooms` at disconnect time (`sessionRoomIds`), because Socket.IO may already have cleared rooms when `handleDisconnect` runs.
+
+**Roster and State Convergence**:
+
+- `session:participant-joined` broadcasts MUST use the persisted roster `characterId`, not the client join payload alone (reconnect may send `characterId: null` before Redux hydration).
+- Client roster state MUST merge HTTP and WebSocket updates without overwriting newer WebSocket data (`mergeParticipantsPreserveCharacterIds`).
+- After participant join or character-change events, clients SHOULD trigger a debounced HTTP roster resync as a convergence fallback.
+- Session end toasts MUST be deduplicated per session code and reason when multiple socket subscribers receive the same event (`shouldShowSessionEndNotice`).
+
+**WebSocket Conventions** (mandatory for all session event handlers):
+
+- In all WebSocket payloads, `sessionId` means the session OTP code (same value used for `session:join`), not the internal database UUID.
+- Socket.IO namespace: `/session`, path: `/ws`.
+- Gateway broadcasts to other participants use `client.to()` — emitters do not receive their own events; local listeners are required (see `sessionCharacterSyncBridge`, FR-022).
+- After `session:leave`, the leaving socket is no longer in the room; server-side notifications to remaining participants MUST use `server.to(roomId)`, not `client.to()`.
+
+**Prohibitions**:
+
+- Creating a new Socket.IO connection on JWT token change.
+- Creating parallel connections from layout and session page for the same OTP code.
+- Including the JWT token in the socket pool connection key.
+- Immediately notifying `session:participant-disconnected` on every Socket.IO disconnect without a grace period.
+- Broadcasting join events with `characterId: null` when the persisted roster already has a character.
+- Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
+- Registering duplicate session-end handlers that each show an independent toast for the same event.
+
+**Tests**:
+
+- Pool nominal: same OTP code reuses the same socket across acquire calls.
+- Pool edge: JWT refresh updates `socket.auth` without disconnect.
+- Pool edge: OTP code change disconnects the previous socket and creates a new one.
+- Gateway edge: disconnect within grace period followed by rejoin cancels `session:participant-disconnected`.
+- Gateway edge: disconnect beyond grace period emits `session:participant-disconnected`.
+- Join after reconnect preserves roster `characterId` in the `session:participant-joined` broadcast.
+- Session end toast is shown once despite multiple subscribers.
+
+**References**:
+
+- `services/web/client/src/lib/sessionSocketPool.ts`
+- `services/web/client/src/lib/__tests__/sessionSocketPool.test.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/lib/sessionCharacterSyncBridge.ts`
+- `services/web/client/src/lib/sessionParticipantMerge.ts`
+- `services/web/client/src/hooks/useSessionBattleSync.ts`
+- `services/web/client/src/lib/sessionBattleSyncBridge.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`
+- `services/session/api/src/resources/session/session.gateway.spec.ts`
