@@ -16,6 +16,8 @@ export interface PricingContext {
   originalAmount: number;
   discountedAmount: number;
   discountAmount: number;
+  giftAmount: number;
+  chargeableAmount: number;
   currency: string;
 }
 
@@ -41,6 +43,9 @@ export interface CheckoutFormProps {
   quantitySyncPending: boolean;
   onQuantityChange: (quantity: number) => void;
   referralDiscount: ReferralDiscount | null;
+  isFreeOrder: boolean;
+  piError: string | null;
+  onConfirmFreeOrder: () => Promise<void>;
 }
 
 export function CheckoutForm({
@@ -54,6 +59,9 @@ export function CheckoutForm({
   quantitySyncPending,
   onQuantityChange,
   referralDiscount,
+  isFreeOrder,
+  piError,
+  onConfirmFreeOrder,
 }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -64,7 +72,19 @@ export function CheckoutForm({
   const [payLoading, setPayLoading] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
 
-  const { originalAmount, discountedAmount, discountAmount, currency } = pricing;
+  const { originalAmount, discountedAmount, discountAmount, giftAmount, chargeableAmount, currency } = pricing;
+
+  async function handleConfirmFreeOrder() {
+    setPayLoading(true);
+    setPayError(null);
+    try {
+      await onConfirmFreeOrder();
+      router.push(`/${locale}/checkout/return?redirect_status=succeeded`);
+    } catch {
+      setPayError(t("payError"));
+      setPayLoading(false);
+    }
+  }
 
   async function handleConfirmPayment() {
     if (!stripe || !elements) return;
@@ -89,19 +109,21 @@ export function CheckoutForm({
   return (
     <div className="flex flex-row gap-6 items-start w-full justify-center h-full">
       {/* Payment details */}
-      <div className="w-[50%] overflow-y-auto self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-        <Card className="gap-3 p-5">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            {t("paymentDetails")}
-          </h2>
-          <PaymentElement
-            options={{
-              paymentMethodOrder: ["card"],
-              layout: { type: "accordion", defaultCollapsed: false },
-            }}
-          />
-        </Card>
-      </div>
+      {!isFreeOrder && (
+        <div className="w-[50%] overflow-y-auto self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+          <Card className="gap-3 p-5">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              {t("paymentDetails")}
+            </h2>
+            <PaymentElement
+              options={{
+                paymentMethodOrder: ["card"],
+                layout: { type: "accordion", defaultCollapsed: false },
+              }}
+            />
+          </Card>
+        </div>
+      )}
 
       <div className="flex flex-col gap-6">
         {/* Order summary */}
@@ -184,7 +206,7 @@ export function CheckoutForm({
               className={`flex justify-between text-sm text-muted-foreground ${quantity <= 1 ? "invisible" : ""}`}
               aria-hidden={quantity <= 1}>
               <span>{t("unitPrice")}</span>
-              <span>{formatPrice(discountedAmount, currency)}</span>
+              <span>{formatPrice(chargeableAmount, currency)}</span>
             </div>
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>
@@ -203,10 +225,16 @@ export function CheckoutForm({
                 <span>-{formatPrice(discountAmount * quantity, currency)}</span>
               </div>
             )}
+            {giftAmount > 0 && (
+              <div className="flex justify-between text-sm text-green-500">
+                <span>{t("giftDiscount")}</span>
+                <span>-{formatPrice(giftAmount * quantity, currency)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-base font-bold text-card-foreground pt-1 border-t border-border/40">
               <span>{t("total")}</span>
-              <span className={discountAmount > 0 ? "text-green-400" : ""}>
-                {formatPrice(discountedAmount * quantity, currency)}
+              <span className={discountAmount > 0 || giftAmount > 0 ? "text-green-400" : ""}>
+                {formatPrice(chargeableAmount * quantity, currency)}
               </span>
             </div>
           </div>
@@ -293,18 +321,24 @@ export function CheckoutForm({
         </Card>
 
         {/* Pay button */}
-        {payError && (
+        {(payError || piError) && (
           <p
             className="text-sm text-destructive text-center"
             role="alert">
-            {payError}
+            {payError ?? piError}
           </p>
         )}
         <Button
           size="lg"
           className="w-full rounded-2xl font-semibold text-base h-14"
-          onClick={handleConfirmPayment}
-          disabled={payLoading || piRefreshing || quantitySyncPending || !stripe || !elements}
+          onClick={isFreeOrder ? handleConfirmFreeOrder : handleConfirmPayment}
+          disabled={
+            payLoading ||
+            piRefreshing ||
+            quantitySyncPending ||
+            !!piError ||
+            (!isFreeOrder && (!stripe || !elements))
+          }
           aria-busy={payLoading}>
           {payLoading ? (
             <>
@@ -314,8 +348,10 @@ export function CheckoutForm({
               />
               {t("preparing")}
             </>
+          ) : isFreeOrder ? (
+            t("freeOrderButton")
           ) : (
-            t("payButton", { amount: formatPrice(discountedAmount * quantity, currency) })
+            t("payButton", { amount: formatPrice(chargeableAmount * quantity, currency) })
           )}
         </Button>
 

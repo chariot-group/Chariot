@@ -34,6 +34,17 @@ export interface CheckoutSessionStatus {
     paymentStatus: string;
 }
 
+export interface PaymentIntentResult {
+    isFreeOrder: boolean;
+    clientSecret?: string;
+    paymentIntentId?: string;
+    giftAmountPerUnit?: number;
+}
+
+export interface FreeOrderResult {
+    orderId: string;
+}
+
 class PaymentService {
     private readonly STRIPE_PATH = '/stripe';
 
@@ -64,8 +75,8 @@ class PaymentService {
         promoCode?: string,
         affiliationCode?: string,
         quantity?: number,
-    ): Promise<{ clientSecret: string; paymentIntentId: string }> {
-        const response = await createPaymentApiClient().post<IResponse<{ clientSecret: string; paymentIntentId: string }>>(
+    ): Promise<PaymentIntentResult> {
+        const response = await createPaymentApiClient().post<IResponse<PaymentIntentResult>>(
             `${this.STRIPE_PATH}/payment-intent`,
             {
                 packId,
@@ -83,8 +94,8 @@ class PaymentService {
         quantity?: number,
         promoCode?: string,
         affiliationCode?: string,
-    ): Promise<void> {
-        await createPaymentApiClient().patch(
+    ): Promise<PaymentIntentResult> {
+        const response = await createPaymentApiClient().patch<IResponse<PaymentIntentResult>>(
             `${this.STRIPE_PATH}/payment-intent/${encodeURIComponent(piId)}`,
             {
                 ...(quantity && quantity > 1 && { quantity }),
@@ -92,6 +103,27 @@ class PaymentService {
                 ...(affiliationCode && { affiliationCode }),
             },
         );
+        return response.data.data;
+    }
+
+    async fulfillFreeOrder(
+        packId: string,
+        displayName: string,
+        quantity?: number,
+        promoCode?: string,
+        affiliationCode?: string,
+    ): Promise<FreeOrderResult> {
+        const response = await createPaymentApiClient().post<IResponse<FreeOrderResult>>(
+            `${this.STRIPE_PATH}/free-order`,
+            {
+                packId,
+                displayName,
+                ...(quantity && quantity > 1 && { quantity }),
+                ...(promoCode && { promoCode }),
+                ...(affiliationCode && { affiliationCode }),
+            },
+        );
+        return response.data.data;
     }
 }
 

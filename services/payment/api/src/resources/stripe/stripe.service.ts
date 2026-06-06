@@ -20,10 +20,16 @@ import { EmbeddedCheckoutDto } from '@/resources/stripe/dto/embedded-checkout.dt
 import {
     CheckoutSessionStatus,
     EmbeddedCheckoutResult,
+    FreeOrderResult,
     PaymentIntentResult,
     ResolvedCode,
     StripeProductWithPrices,
 } from '@/resources/stripe/types/stripe.type';
+import {
+    isStripeFreeOrder,
+    resolveChargeableAmount,
+} from '@/resources/stripe/stripe-charge.utils';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class StripeService {
@@ -55,7 +61,8 @@ export class StripeService {
             const {
                 product,
                 originalUnitAmount,
-                discountedUnitAmount,
+                chargeableUnitAmount,
+                giftAmountPerUnit,
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
@@ -63,6 +70,12 @@ export class StripeService {
                 referralDiscountType,
                 referralDiscountPercent,
             } = await this.computeDiscount(dto, userId);
+
+            if (isStripeFreeOrder(chargeableUnitAmount)) {
+                throw new BadRequestException(
+                    'Cette commande ne peut pas être payée via Stripe Checkout. Utilisez le flux de commande gratuite.',
+                );
+            }
 
             const session = await this.stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
@@ -74,7 +87,7 @@ export class StripeService {
                             product_data: {
                                 name: `${displayName} (${product.metadata?.token_number || '0'} chars)`,
                             },
-                            unit_amount: discountedUnitAmount,
+                            unit_amount: chargeableUnitAmount,
                         },
                         quantity: 1,
                     },
@@ -87,7 +100,7 @@ export class StripeService {
                     packId: dto.packId,
                     tokenAmount: product.metadata?.token_number || '0',
                     originalUnitAmount: String(originalUnitAmount),
-                    discountAmountPerUnit: String(discountAmountPerUnit),
+                    discountAmountPerUnit: String(discountAmountPerUnit + giftAmountPerUnit),
                     ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
                     ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
                     ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
@@ -111,8 +124,11 @@ export class StripeService {
 
     private async computeDiscount(dto: CheckoutDto, userId: string): Promise<{
         product: StripeProductWithPrices;
+        currency: string;
         originalUnitAmount: number;
         discountedUnitAmount: number;
+        chargeableUnitAmount: number;
+        giftAmountPerUnit: number;
         discountAmountPerUnit: number;
         promoCodeId?: string;
         affiliationId?: string;
@@ -191,10 +207,20 @@ export class StripeService {
             }
         }
 
+        const currency = product.prices[0].currency;
+        const discountedUnitAmount = Math.max(0, originalUnitAmount - discountAmountPerUnit);
+        const { chargeableAmount, giftAmount } = resolveChargeableAmount(
+            discountedUnitAmount,
+            currency,
+        );
+
         return {
             product,
+            currency,
             originalUnitAmount,
-            discountedUnitAmount: Math.max(0, originalUnitAmount - discountAmountPerUnit),
+            discountedUnitAmount,
+            chargeableUnitAmount: chargeableAmount,
+            giftAmountPerUnit: giftAmount,
             discountAmountPerUnit,
             promoCodeId,
             affiliationId,
@@ -219,7 +245,8 @@ export class StripeService {
             const {
                 product,
                 originalUnitAmount,
-                discountedUnitAmount,
+                chargeableUnitAmount,
+                giftAmountPerUnit,
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
@@ -227,6 +254,12 @@ export class StripeService {
                 referralDiscountType,
                 referralDiscountPercent,
             } = await this.computeDiscount(dto, userId);
+
+            if (isStripeFreeOrder(chargeableUnitAmount)) {
+                throw new BadRequestException(
+                    'Cette commande ne peut pas être payée via Stripe Checkout. Utilisez le flux de commande gratuite.',
+                );
+            }
 
             const returnUrl = `${process.env.FRONTEND_URL}/${locale}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
 
@@ -244,7 +277,7 @@ export class StripeService {
                             product_data: {
                                 name: `${displayName} (${product.metadata?.token_number || '0'} chars)`,
                             },
-                            unit_amount: discountedUnitAmount,
+                            unit_amount: chargeableUnitAmount,
                         },
                         quantity: 1,
                     },
@@ -256,7 +289,7 @@ export class StripeService {
                     packId,
                     tokenAmount: product.metadata?.token_number || '0',
                     originalUnitAmount: String(originalUnitAmount),
-                    discountAmountPerUnit: String(discountAmountPerUnit),
+                    discountAmountPerUnit: String(discountAmountPerUnit + giftAmountPerUnit),
                     ...(promoCodeId && { promoCode, promoCodeId }),
                     ...(affiliationId && { affiliationCode, affiliationId }),
                     ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
@@ -456,53 +489,11 @@ export class StripeService {
         userId: string,
     ): Promise<IResponse<PaymentIntentResult>> {
         try {
-            const { packId, displayName } = dto;
-            const quantity = Math.max(1, dto.quantity ?? 1);
             const start = Date.now();
-
-            const {
-                product,
-                originalUnitAmount,
-                discountedUnitAmount,
-                discountAmountPerUnit,
-                promoCodeId,
-                affiliationId,
-                referralId,
-                referralDiscountType,
-                referralDiscountPercent,
-            } = await this.computeDiscount(dto, userId);
-
-            const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
-
-            const paymentIntent = await this.stripe.paymentIntents.create({
-                amount: discountedUnitAmount * quantity,
-                currency: product.prices[0].currency,
-                automatic_payment_methods: { enabled: true },
-                description: `${displayName} (${product.metadata?.token_number || '0'} chars) x${quantity}`,
-                metadata: {
-                    source: 'payment_element',
-                    userId,
-                    packId,
-                    displayName,
-                    tokenAmount: String(tokenAmountPerPack * quantity),
-                    originalUnitAmount: String(originalUnitAmount * quantity),
-                    discountAmountPerUnit: String(discountAmountPerUnit * quantity),
-                    ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
-                    ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
-                    ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
-                },
-            });
-
-            if (!paymentIntent.client_secret) {
-                throw new InternalServerErrorException('PaymentIntent client_secret is missing');
-            }
-
+            const result = await this.buildPaymentIntentResult(dto, userId);
             const message = `PaymentIntent created in ${Date.now() - start} ms`;
             this.logger.verbose(message, this.SERVICE_NAME);
-            return {
-                message,
-                data: { clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id },
-            };
+            return { message, data: result };
         } catch (error) {
             const errorMessage = `Error creating PaymentIntent: ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
@@ -516,7 +507,7 @@ export class StripeService {
         piId: string,
         dto: UpdatePaymentIntentDto,
         userId: string,
-    ): Promise<IResponse<void>> {
+    ): Promise<IResponse<PaymentIntentResult>> {
         try {
             const start = Date.now();
 
@@ -541,10 +532,18 @@ export class StripeService {
                 quantity: dto.quantity,
             };
 
+            if (existingPI.status === 'canceled') {
+                const result = await this.buildPaymentIntentResult(checkoutDto, userId);
+                const message = `PaymentIntent recreated in ${Date.now() - start} ms`;
+                this.logger.verbose(message, this.SERVICE_NAME);
+                return { message, data: result };
+            }
+
             const {
                 product,
                 originalUnitAmount,
-                discountedUnitAmount,
+                chargeableUnitAmount,
+                giftAmountPerUnit,
                 discountAmountPerUnit,
                 promoCodeId,
                 affiliationId,
@@ -555,15 +554,32 @@ export class StripeService {
 
             const quantity = Math.max(1, dto.quantity ?? 1);
             const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
+            const totalDiscountPerUnit = discountAmountPerUnit + giftAmountPerUnit;
+
+            if (isStripeFreeOrder(chargeableUnitAmount)) {
+                if (existingPI.status !== 'canceled') {
+                    await this.stripe.paymentIntents.cancel(piId);
+                }
+
+                const message = `PaymentIntent ${piId} cancelled for free order in ${Date.now() - start} ms`;
+                this.logger.verbose(message, this.SERVICE_NAME);
+                return {
+                    message,
+                    data: {
+                        isFreeOrder: true,
+                        giftAmountPerUnit,
+                    },
+                };
+            }
 
             await this.stripe.paymentIntents.update(piId, {
-                amount: discountedUnitAmount * quantity,
+                amount: chargeableUnitAmount * quantity,
                 description: `${displayName} (${product.metadata?.token_number || '0'} chars) x${quantity}`,
                 metadata: {
                     ...existingPI.metadata,
                     tokenAmount: String(tokenAmountPerPack * quantity),
                     originalUnitAmount: String(originalUnitAmount * quantity),
-                    discountAmountPerUnit: String(discountAmountPerUnit * quantity),
+                    discountAmountPerUnit: String(totalDiscountPerUnit * quantity),
                     promoCode: promoCodeId ? (dto.promoCode ?? '') : '',
                     promoCodeId: promoCodeId ?? '',
                     affiliationCode: affiliationId ? (dto.affiliationCode ?? '') : '',
@@ -574,9 +590,21 @@ export class StripeService {
                 },
             });
 
+            if (!existingPI.client_secret) {
+                throw new InternalServerErrorException('PaymentIntent client_secret is missing');
+            }
+
             const message = `PaymentIntent ${piId} updated in ${Date.now() - start} ms`;
             this.logger.verbose(message, this.SERVICE_NAME);
-            return { message, data: undefined };
+            return {
+                message,
+                data: {
+                    isFreeOrder: false,
+                    clientSecret: existingPI.client_secret,
+                    paymentIntentId: piId,
+                    giftAmountPerUnit: 0,
+                },
+            };
         } catch (error) {
             const errorMessage = `Error updating PaymentIntent: ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
@@ -584,6 +612,144 @@ export class StripeService {
                 ? error
                 : new InternalServerErrorException(errorMessage);
         }
+    }
+
+    async fulfillFreeOrder(
+        dto: CheckoutDto,
+        userId: string,
+    ): Promise<IResponse<FreeOrderResult>> {
+        try {
+            const start = Date.now();
+            const quantity = Math.max(1, dto.quantity ?? 1);
+
+            const {
+                product,
+                currency,
+                originalUnitAmount,
+                chargeableUnitAmount,
+                giftAmountPerUnit,
+                discountAmountPerUnit,
+                promoCodeId,
+                affiliationId,
+                referralId,
+                referralDiscountType,
+                referralDiscountPercent,
+            } = await this.computeDiscount(dto, userId);
+
+            if (!isStripeFreeOrder(chargeableUnitAmount)) {
+                throw new BadRequestException(
+                    'Cette commande nécessite un paiement par carte et ne peut pas être honorée gratuitement',
+                );
+            }
+
+            const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
+            const totalTokens = tokenAmountPerPack * quantity;
+            const originalTotal = originalUnitAmount * quantity;
+            const totalDiscountAmount = (discountAmountPerUnit + giftAmountPerUnit) * quantity;
+            const orderId = `free_${randomUUID()}`;
+
+            await this.paymentService.createCompleted({
+                userId,
+                amount: originalTotal,
+                currency,
+                stripeSessionId: orderId,
+                tokenCount: totalTokens,
+                discountAmount: totalDiscountAmount,
+                ...(promoCodeId && { promoCodeId }),
+                ...(affiliationId && { affiliationId }),
+            });
+
+            if (referralId && referralDiscountType && (referralDiscountType === 'referee' || referralDiscountType === 'referrer')) {
+                await this.referralService.markReferralDiscountUsed(
+                    userId,
+                    referralId,
+                    referralDiscountType,
+                    orderId,
+                    originalTotal,
+                    totalDiscountAmount,
+                    parseInt(String(referralDiscountPercent ?? '0'), 10),
+                );
+            }
+
+            await this.referralService.validateRefereeFirstPurchase(userId);
+            await this.creditTokensToUser(userId, totalTokens, orderId);
+
+            this.stripePaymentsCounter.inc({ status: 'success' });
+
+            const message = `Free order fulfilled in ${Date.now() - start} ms`;
+            this.logger.verbose(
+                `Free order fulfilled: ${totalTokens} tokens for user ${userId}`,
+                this.SERVICE_NAME,
+            );
+            return { message, data: { orderId } };
+        } catch (error) {
+            this.stripePaymentsCounter.inc({ status: 'failed' });
+            if (error instanceof BadRequestException) throw error;
+            const errorMessage = `Error fulfilling free order: ${error.message}`;
+            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(errorMessage);
+        }
+    }
+
+    private async buildPaymentIntentResult(
+        dto: CheckoutDto,
+        userId: string,
+    ): Promise<PaymentIntentResult> {
+        const { packId, displayName } = dto;
+        const quantity = Math.max(1, dto.quantity ?? 1);
+
+        const {
+            product,
+            originalUnitAmount,
+            chargeableUnitAmount,
+            giftAmountPerUnit,
+            discountAmountPerUnit,
+            promoCodeId,
+            affiliationId,
+            referralId,
+            referralDiscountType,
+            referralDiscountPercent,
+        } = await this.computeDiscount(dto, userId);
+
+        if (isStripeFreeOrder(chargeableUnitAmount)) {
+            return {
+                isFreeOrder: true,
+                giftAmountPerUnit,
+            };
+        }
+
+        const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
+        const totalDiscountPerUnit = discountAmountPerUnit + giftAmountPerUnit;
+
+        const paymentIntent = await this.stripe.paymentIntents.create({
+            amount: chargeableUnitAmount * quantity,
+            currency: product.prices[0].currency,
+            automatic_payment_methods: { enabled: true },
+            description: `${displayName} (${product.metadata?.token_number || '0'} chars) x${quantity}`,
+            metadata: {
+                source: 'payment_element',
+                userId,
+                packId,
+                displayName,
+                tokenAmount: String(tokenAmountPerPack * quantity),
+                originalUnitAmount: String(originalUnitAmount * quantity),
+                discountAmountPerUnit: String(totalDiscountPerUnit * quantity),
+                ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
+                ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
+                ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
+            },
+        });
+
+        if (!paymentIntent.client_secret) {
+            throw new InternalServerErrorException('PaymentIntent client_secret is missing');
+        }
+
+        return {
+            isFreeOrder: false,
+            clientSecret: paymentIntent.client_secret,
+            paymentIntentId: paymentIntent.id,
+            giftAmountPerUnit: 0,
+        };
     }
 
     private async fulfillPaymentIntentOrder(paymentIntent: Stripe.PaymentIntent): Promise<void> {

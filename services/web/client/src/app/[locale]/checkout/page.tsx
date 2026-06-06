@@ -27,6 +27,8 @@ function CheckoutContent() {
     clientSecret,
     piRefreshing,
     piError,
+    isFreeOrder,
+    onConfirmFreeOrder,
     pricing,
     tokenCount,
     quantity,
@@ -95,11 +97,29 @@ function CheckoutContent() {
               </p>
             )}
 
-            {!clientSecret ? (
+            {!clientSecret && !isFreeOrder ? (
               <div className="flex justify-center py-10">
                 <Loader2
                   className="h-6 w-6 animate-spin text-primary"
                   aria-label={t("loading")}
+                />
+              </div>
+            ) : isFreeOrder ? (
+              <div className="flex-1 min-h-0 flex justify-center">
+                <CheckoutForm
+                  product={product}
+                  tokenCount={tokenCount}
+                  pricing={pricing}
+                  promoCode={promoCode}
+                  piRefreshing={piRefreshing}
+                  locale={locale}
+                  quantity={quantity}
+                  quantitySyncPending={quantitySyncPending}
+                  onQuantityChange={onQuantityChange}
+                  referralDiscount={referralDiscount}
+                  isFreeOrder
+                  piError={piError}
+                  onConfirmFreeOrder={onConfirmFreeOrder}
                 />
               </div>
             ) : (
@@ -108,7 +128,7 @@ function CheckoutContent() {
                   key={clientSecret}
                   stripe={stripePromise}
                   options={{
-                    clientSecret,
+                    clientSecret: clientSecret!,
                     appearance: { theme: "night" },
                     locale: locale as import("@stripe/stripe-js").StripeElementLocale,
                   }}>
@@ -123,6 +143,9 @@ function CheckoutContent() {
                     quantitySyncPending={quantitySyncPending}
                     onQuantityChange={onQuantityChange}
                     referralDiscount={referralDiscount}
+                    isFreeOrder={false}
+                    piError={piError}
+                    onConfirmFreeOrder={onConfirmFreeOrder}
                   />
                 </Elements>
               </div>

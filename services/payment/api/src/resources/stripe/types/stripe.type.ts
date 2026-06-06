@@ -20,6 +20,12 @@ export interface EmbeddedCheckoutResult {
 }
 
 export interface PaymentIntentResult {
-    clientSecret: string;
-    paymentIntentId: string;
+    isFreeOrder: boolean;
+    clientSecret?: string;
+    paymentIntentId?: string;
+    giftAmountPerUnit?: number;
+}
+
+export interface FreeOrderResult {
+    orderId: string;
 }

@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import paymentService, { ResolvedCode, StripeProduct } from "@/services/PaymentService";
-import { computeDiscountedAmount } from "@/lib/checkout-utils";
+import paymentService, { PaymentIntentResult, ResolvedCode, StripeProduct } from "@/services/PaymentService";
+import {
+    computeDiscountedAmount,
+    computeGiftAmount,
+    computeReferralDiscountedAmount,
+} from "@/lib/checkout-utils";
 import type { PromoCodeState } from "@/components/checkout/CheckoutForm";
 import referralService from "@/services/ReferralService";
 
@@ -22,11 +26,15 @@ interface UseCheckoutReturn {
     clientSecret: string | null;
     piRefreshing: boolean;
     piError: string | null;
+    isFreeOrder: boolean;
+    onConfirmFreeOrder: () => Promise<void>;
     // Pricing
     pricing: {
         originalAmount: number;
         discountedAmount: number;
         discountAmount: number;
+        giftAmount: number;
+        chargeableAmount: number;
         currency: string;
     };
     tokenCount: number | null;
@@ -78,6 +86,17 @@ export function useCheckout(): UseCheckoutReturn {
     const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
     const [piRefreshing, setPiRefreshing] = useState(false);
     const [piError, setPiError] = useState<string | null>(null);
+    const [isFreeOrder, setIsFreeOrder] = useState(false);
+
+    const applyPaymentIntentResult = useCallback((result: PaymentIntentResult) => {
+        setIsFreeOrder(result.isFreeOrder);
+        if (result.isFreeOrder) {
+            setClientSecret(null);
+            return;
+        }
+        if (result.clientSecret) setClientSecret(result.clientSecret);
+        if (result.paymentIntentId) setPaymentIntentId(result.paymentIntentId);
+    }, []);
 
     // ── Load product ────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -117,15 +136,14 @@ export function useCheckout(): UseCheckoutReturn {
                     packId,
                     displayName || product.name,
                 );
-                setClientSecret(result.clientSecret);
-                setPaymentIntentId(result.paymentIntentId);
+                applyPaymentIntentResult(result);
             } catch {
                 setPiError(t("payError"));
             } finally {
                 setPiRefreshing(false);
             }
         },
-        [packId, displayName, product, t],
+        [packId, displayName, product, t, applyPaymentIntentResult],
     );
 
     // ── Update existing PaymentIntent amount (quantity / promo changes) ────────
@@ -135,24 +153,47 @@ export function useCheckout(): UseCheckoutReturn {
             setPiRefreshing(true);
             setPiError(null);
             try {
-                await paymentService.updatePaymentIntent(
+                const result = await paymentService.updatePaymentIntent(
                     paymentIntentId,
                     qty,
                     promoCode,
                     affiliationCode,
                 );
+                applyPaymentIntentResult(result);
             } catch {
                 setPiError(t("payError"));
             } finally {
                 setPiRefreshing(false);
             }
         },
-        [paymentIntentId, t],
+        [paymentIntentId, t, applyPaymentIntentResult],
     );
+
+    const handleConfirmFreeOrder = useCallback(async () => {
+        if (!product) return;
+        const promoCode = appliedCode?.resolved.type === "promo" ? appliedCode.raw : undefined;
+        const affiliationCode = appliedCode?.resolved.type === "affiliation" ? appliedCode.raw : undefined;
+        await paymentService.fulfillFreeOrder(
+            packId,
+            displayName || product.name,
+            quantity,
+            promoCode,
+            affiliationCode,
+        );
+    }, [appliedCode, displayName, packId, product, quantity]);
 
     useEffect(() => {
         if (product) void createInitialPaymentIntent();
     }, [product, createInitialPaymentIntent]);
+
+    // Sync promo/quantity when PaymentIntent becomes available after a code was applied early
+    useEffect(() => {
+        if (!paymentIntentId || !appliedCode) return;
+        const promoCode = appliedCode.resolved.type === "promo" ? appliedCode.raw : undefined;
+        const affiliationCode = appliedCode.resolved.type === "affiliation" ? appliedCode.raw : undefined;
+        void updatePaymentIntentAmount(promoCode, affiliationCode, quantity);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-sync when PI id first arrives
+    }, [paymentIntentId]);
 
     useEffect(() => {
         return () => {
@@ -213,16 +254,19 @@ export function useCheckout(): UseCheckoutReturn {
 
     // ── Pricing ─────────────────────────────────────────────────────────────────
     const price = product?.prices[0];
+    const currency = price?.currency ?? "eur";
     const originalAmount = price?.unit_amount ?? 0;
     let discountedAmount = originalAmount;
     if (originalAmount > 0) {
         if (appliedCode) {
             discountedAmount = computeDiscountedAmount(originalAmount, appliedCode.resolved);
         } else if (referralDiscount) {
-            discountedAmount = Math.max(0, originalAmount - Math.floor((originalAmount * referralDiscount.discountPercent) / 100));
+            discountedAmount = computeReferralDiscountedAmount(originalAmount, referralDiscount.discountPercent);
         }
     }
+    const giftAmount = computeGiftAmount(discountedAmount, currency);
     const discountAmount = originalAmount - discountedAmount;
+    const chargeableAmount = Math.max(0, discountedAmount - giftAmount);
     const tokenCount = product?.metadata?.token_number ? parseInt(product.metadata.token_number, 10) : null;
 
     const handleQuantityChange = useCallback((newQuantity: number) => {
@@ -258,11 +302,15 @@ export function useCheckout(): UseCheckoutReturn {
         clientSecret,
         piRefreshing,
         piError,
+        isFreeOrder,
+        onConfirmFreeOrder: handleConfirmFreeOrder,
         pricing: {
             originalAmount,
             discountedAmount,
             discountAmount,
-            currency: price?.currency ?? "eur",
+            giftAmount,
+            chargeableAmount,
+            currency,
         },
         tokenCount,
         quantity,
