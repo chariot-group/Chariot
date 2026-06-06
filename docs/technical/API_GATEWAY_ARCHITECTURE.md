@@ -185,7 +185,7 @@ sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total
 ## References
 
 - Gateway README: [services/gateway](../../services/gateway)
-- Functional rules: [functional-rules.md](../functional-rules.md) (FR-002 to FR-006)
+- Functional rules: [functional-rules.md](../functional-rules.md) (FR-002 to FR-008)
 - [NestJS Documentation](https://docs.nestjs.com/)
 - [Throttler Module](https://docs.nestjs.com/security/rate-limiting)
 

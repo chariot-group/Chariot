@@ -99,3 +99,15 @@ export class SessionProxyController {
     await handleProxy(req, res, "session", /^\/session/, this.proxyService, this.logger);
   }
 }
+
+@Controller("payment")
+export class PaymentProxyController {
+  private readonly logger = new Logger(PaymentProxyController.name);
+
+  constructor(private readonly proxyService: ProxyService) {}
+
+  @All("*")
+  async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
+    await handleProxy(req, res, "payment", /^\/payment/, this.proxyService, this.logger);
+  }
+}

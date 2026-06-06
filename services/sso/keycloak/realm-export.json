@@ -86,11 +86,13 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "http://localhost:5173/*",
-        "http://localhost:3000/*"
+        "http://localhost:3000/*",
+        "http://localhost:3001/*"
       ],
       "webOrigins": [
         "http://localhost:5173",
         "http://localhost:3000",
+        "http://localhost:3001",
         "+"
       ],
       "publicClient": true,

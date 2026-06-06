@@ -3,11 +3,16 @@ import { Player } from "@/types/character";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import Column2 from "@/components/character/tabContents/general/view/Column2";
 import Statistics from "@/components/character/tabContents/shared/Statistics";
+import { Button } from "@/components/ui/button";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsInSession } from "@/store/slices/sessionSlice";
+import CharacterService from "@/services/CharacterService";
+import { toast } from "react-toastify";
+import SensesSection from "@/components/character/tabContents/general/shared/SensesSection";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -25,8 +30,8 @@ export default function PlayerGeneralTabContent({
   const tAlignment = useTranslations("alignments");
   const tClass = useTranslations("classes");
   const tEdit = useTranslations("characterDetail.edit");
-
-  const [checked, setChecked] = useState<boolean>(player.inspiration);
+  const isInSession = useAppSelector(selectIsInSession);
+  const [isInspirationLoading, setIsInspirationLoading] = useState(false);
 
   function infoExhaustionLevel(level: number): string {
     return t(`exhaustionLevels.${level}`);
@@ -104,6 +109,7 @@ export default function PlayerGeneralTabContent({
           <Statistics
             player={player}
             accentColor={accentColor}
+            onCharacterUpdate={onCharacterUpdate}
           />
 
           <Column2
@@ -134,6 +140,16 @@ export default function PlayerGeneralTabContent({
               <div className="flex flex-col">
                 <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
                 <dd className="text-sm sm:text-base">{player?.stats?.languages.join(", ")}</dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="text-sm sm:text-base font-semibold">{t("senses")} :</dt>
+                <dd>
+                  <SensesSection
+                    senses={player?.stats?.senses}
+                    accentColor={accentColor}
+                    embedded
+                  />
+                </dd>
               </div>
               <div className="flex flex-col">
                 <dt className="text-sm sm:text-base font-semibold">{t("tools")} :</dt>
@@ -231,21 +247,39 @@ export default function PlayerGeneralTabContent({
               className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
               {t("inspiration")}
             </h2>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="inspiration-checkbox"
-                checked={checked}
-                onCheckedChange={(value) => setChecked(value === true)}
-                disabled
-                aria-label={`${t("inspiration")} ${checked ? t("inspirationActive") : t("inspirationInactive")}`}
-                aria-describedby="inspiration-heading"
-              />
-              <label
-                htmlFor="inspiration-checkbox"
-                className="sr-only">
-                {t("inspirationState")}
-              </label>
-            </div>
+            {isInSession ? (
+              player.inspiration ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isInspirationLoading}
+                  onClick={async () => {
+                    if (!onCharacterUpdate) return;
+                    setIsInspirationLoading(true);
+                    try {
+                      const updated = (await CharacterService.updateCharacter("players", player._id, {
+                        inspiration: false,
+                      })) as Player;
+                      onCharacterUpdate(updated);
+                    } catch {
+                      toast.error(t("inspirationUseError"), { toastId: "inspiration-error" });
+                    } finally {
+                      setIsInspirationLoading(false);
+                    }
+                  }}>
+                  {t("inspirationUseButton")}
+                </Button>
+              ) : (
+                <span className="text-sm text-muted-foreground">{t("inspirationInactive")}</span>
+              )
+            ) : (
+              <p
+                className="font-semibold text-sm sm:text-base"
+                aria-label={`${t("inspiration")} : ${player.inspiration ? t("inspirationActive") : t("inspirationInactive")}`}>
+                {player.inspiration ? t("inspirationActive") : t("inspirationInactive")}
+              </p>
+            )}
           </Card>
 
           {/* Historique */}
@@ -274,7 +308,7 @@ export default function PlayerGeneralTabContent({
             className="gap-3 py-4 px-4 md:px-6"
             characterId={player._id}
             characterKind="players"
-            onAfterAbilityUse={onCharacterUpdate}
+            onAfterAbilityUse={onCharacterUpdate as () => void}
           />
         </section>
       </div>

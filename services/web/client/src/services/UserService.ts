@@ -26,7 +26,7 @@ class UserService {
      * Change password for current authenticated user
      * @param passwordData Current and new passwords
      * @throws Error with message if password change fails
-     * @see FR-009: User Password Change
+     * @see FR-011: User Password Change
      */
     async changePassword(passwordData: PasswordChangeDto): Promise<void> {
         try {

@@ -70,6 +70,7 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                                         accentColor={TAB_COLORS[tab]}
                                         form={form}
                                         isEditing={isEditing}
+                                        onCharacterUpdate={onCharacterUpdate}
                                     />
                                 );
                             case "history":

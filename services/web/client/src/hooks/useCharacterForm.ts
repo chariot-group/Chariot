@@ -208,6 +208,34 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
         form.reset(normalizeSpellSlots(character) as TFormValues);
     }, [character, characterId, form, isDirty]);
 
+    const sanitizeCharacterFormData = (data: TFormValues): TFormValues & { groups?: unknown[] } => {
+        const sanitizedData = { ...data } as TFormValues & { groups?: unknown[]; stats?: unknown };
+
+        if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {
+            sanitizedData.groups = sanitizedData.groups.map((group) =>
+                typeof group === 'object' && group !== null && '_id' in group
+                    ? (group as { _id: string })._id
+                    : group
+            );
+        }
+
+        if (typeof sanitizedData.stats === 'object' && sanitizedData.stats !== null) {
+            const stats = { ...(sanitizedData.stats as Record<string, unknown>) };
+            if (Array.isArray(stats.senses)) {
+                stats.senses = stats.senses
+                    .filter((sense): sense is Record<string, unknown> => typeof sense === 'object' && sense !== null)
+                    .map((sense) => {
+                        const name = typeof sense.name === 'string' ? sense.name.trim() : '';
+                        return { ...sense, name };
+                    })
+                    .filter((sense) => sense.name.length > 0);
+            }
+            sanitizedData.stats = stats;
+        }
+
+        return sanitizedData as TFormValues & { groups?: unknown[] };
+    };
+
     /**
      * Fonction de création d'un nouveau personnage
      */
@@ -224,17 +252,11 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
             setIsSaving(true);
             setSuccess(false);
 
-            const sanitizedData = { ...data } as TFormValues & { groups?: unknown[] };
-            if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {
-                sanitizedData.groups = sanitizedData.groups.map((group) =>
-                    typeof group === 'object' && group !== null && '_id' in group
-                        ? (group as { _id: string })._id
-                        : group
-                );
-            }
+            const sanitizedData = sanitizeCharacterFormData(data);
 
             if (type === 'players' && !isInSession) {
                 delete (sanitizedData as Record<string, unknown>).exhaustionLevel;
+                delete (sanitizedData as Record<string, unknown>).inspiration;
             }
 
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
@@ -284,18 +306,11 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
                 return;
             }
 
-            // Transformer les groups en tableau d'IDs si nécessaire
-            const sanitizedData = { ...data } as TFormValues & { groups?: unknown[] };
-            if (sanitizedData.groups && Array.isArray(sanitizedData.groups)) {
-                sanitizedData.groups = sanitizedData.groups.map((group) =>
-                    typeof group === 'object' && group !== null && '_id' in group
-                        ? (group as { _id: string })._id
-                        : group
-                );
-            }
+            const sanitizedData = sanitizeCharacterFormData(data);
 
             if (type === 'players' && !isInSession) {
                 delete (sanitizedData as Record<string, unknown>).exhaustionLevel;
+                delete (sanitizedData as Record<string, unknown>).inspiration;
             }
 
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)

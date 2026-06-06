@@ -5,7 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, FieldValues } from "react-hook-form";
+import {
+  Controller,
+  UseFormReturn,
+  FieldArrayWithId,
+  UseFieldArrayAppend,
+  UseFieldArrayRemove,
+  FieldValues,
+} from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown, Moon, Clock } from "lucide-react";
@@ -66,9 +73,9 @@ const AbilitiesUpdateSection = ({
               setTimeout(() => {
                 const newAbility = document.getElementById(`ability-${newIndex}`);
                 if (newAbility) {
-                  newAbility.scrollIntoView({ behavior: "smooth", block: "center" });
+                  newAbility.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 }
-              }, 100);
+              }, 350);
             }}
             className="flex items-center gap-2">
             <Plus className="size-4" />
@@ -219,8 +226,12 @@ const AbilitiesUpdateSection = ({
                                     { shouldDirty: true },
                                   );
                                 } else {
-                                  form.setValue(`${fieldArrayName}.${index}.counterMax`, undefined, { shouldDirty: true });
-                                  form.setValue(`${fieldArrayName}.${index}.counterCurrent`, undefined, { shouldDirty: true });
+                                  form.setValue(`${fieldArrayName}.${index}.counterMax`, undefined, {
+                                    shouldDirty: true,
+                                  });
+                                  form.setValue(`${fieldArrayName}.${index}.counterCurrent`, undefined, {
+                                    shouldDirty: true,
+                                  });
                                   form.setValue(`${fieldArrayName}.${index}.counterResetsOnShortRest`, undefined, {
                                     shouldDirty: true,
                                   });
@@ -259,14 +270,18 @@ const AbilitiesUpdateSection = ({
                                 name={maxField.name}
                                 ref={maxField.ref}
                                 onBlur={maxField.onBlur}
-                                value={maxField.value === undefined || maxField.value === null ? "" : String(maxField.value)}
+                                value={
+                                  maxField.value === undefined || maxField.value === null ? "" : String(maxField.value)
+                                }
                                 id={`${fieldArrayName}-counterMax-${index}`}
                                 type="number"
                                 inputMode="numeric"
                                 min={Math.max(0, Number(counterCurrentVal) || 0)}
                                 className="text-sm tabular-nums"
                                 aria-invalid={fieldState.invalid}
-                                aria-describedby={fieldState.error ? `${fieldArrayName}-counterMax-err-${index}` : undefined}
+                                aria-describedby={
+                                  fieldState.error ? `${fieldArrayName}-counterMax-err-${index}` : undefined
+                                }
                                 onChange={(e) => {
                                   const v = e.target.value;
                                   if (v === "") {
@@ -315,7 +330,9 @@ const AbilitiesUpdateSection = ({
                                   max={typeof counterMaxVal === "number" ? counterMaxVal : undefined}
                                   className="text-sm tabular-nums"
                                   aria-invalid={fieldState.invalid}
-                                  aria-describedby={fieldState.error ? `${fieldArrayName}-counterCurrent-err-${index}` : undefined}
+                                  aria-describedby={
+                                    fieldState.error ? `${fieldArrayName}-counterCurrent-err-${index}` : undefined
+                                  }
                                   onChange={(e) => {
                                     const v = e.target.value;
                                     if (v === "") {

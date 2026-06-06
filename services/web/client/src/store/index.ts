@@ -9,7 +9,14 @@ import sidebarReducer from '@/store/slices/sidebarSlice';
 import characterReducer from '@/store/slices/characterSlice';
 import userReducer from '@/store/slices/userSlice';
 import codexDraftReducer from '@/store/slices/codexDraftSlice';
-import sessionReducer, { type CurrentSessionState } from '@/store/slices/sessionSlice';
+import { ensureConditionEntryRemainingSeconds } from '@/components/initiativeTracker/conditionDuration';
+import { defaultPlayerDisplayNameForRow } from '@/components/initiativeTracker/utils';
+import sessionReducer, {
+    normalizeInitiativeTrackerConditionEntry,
+    normalizePlayerFieldVisibility,
+    type CurrentSessionState,
+    type InitiativeTrackerRowKind,
+} from '@/store/slices/sessionSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
 import { UserState } from '@/types/user';
 
@@ -54,6 +61,25 @@ const groupTransform = createTransform(
     { whitelist: ['group'] }
 );
 
+/**
+ * Nettoie un tableau de personnages persistés : conserve l'ordre, supprime les `_id` dupliqués (premier vu gagne)
+ * et écarte les entrées sans `_id`. Indispensable pour purger des états persistés pollués avant l'ajout du dedupe
+ * côté reducer (sinon la cooldown `characters.length > 0` empêche le refetch et l'erreur de clé dupliquée persiste).
+ */
+const sanitizePersistedCharacters = (value: unknown): unknown => {
+    if (!Array.isArray(value)) return value;
+    const seen = new Set<string>();
+    const cleaned: unknown[] = [];
+    for (const item of value) {
+        const id = (item as { _id?: unknown } | null)?._id;
+        if (typeof id !== 'string' || id.length === 0) continue;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        cleaned.push(item);
+    }
+    return cleaned;
+};
+
 const characterTransform = createTransform(
     (inboundState: Record<string, unknown>) => {
         const { loadingWithoutGroup, loadingMoreWithoutGroup, errorWithoutGroup, loadingAll, errorAll, ...rest } = inboundState;
@@ -67,6 +93,8 @@ const characterTransform = createTransform(
     (outboundState: Record<string, unknown>) => {
         return {
             ...outboundState,
+            charactersWithoutGroup: sanitizePersistedCharacters(outboundState.charactersWithoutGroup),
+            allCharacters: sanitizePersistedCharacters(outboundState.allCharacters),
             loadingWithoutGroup: false,
             loadingMoreWithoutGroup: false,
             errorWithoutGroup: null,
@@ -105,10 +133,58 @@ const sessionTransform = createTransform(
         expiresAt: outbound?.expiresAt ?? null,
         participants: outbound?.participants ?? [],
         tokensByUser: outbound?.tokensByUser ?? {},
+        initBattleDraft: {
+            showAllOpponents: outbound?.initBattleDraft?.showAllOpponents ?? false,
+            selectedGroupIds: outbound?.initBattleDraft?.selectedGroupIds ?? [],
+            expandedGroupIds: outbound?.initBattleDraft?.expandedGroupIds ?? [],
+            excludedMembersByGroup: outbound?.initBattleDraft?.excludedMembersByGroup ?? {},
+        },
+        initiativeTrackerRows: (outbound?.initiativeTrackerRows ?? []).map((row) => {
+            const legacyConditions =
+                "condition" in row && row.condition && row.condition !== "none" ? [row.condition] : [];
+            const rawConditions = row.conditions ?? legacyConditions;
+            const kind: InitiativeTrackerRowKind =
+                row.kind === 'player' || row.kind === 'npc' ? row.kind : 'npc';
+
+            return {
+                ...row,
+                maxHitPoints: Number.isFinite(row.maxHitPoints) ? row.maxHitPoints : row.hitPoints ?? 0,
+                tempHitPoints: Number.isFinite(row.tempHitPoints) ? row.tempHitPoints : 0,
+                kind,
+                deathSavesFailures: Number.isFinite(row.deathSavesFailures)
+                    ? Math.max(0, Math.floor(Number(row.deathSavesFailures)))
+                    : 0,
+                playerFieldVisibility: normalizePlayerFieldVisibility(
+                    row.playerFieldVisibility,
+                    kind,
+                    row.groupId ?? '',
+                ),
+                playerDisplayName: (() => {
+                    const gmName = defaultPlayerDisplayNameForRow({
+                        firstname: row.firstname ?? '',
+                        lastname: row.lastname ?? '',
+                        surname: row.surname ?? '',
+                    });
+                    const raw =
+                        typeof row.playerDisplayName === 'string' ? row.playerDisplayName.trim() : '';
+                    return raw.length > 0 ? raw : gmName;
+                })(),
+                conditions: rawConditions
+                    .map((entry) => normalizeInitiativeTrackerConditionEntry(entry))
+                    .filter((entry): entry is NonNullable<typeof entry> => entry != null)
+                    .map((entry) => ensureConditionEntryRemainingSeconds(entry)),
+            };
+        }),
+        battleInitialized: outbound?.battleInitialized ?? (outbound?.initiativeTrackerRows?.length ?? 0) > 0,
+        battleStarted: outbound?.battleStarted ?? false,
+        activeTurnRowId: outbound?.activeTurnRowId ?? null,
+        currentRound: outbound?.currentRound ?? 1,
+        turnsWithActions: outbound?.turnsWithActions ?? [],
         characterSheetRemoteVersions:
             outbound?.characterSheetRemoteVersions && typeof outbound.characterSheetRemoteVersions === 'object'
                 ? outbound.characterSheetRemoteVersions
                 : {},
+        lastConsultedSheetPath: outbound?.lastConsultedSheetPath ?? null,
     }),
     { whitelist: ['session'] },
 );

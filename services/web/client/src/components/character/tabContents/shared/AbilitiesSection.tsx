@@ -10,6 +10,7 @@ import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 type CharacterTypeFilter = "players" | "npcs";
 
@@ -39,12 +40,15 @@ const AbilitiesSection = ({
   const t = useTranslations("characterDetail.battle");
   const toast = useToast();
   const isInSession = useAppSelector(selectIsInSession);
+  const sessionCode = useActiveSessionCode();
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
 
   const showUseControls = isInSession && Boolean(onAfterAbilityUse);
-
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const hasAbilities = abilities.length > 0;
+  const hasShortRestReset = abilities.some((ability) => ability.counterResetsOnShortRest === true);
+  const hasLongRestReset = abilities.some((ability) => ability.counterResetsOnLongRest === true);
+  const showRestLegend = hasShortRestReset || hasLongRestReset;
 
   const handleUse = useCallback(
     async (index: number) => {
@@ -60,15 +64,15 @@ const AbilitiesSection = ({
         const next = abilities.map((a, i) =>
           i === index
             ? {
-                ...a,
-                counterCurrent: current + 1,
-              }
+              ...a,
+              counterCurrent: current + 1,
+            }
             : a
         );
         const type = characterKind === "npcs" ? "npcs" : "players";
         const updated = (await CharacterService.updateCharacter(type, characterId, {
           abilities: next,
-        })) as Player | NPC;
+        }, sessionCode)) as Player | NPC;
         onAfterAbilityUse?.(updated);
       } catch (e) {
         console.error(e);
@@ -77,7 +81,7 @@ const AbilitiesSection = ({
         setLoadingIndex(null);
       }
     },
-    [abilities, characterId, characterKind, onAfterAbilityUse, toast, t]
+    [abilities, characterId, characterKind, onAfterAbilityUse, sessionCode, toast, t]
   );
 
   return (
@@ -110,6 +114,30 @@ const AbilitiesSection = ({
           </button>
         </div>
       </div>
+      {showRestLegend && (
+        <div
+          className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground sm:text-xs"
+          aria-label={t("abilityCounterResetLegend")}>
+          {hasShortRestReset && (
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+              <Clock
+                className="size-3.5 shrink-0 text-white sm:size-4"
+                aria-hidden
+              />
+              <span>{t("abilityCounterResetShortRestShort")}</span>
+            </span>
+          )}
+          {hasLongRestReset && (
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+              <Moon
+                className="size-3.5 shrink-0 text-white sm:size-4"
+                aria-hidden
+              />
+              <span>{t("abilityCounterResetLongRestShort")}</span>
+            </span>
+          )}
+        </div>
+      )}
       <Accordion
         type="multiple"
         value={openAccordionValues}
@@ -122,6 +150,7 @@ const AbilitiesSection = ({
           const atLimit = hasCounter && typeof max === "number" && current >= max;
           const canPressUse = hasCounter && typeof max === "number" && !atLimit;
           const useBusy = loadingIndex === index;
+          const isOpen = openAccordionValues.includes(`${ability.name}-${index}`);
 
           return (
             <AccordionItem
@@ -129,7 +158,7 @@ const AbilitiesSection = ({
               value={`${ability.name}-${index}`}
               className="border-b border-gray py-1.5">
               <AccordionTrigger
-                className="min-w-0 w-full items-center py-1.5 text-left hover:no-underline gap-2"
+                className="min-w-0 w-full items-start py-1.5 text-left hover:no-underline gap-2 [&>svg]:mt-1 [&>svg]:self-start"
                 aria-label={[
                   t("details"),
                   ability.name,
@@ -138,58 +167,53 @@ const AbilitiesSection = ({
                 ]
                   .filter(Boolean)
                   .join(" ")}>
-                <span className="flex min-w-0 min-h-0 flex-1 items-center gap-1.5 overflow-hidden sm:gap-2">
-                  {(ability.counterResetsOnShortRest === true ||
-                    ability.counterResetsOnLongRest === true) && (
+                <span className="flex min-w-0 min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
+                  <span className={`min-w-0 leading-tight text-sm font-semibold sm:text-lg ${isOpen ? "whitespace-normal break-words" : "truncate"}`}>
+                    {ability.name}
+                  </span>
+                  {((ability.counterResetsOnShortRest === true ||
+                    ability.counterResetsOnLongRest === true) ||
+                    (hasCounter && typeof max === "number")) && (
                     <span
-                      className="flex shrink-0 items-center gap-0.5"
-                      role="group"
-                      aria-label={t("abilityCounterResetLegend")}>
-                      {ability.counterResetsOnShortRest === true && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
+                      className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:text-sm">
+                      {(ability.counterResetsOnShortRest === true ||
+                        ability.counterResetsOnLongRest === true) && (
+                        <span
+                          className="flex min-w-0 flex-wrap items-center gap-1"
+                          role="group"
+                          aria-label={t("abilityCounterResetLegend")}>
+                          {ability.counterResetsOnShortRest === true && (
                             <span
-                              className="inline-flex cursor-help rounded-md p-0.5 text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                              tabIndex={0}
+                              className="inline-flex rounded-md p-0.5 text-muted-foreground"
                               aria-label={t("abilityCounterResetShortRest")}>
                               <Clock
-                                className="size-4 shrink-0 text-white sm:size-5"
+                                className="size-3.5 shrink-0 text-white sm:size-4"
                                 aria-hidden
                               />
                             </span>
-                          </TooltipTrigger>
-                          <TooltipContent>{t("abilityCounterResetShortRest")}</TooltipContent>
-                        </Tooltip>
-                      )}
-                      {ability.counterResetsOnLongRest === true && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
+                          )}
+                          {ability.counterResetsOnLongRest === true && (
                             <span
-                              className="inline-flex cursor-help rounded-md p-0.5 text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                              tabIndex={0}
+                              className="inline-flex rounded-md p-0.5 text-muted-foreground"
                               aria-label={t("abilityCounterResetLongRest")}>
                               <Moon
-                                className="size-4 shrink-0 text-white sm:size-5"
+                                className="size-3.5 shrink-0 text-white sm:size-4"
                                 aria-hidden
                               />
                             </span>
-                          </TooltipTrigger>
-                          <TooltipContent>{t("abilityCounterResetLongRest")}</TooltipContent>
-                        </Tooltip>
+                          )}
+                        </span>
+                      )}
+                      {hasCounter && typeof max === "number" && (
+                        <span
+                          className="tabular-nums font-medium whitespace-nowrap"
+                          aria-label={t("abilityCounterShort", { current, max })}>
+                          {t("abilityCounterShort", { current, max })}
+                        </span>
                       )}
                     </span>
                   )}
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold sm:text-lg">
-                    {ability.name}
-                  </span>
                 </span>
-                {hasCounter && typeof max === "number" && (
-                  <span
-                    className="text-xs sm:text-sm font-medium text-muted-foreground tabular-nums shrink-0 whitespace-nowrap"
-                    aria-label={t("abilityCounterShort", { current, max })}>
-                    {t("abilityCounterShort", { current, max })}
-                  </span>
-                )}
               </AccordionTrigger>
               <AccordionContent
                 className="text-sm sm:text-base pb-3 space-y-3"

@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import CharacterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
+import { isPlayer } from "@/utils/global.utils";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -29,6 +30,7 @@ import { Character } from "@/types/character";
  */
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");
+  const tClass = useTranslations("classes");
   const { characters, loading, loadingMore, hasMore, loadMoreCharacters, refetch, error } = usePlayersWithoutGroup(10, {
     autoFetch: false,
   });
@@ -94,7 +96,7 @@ export default function CharactersWithoutGroupList() {
         href="/characters/new/players"
         onClick={() => setOpenMobile(false)}
         aria-label={t("createCharacter")}
-        className="shrink-0 text-sm cursor-pointer flex hover:font-bold justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
         {t("createCharacter")}
         <PlusCircleIcon
           aria-hidden="true"
@@ -103,21 +105,38 @@ export default function CharactersWithoutGroupList() {
       </Link>
 
       <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain scroll-smooth py-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-        {characters.map((character) => {
+        {characters.map((character, index) => {
           const isSelected = selectedCharacterId === character._id;
+          const classLabel = isPlayer(character)
+            ? character.class
+                .map((cls) => (cls?.name ? tClass(cls.name).trim() : ""))
+                .filter((label) => label.length > 0)
+                .join(" / ")
+            : "";
+          const displayName =
+            [character.firstname, character.lastname]
+              .map((part) => (typeof part === "string" ? part.trim() : ""))
+              .filter((part) => part.length > 0)
+              .join(" ") || t("unnamedCharacter");
           return (
-            <ContextMenu key={character._id}>
+            <ContextMenu key={character._id ?? `character-${index}`}>
               <ContextMenuTrigger asChild>
                 <Link
                   href={`/characters/${character._id}`}
                   aria-current={isSelected ? "page" : undefined}
-                  aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
+                  aria-label={`${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
                   onClick={() => dispatch(clearSelectedCampaign())}
-                  className={`w-full shrink-0 border-2 cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/character focus-visible:border ${isSelected ? "bg-white" : ""}`}>
+                  className={`w-full shrink-0 border-2 cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center gap-1 group/character focus-visible:border ${isSelected ? "bg-white" : ""}`}>
                   <span
-                    className={`text-sm min-w-0 truncate group-hover/character:font-bold group-hover/character:text-black ${isSelected ? "font-bold text-black" : ""}`}>
-                    {character.firstname} {character.lastname}
+                    className={`text-sm min-w-0 flex-1 truncate group-hover/character:font-bold group-hover/character:text-black ${isSelected ? "font-bold text-black" : ""}`}>
+                    {displayName}
                   </span>
+                  {classLabel && (
+                    <span
+                      className={`text-sm shrink-0 whitespace-nowrap group-hover/character:font-bold group-hover/character:text-black ${isSelected ? "font-bold text-black" : ""}`}>
+                      ({classLabel})
+                    </span>
+                  )}
                 </Link>
               </ContextMenuTrigger>
               <ContextMenuContent
@@ -142,7 +161,14 @@ export default function CharactersWithoutGroupList() {
             aria-busy={loadingMore}
             aria-label={t("loadMoreCharactersAria")}
             className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
-            {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mx-auto" aria-hidden /> : t("loadMoreCharacters")}
+            {loadingMore ? (
+              <Loader2
+                className="w-4 h-4 animate-spin mx-auto"
+                aria-hidden
+              />
+            ) : (
+              t("loadMoreCharacters")
+            )}
           </button>
         )}
       </div>

@@ -28,13 +28,14 @@ describe('MaillingService', () => {
       sendMail: mockSendMail,
     });
 
-    // Mock fs.readFile
-    mockReadFile = jest.fn();
-    (fs.readFile as jest.Mock) = mockReadFile;
+    // Mock fs.readFile - use the auto-mock created by jest.mock('fs/promises')
+    mockReadFile = fs.readFile as jest.Mock;
+    mockReadFile.mockReset();
 
-    // Mock path.resolve
-    mockResolve = jest.fn((filePath) => filePath);
-    (path.resolve as jest.Mock) = mockResolve;
+    // Mock path.resolve - use the auto-mock created by jest.mock('path')
+    mockResolve = path.resolve as jest.Mock;
+    mockResolve.mockReset();
+    mockResolve.mockImplementation((filePath: string) => filePath);
 
     // Create service instance directly, bypassing NestJS injection
     service = new MaillingService(mockCounter);

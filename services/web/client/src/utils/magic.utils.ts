@@ -30,7 +30,7 @@ export function hasLevel0Spells(spellcasting: Spellcasting): boolean {
  */
 export function getSpellByLevel(selectedSpellcasting: Spellcasting, level: number): Spell[] {
     if (!selectedSpellcasting) return [];
-    return selectedSpellcasting.spells.filter((spell) => spell.level === level);
+    return selectedSpellcasting.spells.filter((spell) => Number(spell.level) === level);
 }
 
 /**
@@ -219,6 +219,18 @@ export function getSpellSlotEntry(
     const slot = spellcasting.spellSlotsByLevel?.[key];
     if (!slot) return null;
     return { total: slot.total ?? 0, used: slot.used ?? 0 };
+}
+
+export function getRemainingSpellSlots(
+    spellcasting: Spellcasting,
+    level: number,
+): { current: number; total: number } | null {
+    const slot = getSpellSlotEntry(spellcasting, level);
+    if (!slot) return null;
+    return {
+        current: Math.max(0, (slot.total ?? 0) - (slot.used ?? 0)),
+        total: slot.total ?? 0,
+    };
 }
 
 export function hasAvailableSpellSlot(spellcasting: Spellcasting, level: number): boolean {

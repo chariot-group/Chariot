@@ -1,5 +1,4 @@
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
-import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getIconForValue } from "@/utils/global.utils";
@@ -56,7 +55,7 @@ export default function SavingThrowsEdit({ form, accentColor }: SavingThrowsEdit
                 type="button"
                 onClick={() => toggleSavingThrowProficiency(key)}
                 className="text-left">
-                <Card className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
+                <div className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
                   <div className="text-sm flex items-center gap-2 justify-between">
                     <span className={`truncate ${isProficient && "italic"}`}>{label}</span>{" "}
                     <div className="flex flex-row gap-2">
@@ -73,7 +72,7 @@ export default function SavingThrowsEdit({ form, accentColor }: SavingThrowsEdit
                       />
                     </div>
                   </div>
-                </Card>
+                </div>
               </button>
             )}
           />

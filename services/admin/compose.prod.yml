@@ -1,0 +1,31 @@
+name: chariot-admin-prod
+
+services:
+  chariot-admin:
+    image: ghcr.io/chariot-group/chariot-admin-production:latest
+    container_name: chariot-admin-prod
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "3001"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_ENV_NAME: production
+    networks:
+      - chariot-group-network-prod
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chariot-admin-prod.rule=Host(`${ADMIN_HOST}`)"
+      - "traefik.http.routers.chariot-admin-prod.entrypoints=websecure"
+      - "traefik.http.routers.chariot-admin-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chariot-admin-prod.loadbalancer.server.port=3001"
+      - "traefik.http.routers.chariot-admin-prod.service=chariot-admin-prod"
+      - "traefik.docker.network=traefik-public"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  chariot-group-network-prod:
+    external: true
+  traefik-public:
+    external: true

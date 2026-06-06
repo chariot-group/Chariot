@@ -1,0 +1,59 @@
+# Étape 1 : Installation de TOUTES les dépendances (dev + prod) pour le build
+FROM node:26-alpine AS deps
+RUN apk upgrade --no-cache && apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci --no-audit --no-fund
+
+# Étape 2 : Build de l'application
+FROM node:26-alpine AS builder
+RUN apk upgrade --no-cache
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ARG NODE_ENV=production
+ARG DATABASE_URL
+ENV NODE_ENV=${NODE_ENV}
+ENV DATABASE_URL=${DATABASE_URL:-postgresql://fake:fake@localhost:5432/fake}
+
+RUN npx prisma generate
+
+RUN npm run build && \
+    find dist -type f && \
+    test -f dist/src/main.js && \
+    echo "✅ Build successful: dist/src/main.js created"
+
+# Étape 3 : Installation des dépendances de production uniquement
+FROM node:26-alpine AS prod-deps
+RUN apk upgrade --no-cache
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production --no-audit --no-fund
+
+# Étape 4 : Image finale de production (ultra légère)
+FROM node:26-alpine AS runner
+RUN apk upgrade --no-cache
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
+
+COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+
+RUN mkdir -p /app/logger/logs \
+ && chown -R nestjs:nodejs /app/logger
+
+USER nestjs
+
+EXPOSE 9003
+
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/src/main"]

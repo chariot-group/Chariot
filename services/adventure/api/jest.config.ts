@@ -9,7 +9,7 @@ const config: Config = {
         '/node_modules/(?!(jose|jwks-rsa)/)',
     ],
     transform: {
-        '^.+\\.(t|j)s$': 'ts-jest',
+        '^.+\.(t|j)s$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
     },
     collectCoverageFrom: ['**/*.(t|j)s'],
     coverageDirectory: '../coverage',

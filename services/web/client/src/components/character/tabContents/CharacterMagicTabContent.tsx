@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Character, Player, Spell, Spellcasting } from "@/types/character";
 import { Book, Dice5, Target, ArrowLeft, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
   classWithSpellPrepared,
@@ -15,6 +15,7 @@ import {
   numberSpellsPrepare,
   getNpcUsesGroups,
   getSpellsByUses,
+  getRemainingSpellSlots,
   npcUsesKey,
 } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
@@ -77,6 +78,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>(() =>
     getInitialAccordionValuesForSpellcasting(selectedSpellcasting),
   );
+  const spellCardRingStyle = { "--tw-ring-color": `var(--${accentColor})` } as CSSProperties;
 
   const handleSpellcastingChange = (spellcasting: Spellcasting) => {
     setSelectedSpellcasting(spellcasting);
@@ -392,8 +394,9 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                           handleSpellSelect(spell);
                                         }
                                       }}
-                                      key={index}
-                                      className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      key={`spell-npc-${key}-idx-${index}`}
+                                      className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                      style={spellCardRingStyle}
                                       role="button"
                                       tabIndex={0}
                                       aria-pressed={selectedSpell === spell}
@@ -423,6 +426,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                   if (selectedSpellcasting.spellSlotsByLevel) {
                     Object.keys(selectedSpellcasting.spellSlotsByLevel).forEach((l) => {
                       const n = Number(l);
+                      if (!Number.isFinite(n)) return;
                       if (!levels.includes(n)) levels.push(n);
                     });
                   }
@@ -430,6 +434,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                   if (selectedSpellcasting.spells) {
                     selectedSpellcasting.spells.forEach((spell) => {
                       const n = Number(spell.level);
+                      if (!Number.isFinite(n)) return;
                       if (!levels.includes(n)) levels.push(n);
                     });
                   }
@@ -444,19 +449,20 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                       className="w-full flex flex-col gap-2">
                       {levels.map((level) => {
                         const spells = getSpellByLevel(selectedSpellcasting, level);
-                        const slot = selectedSpellcasting.spellSlotsByLevel?.[level];
+                        const slotKey = String(level);
+                        const slotCount = level > 0 ? getRemainingSpellSlots(selectedSpellcasting, level) : null;
 
                         return (
                           <AccordionItem
-                            key={level}
+                            key={`spell-level-${slotKey}`}
                             value={`level-${level}`}
                             className={`flex flex-col gap-2`}>
                             <Card className="gap-3 p-0">
                               <AccordionTrigger className="py-4 px-4 md:px-6">
                                 <h2 className={`text-base md:text-lg font-medium ${accentColor}`}>
                                   {level === 0
-                                    ? tMagic("cantrips")
-                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { used: slot?.used || 0, total: slot?.total || 0 })}`}
+                                    ? `${tMagic("cantrips")}: ∞`
+                                    : `${tMagic("spellLevel", { level })}: ${tMagic("spellSlots", { current: slotCount?.current || 0, total: slotCount?.total || 0 })}`}
                                 </h2>
                               </AccordionTrigger>
                             </Card>
@@ -475,8 +481,9 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
                                         handleSpellSelect(spell);
                                       }
                                     }}
-                                    key={index}
-                                    className={`${selectedSpell === spell && `border`} hover:border border-${accentColor} gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                    key={`spell-lvl-${level}-idx-${index}`}
+                                    className={`${selectedSpell === spell ? "ring-2" : ""} hover:ring-2 ring-inset transition-shadow gap-3 p-2 md:px-6 flex-col cursor-pointer`}
+                                    style={spellCardRingStyle}
                                     role="button"
                                     tabIndex={0}
                                     aria-pressed={selectedSpell === spell}
