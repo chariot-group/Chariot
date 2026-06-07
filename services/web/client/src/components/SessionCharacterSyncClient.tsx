@@ -332,7 +332,7 @@ export default function SessionCharacterSyncClient() {
             registerSessionSyncSocket(null);
             releaseSessionSocket();
         };
-    }, [shouldConnect, code, dispatch]);
+    }, [shouldConnect, code, dispatch, token]);
 
     const isOnSessionLobbyPage = /\/campaigns\/[^/]+\/session\/[^/]+(?:\/|$)/.test(pathname ?? "");
 
@@ -524,7 +524,7 @@ export default function SessionCharacterSyncClient() {
             if (onParticipantLeft) socket.off("session:participant-left", onParticipantLeft);
             if (onParticipantDisconnected) socket.off("session:participant-disconnected", onParticipantDisconnected);
         };
-    }, [shouldConnect, code, isOnSessionLobbyPage, dispatch]);
+    }, [shouldConnect, code, isOnSessionLobbyPage, dispatch, token]);
 
     return null;
 }

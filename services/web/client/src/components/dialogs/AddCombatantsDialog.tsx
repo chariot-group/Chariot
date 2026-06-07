@@ -33,7 +33,6 @@ import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Character } from "@/types/character";
-import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import {
   trackerDeathSavesFailuresFromCharacter,
   trackerKindFromCharacter,

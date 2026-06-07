@@ -449,7 +449,7 @@ export function useSessionSocket({
             releaseSessionSocket();
             socketRef.current = null;
         };
-    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId, isInSession]);
+    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId, isInSession, token]);
 
     const handleCharacterChange = (characterId: string) => {
         const socket = socketRef.current;
