@@ -1,6 +1,7 @@
 import { Module, Logger } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { ThrottlerModule } from "@nestjs/throttler";
+import { GatewayThrottlerGuard } from "@/common/guards/gateway-throttler.guard";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { HttpModule } from "@nestjs/axios";
 import { PrometheusModule } from "@willsoto/nestjs-prometheus";
@@ -17,13 +18,15 @@ import { MetricsModule } from "./metrics/metrics.module";
       isGlobal: true,
       envFilePath: ".env",
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: "default",
-        ttl: parseInt(process.env.GATEWAY_RATE_LIMIT_WINDOW || "60000", 10),
-        limit: parseInt(process.env.GATEWAY_RATE_LIMIT_MAX || "100", 10),
-      },
-    ]),
+    ThrottlerModule.forRootAsync({
+      useFactory: () => [
+        {
+          name: "default",
+          ttl: parseInt(process.env.GATEWAY_RATE_LIMIT_WINDOW || "60000", 10),
+          limit: parseInt(process.env.GATEWAY_RATE_LIMIT_MAX || "100", 10),
+        },
+      ],
+    }),
     PrometheusModule.register({
       path: "/metrics",
       defaultMetrics: {
@@ -41,7 +44,7 @@ import { MetricsModule } from "./metrics/metrics.module";
     Logger,
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: GatewayThrottlerGuard,
     },
     {
       provide: APP_INTERCEPTOR,

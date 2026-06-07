@@ -8,6 +8,7 @@ import Skill from "@/components/character/tabContents/general/shared/SavingThrow
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import Statistics from "@/components/character/tabContents/shared/Statistics";
+import { useId } from "react";
 
 interface Props {
   player: Player;
@@ -17,6 +18,11 @@ interface Props {
 
 const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Props) => {
   const t = useTranslations("characterDetail.battle");
+  const sectionId = useId();
+  const savingThrowsHeadingId = `${sectionId}-saving-throws-heading`;
+  const deathSavesHeadingId = `${sectionId}-death-saves-heading`;
+  const abilitiesHeadingId = `${sectionId}-abilities-traits-heading`;
+  const affinitiesHeadingId = `${sectionId}-battle-affinities-heading-player`;
 
   // Configuration des badges de statistiques
 
@@ -34,9 +40,9 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
           <Card
             className="gap-3 p-4 md:px-6 h-fit"
             role="region"
-            aria-labelledby="saving-throws-heading">
+            aria-labelledby={savingThrowsHeadingId}>
             <h2
-              id="saving-throws-heading"
+              id={savingThrowsHeadingId}
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("savingThrows")}
             </h2>
@@ -63,9 +69,9 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
         <Card
           className="gap-3 p-4 md:px-6 h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
           role="region"
-          aria-labelledby="death-saves-heading">
+          aria-labelledby={deathSavesHeadingId}>
           <h2
-            id="death-saves-heading"
+            id={deathSavesHeadingId}
             className={`text-xl sm:text-2xl font-semibold self-start ${accentColor}`}>
             {t("deathSaves")}
           </h2>
@@ -74,7 +80,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
             <div
               className="grid grid-cols-3 gap-1 md:gap-1 w-full md:w-3/4 xl:w-full xl:max-w-45 justify-self-end md:justify-self-start xl:justify-self-end"
               role="status"
-              aria-label={`${t("successes")} ${player.deathSaves.successes} ${t("unperformedThrow")}`}>
+              aria-label={t("deathSaveSuccessesStatus", { count: player.deathSaves.successes })}>
               {Array.from({ length: 3 }).map((_, index) => (
                 <Image
                   key={"death-save-success-" + index}
@@ -91,7 +97,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
             <div
               className="grid grid-cols-3 gap-1 md:gap-2 w-full md:w-3/4 xl:w-full xl:max-w-45 justify-self-end md:justify-self-start xl:justify-self-end"
               role="status"
-              aria-label={`${t("failures")} ${player.deathSaves.failures} ${t("unperformedThrow")}`}>
+              aria-label={t("deathSaveFailuresStatus", { count: player.deathSaves.failures })}>
               {Array.from({ length: 3 }).map((_, index) => (
                 <Image
                   key={"death-save-failure-" + index}
@@ -115,7 +121,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
             abilities={player.abilities}
             accentColor={accentColor}
             title={t("abilitiesAndTraits")}
-            headingId="abilities-traits-heading"
+            headingId={abilitiesHeadingId}
             characterId={player._id}
             characterKind="players"
             onAfterAbilityUse={onCharacterUpdate}
@@ -134,9 +140,9 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
           <Card
             className="gap-3 p-4 md:px-6 h-fit"
             role="region"
-            aria-labelledby="battle-affinities-heading-player">
+            aria-labelledby={affinitiesHeadingId}>
             <h2
-              id="battle-affinities-heading-player"
+              id={affinitiesHeadingId}
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("affinities")}
             </h2>

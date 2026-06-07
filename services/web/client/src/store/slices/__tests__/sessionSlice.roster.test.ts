@@ -104,6 +104,7 @@ describe("FR-018 — end combat reset", () => {
         expandedGroupIds: ["g1"],
         excludedMembersByGroup: { g1: ["c2"] },
         showAllOpponents: true,
+        allowPlayerInitiativeInput: true,
       }),
     );
     state = sessionReducer(state, startBattle());
@@ -121,6 +122,7 @@ describe("FR-018 — end combat reset", () => {
       expandedGroupIds: [],
       excludedMembersByGroup: {},
       showAllOpponents: false,
+      allowPlayerInitiativeInput: false,
     });
   });
 });

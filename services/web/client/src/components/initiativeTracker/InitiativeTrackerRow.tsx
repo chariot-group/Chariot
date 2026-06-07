@@ -79,6 +79,8 @@ type InitiativeTrackerRowProps = {
     conditionRoundHint: string;
     visibleFor: string;
     playerDisplayNameSubtitle: string;
+    ownCharacterBadge: string;
+    ownCharacterLabel: string;
     hitPointsFor: string;
     hitPointsSessionTooltip: string;
     hpAbbr: string;
@@ -160,8 +162,17 @@ export function InitiativeTrackerRow({
 
   const renderCharacterNameText = (primary: string, className = "") => (
     <span className={cn("flex w-full max-w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden", className)}>
-      <span className="block w-full min-w-0 max-w-full truncate text-base font-semibold text-white" title={primary}>
-        {primary}
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white" title={primary}>
+          {primary}
+        </span>
+        {isOwnCharacter ? (
+          <span
+            className="shrink-0 rounded-full bg-blue/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue"
+            aria-label={labels.ownCharacterLabel}>
+            {labels.ownCharacterBadge}
+          </span>
+        ) : null}
       </span>
       {showGmAliasSubtitle ? (
         <span
@@ -228,13 +239,16 @@ export function InitiativeTrackerRow({
       : isActiveTurn
         ? "bg-blue/35"
         : "bg-gray";
-  const rowRingClass = isActiveTurn
-    ? "ring-2 ring-blue/60"
-    : isDead
-      ? "ring-2 ring-red/60"
-      : isUnconscious
-        ? "ring-2 ring-yellow/60"
-        : "";
+  const rowRingClass = cn(
+    isActiveTurn
+      ? "ring-2 ring-blue/60"
+      : isDead
+        ? "ring-2 ring-red/60"
+        : isUnconscious
+          ? "ring-2 ring-yellow/60"
+          : "",
+    isOwnCharacter && "ring-2 ring-white/30 ring-offset-1 ring-offset-background",
+  );
 
   const renderCharacterNameNode = () => {
     if (showHiddenName) return hidden;
@@ -334,7 +348,7 @@ export function InitiativeTrackerRow({
   const renderInitiativeCell = (compact = false) => (
     <div className={cn("flex w-full min-w-0 items-center", !compact && TRACKER_CELL_ALIGN.initiative, hasTabletExpansion && "pl-5")}>
       {showInitiative ? (
-        isPlayerView || initiativeLocked ? (
+        initiativeLocked || (isPlayerView && !isOwnCharacter) ? (
           <div
             className={cn(
               "mx-auto flex h-9 w-full max-w-[88px] items-center justify-center rounded-[15px] bg-gray-middle-light px-3 text-sm font-medium tabular-nums text-white",
@@ -493,6 +507,16 @@ export function InitiativeTrackerRow({
           />
         ) : null}
 
+        {!isPlayerView ? (
+          <div className={TRACKER_CELL_ALIGN.visible}>
+            <VisibilityTriggerButton
+              row={row}
+              ariaLabel={labels.visibleFor}
+              onClick={() => setVisibilityOpen(true)}
+            />
+          </div>
+        ) : null}
+
         {renderInitiativeCell()}
 
         <div className={`flex w-full max-w-full min-w-0 overflow-hidden ${TRACKER_CELL_ALIGN.character}`}>
@@ -510,16 +534,6 @@ export function InitiativeTrackerRow({
         <span className={`flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden ${TRACKER_CELL_ALIGN.group}`}>
           {groupContent}
         </span>
-
-        {!isPlayerView ? (
-          <div className={TRACKER_CELL_ALIGN.visible}>
-            <VisibilityTriggerButton
-              row={row}
-              ariaLabel={labels.visibleFor}
-              onClick={() => setVisibilityOpen(true)}
-            />
-          </div>
-        ) : null}
       </div>
 
       <div

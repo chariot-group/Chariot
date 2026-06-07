@@ -13,6 +13,7 @@ import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectIsInSession, selectSessionCode } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import UserService from "@/services/UserService";
+import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipantUserLabel";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -115,8 +116,10 @@ export default function CharacterDetailView({
     void UserService.getUserById(playedBySubjectId)
       .then((u) => {
         if (!cancelled) {
-          const label = u.username?.trim() || playedBySubjectId;
-          setResolvedPlayedBy({ createdByKey: playedBySubjectId, label });
+          const label = formatSessionParticipantUserLabel(u);
+          if (label) {
+            setResolvedPlayedBy({ createdByKey: playedBySubjectId, label });
+          }
         }
       })
       .catch(() => {
@@ -177,7 +180,7 @@ export default function CharacterDetailView({
 
   return (
     <main
-      className="flex flex-col h-screen overflow-hidden"
+      className="flex flex-col flex-1 min-h-0 overflow-hidden"
       id="characterView">
       <form
         id="character-update-form"
@@ -303,7 +306,7 @@ export default function CharacterDetailView({
 
         {/* Footer avec boutons - fixe en bas */}
         {showEditControls ? (
-          <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 border-t border-transparent">
+          <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] border-t border-transparent">
             <div className="w-full mx-auto flex flex-row-reverse gap-2">
               {isEditing ? (
                 <React.Fragment>

@@ -25,10 +25,13 @@ import { useCallback, useEffect, useRef } from "react";
 const BATTLE_SYNC_DEBOUNCE_MS = 250;
 
 export function shouldBroadcastBattleStateSnapshot(
-  snapshot: Pick<BattleStateSnapshot, "battleInitialized" | "battleStarted">,
-  hadBroadcastStartedBattle: boolean,
+  snapshot: Pick<BattleStateSnapshot, "battleInitialized" | "battleStarted" | "allowPlayerInitiativeInput">,
+  hadBroadcastVisibleBattle: boolean,
 ): boolean {
-  return snapshot.battleStarted || (!snapshot.battleInitialized && hadBroadcastStartedBattle);
+  const visibleToPlayers = snapshot.battleStarted || (
+    snapshot.battleInitialized && snapshot.allowPlayerInitiativeInput
+  );
+  return visibleToPlayers || (!snapshot.battleInitialized && hadBroadcastVisibleBattle);
 }
 
 function isGameMaster(
@@ -57,7 +60,9 @@ export function useSessionBattleSync() {
   const codeRef = useRef(code);
   const isGmRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hasBroadcastStartedBattleRef = useRef(snapshot.battleStarted);
+  const hasBroadcastVisibleBattleRef = useRef(
+    snapshot.battleStarted || (snapshot.battleInitialized && snapshot.allowPlayerInitiativeInput),
+  );
 
   useEffect(() => {
     snapshotRef.current = snapshot;
@@ -94,7 +99,13 @@ export function useSessionBattleSync() {
     });
 
     registerBattleStateRequestResponder(() => {
-      if (!isGmRef.current || !snapshotRef.current.battleStarted) return null;
+      if (
+        !isGmRef.current ||
+        (!snapshotRef.current.battleStarted
+          && !(snapshotRef.current.battleInitialized && snapshotRef.current.allowPlayerInitiativeInput))
+      ) {
+        return null;
+      }
       return snapshotRef.current;
     });
 
@@ -109,14 +120,16 @@ export function useSessionBattleSync() {
   useEffect(() => {
     if (!isInSession || !isGm) return;
 
-    const hadBroadcastStartedBattle = hasBroadcastStartedBattleRef.current;
-    const shouldBroadcast = shouldBroadcastBattleStateSnapshot(snapshot, hadBroadcastStartedBattle);
+    const hadBroadcastVisibleBattle = hasBroadcastVisibleBattleRef.current;
+    const shouldBroadcast = shouldBroadcastBattleStateSnapshot(snapshot, hadBroadcastVisibleBattle);
     if (!shouldBroadcast) return;
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       debounceRef.current = null;
-      hasBroadcastStartedBattleRef.current = snapshotRef.current.battleStarted;
+      hasBroadcastVisibleBattleRef.current =
+        snapshotRef.current.battleStarted
+        || (snapshotRef.current.battleInitialized && snapshotRef.current.allowPlayerInitiativeInput);
       emitBattleStateUpdate(snapshotRef.current);
     }, BATTLE_SYNC_DEBOUNCE_MS);
 
@@ -170,7 +183,10 @@ export function useSessionBattleSync() {
     };
 
     const onParticipantJoined = () => {
-      if (snapshotRef.current.battleStarted) {
+      if (
+        snapshotRef.current.battleStarted
+        || (snapshotRef.current.battleInitialized && snapshotRef.current.allowPlayerInitiativeInput)
+      ) {
         emitBattleStateUpdate(snapshotRef.current);
       }
     };

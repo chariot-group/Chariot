@@ -18,8 +18,9 @@ function baseWsUrl(): string {
     return process.env.NEXT_PUBLIC_SESSION_WS_URL ?? "http://localhost:9002";
 }
 
-function makeConnectionKey(code: string, token: string): string {
-    return `${code.trim()}::${token}`;
+/** Clé stable par session : le refresh JWT ne doit pas recréer la connexion WS. */
+function makeConnectionKey(code: string): string {
+    return code.trim();
 }
 
 /** Socket actif du pool, si une acquisition est en cours (effets après le premier acquire du cycle). */
@@ -28,11 +29,20 @@ export function getPooledSessionSocket(): Socket | null {
 }
 
 /**
- * Partage une unique connexion Socket.IO vers `/session` pour un couple (code OTP, token).
- * Évite deux connexions parallèles (layout + page session) et les allers-retours inutiles au changement de route.
+ * Met à jour le token d’auth pour la prochaine reconnexion Socket.IO sans couper la connexion active.
+ * Le handshake initial suffit tant que la socket reste connectée.
+ */
+export function syncSessionSocketAuth(token: string): void {
+    if (!pool?.socket || !token.trim()) return;
+    pool.socket.auth = { token };
+}
+
+/**
+ * Partage une unique connexion Socket.IO vers `/session` pour un code OTP de session.
+ * Évite deux connexions parallèles (layout + page session) et les reconnexions au refresh JWT.
  */
 export function acquireSessionSocket(code: string, token: string): Socket {
-    const key = makeConnectionKey(code, token);
+    const key = makeConnectionKey(code);
     if (pool && pool.connectionKey !== key) {
         pool.socket.disconnect();
         pool = null;
@@ -44,6 +54,8 @@ export function acquireSessionSocket(code: string, token: string): Socket {
             transports: TRANSPORTS,
         });
         pool = { socket, refCount: 0, connectionKey: key };
+    } else {
+        syncSessionSocketAuth(token);
     }
     pool.refCount += 1;
     return pool.socket;
