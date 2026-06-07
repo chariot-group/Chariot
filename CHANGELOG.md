@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.6.1] - 06-06-2026
+
+### Added
+- Added free checkout flow for orders at 0 € or below the Stripe minimum charge amount (button "Obtenir gratuitement", no card payment required)
+- Added "Cadeau" line in checkout recap when a positive remainder below the Stripe minimum is waived
+
+### Fixed
+- Fixed promo codes at 99–100 % being displayed in checkout but charging the full price
+- Fixed Stripe Elements context error when applying a 100 % promo code (`CheckoutFreeForm` / `CheckoutPaidForm` split)
+- Fixed footer buttons visibility
+- Fixed somes sessions bugs
+
+## [1.0.1] - 06-06-2026
+
+### Added
+- Added `stripe-charge.utils` to resolve Stripe-chargeable amounts and gift waivers below currency minimum (EUR: 50 centimes)
+- Added `POST /stripe/free-order` endpoint to fulfill zero-amount orders without Stripe card payment
+- Added FR-013-C functional rule for below-minimum and free checkout orders
+
+### Fixed
+- Fixed promo codes at 99–100 % failing to update PaymentIntent amount (Stripe rejects amounts below minimum); order is now routed to the free-order flow instead
+- PaymentIntent is cancelled when an order becomes non-chargeable to prevent accidental full-price payment
+
+### Changed
+- `createPaymentIntent` and `updatePaymentIntent` now return `isFreeOrder` and use chargeable amount instead of raw discounted amount
+- Checkout session metadata includes gift amount in total discount
+
 ## [2.6.0] - 06-06-2026
 
 ### Added

@@ -16,6 +16,8 @@ export interface PricingContext {
   originalAmount: number;
   discountedAmount: number;
   discountAmount: number;
+  giftAmount: number;
+  chargeableAmount: number;
   currency: string;
 }
 
@@ -41,70 +43,71 @@ export interface CheckoutFormProps {
   quantitySyncPending: boolean;
   onQuantityChange: (quantity: number) => void;
   referralDiscount: ReferralDiscount | null;
+  isFreeOrder: boolean;
+  piError: string | null;
+  onConfirmFreeOrder: () => Promise<void>;
 }
 
-export function CheckoutForm({
+interface CheckoutFormContentProps extends CheckoutFormProps {
+  onConfirm: () => void;
+  confirmDisabled: boolean;
+  confirmLabel: string;
+  showPaymentPanel: boolean;
+}
+
+function CheckoutFormContent({
   product,
   tokenCount,
   pricing,
   promoCode,
   piRefreshing,
-  locale,
   quantity,
-  quantitySyncPending,
   onQuantityChange,
   referralDiscount,
-}: CheckoutFormProps) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const router = useRouter();
+  piError,
+  onConfirm,
+  confirmDisabled,
+  confirmLabel,
+  showPaymentPanel,
+}: CheckoutFormContentProps) {
   const t = useTranslations("checkout");
   const tShop = useTranslations("shop");
 
   const [payLoading, setPayLoading] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
 
-  const { originalAmount, discountedAmount, discountAmount, currency } = pricing;
+  const { originalAmount, discountAmount, giftAmount, chargeableAmount, currency } = pricing;
 
-  async function handleConfirmPayment() {
-    if (!stripe || !elements) return;
+  async function handleConfirm() {
     setPayLoading(true);
     setPayError(null);
-
-    const returnUrl = `${window.location.origin}/${locale}/checkout/return`;
-    const result = await stripe.confirmPayment({
-      elements,
-      confirmParams: { return_url: returnUrl },
-      redirect: "if_required",
-    });
-
-    if (result.error) {
-      setPayError(result.error.message ?? t("payError"));
+    try {
+      await onConfirm();
+    } catch {
+      setPayError(t("payError"));
       setPayLoading(false);
-    } else {
-      router.push(`/${locale}/checkout/return?redirect_status=succeeded`);
     }
   }
 
   return (
     <div className="flex flex-row gap-6 items-start w-full justify-center h-full">
-      {/* Payment details */}
-      <div className="w-[50%] overflow-y-auto self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-        <Card className="gap-3 p-5">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            {t("paymentDetails")}
-          </h2>
-          <PaymentElement
-            options={{
-              paymentMethodOrder: ["card"],
-              layout: { type: "accordion", defaultCollapsed: false },
-            }}
-          />
-        </Card>
-      </div>
+      {showPaymentPanel && (
+        <div className="w-[50%] overflow-y-auto self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+          <Card className="gap-3 p-5">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              {t("paymentDetails")}
+            </h2>
+            <PaymentElement
+              options={{
+                paymentMethodOrder: ["card"],
+                layout: { type: "accordion", defaultCollapsed: false },
+              }}
+            />
+          </Card>
+        </div>
+      )}
 
       <div className="flex flex-col gap-6">
-        {/* Order summary */}
         <Card className="gap-4 p-5">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t("orderSummary")}</h2>
           <div className="flex items-center gap-3">
@@ -145,7 +148,6 @@ export function CheckoutForm({
             )}
           </div>
 
-          {/* Quantity selector */}
           <div className="flex items-center justify-between pt-1">
             <span className="text-sm text-muted-foreground">{t("quantity")}</span>
             <div className="flex items-center gap-2">
@@ -178,13 +180,12 @@ export function CheckoutForm({
             </div>
           </div>
 
-          {/* Price breakdown */}
           <div className="space-y-1.5 pt-1 border-t border-border/40">
             <div
               className={`flex justify-between text-sm text-muted-foreground ${quantity <= 1 ? "invisible" : ""}`}
               aria-hidden={quantity <= 1}>
               <span>{t("unitPrice")}</span>
-              <span>{formatPrice(discountedAmount, currency)}</span>
+              <span>{formatPrice(chargeableAmount, currency)}</span>
             </div>
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>
@@ -203,16 +204,21 @@ export function CheckoutForm({
                 <span>-{formatPrice(discountAmount * quantity, currency)}</span>
               </div>
             )}
+            {giftAmount > 0 && (
+              <div className="flex justify-between text-sm text-green-500">
+                <span>{t("giftDiscount")}</span>
+                <span>-{formatPrice(giftAmount * quantity, currency)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-base font-bold text-card-foreground pt-1 border-t border-border/40">
               <span>{t("total")}</span>
-              <span className={discountAmount > 0 ? "text-green-400" : ""}>
-                {formatPrice(discountedAmount * quantity, currency)}
+              <span className={discountAmount > 0 || giftAmount > 0 ? "text-green-400" : ""}>
+                {formatPrice(chargeableAmount * quantity, currency)}
               </span>
             </div>
           </div>
         </Card>
 
-        {/* Promo code */}
         <Card className="gap-3 p-5">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t("promoTitle")}</h2>
           {referralDiscount && !promoCode.applied && (
@@ -222,7 +228,7 @@ export function CheckoutForm({
                 aria-hidden="true"
               />
               <span className="font-medium text-card-foreground">{t("referralDiscount")}</span>
-              <span className="text-green-400">-{referralDiscount.discountPercent} %</span>
+              <span className="text-green-400">-{referralDiscount.discountPercent} %</span>
             </div>
           )}
           {promoCode.applied ? (
@@ -292,19 +298,18 @@ export function CheckoutForm({
           )}
         </Card>
 
-        {/* Pay button */}
-        {payError && (
+        {(payError || piError) && (
           <p
             className="text-sm text-destructive text-center"
             role="alert">
-            {payError}
+            {payError ?? piError}
           </p>
         )}
         <Button
           size="lg"
           className="w-full rounded-2xl font-semibold text-base h-14"
-          onClick={handleConfirmPayment}
-          disabled={payLoading || piRefreshing || quantitySyncPending || !stripe || !elements}
+          onClick={handleConfirm}
+          disabled={payLoading || confirmDisabled}
           aria-busy={payLoading}>
           {payLoading ? (
             <>
@@ -315,12 +320,67 @@ export function CheckoutForm({
               {t("preparing")}
             </>
           ) : (
-            t("payButton", { amount: formatPrice(discountedAmount * quantity, currency) })
+            confirmLabel
           )}
         </Button>
 
-        <p className="text-center text-xs text-muted-foreground">{t("securedByStripe")}</p>
+        {!showPaymentPanel && <p className="text-center text-xs text-muted-foreground">{t("freeOrderNotice")}</p>}
+        {showPaymentPanel && <p className="text-center text-xs text-muted-foreground">{t("securedByStripe")}</p>}
       </div>
     </div>
+  );
+}
+
+/** Free checkout — no Stripe Elements context required. */
+export function CheckoutFreeForm(props: CheckoutFormProps) {
+  const router = useRouter();
+  const t = useTranslations("checkout");
+  const { locale, onConfirmFreeOrder, piRefreshing, quantitySyncPending, piError, pricing } = props;
+
+  return (
+    <CheckoutFormContent
+      {...props}
+      showPaymentPanel={false}
+      confirmLabel={t("freeOrderButton")}
+      confirmDisabled={piRefreshing || quantitySyncPending || !!piError}
+      onConfirm={async () => {
+        await onConfirmFreeOrder();
+        router.push(`/${locale}/checkout/return?redirect_status=succeeded`);
+      }}
+    />
+  );
+}
+
+/** Paid checkout — must be rendered inside <Elements>. */
+export function CheckoutPaidForm(props: CheckoutFormProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const router = useRouter();
+  const t = useTranslations("checkout");
+  const { locale, piRefreshing, quantitySyncPending, piError, pricing, quantity } = props;
+  const { chargeableAmount, currency } = pricing;
+
+  return (
+    <CheckoutFormContent
+      {...props}
+      showPaymentPanel
+      confirmLabel={t("payButton", { amount: formatPrice(chargeableAmount * quantity, currency) })}
+      confirmDisabled={piRefreshing || quantitySyncPending || !!piError || !stripe || !elements}
+      onConfirm={async () => {
+        if (!stripe || !elements) {
+          throw new Error("Stripe not ready");
+        }
+        const returnUrl = `${window.location.origin}/${locale}/checkout/return`;
+        const result = await stripe.confirmPayment({
+          elements,
+          confirmParams: { return_url: returnUrl },
+          redirect: "if_required",
+        });
+        if (result.error) {
+          throw new Error(result.error.message ?? t("payError"));
+        }
+        router.push(`/${locale}/checkout/return?redirect_status=succeeded`);
+      }}
+    />
   );
 }

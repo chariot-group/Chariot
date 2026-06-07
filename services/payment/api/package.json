@@ -1,6 +1,6 @@
 {
   "name": "@chariot/chariot-payment",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chariot Payment Microservice",
   "author": "",
   "private": true,

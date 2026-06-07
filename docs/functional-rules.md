@@ -998,6 +998,41 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
+### FR-013-C: Below-Minimum and Free Checkout Orders
+
+**Rule**: When the final discounted order amount is zero or below the Stripe minimum charge for the currency, the order must be fulfilled without a card payment. Any positive remainder below the Stripe minimum must appear as a complimentary "Cadeau" line in the checkout recap.
+
+**Requirements**:
+
+- Stripe minimum charge amounts must be enforced server-side before creating or updating a PaymentIntent (EUR minimum: 50 centimes)
+- When `chargeableAmount === 0`, checkout must use `POST /stripe/free-order` instead of Stripe PaymentElement confirmation
+- The existing PaymentIntent must be cancelled when the order becomes non-chargeable, to prevent accidental full-price payment
+- Free-order fulfillment must produce the same side effects as a successful Stripe webhook: payment recorded as `COMPLETED`, promo/affiliation usage tracked, referral side effects applied, tokens credited
+- When `0 < discountedAmount < stripeMinimum`, the checkout recap must display a **Cadeau** line equal to the remainder waived (gift amount), in addition to any promo/affiliation/referral discount lines
+- The pay button must remain disabled while PaymentIntent synchronization fails (`piError` present)
+
+**Prohibitions**:
+
+- Attempting to create or update a Stripe PaymentIntent with an amount below the Stripe minimum (except 0 handled by free-order flow)
+- Allowing card payment when the displayed total is 0 €
+- Omitting the Cadeau line when a positive remainder below the Stripe minimum exists
+
+**Tests**:
+
+- `resolveChargeableAmount` returns gift waiver for amounts between 1 and minimum-1 centimes
+- `resolveChargeableAmount` returns no gift for amount exactly at Stripe minimum
+- `resolveChargeableAmount` returns zero charge for fully discounted orders
+- Free-order endpoint rejects requests where `chargeableAmount > 0`
+
+**References**:
+
+- `services/payment/api/src/resources/stripe/stripe-charge.utils.ts`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `services/web/client/src/lib/checkout-utils.ts`
+- `services/web/client/src/components/checkout/CheckoutForm.tsx`
+
+---
+
 ## FR-014: Admin Sidebar External Navigation Links
 
 **Rule**: The admin client sidebar must expose configurable external links to third-party administration consoles (Keycloak, Stripe). URLs must be defined per environment via environment variables and must not be hardcoded.
