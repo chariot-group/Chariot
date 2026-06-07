@@ -65,11 +65,11 @@ export default function Header() {
   return (
     <React.Fragment>
       {process.env.NEXT_PUBLIC_ENV_NAME === "integration" && (
-        <div className="w-full bg-yellow-500 text-black text-center py-2 px-4 font-semibold text-sm">
+        <div className="w-full shrink-0 bg-yellow-500 text-black text-center py-2 px-4 font-semibold text-sm">
           ⚠️ ENVIRONNEMENT D&apos;INTEG v{appVersion}
         </div>
       )}
-      <header className="w-full flex flex-row justify-between items-center px-2 sm:px-4 z-10">
+      <header className="w-full shrink-0 flex flex-row justify-between items-center px-2 sm:px-4 z-10">
         <SidebarTrigger className="self-start mt-1" />
         <button
           type="button"
