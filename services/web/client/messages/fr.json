@@ -484,6 +484,7 @@
   },
   "zodErrors": {
     "invalidTypeReceived": "Entrée invalide",
+    "invalidOption": "Sélectionnez une option valide",
     "required": "Requis",
     "tooSmall": {
       "string": {
@@ -514,7 +515,9 @@
     },
     "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}",
     "abilityCounterOrder": "L'utilisation actuelle ne peut pas dépasser le plafond.",
-    "classLevelTotalsVsGlobalHitDice": "Le total des niveaux de classe ({total}) dépasse le niveau global ({global}). Corrigez les niveaux de classe ou le niveau global — l’erreur est indiquée sur les dés restants."
+    "classLevelTotalsVsGlobalHitDice": "Le total des niveaux de classe ({total}) dépasse le niveau global ({global}). Corrigez les niveaux de classe ou le niveau global — l’erreur est indiquée sur les dés restants.",
+    "singleDamageType": "Un seul type de dégâts est autorisé par ligne de dégâts.",
+    "uniqueActionDamageType": "Chaque type de dégâts doit être unique dans une même action."
   },
   "characterDetail": {
     "editCharacter": "Modifier le personnage",
@@ -642,7 +645,8 @@
       "battle": "Combat",
       "magic": "Magie",
       "inventory": "Inventaire",
-      "history": "Histoire"
+      "history": "Histoire",
+      "containsErrors": "Cet onglet contient des champs en erreur"
     },
     "battle": {
       "stats": "Statistiques",
@@ -1094,6 +1098,9 @@
       "selectSpellToEdit": "Sélectionnez un sort à gauche pour modifier ses détails",
       "noSpellsInLevel": "Aucun sort à ce niveau",
       "newSpell": "Nouveau sort",
+      "spellContainsErrors": "Ce sort contient des champs en erreur",
+      "spellContainsErrorsAria": "{name} contient des champs en erreur",
+      "spellCategoryContainsErrors": "Cette catégorie de sorts contient des champs en erreur",
       "effectTypes": {
         "attack": "Attaque",
         "heal": "Soin",

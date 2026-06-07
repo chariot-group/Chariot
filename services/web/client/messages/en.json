@@ -483,6 +483,7 @@
   },
   "zodErrors": {
     "invalidTypeReceived": "Invalid input",
+    "invalidOption": "Select a valid option",
     "required": "Required",
     "tooSmall": {
       "string": {
@@ -513,7 +514,9 @@
     },
     "notMultipleOf": "Number must be a multiple of {multipleOf}",
     "abilityCounterOrder": "Current uses cannot exceed the maximum.",
-    "classLevelTotalsVsGlobalHitDice": "Total class levels ({total}) exceed the character’s global level ({global}). Fix class levels or the global level — the error appears on remaining hit dice."
+    "classLevelTotalsVsGlobalHitDice": "Total class levels ({total}) exceed the character’s global level ({global}). Fix class levels or the global level — the error appears on remaining hit dice.",
+    "singleDamageType": "Only one damage type is allowed per damage entry.",
+    "uniqueActionDamageType": "Each damage type must be unique within an action."
   },
   "characterDetail": {
     "editCharacter": "Edit character",
@@ -641,7 +644,8 @@
       "battle": "Battle",
       "magic": "Magic",
       "inventory": "Inventory",
-      "history": "History"
+      "history": "History",
+      "containsErrors": "This tab contains fields with errors"
     },
     "battle": {
       "stats": "Stats",
@@ -1089,6 +1093,9 @@
       "selectSpellToEdit": "Select a spell on the left to edit its details",
       "noSpellsInLevel": "No spells for this level",
       "newSpell": "New spell",
+      "spellContainsErrors": "This spell contains fields with errors",
+      "spellContainsErrorsAria": "{name} contains fields with errors",
+      "spellCategoryContainsErrors": "This spell category contains fields with errors",
       "effectTypes": {
         "attack": "Attack",
         "heal": "Heal",

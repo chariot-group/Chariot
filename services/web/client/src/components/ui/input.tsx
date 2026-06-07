@@ -5,6 +5,13 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+function parseNumberAttribute(value: string): number | null {
+  if (value.trim() === "") return null;
+
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
 function Input({ className, type, ref: externalRef, ...props }: React.ComponentProps<"input">) {
   const innerRef = React.useRef<HTMLInputElement>(null);
 
@@ -21,11 +28,26 @@ function Input({ className, type, ref: externalRef, ...props }: React.ComponentP
     if (!input || props.disabled) return;
 
     const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+    const step = Number(input.step);
+    const fallbackStep = Number.isFinite(step) && step > 0 ? step : 1;
+    const currentValue = Number(input.value);
+    const min = parseNumberAttribute(input.min);
+    const max = parseNumberAttribute(input.max);
+    const fallbackBase = Number.isFinite(currentValue) ? currentValue : 0;
+    const nextValue = direction === "up" ? fallbackBase + fallbackStep : fallbackBase - fallbackStep;
+    const clampedValue = Math.min(
+      max ?? Number.POSITIVE_INFINITY,
+      Math.max(min ?? Number.NEGATIVE_INFINITY, nextValue),
+    );
+    const decimalPrecision = Math.min(
+      10,
+      Math.max(
+        input.value.split(".")[1]?.length ?? 0,
+        input.step.split(".")[1]?.length ?? 0,
+      ),
+    );
 
-    if (direction === "up") input.stepUp();
-    else input.stepDown();
-
-    nativeInputValueSetter?.call(input, input.value);
+    nativeInputValueSetter?.call(input, String(Number(clampedValue.toFixed(decimalPrecision))));
     input.dispatchEvent(new Event("input", { bubbles: true }));
   };
 

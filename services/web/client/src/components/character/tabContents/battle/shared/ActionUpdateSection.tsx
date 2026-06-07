@@ -344,20 +344,32 @@ const ActionUpdateSection = ({
                           <Controller
                             name={`${fieldArrayName}.${index}.attackBonus`}
                             control={form.control}
-                            render={({ field: attackField }) => (
-                              <Input
-                                {...attackField}
-                                value={attackField.value ?? ""}
-                                type="number"
-                                onChange={(event) => {
-                                  form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, { shouldDirty: true });
+                            render={({ field: attackField, fieldState }) => (
+                              <Field
+                                data-invalid={fieldState.invalid}
+                                orientation="vertical">
+                                <Input
+                                  {...attackField}
+                                  value={attackField.value ?? ""}
+                                  type="number"
+                                  aria-invalid={fieldState.invalid}
+                                  aria-describedby={fieldState.error ? `${fieldArrayName}-${index}-attack-bonus-error` : undefined}
+                                  onChange={(event) => {
+                                    form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, { shouldDirty: true });
 
-                                  clearAutoDamageBonusForAction(index, true);
+                                    clearAutoDamageBonusForAction(index, true);
 
-                                  attackField.onChange(event);
-                                }}
-                                placeholder={tEdit("zeroPlaceholder")}
-                              />
+                                    attackField.onChange(event);
+                                  }}
+                                  placeholder={tEdit("zeroPlaceholder")}
+                                />
+                                {fieldState.error && (
+                                  <FieldError
+                                    id={`${fieldArrayName}-${index}-attack-bonus-error`}
+                                    errors={[fieldState.error]}
+                                  />
+                                )}
+                              </Field>
                             )}
                           />
                         </div>
@@ -422,75 +434,92 @@ const ActionUpdateSection = ({
 
                           return (
                             <div className="flex flex-col gap-3 w-full min-w-0">
-                              {damages.map((damage, damageIndex) => (
-                                <div
-                                  key={damageIndex}
-                                  className="flex flex-col gap-3 w-full min-w-0 rounded-[20px] border border-white/10 bg-white/3 p-3">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                      {`${t("type")} ${damageIndex + 1}`}
-                                    </span>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => {
-                                        damageField.onChange(damages.filter((_: unknown, i: number) => i !== damageIndex));
-                                      }}
-                                      aria-label={`${tCommon("delete")} ${damageIndex + 1}`}
-                                      className="text-red-500 shrink-0">
-                                      <Trash2 className="size-4" />
-                                    </Button>
-                                  </div>
-                                  <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-end gap-3">
-                                    <div className="flex flex-col gap-1 min-w-0">
-                                      <span className="text-xs font-medium text-muted-foreground">{tEdit("spellDamage")}</span>
-                                      <Input
-                                        value={damage?.dice ?? ""}
-                                        onChange={(event) => updateDamage(damageIndex, "dice", event.target.value)}
-                                        placeholder="1d6"
-                                        className="w-full"
-                                      />
-                                    </div>
-                                    <Button
-                                      type="button"
-                                      variant={damage?.applyAbilityBonus ? "default" : "outline"}
-                                      size="sm"
-                                      disabled={!hasSelectedAttackAbility}
-                                      onClick={() => {
-                                        const updatedDamages = [...damages];
-                                        const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
-                                        const applyAbilityBonus = !Boolean(currentDamage.applyAbilityBonus);
-                                        const nextDice = applyAbilityBonus && hasSelectedAttackAbility
-                                          ? applyAbilityModifierToDice(currentDamage.dice ?? "", selectedDamageModifier)
-                                          : stripTrailingDamageBonus(currentDamage.dice ?? "");
+                              {damages.map((damage, damageIndex) => {
+                                const damageTypePath = `${fieldArrayName}.${index}.damage.${damageIndex}.type`;
+                                const damageTypeState = form.getFieldState(damageTypePath, form.formState);
+                                const damageTypeErrorId = `${fieldArrayName}-${index}-damage-${damageIndex}-type-error`;
 
-                                        updatedDamages[damageIndex] = {
-                                          ...currentDamage,
-                                          applyAbilityBonus,
-                                          dice: nextDice,
-                                        };
-                                        damageField.onChange(updatedDamages);
-                                      }}
-                                      title={hasSelectedAttackAbility && selectedAttackSuggestion
-                                        ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
-                                        : t("attackDC")}
-                                      className="h-9 w-22 px-0 text-xs shrink-0 justify-center self-end">
-                                      AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
-                                    </Button>
+                                return (
+                                  <div
+                                    key={damageIndex}
+                                    className="flex flex-col gap-3 w-full min-w-0 rounded-[20px] border border-white/10 bg-white/3 p-3">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="text-xs font-medium text-muted-foreground">
+                                        {`${t("type")} ${damageIndex + 1}`}
+                                      </span>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => {
+                                          damageField.onChange(damages.filter((_: unknown, i: number) => i !== damageIndex));
+                                        }}
+                                        aria-label={`${tCommon("delete")} ${damageIndex + 1}`}
+                                        className="text-red-500 shrink-0">
+                                        <Trash2 className="size-4" />
+                                      </Button>
+                                    </div>
+                                    <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-end gap-3">
+                                      <div className="flex flex-col gap-1 min-w-0">
+                                        <span className="text-xs font-medium text-muted-foreground">{tEdit("spellDamage")}</span>
+                                        <Input
+                                          value={damage?.dice ?? ""}
+                                          onChange={(event) => updateDamage(damageIndex, "dice", event.target.value)}
+                                          placeholder="1d6"
+                                          className="w-full"
+                                        />
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant={damage?.applyAbilityBonus ? "default" : "outline"}
+                                        size="sm"
+                                        disabled={!hasSelectedAttackAbility}
+                                        onClick={() => {
+                                          const updatedDamages = [...damages];
+                                          const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
+                                          const applyAbilityBonus = !Boolean(currentDamage.applyAbilityBonus);
+                                          const nextDice = applyAbilityBonus && hasSelectedAttackAbility
+                                            ? applyAbilityModifierToDice(currentDamage.dice ?? "", selectedDamageModifier)
+                                            : stripTrailingDamageBonus(currentDamage.dice ?? "");
+
+                                          updatedDamages[damageIndex] = {
+                                            ...currentDamage,
+                                            applyAbilityBonus,
+                                            dice: nextDice,
+                                          };
+                                          damageField.onChange(updatedDamages);
+                                        }}
+                                        title={hasSelectedAttackAbility && selectedAttackSuggestion
+                                          ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
+                                          : t("attackDC")}
+                                        className="h-9 w-22 px-0 text-xs shrink-0 justify-center self-end">
+                                        AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
+                                      </Button>
+                                    </div>
+                                    <Field
+                                      data-invalid={damageTypeState.invalid}
+                                      orientation="vertical"
+                                      className="w-full min-w-0">
+                                      <span className="mb-1 block text-xs font-medium text-muted-foreground">{tEdit("damageType")}</span>
+                                      <DamageTypeInput
+                                        id={damageTypePath}
+                                        value={damage?.type ?? ""}
+                                        onChange={(value) => updateDamage(damageIndex, "type", value)}
+                                        placeholder={tEdit("damageTypePlaceholder")}
+                                        aria-invalid={damageTypeState.invalid}
+                                        aria-describedby={damageTypeState.error ? damageTypeErrorId : undefined}
+                                        customDamageTypes={existingDamageTypes}
+                                      />
+                                      {damageTypeState.error && (
+                                        <FieldError
+                                          id={damageTypeErrorId}
+                                          errors={[damageTypeState.error]}
+                                        />
+                                      )}
+                                    </Field>
                                   </div>
-                                  <div className="w-full min-w-0">
-                                    <span className="mb-1 block text-xs font-medium text-muted-foreground">{tEdit("damageType")}</span>
-                                    <DamageTypeInput
-                                      id={`${fieldArrayName}.${index}.damage.${damageIndex}.type`}
-                                      value={damage?.type ?? ""}
-                                      onChange={(value) => updateDamage(damageIndex, "type", value)}
-                                      placeholder={tEdit("damageTypePlaceholder")}
-                                      customDamageTypes={existingDamageTypes}
-                                    />
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                               <Button
                                 type="button"
                                 variant="outline"

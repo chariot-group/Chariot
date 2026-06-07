@@ -483,6 +483,7 @@
   },
   "zodErrors": {
     "invalidTypeReceived": "Entrada inválida",
+    "invalidOption": "Selecciona una opción válida",
     "required": "Requerido",
     "tooSmall": {
       "string": {
@@ -513,7 +514,9 @@
     },
     "notMultipleOf": "El número debe ser un múltiplo de {multipleOf}",
     "abilityCounterOrder": "El uso actual no puede superar el máximo.",
-    "classLevelTotalsVsGlobalHitDice": "La suma de niveles de clase ({total}) supera el nivel global del personaje ({global}). Corrige los niveles o el nivel global — el error aparece en los dados restantes."
+    "classLevelTotalsVsGlobalHitDice": "La suma de niveles de clase ({total}) supera el nivel global del personaje ({global}). Corrige los niveles o el nivel global — el error aparece en los dados restantes.",
+    "singleDamageType": "Solo se permite un tipo de daño por línea de daño.",
+    "uniqueActionDamageType": "Cada tipo de daño debe ser único dentro de una misma acción."
   },
   "characterDetail": {
     "editCharacter": "Modificar personaje",
@@ -641,7 +644,8 @@
       "battle": "Combate",
       "magic": "Magia",
       "inventory": "Inventario",
-      "history": "Historia"
+      "history": "Historia",
+      "containsErrors": "Esta pestaña contiene campos con errores"
     },
     "battle": {
       "stats": "Estadísticas",
@@ -1090,6 +1094,9 @@
       "selectSpellToEdit": "Selecciona un conjuro a la izquierda para editar sus detalles",
       "noSpellsInLevel": "No hay conjuros en este nivel",
       "newSpell": "Nuevo conjuro",
+      "spellContainsErrors": "Este conjuro contiene campos con errores",
+      "spellContainsErrorsAria": "{name} contiene campos con errores",
+      "spellCategoryContainsErrors": "Esta categoría de conjuros contiene campos con errores",
       "effectTypes": {
         "attack": "Ataque",
         "heal": "Curación",

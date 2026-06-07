@@ -21,6 +21,7 @@ import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement }
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
+import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -78,13 +79,13 @@ export default function CharacterDetailView({
   const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
 
   // Fonction pour changer d'onglet et mettre à jour l'URL
-  const handleTabChange = (newTab: string) => {
+  const handleTabChange = React.useCallback((newTab: string) => {
     const tab = newTab as CharacterTab;
     // Mettre à jour l'URL sans recharger la page
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
     router.replace(`?${params.toString()}`, { scroll: false });
-  };
+  }, [router, searchParams]);
 
   // Déterminer le type de personnage
   const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
@@ -105,7 +106,16 @@ export default function CharacterDetailView({
   });
 
   // Abonnement explicite (sinon isDirty ne met pas à jour le footer quand seuls des champs imbriqués changent, ex. abilities)
-  const { isDirty } = useFormState({ control: form.control });
+  const { errors, isDirty } = useFormState({ control: form.control });
+  const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
+
+  const handleInvalid = React.useCallback((errors: Record<string, unknown>) => {
+    const firstErrorTab = getFirstCharacterTabWithError(errors);
+    if (firstErrorTab && firstErrorTab !== activeTab) {
+      handleTabChange(firstErrorTab);
+    }
+    toast.error(t("updateError"));
+  }, [activeTab, handleTabChange, t, toast]);
 
   useEffect(() => {
     if (!playedBySubjectId) {
@@ -165,7 +175,7 @@ export default function CharacterDetailView({
 
       event.preventDefault();
       event.stopPropagation();
-      form.handleSubmit(onUpdate, () => toast.error(t("updateError")))();
+      form.handleSubmit(onUpdate, handleInvalid)();
     };
 
     window.addEventListener("keydown", handleGlobalShortcuts, true);
@@ -173,7 +183,7 @@ export default function CharacterDetailView({
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcuts, true);
     };
-  }, [form, isDirty, isEditing, onCancel, onUpdate, setIsEditing, t, toast]);
+  }, [form, handleInvalid, isDirty, isEditing, onCancel, onUpdate, setIsEditing]);
 
   return (
     <main
@@ -188,7 +198,7 @@ export default function CharacterDetailView({
             return;
           }
 
-          form.handleSubmit(onUpdate)(event);
+          form.handleSubmit(onUpdate, handleInvalid)(event);
         }}
         onKeyDown={(event) => {
           if (isEnterWithModifiers(event)) {
@@ -282,6 +292,7 @@ export default function CharacterDetailView({
                     activeTab={activeTab}
                     listClassName="gap-1 lg:flex-wrap"
                     triggerClassName="grow-0"
+                    tabsWithErrors={isEditing ? tabsWithErrors : undefined}
                   />
                 </div>
               </div>
