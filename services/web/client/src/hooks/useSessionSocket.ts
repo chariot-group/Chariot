@@ -19,7 +19,7 @@ import {
     resolveParticipantToastLabel,
 } from "@/lib/sessionParticipantDisplayNames";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
-import { useAppDispatch, useAppStore } from "@/store/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
     clearCurrentSession,
     mergeSessionParticipantDisplayNames,
