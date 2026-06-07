@@ -38,10 +38,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import characterService from "@/services/CharacterService";
 import type { Character } from "@/types/character";
-import {
-  trackerDeathSavesFailuresFromCharacter,
-  trackerKindFromCharacter,
-} from "@/components/initiativeTracker/utils";
+import { trackerDeathSavesFailuresFromCharacter, trackerKindFromCharacter } from "@/components/initiativeTracker/utils";
 
 type BattleGroupCharacter = SessionParticipantsGroupCharacter;
 
@@ -404,9 +401,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               lastname,
               surname,
               avatar: character.avatar ?? "",
-              hitPoints: Number.isFinite(currentHitPoints)
-                ? Number(currentHitPoints)
-                : Number(maxHitPoints ?? 0),
+              hitPoints: Number.isFinite(currentHitPoints) ? Number(currentHitPoints) : Number(maxHitPoints ?? 0),
               maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
               tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
               armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
@@ -472,7 +467,9 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                         persistInitBattleDraft({ showAllOpponents: nextShowAllOpponents });
                       }}
                     />
-                    <Label htmlFor="enable-half-proficiency" className="cursor-pointer text-sm text-card-foreground">
+                    <Label
+                      htmlFor="enable-half-proficiency"
+                      className="cursor-pointer text-sm text-card-foreground">
                       {t("initBattleShowAllOpponents")}
                     </Label>
                   </div>

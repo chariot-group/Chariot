@@ -33,10 +33,7 @@ import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Character } from "@/types/character";
-import {
-  trackerDeathSavesFailuresFromCharacter,
-  trackerKindFromCharacter,
-} from "@/components/initiativeTracker/utils";
+import { trackerDeathSavesFailuresFromCharacter, trackerKindFromCharacter } from "@/components/initiativeTracker/utils";
 
 type BattleGroupCharacter = SessionParticipantsGroupCharacter;
 
@@ -79,15 +76,9 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
 
-  const inCombatCharacterIds = React.useMemo(
-    () => new Set(trackerRows.map((row) => row.characterId)),
-    [trackerRows],
-  );
+  const inCombatCharacterIds = React.useMemo(() => new Set(trackerRows.map((row) => row.characterId)), [trackerRows]);
 
-  const groupIdsInInitiative = React.useMemo(
-    () => new Set(trackerRows.map((row) => row.groupId)),
-    [trackerRows],
-  );
+  const groupIdsInInitiative = React.useMemo(() => new Set(trackerRows.map((row) => row.groupId)), [trackerRows]);
 
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -100,10 +91,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const dialogInitializedRef = React.useRef(false);
 
   const eligibleGroups = React.useMemo(
-    () =>
-      groups.filter((group) =>
-        (group.characters ?? []).some((member) => !inCombatCharacterIds.has(member._id)),
-      ),
+    () => groups.filter((group) => (group.characters ?? []).some((member) => !inCombatCharacterIds.has(member._id))),
     [groups, inCombatCharacterIds],
   );
 
@@ -296,16 +284,12 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
               surname: character.surname ?? "",
               avatar: character.avatar ?? "",
               initiative: resolveMemberInitiative(member._id),
-              hitPoints: Number.isFinite(currentHitPoints)
-                ? Number(currentHitPoints)
-                : Number(maxHitPoints ?? 0),
+              hitPoints: Number.isFinite(currentHitPoints) ? Number(currentHitPoints) : Number(maxHitPoints ?? 0),
               maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
               tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
               armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
               kind,
-              deathSavesFailures: isHydrated
-                ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
-                : 0,
+              deathSavesFailures: isHydrated ? trackerDeathSavesFailuresFromCharacter(hydrated as Character) : 0,
             });
           });
       });
@@ -355,9 +339,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                   <p className="text-sm text-muted-foreground">{t("addCombatantsNoGroupSelected")}</p>
                 ) : (
                   selectedGroups.map((group) => {
-                    const availableMembers = (group.characters ?? []).filter(
-                      (m) => !inCombatCharacterIds.has(m._id),
-                    );
+                    const availableMembers = (group.characters ?? []).filter((m) => !inCombatCharacterIds.has(m._id));
                     const excluded = new Set(excludedMembersByGroup[group._id] ?? []);
                     const isExpanded = expandedGroupIds.includes(group._id);
                     return (
@@ -396,13 +378,9 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                                   groupedInitiativeApply: t("groupedInitiativeApply"),
                                   groupedClearSelection: t("groupedInitiativeClearSelection"),
                                 }}
-                                onToggleMember={(memberId, include) =>
-                                  toggleMember(group._id, memberId, include)
-                                }
+                                onToggleMember={(memberId, include) => toggleMember(group._id, memberId, include)}
                                 onMemberInitiativeChange={setMemberInitiative}
-                                onApplyGroupInitiative={(initiative) =>
-                                  applyGroupInitiative(group._id, initiative)
-                                }
+                                onApplyGroupInitiative={(initiative) => applyGroupInitiative(group._id, initiative)}
                                 onClearMemberSelection={() =>
                                   clearGroupMemberSelection(
                                     group._id,

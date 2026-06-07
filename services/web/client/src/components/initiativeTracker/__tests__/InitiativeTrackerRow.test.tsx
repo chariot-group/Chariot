@@ -116,7 +116,9 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
       />,
     );
 
-    expect(html).toContain("block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden cursor-not-allowed text-white/85");
+    expect(html).toContain(
+      "block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden cursor-not-allowed text-white/85",
+    );
     expect(html).toContain("block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white");
   });
 

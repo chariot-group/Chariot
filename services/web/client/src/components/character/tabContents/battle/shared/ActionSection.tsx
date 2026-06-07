@@ -31,10 +31,13 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const [prioritizeUsageType, setPrioritizeUsageType] = useState<ActionUsageType>("action");
-  const usageTypeCounts = ACTION_USAGE_OPTIONS.reduce<Record<ActionUsageType, number>>((counts, usageType) => {
-    counts[usageType] = 0;
-    return counts;
-  }, { action: 0, bonus_action: 0, reaction: 0 });
+  const usageTypeCounts = ACTION_USAGE_OPTIONS.reduce<Record<ActionUsageType, number>>(
+    (counts, usageType) => {
+      counts[usageType] = 0;
+      return counts;
+    },
+    { action: 0, bonus_action: 0, reaction: 0 },
+  );
 
   actions.forEach((action) => {
     usageTypeCounts[normalizeUsageType(action.usageType)] += 1;
@@ -102,9 +105,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                     <TooltipTrigger asChild>
                       <span className="inline-flex">{button}</span>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      {t("usageTypeUnavailableTooltip", { type: usageLabel })}
-                    </TooltipContent>
+                    <TooltipContent>{t("usageTypeUnavailableTooltip", { type: usageLabel })}</TooltipContent>
                   </Tooltip>
                 );
               }
@@ -134,21 +135,17 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
             }}
             disabled={!hasActions}
             className={accentColor}
-            aria-label={openAccordionValues.length > 0
-              ? t("collapseSectionActions", { section: title })
-              : t("expandSectionActions", { section: title })}
+            aria-label={
+              openAccordionValues.length > 0
+                ? t("collapseSectionActions", { section: title })
+                : t("expandSectionActions", { section: title })
+            }
             aria-expanded={openAccordionValues.length > 0}>
-            {openAccordionValues.length > 0
-              ? (
-                <ListChevronsDownUp
-                  aria-hidden="true"
-                />
-              )
-              : (
-                <ListChevronsUpDown
-                  aria-hidden="true"
-                />
-              )}
+            {openAccordionValues.length > 0 ? (
+              <ListChevronsDownUp aria-hidden="true" />
+            ) : (
+              <ListChevronsUpDown aria-hidden="true" />
+            )}
             <span className="sr-only">
               {openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             </span>
@@ -190,13 +187,16 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                   role="region"
                   aria-labelledby={triggerId}>
                   <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("attackDC")}</span>
+                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                      {t("attackDC")}
+                    </span>
                     {(() => {
-                      const attackOrDc = action.attackBonus !== undefined && action.attackBonus !== null
-                        ? formatSignedBonus(action.attackBonus)
-                        : action.dc?.dcValue
-                          ? `DC ${action.dc.dcValue}`
-                          : "-";
+                      const attackOrDc =
+                        action.attackBonus !== undefined && action.attackBonus !== null
+                          ? formatSignedBonus(action.attackBonus)
+                          : action.dc?.dcValue
+                            ? `DC ${action.dc.dcValue}`
+                            : "-";
                       return (
                         <span
                           className="text-sm md:text-base"
@@ -213,11 +213,11 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                     <span className="text-sm md:text-base">
                       {action.damage && action.damage.length > 0
                         ? action.damage.map((d, i) => (
-                          <span key={i}>
-                            {d.dice} {d.type}
-                            {i < action.damage!.length - 1 ? " + " : ""}
-                          </span>
-                        ))
+                            <span key={i}>
+                              {d.dice} {d.type}
+                              {i < action.damage!.length - 1 ? " + " : ""}
+                            </span>
+                          ))
                         : "-"}
                       {action.range && ` (${action.range})`}
                     </span>
@@ -225,7 +225,9 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                   {action.description && (
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
                       <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
-                      <span className="text-sm md:text-base italic whitespace-pre-wrap wrap-break-word">{action.description}</span>
+                      <span className="text-sm md:text-base italic whitespace-pre-wrap wrap-break-word">
+                        {action.description}
+                      </span>
                     </Card>
                   )}
                 </div>

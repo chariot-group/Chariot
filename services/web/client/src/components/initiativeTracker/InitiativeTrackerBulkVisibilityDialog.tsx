@@ -4,13 +4,7 @@ import * as React from "react";
 import { Cog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -179,9 +173,7 @@ function InitiativeTrackerBulkVisibilityDialogContent({
               <Checkbox
                 id={`bulk-visibility-field-${key}`}
                 checked={
-                  draft.playerFieldVisibility[key] === "mixed"
-                    ? "indeterminate"
-                    : draft.playerFieldVisibility[key]
+                  draft.playerFieldVisibility[key] === "mixed" ? "indeterminate" : draft.playerFieldVisibility[key]
                 }
                 disabled={draft.visible === false}
                 onCheckedChange={(checked) => toggleField(key, Boolean(checked))}
@@ -224,7 +216,10 @@ function InitiativeTrackerBulkVisibilityDialogContent({
             onApply(payload.changes, payload.playerDisplayName);
             onOpenChange(false);
           }}>
-          <Cog className="size-4" aria-hidden="true" />
+          <Cog
+            className="size-4"
+            aria-hidden="true"
+          />
           {labels.configure}
         </Button>
       </DialogFooter>

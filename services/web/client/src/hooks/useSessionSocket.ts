@@ -181,6 +181,10 @@ export function useSessionSocket({
         routerRef.current.push(`/${localeRef.current}/welcome`);
     });
 
+    useEffect(() => {
+        hasProcessedSessionEndRef.current = false;
+    }, [code]);
+
     // Sync session state to Redux — fusion avec le store pour ne pas écraser les MAJ WS/layout (sidebar MJ).
     useEffect(() => {
         const fromRedux = selectSessionParticipants(appStore.getState());

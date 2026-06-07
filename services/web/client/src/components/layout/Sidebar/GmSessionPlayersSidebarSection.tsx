@@ -269,27 +269,25 @@ export default function GmSessionPlayersSidebarSection() {
             </span>
           );
 
-          return (
-            hasSheet ? (
-              <Link
-                key={`${p.userId}-${cid ?? "pending"}`}
-                href={href}
-                aria-current={isSelected ? "page" : undefined}
-                aria-label={inlineLabel}
-                className={rowClasses}
-                onClick={() => {
-                  if (isMobile) setOpenMobile(false);
-                }}>
-                {innerLabel}
-              </Link>
-            ) : (
-              <div
-                key={`${p.userId}-${cid ?? "pending"}`}
-                className={rowClasses}
-                aria-label={inlineLabel}>
-                {innerLabel}
-              </div>
-            )
+          return hasSheet ? (
+            <Link
+              key={`${p.userId}-${cid ?? "pending"}`}
+              href={href}
+              aria-current={isSelected ? "page" : undefined}
+              aria-label={inlineLabel}
+              className={rowClasses}
+              onClick={() => {
+                if (isMobile) setOpenMobile(false);
+              }}>
+              {innerLabel}
+            </Link>
+          ) : (
+            <div
+              key={`${p.userId}-${cid ?? "pending"}`}
+              className={rowClasses}
+              aria-label={inlineLabel}>
+              {innerLabel}
+            </div>
           );
         })}
       </CollapsibleContent>

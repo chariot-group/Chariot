@@ -3,7 +3,14 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, FieldValues } from "react-hook-form";
+import {
+  Controller,
+  UseFormReturn,
+  FieldArrayWithId,
+  UseFieldArrayAppend,
+  UseFieldArrayRemove,
+  FieldValues,
+} from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
@@ -71,17 +78,20 @@ const ActionUpdateSection = ({
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const hasActions = fields.length > 0;
 
-  const watchedActions = form.watch(fieldArrayName) as Array<{
-    attackAbility?: AbilityScoreKey;
-    attackBonus?: number;
-    damage?: Array<{ dice?: string; type?: string; applyAbilityBonus?: boolean }>;
-  }> | undefined;
+  const watchedActions = form.watch(fieldArrayName) as
+    | Array<{
+        attackAbility?: AbilityScoreKey;
+        attackBonus?: number;
+        damage?: Array<{ dice?: string; type?: string; applyAbilityBonus?: boolean }>;
+      }>
+    | undefined;
   const watchedAbilityScores = form.watch("stats.abilityScores") as Partial<AbilityScores> | undefined;
   const watchedProficiencyBonus = Number(form.watch("stats.proficiencyBonus") ?? 0);
   const watchedChallengeRating = Number(form.watch("challenge.challengeRating") ?? 0);
-  const proficiencyBonus = watchedProficiencyBonus > 0
-    ? watchedProficiencyBonus
-    : getProficiencyBonusFromChallengeRating(watchedChallengeRating);
+  const proficiencyBonus =
+    watchedProficiencyBonus > 0
+      ? watchedProficiencyBonus
+      : getProficiencyBonusFromChallengeRating(watchedChallengeRating);
   const attackSuggestions = useMemo(
     () => getAttackSuggestionOptions(watchedAbilityScores, proficiencyBonus),
     [proficiencyBonus, watchedAbilityScores],
@@ -229,21 +239,17 @@ const ActionUpdateSection = ({
             }}
             disabled={!hasActions}
             className={accentColor}
-            aria-label={openAccordionValues.length > 0
-              ? t("collapseSectionActions", { section: title })
-              : t("expandSectionActions", { section: title })}
+            aria-label={
+              openAccordionValues.length > 0
+                ? t("collapseSectionActions", { section: title })
+                : t("expandSectionActions", { section: title })
+            }
             aria-expanded={openAccordionValues.length > 0}>
-            {openAccordionValues.length > 0
-              ? (
-                <ListChevronsDownUp
-                  aria-hidden="true"
-                />
-              )
-              : (
-                <ListChevronsUpDown
-                  aria-hidden="true"
-                />
-              )}
+            {openAccordionValues.length > 0 ? (
+              <ListChevronsDownUp aria-hidden="true" />
+            ) : (
+              <ListChevronsUpDown aria-hidden="true" />
+            )}
             <span className="sr-only">
               {openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             </span>
@@ -259,7 +265,9 @@ const ActionUpdateSection = ({
           {fields.map((field, index) => {
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
             const usageType = normalizeUsageType(form.watch(`${fieldArrayName}.${index}.usageType`));
-            const selectedAbilityKey = form.watch(`${fieldArrayName}.${index}.attackAbility`) as AbilityScoreKey | undefined;
+            const selectedAbilityKey = form.watch(`${fieldArrayName}.${index}.attackAbility`) as
+              | AbilityScoreKey
+              | undefined;
             const selectedAttackSuggestion = selectedAbilityKey
               ? attackSuggestions.find((suggestion) => suggestion.key === selectedAbilityKey)
               : undefined;
@@ -420,7 +428,9 @@ const ActionUpdateSection = ({
                                 value={attackField.value ?? ""}
                                 type="number"
                                 onChange={(event) => {
-                                  form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, { shouldDirty: true });
+                                  form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, {
+                                    shouldDirty: true,
+                                  });
 
                                   clearAutoDamageBonusForAction(index, true);
 
@@ -445,8 +455,12 @@ const ActionUpdateSection = ({
                               size="sm"
                               onClick={() => {
                                 clearAutoDamageBonusForAction(index, true);
-                                form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, { shouldDirty: true });
-                                form.setValue(`${fieldArrayName}.${index}.attackAbility`, suggestion.key, { shouldDirty: true });
+                                form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, {
+                                  shouldDirty: true,
+                                });
+                                form.setValue(`${fieldArrayName}.${index}.attackAbility`, suggestion.key, {
+                                  shouldDirty: true,
+                                });
                               }}
                               title={`${tAbilities(suggestion.key)} ${formatSignedBonus(suggestion.attackBonus)}`}
                               aria-pressed={isSelected}
@@ -476,12 +490,17 @@ const ActionUpdateSection = ({
 
                           const updateDamage = (damageIndex: number, key: "dice" | "type", value: string) => {
                             const updatedDamages = [...damages];
-                            const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
-                            const normalizedValue = key === "type"
-                              ? value.trim()
-                              : currentDamage.applyAbilityBonus && hasSelectedAttackAbility
-                                ? applyAbilityModifierToDice(value, selectedDamageModifier)
-                                : value;
+                            const currentDamage = updatedDamages[damageIndex] ?? {
+                              dice: "",
+                              type: "",
+                              applyAbilityBonus: false,
+                            };
+                            const normalizedValue =
+                              key === "type"
+                                ? value.trim()
+                                : currentDamage.applyAbilityBonus && hasSelectedAttackAbility
+                                  ? applyAbilityModifierToDice(value, selectedDamageModifier)
+                                  : value;
 
                             if (key === "type" && normalizedValue) {
                               const duplicatedType = updatedDamages.some((damage, indexInList) => {
@@ -514,7 +533,9 @@ const ActionUpdateSection = ({
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => {
-                                        damageField.onChange(damages.filter((_: unknown, i: number) => i !== damageIndex));
+                                        damageField.onChange(
+                                          damages.filter((_: unknown, i: number) => i !== damageIndex),
+                                        );
                                       }}
                                       aria-label={`${tCommon("delete")} ${damageIndex + 1}`}
                                       className="text-red-500 shrink-0">
@@ -547,11 +568,19 @@ const ActionUpdateSection = ({
                                       disabled={!hasSelectedAttackAbility}
                                       onClick={() => {
                                         const updatedDamages = [...damages];
-                                        const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
+                                        const currentDamage = updatedDamages[damageIndex] ?? {
+                                          dice: "",
+                                          type: "",
+                                          applyAbilityBonus: false,
+                                        };
                                         const applyAbilityBonus = !Boolean(currentDamage.applyAbilityBonus);
-                                        const nextDice = applyAbilityBonus && hasSelectedAttackAbility
-                                          ? applyAbilityModifierToDice(currentDamage.dice ?? "", selectedDamageModifier)
-                                          : stripTrailingDamageBonus(currentDamage.dice ?? "");
+                                        const nextDice =
+                                          applyAbilityBonus && hasSelectedAttackAbility
+                                            ? applyAbilityModifierToDice(
+                                                currentDamage.dice ?? "",
+                                                selectedDamageModifier,
+                                              )
+                                            : stripTrailingDamageBonus(currentDamage.dice ?? "");
 
                                         updatedDamages[damageIndex] = {
                                           ...currentDamage,
@@ -560,13 +589,17 @@ const ActionUpdateSection = ({
                                         };
                                         damageField.onChange(updatedDamages);
                                       }}
-                                      title={hasSelectedAttackAbility && selectedAttackSuggestion
-                                        ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
-                                        : t("attackDC")}
+                                      title={
+                                        hasSelectedAttackAbility && selectedAttackSuggestion
+                                          ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
+                                          : t("attackDC")
+                                      }
                                       aria-pressed={Boolean(damage?.applyAbilityBonus)}
                                       aria-label={t("autoDamageBonusAria", {
                                         index: damageIndex + 1,
-                                        bonus: hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : t("noValue"),
+                                        bonus: hasSelectedAttackAbility
+                                          ? formatSignedBonus(selectedDamageModifier)
+                                          : t("noValue"),
                                       })}
                                       className="h-9 w-22 px-0 text-xs shrink-0 justify-center self-end">
                                       AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
@@ -592,7 +625,9 @@ const ActionUpdateSection = ({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => damageField.onChange([...damages, { dice: "", type: "", applyAbilityBonus: false }])}
+                                onClick={() =>
+                                  damageField.onChange([...damages, { dice: "", type: "", applyAbilityBonus: false }])
+                                }
                                 aria-label={t("addDamageToAction", { index: index + 1 })}
                                 className="w-fit flex items-center gap-2">
                                 <Plus
