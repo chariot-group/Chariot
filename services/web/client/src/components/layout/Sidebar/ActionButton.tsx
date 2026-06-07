@@ -82,7 +82,6 @@ export function ActionButton() {
   const initBattleDraft = useAppSelector(selectSessionInitBattleDraft);
   const isInitiativeTrackerPage = currentPage.endsWith("/initiativeTracker");
   const isCharacterPage = currentPage.includes("/characters/") && !currentPage.includes("/characters/new");
-  const allowPlayerInitiativeInput = initBattleDraft.allowPlayerInitiativeInput ?? false;
 
   const navigateToSession = (nextContextMode?: "player" | "gm") => {
     if (nextContextMode) {
