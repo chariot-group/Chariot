@@ -180,7 +180,7 @@ export default function CharacterDetailView({
 
   return (
     <main
-      className="flex flex-col h-screen overflow-hidden"
+      className="flex flex-col flex-1 min-h-0 overflow-hidden"
       id="characterView">
       <form
         id="character-update-form"
@@ -306,7 +306,7 @@ export default function CharacterDetailView({
 
         {/* Footer avec boutons - fixe en bas */}
         {showEditControls ? (
-          <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 border-t border-transparent">
+          <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] border-t border-transparent">
             <div className="w-full mx-auto flex flex-row-reverse gap-2">
               {isEditing ? (
                 <React.Fragment>

@@ -135,6 +135,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [showAllOpponents, setShowAllOpponents] = React.useState(false);
+  const [allowPlayerInitiativeInput, setAllowPlayerInitiativeInput] = React.useState(false);
   const [groups, setGroups] = React.useState<BattleGroup[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = React.useState<string[]>([]);
   const [expandedGroupIds, setExpandedGroupIds] = React.useState<string[]>([]);
@@ -144,6 +145,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const persistInitBattleDraft = React.useCallback(
     (partial: {
       showAllOpponents?: boolean;
+      allowPlayerInitiativeInput?: boolean;
       selectedGroupIds?: string[];
       expandedGroupIds?: string[];
       excludedMembersByGroup?: Record<string, string[]>;
@@ -206,12 +208,14 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           ),
         );
         const nextShowAllOpponents = draft?.showAllOpponents ?? false;
+        const nextAllowPlayerInitiativeInput = draft?.allowPlayerInitiativeInput ?? false;
 
         setGroups(groupsWithSessionParticipants);
         setSelectedGroupIds(nextSelectedGroupIds);
         setExpandedGroupIds(nextExpandedGroupIds);
         setExcludedMembersByGroup(nextExcludedMembersByGroup);
         setShowAllOpponents(nextShowAllOpponents);
+        setAllowPlayerInitiativeInput(nextAllowPlayerInitiativeInput);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -438,7 +442,26 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                   <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-x-4 gap-y-2">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="allow-player-initiative-input"
+                        className="cursor-pointer"
+                        checked={allowPlayerInitiativeInput}
+                        onCheckedChange={(checked) => {
+                          const nextAllowPlayerInitiativeInput = Boolean(checked);
+                          setAllowPlayerInitiativeInput(nextAllowPlayerInitiativeInput);
+                          persistInitBattleDraft({
+                            allowPlayerInitiativeInput: nextAllowPlayerInitiativeInput,
+                          });
+                        }}
+                      />
+                      <Label
+                        htmlFor="allow-player-initiative-input"
+                        className="cursor-pointer text-sm text-card-foreground">
+                        {t("initBattleAllowPlayerInitiativeInput")}
+                      </Label>
+                    </div>
                     <Checkbox
                       id="enable-half-proficiency"
                       className="cursor-pointer"
@@ -449,9 +472,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                         persistInitBattleDraft({ showAllOpponents: nextShowAllOpponents });
                       }}
                     />
-                    <Label
-                      htmlFor="enable-half-proficiency"
-                      className="cursor-pointer text-sm text-card-foreground">
+                    <Label htmlFor="enable-half-proficiency" className="cursor-pointer text-sm text-card-foreground">
                       {t("initBattleShowAllOpponents")}
                     </Label>
                   </div>

@@ -9,6 +9,8 @@
 ### Fixed
 - Fixed promo codes at 99–100 % being displayed in checkout but charging the full price
 - Fixed Stripe Elements context error when applying a 100 % promo code (`CheckoutFreeForm` / `CheckoutPaidForm` split)
+- Fixed footer buttons visibility
+- Fixed somes sessions bugs
 
 ## [1.0.1] - 06-06-2026
 
