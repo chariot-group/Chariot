@@ -44,7 +44,9 @@ describe('UserService - addTokens', () => {
       history: [],
       save,
     };
-    userModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(user) });
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(user),
+    });
 
     await service.addTokens(keycloakId, 10);
 
@@ -59,7 +61,9 @@ describe('UserService - addTokens', () => {
   });
 
   it('error: throws when user is not found', async () => {
-    userModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    });
 
     await expect(service.addTokens(keycloakId, 5)).rejects.toBeInstanceOf(
       InternalServerErrorException,

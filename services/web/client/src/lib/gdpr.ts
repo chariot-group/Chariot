@@ -43,7 +43,7 @@ export function buildProfileExportPayload(
   user: User,
   exportedAt: Date = new Date(),
 ): GdprProfileExportPayload {
-  const { keycloakId: _keycloakId, ...profile } = user;
+  const { ...profile } = user;
 
   return sanitizeForGdprExport({
     exportedAt: exportedAt.toISOString(),
