@@ -327,6 +327,46 @@ describe("FR-023 — bulk display configuration", () => {
     expect(state.initiativeTrackerRows.find((row) => row.id === "a")?.playerFieldVisibility.hitPoints).toBe(true);
   });
 
+  it("edge: partial field-visibility bulk changes preserve untouched visibility flags", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({
+          id: "a",
+          playerFieldVisibility: {
+            initiative: false,
+            name: true,
+            hitPoints: false,
+            armorClass: true,
+            conditions: false,
+            groupLabel: true,
+          },
+        }),
+      ]),
+    );
+
+    state = sessionReducer(
+      state,
+      updateInitiativeTrackerRowsBulk({
+        ids: ["a"],
+        changes: {
+          playerFieldVisibility: {
+            hitPoints: true,
+          },
+        },
+      }),
+    );
+
+    expect(state.initiativeTrackerRows[0].playerFieldVisibility).toEqual({
+      initiative: false,
+      name: true,
+      hitPoints: true,
+      armorClass: true,
+      conditions: false,
+      groupLabel: true,
+    });
+  });
+
   it("edge: empty shared alias preserves existing aliases", () => {
     let state = sessionReducer(
       undefined,

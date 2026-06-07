@@ -137,6 +137,7 @@
       "groupedInitiativeClearSelection": "Borrar selección",
       "bulkVisibilityEnable": "Configurar la visualización de varios personajes",
       "bulkVisibilityDisable": "Salir del modo de visualización agrupada",
+      "bulkVisibilityModeTitle": "Configuración agrupada de la visualización",
       "bulkVisibilitySelectAllRows": "Seleccionar todos los personajes para visualización agrupada",
       "conditionFor": "Estado de {name}",
       "visibleFor": "Mostrar {name}",
@@ -179,11 +180,12 @@
       },
       "bulkVisibilityDialog": {
         "title": "Visualización agrupada",
-        "description": "Selecciona varios personajes y aplica la misma configuración de visualización. El nombre común es opcional y está vacío por defecto.",
+        "description": "Selecciona varios personajes y configura su visualización común. El nombre común es opcional y está vacío por defecto.",
         "playerDisplayName": "Nombre común mostrado a los jugadores",
         "playerDisplayNameHint": "Vacío por defecto. Si se deja vacío, los nombres ya configurados se conservan.",
         "playerDisplayNamePlaceholder": "Dejar vacío o introducir un nombre común",
-        "emptySelection": "Selecciona al menos un personaje antes de aplicar una visualización agrupada.",
+        "emptySelection": "Selecciona al menos un personaje antes de configurar una visualización agrupada.",
+        "configure": "Configurar",
         "leaveInitiative": "Sacar la selección de la iniciativa"
       },
       "roundIndicator": "Ronda {round}",

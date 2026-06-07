@@ -507,6 +507,16 @@ export function InitiativeTrackerRow({
           />
         ) : null}
 
+        {!isPlayerView ? (
+          <div className={TRACKER_CELL_ALIGN.visible}>
+            <VisibilityTriggerButton
+              row={row}
+              ariaLabel={labels.visibleFor}
+              onClick={() => setVisibilityOpen(true)}
+            />
+          </div>
+        ) : null}
+
         {renderInitiativeCell()}
 
         <div className={`flex w-full max-w-full min-w-0 overflow-hidden ${TRACKER_CELL_ALIGN.character}`}>
@@ -524,16 +534,6 @@ export function InitiativeTrackerRow({
         <span className={`flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden ${TRACKER_CELL_ALIGN.group}`}>
           {groupContent}
         </span>
-
-        {!isPlayerView ? (
-          <div className={TRACKER_CELL_ALIGN.visible}>
-            <VisibilityTriggerButton
-              row={row}
-              ariaLabel={labels.visibleFor}
-              onClick={() => setVisibilityOpen(true)}
-            />
-          </div>
-        ) : null}
       </div>
 
       <div

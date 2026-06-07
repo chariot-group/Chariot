@@ -326,6 +326,17 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
     });
 };
 
+const mergePlayerFieldVisibilityChange = (
+    row: InitiativeTrackerRow,
+    nextVisibility: Partial<InitiativeTrackerPlayerFieldVisibility> | undefined,
+) => {
+    if (!nextVisibility) return row.playerFieldVisibility;
+    return {
+        ...row.playerFieldVisibility,
+        ...nextVisibility,
+    };
+};
+
 const purgeTurnKeysForRow = (turnsWithActions: string[], rowId: string): string[] => {
     const suffix = `:${rowId}`;
     return turnsWithActions.filter((key) => !key.endsWith(suffix));
@@ -557,10 +568,14 @@ const sessionSlice = createSlice({
         ) => {
             const row = state.initiativeTrackerRows.find((item) => item.id === action.payload.id);
             if (!row) return;
+            const nextPlayerFieldVisibility = mergePlayerFieldVisibilityChange(
+                row,
+                action.payload.changes.playerFieldVisibility,
+            );
             Object.assign(row, action.payload.changes);
             if (action.payload.changes.playerFieldVisibility || action.payload.changes.kind) {
                 row.playerFieldVisibility = normalizePlayerFieldVisibility(
-                    row.playerFieldVisibility,
+                    nextPlayerFieldVisibility,
                     row.kind,
                     row.groupId,
                 );
@@ -576,7 +591,9 @@ const sessionSlice = createSlice({
             state,
             action: PayloadAction<{
                 ids: string[];
-                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>>;
+                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>> & {
+                    playerFieldVisibility?: Partial<InitiativeTrackerPlayerFieldVisibility>;
+                };
                 playerDisplayName?: string;
             }>,
         ) => {
@@ -586,6 +603,10 @@ const sessionSlice = createSlice({
             let changed = false;
             for (const row of state.initiativeTrackerRows) {
                 if (!rowIds.has(row.id)) continue;
+                const nextPlayerFieldVisibility = mergePlayerFieldVisibilityChange(
+                    row,
+                    action.payload.changes.playerFieldVisibility,
+                );
                 Object.assign(row, action.payload.changes);
                 if (typeof action.payload.playerDisplayName === 'string') {
                     const trimmedDisplayName = action.payload.playerDisplayName.trim();
@@ -595,7 +616,7 @@ const sessionSlice = createSlice({
                 }
                 if (action.payload.changes.playerFieldVisibility || action.payload.changes.kind) {
                     row.playerFieldVisibility = normalizePlayerFieldVisibility(
-                        row.playerFieldVisibility,
+                        nextPlayerFieldVisibility,
                         row.kind,
                         row.groupId,
                     );

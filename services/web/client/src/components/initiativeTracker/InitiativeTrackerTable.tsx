@@ -1,25 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { ListOrdered, MonitorCog } from "lucide-react";
+import { Cog, ListOrdered } from "lucide-react";
 import type {
   InitiativeTrackerConditionDuration,
   InitiativeTrackerConditionDurationUnit,
   InitiativeTrackerConditionEntry,
-  InitiativeTrackerPlayerFieldVisibility,
   InitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { deriveBulkVisibilitySummary } from "@/components/initiativeTracker/bulkSelection";
 import { InitiativeTrackerBulkVisibilityDialog } from "@/components/initiativeTracker/InitiativeTrackerBulkVisibilityDialog";
 import { InitiativeTrackerGroupedInitiativeBar } from "@/components/initiativeTracker/InitiativeTrackerGroupedInitiativeBar";
 import { InitiativeTrackerRow as InitiativeTrackerRowComponent } from "@/components/initiativeTracker/InitiativeTrackerRow";
 import {
+  PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS,
   TRACKER_GRID_TEMPLATE_COLUMNS,
   TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION,
-  PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS,
   TRACKER_HEADER_ALIGN,
 } from "@/components/initiativeTracker/constants";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
@@ -51,7 +50,9 @@ type InitiativeTrackerTableProps = {
   onRemoveMultipleFromInitiative?: (rowIds: string[]) => void;
   onUpdateMultipleRows?: (
     rowIds: string[],
-    changes: Partial<Omit<InitiativeTrackerRow, "id" | "playerDisplayName">>,
+    changes: Partial<Omit<InitiativeTrackerRow, "id" | "playerDisplayName">> & {
+      playerFieldVisibility?: Partial<InitiativeTrackerRow["playerFieldVisibility"]>;
+    },
     playerDisplayName?: string,
   ) => void;
   getRowLabels: (row: InitiativeTrackerRow) => {
@@ -125,6 +126,7 @@ type InitiativeTrackerTableProps = {
   bulkVisibilityLabels?: {
     enableMode: string;
     disableMode: string;
+    modeTitle: string;
     getSelectedCountLabel: (count: number) => string;
     selectAllRows: string;
     clearSelection: string;
@@ -136,7 +138,7 @@ type InitiativeTrackerTableProps = {
     playerDisplayNamePlaceholder: string;
     fieldsTitle: string;
     emptySelection: string;
-    apply: string;
+    configure: string;
     cancel: string;
     leaveInitiative: string;
     fields: {
@@ -228,6 +230,14 @@ export function InitiativeTrackerTable({
 
   const allRowsSelected = rows.length > 0 && rows.every((row) => selectedRowIds.has(row.id));
   const someRowsSelected = rows.some((row) => selectedRowIds.has(row.id));
+  const selectedRows = React.useMemo(
+    () => rows.filter((row) => selectedRowIds.has(row.id)),
+    [rows, selectedRowIds],
+  );
+  const bulkVisibilitySummary = React.useMemo(
+    () => (selectedRows.length > 0 ? deriveBulkVisibilitySummary(selectedRows) : null),
+    [selectedRows],
+  );
   const selectAllRowsLabel = bulkVisibilityActive
     ? bulkVisibilityLabels?.selectAllRows
     : groupedInitiativeLabels?.selectAllRows;
@@ -240,104 +250,9 @@ export function InitiativeTrackerTable({
     exitGroupedInitiativeMode();
   };
 
-  const groupedInitiativeToggle = groupedInitiativeAvailable ? (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-pressed={groupedInitiativeActive}
-          aria-label={
-            groupedInitiativeActive
-              ? groupedInitiativeLabels.disableMode
-              : groupedInitiativeLabels.enableMode
-          }
-          onClick={() => {
-            if (groupedInitiativeActive) {
-              exitGroupedInitiativeMode();
-              return;
-            }
-            setSelectionMode("initiative");
-          }}
-          className={cn(
-            "size-7 shrink-0 text-white/45 hover:bg-white/10 hover:text-white/80",
-            groupedInitiativeActive && "bg-white/10 text-blue",
-          )}>
-          <ListOrdered className="size-4" aria-hidden="true" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        {groupedInitiativeActive
-          ? groupedInitiativeLabels.disableMode
-          : groupedInitiativeLabels.enableMode}
-      </TooltipContent>
-    </Tooltip>
-  ) : null;
-
-  const bulkVisibilityToggle = bulkVisibilityAvailable ? (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-pressed={bulkVisibilityActive}
-          aria-label={
-            bulkVisibilityActive
-              ? bulkVisibilityLabels.disableMode
-              : bulkVisibilityLabels.enableMode
-          }
-          onClick={() => {
-            if (bulkVisibilityActive) {
-              exitBulkVisibilityMode();
-              return;
-            }
-            setSelectionMode("visibility");
-          }}
-          className={cn(
-            "size-7 shrink-0 text-white/45 hover:bg-white/10 hover:text-white/80",
-            bulkVisibilityActive && "bg-white/10 text-green",
-          )}>
-          <MonitorCog className="size-4" aria-hidden="true" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        {bulkVisibilityActive
-          ? bulkVisibilityLabels.disableMode
-          : bulkVisibilityLabels.enableMode}
-      </TooltipContent>
-    </Tooltip>
-  ) : null;
-
   return (
     <div className="w-full min-w-0">
-      {bulkVisibilityAvailable ? (
-        <div className="mb-2 flex min-w-0 justify-end md:hidden">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            aria-pressed={bulkVisibilityActive}
-            className="max-w-full gap-2 rounded-[15px]"
-            onClick={() => {
-              if (bulkVisibilityActive) {
-                exitBulkVisibilityMode();
-                return;
-              }
-              setSelectionMode("visibility");
-            }}>
-            <MonitorCog className="size-4" aria-hidden="true" />
-            <span className="min-w-0 truncate">
-              {bulkVisibilityActive
-                ? bulkVisibilityLabels.disableMode
-                : bulkVisibilityLabels.enableMode}
-            </span>
-          </Button>
-        </div>
-      ) : null}
-
-      <div className="hidden w-full max-w-full min-w-0 overflow-hidden rounded-[24px] bg-card text-sm font-bold text-white shadow-xl lg:text-lg md:block">
+      <div className="hidden w-full max-w-full min-w-0 overflow-hidden rounded-[24px] bg-card text-sm font-bold text-white shadow-xl md:block lg:text-lg">
         <div
           className="grid w-full max-w-full min-w-0 items-center gap-x-2 px-3 py-3 lg:gap-x-3 lg:px-5"
           style={{ gridTemplateColumns }}>
@@ -355,21 +270,87 @@ export function InitiativeTrackerTable({
               className="size-5 cursor-pointer justify-self-center"
             />
           ) : null}
-          <span className={`flex min-w-0 items-center justify-center gap-1.5 ${TRACKER_HEADER_ALIGN.initiative}`}>
-            <span className="min-w-0 truncate">{columnLabels.initiative}</span>
-            {groupedInitiativeToggle}
+          {!isPlayerView ? (
+            <span className={`flex min-w-0 items-center justify-center gap-1.5 ${TRACKER_HEADER_ALIGN.visible}`}>
+              <span className="min-w-0 truncate">{columnLabels.visible}</span>
+              {bulkVisibilityAvailable && bulkVisibilityLabels ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-pressed={bulkVisibilityActive}
+                      aria-label={
+                        bulkVisibilityActive
+                          ? bulkVisibilityLabels.disableMode
+                          : bulkVisibilityLabels.enableMode
+                      }
+                      onClick={() => {
+                        if (bulkVisibilityActive) {
+                          exitBulkVisibilityMode();
+                          return;
+                        }
+                        setSelectionMode("visibility");
+                        setSelectedRowIds(new Set());
+                      }}
+                      className="size-7 shrink-0 text-white/45 hover:bg-white/10 hover:text-white/80"
+                    >
+                      <Cog className="size-4" aria-hidden="true" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {bulkVisibilityActive
+                      ? bulkVisibilityLabels.disableMode
+                      : bulkVisibilityLabels.enableMode}
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
+            </span>
+          ) : null}
+          <span className={`min-w-0 truncate text-center ${TRACKER_HEADER_ALIGN.initiative}`}>
+            <span className="inline-flex items-center justify-center gap-1.5">
+              <span className="min-w-0 truncate">{columnLabels.initiative}</span>
+              {groupedInitiativeAvailable && groupedInitiativeLabels ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-pressed={groupedInitiativeActive}
+                      aria-label={
+                        groupedInitiativeActive
+                          ? groupedInitiativeLabels.disableMode
+                          : groupedInitiativeLabels.enableMode
+                      }
+                      onClick={() => {
+                        if (groupedInitiativeActive) {
+                          exitGroupedInitiativeMode();
+                          return;
+                        }
+                        setSelectionMode("initiative");
+                        setSelectedRowIds(new Set());
+                      }}
+                      className="size-7 shrink-0 text-white/45 hover:bg-white/10 hover:text-white/80 data-[state=on]:bg-white/10"
+                    >
+                      <ListOrdered className="size-4" aria-hidden="true" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {groupedInitiativeActive
+                      ? groupedInitiativeLabels.disableMode
+                      : groupedInitiativeLabels.enableMode}
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
+            </span>
           </span>
           <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.character}`}>{columnLabels.character}</span>
           <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.hitPoints}`}>{columnLabels.hitPoints}</span>
           <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.armorClass}`}>{columnLabels.armorClass}</span>
           <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.condition}`}>{columnLabels.condition}</span>
           <span className={`min-w-0 truncate ${TRACKER_HEADER_ALIGN.group}`}>{columnLabels.group}</span>
-          {!isPlayerView ? (
-            <span className={`flex min-w-0 items-center justify-center gap-1.5 ${TRACKER_HEADER_ALIGN.visible}`}>
-              <span className="min-w-0 truncate">{columnLabels.visible}</span>
-              {bulkVisibilityToggle}
-            </span>
-          ) : null}
         </div>
 
         {groupedInitiativeActive && groupedInitiativeLabels ? (
@@ -409,8 +390,10 @@ export function InitiativeTrackerTable({
                 <Button
                   type="button"
                   size="sm"
+                  className="gap-2"
                   onClick={() => setBulkVisibilityOpen(true)}>
-                  {bulkVisibilityLabels.apply}
+                  <Cog className="size-4" aria-hidden="true" />
+                  {bulkVisibilityLabels.configure}
                 </Button>
               </div>
             </div>
@@ -473,8 +456,10 @@ export function InitiativeTrackerTable({
               <Button
                 type="button"
                 size="sm"
+                className="gap-2"
                 onClick={() => setBulkVisibilityOpen(true)}>
-                {bulkVisibilityLabels.apply}
+                <Cog className="size-4" aria-hidden="true" />
+                {bulkVisibilityLabels.configure}
               </Button>
             </div>
           </div>
@@ -485,6 +470,7 @@ export function InitiativeTrackerTable({
         <InitiativeTrackerBulkVisibilityDialog
           open={bulkVisibilityOpen}
           selectedCount={selectedRowIds.size}
+          selectionSummary={bulkVisibilitySummary}
           labels={{
             title: bulkVisibilityLabels.title,
             description: bulkVisibilityLabels.description,
@@ -494,7 +480,7 @@ export function InitiativeTrackerTable({
             playerDisplayNamePlaceholder: bulkVisibilityLabels.playerDisplayNamePlaceholder,
             fieldsTitle: bulkVisibilityLabels.fieldsTitle,
             emptySelection: bulkVisibilityLabels.emptySelection,
-            apply: bulkVisibilityLabels.apply,
+            configure: bulkVisibilityLabels.configure,
             cancel: bulkVisibilityLabels.cancel,
             leaveInitiative: bulkVisibilityLabels.leaveInitiative,
             fields: bulkVisibilityLabels.fields,
@@ -504,12 +490,8 @@ export function InitiativeTrackerTable({
             onRemoveMultipleFromInitiative?.([...selectedRowIds]);
             exitBulkVisibilityMode();
           }}
-          onApply={(visible, playerFieldVisibility: InitiativeTrackerPlayerFieldVisibility, playerDisplayName) => {
-            onUpdateMultipleRows?.(
-              [...selectedRowIds],
-              { visible, playerFieldVisibility },
-              playerDisplayName.length > 0 ? playerDisplayName : undefined,
-            );
+          onApply={(changes, playerDisplayName) => {
+            onUpdateMultipleRows?.([...selectedRowIds], changes, playerDisplayName);
             exitBulkVisibilityMode();
           }}
         />

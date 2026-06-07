@@ -572,7 +572,7 @@ export default function InitiativeTrackerPage() {
                   playerDisplayNamePlaceholder: t("bulkVisibilityDialog.playerDisplayNamePlaceholder"),
                   fieldsTitle: t("visibilityDialog.title"),
                   emptySelection: t("bulkVisibilityDialog.emptySelection"),
-                  apply: t("visibilityDialog.apply"),
+                  configure: t("bulkVisibilityDialog.configure"),
                   cancel: t("visibilityDialog.cancel"),
                   leaveInitiative: t("bulkVisibilityDialog.leaveInitiative"),
                   fields: {

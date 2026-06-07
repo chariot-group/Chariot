@@ -1731,3 +1731,44 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
+
+---
+
+## FR-024: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+
+**Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
+
+**Requirements**:
+
+- The tracker must expose bulk-selection entry points for both grouped initiative editing and grouped display configuration using explicit configuration wording that identifies the target action.
+- Bulk-selection mode must present a clear active state, the current number of selected rows, and an obvious way to clear or exit the selection.
+- The selection interaction pattern must stay consistent between grouped initiative editing and grouped display configuration across desktop and mobile layouts.
+- When the GM reopens grouped display configuration for a current multi-selection:
+  - any field whose selected rows all share the same current value must be shown with that active value;
+  - any field whose selected rows do not share the same current value must be shown with an explicit mixed state;
+  - unchanged mixed fields must not overwrite existing row-specific values when the grouped configuration is saved.
+- Grouped display configuration must remain compatible with FR-021 and FR-023 visibility and alias rules.
+
+**Accessibility Requirements**:
+
+- Bulk-selection mode changes, selected-count updates, and mixed-field states must be perceivable to assistive technologies.
+- Bulk-selection controls for both workflows must keep explicit accessible names that describe whether the user is configuring display or initiative.
+
+**Prohibitions**:
+
+- Resetting grouped display controls to unrelated defaults when the current selection already has active shared values.
+- Hiding the distinction between a shared value and a mixed value in grouped display configuration.
+- Using ambiguous wording that does not let the GM distinguish between grouped initiative editing and grouped display configuration.
+
+**Tests**:
+
+- Reopening grouped display configuration for rows sharing the same display settings preloads those settings.
+- Reopening grouped display configuration for rows with different settings shows a mixed state and preserves untouched values on save.
+- Grouped initiative and grouped display selection modes expose distinct labels, active state, selection count, and exit/clear actions on desktop and mobile.
+- Keyboard and screen-reader coverage includes active mode, selected count, and mixed-state announcements.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
+- `services/web/client/src/components/initiativeTracker/`
+- `services/web/client/src/store/slices/sessionSlice.ts`

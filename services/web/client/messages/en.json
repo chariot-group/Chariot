@@ -137,6 +137,7 @@
       "groupedInitiativeClearSelection": "Clear selection",
       "bulkVisibilityEnable": "Configure display for multiple characters",
       "bulkVisibilityDisable": "Exit grouped display mode",
+      "bulkVisibilityModeTitle": "Grouped display configuration",
       "bulkVisibilitySelectAllRows": "Select all characters for grouped display",
       "conditionFor": "Condition for {name}",
       "visibleFor": "Show {name}",
@@ -179,11 +180,12 @@
       },
       "bulkVisibilityDialog": {
         "title": "Grouped display",
-        "description": "Select multiple characters, then apply the same display settings. The shared name is optional and empty by default.",
+        "description": "Select multiple characters, then configure their shared display settings. The shared name is optional and empty by default.",
         "playerDisplayName": "Shared name shown to players",
         "playerDisplayNameHint": "Empty by default. If left empty, existing configured names are preserved.",
         "playerDisplayNamePlaceholder": "Leave empty or enter a shared name",
-        "emptySelection": "Select at least one character before applying grouped display.",
+        "emptySelection": "Select at least one character before configuring grouped display.",
+        "configure": "Configure",
         "leaveInitiative": "Leave initiative for selection"
       },
       "roundIndicator": "Round {round}",
