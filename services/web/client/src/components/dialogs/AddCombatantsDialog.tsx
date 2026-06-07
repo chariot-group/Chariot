@@ -23,41 +23,23 @@ import {
   createInitiativeTrackerRow,
   selectCurrentSession,
   selectInitiativeTrackerRows,
+  selectSessionParticipantDisplayNames,
 } from "@/store/slices/sessionSlice";
+import {
+  buildSessionParticipantsGroup,
+  type SessionParticipantsGroupCharacter,
+} from "@/lib/buildSessionParticipantsGroup";
 import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { Character, Player } from "@/types/character";
-import type { SessionParticipant } from "@/services/SessionService";
-import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
-import {
-  trackerDeathSavesFailuresFromCharacter,
-  trackerKindFromCharacter,
-} from "@/components/initiativeTracker/utils";
+import type { Character } from "@/types/character";
+import { trackerDeathSavesFailuresFromCharacter, trackerKindFromCharacter } from "@/components/initiativeTracker/utils";
 
-type BattleGroupCharacter = {
-  _id: string;
-  firstname?: string;
-  lastname?: string;
-  surname?: string;
-  avatar?: string;
-  createdBy?: string;
-  stats?: {
-    currentHitPoints?: number;
-    maxHitPoints?: number;
-    tempHitPoints?: number;
-    armorClass?: number;
-  };
-  challenge?: { challengeRating?: number | string };
-  profile?: { type?: string };
-  progression?: { level?: number };
-};
+type BattleGroupCharacter = SessionParticipantsGroupCharacter;
 
 type BattleGroup = Omit<Group, "characters"> & {
   characters: BattleGroupCharacter[];
 };
-
-const SESSION_PARTICIPANTS_GROUP_LABEL = "Participants session";
 
 const parseChallengeRating = (value: unknown): number => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -80,68 +62,6 @@ const isNpcCharacter = (character: BattleGroupCharacter): boolean => {
   return cr > 0 || !character.createdBy || !!character.profile?.type;
 };
 
-const buildSessionParticipantsGroup = async (
-  allGroups: BattleGroup[],
-  participants: SessionParticipant[],
-  campaignId: string,
-  sessionCode?: string | null,
-): Promise<BattleGroup> => {
-  const nonGameMasterParticipants = participants.filter((p) => p.status !== "gameMaster");
-  const characterById = new Map<string, BattleGroupCharacter>();
-  allGroups.forEach((group) => {
-    (group.characters ?? []).forEach((character) => {
-      characterById.set(character._id, character);
-    });
-  });
-
-  const missingCharacterIds = Array.from(
-    new Set(
-      nonGameMasterParticipants
-        .map((p) => p.characterId)
-        .filter((id): id is string => Boolean(id && !characterById.has(id))),
-    ),
-  );
-
-  const fetched = await Promise.allSettled(
-    missingCharacterIds.map((id) => characterService.getCharacterById(id, { sessionCode })),
-  );
-  const fetchedById = new Map<string, BattleGroupCharacter>();
-  fetched.forEach((result) => {
-    if (result.status !== "fulfilled") return;
-    const c = result.value;
-    fetchedById.set(c._id, {
-      _id: c._id,
-      firstname: c.firstname,
-      lastname: c.lastname,
-      surname: c.surname,
-      createdBy: c.createdBy,
-      progression: (c as Player).progression,
-    });
-  });
-
-  const uniqueCharacters = new Map<string, BattleGroupCharacter>();
-  nonGameMasterParticipants.forEach((participant) => {
-    const characterId = participant.characterId ?? `session-participant-${participant.id}`;
-    const existing = participant.characterId
-      ? (characterById.get(participant.characterId) ?? fetchedById.get(participant.characterId))
-      : undefined;
-    uniqueCharacters.set(
-      characterId,
-      existing ?? { _id: characterId, surname: "Participant", createdBy: participant.userId },
-    );
-  });
-
-  const now = new Date().toISOString();
-  return {
-    _id: SESSION_PARTICIPANTS_GROUP_ID,
-    label: SESSION_PARTICIPANTS_GROUP_LABEL,
-    campaignId,
-    createdAt: now,
-    updatedAt: now,
-    characters: Array.from(uniqueCharacters.values()),
-  };
-};
-
 interface AddCombatantsDialogProps {
   children: React.ReactNode;
 }
@@ -153,17 +73,12 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const dispatch = useAppDispatch();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const session = useAppSelector(selectCurrentSession);
+  const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
 
-  const inCombatCharacterIds = React.useMemo(
-    () => new Set(trackerRows.map((row) => row.characterId)),
-    [trackerRows],
-  );
+  const inCombatCharacterIds = React.useMemo(() => new Set(trackerRows.map((row) => row.characterId)), [trackerRows]);
 
-  const groupIdsInInitiative = React.useMemo(
-    () => new Set(trackerRows.map((row) => row.groupId)),
-    [trackerRows],
-  );
+  const groupIdsInInitiative = React.useMemo(() => new Set(trackerRows.map((row) => row.groupId)), [trackerRows]);
 
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -176,10 +91,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const dialogInitializedRef = React.useRef(false);
 
   const eligibleGroups = React.useMemo(
-    () =>
-      groups.filter((group) =>
-        (group.characters ?? []).some((member) => !inCombatCharacterIds.has(member._id)),
-      ),
+    () => groups.filter((group) => (group.characters ?? []).some((member) => !inCombatCharacterIds.has(member._id))),
     [groups, inCombatCharacterIds],
   );
 
@@ -227,6 +139,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
           allGroups,
           session?.participants ?? [],
           selectedCampaignId,
+          participantDisplayNames,
           session?.code,
         );
         setGroups([...allGroups, sessionGroup]);
@@ -239,7 +152,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     return () => {
       mounted = false;
     };
-  }, [open, selectedCampaignId, session?.code, session?.participants]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, participantDisplayNames]);
 
   React.useEffect(() => {
     if (!open) {
@@ -371,16 +284,12 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
               surname: character.surname ?? "",
               avatar: character.avatar ?? "",
               initiative: resolveMemberInitiative(member._id),
-              hitPoints: Number.isFinite(currentHitPoints)
-                ? Number(currentHitPoints)
-                : Number(maxHitPoints ?? 0),
+              hitPoints: Number.isFinite(currentHitPoints) ? Number(currentHitPoints) : Number(maxHitPoints ?? 0),
               maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
               tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
               armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
               kind,
-              deathSavesFailures: isHydrated
-                ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
-                : 0,
+              deathSavesFailures: isHydrated ? trackerDeathSavesFailuresFromCharacter(hydrated as Character) : 0,
             });
           });
       });
@@ -430,9 +339,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                   <p className="text-sm text-muted-foreground">{t("addCombatantsNoGroupSelected")}</p>
                 ) : (
                   selectedGroups.map((group) => {
-                    const availableMembers = (group.characters ?? []).filter(
-                      (m) => !inCombatCharacterIds.has(m._id),
-                    );
+                    const availableMembers = (group.characters ?? []).filter((m) => !inCombatCharacterIds.has(m._id));
                     const excluded = new Set(excludedMembersByGroup[group._id] ?? []);
                     const isExpanded = expandedGroupIds.includes(group._id);
                     return (
@@ -471,13 +378,9 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                                   groupedInitiativeApply: t("groupedInitiativeApply"),
                                   groupedClearSelection: t("groupedInitiativeClearSelection"),
                                 }}
-                                onToggleMember={(memberId, include) =>
-                                  toggleMember(group._id, memberId, include)
-                                }
+                                onToggleMember={(memberId, include) => toggleMember(group._id, memberId, include)}
                                 onMemberInitiativeChange={setMemberInitiative}
-                                onApplyGroupInitiative={(initiative) =>
-                                  applyGroupInitiative(group._id, initiative)
-                                }
+                                onApplyGroupInitiative={(initiative) => applyGroupInitiative(group._id, initiative)}
                                 onClearMemberSelection={() =>
                                   clearGroupMemberSelection(
                                     group._id,

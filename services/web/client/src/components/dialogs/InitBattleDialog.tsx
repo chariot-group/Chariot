@@ -19,10 +19,16 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import {
   selectCurrentSession,
+  selectSessionParticipantDisplayNames,
   setInitiativeTrackerRows,
   setSessionInitBattleDraft,
   createInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
+import {
+  buildSessionParticipantsGroup,
+  type SessionParticipantsGroupCharacter,
+} from "@/lib/buildSessionParticipantsGroup";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { Group } from "@/types/campaign";
 import { ChevronDown, ChevronRight, Loader2, Skull, Star, Swords, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -30,45 +36,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { SessionParticipant } from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
-import type { Character, Player } from "@/types/character";
-import {
-  trackerDeathSavesFailuresFromCharacter,
-  trackerKindFromCharacter,
-} from "@/components/initiativeTracker/utils";
+import type { Character } from "@/types/character";
+import { trackerDeathSavesFailuresFromCharacter, trackerKindFromCharacter } from "@/components/initiativeTracker/utils";
 
-type BattleGroupCharacter = {
-  _id: string;
-  firstname?: string;
-  lastname?: string;
-  surname?: string;
-  avatar?: string;
-  createdBy?: string;
-  stats?: {
-    currentHitPoints?: number;
-    maxHitPoints?: number;
-    tempHitPoints?: number;
-    armorClass?: number;
-    initiative?: number;
-  };
-  challenge?: {
-    challengeRating?: number | string;
-  };
-  profile?: {
-    type?: string;
-  };
-  progression?: {
-    level?: number;
-  };
-};
+type BattleGroupCharacter = SessionParticipantsGroupCharacter;
 
 type BattleGroup = Omit<Group, "characters"> & {
   characters: BattleGroupCharacter[];
 };
-
-const SESSION_PARTICIPANTS_GROUP_ID = "__session_participants__";
-const SESSION_PARTICIPANTS_GROUP_LABEL = "Participants session";
 
 const sanitizeGroupIds = (nextGroupIds: string[], allGroups: BattleGroup[], mandatoryIds: string[]): string[] => {
   const validGroupIds = new Set(
@@ -143,76 +119,6 @@ interface InitBattleDialogProps {
   children: React.ReactNode;
 }
 
-const buildSessionParticipantsGroup = async (
-  allGroups: BattleGroup[],
-  participants: SessionParticipant[],
-  campaignId: string,
-  sessionCode?: string | null,
-): Promise<BattleGroup> => {
-  const nonGameMasterParticipants = participants.filter((participant) => participant.status !== "gameMaster");
-
-  const characterById = new Map<string, BattleGroupCharacter>();
-  allGroups.forEach((group) => {
-    (group.characters ?? []).forEach((character) => {
-      characterById.set(character._id, character);
-    });
-  });
-
-  const missingCharacterIds = Array.from(
-    new Set(
-      nonGameMasterParticipants
-        .map((participant) => participant.characterId)
-        .filter((characterId): characterId is string => Boolean(characterId && !characterById.has(characterId))),
-    ),
-  );
-
-  const fetchedCharacters = await Promise.allSettled(
-    missingCharacterIds.map((characterId) => characterService.getCharacterById(characterId, { sessionCode })),
-  );
-
-  const fetchedCharacterById = new Map<string, BattleGroupCharacter>();
-  fetchedCharacters.forEach((result) => {
-    if (result.status !== "fulfilled") return;
-
-    const character = result.value;
-    fetchedCharacterById.set(character._id, {
-      _id: character._id,
-      firstname: character.firstname,
-      lastname: character.lastname,
-      surname: character.surname,
-      createdBy: character.createdBy,
-      progression: (character as Player).progression,
-    });
-  });
-
-  const uniqueCharacters = new Map<string, BattleGroupCharacter>();
-  nonGameMasterParticipants.forEach((participant) => {
-    const characterId = participant.characterId ?? `session-participant-${participant.id}`;
-    const existingCharacter = participant.characterId
-      ? (characterById.get(participant.characterId) ?? fetchedCharacterById.get(participant.characterId))
-      : undefined;
-    uniqueCharacters.set(
-      characterId,
-      existingCharacter ?? {
-        _id: characterId,
-        surname: "Participant",
-        createdBy: participant.userId,
-      },
-    );
-  });
-
-  const now = new Date().toISOString();
-
-  return {
-    _id: SESSION_PARTICIPANTS_GROUP_ID,
-    label: SESSION_PARTICIPANTS_GROUP_LABEL,
-    campaignId,
-    createdAt: now,
-    updatedAt: now,
-    characters: Array.from(uniqueCharacters.values()),
-  };
-};
-
 export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const t = useTranslations("initTracker");
   const tCommon = useTranslations("common");
@@ -221,10 +127,12 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const pathname = usePathname();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const session = useAppSelector(selectCurrentSession);
+  const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
 
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [showAllOpponents, setShowAllOpponents] = React.useState(false);
+  const [allowPlayerInitiativeInput, setAllowPlayerInitiativeInput] = React.useState(false);
   const [groups, setGroups] = React.useState<BattleGroup[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = React.useState<string[]>([]);
   const [expandedGroupIds, setExpandedGroupIds] = React.useState<string[]>([]);
@@ -234,6 +142,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const persistInitBattleDraft = React.useCallback(
     (partial: {
       showAllOpponents?: boolean;
+      allowPlayerInitiativeInput?: boolean;
       selectedGroupIds?: string[];
       expandedGroupIds?: string[];
       excludedMembersByGroup?: Record<string, string[]>;
@@ -272,6 +181,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           allGroups,
           session?.participants ?? [],
           selectedCampaignId,
+          participantDisplayNames,
           session?.code,
         );
 
@@ -295,12 +205,14 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           ),
         );
         const nextShowAllOpponents = draft?.showAllOpponents ?? false;
+        const nextAllowPlayerInitiativeInput = draft?.allowPlayerInitiativeInput ?? false;
 
         setGroups(groupsWithSessionParticipants);
         setSelectedGroupIds(nextSelectedGroupIds);
         setExpandedGroupIds(nextExpandedGroupIds);
         setExcludedMembersByGroup(nextExcludedMembersByGroup);
         setShowAllOpponents(nextShowAllOpponents);
+        setAllowPlayerInitiativeInput(nextAllowPlayerInitiativeInput);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -314,7 +226,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initBattleDraft is only read once on open to restore draft state; including it would retrigger loadGroups on every user interaction
-  }, [open, selectedCampaignId, session?.code, session?.participants]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, participantDisplayNames]);
 
   const selectedGroups = React.useMemo(() => {
     const selectedIds = new Set(selectedGroupIds);
@@ -489,9 +401,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               lastname,
               surname,
               avatar: character.avatar ?? "",
-              hitPoints: Number.isFinite(currentHitPoints)
-                ? Number(currentHitPoints)
-                : Number(maxHitPoints ?? 0),
+              hitPoints: Number.isFinite(currentHitPoints) ? Number(currentHitPoints) : Number(maxHitPoints ?? 0),
               maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
               tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
               armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
@@ -527,7 +437,26 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                   <p className="text-sm font-semibold">{t("initBattleSelectedGroups")}</p>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-x-4 gap-y-2">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="allow-player-initiative-input"
+                        className="cursor-pointer"
+                        checked={allowPlayerInitiativeInput}
+                        onCheckedChange={(checked) => {
+                          const nextAllowPlayerInitiativeInput = Boolean(checked);
+                          setAllowPlayerInitiativeInput(nextAllowPlayerInitiativeInput);
+                          persistInitBattleDraft({
+                            allowPlayerInitiativeInput: nextAllowPlayerInitiativeInput,
+                          });
+                        }}
+                      />
+                      <Label
+                        htmlFor="allow-player-initiative-input"
+                        className="cursor-pointer text-sm text-card-foreground">
+                        {t("initBattleAllowPlayerInitiativeInput")}
+                      </Label>
+                    </div>
                     <Checkbox
                       id="enable-half-proficiency"
                       className="cursor-pointer"

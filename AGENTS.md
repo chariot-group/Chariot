@@ -101,3 +101,77 @@ After a feature is implemented and presented to the user:
 5. This pass MUST follow project technical standards from repository documentation (including `docs/*.md`), and SHOULD align with recent best practices of the technologies in use when compatible with project constraints.
 6. As part of this pass, the agent MUST run the linter and relevant test suite(s), then report results.
 7. If linter or tests fail, the agent MUST fix issues when feasible and rerun checks before considering the work complete.
+
+## 10) High-Attention Domain: Sessions & WebSocket
+
+Session and WebSocket code is a **cross-cutting, stateful subsystem** spanning frontend layout, session lobby, initiative tracker, character sheets, Redux persist, and the NestJS session gateway. Changes here have caused regressions from seemingly small diffs (duplicate connections, false disconnect toasts, roster wipes on reconnect). Treat this domain as **high attention** by default.
+
+### 10.1 Mandatory Pre-Work
+
+Before proposing or implementing any session or WebSocket change, the agent MUST:
+
+1. Read applicable functional rules: **FR-010**, **FR-021**, **FR-022**, **FR-024**, **FR-025**, **FR-026** (and FR-018/FR-020 when combat tracker behavior is involved).
+2. Trace the full path: **emitter client → gateway handler → broadcast → consumer client(s) → Redux/local state**.
+3. Classify the change into one primary category:
+   - **Connection lifecycle** (pool, JWT refresh, reconnect, session end)
+   - **Roster / participant state** (join, leave, disconnect, display names)
+   - **Combat sync** (battle snapshot, visibility, late join)
+   - **Character sheet sync** (sheet updates, tracker mirror, local echo for GM)
+4. Identify all subscribers to the shared socket pool — never assume only the session lobby page holds the connection.
+5. Never treat session work as frontend-only; gateway timing and broadcast semantics are part of the contract.
+
+### 10.2 Architecture Snapshot
+
+| Layer | Responsibility | Key files |
+| --- | --- | --- |
+| Connection pool | One Socket.IO client per OTP code, shared refCount | `sessionSocketPool.ts` |
+| Layout subscriber | Persistent WS while `isInSession`, join on connect, roster HTTP fallback | `SessionCharacterSyncClient.tsx` |
+| Lobby subscriber | Session page actions (launch, tokens, leave) + Redux merge | `useSessionSocket.ts` |
+| Battle sync | GM broadcast / player apply / late-join request | `useSessionBattleSync.ts`, `sessionBattleSyncBridge.ts` |
+| Sheet sync | Emit + local echo (GM not echoed by gateway) | `sessionCharacterSyncBridge.ts` |
+| Redux state | Roster, combat, display names, persistence | `sessionSlice.ts` |
+| Gateway | Auth, rooms, grace-period disconnect, broadcast validation | `session.gateway.ts` |
+
+**Naming trap**: WebSocket field `sessionId` = **OTP session code**, not the internal DB UUID.
+
+**Broadcast trap**: Gateway uses `client.to(room)` — the emitter does not receive its own event. GM/local updates need explicit client-side listeners (FR-022).
+
+### 10.3 Lessons from `hotfix/sessions` (Non-Exhaustive Pitfall List)
+
+| Symptom | Root cause | Required safeguard |
+| --- | --- | --- |
+| False "participant disconnected" toast on page refresh | Immediate gateway disconnect notification | 3s grace period + cancel on rejoin/leave (FR-026) |
+| Double WebSocket connections | Layout + lobby each calling `io()` | Shared `sessionSocketPool` with refCount (FR-026) |
+| Reconnect drops assigned character | Join broadcast used client payload `characterId: null` | Gateway broadcasts persisted roster `characterId` (FR-026) |
+| Socket reconnects on every JWT refresh | Token included in pool connection key | Key = OTP code only; `syncSessionSocketAuth` for token (FR-026) |
+| Roster flashes or loses WS updates | HTTP sync overwrites Redux participants | `mergeParticipantsPreserveCharacterIds` (FR-026) |
+| Duplicate session-end toasts | Multiple components listen to `session:closed` / `session:expired` | `shouldShowSessionEndNotice` dedup (FR-026) |
+| UUID shown as player name | Raw `userId` / email used before profile fetch | FR-024 label resolution chain |
+| GM sheet edit not reflected on tracker | No local echo (`client.to` excludes emitter) | `registerLocalCharacterSheetUpdatedListener` (FR-022) |
+| `participant-left` not received by others | `client.to()` after `client.leave()` | `server.to(roomId)` on gateway (FR-026) |
+
+### 10.4 Mandatory Test Coverage for Session/WS Changes
+
+Any session or WebSocket change MUST include or update focused tests covering at minimum:
+
+1. **Nominal** path for the touched event or lifecycle step.
+2. **One reconnect or race edge** (JWT refresh, rapid disconnect/rejoin, debounced HTTP sync).
+3. **One failure or guard case** when applicable (unauthorized broadcast, missing roster character, pool OTP switch).
+
+Existing test anchors:
+
+- `services/web/client/src/lib/__tests__/sessionSocketPool.test.ts`
+- `services/web/client/src/lib/__tests__/sessionCharacterSyncBridge.test.ts`
+- `services/web/client/src/lib/__tests__/formatSessionParticipantUserLabel.test.ts`
+- `services/session/api/src/resources/session/session.gateway.spec.ts`
+- `services/web/client/src/store/slices/__tests__/sessionSlice.*.test.ts`
+
+### 10.5 Agent Checklist Before Coding
+
+- [ ] Listed applicable FR IDs and confirmed no functional conflict.
+- [ ] Mapped emitter → gateway → all consumers (including layout-level `SessionCharacterSyncClient`).
+- [ ] Verified pool acquire/release balance for every new subscriber.
+- [ ] Confirmed JWT/token changes do not recreate the socket effect.
+- [ ] Confirmed gateway broadcasts use persisted authoritative data, not optimistic client payload alone.
+- [ ] Planned tests for nominal + reconnect/race + failure case.
+- [ ] For UI-facing changes: accessibility remains in scope (FR-019).

@@ -5,6 +5,7 @@ import ActionSection from "@/components/character/tabContents/battle/shared/Acti
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 import NpcStatistics from "@/components/character/tabContents/shared/NpcStatistics";
+import { useId } from "react";
 
 interface Props {
   npc: NPC;
@@ -14,6 +15,10 @@ interface Props {
 
 const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => {
   const t = useTranslations("characterDetail.battle");
+  const sectionId = useId();
+  const savingThrowsHeadingId = `${sectionId}-saving-throws-heading`;
+  const abilitiesHeadingId = `${sectionId}-abilities-traits-heading-npc`;
+  const affinitiesHeadingId = `${sectionId}-battle-affinities-heading-npc`;
 
   return (
     <div className="w-full flex flex-col gap-4 items-start">
@@ -28,9 +33,9 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
           <Card
             className="gap-3 p-4 md:px-6  h-fit"
             role="region"
-            aria-labelledby="saving-throws-heading">
+            aria-labelledby={savingThrowsHeadingId}>
             <h2
-              id="saving-throws-heading"
+              id={savingThrowsHeadingId}
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("savingThrows")}
             </h2>
@@ -57,7 +62,7 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
           abilities={npc.abilities}
           accentColor={accentColor}
           title={t("abilitiesAndTraits")}
-          headingId="abilities-traits-heading-npc"
+          headingId={abilitiesHeadingId}
           characterId={npc._id}
           characterKind="npcs"
           onAfterAbilityUse={onCharacterUpdate}
@@ -67,9 +72,9 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
         <Card
           className="gap-3 p-4 md:px-6 h-fit"
           role="region"
-          aria-labelledby="battle-affinities-heading-npc">
+          aria-labelledby={affinitiesHeadingId}>
           <h2
-            id="battle-affinities-heading-npc"
+            id={affinitiesHeadingId}
             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {t("affinities")}
           </h2>

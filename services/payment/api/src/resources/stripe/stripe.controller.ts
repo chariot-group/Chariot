@@ -30,6 +30,7 @@ import { IResponse } from '@/common/dtos/response.dto';
 import type {
     CheckoutSessionStatus,
     EmbeddedCheckoutResult,
+    FreeOrderResult,
     PaymentIntentResult,
     ResolvedCode,
     StripeProductWithPrices,
@@ -69,8 +70,22 @@ export class StripeController {
         @Req() request,
         @Param('id') piId: string,
         @Body() dto: UpdatePaymentIntentDto,
-    ): Promise<IResponse<void>> {
+    ): Promise<IResponse<PaymentIntentResult>> {
         return this.stripeService.updatePaymentIntent(piId, dto, request.user.keycloakId);
+    }
+
+    @Post('free-order')
+    @ApiOperation({ summary: 'Fulfill a zero-amount order without Stripe card payment' })
+    @ApiBody({ type: CheckoutDto })
+    @ApiResponse({ status: 201, description: 'Free order fulfilled successfully' })
+    @ApiResponse({ status: 400, description: 'Order requires card payment or invalid payload' })
+    @ApiResponse({ status: 401, description: 'User not authenticated' })
+    @ApiResponse({ status: 500, description: 'Internal error while fulfilling free order' })
+    async fulfillFreeOrder(
+        @Req() request,
+        @Body() dto: CheckoutDto,
+    ): Promise<IResponse<FreeOrderResult>> {
+        return this.stripeService.fulfillFreeOrder(dto, request.user.keycloakId);
     }
 
     @Post('checkout')

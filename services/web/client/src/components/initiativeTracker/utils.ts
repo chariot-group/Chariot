@@ -196,7 +196,7 @@ export function sanitizeInitiativeTrackerRowForPlayer(row: InitiativeTrackerRow)
 }
 
 export function sanitizeBattleStateSnapshotForPlayers(snapshot: BattleStateSnapshot): BattleStateSnapshot {
-  const initiativeTrackerRows = filterRowsForPlayerView(snapshot.initiativeTrackerRows).map(
+  const initiativeTrackerRows = filterRowsForPlayerView(sortInitiativeTrackerRows(snapshot.initiativeTrackerRows)).map(
     sanitizeInitiativeTrackerRowForPlayer,
   );
   const activeTurnVisible = snapshot.activeTurnRowId

@@ -378,8 +378,11 @@ Each rule has a unique identifier and must be tested.
 - `keycloakId` must be a valid UUID v4 format
 - `keycloakId` must be unique across all users
 - `balance` must be a number
+- `balance` MUST NOT become negative after any debit operation
 - History entries must contain all three fields: date, campaignName, value
 - History is immutable once created (no updates or deletions of history entries)
+- Session lobby token deposits (`session:add-token`, `session:add-tokens`) MUST be rejected server-side when `alreadyDepositedInSession + requestedAmount > user.balance`
+- Session launch debits (`PUT /user/me/history`) MUST be rejected when `value > user.balance`
 
 **Prohibitions**:
 
@@ -387,6 +390,8 @@ Each rule has a unique identifier and must be tested.
 - Modifying `keycloakId` after user creation
 - Deleting history entries
 - Creating history entries without all required fields
+- Allowing a session token deposit or launch debit that would make `balance` negative
+- Relying on frontend-only balance checks for session token deposits
 
 **Tests**:
 
@@ -396,6 +401,8 @@ Each rule has a unique identifier and must be tested.
 - History entries can be added to existing users
 - Balance updates are properly tracked in history
 - Default balance is 0 for new users
+- `addHistory` rejects debits that would make balance negative
+- Session gateway rejects token deposits when balance is insufficient
 
 **References**:
 
@@ -998,6 +1005,41 @@ Each rule has a unique identifier and must be tested.
 
 ---
 
+### FR-013-C: Below-Minimum and Free Checkout Orders
+
+**Rule**: When the final discounted order amount is zero or below the Stripe minimum charge for the currency, the order must be fulfilled without a card payment. Any positive remainder below the Stripe minimum must appear as a complimentary "Cadeau" line in the checkout recap.
+
+**Requirements**:
+
+- Stripe minimum charge amounts must be enforced server-side before creating or updating a PaymentIntent (EUR minimum: 50 centimes)
+- When `chargeableAmount === 0`, checkout must use `POST /stripe/free-order` instead of Stripe PaymentElement confirmation
+- The existing PaymentIntent must be cancelled when the order becomes non-chargeable, to prevent accidental full-price payment
+- Free-order fulfillment must produce the same side effects as a successful Stripe webhook: payment recorded as `COMPLETED`, promo/affiliation usage tracked, referral side effects applied, tokens credited
+- When `0 < discountedAmount < stripeMinimum`, the checkout recap must display a **Cadeau** line equal to the remainder waived (gift amount), in addition to any promo/affiliation/referral discount lines
+- The pay button must remain disabled while PaymentIntent synchronization fails (`piError` present)
+
+**Prohibitions**:
+
+- Attempting to create or update a Stripe PaymentIntent with an amount below the Stripe minimum (except 0 handled by free-order flow)
+- Allowing card payment when the displayed total is 0 €
+- Omitting the Cadeau line when a positive remainder below the Stripe minimum exists
+
+**Tests**:
+
+- `resolveChargeableAmount` returns gift waiver for amounts between 1 and minimum-1 centimes
+- `resolveChargeableAmount` returns no gift for amount exactly at Stripe minimum
+- `resolveChargeableAmount` returns zero charge for fully discounted orders
+- Free-order endpoint rejects requests where `chargeableAmount > 0`
+
+**References**:
+
+- `services/payment/api/src/resources/stripe/stripe-charge.utils.ts`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `services/web/client/src/lib/checkout-utils.ts`
+- `services/web/client/src/components/checkout/CheckoutForm.tsx`
+
+---
+
 ## FR-014: Admin Sidebar External Navigation Links
 
 **Rule**: The admin client sidebar must expose configurable external links to third-party administration consoles (Keycloak, Stripe). URLs must be defined per environment via environment variables and must not be hardcoded.
@@ -1473,8 +1515,10 @@ Each rule has a unique identifier and must be tested.
 
 **Sidebar Navigation — Player**:
 
-- Before the GM has actually started combat, players MUST NOT have access to the initiative tracker.
-- While combat is initialized but not started, the sidebar footer for players MUST NOT show **Return to Battle**.
+- Before the GM has actually started combat, players MUST NOT have access to the initiative tracker, unless the GM explicitly enabled preparatory initiative entry.
+- While combat is initialized but not started:
+  - if preparatory initiative entry is disabled, the sidebar footer for players MUST NOT show **Return to Battle**.
+  - if preparatory initiative entry is enabled, the sidebar footer for players MUST show **Return to Battle**, navigating to `/{locale}/initiativeTracker`.
 - Once combat has started, when the player is not on the initiative tracker page, the sidebar footer MUST show **Return to Battle** (same label, icon, and styling as the GM), navigating to `/{locale}/initiativeTracker`.
 - Once combat has started, when the player is on the initiative tracker page, the sidebar footer MUST show **View Character Sheet**, navigating to their session character sheet.
 - If the player has no assigned character, **View Character Sheet** is disabled with an explanatory tooltip.
@@ -1517,28 +1561,43 @@ Each initiative tracker row carries:
 **Player Initiative Tracker View**:
 
 - Same route as GM: `/{locale}/initiativeTracker`.
-- Players can access this route only once combat has started (`battleStarted === true`).
-- If a player tries to access the route before combat starts, they MUST be redirected back to their session character sheet.
-- Read-only: no HP edit dialog, no condition edit, no initiative edit, no turn controls, no visibility column.
-- Rows filtered to `visible === true`, plus any row in the session participants group (always shown to connected players).
+- The GM battle configuration MUST expose a checkbox: **Allow players to enter their initiative**.
+- This checkbox is stored in `session.initBattleDraft.allowPlayerInitiativeInput`, restored when reopening the configuration dialog, and reset when combat ends or the tracker is reset.
+- If the checkbox is disabled:
+  - players can access the route only once combat has started (`battleStarted === true`);
+  - if a player tries to access the route before combat starts, they MUST be redirected back to their session character sheet.
+- If the checkbox is enabled and combat is initialized but not started:
+  - players MAY access the route before combat start;
+  - each player MUST see only their own tracker row during this preparatory phase;
+  - the player MAY edit only the initiative value of their own row;
+  - no other tracker field is editable, and turn controls remain unavailable;
+  - if the player has no assigned session character, they MUST be redirected back to their session character sheet.
+- Once combat has started, the player tracker remains read-only: no HP edit dialog, no condition edit, no initiative edit, no turn controls, no visibility column.
+- Before combat start, rows are limited to the player’s own row; after combat start, rows are filtered to `visible === true`, plus any row in the session participants group (always shown to connected players).
 - Field values masked when the corresponding `playerFieldVisibility` flag is `false` (display placeholder `—`; hidden name displays a generic hidden label).
 - Active turn highlight and round indicator reflect GM broadcast state.
+- Player-visible row ordering MUST match the GM initiative order even when initiative values are hidden from players.
 - Vital status visuals (FR-020) apply on visible HP when HP is shown.
+- The player’s own row MUST have a dedicated visual indicator and accessible label so the player can immediately identify their character within the initiative order.
 
 **Real-Time Sync (WebSocket)**:
 
-- GM emits `session:battle-state-updated` with a snapshot: `initiativeTrackerRows`, `battleInitialized`, `battleStarted`, `activeTurnRowId`, `currentRound`.
+- GM emits `session:battle-state-updated` with a snapshot: `initiativeTrackerRows`, `battleInitialized`, `battleStarted`, `activeTurnRowId`, `currentRound`, `allowPlayerInitiativeInput`.
 - Gateway validates emitter is session GM, then broadcasts to other participants (`client.to`).
 - Players apply via `applyRemoteBattleState` (does not register GM turn-lock actions).
-- The initiative snapshot MUST become available to players only once combat has started; a merely initialized combat is GM-only.
+- The initiative snapshot MUST become available to players only once combat has started, except when `allowPlayerInitiativeInput === true`, in which case the initialized preparatory state is also broadcast.
 - On `session:request-battle-state`, the gateway relays to the session room; GM clients respond by emitting the current snapshot (handles late join / reconnect).
 - GM also rebroadcasts after `session:participant-joined` when a battle is active.
+- A connected player MAY emit an initiative update event for their own session character only while combat is initialized, not started, and `allowPlayerInitiativeInput === true`.
+- The GM client remains the authoritative broadcaster of the resulting battle snapshot after applying a valid player initiative update.
 
 **Prohibitions**:
 
 - Showing GM-only controls (turn engine, reset, visibility editor) to players.
-- Exposing an initialized-but-not-started combat to players.
+- Exposing an initialized-but-not-started combat to players when `allowPlayerInitiativeInput !== true`.
 - Persisting player-local edits to battle state (players are consumers only).
+- Allowing a player to edit another row's initiative.
+- Allowing a player to edit initiative after combat has started.
 - Broadcasting battle state from non-GM participants.
 - Using sidebar **Reset** during an initialized or started battle.
 - Reopening a new combat with rows, setup choices, or turn progress carried over from a previous ended combat.
@@ -1548,6 +1607,15 @@ Each initiative tracker row carries:
 - Sidebar state matrix (GM/player × page × battle state).
 - Default `playerFieldVisibility` per kind (NPC vs player).
 - Player view filters hidden rows and masks hidden fields.
+- Preparatory player mode:
+  - player can access the tracker before combat start only when `allowPlayerInitiativeInput === true`
+  - player sees only their own row before combat start
+  - player can edit only their own initiative before combat start
+  - player is redirected when no assigned character exists
+- Ordering:
+  - player-visible row order matches GM initiative order even when initiative is hidden
+- Visual:
+  - own player row renders a dedicated indicator and accessible label
 - `applyRemoteBattleState` replaces battle fields without touching `turnsWithActions`.
 - Rehydration adds default `playerFieldVisibility` to legacy rows.
 
@@ -1699,6 +1767,239 @@ Each initiative tracker row carries:
 - Bulk leave-initiative removes selected rows without ending combat.
 - Applying a bulk change during started combat registers a tracker action on the current turn.
 - Keyboard, focus, accessible names, selected-state, and dialog-label behavior are covered.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
+- `services/web/client/src/components/initiativeTracker/`
+- `services/web/client/src/store/slices/sessionSlice.ts`
+
+---
+
+## FR-024: Session Participant Human-Readable Display Names
+
+**Rule**: Whenever the application displays the identity of a connected session participant to another user (Game Master or player), it MUST show a human-readable label derived from the participant profile. Technical identifiers and private contact data MUST NOT be used as display labels.
+
+**Scope**:
+
+- Session lobby participant list (`/{locale}/campaigns/{campaignId}/session/{code}`)
+- GM sidebar session players section (`Joueurs (session)`)
+- GM character sheet context when showing who plays a character (`playedBy`)
+- Session toasts that name a joining, leaving, or disconnected participant
+- Initiative tracker session-participant rows when no character sheet is available at battle setup or add-combatants time (fallback label before hydration)
+- Applies whenever `isInSession === true` and a roster entry references a `userId`
+
+**Label Resolution Priority**:
+
+1. `username` (Keycloak / user profile), when present and not a Keycloak UUID
+2. `firstName` + `lastName` (trimmed, space-separated), when `username` is absent or unusable
+3. Loading placeholder `...` while the label is not yet resolved
+
+**Data Sources** (non-exclusive; client may merge the first valid result):
+
+- WebSocket `session:participant-joined` payload field `username` (`preferred_username` from JWT)
+- Authenticated API `GET /user/{keycloakId}`
+- Redux `session.participantDisplayNames`, cleared on `clearCurrentSession` and pruned when a participant leaves the roster
+
+**Display Requirements**:
+
+- The same participant MUST use the same resolved label across lobby, sidebar, initiative tracker fallbacks, and toasts for the current session context.
+- A resolved label MUST NOT be replaced by a Keycloak UUID if a better source becomes available later (WebSocket username or successful profile fetch).
+- While resolution is pending, UI surfaces MUST show `...`, not the raw `userId`.
+
+**Prohibitions**:
+
+- Displaying a participant email as their session label
+- Displaying a Keycloak `sub` / UUID (`userId`) as a fallback label
+- Treating a UUID-shaped `username` or WebSocket `username` as a valid display label
+- Persisting `participantDisplayNames` across sessions (labels are ephemeral per active session)
+
+**Tests**:
+
+- Nominal: user with `username` shows that username in lobby, GM sidebar, and initiative tracker when character sheet is unavailable
+- Edge: user without `username` but with `firstName` + `lastName` shows the full name
+- Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
+- Edge: initial API failure followed by WebSocket username still updates the displayed label
+- Error: profile fetch failure shows `...`, never UUID or email
+- Regression: `username` equal to Keycloak UUID falls back to `firstName` + `lastName` or `...`
+
+**References**:
+
+- `services/web/client/src/lib/formatSessionParticipantUserLabel.ts`
+- `services/web/client/src/lib/sessionParticipantDisplayNames.ts`
+- `services/web/client/src/store/slices/sessionSlice.ts` (`participantDisplayNames`)
+- `services/web/client/src/hooks/useSessionData.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/session/api/src/resources/session/session.gateway.ts`
+
+---
+
+## FR-025: In-Session Logo and Session Lobby Sidebar Navigation
+
+**Rule**: While a user is connected to an active session, clicking the application logo in the header and the sidebar action button on the session lobby page must provide contextual navigation back to character sheets instead of the generic welcome redirect or an irrelevant session action.
+
+**Scope**:
+
+- Applies when `isInSession === true` and the session record is available in Redux.
+- Complements FR-021 (combat navigation) without overriding combat-specific sidebar rules on other pages.
+- The session lobby page is `/{locale}/campaigns/{campaignId}/session/{sessionCode}`.
+
+**Header Logo — Player**:
+
+- When a connected player clicks the logo, they MUST be redirected to their session character sheet: `/{locale}/characters/{characterId}?sessionCode={sessionCode}` when a character is assigned.
+- If the player has no assigned character, the logo click MUST fall back to `/{locale}/welcome`.
+
+**Header Logo — Game Master**:
+
+- When the connected GM clicks the logo, they MUST be redirected to the first character of the first active group in the session campaign, using the same resolution order as `NavigationService.determineSpaceDestination` (active groups first, then archived groups with characters).
+- If no character exists in the campaign, the logo click MUST fall back to `/{locale}/welcome`.
+
+**Header Logo — Outside Session**:
+
+- When the user is not in a session, logo click behavior is unchanged: redirect to `/{locale}/welcome`.
+
+**Sidebar Action Button — Player on Session Lobby**:
+
+- When the session is launched (`sessionStatus === "launched"`) and the player is on the session lobby page:
+  - If combat has not started, the sidebar footer MUST show **Return to Character Sheet**, navigating to the player's session character sheet.
+  - If combat has started, the sidebar footer MUST show **Return to Battle** (same behavior as FR-021 when the player is outside the initiative tracker).
+- If the player has no assigned character, **Return to Character Sheet** is disabled with an explanatory tooltip.
+
+**Accessibility**:
+
+- The logo button MUST expose an accessible name describing its destination context (home vs character sheet navigation).
+
+**Tests**:
+
+- Nominal: launched session, player on session lobby without combat sees **Return to Character Sheet**.
+- Nominal: player in session clicks logo and lands on their session character sheet URL with `sessionCode`.
+- Nominal: GM in session clicks logo and lands on first character of first campaign group.
+- Edge: player without assigned character cannot use **Return to Character Sheet**; logo falls back to welcome.
+- Edge: combat started, player on session lobby sees **Return to Battle**.
+- Regression: user not in session still redirects logo to welcome.
+
+**References**:
+
+- `services/web/client/src/components/layout/Header.tsx`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/layout/SessionTimer.tsx`
+- `services/web/client/src/services/NavigationService.ts`
+- `services/web/client/src/lib/sessionInAppNavigation.ts`
+
+---
+
+## FR-026: Session WebSocket Connection Lifecycle and Reconnection Resilience
+
+**Rule**: The application MUST maintain exactly one active Socket.IO connection per browser tab per active session OTP code. Transient disconnections (JWT refresh, client navigation, React lifecycle) MUST NOT cause spurious participant-disconnected notifications, duplicate connections, or loss of roster state.
+
+**Scope**:
+
+- Applies whenever `isInSession === true` or a session-aware client component holds an active session OTP code.
+- Complements FR-021 (combat sync), FR-022 (character sheet sync), and FR-024 (display names) without overriding their domain-specific rules.
+- Covers client connection pooling, JWT refresh handling, gateway disconnect grace period, and HTTP/WebSocket roster convergence.
+
+**Client Connection Pool**:
+
+- Exactly one pooled Socket.IO connection per session OTP code (`sessionSocketPool`).
+- Multiple subscribers (layout `SessionCharacterSyncClient`, session lobby `useSessionSocket`, battle sync hooks) MUST share the connection via acquire/release refCount.
+- JWT refresh MUST update `socket.auth.token` without disconnecting or recreating the socket.
+- The pool connection key MUST be the session OTP code only — the JWT MUST NOT be part of the key.
+- Changing the session OTP code MUST disconnect the previous socket and create a new connection.
+- Socket effect dependencies MUST NOT include the JWT token when only auth sync is required; token changes update auth in a separate effect.
+
+**Gateway Disconnect Grace Period**:
+
+- On Socket.IO disconnect, the gateway MUST wait a grace period (currently 3 seconds) before emitting `session:participant-disconnected` and persisting disconnected status.
+- A successful `session:join` from the same user within the grace period MUST cancel the pending disconnect notification.
+- An explicit `session:leave` MUST cancel any pending disconnect notification for that user.
+- The gateway MUST track session room membership independently of `client.rooms` at disconnect time (`sessionRoomIds`), because Socket.IO may already have cleared rooms when `handleDisconnect` runs.
+
+**Roster and State Convergence**:
+
+- `session:participant-joined` broadcasts MUST use the persisted roster `characterId`, not the client join payload alone (reconnect may send `characterId: null` before Redux hydration).
+- Client roster state MUST merge HTTP and WebSocket updates without overwriting newer WebSocket data (`mergeParticipantsPreserveCharacterIds`).
+- After participant join or character-change events, clients SHOULD trigger a debounced HTTP roster resync as a convergence fallback.
+- Session end toasts MUST be deduplicated per session code and reason when multiple socket subscribers receive the same event (`shouldShowSessionEndNotice`).
+
+**WebSocket Conventions** (mandatory for all session event handlers):
+
+- In all WebSocket payloads, `sessionId` means the session OTP code (same value used for `session:join`), not the internal database UUID.
+- Socket.IO namespace: `/session`, path: `/ws`.
+- Gateway broadcasts to other participants use `client.to()` — emitters do not receive their own events; local listeners are required (see `sessionCharacterSyncBridge`, FR-022).
+- After `session:leave`, the leaving socket is no longer in the room; server-side notifications to remaining participants MUST use `server.to(roomId)`, not `client.to()`.
+
+**Prohibitions**:
+
+- Creating a new Socket.IO connection on JWT token change.
+- Creating parallel connections from layout and session page for the same OTP code.
+- Including the JWT token in the socket pool connection key.
+- Immediately notifying `session:participant-disconnected` on every Socket.IO disconnect without a grace period.
+- Broadcasting join events with `characterId: null` when the persisted roster already has a character.
+- Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
+- Registering duplicate session-end handlers that each show an independent toast for the same event.
+
+**Tests**:
+
+- Pool nominal: same OTP code reuses the same socket across acquire calls.
+- Pool edge: JWT refresh updates `socket.auth` without disconnect.
+- Pool edge: OTP code change disconnects the previous socket and creates a new one.
+- Gateway edge: disconnect within grace period followed by rejoin cancels `session:participant-disconnected`.
+- Gateway edge: disconnect beyond grace period emits `session:participant-disconnected`.
+- Join after reconnect preserves roster `characterId` in the `session:participant-joined` broadcast.
+- Session end toast is shown once despite multiple subscribers.
+
+**References**:
+
+- `services/web/client/src/lib/sessionSocketPool.ts`
+- `services/web/client/src/lib/__tests__/sessionSocketPool.test.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/lib/sessionCharacterSyncBridge.ts`
+- `services/web/client/src/lib/sessionParticipantMerge.ts`
+- `services/web/client/src/hooks/useSessionBattleSync.ts`
+- `services/web/client/src/lib/sessionBattleSyncBridge.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`
+- `services/session/api/src/resources/session/session.gateway.spec.ts`
+
+---
+
+## FR-026: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+
+**Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
+
+**Requirements**:
+
+- The tracker must expose bulk-selection entry points for both grouped initiative editing and grouped display configuration using explicit configuration wording that identifies the target action.
+- Bulk-selection mode must present a clear active state, the current number of selected rows, and an obvious way to clear or exit the selection.
+- The selection interaction pattern must stay consistent between grouped initiative editing and grouped display configuration across desktop and mobile layouts.
+- When the GM reopens grouped display configuration for a current multi-selection:
+  - any field whose selected rows all share the same current value must be shown with that active value;
+  - any field whose selected rows do not share the same current value must be shown with an explicit mixed state;
+  - unchanged mixed fields must not overwrite existing row-specific values when the grouped configuration is saved.
+- Grouped display configuration must remain compatible with FR-021 and FR-023 visibility and alias rules.
+
+**Accessibility Requirements**:
+
+- Bulk-selection mode changes, selected-count updates, and mixed-field states must be perceivable to assistive technologies.
+- Bulk-selection controls for both workflows must keep explicit accessible names that describe whether the user is configuring display or initiative.
+
+**Prohibitions**:
+
+- Resetting grouped display controls to unrelated defaults when the current selection already has active shared values.
+- Hiding the distinction between a shared value and a mixed value in grouped display configuration.
+- Using ambiguous wording that does not let the GM distinguish between grouped initiative editing and grouped display configuration.
+
+**Tests**:
+
+- Reopening grouped display configuration for rows sharing the same display settings preloads those settings.
+- Reopening grouped display configuration for rows with different settings shows a mixed state and preserves untouched values on save.
+- Grouped initiative and grouped display selection modes expose distinct labels, active state, selection count, and exit/clear actions on desktop and mobile.
+- Keyboard and screen-reader coverage includes active mode, selected count, and mixed-state announcements.
 
 **References**:
 

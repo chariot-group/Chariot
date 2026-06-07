@@ -3,12 +3,15 @@
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { UserPlus } from "lucide-react";
+import { LayersPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddCombatantsDialog } from "@/components/dialogs/AddCombatantsDialog";
 import { InitiativeTrackerHealthDialog } from "@/components/initiativeTracker/InitiativeTrackerHealthDialog";
 import { InitiativeTrackerTable } from "@/components/initiativeTracker/InitiativeTrackerTable";
-import { InitiativeTrackerTurnControls, type PreviousTurnState } from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
+import {
+  InitiativeTrackerTurnControls,
+  type PreviousTurnState,
+} from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import {
   characterName,
@@ -25,7 +28,7 @@ import {
   buildConditionEntry,
   formatRemainingConditionDuration,
 } from "@/components/initiativeTracker/conditionDuration";
-import { ROUND_DURATION_SECONDS } from "@/components/initiativeTracker/constants";
+import { ROUND_DURATION_SECONDS, SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import type {
   InitiativeTrackerConditionDurationUnit,
   InitiativeTrackerConditionEntry,
@@ -34,6 +37,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useAppStore } from "@/store/hooks";
 import { useUser } from "@/hooks/useUser";
 import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
+import { getPooledSessionSocket } from "@/lib/sessionSocketPool";
 import {
   endBattle,
   nextBattleTurn,
@@ -43,8 +47,10 @@ import {
   selectBattleStarted,
   selectCharacterSheetRemoteVersions,
   selectCurrentRound,
+  selectCurrentUserParticipant,
   selectLastConsultedSheetPath,
   selectBattleStateSnapshot,
+  selectSessionInitBattleDraft,
   selectTurnsWithActions,
   selectInitiativeTrackerRows,
   selectIsInSession,
@@ -79,6 +85,7 @@ export default function InitiativeTrackerPage() {
   const turnsWithActions = useAppSelector(selectTurnsWithActions);
   const remoteCharacterVersions = useAppSelector(selectCharacterSheetRemoteVersions);
   const lastConsultedSheetPath = useAppSelector(selectLastConsultedSheetPath);
+  const initBattleDraft = useAppSelector(selectSessionInitBattleDraft);
 
   const isGameMaster = React.useMemo(() => {
     const userId = user.user?.keycloakId;
@@ -87,12 +94,44 @@ export default function InitiativeTrackerPage() {
   }, [participants, user.user?.keycloakId]);
 
   const trackerMode = isGameMaster ? "gm" : "player";
+  const allowPlayerInitiativeInput = initBattleDraft.allowPlayerInitiativeInput ?? false;
   const previousBattleInitializedRef = React.useRef(battleInitialized);
 
+  const ownCharacterId = React.useMemo(() => {
+    const userId = user.user?.keycloakId;
+    if (!userId) return null;
+    return participants.find((p) => p.userId === userId)?.characterId ?? null;
+  }, [participants, user.user?.keycloakId]);
+  const ownParticipant = useAppSelector((state) =>
+    user.user?.keycloakId ? selectCurrentUserParticipant(state, user.user.keycloakId) : null,
+  );
+
+  const ownCharacterSheetHref = React.useMemo(() => {
+    if (!ownCharacterId) return null;
+    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
+    return `/${locale}/characters/${encodeURIComponent(ownCharacterId)}${query}`;
+  }, [locale, ownCharacterId, sessionCode]);
+
+  const playerCanAccessPreparationTracker =
+    !isGameMaster &&
+    battleInitialized &&
+    !battleStarted &&
+    allowPlayerInitiativeInput &&
+    ownCharacterId != null &&
+    ownParticipant?.status === "connected";
+  const playerCanEditOwnInitiative = playerCanAccessPreparationTracker;
+
   const visibleRows = React.useMemo(() => {
-    const sorted = sortInitiativeTrackerRows(rows);
-    return isGameMaster ? sorted : filterRowsForPlayerView(sorted);
-  }, [isGameMaster, rows]);
+    if (isGameMaster) {
+      return sortInitiativeTrackerRows(rows);
+    }
+
+    if (!battleStarted) {
+      return ownCharacterId ? rows.filter((row) => row.characterId === ownCharacterId) : [];
+    }
+
+    return filterRowsForPlayerView(rows);
+  }, [battleStarted, isGameMaster, ownCharacterId, rows]);
 
   const activeTurnIndex = React.useMemo(() => {
     if (!activeTurnRowId) return -1;
@@ -114,31 +153,41 @@ export default function InitiativeTrackerPage() {
 
   const canGoPrevious = previousTurnState === "available";
 
-  const broadcastCurrentBattleState = React.useCallback((options?: { includeEnded?: boolean }) => {
-    if (!isGameMaster || !isInSession) return;
-    const snapshot = selectBattleStateSnapshot(
-      store.getState() as Parameters<typeof selectBattleStateSnapshot>[0],
-    );
-    if (!snapshot.battleStarted && !options?.includeEnded) return;
-    emitBattleStateUpdate(snapshot);
-  }, [isGameMaster, isInSession, store]);
+  const broadcastCurrentBattleState = React.useCallback(
+    (options?: { includeEnded?: boolean }) => {
+      if (!isGameMaster || !isInSession) return;
+      const snapshot = selectBattleStateSnapshot(store.getState() as Parameters<typeof selectBattleStateSnapshot>[0]);
+      if (
+        !snapshot.battleStarted &&
+        !(snapshot.battleInitialized && snapshot.allowPlayerInitiativeInput) &&
+        !options?.includeEnded
+      ) {
+        return;
+      }
+      emitBattleStateUpdate(snapshot);
+    },
+    [isGameMaster, isInSession, store],
+  );
 
-  const dispatchTrackerAction = React.useCallback((
-    action: ReturnType<
-      | typeof updateInitiativeTrackerRow
-      | typeof removeInitiativeTrackerRow
-      | typeof removeInitiativeTrackerRows
-      | typeof updateInitiativeTrackerRowsBulk
-      | typeof startBattle
-      | typeof endBattle
-      | typeof nextBattleTurn
-      | typeof previousBattleTurn
-    >,
-    options?: { includeEnded?: boolean },
-  ) => {
-    dispatch(action);
-    broadcastCurrentBattleState(options);
-  }, [broadcastCurrentBattleState, dispatch]);
+  const dispatchTrackerAction = React.useCallback(
+    (
+      action: ReturnType<
+        | typeof updateInitiativeTrackerRow
+        | typeof removeInitiativeTrackerRow
+        | typeof removeInitiativeTrackerRows
+        | typeof updateInitiativeTrackerRowsBulk
+        | typeof startBattle
+        | typeof endBattle
+        | typeof nextBattleTurn
+        | typeof previousBattleTurn
+      >,
+      options?: { includeEnded?: boolean },
+    ) => {
+      dispatch(action);
+      broadcastCurrentBattleState(options);
+    },
+    [broadcastCurrentBattleState, dispatch],
+  );
 
   const updateRow = (id: string, changes: Partial<Omit<InitiativeTrackerRow, "id">>) => {
     dispatchTrackerAction(updateInitiativeTrackerRow({ id, changes }));
@@ -219,20 +268,8 @@ export default function InitiativeTrackerPage() {
     updateRow(row.id, { conditions: [] });
   };
 
-  const ownCharacterId = React.useMemo(() => {
-    const userId = user.user?.keycloakId;
-    if (!userId) return null;
-    return participants.find((p) => p.userId === userId)?.characterId ?? null;
-  }, [participants, user.user?.keycloakId]);
-
-  const ownCharacterSheetHref = React.useMemo(() => {
-    if (!ownCharacterId) return null;
-    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
-    return `/${locale}/characters/${encodeURIComponent(ownCharacterId)}${query}`;
-  }, [locale, ownCharacterId, sessionCode]);
-
   React.useEffect(() => {
-    if (!isGameMaster && !battleStarted) {
+    if (!isGameMaster && !battleStarted && !playerCanAccessPreparationTracker) {
       if (ownCharacterSheetHref) {
         router.replace(ownCharacterSheetHref);
       }
@@ -256,9 +293,98 @@ export default function InitiativeTrackerPage() {
     if (ownCharacterSheetHref) {
       router.replace(ownCharacterSheetHref);
     }
-  }, [battleInitialized, battleStarted, isGameMaster, lastConsultedSheetPath, ownCharacterSheetHref, router]);
+  }, [
+    battleInitialized,
+    battleStarted,
+    isGameMaster,
+    lastConsultedSheetPath,
+    ownCharacterSheetHref,
+    playerCanAccessPreparationTracker,
+    router,
+  ]);
 
-  if (!isGameMaster && !battleStarted) {
+  React.useEffect(() => {
+    if (!isGameMaster || battleStarted || !battleInitialized || !allowPlayerInitiativeInput) return;
+
+    const socket = getPooledSessionSocket();
+    if (!socket) return;
+
+    const onPlayerInitiativeSubmitted = ({
+      characterId,
+      initiative,
+      userId,
+    }: {
+      characterId?: string;
+      initiative?: number;
+      userId?: string;
+    }) => {
+      if (typeof characterId !== "string" || !characterId.trim()) return;
+      if (!Number.isFinite(initiative)) return;
+      if (typeof userId !== "string" || !userId.trim()) return;
+
+      const participant = participants.find((p) => p.userId === userId);
+      if (!participant || participant.status === "gameMaster" || participant.characterId !== characterId) {
+        return;
+      }
+
+      const row = rows.find((candidate) => candidate.characterId === characterId);
+      if (!row || row.groupId !== SESSION_PARTICIPANTS_GROUP_ID) return;
+
+      dispatchTrackerAction(
+        updateInitiativeTrackerRow({
+          id: row.id,
+          changes: { initiative: Math.trunc(Number(initiative)) },
+        }),
+      );
+    };
+
+    socket.on("session:player-initiative-submitted", onPlayerInitiativeSubmitted);
+
+    return () => {
+      socket.off("session:player-initiative-submitted", onPlayerInitiativeSubmitted);
+    };
+  }, [
+    allowPlayerInitiativeInput,
+    battleInitialized,
+    battleStarted,
+    dispatchTrackerAction,
+    isGameMaster,
+    participants,
+    rows,
+  ]);
+
+  const playerUpdateRow = React.useCallback(
+    (id: string, changes: Partial<Omit<InitiativeTrackerRow, "id">>) => {
+      if (!playerCanEditOwnInitiative || !ownCharacterId) return;
+
+      const row = rows.find((candidate) => candidate.id === id);
+      if (!row || row.characterId !== ownCharacterId) return;
+
+      const nextInitiative = changes.initiative;
+      if (!Number.isFinite(nextInitiative)) return;
+      const normalizedInitiative = Math.trunc(Number(nextInitiative));
+
+      dispatch(
+        updateInitiativeTrackerRow({
+          id,
+          changes: { initiative: normalizedInitiative },
+        }),
+      );
+
+      const socket = getPooledSessionSocket();
+      const userId = user.user?.keycloakId;
+      if (!socket || !sessionCode || !userId) return;
+
+      socket.emit("session:player-initiative-submitted", {
+        sessionId: sessionCode,
+        characterId: ownCharacterId,
+        initiative: normalizedInitiative,
+      });
+    },
+    [dispatch, ownCharacterId, playerCanEditOwnInitiative, rows, sessionCode, user.user?.keycloakId],
+  );
+
+  if (!isGameMaster && !battleStarted && !playerCanAccessPreparationTracker) {
     return null;
   }
 
@@ -283,6 +409,8 @@ export default function InitiativeTrackerPage() {
       conditionRoundHint: t("conditionRoundHint", { seconds: ROUND_DURATION_SECONDS }),
       visibleFor: t("visibleFor", { name }),
       playerDisplayNameSubtitle: t("playerDisplayNameSubtitle"),
+      ownCharacterBadge: t("ownCharacterBadge"),
+      ownCharacterLabel: t("ownCharacterLabel", { name }),
       hiddenField: t("hiddenField"),
       otherGroup: t("otherGroup"),
       expandDetails: t("expandDetails", { name }),
@@ -315,8 +443,7 @@ export default function InitiativeTrackerPage() {
       hitPointsSessionTooltip: tBattle("healthPointsSessionTooltip"),
       hpAbbr: tBattle("hpAbbr"),
       getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => t(`conditions.${condition}`),
-      getConditionDescription: (condition: ActiveInitiativeTrackerCondition) =>
-        t(`conditionDescriptions.${condition}`),
+      getConditionDescription: (condition: ActiveInitiativeTrackerCondition) => t(`conditionDescriptions.${condition}`),
       formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => {
         if (entry.duration?.unit === "untilCombatEnd") {
           return t("conditionDurationUntilCombatEnd");
@@ -361,11 +488,11 @@ export default function InitiativeTrackerPage() {
           <p
             className="text-center text-sm text-white/60"
             role="status">
-            {t("playerReadOnlyNotice")}
+            {playerCanEditOwnInitiative ? t("playerPrepInitiativeNotice") : t("playerReadOnlyNotice")}
           </p>
         ) : null}
 
-        {(battleStarted || isGameMaster) ? (
+        {battleStarted || isGameMaster ? (
           <div className="flex min-w-0 items-center justify-between gap-2">
             {battleStarted ? (
               <div className="min-w-0 rounded-full bg-card px-4 py-2 text-sm font-bold text-white shadow-lg sm:px-5 sm:text-base">
@@ -382,7 +509,7 @@ export default function InitiativeTrackerPage() {
                   variant="outline"
                   aria-label={tInit("addCombatants")}
                   className="gap-2 rounded-[15px] px-3 sm:px-4">
-                  <UserPlus
+                  <LayersPlus
                     className="size-4"
                     aria-hidden="true"
                   />
@@ -399,7 +526,7 @@ export default function InitiativeTrackerPage() {
           ownCharacterId={ownCharacterId}
           ownCharacterSheetHref={ownCharacterSheetHref}
           activeTurnRowId={battleStarted ? activeTurnRowId : null}
-          initiativeLocked={battleStarted || !isGameMaster}
+          initiativeLocked={battleStarted || (!isGameMaster && !playerCanEditOwnInitiative)}
           columnLabels={{
             initiative: t("initiative"),
             character: t("character"),
@@ -410,7 +537,7 @@ export default function InitiativeTrackerPage() {
             visible: t("visible"),
           }}
           getSheetHref={getSheetHref}
-          onUpdateRow={isGameMaster ? updateRow : undefined}
+          onUpdateRow={isGameMaster ? updateRow : playerCanEditOwnInitiative ? playerUpdateRow : undefined}
           onAddCondition={isGameMaster ? addCondition : undefined}
           onRemoveCondition={isGameMaster ? removeCondition : undefined}
           onClearConditions={isGameMaster ? clearConditions : undefined}
@@ -433,11 +560,15 @@ export default function InitiativeTrackerPage() {
               ? {
                   enableMode: t("groupedInitiativeEnable"),
                   disableMode: t("groupedInitiativeDisable"),
+                  enableModeShort: t("groupedInitiativeEnableShort"),
+                  disableModeShort: t("groupedInitiativeDisableShort"),
                   getSelectedCountLabel: (count) => t("groupedInitiativeSelectedCount", { count }),
                   initiativePlaceholder: t("groupedInitiativePlaceholder"),
                   apply: t("groupedInitiativeApply"),
                   clearSelection: t("groupedInitiativeClearSelection"),
+                  clearSelectionShort: t("groupedInitiativeClearSelectionShort"),
                   selectAllRows: t("selectAllRows"),
+                  selectAllRowsShort: t("selectAllRowsShort"),
                 }
               : undefined
           }
@@ -446,9 +577,14 @@ export default function InitiativeTrackerPage() {
               ? {
                   enableMode: t("bulkVisibilityEnable"),
                   disableMode: t("bulkVisibilityDisable"),
+                  enableModeShort: t("bulkVisibilityEnableShort"),
+                  disableModeShort: t("bulkVisibilityDisableShort"),
+                  modeTitle: t("bulkVisibilityModeTitle"),
                   getSelectedCountLabel: (count) => t("groupedInitiativeSelectedCount", { count }),
                   selectAllRows: t("bulkVisibilitySelectAllRows"),
+                  selectAllRowsShort: t("bulkVisibilitySelectAllRowsShort"),
                   clearSelection: t("groupedInitiativeClearSelection"),
+                  clearSelectionShort: t("groupedInitiativeClearSelectionShort"),
                   title: t("bulkVisibilityDialog.title"),
                   description: t("bulkVisibilityDialog.description"),
                   showToPlayers: t("visibilityDialog.showToPlayers"),
@@ -457,7 +593,8 @@ export default function InitiativeTrackerPage() {
                   playerDisplayNamePlaceholder: t("bulkVisibilityDialog.playerDisplayNamePlaceholder"),
                   fieldsTitle: t("visibilityDialog.title"),
                   emptySelection: t("bulkVisibilityDialog.emptySelection"),
-                  apply: t("visibilityDialog.apply"),
+                  configure: t("bulkVisibilityDialog.configure"),
+                  configureShort: t("bulkVisibilityDialog.configureShort"),
                   cancel: t("visibilityDialog.cancel"),
                   leaveInitiative: t("bulkVisibilityDialog.leaveInitiative"),
                   fields: {

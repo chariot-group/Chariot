@@ -10,6 +10,7 @@ import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcSt
 import { Controller } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeTagInput } from "@/components/ui/damage-type-tag-input";
+import { useId } from "react";
 
 interface NPCBattleTabEditProps {
   npc: NPC;
@@ -20,6 +21,9 @@ interface NPCBattleTabEditProps {
 export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTabEditProps) {
   void npc;
   const t = useTranslations("characterDetail.battle");
+  const sectionId = useId();
+  const savingThrowsHeadingId = `${sectionId}-saving-throws-heading-edit`;
+  const affinitiesHeadingId = `${sectionId}-battle-affinities-heading-npc-edit`;
 
   // Field arrays pour les listes dynamiques
   const {
@@ -72,9 +76,9 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
           <Card
             className="gap-3 p-4 md:px-6 h-fit"
             role="region"
-            aria-labelledby="saving-throws-heading-edit">
+            aria-labelledby={savingThrowsHeadingId}>
             <h2
-              id="saving-throws-heading-edit"
+              id={savingThrowsHeadingId}
               className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
               {t("savingThrows")}
             </h2>
@@ -105,9 +109,9 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
         <Card
           className="gap-3 p-4 md:px-6 h-fit"
           role="region"
-          aria-labelledby="battle-affinities-heading-npc-edit">
+          aria-labelledby={affinitiesHeadingId}>
           <h2
-            id="battle-affinities-heading-npc-edit"
+            id={affinitiesHeadingId}
             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {t("affinities")}
           </h2>

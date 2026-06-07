@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Action, ActionUsageType } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ArrowUpDown, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,13 +26,18 @@ const normalizeUsageType = (usageType?: string): ActionUsageType => {
 const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
   const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
+  const sectionId = useId();
+  const headingId = `${sectionId}-heading`;
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const [prioritizeUsageType, setPrioritizeUsageType] = useState<ActionUsageType>("action");
-  const usageTypeCounts = ACTION_USAGE_OPTIONS.reduce<Record<ActionUsageType, number>>((counts, usageType) => {
-    counts[usageType] = 0;
-    return counts;
-  }, { action: 0, bonus_action: 0, reaction: 0 });
+  const usageTypeCounts = ACTION_USAGE_OPTIONS.reduce<Record<ActionUsageType, number>>(
+    (counts, usageType) => {
+      counts[usageType] = 0;
+      return counts;
+    },
+    { action: 0, bonus_action: 0, reaction: 0 },
+  );
 
   actions.forEach((action) => {
     usageTypeCounts[normalizeUsageType(action.usageType)] += 1;
@@ -51,15 +56,18 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
   return (
     <section
       className="flex flex-col gap-2 w-full"
-      aria-labelledby={`${title.toLowerCase().replace(/\s+/g, "-")}-heading`}>
+      aria-labelledby={headingId}>
       <Card className="gap-3 p-4 md:px-6 h-fit flex-col items-stretch xl:flex-row xl:items-start xl:justify-between">
         <div className="flex flex-col gap-2 min-w-0 flex-1">
           <h2
-            id={`${title.toLowerCase().replace(/\s+/g, "-")}-heading`}
+            id={headingId}
             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {title}
           </h2>
-          <div className="flex flex-wrap items-center gap-1">
+          <div
+            className="flex flex-wrap items-center gap-1"
+            role="group"
+            aria-label={t("usageTypePriorityGroup", { section: title })}>
             {ACTION_USAGE_OPTIONS.map((option) => {
               const count = usageTypeCounts[option];
               const isAvailable = count > 0;
@@ -73,11 +81,20 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                   className={`h-6 px-2 text-xs ${!isAvailable ? "opacity-45 grayscale cursor-default!" : ""}`}
                   variant={isSelected ? "default" : "outline"}
                   aria-disabled={!isAvailable}
+                  aria-pressed={isSelected}
+                  aria-label={t("usageTypePriorityButton", {
+                    type: usageLabel,
+                    count,
+                    selected: isSelected ? t("selected") : t("notSelected"),
+                  })}
                   onClick={() => {
                     if (!isAvailable) return;
                     setPrioritizeUsageType(option);
                   }}>
-                  <ArrowUpDown className="size-3.5" />
+                  <ArrowUpDown
+                    className="size-3.5"
+                    aria-hidden="true"
+                  />
                   {`${usageLabel} (${count})`}
                 </Button>
               );
@@ -88,9 +105,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                     <TooltipTrigger asChild>
                       <span className="inline-flex">{button}</span>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      {t("usageTypeUnavailableTooltip", { type: usageLabel })}
-                    </TooltipContent>
+                    <TooltipContent>{t("usageTypeUnavailableTooltip", { type: usageLabel })}</TooltipContent>
                   </Tooltip>
                 );
               }
@@ -106,22 +121,35 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
           </div>
         </div>
         <div className="flex justify-end shrink-0 self-end xl:self-start">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={() => {
               if (!hasActions) return;
               if (openAccordionValues.length > 0) {
                 setOpenAccordionValues([]);
               } else {
-                setOpenAccordionValues(displayedActions.map((action, index) => `${action.name}-${index}`));
+                setOpenAccordionValues(displayedActions.map((_, index) => `${sectionId}-action-${index}`));
               }
             }}
             disabled={!hasActions}
-            className={`text-sm pr-3 py-2 focus:outline-none ${hasActions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
-            aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+            className={accentColor}
+            aria-label={
+              openAccordionValues.length > 0
+                ? t("collapseSectionActions", { section: title })
+                : t("expandSectionActions", { section: title })
+            }
             aria-expanded={openAccordionValues.length > 0}>
-            {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-          </button>
+            {openAccordionValues.length > 0 ? (
+              <ListChevronsDownUp aria-hidden="true" />
+            ) : (
+              <ListChevronsUpDown aria-hidden="true" />
+            )}
+            <span className="sr-only">
+              {openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+            </span>
+          </Button>
         </div>
       </Card>
       <Accordion
@@ -131,13 +159,17 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
         className="w-full flex flex-col gap-2">
         {displayedActions.map((action, index) => {
           const usageType = normalizeUsageType(action.usageType);
+          const itemId = `${sectionId}-action-${index}`;
+          const triggerId = `${itemId}-trigger`;
+          const detailsId = `${itemId}-details`;
           return (
             <AccordionItem
               key={`${action.name}-${index}`}
-              value={`${action.name}-${index}`}
+              value={itemId}
               className="flex flex-col gap-2">
               <Card className="gap-2 p-0 flex-col">
                 <AccordionTrigger
+                  id={triggerId}
                   className="py-3 px-3 md:py-4 md:px-6 rounded-md truncate"
                   aria-label={`${t("actionDetails")} ${action.name}`}>
                   <div className="truncate flex items-center gap-1">
@@ -150,17 +182,21 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
               </Card>
               <AccordionContent>
                 <div
+                  id={detailsId}
                   className="flex flex-wrap gap-2 items-start"
                   role="region"
-                  aria-label={`${t("details")} ${action.name}`}>
+                  aria-labelledby={triggerId}>
                   <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("attackDC")}</span>
+                    <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                      {t("attackDC")}
+                    </span>
                     {(() => {
-                      const attackOrDc = action.attackBonus !== undefined && action.attackBonus !== null
-                        ? formatSignedBonus(action.attackBonus)
-                        : action.dc?.dcValue
-                          ? `DC ${action.dc.dcValue}`
-                          : "-";
+                      const attackOrDc =
+                        action.attackBonus !== undefined && action.attackBonus !== null
+                          ? formatSignedBonus(action.attackBonus)
+                          : action.dc?.dcValue
+                            ? `DC ${action.dc.dcValue}`
+                            : "-";
                       return (
                         <span
                           className="text-sm md:text-base"
@@ -177,11 +213,11 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                     <span className="text-sm md:text-base">
                       {action.damage && action.damage.length > 0
                         ? action.damage.map((d, i) => (
-                          <span key={i}>
-                            {d.dice} {d.type}
-                            {i < action.damage!.length - 1 ? " + " : ""}
-                          </span>
-                        ))
+                            <span key={i}>
+                              {d.dice} {d.type}
+                              {i < action.damage!.length - 1 ? " + " : ""}
+                            </span>
+                          ))
                         : "-"}
                       {action.range && ` (${action.range})`}
                     </span>
@@ -189,7 +225,9 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                   {action.description && (
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
                       <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
-                      <span className="text-sm md:text-base italic whitespace-pre-wrap wrap-break-word">{action.description}</span>
+                      <span className="text-sm md:text-base italic whitespace-pre-wrap wrap-break-word">
+                        {action.description}
+                      </span>
                     </Card>
                   )}
                 </div>

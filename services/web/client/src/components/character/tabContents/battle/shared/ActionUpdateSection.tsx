@@ -3,9 +3,16 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Controller, UseFormReturn, FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, FieldValues } from "react-hook-form";
+import {
+  Controller,
+  UseFormReturn,
+  FieldArrayWithId,
+  UseFieldArrayAppend,
+  UseFieldArrayRemove,
+  FieldValues,
+} from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
@@ -65,21 +72,26 @@ const ActionUpdateSection = ({
   const tEdit = useTranslations("characterDetail.edit");
   const tCommon = useTranslations("common");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
+  const sectionId = useId();
+  const headingId = `${sectionId}-heading`;
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const hasActions = fields.length > 0;
 
-  const watchedActions = form.watch(fieldArrayName) as Array<{
-    attackAbility?: AbilityScoreKey;
-    attackBonus?: number;
-    damage?: Array<{ dice?: string; type?: string; applyAbilityBonus?: boolean }>;
-  }> | undefined;
+  const watchedActions = form.watch(fieldArrayName) as
+    | Array<{
+        attackAbility?: AbilityScoreKey;
+        attackBonus?: number;
+        damage?: Array<{ dice?: string; type?: string; applyAbilityBonus?: boolean }>;
+      }>
+    | undefined;
   const watchedAbilityScores = form.watch("stats.abilityScores") as Partial<AbilityScores> | undefined;
   const watchedProficiencyBonus = Number(form.watch("stats.proficiencyBonus") ?? 0);
   const watchedChallengeRating = Number(form.watch("challenge.challengeRating") ?? 0);
-  const proficiencyBonus = watchedProficiencyBonus > 0
-    ? watchedProficiencyBonus
-    : getProficiencyBonusFromChallengeRating(watchedChallengeRating);
+  const proficiencyBonus =
+    watchedProficiencyBonus > 0
+      ? watchedProficiencyBonus
+      : getProficiencyBonusFromChallengeRating(watchedChallengeRating);
   const attackSuggestions = useMemo(
     () => getAttackSuggestionOptions(watchedAbilityScores, proficiencyBonus),
     [proficiencyBonus, watchedAbilityScores],
@@ -173,9 +185,15 @@ const ActionUpdateSection = ({
   };
 
   return (
-    <section className="flex flex-col gap-2 w-full">
+    <section
+      className="flex flex-col gap-2 w-full"
+      aria-labelledby={headingId}>
       <Card className="gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between">
-        <h2 className={`min-w-0 flex-1 text-xl sm:text-2xl font-semibold ${accentColor}`}>{title}</h2>
+        <h2
+          id={headingId}
+          className={`min-w-0 flex-1 text-xl sm:text-2xl font-semibold ${accentColor}`}>
+          {title}
+        </h2>
         <div className="flex shrink-0 items-center gap-2">
           <Button
             type="button"
@@ -199,12 +217,18 @@ const ActionUpdateSection = ({
                 }
               }, 100);
             }}
+            aria-label={t("addActionToSection", { section: title })}
             className="flex items-center gap-2">
-            <Plus className="size-4" />
+            <Plus
+              className="size-4"
+              aria-hidden="true"
+            />
             <span className="hidden sm:block">{tEdit("add")}</span>
           </Button>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={() => {
               if (!hasActions) return;
               if (openAccordionValues.length > 0) {
@@ -214,11 +238,22 @@ const ActionUpdateSection = ({
               }
             }}
             disabled={!hasActions}
-            className={`text-sm p-2 focus:outline-none ${hasActions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
-            aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+            className={accentColor}
+            aria-label={
+              openAccordionValues.length > 0
+                ? t("collapseSectionActions", { section: title })
+                : t("expandSectionActions", { section: title })
+            }
             aria-expanded={openAccordionValues.length > 0}>
-            {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-          </button>
+            {openAccordionValues.length > 0 ? (
+              <ListChevronsDownUp aria-hidden="true" />
+            ) : (
+              <ListChevronsUpDown aria-hidden="true" />
+            )}
+            <span className="sr-only">
+              {openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
+            </span>
+          </Button>
         </div>
       </Card>
       {fields.length > 0 && (
@@ -230,7 +265,9 @@ const ActionUpdateSection = ({
           {fields.map((field, index) => {
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
             const usageType = normalizeUsageType(form.watch(`${fieldArrayName}.${index}.usageType`));
-            const selectedAbilityKey = form.watch(`${fieldArrayName}.${index}.attackAbility`) as AbilityScoreKey | undefined;
+            const selectedAbilityKey = form.watch(`${fieldArrayName}.${index}.attackAbility`) as
+              | AbilityScoreKey
+              | undefined;
             const selectedAttackSuggestion = selectedAbilityKey
               ? attackSuggestions.find((suggestion) => suggestion.key === selectedAbilityKey)
               : undefined;
@@ -244,6 +281,15 @@ const ActionUpdateSection = ({
             const rangeError = form.getFieldState(`${fieldArrayName}.${index}.range`).invalid;
             const descriptionError = form.getFieldState(`${fieldArrayName}.${index}.description`).invalid;
             const hasError = nameError || attackBonusError || damageError || rangeError || descriptionError;
+            const actionItemId = `${sectionId}-action-${index}`;
+            const triggerId = `${actionItemId}-trigger`;
+            const contentId = `${actionItemId}-content`;
+            const actionNameLabelId = `${actionItemId}-name-label`;
+            const usageTypeLabelId = `${actionItemId}-usage-type-label`;
+            const attackLabelId = `${actionItemId}-attack-label`;
+            const damageLabelId = `${actionItemId}-damage-label`;
+            const rangeLabelId = `${actionItemId}-range-label`;
+            const descriptionLabelId = `${actionItemId}-description-label`;
 
             return (
               <AccordionItem
@@ -254,8 +300,9 @@ const ActionUpdateSection = ({
                 <Card className={`gap-2 p-0 flex-col ${hasError ? "ring-destructive ring" : ""}`}>
                   <div className="relative py-3 px-3 md:py-2 md:px-6">
                     <AccordionTrigger
+                      id={triggerId}
                       className="w-full items-center gap-2 pr-10"
-                      aria-label={`Détails de l'action ${index + 1}`}>
+                      aria-label={t("actionDetailsForIndex", { index: index + 1 })}>
                       <div className="truncate flex items-center gap-1">
                         <span className={`text-base md:text-lg font-medium text-left truncate`}>{actionName}</span>
                         <span className="text-base md:text-lg font-medium text-left">
@@ -271,15 +318,28 @@ const ActionUpdateSection = ({
                         e.stopPropagation();
                         remove(index);
                       }}
+                      aria-label={t("removeActionFromSection", { section: title, index: index + 1 })}
                       className="text-red-500 shrink-0 absolute right-3 md:right-6 top-1/2 -translate-y-1/2">
-                      <Trash2 className="size-4" />
+                      <Trash2
+                        className="size-4"
+                        aria-hidden="true"
+                      />
                     </Button>
                   </div>
                 </Card>
                 <AccordionContent>
-                  <div className="flex flex-wrap gap-2 items-start">
+                  <div
+                    id={contentId}
+                    className="flex flex-wrap gap-2 items-start"
+                    role="region"
+                    aria-labelledby={triggerId}>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("name")}</span>
+                      <label
+                        id={actionNameLabelId}
+                        htmlFor={`${actionItemId}-name`}
+                        className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                        {t("name")}
+                      </label>
                       <Controller
                         name={`${fieldArrayName}.${index}.name`}
                         control={form.control}
@@ -289,18 +349,30 @@ const ActionUpdateSection = ({
                             orientation="vertical">
                             <Input
                               {...nameField}
+                              id={`${actionItemId}-name`}
                               className="text-sm"
                               required
                               aria-invalid={fieldState.invalid}
+                              aria-labelledby={actionNameLabelId}
+                              aria-describedby={fieldState.error ? `${actionItemId}-name-error` : undefined}
                               placeholder={t("name")}
                             />
-                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                            {fieldState.error && (
+                              <FieldError
+                                id={`${actionItemId}-name-error`}
+                                errors={[fieldState.error]}
+                              />
+                            )}
                           </Field>
                         )}
                       />
                     </Card>
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>{t("usageType")}</span>
+                      <span
+                        id={usageTypeLabelId}
+                        className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                        {t("usageType")}
+                      </span>
                       <Controller
                         name={`${fieldArrayName}.${index}.usageType`}
                         control={form.control}
@@ -308,7 +380,9 @@ const ActionUpdateSection = ({
                           <Select
                             value={normalizeUsageType(usageTypeField.value)}
                             onValueChange={usageTypeField.onChange}>
-                            <SelectTrigger className="w-full sm:max-w-45">
+                            <SelectTrigger
+                              className="w-full sm:max-w-45"
+                              aria-labelledby={usageTypeLabelId}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -326,9 +400,12 @@ const ActionUpdateSection = ({
                     </Card>
                     <Card className="sm:items-center grid grid-rows-2 sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
                       <div className="flex flex-row items-center justify-between gap-2">
-                        <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                        <label
+                          id={attackLabelId}
+                          htmlFor={`${actionItemId}-attack-bonus`}
+                          className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                           {t("attackDC")}
-                        </span>
+                        </label>
                         <div className="flex flex-col gap-2 w-full sm:w-auto">
                           <Controller
                             name={`${fieldArrayName}.${index}.attackAbility`}
@@ -347,15 +424,19 @@ const ActionUpdateSection = ({
                             render={({ field: attackField }) => (
                               <Input
                                 {...attackField}
+                                id={`${actionItemId}-attack-bonus`}
                                 value={attackField.value ?? ""}
                                 type="number"
                                 onChange={(event) => {
-                                  form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, { shouldDirty: true });
+                                  form.setValue(`${fieldArrayName}.${index}.attackAbility`, undefined, {
+                                    shouldDirty: true,
+                                  });
 
                                   clearAutoDamageBonusForAction(index, true);
 
                                   attackField.onChange(event);
                                 }}
+                                aria-labelledby={attackLabelId}
                                 placeholder={tEdit("zeroPlaceholder")}
                               />
                             )}
@@ -374,10 +455,20 @@ const ActionUpdateSection = ({
                               size="sm"
                               onClick={() => {
                                 clearAutoDamageBonusForAction(index, true);
-                                form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, { shouldDirty: true });
-                                form.setValue(`${fieldArrayName}.${index}.attackAbility`, suggestion.key, { shouldDirty: true });
+                                form.setValue(`${fieldArrayName}.${index}.attackBonus`, suggestion.attackBonus, {
+                                  shouldDirty: true,
+                                });
+                                form.setValue(`${fieldArrayName}.${index}.attackAbility`, suggestion.key, {
+                                  shouldDirty: true,
+                                });
                               }}
                               title={`${tAbilities(suggestion.key)} ${formatSignedBonus(suggestion.attackBonus)}`}
+                              aria-pressed={isSelected}
+                              aria-label={t("attackSuggestionAria", {
+                                ability: tAbilities(suggestion.key),
+                                bonus: formatSignedBonus(suggestion.attackBonus),
+                                selected: isSelected ? t("selected") : t("notSelected"),
+                              })}
                               className="h-7 px-2 text-xs">
                               {ABILITY_SCORE_SHORT_LABELS[suggestion.key]} {formatSignedBonus(suggestion.attackBonus)}
                             </Button>
@@ -386,7 +477,9 @@ const ActionUpdateSection = ({
                       </div>
                     </Card>
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                      <span
+                        id={damageLabelId}
+                        className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                         {t("damageType")}
                       </span>
                       <Controller
@@ -397,12 +490,17 @@ const ActionUpdateSection = ({
 
                           const updateDamage = (damageIndex: number, key: "dice" | "type", value: string) => {
                             const updatedDamages = [...damages];
-                            const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
-                            const normalizedValue = key === "type"
-                              ? value.trim()
-                              : currentDamage.applyAbilityBonus && hasSelectedAttackAbility
-                                ? applyAbilityModifierToDice(value, selectedDamageModifier)
-                                : value;
+                            const currentDamage = updatedDamages[damageIndex] ?? {
+                              dice: "",
+                              type: "",
+                              applyAbilityBonus: false,
+                            };
+                            const normalizedValue =
+                              key === "type"
+                                ? value.trim()
+                                : currentDamage.applyAbilityBonus && hasSelectedAttackAbility
+                                  ? applyAbilityModifierToDice(value, selectedDamageModifier)
+                                  : value;
 
                             if (key === "type" && normalizedValue) {
                               const duplicatedType = updatedDamages.some((damage, indexInList) => {
@@ -435,21 +533,32 @@ const ActionUpdateSection = ({
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => {
-                                        damageField.onChange(damages.filter((_: unknown, i: number) => i !== damageIndex));
+                                        damageField.onChange(
+                                          damages.filter((_: unknown, i: number) => i !== damageIndex),
+                                        );
                                       }}
                                       aria-label={`${tCommon("delete")} ${damageIndex + 1}`}
                                       className="text-red-500 shrink-0">
-                                      <Trash2 className="size-4" />
+                                      <Trash2
+                                        className="size-4"
+                                        aria-hidden="true"
+                                      />
                                     </Button>
                                   </div>
                                   <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-end gap-3">
                                     <div className="flex flex-col gap-1 min-w-0">
-                                      <span className="text-xs font-medium text-muted-foreground">{tEdit("spellDamage")}</span>
+                                      <label
+                                        htmlFor={`${actionItemId}-damage-${damageIndex}-dice`}
+                                        className="text-xs font-medium text-muted-foreground">
+                                        {tEdit("spellDamage")}
+                                      </label>
                                       <Input
+                                        id={`${actionItemId}-damage-${damageIndex}-dice`}
                                         value={damage?.dice ?? ""}
                                         onChange={(event) => updateDamage(damageIndex, "dice", event.target.value)}
                                         placeholder="1d6"
                                         className="w-full"
+                                        aria-label={t("damageDiceForIndex", { index: damageIndex + 1 })}
                                       />
                                     </div>
                                     <Button
@@ -459,11 +568,19 @@ const ActionUpdateSection = ({
                                       disabled={!hasSelectedAttackAbility}
                                       onClick={() => {
                                         const updatedDamages = [...damages];
-                                        const currentDamage = updatedDamages[damageIndex] ?? { dice: "", type: "", applyAbilityBonus: false };
+                                        const currentDamage = updatedDamages[damageIndex] ?? {
+                                          dice: "",
+                                          type: "",
+                                          applyAbilityBonus: false,
+                                        };
                                         const applyAbilityBonus = !Boolean(currentDamage.applyAbilityBonus);
-                                        const nextDice = applyAbilityBonus && hasSelectedAttackAbility
-                                          ? applyAbilityModifierToDice(currentDamage.dice ?? "", selectedDamageModifier)
-                                          : stripTrailingDamageBonus(currentDamage.dice ?? "");
+                                        const nextDice =
+                                          applyAbilityBonus && hasSelectedAttackAbility
+                                            ? applyAbilityModifierToDice(
+                                                currentDamage.dice ?? "",
+                                                selectedDamageModifier,
+                                              )
+                                            : stripTrailingDamageBonus(currentDamage.dice ?? "");
 
                                         updatedDamages[damageIndex] = {
                                           ...currentDamage,
@@ -472,17 +589,30 @@ const ActionUpdateSection = ({
                                         };
                                         damageField.onChange(updatedDamages);
                                       }}
-                                      title={hasSelectedAttackAbility && selectedAttackSuggestion
-                                        ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
-                                        : t("attackDC")}
+                                      title={
+                                        hasSelectedAttackAbility && selectedAttackSuggestion
+                                          ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
+                                          : t("attackDC")
+                                      }
+                                      aria-pressed={Boolean(damage?.applyAbilityBonus)}
+                                      aria-label={t("autoDamageBonusAria", {
+                                        index: damageIndex + 1,
+                                        bonus: hasSelectedAttackAbility
+                                          ? formatSignedBonus(selectedDamageModifier)
+                                          : t("noValue"),
+                                      })}
                                       className="h-9 w-22 px-0 text-xs shrink-0 justify-center self-end">
                                       AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
                                     </Button>
                                   </div>
                                   <div className="w-full min-w-0">
-                                    <span className="mb-1 block text-xs font-medium text-muted-foreground">{tEdit("damageType")}</span>
+                                    <label
+                                      htmlFor={`${actionItemId}-damage-${damageIndex}-type`}
+                                      className="mb-1 block text-xs font-medium text-muted-foreground">
+                                      {tEdit("damageType")}
+                                    </label>
                                     <DamageTypeInput
-                                      id={`${fieldArrayName}.${index}.damage.${damageIndex}.type`}
+                                      id={`${actionItemId}-damage-${damageIndex}-type`}
                                       value={damage?.type ?? ""}
                                       onChange={(value) => updateDamage(damageIndex, "type", value)}
                                       placeholder={tEdit("damageTypePlaceholder")}
@@ -495,9 +625,15 @@ const ActionUpdateSection = ({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => damageField.onChange([...damages, { dice: "", type: "", applyAbilityBonus: false }])}
+                                onClick={() =>
+                                  damageField.onChange([...damages, { dice: "", type: "", applyAbilityBonus: false }])
+                                }
+                                aria-label={t("addDamageToAction", { index: index + 1 })}
                                 className="w-fit flex items-center gap-2">
-                                <Plus className="size-4" />
+                                <Plus
+                                  className="size-4"
+                                  aria-hidden="true"
+                                />
                                 {tEdit("add")}
                               </Button>
                             </div>
@@ -506,29 +642,41 @@ const ActionUpdateSection = ({
                       />
                     </Card>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
+                      <label
+                        id={rangeLabelId}
+                        htmlFor={`${actionItemId}-range`}
+                        className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
                         {t("range")}
-                      </span>
+                      </label>
                       <Controller
                         name={`${fieldArrayName}.${index}.range`}
                         control={form.control}
                         render={({ field: rangeField }) => (
                           <Input
                             {...rangeField}
+                            id={`${actionItemId}-range`}
+                            aria-labelledby={rangeLabelId}
                             placeholder={t("range")}
                           />
                         )}
                       />
                     </Card>
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
-                      <span className={`${accentColor} font-semibold text-sm md:text-base`}>{t("description")}</span>
+                      <label
+                        id={descriptionLabelId}
+                        htmlFor={`${actionItemId}-description`}
+                        className={`${accentColor} font-semibold text-sm md:text-base`}>
+                        {t("description")}
+                      </label>
                       <Controller
                         name={`${fieldArrayName}.${index}.description`}
                         control={form.control}
                         render={({ field: descField }) => (
                           <Textarea
                             {...descField}
+                            id={`${actionItemId}-description`}
                             value={descField.value || ""}
+                            aria-labelledby={descriptionLabelId}
                             placeholder={t("description")}
                           />
                         )}
