@@ -23,14 +23,14 @@ export const CONDITIONS: ActiveInitiativeTrackerCondition[] = [
 export const SESSION_PARTICIPANTS_GROUP_ID = "__session_participants__";
 
 export const TRACKER_GRID_TEMPLATE_COLUMNS =
-  "44px minmax(52px, 72px) minmax(92px, 1.15fr) minmax(72px, 88px) minmax(40px, 48px) minmax(96px, 0.95fr) minmax(0, 0.9fr)";
+  "minmax(44px, 112px) minmax(52px, 132px) minmax(92px, 1.15fr) minmax(64px, 88px) minmax(40px, 52px) minmax(88px, 0.95fr) minmax(0, 0.9fr)";
 
 export const TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION =
-  "32px 44px minmax(52px, 72px) minmax(92px, 1.15fr) minmax(72px, 88px) minmax(40px, 48px) minmax(96px, 0.95fr) minmax(0, 0.9fr)";
+  "32px minmax(44px, 112px) minmax(52px, 132px) minmax(92px, 1.15fr) minmax(64px, 88px) minmax(40px, 52px) minmax(88px, 0.95fr) minmax(0, 0.9fr)";
 
 /** FR-021 — grille sans colonne visibilité MJ (vue joueur). */
 export const PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS =
-  "minmax(52px, 72px) minmax(92px, 1.15fr) minmax(72px, 88px) minmax(40px, 48px) minmax(96px, 0.95fr) minmax(0, 0.9fr)";
+  "minmax(52px, 132px) minmax(92px, 1.15fr) minmax(64px, 88px) minmax(40px, 52px) minmax(88px, 0.95fr) minmax(0, 0.9fr)";
 
 /** Classes d'alignement par colonne (initiative, perso, pv, ca, état, groupe [, visibilité]). */
 export const TRACKER_CELL_ALIGN = {

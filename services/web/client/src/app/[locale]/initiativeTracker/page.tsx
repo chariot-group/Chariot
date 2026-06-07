@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { UserPlus } from "lucide-react";
+import { LayersPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddCombatantsDialog } from "@/components/dialogs/AddCombatantsDialog";
 import { InitiativeTrackerHealthDialog } from "@/components/initiativeTracker/InitiativeTrackerHealthDialog";
@@ -497,7 +497,7 @@ export default function InitiativeTrackerPage() {
                   variant="outline"
                   aria-label={tInit("addCombatants")}
                   className="gap-2 rounded-[15px] px-3 sm:px-4">
-                  <UserPlus
+                  <LayersPlus
                     className="size-4"
                     aria-hidden="true"
                   />
@@ -548,11 +548,15 @@ export default function InitiativeTrackerPage() {
               ? {
                   enableMode: t("groupedInitiativeEnable"),
                   disableMode: t("groupedInitiativeDisable"),
+                  enableModeShort: t("groupedInitiativeEnableShort"),
+                  disableModeShort: t("groupedInitiativeDisableShort"),
                   getSelectedCountLabel: (count) => t("groupedInitiativeSelectedCount", { count }),
                   initiativePlaceholder: t("groupedInitiativePlaceholder"),
                   apply: t("groupedInitiativeApply"),
                   clearSelection: t("groupedInitiativeClearSelection"),
+                  clearSelectionShort: t("groupedInitiativeClearSelectionShort"),
                   selectAllRows: t("selectAllRows"),
+                  selectAllRowsShort: t("selectAllRowsShort"),
                 }
               : undefined
           }
@@ -561,9 +565,14 @@ export default function InitiativeTrackerPage() {
               ? {
                   enableMode: t("bulkVisibilityEnable"),
                   disableMode: t("bulkVisibilityDisable"),
+                  enableModeShort: t("bulkVisibilityEnableShort"),
+                  disableModeShort: t("bulkVisibilityDisableShort"),
+                  modeTitle: t("bulkVisibilityModeTitle"),
                   getSelectedCountLabel: (count) => t("groupedInitiativeSelectedCount", { count }),
                   selectAllRows: t("bulkVisibilitySelectAllRows"),
+                  selectAllRowsShort: t("bulkVisibilitySelectAllRowsShort"),
                   clearSelection: t("groupedInitiativeClearSelection"),
+                  clearSelectionShort: t("groupedInitiativeClearSelectionShort"),
                   title: t("bulkVisibilityDialog.title"),
                   description: t("bulkVisibilityDialog.description"),
                   showToPlayers: t("visibilityDialog.showToPlayers"),
@@ -573,6 +582,7 @@ export default function InitiativeTrackerPage() {
                   fieldsTitle: t("visibilityDialog.title"),
                   emptySelection: t("bulkVisibilityDialog.emptySelection"),
                   configure: t("bulkVisibilityDialog.configure"),
+                  configureShort: t("bulkVisibilityDialog.configureShort"),
                   cancel: t("visibilityDialog.cancel"),
                   leaveInitiative: t("bulkVisibilityDialog.leaveInitiative"),
                   fields: {
