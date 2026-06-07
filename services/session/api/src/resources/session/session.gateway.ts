@@ -493,13 +493,16 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             const updated = await this.redisService.addToken(data.sessionId, userId, maxTokens);
             if (updated === null) {
-                client.emit('session:error', { message: 'Token limit reached' });
+                client.emit('session:error', { code: 'TOKEN_LIMIT_REACHED', message: 'Token limit reached' });
                 return;
             }
             this.server.to(session.id).emit('session:token-updated', { tokensByUser: updated });
         } catch (error: any) {
             this.logger.error(`Failed to add token: ${error.message}`, null, this.SERVICE_NAME);
-            client.emit('session:error', { message: `Failed to add token: ${error.message}` });
+            client.emit('session:error', {
+                code: 'TOKEN_DEPOSIT_FAILED',
+                message: `Failed to add token: ${error.message}`,
+            });
         }
     }
 
@@ -543,13 +546,16 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             const result = await this.redisService.addTokens(data.sessionId, userId, maxTokens, requestedAmount);
             if (result === null) {
-                client.emit('session:error', { message: 'Token limit reached' });
+                client.emit('session:error', { code: 'TOKEN_LIMIT_REACHED', message: 'Token limit reached' });
                 return;
             }
             this.server.to(session.id).emit('session:token-updated', { tokensByUser: result.tokens });
         } catch (error: any) {
             this.logger.error(`Failed to add tokens: ${error.message}`, null, this.SERVICE_NAME);
-            client.emit('session:error', { message: `Failed to add tokens: ${error.message}` });
+            client.emit('session:error', {
+                code: 'TOKEN_DEPOSIT_FAILED',
+                message: `Failed to add tokens: ${error.message}`,
+            });
         }
     }
 
@@ -579,7 +585,15 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     ): Promise<{ code: string; message: string } | null> {
         const tokens = await this.redisService.getTokens(sessionId);
         const currentDeposited = tokens[userId] ?? 0;
-        const balance = await this.adventureUserService.getBalance(userId);
+        let balance: number;
+        try {
+            balance = await this.adventureUserService.getBalance(userId);
+        } catch (error: any) {
+            return {
+                code: 'BALANCE_CHECK_FAILED',
+                message: error?.message ?? 'Failed to verify token balance',
+            };
+        }
         if (currentDeposited + amount > balance) {
             return {
                 code: 'INSUFFICIENT_TOKEN_BALANCE',

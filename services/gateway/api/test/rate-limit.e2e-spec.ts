@@ -1,15 +1,14 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, HttpStatus } from "@nestjs/common";
-import * as request from "supertest";
+import request from "supertest";
 import { AppModule } from "../src/app.module";
 
 describe("Rate Limiting (e2e)", () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    // Set test rate limit configuration
     process.env.GATEWAY_RATE_LIMIT_MAX = "5";
-    process.env.GATEWAY_RATE_LIMIT_WINDOW = "10000"; // 10 seconds
+    process.env.GATEWAY_RATE_LIMIT_WINDOW = "10000";
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -25,24 +24,30 @@ describe("Rate Limiting (e2e)", () => {
     delete process.env.GATEWAY_RATE_LIMIT_WINDOW;
   });
 
-  it("should allow requests within rate limit", async () => {
+  it("should allow requests within rate limit on /api routes", async () => {
     for (let i = 0; i < 5; i++) {
-      await request(app.getHttpServer()).get("/").expect(200);
+      await request(app.getHttpServer()).get("/api/characters");
     }
   });
 
-  it("should block requests exceeding rate limit", async () => {
-    // Make requests up to the limit
+  it("should block requests exceeding rate limit on /api routes", async () => {
     for (let i = 0; i < 5; i++) {
-      await request(app.getHttpServer()).get("/");
+      await request(app.getHttpServer()).get("/api/characters");
     }
 
-    // Next request should be blocked
-    await request(app.getHttpServer()).get("/").expect(HttpStatus.TOO_MANY_REQUESTS);
+    await request(app.getHttpServer()).get("/api/characters").expect(HttpStatus.TOO_MANY_REQUESTS);
+  });
+
+  it("should not apply rate limiting to OPTIONS preflight on /api routes", async () => {
+    for (let i = 0; i < 5; i++) {
+      await request(app.getHttpServer()).get("/api/characters");
+    }
+
+    await request(app.getHttpServer()).options("/api/characters").expect(204);
+    await request(app.getHttpServer()).get("/api/characters").expect(HttpStatus.TOO_MANY_REQUESTS);
   });
 
   it("should not apply rate limiting to health endpoints", async () => {
-    // Make many requests to health endpoint
     for (let i = 0; i < 10; i++) {
       await request(app.getHttpServer()).get("/health").expect(200);
     }

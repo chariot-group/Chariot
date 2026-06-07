@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
 import {
@@ -768,12 +768,21 @@ export const selectCharacterSheetRemoteVersions = (state: RootState) =>
 export const selectLastConsultedSheetPath = (state: RootState) =>
     state.session.lastConsultedSheetPath ?? null;
 
-export const selectBattleStateSnapshot = (state: RootState): BattleStateSnapshot => ({
-    initiativeTrackerRows: state.session.initiativeTrackerRows,
-    battleInitialized: state.session.battleInitialized,
-    battleStarted: state.session.battleStarted,
-    activeTurnRowId: state.session.activeTurnRowId,
-    currentRound: state.session.currentRound,
-});
+export const selectBattleStateSnapshot = createSelector(
+    [
+        (state: RootState) => state.session.initiativeTrackerRows,
+        (state: RootState) => state.session.battleInitialized,
+        (state: RootState) => state.session.battleStarted,
+        (state: RootState) => state.session.activeTurnRowId,
+        (state: RootState) => state.session.currentRound,
+    ],
+    (initiativeTrackerRows, battleInitialized, battleStarted, activeTurnRowId, currentRound): BattleStateSnapshot => ({
+        initiativeTrackerRows,
+        battleInitialized,
+        battleStarted,
+        activeTurnRowId,
+        currentRound,
+    }),
+);
 
 export default sessionSlice.reducer;

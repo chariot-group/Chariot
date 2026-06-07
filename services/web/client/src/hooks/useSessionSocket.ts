@@ -46,6 +46,28 @@ import { setContextMode } from "@/store/slices/environmentSlice";
 import { updateUser } from "@/store/slices/userSlice";
 import NavigationService from "@/services/NavigationService";
 
+type SessionErrorPayload = { code?: string; message?: string };
+
+function toastTokenDepositError(
+    toast: ReturnType<typeof useToast>,
+    translate: (key: string) => string,
+    error?: SessionErrorPayload,
+) {
+    switch (error?.code) {
+        case "INSUFFICIENT_TOKEN_BALANCE":
+            toast.error(translate("toast.insufficientTokenBalance"));
+            return;
+        case "TOKEN_LIMIT_REACHED":
+            toast.error(translate("toast.tokenLimitReached"));
+            return;
+        case "BALANCE_CHECK_FAILED":
+            toast.error(translate("toast.tokenBalanceCheckError"));
+            return;
+        default:
+            toast.error(translate("toast.addTokenError"));
+    }
+}
+
 interface UseSessionSocketOptions {
     token: string | null | undefined;
     code: string;
@@ -310,6 +332,7 @@ export function useSessionSocket({
 
         const onTokenUpdated = ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
             setTokensByUserRef.current(updatedTokens);
+            dispatch(setSessionTokensByUser(updatedTokens));
         };
 
         const onSessionLaunched = async (payload?: {
@@ -480,18 +503,18 @@ export function useSessionSocket({
     const handleAddToken = () => {
         const socket = socketRef.current;
         const userId = currentUser?.keycloakId;
-        if (!userId || !socket?.connected) return;
+        if (!userId) return;
+        if (!socket?.connected) {
+            toast.error(t("toast.addTokenSocketError"));
+            return;
+        }
         const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
         if (totalTokens >= participantsRef.current.length) return;
         const myDeposited = tokensByUserRef.current[userId] ?? 0;
         const balance = currentUser?.balance ?? 0;
         if (myDeposited + 1 > balance) return;
-        socket.once("session:error", (error: { code?: string }) => {
-            if (error?.code === "INSUFFICIENT_TOKEN_BALANCE") {
-                toast.error(t("toast.insufficientTokenBalance"));
-                return;
-            }
-            toast.error(t("toast.addTokenError"));
+        socket.once("session:error", (error: SessionErrorPayload) => {
+            toastTokenDepositError(toast, t, error);
         });
         socket.emit("session:add-token", { sessionId: code });
     };
@@ -516,12 +539,8 @@ export function useSessionSocket({
         );
         const actualAmount = Math.min(amount, maxAdd);
         if (actualAmount <= 0) return;
-        socket.once("session:error", (error: { code?: string }) => {
-            if (error?.code === "INSUFFICIENT_TOKEN_BALANCE") {
-                toast.error(t("toast.insufficientTokenBalance"));
-                return;
-            }
-            toast.error(t("toast.addTokenError"));
+        socket.once("session:error", (error: SessionErrorPayload) => {
+            toastTokenDepositError(toast, t, error);
         });
         socket.emit("session:add-tokens", { sessionId: code, amount: actualAmount });
     };

@@ -657,6 +657,34 @@ describe('SessionGateway', () => {
                 message: 'Insufficient token balance',
             });
         });
+
+        it('should reject deposit when balance check fails', async () => {
+            mockRedisService.getTokens.mockResolvedValue({});
+            mockAdventureUserService.getBalance.mockRejectedValue(new Error('secret mismatch'));
+            const client = makeSocket();
+
+            await gateway.handleAddToken(client, { sessionId: 'sess-uuid-1' });
+
+            expect(mockRedisService.addToken).not.toHaveBeenCalled();
+            expect(client.emit).toHaveBeenCalledWith('session:error', {
+                code: 'BALANCE_CHECK_FAILED',
+                message: 'secret mismatch',
+            });
+        });
+
+        it('should reject deposit when session token limit is reached', async () => {
+            mockRedisService.getTokens.mockResolvedValue({});
+            mockAdventureUserService.getBalance.mockResolvedValue(5);
+            mockRedisService.addToken.mockResolvedValue(null);
+            const client = makeSocket();
+
+            await gateway.handleAddToken(client, { sessionId: 'sess-uuid-1' });
+
+            expect(client.emit).toHaveBeenCalledWith('session:error', {
+                code: 'TOKEN_LIMIT_REACHED',
+                message: 'Token limit reached',
+            });
+        });
     });
 
     describe('handleAddTokens', () => {

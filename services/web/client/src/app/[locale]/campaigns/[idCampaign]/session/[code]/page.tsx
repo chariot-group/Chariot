@@ -17,7 +17,7 @@ import { Check, ChevronDown, Copy, Link, Loader2, Minus, Plus, Trash2 } from "lu
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
-import React, { useState, type Dispatch, type SetStateAction } from "react";
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
@@ -28,7 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { selectSessionStatus } from "@/store/slices/sessionSlice";
+import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/sessionSlice";
 import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 
@@ -38,7 +38,7 @@ export default function SessionPage() {
   const campaigns = useAppSelector(selectCampaigns);
   const campaign = campaigns.find((c) => c._id === idCampaign);
   const { token } = useKeycloak();
-  useUser({ autoFetch: true, forceRefresh: true });
+  useUser({ autoFetch: true });
   const currentUser = useAppSelector(selectUser);
   const toast = useToast();
 
@@ -46,8 +46,13 @@ export default function SessionPage() {
   const sessionIsActive = sessionStatus == "activated";
   const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
-  const [tokensByUser, setTokensByUser] = useState<Record<string, number>>({});
+  const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
+  const [tokensByUser, setTokensByUser] = useState<Record<string, number>>(reduxTokensByUser);
   const [customAmount, setCustomAmount] = useState(1);
+
+  useEffect(() => {
+    setTokensByUser(reduxTokensByUser);
+  }, [reduxTokensByUser]);
 
   const {
     campaignLabel,

@@ -19,6 +19,7 @@ import {
     setSessionParticipants,
     setSessionExpiresAt,
     setSessionStatus,
+    setSessionTokensByUser,
     touchRemoteCharacterSheet,
     updateInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
@@ -294,10 +295,15 @@ export default function SessionCharacterSyncClient() {
         const onSessionClosed = () => onSessionEnded("closed");
         const onSessionExpired = () => onSessionEnded("expired");
 
+        const onTokenUpdated = ({ tokensByUser }: { tokensByUser: Record<string, number> }) => {
+            dispatch(setSessionTokensByUser(tokensByUser));
+        };
+
         socket.on("connect", onConnect);
         socket.on("session:launched", onSessionLaunched);
         socket.on("session:closed", onSessionClosed);
         socket.on("session:expired", onSessionExpired);
+        socket.on("session:token-updated", onTokenUpdated);
         if (socket.connected) {
             onConnect();
         }
@@ -313,6 +319,7 @@ export default function SessionCharacterSyncClient() {
             socket.off("session:launched", onSessionLaunched);
             socket.off("session:closed", onSessionClosed);
             socket.off("session:expired", onSessionExpired);
+            socket.off("session:token-updated", onTokenUpdated);
             registerSessionSyncSocket(null);
             releaseSessionSocket();
         };
