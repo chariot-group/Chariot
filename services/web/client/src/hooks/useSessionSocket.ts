@@ -23,6 +23,7 @@ import { useAppDispatch, useAppStore } from "@/store/hooks";
 import {
     clearCurrentSession,
     mergeSessionParticipantDisplayNames,
+    selectIsInSession,
     selectSessionParticipants,
     setSessionParticipants,
     setSessionStatus,
@@ -42,6 +43,7 @@ import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayer
 import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
 import { invalidateCache as invalidateGroupCache } from "@/store/slices/groupSlice";
 import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
+import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { updateUser } from "@/store/slices/userSlice";
 import NavigationService from "@/services/NavigationService";
@@ -101,6 +103,7 @@ export function useSessionSocket({
     const t = useTranslations("sessionPage");
     const pathname = usePathname();
     const locale = pathname.split("/")[1] || "fr";
+    const isInSession = useAppSelector(selectIsInSession);
 
     const socketRef = useRef<Socket | null>(null);
     const participantsRef = useRef(participants);
@@ -195,7 +198,7 @@ export function useSessionSocket({
         }
     }, [token]);
 
-    const shouldConnectSocket = Boolean(token && code);
+    const shouldConnectSocket = Boolean(token && code && isInSession);
 
     useEffect(() => {
         if (!shouldConnectSocket || !token) return;
@@ -330,6 +333,12 @@ export function useSessionSocket({
             endSessionLocally("closed");
         };
 
+        const onSessionError = (payload: { message?: string }) => {
+            const unavailableReason = parseSessionUnavailableReason(payload?.message);
+            if (!unavailableReason) return;
+            endSessionLocally(unavailableReason === "expired" ? "expired" : "closed");
+        };
+
         const onTokenUpdated = ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
             setTokensByUserRef.current(updatedTokens);
             dispatch(setSessionTokensByUser(updatedTokens));
@@ -423,6 +432,7 @@ export function useSessionSocket({
         socket.on("session:participant-disconnected", onParticipantDisconnected);
         socket.on("session:expired", onSessionExpired);
         socket.on("session:closed", onSessionClosed);
+        socket.on("session:error", onSessionError);
         socket.on("session:token-updated", onTokenUpdated);
         socket.on("session:launched", onSessionLaunched);
 
@@ -433,12 +443,13 @@ export function useSessionSocket({
             socket.off("session:participant-disconnected", onParticipantDisconnected);
             socket.off("session:expired", onSessionExpired);
             socket.off("session:closed", onSessionClosed);
+            socket.off("session:error", onSessionError);
             socket.off("session:token-updated", onTokenUpdated);
             socket.off("session:launched", onSessionLaunched);
             releaseSessionSocket();
             socketRef.current = null;
         };
-    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId]);
+    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId, isInSession]);
 
     const handleCharacterChange = (characterId: string) => {
         const socket = socketRef.current;

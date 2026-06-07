@@ -51,6 +51,7 @@ import {
 import { formatSessionParticipantLabelFromWsUsername } from "@/lib/formatSessionParticipantUserLabel";
 import { resolveParticipantToastLabel } from "@/lib/sessionParticipantDisplayNames";
 import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
+import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
 import { trackerMirrorFieldsFromCharacter } from "@/components/initiativeTracker/utils";
 
@@ -295,6 +296,12 @@ export default function SessionCharacterSyncClient() {
         const onSessionClosed = () => onSessionEnded("closed");
         const onSessionExpired = () => onSessionEnded("expired");
 
+        const onSessionError = (payload: { message?: string }) => {
+            const unavailableReason = parseSessionUnavailableReason(payload?.message);
+            if (!unavailableReason) return;
+            onSessionEnded(unavailableReason === "expired" ? "expired" : "closed");
+        };
+
         const onTokenUpdated = ({ tokensByUser }: { tokensByUser: Record<string, number> }) => {
             dispatch(setSessionTokensByUser(tokensByUser));
         };
@@ -303,6 +310,7 @@ export default function SessionCharacterSyncClient() {
         socket.on("session:launched", onSessionLaunched);
         socket.on("session:closed", onSessionClosed);
         socket.on("session:expired", onSessionExpired);
+        socket.on("session:error", onSessionError);
         socket.on("session:token-updated", onTokenUpdated);
         if (socket.connected) {
             onConnect();
@@ -319,6 +327,7 @@ export default function SessionCharacterSyncClient() {
             socket.off("session:launched", onSessionLaunched);
             socket.off("session:closed", onSessionClosed);
             socket.off("session:expired", onSessionExpired);
+            socket.off("session:error", onSessionError);
             socket.off("session:token-updated", onTokenUpdated);
             registerSessionSyncSocket(null);
             releaseSessionSocket();

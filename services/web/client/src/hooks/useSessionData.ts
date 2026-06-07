@@ -11,14 +11,15 @@ import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisp
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
+    clearCurrentSession,
     setCurrentSession,
     setSessionStatus,
     setSessionExpiresAt,
-    selectIsInSession,
     selectSessionParticipantDisplayNames,
     mergeSessionParticipantDisplayNames,
     pruneSessionParticipantDisplayNames,
 } from "@/store/slices/sessionSlice";
+import { isSessionUnavailableMessage } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
 import type { Character } from "@/types/character";
 import type { Campaign } from "@/types/campaign";
@@ -49,7 +50,6 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const pathname = usePathname();
     const locale = pathname.split("/")[1] || "fr";
 
-    const isInSession = useAppSelector(selectIsInSession);
     const participantNames = useAppSelector(selectSessionParticipantDisplayNames);
 
     const [campaignLabel, setCampaignLabel] = useState<string | null>(null);
@@ -87,26 +87,44 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     }, [fetchCharacterDetails]);
 
     useEffect(() => {
+        let cancelled = false;
+
+        const redirectToWelcomeAfterUnavailableSession = () => {
+            dispatch(clearCurrentSession());
+            toast.info(t("toast.sessionNotFound"));
+            router.push(`/${locale}/welcome`);
+        };
+
         const init = async () => {
             try {
                 const session = await sessionService.getSession(code);
+                if (cancelled) return;
+
                 dispatch(setCurrentSession({ code, campaignId: idCampaign }));
                 dispatch(setSessionStatus(session.status));
                 dispatch(setSessionExpiresAt(session.expiresAt));
             } catch {
-                toast.info(t("toast.sessionNotFound"));
-                router.back();
+                if (cancelled) return;
+                redirectToWelcomeAfterUnavailableSession();
                 setIsLoading(false);
                 return;
             }
 
             try {
-                if (!isInSession) {
-                    await sessionService.joinSession(code).then(() => {
-                        toast.success(t("toast.connectionSuccess"));
-                    });
+                await sessionService.joinSession(code);
+                if (cancelled) return;
+                toast.success(t("toast.connectionSuccess"));
+            } catch (error: unknown) {
+                if (cancelled) return;
+                const message =
+                    error && typeof error === "object" && "response" in error
+                        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+                        : undefined;
+                if (isSessionUnavailableMessage(message)) {
+                    redirectToWelcomeAfterUnavailableSession();
+                    setIsLoading(false);
+                    return;
                 }
-            } catch {
                 // Session déjà rejointe ou erreur non bloquante
             }
 
@@ -145,9 +163,14 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             } catch {
                 // silently fail
             }
-            setIsLoading(false);
+            if (!cancelled) {
+                setIsLoading(false);
+            }
         };
         init();
+        return () => {
+            cancelled = true;
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [code]);
 
