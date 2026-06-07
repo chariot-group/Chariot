@@ -25,7 +25,7 @@ import {
   buildConditionEntry,
   formatRemainingConditionDuration,
 } from "@/components/initiativeTracker/conditionDuration";
-import { ROUND_DURATION_SECONDS } from "@/components/initiativeTracker/constants";
+import { ROUND_DURATION_SECONDS, SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import type {
   InitiativeTrackerConditionDurationUnit,
   InitiativeTrackerConditionEntry,
@@ -34,6 +34,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useAppStore } from "@/store/hooks";
 import { useUser } from "@/hooks/useUser";
 import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
+import { getPooledSessionSocket } from "@/lib/sessionSocketPool";
 import {
   endBattle,
   nextBattleTurn,
@@ -43,8 +44,10 @@ import {
   selectBattleStarted,
   selectCharacterSheetRemoteVersions,
   selectCurrentRound,
+  selectCurrentUserParticipant,
   selectLastConsultedSheetPath,
   selectBattleStateSnapshot,
+  selectSessionInitBattleDraft,
   selectTurnsWithActions,
   selectInitiativeTrackerRows,
   selectIsInSession,
@@ -79,6 +82,7 @@ export default function InitiativeTrackerPage() {
   const turnsWithActions = useAppSelector(selectTurnsWithActions);
   const remoteCharacterVersions = useAppSelector(selectCharacterSheetRemoteVersions);
   const lastConsultedSheetPath = useAppSelector(selectLastConsultedSheetPath);
+  const initBattleDraft = useAppSelector(selectSessionInitBattleDraft);
 
   const isGameMaster = React.useMemo(() => {
     const userId = user.user?.keycloakId;
@@ -87,12 +91,43 @@ export default function InitiativeTrackerPage() {
   }, [participants, user.user?.keycloakId]);
 
   const trackerMode = isGameMaster ? "gm" : "player";
+  const allowPlayerInitiativeInput = initBattleDraft.allowPlayerInitiativeInput ?? false;
   const previousBattleInitializedRef = React.useRef(battleInitialized);
 
+  const ownCharacterId = React.useMemo(() => {
+    const userId = user.user?.keycloakId;
+    if (!userId) return null;
+    return participants.find((p) => p.userId === userId)?.characterId ?? null;
+  }, [participants, user.user?.keycloakId]);
+  const ownParticipant = useAppSelector((state) =>
+    user.user?.keycloakId ? selectCurrentUserParticipant(state, user.user.keycloakId) : null,
+  );
+
+  const ownCharacterSheetHref = React.useMemo(() => {
+    if (!ownCharacterId) return null;
+    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
+    return `/${locale}/characters/${encodeURIComponent(ownCharacterId)}${query}`;
+  }, [locale, ownCharacterId, sessionCode]);
+
+  const playerCanAccessPreparationTracker = !isGameMaster
+    && battleInitialized
+    && !battleStarted
+    && allowPlayerInitiativeInput
+    && ownCharacterId != null
+    && ownParticipant?.status === "connected";
+  const playerCanEditOwnInitiative = playerCanAccessPreparationTracker;
+
   const visibleRows = React.useMemo(() => {
-    const sorted = sortInitiativeTrackerRows(rows);
-    return isGameMaster ? sorted : filterRowsForPlayerView(sorted);
-  }, [isGameMaster, rows]);
+    if (isGameMaster) {
+      return sortInitiativeTrackerRows(rows);
+    }
+
+    if (!battleStarted) {
+      return ownCharacterId ? rows.filter((row) => row.characterId === ownCharacterId) : [];
+    }
+
+    return filterRowsForPlayerView(rows);
+  }, [battleStarted, isGameMaster, ownCharacterId, rows]);
 
   const activeTurnIndex = React.useMemo(() => {
     if (!activeTurnRowId) return -1;
@@ -119,7 +154,13 @@ export default function InitiativeTrackerPage() {
     const snapshot = selectBattleStateSnapshot(
       store.getState() as Parameters<typeof selectBattleStateSnapshot>[0],
     );
-    if (!snapshot.battleStarted && !options?.includeEnded) return;
+    if (
+      !snapshot.battleStarted
+      && !(snapshot.battleInitialized && snapshot.allowPlayerInitiativeInput)
+      && !options?.includeEnded
+    ) {
+      return;
+    }
     emitBattleStateUpdate(snapshot);
   }, [isGameMaster, isInSession, store]);
 
@@ -219,20 +260,8 @@ export default function InitiativeTrackerPage() {
     updateRow(row.id, { conditions: [] });
   };
 
-  const ownCharacterId = React.useMemo(() => {
-    const userId = user.user?.keycloakId;
-    if (!userId) return null;
-    return participants.find((p) => p.userId === userId)?.characterId ?? null;
-  }, [participants, user.user?.keycloakId]);
-
-  const ownCharacterSheetHref = React.useMemo(() => {
-    if (!ownCharacterId) return null;
-    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
-    return `/${locale}/characters/${encodeURIComponent(ownCharacterId)}${query}`;
-  }, [locale, ownCharacterId, sessionCode]);
-
   React.useEffect(() => {
-    if (!isGameMaster && !battleStarted) {
+    if (!isGameMaster && !battleStarted && !playerCanAccessPreparationTracker) {
       if (ownCharacterSheetHref) {
         router.replace(ownCharacterSheetHref);
       }
@@ -256,9 +285,93 @@ export default function InitiativeTrackerPage() {
     if (ownCharacterSheetHref) {
       router.replace(ownCharacterSheetHref);
     }
-  }, [battleInitialized, battleStarted, isGameMaster, lastConsultedSheetPath, ownCharacterSheetHref, router]);
+  }, [
+    battleInitialized,
+    battleStarted,
+    isGameMaster,
+    lastConsultedSheetPath,
+    ownCharacterSheetHref,
+    playerCanAccessPreparationTracker,
+    router,
+  ]);
 
-  if (!isGameMaster && !battleStarted) {
+  React.useEffect(() => {
+    if (!isGameMaster || battleStarted || !battleInitialized || !allowPlayerInitiativeInput) return;
+
+    const socket = getPooledSessionSocket();
+    if (!socket) return;
+
+    const onPlayerInitiativeSubmitted = ({
+      characterId,
+      initiative,
+      userId,
+    }: {
+      characterId?: string;
+      initiative?: number;
+      userId?: string;
+    }) => {
+      if (typeof characterId !== "string" || !characterId.trim()) return;
+      if (!Number.isFinite(initiative)) return;
+      if (typeof userId !== "string" || !userId.trim()) return;
+
+      const participant = participants.find((p) => p.userId === userId);
+      if (!participant || participant.status === "gameMaster" || participant.characterId !== characterId) {
+        return;
+      }
+
+      const row = rows.find((candidate) => candidate.characterId === characterId);
+      if (!row || row.groupId !== SESSION_PARTICIPANTS_GROUP_ID) return;
+
+      dispatchTrackerAction(
+        updateInitiativeTrackerRow({
+          id: row.id,
+          changes: { initiative: Math.trunc(Number(initiative)) },
+        }),
+      );
+    };
+
+    socket.on("session:player-initiative-submitted", onPlayerInitiativeSubmitted);
+
+    return () => {
+      socket.off("session:player-initiative-submitted", onPlayerInitiativeSubmitted);
+    };
+  }, [
+    allowPlayerInitiativeInput,
+    battleInitialized,
+    battleStarted,
+    dispatchTrackerAction,
+    isGameMaster,
+    participants,
+    rows,
+  ]);
+
+  const playerUpdateRow = React.useCallback((id: string, changes: Partial<Omit<InitiativeTrackerRow, "id">>) => {
+    if (!playerCanEditOwnInitiative || !ownCharacterId) return;
+
+    const row = rows.find((candidate) => candidate.id === id);
+    if (!row || row.characterId !== ownCharacterId) return;
+
+    const nextInitiative = changes.initiative;
+    if (!Number.isFinite(nextInitiative)) return;
+    const normalizedInitiative = Math.trunc(Number(nextInitiative));
+
+    dispatch(updateInitiativeTrackerRow({
+      id,
+      changes: { initiative: normalizedInitiative },
+    }));
+
+    const socket = getPooledSessionSocket();
+    const userId = user.user?.keycloakId;
+    if (!socket || !sessionCode || !userId) return;
+
+    socket.emit("session:player-initiative-submitted", {
+      sessionId: sessionCode,
+      characterId: ownCharacterId,
+      initiative: normalizedInitiative,
+    });
+  }, [dispatch, ownCharacterId, playerCanEditOwnInitiative, rows, sessionCode, user.user?.keycloakId]);
+
+  if (!isGameMaster && !battleStarted && !playerCanAccessPreparationTracker) {
     return null;
   }
 
@@ -283,6 +396,8 @@ export default function InitiativeTrackerPage() {
       conditionRoundHint: t("conditionRoundHint", { seconds: ROUND_DURATION_SECONDS }),
       visibleFor: t("visibleFor", { name }),
       playerDisplayNameSubtitle: t("playerDisplayNameSubtitle"),
+      ownCharacterBadge: t("ownCharacterBadge"),
+      ownCharacterLabel: t("ownCharacterLabel", { name }),
       hiddenField: t("hiddenField"),
       otherGroup: t("otherGroup"),
       expandDetails: t("expandDetails", { name }),
@@ -361,7 +476,7 @@ export default function InitiativeTrackerPage() {
           <p
             className="text-center text-sm text-white/60"
             role="status">
-            {t("playerReadOnlyNotice")}
+            {playerCanEditOwnInitiative ? t("playerPrepInitiativeNotice") : t("playerReadOnlyNotice")}
           </p>
         ) : null}
 
@@ -399,7 +514,7 @@ export default function InitiativeTrackerPage() {
           ownCharacterId={ownCharacterId}
           ownCharacterSheetHref={ownCharacterSheetHref}
           activeTurnRowId={battleStarted ? activeTurnRowId : null}
-          initiativeLocked={battleStarted || !isGameMaster}
+          initiativeLocked={battleStarted || (!isGameMaster && !playerCanEditOwnInitiative)}
           columnLabels={{
             initiative: t("initiative"),
             character: t("character"),
@@ -410,7 +525,7 @@ export default function InitiativeTrackerPage() {
             visible: t("visible"),
           }}
           getSheetHref={getSheetHref}
-          onUpdateRow={isGameMaster ? updateRow : undefined}
+          onUpdateRow={isGameMaster ? updateRow : playerCanEditOwnInitiative ? playerUpdateRow : undefined}
           onAddCondition={isGameMaster ? addCondition : undefined}
           onRemoveCondition={isGameMaster ? removeCondition : undefined}
           onClearConditions={isGameMaster ? clearConditions : undefined}

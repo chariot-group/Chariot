@@ -211,6 +211,7 @@ describe("FR-021 — applyRemoteBattleState", () => {
         battleStarted: true,
         activeTurnRowId: "b",
         currentRound: 3,
+        allowPlayerInitiativeInput: false,
       }),
     );
 
@@ -231,6 +232,7 @@ describe("FR-021 — applyRemoteBattleState", () => {
         battleStarted: false,
         activeTurnRowId: null,
         currentRound: 1,
+        allowPlayerInitiativeInput: false,
       }),
     );
 
@@ -249,6 +251,7 @@ describe("FR-021 — applyRemoteBattleState", () => {
         battleStarted: false,
         activeTurnRowId: null,
         currentRound: 1,
+        allowPlayerInitiativeInput: false,
       }),
     );
 
@@ -266,6 +269,25 @@ describe("FR-021 — applyRemoteBattleState", () => {
     const normalized = normalizePlayerFieldVisibility(row.playerFieldVisibility, "npc", row.groupId);
     expect(normalized.name).toBe(true);
     expect(normalized.hitPoints).toBe(false);
+  });
+
+  it("nominal: preparatory player-initiative flag is mirrored from GM snapshot", () => {
+    let state = sessionReducer(undefined, setInitiativeTrackerRows([]));
+    state = sessionReducer(
+      state,
+      applyRemoteBattleState({
+        initiativeTrackerRows: [buildRow({ id: "prep" })],
+        battleInitialized: true,
+        battleStarted: false,
+        activeTurnRowId: null,
+        currentRound: 1,
+        allowPlayerInitiativeInput: true,
+      }),
+    );
+
+    expect(state.initBattleDraft.allowPlayerInitiativeInput).toBe(true);
+    expect(state.battleInitialized).toBe(true);
+    expect(state.battleStarted).toBe(false);
   });
 });
 

@@ -19,6 +19,7 @@ import {
 
 export interface SessionInitBattleDraft {
     showAllOpponents: boolean;
+    allowPlayerInitiativeInput: boolean;
     selectedGroupIds: string[];
     expandedGroupIds: string[];
     excludedMembersByGroup: Record<string, string[]>;
@@ -179,6 +180,7 @@ export interface BattleStateSnapshot {
     battleStarted: boolean;
     activeTurnRowId: string | null;
     currentRound: number;
+    allowPlayerInitiativeInput: boolean;
 }
 
 export interface InitiativeTrackerRow {
@@ -258,6 +260,7 @@ export function createInitiativeTrackerRow(input: {
 
 const initialInitBattleDraft: SessionInitBattleDraft = {
     showAllOpponents: false,
+    allowPlayerInitiativeInput: false,
     selectedGroupIds: [],
     expandedGroupIds: [],
     excludedMembersByGroup: {},
@@ -615,6 +618,10 @@ const sessionSlice = createSlice({
             state.battleStarted = payload.battleStarted ?? false;
             state.activeTurnRowId = payload.activeTurnRowId ?? null;
             state.currentRound = payload.currentRound ?? 1;
+            state.initBattleDraft = {
+                ...state.initBattleDraft,
+                allowPlayerInitiativeInput: payload.allowPlayerInitiativeInput ?? false,
+            };
         },
         setLastConsultedSheetPath: (state, action: PayloadAction<string | null>) => {
             const path = action.payload?.trim() ?? '';
@@ -749,6 +756,7 @@ export const selectBattleStateSnapshot = (state: RootState): BattleStateSnapshot
     battleStarted: state.session.battleStarted,
     activeTurnRowId: state.session.activeTurnRowId,
     currentRound: state.session.currentRound,
+    allowPlayerInitiativeInput: state.session.initBattleDraft.allowPlayerInitiativeInput ?? false,
 });
 
 export default sessionSlice.reducer;

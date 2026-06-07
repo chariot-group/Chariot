@@ -1473,8 +1473,10 @@ Each rule has a unique identifier and must be tested.
 
 **Sidebar Navigation — Player**:
 
-- Before the GM has actually started combat, players MUST NOT have access to the initiative tracker.
-- While combat is initialized but not started, the sidebar footer for players MUST NOT show **Return to Battle**.
+- Before the GM has actually started combat, players MUST NOT have access to the initiative tracker, unless the GM explicitly enabled preparatory initiative entry.
+- While combat is initialized but not started:
+  - if preparatory initiative entry is disabled, the sidebar footer for players MUST NOT show **Return to Battle**.
+  - if preparatory initiative entry is enabled, the sidebar footer for players MUST show **Return to Battle**, navigating to `/{locale}/initiativeTracker`.
 - Once combat has started, when the player is not on the initiative tracker page, the sidebar footer MUST show **Return to Battle** (same label, icon, and styling as the GM), navigating to `/{locale}/initiativeTracker`.
 - Once combat has started, when the player is on the initiative tracker page, the sidebar footer MUST show **View Character Sheet**, navigating to their session character sheet.
 - If the player has no assigned character, **View Character Sheet** is disabled with an explanatory tooltip.
@@ -1517,28 +1519,43 @@ Each initiative tracker row carries:
 **Player Initiative Tracker View**:
 
 - Same route as GM: `/{locale}/initiativeTracker`.
-- Players can access this route only once combat has started (`battleStarted === true`).
-- If a player tries to access the route before combat starts, they MUST be redirected back to their session character sheet.
-- Read-only: no HP edit dialog, no condition edit, no initiative edit, no turn controls, no visibility column.
-- Rows filtered to `visible === true`, plus any row in the session participants group (always shown to connected players).
+- The GM battle configuration MUST expose a checkbox: **Allow players to enter their initiative**.
+- This checkbox is stored in `session.initBattleDraft.allowPlayerInitiativeInput`, restored when reopening the configuration dialog, and reset when combat ends or the tracker is reset.
+- If the checkbox is disabled:
+  - players can access the route only once combat has started (`battleStarted === true`);
+  - if a player tries to access the route before combat starts, they MUST be redirected back to their session character sheet.
+- If the checkbox is enabled and combat is initialized but not started:
+  - players MAY access the route before combat start;
+  - each player MUST see only their own tracker row during this preparatory phase;
+  - the player MAY edit only the initiative value of their own row;
+  - no other tracker field is editable, and turn controls remain unavailable;
+  - if the player has no assigned session character, they MUST be redirected back to their session character sheet.
+- Once combat has started, the player tracker remains read-only: no HP edit dialog, no condition edit, no initiative edit, no turn controls, no visibility column.
+- Before combat start, rows are limited to the player’s own row; after combat start, rows are filtered to `visible === true`, plus any row in the session participants group (always shown to connected players).
 - Field values masked when the corresponding `playerFieldVisibility` flag is `false` (display placeholder `—`; hidden name displays a generic hidden label).
 - Active turn highlight and round indicator reflect GM broadcast state.
+- Player-visible row ordering MUST match the GM initiative order even when initiative values are hidden from players.
 - Vital status visuals (FR-020) apply on visible HP when HP is shown.
+- The player’s own row MUST have a dedicated visual indicator and accessible label so the player can immediately identify their character within the initiative order.
 
 **Real-Time Sync (WebSocket)**:
 
-- GM emits `session:battle-state-updated` with a snapshot: `initiativeTrackerRows`, `battleInitialized`, `battleStarted`, `activeTurnRowId`, `currentRound`.
+- GM emits `session:battle-state-updated` with a snapshot: `initiativeTrackerRows`, `battleInitialized`, `battleStarted`, `activeTurnRowId`, `currentRound`, `allowPlayerInitiativeInput`.
 - Gateway validates emitter is session GM, then broadcasts to other participants (`client.to`).
 - Players apply via `applyRemoteBattleState` (does not register GM turn-lock actions).
-- The initiative snapshot MUST become available to players only once combat has started; a merely initialized combat is GM-only.
+- The initiative snapshot MUST become available to players only once combat has started, except when `allowPlayerInitiativeInput === true`, in which case the initialized preparatory state is also broadcast.
 - On `session:request-battle-state`, the gateway relays to the session room; GM clients respond by emitting the current snapshot (handles late join / reconnect).
 - GM also rebroadcasts after `session:participant-joined` when a battle is active.
+- A connected player MAY emit an initiative update event for their own session character only while combat is initialized, not started, and `allowPlayerInitiativeInput === true`.
+- The GM client remains the authoritative broadcaster of the resulting battle snapshot after applying a valid player initiative update.
 
 **Prohibitions**:
 
 - Showing GM-only controls (turn engine, reset, visibility editor) to players.
-- Exposing an initialized-but-not-started combat to players.
+- Exposing an initialized-but-not-started combat to players when `allowPlayerInitiativeInput !== true`.
 - Persisting player-local edits to battle state (players are consumers only).
+- Allowing a player to edit another row's initiative.
+- Allowing a player to edit initiative after combat has started.
 - Broadcasting battle state from non-GM participants.
 - Using sidebar **Reset** during an initialized or started battle.
 - Reopening a new combat with rows, setup choices, or turn progress carried over from a previous ended combat.
@@ -1548,6 +1565,15 @@ Each initiative tracker row carries:
 - Sidebar state matrix (GM/player × page × battle state).
 - Default `playerFieldVisibility` per kind (NPC vs player).
 - Player view filters hidden rows and masks hidden fields.
+- Preparatory player mode:
+  - player can access the tracker before combat start only when `allowPlayerInitiativeInput === true`
+  - player sees only their own row before combat start
+  - player can edit only their own initiative before combat start
+  - player is redirected when no assigned character exists
+- Ordering:
+  - player-visible row order matches GM initiative order even when initiative is hidden
+- Visual:
+  - own player row renders a dedicated indicator and accessible label
 - `applyRemoteBattleState` replaces battle fields without touching `turnsWithActions`.
 - Rehydration adds default `playerFieldVisibility` to legacy rows.
 

@@ -70,6 +70,8 @@ type InitiativeTrackerTableProps = {
     conditionRoundHint: string;
     visibleFor: string;
     playerDisplayNameSubtitle: string;
+    ownCharacterBadge: string;
+    ownCharacterLabel: string;
     hitPointsFor: string;
     hitPointsSessionTooltip: string;
     hpAbbr: string;
@@ -425,7 +427,7 @@ export function InitiativeTrackerTable({
             ownCharacterId={ownCharacterId}
             ownCharacterSheetHref={ownCharacterSheetHref}
             isActiveTurn={activeTurnRowId != null && row.id === activeTurnRowId}
-            initiativeLocked={initiativeLocked || isPlayerView}
+            initiativeLocked={initiativeLocked}
             selectionEnabled={selectionEnabled}
             isSelected={selectedRowIds.has(row.id)}
             onSelectionChange={(selected) => toggleRowSelection(row.id, selected)}
@@ -440,7 +442,7 @@ export function InitiativeTrackerTable({
             onToggleExpanded={() => toggleRowExpanded(row.id)}
             gridTemplateColumns={gridTemplateColumns}
             getSheetHref={isPlayerView ? undefined : getSheetHref}
-            onUpdateRow={isPlayerView ? undefined : onUpdateRow}
+            onUpdateRow={onUpdateRow}
             onAddCondition={isPlayerView ? undefined : onAddCondition}
             onRemoveCondition={isPlayerView ? undefined : onRemoveCondition}
             onClearConditions={isPlayerView ? undefined : onClearConditions}

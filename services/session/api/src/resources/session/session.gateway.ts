@@ -424,6 +424,51 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         }
     }
 
+    /**
+     * FR-021 — relaye une saisie d'initiative préparatoire du joueur vers le MJ.
+     * Le client MJ reste l'autorité qui valide le contexte combat et rebroadcast l'état final.
+     */
+    @SubscribeMessage('session:player-initiative-submitted')
+    async handlePlayerInitiativeSubmitted(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody() data: { sessionId: string; characterId: string; initiative: number },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const me = session.participants.find((p) => p.userId === client.user.keycloakId);
+            if (!me) {
+                client.emit('session:error', { message: 'Not a session participant' });
+                return;
+            }
+            if (me.status === 'gameMaster') {
+                client.emit('session:error', { message: 'Game master cannot submit player initiative' });
+                return;
+            }
+            if (!data.characterId || me.characterId !== data.characterId) {
+                client.emit('session:error', { message: 'Player can only submit initiative for their own character' });
+                return;
+            }
+            if (!Number.isFinite(data.initiative)) {
+                client.emit('session:error', { message: 'Invalid initiative payload' });
+                return;
+            }
+
+            client.to(session.id).emit('session:player-initiative-submitted', {
+                userId: client.user.keycloakId,
+                characterId: data.characterId,
+                initiative: Math.trunc(Number(data.initiative)),
+            });
+            this.logger.verbose(
+                `${client.user.username} submitted preparatory initiative in session ${session.id}`,
+                this.SERVICE_NAME,
+            );
+        } catch (error: any) {
+            const message: string = `Failed to submit player initiative: ${error.message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            client.emit('session:error', { message });
+        }
+    }
+
     @SubscribeMessage('session:close')
     async handleCloseSession(
         @ConnectedSocket() client: AuthenticatedSocket,
