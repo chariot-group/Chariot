@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { InternalServerErrorException, Logger, UnauthorizedException } from '@nestjs/common';
 import { SessionService } from '@/resources/session/session.service';
 import { RedisService } from '@/redis/redis.service';
+import { AdventureUserService } from '@/common/adventure/adventure-user.service';
 import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { SessionWithParticipants } from '@/resources/session/entities/session.model';
@@ -45,6 +46,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
     private readonly logger = new Logger(SessionGateway.name);
     private readonly SERVICE_NAME = SessionGateway.name;
+    /** Délai avant de notifier une déconnexion WS (reconnexion rapide / refresh client). */
+    private static readonly DISCONNECT_NOTIFY_MS = 3_000;
+    private readonly pendingDisconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
     private jwksClient: jwksRsa.JwksClient;
     private keycloakInternalUrl: string;
@@ -54,6 +58,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     constructor(
         private readonly sessionService: SessionService,
         private readonly redisService: RedisService,
+        private readonly adventureUserService: AdventureUserService,
         private readonly configService: ConfigService,
     ) {
         this.keycloakInternalUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL');
@@ -147,12 +152,33 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         };
 
         for (const sessionId of sessionIds) {
-            /* Immédiat : ne pas attendre la persistance, sinon le toast côté clients n'arrive qu'avec retard. */
-            this.server.to(sessionId).emit('session:participant-disconnected', payload);
-            this.sessionService.disconnectParticipant(sessionId, client.user.keycloakId).catch((err: any) => {
+            this.scheduleParticipantDisconnected(sessionId, payload.userId, payload.username);
+        }
+    }
+
+    private disconnectTimerKey(sessionId: string, userId: string): string {
+        return `${sessionId}:${userId}`;
+    }
+
+    private cancelPendingParticipantDisconnect(sessionId: string, userId: string): void {
+        const key = this.disconnectTimerKey(sessionId, userId);
+        const timer = this.pendingDisconnectTimers.get(key);
+        if (!timer) return;
+        clearTimeout(timer);
+        this.pendingDisconnectTimers.delete(key);
+    }
+
+    private scheduleParticipantDisconnected(sessionId: string, userId: string, username: string): void {
+        this.cancelPendingParticipantDisconnect(sessionId, userId);
+        const key = this.disconnectTimerKey(sessionId, userId);
+        const timer = setTimeout(() => {
+            this.pendingDisconnectTimers.delete(key);
+            this.server.to(sessionId).emit('session:participant-disconnected', { userId, username });
+            this.sessionService.disconnectParticipant(sessionId, userId).catch((err: any) => {
                 this.logger.error(`Error handling disconnect for session ${sessionId}: ${err.message}`, null, this.SERVICE_NAME);
             });
-        }
+        }, SessionGateway.DISCONNECT_NOTIFY_MS);
+        this.pendingDisconnectTimers.set(key, timer);
     }
 
     /** Extracts SessionWithParticipants from either a raw session or an IResponse wrapper. */
@@ -201,6 +227,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         try {
             let start: number = Date.now();
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.join(data.sessionId, data, client.user.keycloakId));
+            this.cancelPendingParticipantDisconnect(session.id, client.user.keycloakId);
 
             client.join(session.id);
             this.trackSessionRoom(client, session.id);
@@ -245,6 +272,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const leavingParticipant = preDetails.data.participants.find(
                 (p) => p.userId === client.user.keycloakId,
             );
+            if (leavingParticipant?.sessionId) {
+                this.cancelPendingParticipantDisconnect(leavingParticipant.sessionId, client.user.keycloakId);
+            }
             const leavingCharacterId: string | null = leavingParticipant?.characterId ?? null;
 
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.leave(data.sessionId, client.user.keycloakId));
@@ -500,15 +530,24 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         try {
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
             const maxTokens = session.participants.length;
-            const updated = await this.redisService.addToken(data.sessionId, client.user.keycloakId, maxTokens);
+            const userId = client.user.keycloakId;
+            const balanceError = await this.getInsufficientBalanceError(data.sessionId, userId, 1);
+            if (balanceError) {
+                client.emit('session:error', balanceError);
+                return;
+            }
+            const updated = await this.redisService.addToken(data.sessionId, userId, maxTokens);
             if (updated === null) {
-                client.emit('session:error', { message: 'Token limit reached' });
+                client.emit('session:error', { code: 'TOKEN_LIMIT_REACHED', message: 'Token limit reached' });
                 return;
             }
             this.server.to(session.id).emit('session:token-updated', { tokensByUser: updated });
         } catch (error: any) {
             this.logger.error(`Failed to add token: ${error.message}`, null, this.SERVICE_NAME);
-            client.emit('session:error', { message: `Failed to add token: ${error.message}` });
+            client.emit('session:error', {
+                code: 'TOKEN_DEPOSIT_FAILED',
+                message: `Failed to add token: ${error.message}`,
+            });
         }
     }
 
@@ -539,15 +578,29 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         try {
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
             const maxTokens = session.participants.length;
-            const result = await this.redisService.addTokens(data.sessionId, client.user.keycloakId, maxTokens, data.amount);
+            const userId = client.user.keycloakId;
+            const requestedAmount = Math.max(0, Math.floor(data.amount ?? 0));
+            if (requestedAmount <= 0) {
+                client.emit('session:error', { message: 'Invalid token amount' });
+                return;
+            }
+            const balanceError = await this.getInsufficientBalanceError(data.sessionId, userId, requestedAmount);
+            if (balanceError) {
+                client.emit('session:error', balanceError);
+                return;
+            }
+            const result = await this.redisService.addTokens(data.sessionId, userId, maxTokens, requestedAmount);
             if (result === null) {
-                client.emit('session:error', { message: 'Token limit reached' });
+                client.emit('session:error', { code: 'TOKEN_LIMIT_REACHED', message: 'Token limit reached' });
                 return;
             }
             this.server.to(session.id).emit('session:token-updated', { tokensByUser: result.tokens });
         } catch (error: any) {
             this.logger.error(`Failed to add tokens: ${error.message}`, null, this.SERVICE_NAME);
-            client.emit('session:error', { message: `Failed to add tokens: ${error.message}` });
+            client.emit('session:error', {
+                code: 'TOKEN_DEPOSIT_FAILED',
+                message: `Failed to add tokens: ${error.message}`,
+            });
         }
     }
 
@@ -568,6 +621,31 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             this.logger.error(`Failed to remove tokens: ${error.message}`, null, this.SERVICE_NAME);
             client.emit('session:error', { message: `Failed to remove tokens: ${error.message}` });
         }
+    }
+
+    private async getInsufficientBalanceError(
+        sessionId: string,
+        userId: string,
+        amount: number,
+    ): Promise<{ code: string; message: string } | null> {
+        const tokens = await this.redisService.getTokens(sessionId);
+        const currentDeposited = tokens[userId] ?? 0;
+        let balance: number;
+        try {
+            balance = await this.adventureUserService.getBalance(userId);
+        } catch (error: any) {
+            return {
+                code: 'BALANCE_CHECK_FAILED',
+                message: error?.message ?? 'Failed to verify token balance',
+            };
+        }
+        if (currentDeposited + amount > balance) {
+            return {
+                code: 'INSUFFICIENT_TOKEN_BALANCE',
+                message: 'Insufficient token balance',
+            };
+        }
+        return null;
     }
 
     private async verifyToken(token: string): Promise<any> {

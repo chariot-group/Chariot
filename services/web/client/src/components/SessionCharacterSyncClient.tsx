@@ -4,7 +4,7 @@ import { useEffect, useEffectEvent, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useKeycloak } from "@/providers/KeycloakProvider";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
     selectIsInSession,
     selectSessionCode,
@@ -14,10 +14,12 @@ import {
     selectInitiativeTrackerRows,
     selectCharacterSheetRemoteVersions,
     clearCurrentSession,
+    mergeSessionParticipantDisplayNames,
     removeSessionParticipantByUserId,
     setSessionParticipants,
     setSessionExpiresAt,
     setSessionStatus,
+    setSessionTokensByUser,
     touchRemoteCharacterSheet,
     updateInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
@@ -30,6 +32,7 @@ import sessionService, {
 import CharacterService from "@/services/CharacterService";
 import { selectUser } from "@/store/slices/userSlice";
 import {
+    handleRemoteCharacterSheetUpdated,
     registerLocalCharacterSheetUpdatedListener,
     registerSessionRosterHttpSyncScheduler,
     registerSessionSyncSocket,
@@ -43,8 +46,12 @@ import {
     getPooledSessionSocket,
     releaseSessionSocket,
     shouldShowSessionEndNotice,
+    syncSessionSocketAuth,
 } from "@/lib/sessionSocketPool";
+import { formatSessionParticipantLabelFromWsUsername } from "@/lib/formatSessionParticipantUserLabel";
+import { resolveParticipantToastLabel } from "@/lib/sessionParticipantDisplayNames";
 import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
+import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
 import { trackerMirrorFieldsFromCharacter } from "@/components/initiativeTracker/utils";
 
@@ -74,6 +81,7 @@ export default function SessionCharacterSyncClient() {
     const toast = useToast();
     const t = useTranslations("sessionPage");
     const dispatch = useAppDispatch();
+    const appStore = useAppStore();
     const { token } = useKeycloak();
     const isInSession = useAppSelector(selectIsInSession);
     const code = useAppSelector(selectSessionCode);
@@ -92,6 +100,7 @@ export default function SessionCharacterSyncClient() {
     const toastRef = useRef(toast);
     const routerRef = useRef(router);
     const tRef = useRef(t);
+    const appStoreRef = useRef(appStore);
     const hasProcessedSessionEndRef = useRef(false);
     const lastSyncedVersionsRef = useRef<Map<string, number>>(new Map());
 
@@ -104,7 +113,8 @@ export default function SessionCharacterSyncClient() {
         toastRef.current = toast;
         routerRef.current = router;
         tRef.current = t;
-    }, [participants, user?.keycloakId, pathname, campaignId, code, toast, router, t]);
+        appStoreRef.current = appStore;
+    }, [participants, user?.keycloakId, pathname, campaignId, code, toast, router, t, appStore]);
 
     useEffect(() => {
         if (isInSession && code) {
@@ -184,6 +194,12 @@ export default function SessionCharacterSyncClient() {
     });
 
     const shouldConnect = Boolean(isInSession && code && token);
+
+    useEffect(() => {
+        if (token) {
+            syncSessionSocketAuth(token);
+        }
+    }, [token]);
 
     useEffect(() => {
         setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
@@ -280,10 +296,22 @@ export default function SessionCharacterSyncClient() {
         const onSessionClosed = () => onSessionEnded("closed");
         const onSessionExpired = () => onSessionEnded("expired");
 
+        const onSessionError = (payload: { message?: string }) => {
+            const unavailableReason = parseSessionUnavailableReason(payload?.message);
+            if (!unavailableReason) return;
+            onSessionEnded(unavailableReason === "expired" ? "expired" : "closed");
+        };
+
+        const onTokenUpdated = ({ tokensByUser }: { tokensByUser: Record<string, number> }) => {
+            dispatch(setSessionTokensByUser(tokensByUser));
+        };
+
         socket.on("connect", onConnect);
         socket.on("session:launched", onSessionLaunched);
         socket.on("session:closed", onSessionClosed);
         socket.on("session:expired", onSessionExpired);
+        socket.on("session:error", onSessionError);
+        socket.on("session:token-updated", onTokenUpdated);
         if (socket.connected) {
             onConnect();
         }
@@ -299,10 +327,12 @@ export default function SessionCharacterSyncClient() {
             socket.off("session:launched", onSessionLaunched);
             socket.off("session:closed", onSessionClosed);
             socket.off("session:expired", onSessionExpired);
+            socket.off("session:error", onSessionError);
+            socket.off("session:token-updated", onTokenUpdated);
             registerSessionSyncSocket(null);
             releaseSessionSocket();
         };
-    }, [shouldConnect, code, token, dispatch]);
+    }, [shouldConnect, code, dispatch, token]);
 
     const isOnSessionLobbyPage = /\/campaigns\/[^/]+\/session\/[^/]+(?:\/|$)/.test(pathname ?? "");
 
@@ -352,6 +382,10 @@ export default function SessionCharacterSyncClient() {
                 ];
             }
             dispatch(setSessionParticipants(next));
+            const wsLabel = formatSessionParticipantLabelFromWsUsername(payload.username);
+            if (wsLabel) {
+                dispatch(mergeSessionParticipantDisplayNames({ [payload.userId]: wsLabel }));
+            }
             const joinedCid = payload.characterId?.trim();
             if (joinedCid) {
                 dispatch(touchRemoteCharacterSheet(joinedCid));
@@ -390,7 +424,23 @@ export default function SessionCharacterSyncClient() {
         socket.on("session:participant-joined", onParticipantJoined);
         socket.on("session:participant-character-changed", onParticipantCharacterChanged);
 
-        let onSheetUpdated: ((payload: { characterId: string }) => void) | undefined;
+        const onSheetUpdated = ({ characterId }: { characterId: string }) => {
+            if (!characterId) return;
+            dispatch(touchRemoteCharacterSheet(characterId));
+            handleRemoteCharacterSheetUpdated(characterId);
+            if (
+                shouldNotifyPlayerOfGmCharacterSheetUpdate(
+                    characterId,
+                    userIdRef.current,
+                    participantsRef.current,
+                )
+            ) {
+                toastRef.current.info(tRef.current("toast.sheetEditedByGm"));
+            }
+        };
+
+        socket.on("session:character-sheet-updated", onSheetUpdated);
+
         let onParticipantDisconnected:
             | ((payload: { userId: string; username?: string }) => void)
             | undefined;
@@ -403,20 +453,6 @@ export default function SessionCharacterSyncClient() {
             | undefined;
 
         if (!isOnSessionLobbyPage) {
-            onSheetUpdated = ({ characterId }: { characterId: string }) => {
-                if (!characterId) return;
-                dispatch(touchRemoteCharacterSheet(characterId));
-                if (
-                    shouldNotifyPlayerOfGmCharacterSheetUpdate(
-                        characterId,
-                        userIdRef.current,
-                        participantsRef.current,
-                    )
-                ) {
-                    toastRef.current.info(tRef.current("toast.sheetEditedByGm"));
-                }
-            };
-
             onParticipantDisconnected = ({
                 userId,
                 username,
@@ -430,7 +466,7 @@ export default function SessionCharacterSyncClient() {
                     p.userId === userId ? { ...p, status: "disconnected" as const } : p,
                 );
                 dispatch(setSessionParticipants(next));
-                const label = username?.trim() || userId;
+                const label = resolveParticipantToastLabel(appStoreRef.current.getState(), userId, username);
                 toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
             };
 
@@ -453,7 +489,11 @@ export default function SessionCharacterSyncClient() {
                     if (gmViewingDepartedCharacter) {
                         toastRef.current.info(tRef.current("toast.participantLeftViewingCharacter"));
                     } else {
-                        const label = payload.username?.trim() || payload.userId;
+                        const label = resolveParticipantToastLabel(
+                            appStoreRef.current.getState(),
+                            payload.userId,
+                            payload.username,
+                        );
                         toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
                     }
                 }
@@ -473,7 +513,6 @@ export default function SessionCharacterSyncClient() {
                 }
             };
 
-            socket.on("session:character-sheet-updated", onSheetUpdated);
             socket.on("session:participant-left", onParticipantLeft);
             socket.on("session:participant-disconnected", onParticipantDisconnected);
         }
@@ -481,11 +520,11 @@ export default function SessionCharacterSyncClient() {
         return () => {
             socket.off("session:participant-joined", onParticipantJoined);
             socket.off("session:participant-character-changed", onParticipantCharacterChanged);
-            if (onSheetUpdated) socket.off("session:character-sheet-updated", onSheetUpdated);
+            socket.off("session:character-sheet-updated", onSheetUpdated);
             if (onParticipantLeft) socket.off("session:participant-left", onParticipantLeft);
             if (onParticipantDisconnected) socket.off("session:participant-disconnected", onParticipantDisconnected);
         };
-    }, [shouldConnect, code, token, isOnSessionLobbyPage, dispatch]);
+    }, [shouldConnect, code, isOnSessionLobbyPage, dispatch, token]);
 
     return null;
 }

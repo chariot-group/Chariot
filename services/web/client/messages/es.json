@@ -1333,6 +1333,12 @@
       "characterChangeError": "No se puede cambiar el personaje",
       "sessionLaunched": "¡La sesión ha sido lanzada!",
       "sessionLaunchError": "No se puede lanzar la sesión",
+      "insufficientTokenBalance": "Saldo de tokens insuficiente para depositar este token.",
+      "tokenLimitReached": "Todos los espacios de tokens de la sesión ya están ocupados.",
+      "tokenBalanceCheckError": "No se puede verificar tu saldo (configuración entre servicios). Comprueba INTERNAL_SERVICE_SECRET entre session y adventure.",
+      "addTokenSocketError": "Conexión a la sesión no disponible. Inténtalo de nuevo en unos segundos.",
+      "addTokenError": "No se puede añadir el token a la sesión.",
+      "tokenDebitError": "La sesión ha comenzado, pero el débito de tus tokens ha fallado. Contacta con soporte si tu saldo parece incorrecto.",
       "copySuccess": "Código copiado al portapapeles",
       "copyError": "No se puede copiar el código",
       "copyNotSupported": "La copia no está soportada por este navegador",
@@ -1356,6 +1362,11 @@
       "description": "Estás a punto de cerrar la sesión. Todos los participantes se desconectarán y deberán unirse a una nueva sesión para seguir jugando juntos.",
       "confirm": "Abandonar sesión"
     }
+  },
+  "header": {
+    "logoAriaLabelHome": "Volver al inicio",
+    "logoAriaLabelInSessionPlayer": "Volver a la hoja de personaje",
+    "logoAriaLabelInSessionGm": "Volver a las hojas de personaje de la campaña"
   },
   "sessionTime": {
     "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."

@@ -335,7 +335,7 @@ function CheckoutFormContent({
 export function CheckoutFreeForm(props: CheckoutFormProps) {
   const router = useRouter();
   const t = useTranslations("checkout");
-  const { locale, onConfirmFreeOrder, piRefreshing, quantitySyncPending, piError, pricing } = props;
+  const { locale, onConfirmFreeOrder, piRefreshing, quantitySyncPending, piError } = props;
 
   return (
     <CheckoutFormContent

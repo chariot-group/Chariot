@@ -69,13 +69,16 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
         }
     }, [characterId, sessionCode]);
 
+    /**
+     * Chargement initial + rechargement sur synchro WS (`characterSheetRemoteVersions`).
+     * Un seul effet évite les courses entre fetch initial et fetch distant.
+     */
     useEffect(() => {
-        fetchCharacter();
-    }, [fetchCharacter]);
+        if (!characterId) {
+            setLoading(false);
+            return;
+        }
 
-    /** Rechargement lors d’une synchro temps réel (WebSocket session). */
-    useEffect(() => {
-        if (!characterId || remoteVersion < 1) return;
         let cancelled = false;
         void (async () => {
             try {
@@ -97,10 +100,11 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
                 }
             }
         })();
+
         return () => {
             cancelled = true;
         };
-    }, [remoteVersion, characterId, sessionCode]);
+    }, [characterId, sessionCode, remoteVersion]);
 
     return {
         character,

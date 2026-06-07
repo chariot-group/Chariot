@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
 import {
@@ -8,6 +8,7 @@ import {
     tickConditionEntries,
 } from '@/components/initiativeTracker/conditionDuration';
 import { SESSION_PARTICIPANTS_GROUP_ID } from '@/components/initiativeTracker/constants';
+import { SESSION_PARTICIPANT_NAME_LOADING } from '@/lib/formatSessionParticipantUserLabel';
 import {
     buildBattleTurnKey,
     canUndoBattleTurn,
@@ -288,6 +289,8 @@ export interface CurrentSessionState {
     characterSheetRemoteVersions: Record<string, number>;
     /** FR-021 — dernière fiche consultée par le MJ pendant la session (chemin absolu avec locale). */
     lastConsultedSheetPath: string | null;
+    /** Libellés affichables des participants (username ou prénom + nom). */
+    participantDisplayNames: Record<string, string>;
 }
 
 const initialState: CurrentSessionState = {
@@ -307,6 +310,7 @@ const initialState: CurrentSessionState = {
     turnsWithActions: [],
     characterSheetRemoteVersions: {},
     lastConsultedSheetPath: null,
+    participantDisplayNames: {},
 };
 
 const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow => {
@@ -458,6 +462,7 @@ const sessionSlice = createSlice({
             resetBattleTurnState(state);
             state.characterSheetRemoteVersions = {};
             state.lastConsultedSheetPath = null;
+            state.participantDisplayNames = {};
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
             state.status = action.payload;
@@ -472,6 +477,22 @@ const sessionSlice = createSlice({
         removeSessionParticipantByUserId: (state, action: PayloadAction<string>) => {
             const userId = action.payload;
             state.participants = state.participants.filter((p) => p.userId !== userId);
+            delete state.participantDisplayNames[userId];
+        },
+        mergeSessionParticipantDisplayNames: (state, action: PayloadAction<Record<string, string>>) => {
+            for (const [userId, label] of Object.entries(action.payload)) {
+                const trimmed = label?.trim();
+                if (!trimmed || trimmed === SESSION_PARTICIPANT_NAME_LOADING) continue;
+                state.participantDisplayNames[userId] = trimmed;
+            }
+        },
+        pruneSessionParticipantDisplayNames: (state) => {
+            const activeUserIds = new Set(state.participants.map((p) => p.userId));
+            for (const userId of Object.keys(state.participantDisplayNames)) {
+                if (!activeUserIds.has(userId)) {
+                    delete state.participantDisplayNames[userId];
+                }
+            }
         },
         setSessionTokensByUser: (state, action: PayloadAction<Record<string, number>>) => {
             state.tokensByUser = action.payload;
@@ -739,6 +760,8 @@ export const {
     touchRemoteCharacterSheet,
     applyRemoteBattleState,
     setLastConsultedSheetPath,
+    mergeSessionParticipantDisplayNames,
+    pruneSessionParticipantDisplayNames,
 } = sessionSlice.actions;
 
 export const selectCurrentSession = (state: RootState) => state.session;
@@ -748,6 +771,8 @@ export const selectSessionCampaignId = (state: RootState) => state.session.campa
 export const selectSessionStatus = (state: RootState) => state.session.status;
 export const selectSessionExpiresAt = (state: RootState) => state.session.expiresAt;
 export const selectSessionParticipants = (state: RootState) => state.session.participants;
+export const selectSessionParticipantDisplayNames = (state: RootState) =>
+    state.session.participantDisplayNames ?? {};
 export const selectSessionInitBattleDraft = (state: RootState) => state.session.initBattleDraft;
 export const selectInitiativeTrackerRows = (state: RootState) => state.session.initiativeTrackerRows;
 export const selectBattleInitialized = (state: RootState) => state.session.battleInitialized;

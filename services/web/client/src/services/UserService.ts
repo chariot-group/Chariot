@@ -66,9 +66,13 @@ class UserService {
         }
     }
 
-    async addHistory(campaignName: string, value: number): Promise<void> {
+    async addHistory(campaignName: string, value: number): Promise<User> {
         try {
-            await apiClient().put(`${this.BASE_PATH}/me/history`, { campaignName, value });
+            const response = await apiClient().put<IResponse<User>>(`${this.BASE_PATH}/me/history`, {
+                campaignName,
+                value,
+            });
+            return response.data.data;
         } catch (error) {
             console.error('Error adding history:', error);
             throw new Error('Failed to add history entry');

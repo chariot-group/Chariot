@@ -1332,6 +1332,12 @@
       "characterChangeError": "Unable to change character",
       "sessionLaunched": "The session has been launched!",
       "sessionLaunchError": "Unable to launch the session",
+      "insufficientTokenBalance": "Insufficient token balance to deposit this token.",
+      "tokenLimitReached": "All token slots for this session are already filled.",
+      "tokenBalanceCheckError": "Unable to verify your balance (inter-service configuration). Check INTERNAL_SERVICE_SECRET between session and adventure.",
+      "addTokenSocketError": "Session connection unavailable. Please try again in a few seconds.",
+      "addTokenError": "Unable to add the token to the session.",
+      "tokenDebitError": "The session started, but debiting your tokens failed. Contact support if your balance looks incorrect.",
       "copySuccess": "Code copied to clipboard",
       "copyError": "Unable to copy the code",
       "copyNotSupported": "Copy is not supported by this browser",
@@ -1355,6 +1361,11 @@
       "description": "You are about to end the session. All participants will be logged out and will need to join a new session to continue playing together.",
       "confirm": "Yes, cancel the session"
     }
+  },
+  "header": {
+    "logoAriaLabelHome": "Return to home",
+    "logoAriaLabelInSessionPlayer": "Return to character sheet",
+    "logoAriaLabelInSessionGm": "Return to campaign character sheets"
   },
   "sessionTime": {
     "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left."

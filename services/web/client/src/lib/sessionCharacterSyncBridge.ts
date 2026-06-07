@@ -12,6 +12,9 @@ let sessionRosterHttpSyncScheduler: (() => void) | null = null;
  */
 let localCharacterSheetUpdatedListener: ((characterId: string) => void) | null = null;
 
+/** Effets optionnels après réception WS (ex. libellés roster page session). */
+let remoteCharacterSheetUpdatedListener: ((characterId: string) => void) | null = null;
+
 export function registerSessionSyncSocket(socket: Socket | null): void {
     activeSessionSyncSocket = socket;
 }
@@ -20,6 +23,16 @@ export function registerLocalCharacterSheetUpdatedListener(
     listener: ((characterId: string) => void) | null,
 ): void {
     localCharacterSheetUpdatedListener = listener;
+}
+
+export function registerRemoteCharacterSheetUpdatedListener(
+    listener: ((characterId: string) => void) | null,
+): void {
+    remoteCharacterSheetUpdatedListener = listener;
+}
+
+function notifyRemoteCharacterSheetUpdated(characterId: string): void {
+    remoteCharacterSheetUpdatedListener?.(characterId);
 }
 
 export function emitCharacterSheetUpdated(sessionCode: string, characterId: string): void {
@@ -45,4 +58,11 @@ export function registerSessionRosterHttpSyncScheduler(scheduler: (() => void) |
 /** Re-lance un GET /participants après un événement WS (joined / perso choisi). */
 export function requestSessionRosterHttpSync(): void {
     sessionRosterHttpSyncScheduler?.();
+}
+
+/** Appelé par `SessionCharacterSyncClient` à chaque événement WS `session:character-sheet-updated`. */
+export function handleRemoteCharacterSheetUpdated(characterId: string): void {
+    const cid = characterId.trim();
+    if (!cid) return;
+    notifyRemoteCharacterSheetUpdated(cid);
 }

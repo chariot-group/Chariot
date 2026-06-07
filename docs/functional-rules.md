@@ -378,8 +378,11 @@ Each rule has a unique identifier and must be tested.
 - `keycloakId` must be a valid UUID v4 format
 - `keycloakId` must be unique across all users
 - `balance` must be a number
+- `balance` MUST NOT become negative after any debit operation
 - History entries must contain all three fields: date, campaignName, value
 - History is immutable once created (no updates or deletions of history entries)
+- Session lobby token deposits (`session:add-token`, `session:add-tokens`) MUST be rejected server-side when `alreadyDepositedInSession + requestedAmount > user.balance`
+- Session launch debits (`PUT /user/me/history`) MUST be rejected when `value > user.balance`
 
 **Prohibitions**:
 
@@ -387,6 +390,8 @@ Each rule has a unique identifier and must be tested.
 - Modifying `keycloakId` after user creation
 - Deleting history entries
 - Creating history entries without all required fields
+- Allowing a session token deposit or launch debit that would make `balance` negative
+- Relying on frontend-only balance checks for session token deposits
 
 **Tests**:
 
@@ -396,6 +401,8 @@ Each rule has a unique identifier and must be tested.
 - History entries can be added to existing users
 - Balance updates are properly tracked in history
 - Default balance is 0 for new users
+- `addHistory` rejects debits that would make balance negative
+- Session gateway rejects token deposits when balance is insufficient
 
 **References**:
 
@@ -1769,7 +1776,199 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-024: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+## FR-024: Session Participant Human-Readable Display Names
+
+**Rule**: Whenever the application displays the identity of a connected session participant to another user (Game Master or player), it MUST show a human-readable label derived from the participant profile. Technical identifiers and private contact data MUST NOT be used as display labels.
+
+**Scope**:
+
+- Session lobby participant list (`/{locale}/campaigns/{campaignId}/session/{code}`)
+- GM sidebar session players section (`Joueurs (session)`)
+- GM character sheet context when showing who plays a character (`playedBy`)
+- Session toasts that name a joining, leaving, or disconnected participant
+- Initiative tracker session-participant rows when no character sheet is available at battle setup or add-combatants time (fallback label before hydration)
+- Applies whenever `isInSession === true` and a roster entry references a `userId`
+
+**Label Resolution Priority**:
+
+1. `username` (Keycloak / user profile), when present and not a Keycloak UUID
+2. `firstName` + `lastName` (trimmed, space-separated), when `username` is absent or unusable
+3. Loading placeholder `...` while the label is not yet resolved
+
+**Data Sources** (non-exclusive; client may merge the first valid result):
+
+- WebSocket `session:participant-joined` payload field `username` (`preferred_username` from JWT)
+- Authenticated API `GET /user/{keycloakId}`
+- Redux `session.participantDisplayNames`, cleared on `clearCurrentSession` and pruned when a participant leaves the roster
+
+**Display Requirements**:
+
+- The same participant MUST use the same resolved label across lobby, sidebar, initiative tracker fallbacks, and toasts for the current session context.
+- A resolved label MUST NOT be replaced by a Keycloak UUID if a better source becomes available later (WebSocket username or successful profile fetch).
+- While resolution is pending, UI surfaces MUST show `...`, not the raw `userId`.
+
+**Prohibitions**:
+
+- Displaying a participant email as their session label
+- Displaying a Keycloak `sub` / UUID (`userId`) as a fallback label
+- Treating a UUID-shaped `username` or WebSocket `username` as a valid display label
+- Persisting `participantDisplayNames` across sessions (labels are ephemeral per active session)
+
+**Tests**:
+
+- Nominal: user with `username` shows that username in lobby, GM sidebar, and initiative tracker when character sheet is unavailable
+- Edge: user without `username` but with `firstName` + `lastName` shows the full name
+- Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
+- Edge: initial API failure followed by WebSocket username still updates the displayed label
+- Error: profile fetch failure shows `...`, never UUID or email
+- Regression: `username` equal to Keycloak UUID falls back to `firstName` + `lastName` or `...`
+
+**References**:
+
+- `services/web/client/src/lib/formatSessionParticipantUserLabel.ts`
+- `services/web/client/src/lib/sessionParticipantDisplayNames.ts`
+- `services/web/client/src/store/slices/sessionSlice.ts` (`participantDisplayNames`)
+- `services/web/client/src/hooks/useSessionData.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/session/api/src/resources/session/session.gateway.ts`
+
+---
+
+## FR-025: In-Session Logo and Session Lobby Sidebar Navigation
+
+**Rule**: While a user is connected to an active session, clicking the application logo in the header and the sidebar action button on the session lobby page must provide contextual navigation back to character sheets instead of the generic welcome redirect or an irrelevant session action.
+
+**Scope**:
+
+- Applies when `isInSession === true` and the session record is available in Redux.
+- Complements FR-021 (combat navigation) without overriding combat-specific sidebar rules on other pages.
+- The session lobby page is `/{locale}/campaigns/{campaignId}/session/{sessionCode}`.
+
+**Header Logo — Player**:
+
+- When a connected player clicks the logo, they MUST be redirected to their session character sheet: `/{locale}/characters/{characterId}?sessionCode={sessionCode}` when a character is assigned.
+- If the player has no assigned character, the logo click MUST fall back to `/{locale}/welcome`.
+
+**Header Logo — Game Master**:
+
+- When the connected GM clicks the logo, they MUST be redirected to the first character of the first active group in the session campaign, using the same resolution order as `NavigationService.determineSpaceDestination` (active groups first, then archived groups with characters).
+- If no character exists in the campaign, the logo click MUST fall back to `/{locale}/welcome`.
+
+**Header Logo — Outside Session**:
+
+- When the user is not in a session, logo click behavior is unchanged: redirect to `/{locale}/welcome`.
+
+**Sidebar Action Button — Player on Session Lobby**:
+
+- When the session is launched (`sessionStatus === "launched"`) and the player is on the session lobby page:
+  - If combat has not started, the sidebar footer MUST show **Return to Character Sheet**, navigating to the player's session character sheet.
+  - If combat has started, the sidebar footer MUST show **Return to Battle** (same behavior as FR-021 when the player is outside the initiative tracker).
+- If the player has no assigned character, **Return to Character Sheet** is disabled with an explanatory tooltip.
+
+**Accessibility**:
+
+- The logo button MUST expose an accessible name describing its destination context (home vs character sheet navigation).
+
+**Tests**:
+
+- Nominal: launched session, player on session lobby without combat sees **Return to Character Sheet**.
+- Nominal: player in session clicks logo and lands on their session character sheet URL with `sessionCode`.
+- Nominal: GM in session clicks logo and lands on first character of first campaign group.
+- Edge: player without assigned character cannot use **Return to Character Sheet**; logo falls back to welcome.
+- Edge: combat started, player on session lobby sees **Return to Battle**.
+- Regression: user not in session still redirects logo to welcome.
+
+**References**:
+
+- `services/web/client/src/components/layout/Header.tsx`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/layout/SessionTimer.tsx`
+- `services/web/client/src/services/NavigationService.ts`
+- `services/web/client/src/lib/sessionInAppNavigation.ts`
+
+---
+
+## FR-026: Session WebSocket Connection Lifecycle and Reconnection Resilience
+
+**Rule**: The application MUST maintain exactly one active Socket.IO connection per browser tab per active session OTP code. Transient disconnections (JWT refresh, client navigation, React lifecycle) MUST NOT cause spurious participant-disconnected notifications, duplicate connections, or loss of roster state.
+
+**Scope**:
+
+- Applies whenever `isInSession === true` or a session-aware client component holds an active session OTP code.
+- Complements FR-021 (combat sync), FR-022 (character sheet sync), and FR-024 (display names) without overriding their domain-specific rules.
+- Covers client connection pooling, JWT refresh handling, gateway disconnect grace period, and HTTP/WebSocket roster convergence.
+
+**Client Connection Pool**:
+
+- Exactly one pooled Socket.IO connection per session OTP code (`sessionSocketPool`).
+- Multiple subscribers (layout `SessionCharacterSyncClient`, session lobby `useSessionSocket`, battle sync hooks) MUST share the connection via acquire/release refCount.
+- JWT refresh MUST update `socket.auth.token` without disconnecting or recreating the socket.
+- The pool connection key MUST be the session OTP code only — the JWT MUST NOT be part of the key.
+- Changing the session OTP code MUST disconnect the previous socket and create a new connection.
+- Socket effect dependencies MUST NOT include the JWT token when only auth sync is required; token changes update auth in a separate effect.
+
+**Gateway Disconnect Grace Period**:
+
+- On Socket.IO disconnect, the gateway MUST wait a grace period (currently 3 seconds) before emitting `session:participant-disconnected` and persisting disconnected status.
+- A successful `session:join` from the same user within the grace period MUST cancel the pending disconnect notification.
+- An explicit `session:leave` MUST cancel any pending disconnect notification for that user.
+- The gateway MUST track session room membership independently of `client.rooms` at disconnect time (`sessionRoomIds`), because Socket.IO may already have cleared rooms when `handleDisconnect` runs.
+
+**Roster and State Convergence**:
+
+- `session:participant-joined` broadcasts MUST use the persisted roster `characterId`, not the client join payload alone (reconnect may send `characterId: null` before Redux hydration).
+- Client roster state MUST merge HTTP and WebSocket updates without overwriting newer WebSocket data (`mergeParticipantsPreserveCharacterIds`).
+- After participant join or character-change events, clients SHOULD trigger a debounced HTTP roster resync as a convergence fallback.
+- Session end toasts MUST be deduplicated per session code and reason when multiple socket subscribers receive the same event (`shouldShowSessionEndNotice`).
+
+**WebSocket Conventions** (mandatory for all session event handlers):
+
+- In all WebSocket payloads, `sessionId` means the session OTP code (same value used for `session:join`), not the internal database UUID.
+- Socket.IO namespace: `/session`, path: `/ws`.
+- Gateway broadcasts to other participants use `client.to()` — emitters do not receive their own events; local listeners are required (see `sessionCharacterSyncBridge`, FR-022).
+- After `session:leave`, the leaving socket is no longer in the room; server-side notifications to remaining participants MUST use `server.to(roomId)`, not `client.to()`.
+
+**Prohibitions**:
+
+- Creating a new Socket.IO connection on JWT token change.
+- Creating parallel connections from layout and session page for the same OTP code.
+- Including the JWT token in the socket pool connection key.
+- Immediately notifying `session:participant-disconnected` on every Socket.IO disconnect without a grace period.
+- Broadcasting join events with `characterId: null` when the persisted roster already has a character.
+- Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
+- Registering duplicate session-end handlers that each show an independent toast for the same event.
+
+**Tests**:
+
+- Pool nominal: same OTP code reuses the same socket across acquire calls.
+- Pool edge: JWT refresh updates `socket.auth` without disconnect.
+- Pool edge: OTP code change disconnects the previous socket and creates a new one.
+- Gateway edge: disconnect within grace period followed by rejoin cancels `session:participant-disconnected`.
+- Gateway edge: disconnect beyond grace period emits `session:participant-disconnected`.
+- Join after reconnect preserves roster `characterId` in the `session:participant-joined` broadcast.
+- Session end toast is shown once despite multiple subscribers.
+
+**References**:
+
+- `services/web/client/src/lib/sessionSocketPool.ts`
+- `services/web/client/src/lib/__tests__/sessionSocketPool.test.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/lib/sessionCharacterSyncBridge.ts`
+- `services/web/client/src/lib/sessionParticipantMerge.ts`
+- `services/web/client/src/hooks/useSessionBattleSync.ts`
+- `services/web/client/src/lib/sessionBattleSyncBridge.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`
+- `services/session/api/src/resources/session/session.gateway.spec.ts`
+
+---
+
+## FR-026: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
 
 **Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
 

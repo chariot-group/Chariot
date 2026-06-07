@@ -13,6 +13,7 @@ import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectIsInSession, selectSessionCode } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import UserService from "@/services/UserService";
+import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipantUserLabel";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -115,8 +116,10 @@ export default function CharacterDetailView({
     void UserService.getUserById(playedBySubjectId)
       .then((u) => {
         if (!cancelled) {
-          const label = u.username?.trim() || playedBySubjectId;
-          setResolvedPlayedBy({ createdByKey: playedBySubjectId, label });
+          const label = formatSessionParticipantUserLabel(u);
+          if (label) {
+            setResolvedPlayedBy({ createdByKey: playedBySubjectId, label });
+          }
         }
       })
       .catch(() => {
