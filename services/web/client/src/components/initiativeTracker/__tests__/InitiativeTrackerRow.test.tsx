@@ -21,6 +21,8 @@ const labels = {
   conditionRoundHint: "Round hint",
   visibleFor: "Visible for players",
   playerDisplayNameSubtitle: "Player alias",
+  ownCharacterBadge: "You",
+  ownCharacterLabel: "This is your character",
   hitPointsFor: "Hit points",
   hitPointsSessionTooltip: "Edit hit points",
   hpAbbr: "HP",
@@ -100,7 +102,7 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     expect(html).toContain("flex w-full max-w-full min-w-0 overflow-hidden justify-self-start text-left");
     expect(html).toContain("block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden underline");
     expect(html).toContain("flex w-full max-w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden");
-    expect(html).toContain("block w-full min-w-0 max-w-full truncate text-base font-semibold text-white");
+    expect(html).toContain("block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white");
     expect(html).toContain("block w-full min-w-0 max-w-full truncate text-xs font-medium text-white/55");
   });
 
@@ -115,7 +117,7 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     );
 
     expect(html).toContain("block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden cursor-not-allowed text-white/85");
-    expect(html).toContain("block w-full min-w-0 max-w-full truncate text-base font-semibold text-white");
+    expect(html).toContain("block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white");
   });
 
   it("error path: hidden player names stay masked instead of exposing long text", () => {
@@ -150,7 +152,7 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     );
 
     expect(html).toContain("A very long alias intended to be truncated for players as well");
-    expect(html).toContain("block w-full min-w-0 max-w-full truncate text-base font-semibold text-white");
+    expect(html).toContain("block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white");
     expect(html).not.toContain("A character with a very long first name");
   });
 
@@ -170,5 +172,36 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
 
     expect(html).toContain("Disguised traveler");
     expect(html).not.toContain("A character with a very long first name");
+  });
+
+  it("nominal: own player row renders a dedicated badge", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        ownCharacterId={baseRow.characterId}
+        ownCharacterSheetHref={`/character/${baseRow.characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain("You");
+    expect(html).toContain("This is your character");
+  });
+
+  it("nominal: own player row can render editable initiative when unlocked", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        ownCharacterId={baseRow.characterId}
+        initiativeLocked={false}
+        onUpdateRow={() => {}}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('type="number"');
+    expect(html).toContain('aria-label="Initiative"');
   });
 });

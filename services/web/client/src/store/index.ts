@@ -135,6 +135,7 @@ const sessionTransform = createTransform(
         tokensByUser: outbound?.tokensByUser ?? {},
         initBattleDraft: {
             showAllOpponents: outbound?.initBattleDraft?.showAllOpponents ?? false,
+            allowPlayerInitiativeInput: outbound?.initBattleDraft?.allowPlayerInitiativeInput ?? false,
             selectedGroupIds: outbound?.initBattleDraft?.selectedGroupIds ?? [],
             expandedGroupIds: outbound?.initBattleDraft?.expandedGroupIds ?? [],
             excludedMembersByGroup: outbound?.initBattleDraft?.excludedMembersByGroup ?? {},

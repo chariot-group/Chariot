@@ -19,6 +19,7 @@ import {
 
 export interface SessionInitBattleDraft {
     showAllOpponents: boolean;
+    allowPlayerInitiativeInput: boolean;
     selectedGroupIds: string[];
     expandedGroupIds: string[];
     excludedMembersByGroup: Record<string, string[]>;
@@ -179,6 +180,7 @@ export interface BattleStateSnapshot {
     battleStarted: boolean;
     activeTurnRowId: string | null;
     currentRound: number;
+    allowPlayerInitiativeInput: boolean;
 }
 
 export interface InitiativeTrackerRow {
@@ -258,6 +260,7 @@ export function createInitiativeTrackerRow(input: {
 
 const initialInitBattleDraft: SessionInitBattleDraft = {
     showAllOpponents: false,
+    allowPlayerInitiativeInput: false,
     selectedGroupIds: [],
     expandedGroupIds: [],
     excludedMembersByGroup: {},
@@ -321,6 +324,17 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
         ),
         visible: row.visible,
     });
+};
+
+const mergePlayerFieldVisibilityChange = (
+    row: InitiativeTrackerRow,
+    nextVisibility: Partial<InitiativeTrackerPlayerFieldVisibility> | undefined,
+) => {
+    if (!nextVisibility) return row.playerFieldVisibility;
+    return {
+        ...row.playerFieldVisibility,
+        ...nextVisibility,
+    };
 };
 
 const purgeTurnKeysForRow = (turnsWithActions: string[], rowId: string): string[] => {
@@ -554,10 +568,14 @@ const sessionSlice = createSlice({
         ) => {
             const row = state.initiativeTrackerRows.find((item) => item.id === action.payload.id);
             if (!row) return;
+            const nextPlayerFieldVisibility = mergePlayerFieldVisibilityChange(
+                row,
+                action.payload.changes.playerFieldVisibility,
+            );
             Object.assign(row, action.payload.changes);
             if (action.payload.changes.playerFieldVisibility || action.payload.changes.kind) {
                 row.playerFieldVisibility = normalizePlayerFieldVisibility(
-                    row.playerFieldVisibility,
+                    nextPlayerFieldVisibility,
                     row.kind,
                     row.groupId,
                 );
@@ -573,7 +591,9 @@ const sessionSlice = createSlice({
             state,
             action: PayloadAction<{
                 ids: string[];
-                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>>;
+                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>> & {
+                    playerFieldVisibility?: Partial<InitiativeTrackerPlayerFieldVisibility>;
+                };
                 playerDisplayName?: string;
             }>,
         ) => {
@@ -583,6 +603,10 @@ const sessionSlice = createSlice({
             let changed = false;
             for (const row of state.initiativeTrackerRows) {
                 if (!rowIds.has(row.id)) continue;
+                const nextPlayerFieldVisibility = mergePlayerFieldVisibilityChange(
+                    row,
+                    action.payload.changes.playerFieldVisibility,
+                );
                 Object.assign(row, action.payload.changes);
                 if (typeof action.payload.playerDisplayName === 'string') {
                     const trimmedDisplayName = action.payload.playerDisplayName.trim();
@@ -592,7 +616,7 @@ const sessionSlice = createSlice({
                 }
                 if (action.payload.changes.playerFieldVisibility || action.payload.changes.kind) {
                     row.playerFieldVisibility = normalizePlayerFieldVisibility(
-                        row.playerFieldVisibility,
+                        nextPlayerFieldVisibility,
                         row.kind,
                         row.groupId,
                     );
@@ -615,6 +639,10 @@ const sessionSlice = createSlice({
             state.battleStarted = payload.battleStarted ?? false;
             state.activeTurnRowId = payload.activeTurnRowId ?? null;
             state.currentRound = payload.currentRound ?? 1;
+            state.initBattleDraft = {
+                ...state.initBattleDraft,
+                allowPlayerInitiativeInput: payload.allowPlayerInitiativeInput ?? false,
+            };
         },
         setLastConsultedSheetPath: (state, action: PayloadAction<string | null>) => {
             const path = action.payload?.trim() ?? '';
@@ -749,6 +777,7 @@ export const selectBattleStateSnapshot = (state: RootState): BattleStateSnapshot
     battleStarted: state.session.battleStarted,
     activeTurnRowId: state.session.activeTurnRowId,
     currentRound: state.session.currentRound,
+    allowPlayerInitiativeInput: state.session.initBattleDraft.allowPlayerInitiativeInput ?? false,
 });
 
 export default sessionSlice.reducer;

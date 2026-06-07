@@ -15,6 +15,7 @@ import {
   selectBattleInitialized,
   selectBattleStarted,
   selectIsInSession,
+  selectSessionInitBattleDraft,
   selectSessionStatus,
   selectLastConsultedSheetPath,
 } from "@/store/slices/sessionSlice";
@@ -72,9 +73,11 @@ export function ActionButton() {
 
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const battleStarted = useAppSelector(selectBattleStarted);
+  const initBattleDraft = useAppSelector(selectSessionInitBattleDraft);
   const isInitiativeTrackerPage = currentPage.endsWith("/initiativeTracker");
   const isCharacterPage =
     currentPage.includes("/characters/") && !currentPage.includes("/characters/new");
+  const allowPlayerInitiativeInput = initBattleDraft.allowPlayerInitiativeInput ?? false;
 
   const navigateToSession = (nextContextMode?: "player" | "gm") => {
     if (nextContextMode) {
@@ -186,6 +189,19 @@ export function ActionButton() {
         };
       }
 
+      if (allowPlayerInitiativeInput && battleInitialized && !battleStarted && isInitiativeTrackerPage) {
+        return {
+          label: t("returnToSheet"),
+          state: "returnToSheet",
+          action: navigateToPlayerCharacter,
+          disabled: !currentParticipant?.characterId,
+          icon: <UserCircle className="size-6" />,
+          backgroundColor: "bg-yellow",
+          textColor: "text-black",
+          tooltip: !currentParticipant?.characterId ? t("noPlayerCharacter") : undefined,
+        };
+      }
+
       if (battleStarted && !isInitiativeTrackerPage) {
         return {
           label: t("returnToBattle"),
@@ -233,6 +249,19 @@ export function ActionButton() {
           icon: <LucideSwords className="size-6" />,
           backgroundColor: "bg-red",
           textColor: "text-white",
+        };
+      }
+
+      if (allowPlayerInitiativeInput && battleInitialized && !battleStarted && !isInitiativeTrackerPage) {
+        return {
+          label: t("returnToBattle"),
+          state: "returnToBattle",
+          action: navigateToInitiativeTracker,
+          disabled: !currentParticipant?.characterId,
+          icon: <LucideSwords className="size-6" />,
+          backgroundColor: "bg-red",
+          textColor: "text-white",
+          tooltip: !currentParticipant?.characterId ? t("noPlayerCharacter") : undefined,
         };
       }
 
