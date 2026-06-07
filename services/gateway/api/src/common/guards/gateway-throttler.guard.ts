@@ -15,12 +15,7 @@ export class GatewayThrottlerGuard extends ThrottlerGuard {
       return true;
     }
 
-    const path =
-      typeof req.path === "string"
-        ? req.path
-        : typeof req.url === "string"
-          ? req.url.split("?")[0]
-          : "";
+    const path = typeof req.path === "string" ? req.path : typeof req.url === "string" ? req.url.split("?")[0] : "";
     if (path && THROTTLE_EXEMPT_PATHS.some((exempt) => path === exempt || path.startsWith(`${exempt}/`))) {
       return true;
     }

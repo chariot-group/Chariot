@@ -213,7 +213,10 @@ export class UserController {
     summary: 'Internal: get token balance for a user (service-to-service only)',
   })
   @ApiResponse({ status: 200, description: 'Balance retrieved successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden – invalid internal secret' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden – invalid internal secret',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   async getBalanceInternal(@Param('userId') userId: string) {
     const balance = await this.userService.getBalance(userId);

@@ -55,7 +55,9 @@ describe('UserService - balance integrity', () => {
         history: [],
         save: saveMock,
       };
-      userModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(user) });
+      userModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(user),
+      });
 
       const result = await service.addHistory(keycloakId, {
         campaignName: 'Summer Campaign',
@@ -75,7 +77,9 @@ describe('UserService - balance integrity', () => {
         history: [],
         save: saveMock,
       };
-      userModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(user) });
+      userModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(user),
+      });
 
       await expect(
         service.addHistory(keycloakId, {
@@ -88,7 +92,9 @@ describe('UserService - balance integrity', () => {
     });
 
     it('should throw NotFoundException when user does not exist', async () => {
-      userModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
+      userModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
 
       await expect(
         service.addHistory(keycloakId, {
@@ -109,9 +115,13 @@ describe('UserService - balance integrity', () => {
     });
 
     it('should throw NotFoundException when user does not exist', async () => {
-      userModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
+      userModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
 
-      await expect(service.getBalance(keycloakId)).rejects.toThrow(NotFoundException);
+      await expect(service.getBalance(keycloakId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
