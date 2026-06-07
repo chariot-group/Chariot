@@ -14,6 +14,8 @@ import { Model } from 'mongoose';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
 import { AddHistoryDto } from '@/resources/user/dto/add-history.dto';
 
+export const TOKEN_PURCHASE_CAMPAIGN_NAME = 'Shop';
+
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
@@ -260,6 +262,11 @@ export class UserService {
       }
 
       user.balance += amount;
+      user.history.push({
+        date: new Date(),
+        campaignName: TOKEN_PURCHASE_CAMPAIGN_NAME,
+        value: -amount,
+      });
       await user.save();
 
       const end: number = Date.now();

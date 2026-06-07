@@ -1705,3 +1705,111 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
+
+---
+
+## FR-024: Profile Token History with Purchase and Expense Filters
+
+**Rule**: The profile page must expose the authenticated user's token transaction history (not session history), with client-side filters to show purchases and/or expenses. Both transaction types must be recorded in the immutable `history` array defined in FR-008.
+
+**Scope**:
+
+- Web client profile page (`/[locale]/profile`)
+- Adventure API user history recording (`addHistory`, `addTokens`)
+- Complements FR-008 without changing its immutable-history constraint
+
+**Transaction Semantics** (aligned with `balance -= value` in `UserService.addHistory`):
+
+- **Expense (dépense)**: `value > 0` — decreases balance (e.g. tokens spent when a session is launched)
+- **Purchase (achat)**: `value < 0` — increases balance (e.g. tokens bought via Stripe checkout)
+
+**Backend Requirements**:
+
+- `addTokens` MUST append a history entry when crediting tokens after a successful purchase:
+  - `date`: transaction timestamp
+  - `campaignName`: fixed label `Shop` (displayed via i18n on the client)
+  - `value`: negative amount equal to credited tokens (e.g. credit 10 → `value: -10`)
+- Existing `addHistory` behavior for session spending (positive `value`) is unchanged
+
+**Frontend Requirements**:
+
+**Section identity**:
+
+- Section title and ARIA labels MUST use "Token history" wording (replacing "Session history")
+- List items MUST describe token purchases or expenses (not "session earned/spent" wording)
+
+**Default display**:
+
+- On first render, both transaction types are visible (purchases and expenses)
+- Entries are listed in reverse chronological order (most recent first)
+
+**Filters**:
+
+- Two independent toggle controls: **Purchases** and **Expenses**
+- Both toggles are enabled by default
+- Filtering is client-side on `user.history` using the sign of `value`
+- When at least one toggle is active, only matching entries are shown
+- When both toggles are disabled, the list shows an explicit empty-filter state (distinct from "no history at all")
+- Toggling filters MUST NOT trigger an API call
+- Filter toggle states MUST be persisted in `localStorage` under `chariot_token_history_filters` and restored on next profile visit
+- Invalid or missing persisted values MUST fall back to the default (both toggles enabled)
+
+**Visual treatment**:
+
+- Purchase rows SHOULD visually distinguish credits (e.g. green/`--green` amount prefix `+`)
+- Expense rows SHOULD visually distinguish debits (e.g. gray/`--gray-light` amount, no erroneous `+` prefix)
+- Reuse existing profile card/list patterns (FR-019): `bg-gray-middle-light`, `rounded-[15px]`, responsive gaps
+
+**Accessibility Requirements** (FR-019):
+
+- Filter group uses a semantic `fieldset` with visible `legend` or equivalent labelled region
+- Each filter toggle has an associated visible label and `aria-checked` state
+- Filter region has an accessible name (e.g. `aria-label` on `fieldset`)
+- History list retains `role="list"` / `role="listitem"` with updated `aria-label` per entry type
+- Keyboard: filter toggles reachable via `Tab`, operable via `Space`
+- Empty-filter state is exposed via `role="status"`
+
+**Internationalization**:
+
+- Namespace: `ProfilePage`
+- Required keys (en/fr/es):
+  - `tokenHistory` (section title)
+  - `filterPurchases`, `filterExpenses` (filter labels)
+  - `filterGroupLabel` (fieldset legend)
+  - `tokenItemPurchase`, `tokenItemExpense` (list item accessible names)
+  - `noFilteredHistory` (empty state when filters exclude all entries)
+- Deprecated keys (`sessionHistory`, `sessionItemEarned`, `sessionItemSpent`) MUST be removed or replaced
+
+**Prohibitions**:
+
+- Labelling the section "Session history" once this rule is active
+- Treating positive `value` as a purchase in filters or copy (positive = expense)
+- Omitting purchase entries from history after a successful token credit
+- Hiding both filter toggles with no way to restore default combined view
+- Using color alone to convey purchase vs expense (sign/prefix and accessible text mandatory)
+
+**Tests**:
+
+- **Backend**:
+  - `addTokens` appends a history entry with negative `value` and updates balance
+  - `addHistory` with positive `value` still decreases balance and appends expense entry
+- **Frontend**:
+  - Default view shows both purchases and expenses
+  - Purchases-only filter shows only `value < 0` entries
+  - Expenses-only filter shows only `value > 0` entries
+  - Both filters disabled shows `noFilteredHistory`
+  - Empty history shows existing `noHistory` message
+  - Accessible names differ between purchase and expense rows
+  - Filter keyboard interaction works
+  - Filter preferences are restored from `localStorage` on subsequent visits
+  - Corrupted `localStorage` payload falls back to default filters
+
+**References**:
+
+- `docs/functional-rules.md` — FR-008
+- `services/web/client/src/app/[locale]/profile/page.tsx`
+- `services/web/client/src/lib/tokenHistory.ts`
+- `services/web/client/src/lib/tokenHistoryFilters.ts`
+- `services/adventure/api/src/resources/user/user.service.ts`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `services/web/client/messages/{en,fr,es}.json`

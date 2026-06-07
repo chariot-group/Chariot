@@ -9,7 +9,7 @@ import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { ArrowLeft, Check, Copy, DotIcon, Eye, EyeOff, Link, Loader2, ShoppingCart, SquarePen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { Controller } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";
@@ -22,6 +22,19 @@ import ShopDialog from "@/components/dialogs/Shop";
 import referralService, { type ReferralInfo } from "@/services/ReferralService";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { REFERRAL_TIERS } from "@/lib/referral";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  filterAndSortTokenHistory,
+  formatTokenAmount,
+  isShopPurchaseEntry,
+  isTokenPurchase,
+  type TokenHistoryFilters,
+} from "@/lib/tokenHistory";
+import {
+  loadTokenHistoryFilters,
+  saveTokenHistoryFilters,
+} from "@/lib/tokenHistoryFilters";
 
 export default function ProfilePage() {
   const pathname = usePathname();
@@ -46,6 +59,20 @@ export default function ProfilePage() {
   } = useProfileForm();
 
   const [showShopDialog, setShowShopDialog] = useState<boolean>(false);
+  const [historyFilters, setHistoryFilters] = useState<TokenHistoryFilters>(() =>
+    loadTokenHistoryFilters(),
+  );
+
+  useEffect(() => {
+    saveTokenHistoryFilters(historyFilters);
+  }, [historyFilters]);
+
+  const filteredHistory = useMemo(
+    () => filterAndSortTokenHistory(user?.history ?? [], historyFilters),
+    [historyFilters, user?.history],
+  );
+
+  const hasHistory = (user?.history?.length ?? 0) > 0;
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
   const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
@@ -324,12 +351,12 @@ export default function ProfilePage() {
         <Card
           className="flex flex-col h-100 sm:h-125 lg:h-145"
           role="region"
-          aria-labelledby="session-history-heading">
+          aria-labelledby="token-history-heading">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between sm:items-center shrink-0">
             <h2
-              id="session-history-heading"
+              id="token-history-heading"
               className="text-lg sm:text-xl font-bold">
-              {t("sessionHistory")}
+              {t("tokenHistory")}
             </h2>
             <Card
               className="bg-gray-middle-light px-2 sm:px-3 py-1.5 sm:py-2 rounded-[15px] flex flex-row items-center gap-2 sm:gap-4 lg:gap-6 justify-between self-start sm:self-auto"
@@ -354,41 +381,90 @@ export default function ProfilePage() {
               </span>
             </Card>
           </div>
+          <fieldset
+            className="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0 border-0 p-0 m-0"
+            aria-label={t("filterGroupLabel")}>
+            <legend className="sr-only">{t("filterGroupLabel")}</legend>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="token-history-filter-purchases"
+                checked={historyFilters.showPurchases}
+                onCheckedChange={(checked) =>
+                  setHistoryFilters((prev) => ({
+                    ...prev,
+                    showPurchases: checked === true,
+                  }))
+                }
+                aria-labelledby="token-history-filter-purchases-label"
+              />
+              <Label
+                id="token-history-filter-purchases-label"
+                htmlFor="token-history-filter-purchases"
+                className="text-xs sm:text-sm font-medium cursor-pointer">
+                {t("filterPurchases")}
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="token-history-filter-expenses"
+                checked={historyFilters.showExpenses}
+                onCheckedChange={(checked) =>
+                  setHistoryFilters((prev) => ({
+                    ...prev,
+                    showExpenses: checked === true,
+                  }))
+                }
+                aria-labelledby="token-history-filter-expenses-label"
+              />
+              <Label
+                id="token-history-filter-expenses-label"
+                htmlFor="token-history-filter-expenses"
+                className="text-xs sm:text-sm font-medium cursor-pointer">
+                {t("filterExpenses")}
+              </Label>
+            </div>
+          </fieldset>
           <div className="flex-1 overflow-hidden">
             <div
               className="h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
               role="list"
-              aria-label={t("sessionHistory")}
+              aria-label={t("tokenHistory")}
               tabIndex={0}
               style={{
-                maskImage: "linear-gradient(to top, transparent 0, black 30%)",
-                WebkitMaskImage: "linear-gradient(to top, transparent 0, black 30%)",
+                maskImage: "linear-gradient(to top, transparent 0%, black 8%)",
+                WebkitMaskImage: "linear-gradient(to top, transparent 0%, black 8%)",
               }}>
-              {user?.history && user.history.length > 0 ? (
-                <div className="space-y-2">
-                  {user.history.map((entry, index) => {
+              {filteredHistory.length > 0 ? (
+                <div className="space-y-2 pb-3">
+                  {filteredHistory.map((entry, index) => {
                     const entryDate = new Date(entry.date);
-                    const formattedDate = entryDate.toLocaleDateString("fr-FR", {
+                    const dateLocale =
+                      locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : "en-US";
+                    const formattedDate = entryDate.toLocaleDateString(dateLocale, {
                       day: "2-digit",
                       month: "2-digit",
                       year: "numeric",
                     });
+                    const displayLabel = isShopPurchaseEntry(entry.campaignName)
+                      ? t("shopPurchaseLabel")
+                      : entry.campaignName;
+                    const amount = Math.abs(entry.value);
 
                     return (
                       <Card
-                        key={index}
+                        key={`${entry.date}-${entry.campaignName}-${entry.value}-${index}`}
                         role="listitem"
                         aria-label={
-                          entry.value > 0
-                            ? t("sessionItemEarned", {
+                          isTokenPurchase(entry.value)
+                            ? t("tokenItemPurchase", {
                                 date: formattedDate,
-                                campaign: entry.campaignName,
-                                amount: Math.abs(entry.value),
+                                label: displayLabel,
+                                amount,
                               })
-                            : t("sessionItemSpent", {
+                            : t("tokenItemExpense", {
                                 date: formattedDate,
-                                campaign: entry.campaignName,
-                                amount: Math.abs(entry.value),
+                                label: displayLabel,
+                                amount,
                               })
                         }
                         className="bg-gray-middle-light px-2 sm:px-3 py-2 sm:py-2.5 rounded-[15px] flex flex-row items-center gap-2 sm:gap-6 justify-between">
@@ -401,15 +477,16 @@ export default function ProfilePage() {
                           <span
                             className="text-sm sm:text-base truncate"
                             aria-hidden="true">
-                            {entry.campaignName}
+                            {displayLabel}
                           </span>
                         </div>
                         <span
-                          className={
-                            "text-sm sm:text-base font-bold shrink-0 self-end sm:self-auto flex flex-row items-center gap-1"
-                          }
+                          className={cn(
+                            "text-sm sm:text-base font-bold shrink-0 self-end sm:self-auto flex flex-row items-center gap-1",
+                            isTokenPurchase(entry.value) ? "text-green" : "text-gray-light",
+                          )}
                           aria-hidden="true">
-                          {entry.value}
+                          {formatTokenAmount(entry.value)}
                           <Image
                             src={Token}
                             alt=""
@@ -425,7 +502,7 @@ export default function ProfilePage() {
                 <div
                   className="flex items-center justify-center h-full text-muted-foreground"
                   role="status">
-                  <p>{t("noHistory")}</p>
+                  <p>{hasHistory ? t("noFilteredHistory") : t("noHistory")}</p>
                 </div>
               )}
             </div>
