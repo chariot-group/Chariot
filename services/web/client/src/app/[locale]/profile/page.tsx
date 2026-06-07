@@ -6,7 +6,7 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/hooks/useUser";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
-import { ArrowLeft, Check, Copy, DotIcon, Eye, EyeOff, Link, Loader2, ShoppingCart, SquarePen } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, ShoppingCart, SquarePen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
@@ -15,13 +15,14 @@ import { useTranslations } from "next-intl";
 import Token from "@public/assets/token.svg";
 import { usePathname, useRouter } from "next/navigation";
 import { useProfileForm } from "@/hooks/useProfileForm";
+import ProfileSection from "@/components/profile/ProfileSection";
+import ProfileGdprActions from "@/components/profile/ProfileGdprActions";
+import ProfileReferralSection from "@/components/profile/ProfileReferralSection";
 import ReadProfile from "@/components/profile/ReadProfile";
 import UpdateProfile from "@/components/profile/UpdateProfile";
-import { isEnterWithModifiers, isEnterWithoutModifiers } from "@/utils/keyboard.utils";
+import { isEnterWithModifiers } from "@/utils/keyboard.utils";
 import ShopDialog from "@/components/dialogs/Shop";
 import referralService, { type ReferralInfo } from "@/services/ReferralService";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { REFERRAL_TIERS } from "@/lib/referral";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
@@ -46,7 +47,6 @@ export default function ProfilePage() {
   const t = useTranslations("ProfilePage");
   const router = useRouter();
 
-  const tEdit = useTranslations("ProfilePage.editProfile");
   const tAuth = useTranslations("auth");
 
   const {
@@ -74,7 +74,6 @@ export default function ProfilePage() {
 
   const hasHistory = (user?.history?.length ?? 0) > 0;
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
-  const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
 
   useEffect(() => {
@@ -142,27 +141,233 @@ export default function ProfilePage() {
           </div>
         </Button>
       </div>
-      <div className="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-2 gap-2 ">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 gap-2">
-          {!isUpdating && <ReadProfile user={user} />}
-          {isUpdating && (
-            <UpdateProfile
-              user={user}
-              form={formProfile}
-              isLoading={isLoadingProfile}
-              onSubmit={onUpdate}
-              onCancel={onCancel}
+      <div className="w-full max-w-7xl flex flex-col gap-6 sm:gap-8 pb-6 sm:pb-8 md:pb-10">
+        {!isUpdating && (
+          <ReadProfile
+            user={user}
+            onEdit={() => setIsUpdating(true)}
+            isLoading={isLoadingProfile}
+          />
+        )}
+        {isUpdating && (
+          <UpdateProfile
+            user={user}
+            form={formProfile}
+            isLoading={isLoadingProfile}
+            onSubmit={onUpdate}
+            onCancel={onCancel}
+          />
+        )}
+
+        <ProfileSection
+          id="profile-section-tokens"
+          title={t("sections.tokens")}>
+          <Card
+            className="flex flex-col h-100 sm:h-125 lg:h-145"
+            role="region"
+            aria-labelledby="token-history-heading">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between sm:items-center shrink-0">
+              <h3
+                id="token-history-heading"
+                className="text-lg sm:text-xl font-bold">
+                {t("tokenHistory")}
+              </h3>
+            <Card
+              className="bg-gray-middle-light px-2 sm:px-3 py-1.5 sm:py-2 rounded-[15px] flex flex-row items-center gap-2 sm:gap-4 lg:gap-6 justify-between self-start sm:self-auto"
+              role="status"
+              aria-live="polite"
+              aria-label={t("tokenBalanceAria", { balance: user?.balance ?? 0 })}>
+              <span
+                className="font-bold text-xs sm:text-sm hidden xl:inline"
+                aria-hidden="true">
+                {t("yourTokens")}
+              </span>
+              <span
+                className="flex flex-row gap-1 font-semibold text-sm sm:text-base"
+                aria-hidden="true">
+                {user?.balance ?? 0}
+                <Image
+                  src={Token}
+                  alt=""
+                  aria-hidden="true"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
+                />
+              </span>
+            </Card>
+          </div>
+          <fieldset
+            className="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0 border-0 p-0 m-0"
+            aria-label={t("filterGroupLabel")}>
+            <legend className="sr-only">{t("filterGroupLabel")}</legend>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="token-history-filter-purchases"
+                checked={historyFilters.showPurchases}
+                onCheckedChange={(checked) =>
+                  setHistoryFilters((prev) => ({
+                    ...prev,
+                    showPurchases: checked === true,
+                  }))
+                }
+                aria-labelledby="token-history-filter-purchases-label"
+              />
+              <Label
+                id="token-history-filter-purchases-label"
+                htmlFor="token-history-filter-purchases"
+                className="text-xs sm:text-sm font-medium cursor-pointer">
+                {t("filterPurchases")}
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="token-history-filter-expenses"
+                checked={historyFilters.showExpenses}
+                onCheckedChange={(checked) =>
+                  setHistoryFilters((prev) => ({
+                    ...prev,
+                    showExpenses: checked === true,
+                  }))
+                }
+                aria-labelledby="token-history-filter-expenses-label"
+              />
+              <Label
+                id="token-history-filter-expenses-label"
+                htmlFor="token-history-filter-expenses"
+                className="text-xs sm:text-sm font-medium cursor-pointer">
+                {t("filterExpenses")}
+              </Label>
+            </div>
+          </fieldset>
+          <div className="flex-1 overflow-hidden">
+            <div
+              className="h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              role="list"
+              aria-label={t("tokenHistory")}
+              tabIndex={0}
+              style={{
+                maskImage: "linear-gradient(to top, transparent 0%, black 8%)",
+                WebkitMaskImage: "linear-gradient(to top, transparent 0%, black 8%)",
+              }}>
+              {filteredHistory.length > 0 ? (
+                <div className="space-y-2 pb-3">
+                  {filteredHistory.map((entry, index) => {
+                    const entryDate = new Date(entry.date);
+                    const dateLocale =
+                      locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : "en-US";
+                    const formattedDate = entryDate.toLocaleDateString(dateLocale, {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    });
+                    const displayLabel = isShopPurchaseEntry(entry.campaignName)
+                      ? t("shopPurchaseLabel")
+                      : entry.campaignName;
+                    const amount = Math.abs(entry.value);
+
+                    return (
+                      <Card
+                        key={`${entry.date}-${entry.campaignName}-${entry.value}-${index}`}
+                        role="listitem"
+                        aria-label={
+                          isTokenPurchase(entry.value)
+                            ? t("tokenItemPurchase", {
+                                date: formattedDate,
+                                label: displayLabel,
+                                amount,
+                              })
+                            : t("tokenItemExpense", {
+                                date: formattedDate,
+                                label: displayLabel,
+                                amount,
+                              })
+                        }
+                        className="bg-gray-middle-light px-2 sm:px-3 py-2 sm:py-2.5 rounded-[15px] flex flex-row items-center gap-2 sm:gap-6 justify-between">
+                        <div className="flex flex-row items-center gap-1 sm:gap-4 md:gap-8 xl:gap-20 flex-1 min-w-0">
+                          <span
+                            className="text-xs sm:text-sm text-foreground shrink-0"
+                            aria-hidden="true">
+                            <time dateTime={entry.date.toString()}>{formattedDate}</time>
+                          </span>
+                          <span
+                            className="text-sm sm:text-base truncate"
+                            aria-hidden="true">
+                            {displayLabel}
+                          </span>
+                        </div>
+                        <span
+                          className={cn(
+                            "text-sm sm:text-base font-bold shrink-0 self-end sm:self-auto flex flex-row items-center gap-1",
+                            isTokenPurchase(entry.value) ? "text-green" : "text-gray-light",
+                          )}
+                          aria-hidden="true">
+                          {formatTokenAmount(entry.value)}
+                          <Image
+                            src={Token}
+                            alt=""
+                            aria-hidden="true"
+                            className="w-4 h-4 sm:w-5 sm:h-5"
+                          />
+                        </span>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div
+                  className="flex items-center justify-center h-full text-muted-foreground"
+                  role="status">
+                  <p>{hasHistory ? t("noFilteredHistory") : t("noHistory")}</p>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button
+              className="rounded-[15px] w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
+              onClick={() => setShowShopDialog(true)}
+              aria-label={t("reloadTokens")}>
+              <ShoppingCart
+                className="h-4 w-4 sm:h-5 sm:w-5"
+                aria-hidden="true"
+              />
+              <span>{t("reloadTokens")}</span>
+            </Button>
+
+            <ShopDialog
+              open={showShopDialog}
+              onOpenChange={setShowShopDialog}
             />
-          )}
+          </div>
+          </Card>
+        </ProfileSection>
+
+        {referralInfo && (
+          <ProfileSection
+            id="profile-section-referral"
+            title={t("sections.referral")}>
+            <ProfileReferralSection
+              referralInfo={referralInfo}
+              linkCopyState={linkCopyState}
+              onCopyLink={() =>
+                copy(`${window.location.origin}?ref=${referralInfo.code}`, setLinkCopyState)
+              }
+            />
+          </ProfileSection>
+        )}
+
+        <ProfileSection
+          id="profile-section-security"
+          title={t("sections.security")}>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 items-start">
           <Card
             className="gap-6 sm:gap-8 md:gap-10"
             role="region"
             aria-labelledby="change-password-heading">
-            <h2
+            <h3
               id="change-password-heading"
               className="text-lg sm:text-xl font-bold">
               {t("changePasswordTitle")}
-            </h2>
+            </h3>
             <div className="px-0 sm:px-2">
               <form
                 id="form-reset-password"
@@ -347,331 +552,9 @@ export default function ProfilePage() {
               </Field>
             </div>
           </Card>
-        </div>
-        <Card
-          className="flex flex-col h-100 sm:h-125 lg:h-145"
-          role="region"
-          aria-labelledby="token-history-heading">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between sm:items-center shrink-0">
-            <h2
-              id="token-history-heading"
-              className="text-lg sm:text-xl font-bold">
-              {t("tokenHistory")}
-            </h2>
-            <Card
-              className="bg-gray-middle-light px-2 sm:px-3 py-1.5 sm:py-2 rounded-[15px] flex flex-row items-center gap-2 sm:gap-4 lg:gap-6 justify-between self-start sm:self-auto"
-              role="status"
-              aria-live="polite"
-              aria-label={t("tokenBalanceAria", { balance: user?.balance ?? 0 })}>
-              <span
-                className="font-bold text-xs sm:text-sm hidden xl:inline"
-                aria-hidden="true">
-                {t("yourTokens")}
-              </span>
-              <span
-                className="flex flex-row gap-1 font-semibold text-sm sm:text-base"
-                aria-hidden="true">
-                {user?.balance ?? 0}
-                <Image
-                  src={Token}
-                  alt=""
-                  aria-hidden="true"
-                  className="w-4 h-4 sm:w-5 sm:h-5"
-                />
-              </span>
-            </Card>
+          <ProfileGdprActions />
           </div>
-          <fieldset
-            className="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0 border-0 p-0 m-0"
-            aria-label={t("filterGroupLabel")}>
-            <legend className="sr-only">{t("filterGroupLabel")}</legend>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="token-history-filter-purchases"
-                checked={historyFilters.showPurchases}
-                onCheckedChange={(checked) =>
-                  setHistoryFilters((prev) => ({
-                    ...prev,
-                    showPurchases: checked === true,
-                  }))
-                }
-                aria-labelledby="token-history-filter-purchases-label"
-              />
-              <Label
-                id="token-history-filter-purchases-label"
-                htmlFor="token-history-filter-purchases"
-                className="text-xs sm:text-sm font-medium cursor-pointer">
-                {t("filterPurchases")}
-              </Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="token-history-filter-expenses"
-                checked={historyFilters.showExpenses}
-                onCheckedChange={(checked) =>
-                  setHistoryFilters((prev) => ({
-                    ...prev,
-                    showExpenses: checked === true,
-                  }))
-                }
-                aria-labelledby="token-history-filter-expenses-label"
-              />
-              <Label
-                id="token-history-filter-expenses-label"
-                htmlFor="token-history-filter-expenses"
-                className="text-xs sm:text-sm font-medium cursor-pointer">
-                {t("filterExpenses")}
-              </Label>
-            </div>
-          </fieldset>
-          <div className="flex-1 overflow-hidden">
-            <div
-              className="h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
-              role="list"
-              aria-label={t("tokenHistory")}
-              tabIndex={0}
-              style={{
-                maskImage: "linear-gradient(to top, transparent 0%, black 8%)",
-                WebkitMaskImage: "linear-gradient(to top, transparent 0%, black 8%)",
-              }}>
-              {filteredHistory.length > 0 ? (
-                <div className="space-y-2 pb-3">
-                  {filteredHistory.map((entry, index) => {
-                    const entryDate = new Date(entry.date);
-                    const dateLocale =
-                      locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : "en-US";
-                    const formattedDate = entryDate.toLocaleDateString(dateLocale, {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    });
-                    const displayLabel = isShopPurchaseEntry(entry.campaignName)
-                      ? t("shopPurchaseLabel")
-                      : entry.campaignName;
-                    const amount = Math.abs(entry.value);
-
-                    return (
-                      <Card
-                        key={`${entry.date}-${entry.campaignName}-${entry.value}-${index}`}
-                        role="listitem"
-                        aria-label={
-                          isTokenPurchase(entry.value)
-                            ? t("tokenItemPurchase", {
-                                date: formattedDate,
-                                label: displayLabel,
-                                amount,
-                              })
-                            : t("tokenItemExpense", {
-                                date: formattedDate,
-                                label: displayLabel,
-                                amount,
-                              })
-                        }
-                        className="bg-gray-middle-light px-2 sm:px-3 py-2 sm:py-2.5 rounded-[15px] flex flex-row items-center gap-2 sm:gap-6 justify-between">
-                        <div className="flex flex-row items-center gap-1 sm:gap-4 md:gap-8 xl:gap-20 flex-1 min-w-0">
-                          <span
-                            className="text-xs sm:text-sm text-foreground shrink-0"
-                            aria-hidden="true">
-                            <time dateTime={entry.date.toString()}>{formattedDate}</time>
-                          </span>
-                          <span
-                            className="text-sm sm:text-base truncate"
-                            aria-hidden="true">
-                            {displayLabel}
-                          </span>
-                        </div>
-                        <span
-                          className={cn(
-                            "text-sm sm:text-base font-bold shrink-0 self-end sm:self-auto flex flex-row items-center gap-1",
-                            isTokenPurchase(entry.value) ? "text-green" : "text-gray-light",
-                          )}
-                          aria-hidden="true">
-                          {formatTokenAmount(entry.value)}
-                          <Image
-                            src={Token}
-                            alt=""
-                            aria-hidden="true"
-                            className="w-4 h-4 sm:w-5 sm:h-5"
-                          />
-                        </span>
-                      </Card>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div
-                  className="flex items-center justify-center h-full text-muted-foreground"
-                  role="status">
-                  <p>{hasHistory ? t("noFilteredHistory") : t("noHistory")}</p>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              className="rounded-[15px] w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
-              onClick={() => setShowShopDialog(true)}
-              aria-label={t("reloadTokens")}>
-              <ShoppingCart
-                className="h-4 w-4 sm:h-5 sm:w-5"
-                aria-hidden="true"
-              />
-              <span>{t("reloadTokens")}</span>
-            </Button>
-
-            <ShopDialog
-              open={showShopDialog}
-              onOpenChange={setShowShopDialog}
-            />
-          </div>
-        </Card>
-      </div>
-      {referralInfo && (
-        <div className="w-full max-w-7xl mt-2">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-start">
-            <Card
-              className="flex flex-col gap-4 lg:col-span-2"
-              role="region"
-              aria-labelledby="referral-tiers-heading">
-              <div>
-                <h2
-                  id="referral-tiers-heading"
-                  className="text-lg sm:text-xl font-bold">
-                  {t("referral.tiersTitle")}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">{t("referral.tiersSubtitle")}</p>
-              </div>
-
-              <div
-                className="flex flex-col items-center gap-1.5 w-full"
-                role="list"
-                aria-label={t("referral.tiersTitle")}>
-                {REFERRAL_TIERS.map((tier, idx) => {
-                  const widthPercent = 30 + Math.round((idx / (REFERRAL_TIERS.length - 1)) * 70);
-                  const isReached = referralInfo.pendingReferralsCount >= tier.minReferees;
-                  const isCurrentTier =
-                    isReached &&
-                    (idx === 0 || referralInfo.pendingReferralsCount < REFERRAL_TIERS[idx - 1].minReferees);
-                  return (
-                    <div
-                      key={tier.minReferees}
-                      role="listitem"
-                      style={{ width: `${widthPercent}%` }}
-                      className={cn(
-                        "flex justify-between items-center px-3 py-2 rounded-[10px] transition-all duration-300",
-                        isCurrentTier
-                          ? "bg-primary text-primary-foreground shadow-md scale-[1.02]"
-                          : isReached
-                            ? "bg-primary/40 text-foreground"
-                            : "bg-gray-middle-light text-muted-foreground opacity-70",
-                      )}>
-                      <span className="text-xs font-medium">
-                        {tier.minReferees}+{" "}
-                        {tier.minReferees === 1 ? t("referral.tierReferral") : t("referral.tierReferrals")}
-                      </span>
-                      <span className="text-sm font-bold">{tier.discount}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <span className="flex flex-row items-center gap-2 mt-auto justify-center flex-wrap">
-                <p className="text-xs text-green-400">
-                  {t("referral.validatedReferees", { count: referralInfo.pendingReferralsCount ?? 0 })}
-                </p>
-                <DotIcon className="text-muted-foreground" />
-                <p className="text-xs text-amber-400">
-                  {t("referral.pendingFirstPurchase", {
-                    count: (referralInfo.refereeCount ?? 0) - (referralInfo.validatedRefereeCount ?? 0),
-                  })}
-                </p>
-              </span>
-            </Card>
-
-            <Card className="flex flex-col gap-0 p-4 sm:p-6">
-              <h2
-                id="referral-code-heading"
-                className="text-base sm:text-lg font-bold mb-4">
-                {t("referral.yourCode")}
-              </h2>
-              <p className="w-full text-xl text-center">{referralInfo.code}</p>
-              <div className="gap-3 items-center grid grid-cols-5">
-                <Button
-                  variant="outline"
-                  className={`mt-4 w-full transition-colors col-span-4 ${
-                    codeCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
-                  }`}
-                  aria-label={t("referral.copyAriaLabel")}
-                  disabled={codeCopyState !== "idle"}
-                  onClick={() => copy(referralInfo.code, setCodeCopyState)}>
-                  {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
-                  {codeCopyState === "success" && <Check />}
-                  {codeCopyState === "idle" && <Copy />}
-                  {codeCopyState === "success" ? t("referral.codeCopied") : t("referral.copyCode")}
-                </Button>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      aria-label={t("referral.copyLinkAriaLabel")}
-                      className={`mt-4 transition-colors ${
-                        linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
-                      }`}
-                      disabled={linkCopyState !== "idle"}
-                      onClick={() => copy(`${window.location.origin}?ref=${referralInfo.code}`, setLinkCopyState)}>
-                      {linkCopyState === "success" ? <Check /> : <Link />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {linkCopyState === "success" ? t("referral.linkCopied") : t("referral.copyLink")}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </Card>
-          </div>
-        </div>
-      )}
-      <div className="w-full max-w-7xl flex flex-row-reverse py-2 sm:py-4 md:py-6 lg:py-8">
-        {isUpdating ? (
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoadingProfile}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onCancel();
-                }
-              }}
-              aria-label={tEdit("cancelUpdate")}>
-              {tEdit("cancelUpdate")}
-            </Button>
-            <Button
-              type="submit"
-              form="form-update-profile"
-              disabled={isLoadingProfile || !formProfile.formState.isValid}
-              tabIndex={0}
-              aria-label={tEdit("updateProfile")}
-              aria-busy={isLoadingProfile}>
-              {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
-            </Button>
-          </div>
-        ) : (
-          <Button
-            type="button"
-            onClick={() => setIsUpdating(true)}
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (isEnterWithoutModifiers(e) || e.key === " ") {
-                e.preventDefault();
-                setIsUpdating(true);
-              }
-            }}>
-            <SquarePen aria-hidden="true" /> {isLoadingProfile ? tAuth("loading") : tEdit("updateProfile")}
-          </Button>
-        )}
+        </ProfileSection>
       </div>
     </main>
   );

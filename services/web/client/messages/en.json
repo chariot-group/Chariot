@@ -302,7 +302,9 @@
   },
   "Profile": {
     "profile": "Profile",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "wheelsUnit": "wheels",
+    "wheelsBalanceAria": "Current wheel balance: {balance} wheels"
   },
   "payment": {
     "reloadSuccess": "Your account was reloaded with {chars} wheels.",
@@ -376,6 +378,12 @@
   },
   "ProfilePage": {
     "pageTitle": "User Profile",
+    "sections": {
+      "profile": "My profile",
+      "security": "Security",
+      "tokens": "Tokens",
+      "referral": "Referral"
+    },
     "changePasswordTitle": "Change Password",
     "currentPassword": "Current password",
     "newPassword": "New password",
@@ -398,6 +406,13 @@
     "tokenBalanceAria": "Current token balance: {balance} tokens",
     "tokenItemPurchase": "Purchase on {date} — {label}, {amount} tokens credited",
     "tokenItemExpense": "Expense on {date} — {label}, {amount} tokens spent",
+    "languagePreference": "Language",
+    "languagePreferenceAria": "Site language",
+    "languages": {
+      "fr": "🇫🇷 French",
+      "en": "🇬🇧 English",
+      "es": "🇪🇸 Spanish"
+    },
     "changePassword": {
       "successMessage": "Password changed successfully",
       "errorMessage": "Failed to change password",
@@ -425,6 +440,11 @@
     },
     "referral": {
       "yourCode": "Your referral code",
+      "tiersProgressAriaLabel": "Referral tier progress",
+      "maxDiscountLabel": "Max",
+      "maxDiscountAriaLabel": "Maximum possible discount: {discount}%",
+      "noApplicableDiscount": "0%",
+      "tierSegmentAriaLabel": "{count, plural, one {# referral} other {# referrals}}: {discount}% discount",
       "copyCode": "Copy code",
       "codeCopied": "Code copied!",
       "copyAriaLabel": "Copy referral code",
@@ -439,7 +459,44 @@
       "tiersTitle": "Referral tiers",
       "tiersSubtitle": "The more you refer, the more you save",
       "tierReferral": "referral",
-      "tierReferrals": "referrals"
+      "tierReferrals": "referrals",
+      "currentDiscount": "Available discount: {discount}%",
+      "nextTierGoal": "{count, plural, one {# more referral} other {# more referrals}} to reach {discount}%",
+      "maxTierReached": "Maximum tier reached ({discount}%)",
+      "rulesTooltipAriaLabel": "Referral program rules",
+      "rulesTooltipTitle": "How does referral work?",
+      "rulesTooltipReferee": "Your referral gets 15% off their first order (one-time use).",
+      "rulesTooltipReferrer": "You earn one tier per validated referral: 10% from 1 referral, then +5% per referral (max. 50%).",
+      "rulesTooltipValidation": "A referral is validated after their first paid purchase.",
+      "rulesTooltipReset": "Your tier resets to zero after you use your referrer discount.",
+      "rulesTooltipNotCumulative": "Cannot be combined with a promo or affiliation code. Only the best discount applies."
+    },
+    "gdpr": {
+      "title": "Personal data",
+      "description": "Exercise your GDPR rights over your personal data.",
+      "exportTitle": "Export profile data",
+      "exportDescription": "Download a copy of your profile information (identity, balance, and token history).",
+      "exportAction": "Download",
+      "exporting": "Exporting…",
+      "exportAriaLabel": "Download a copy of my profile data",
+      "exportSuccess": "Your profile data has been downloaded.",
+      "exportError": "Unable to export your profile data. Please try again.",
+      "dataRequestTitle": "Request all my data",
+      "dataRequestDescription": "Request a complete copy of all your data by email (campaigns, characters, sessions, payments, referral…).",
+      "dataRequestAction": "Contact support",
+      "dataRequestAriaLabel": "Request access to all of my personal data by email",
+      "deleteTitle": "Delete my account",
+      "deleteDescription": "Request permanent deletion of your account and associated data.",
+      "deleteAction": "Delete my account",
+      "deleteAriaLabel": "Request deletion of my account",
+      "deleteDialogTitle": "Confirm deletion",
+      "deleteDialogDescription": "This will permanently delete your account and all your data. This action is irreversible. You will be asked to confirm the request by email.",
+      "deleteDialogCancel": "Cancel",
+      "deleteDialogConfirm": "Confirm request",
+      "privacyPolicyTitle": "Privacy policy",
+      "privacyPolicyDescription": "See how your data is collected and used.",
+      "privacyPolicyAction": "View",
+      "privacyPolicyAriaLabel": "View privacy policy (opens in new tab)"
     }
   },
   "welcome": {

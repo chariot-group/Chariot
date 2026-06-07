@@ -302,7 +302,9 @@
   },
   "Profile": {
     "profile": "Perfil",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "wheelsUnit": "wheels",
+    "wheelsBalanceAria": "Saldo de wheels actual: {balance} wheels"
   },
   "payment": {
     "reloadSuccess": "Tu cuenta se recargó con {chars} wheels.",
@@ -376,6 +378,12 @@
   },
   "ProfilePage": {
     "pageTitle": "Perfil de usuario",
+    "sections": {
+      "profile": "Mi perfil",
+      "security": "Seguridad",
+      "tokens": "Tokens",
+      "referral": "Apadrinamiento"
+    },
     "changePasswordTitle": "Cambiar contraseña",
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
@@ -398,6 +406,13 @@
     "tokenBalanceAria": "Saldo de tokens actual: {balance} tokens",
     "tokenItemPurchase": "Compra del {date} — {label}, {amount} tokens acreditados",
     "tokenItemExpense": "Gasto del {date} — {label}, {amount} tokens gastados",
+    "languagePreference": "Idioma",
+    "languagePreferenceAria": "Idioma del sitio",
+    "languages": {
+      "fr": "🇫🇷 Francés",
+      "en": "🇬🇧 Inglés",
+      "es": "🇪🇸 Español"
+    },
     "changePassword": {
       "successMessage": "Contraseña cambiada correctamente",
       "errorMessage": "Error al cambiar la contraseña",
@@ -425,6 +440,11 @@
     },
     "referral": {
       "yourCode": "Tu código de referido",
+      "tiersProgressAriaLabel": "Progreso de niveles de referidos",
+      "maxDiscountLabel": "Máx.",
+      "maxDiscountAriaLabel": "Descuento máximo posible: {discount} %",
+      "noApplicableDiscount": "0 %",
+      "tierSegmentAriaLabel": "{count, plural, one {# referido} other {# referidos}}: {discount} % de descuento",
       "copyCode": "Copiar código",
       "codeCopied": "¡Código copiado!",
       "copyAriaLabel": "Copiar código de referido",
@@ -439,7 +459,44 @@
       "tiersTitle": "Niveles de referidos",
       "tiersSubtitle": "Cuanto más refieras, más ahorras",
       "tierReferral": "referido",
-      "tierReferrals": "referidos"
+      "tierReferrals": "referidos",
+      "currentDiscount": "Descuento disponible: {discount} %",
+      "nextTierGoal": "{count, plural, one {# referido más} other {# referidos más}} para alcanzar {discount} %",
+      "maxTierReached": "Nivel máximo alcanzado ({discount} %)",
+      "rulesTooltipAriaLabel": "Reglas del programa de referidos",
+      "rulesTooltipTitle": "¿Cómo funciona el referido?",
+      "rulesTooltipReferee": "Tu referido obtiene un 15 % de descuento en su primer pedido (un solo uso).",
+      "rulesTooltipReferrer": "Ganas un nivel por referido validado: 10 % desde 1 referido, luego +5 % por referido (máx. 50 %).",
+      "rulesTooltipValidation": "Un referido se valida tras su primera compra pagada.",
+      "rulesTooltipReset": "Tu nivel vuelve a cero después de usar tu descuento de referidor.",
+      "rulesTooltipNotCumulative": "No acumulable con un código promocional o de afiliación. Solo se aplica el mejor descuento."
+    },
+    "gdpr": {
+      "title": "Datos personales",
+      "description": "Ejerce tus derechos RGPD sobre tus datos personales.",
+      "exportTitle": "Exportar datos de perfil",
+      "exportDescription": "Descarga una copia de la información de tu perfil (identidad, saldo e historial de tokens).",
+      "exportAction": "Descargar",
+      "exporting": "Exportando…",
+      "exportAriaLabel": "Descargar una copia de mis datos de perfil",
+      "exportSuccess": "Tus datos de perfil se han descargado.",
+      "exportError": "No se pudieron exportar tus datos de perfil. Inténtalo de nuevo.",
+      "dataRequestTitle": "Solicitar todos mis datos",
+      "dataRequestDescription": "Solicita por correo una copia completa de todos tus datos (campañas, personajes, sesiones, pagos, referidos…).",
+      "dataRequestAction": "Contactar soporte",
+      "dataRequestAriaLabel": "Solicitar por correo el acceso a todos mis datos personales",
+      "deleteTitle": "Eliminar mi cuenta",
+      "deleteDescription": "Solicita la eliminación permanente de tu cuenta y datos asociados.",
+      "deleteAction": "Eliminar mi cuenta",
+      "deleteAriaLabel": "Solicitar la eliminación de mi cuenta",
+      "deleteDialogTitle": "Confirmar eliminación",
+      "deleteDialogDescription": "Esta acción eliminará permanentemente tu cuenta y todos tus datos. Es irreversible. Se te pedirá confirmar la solicitud por correo electrónico.",
+      "deleteDialogCancel": "Cancelar",
+      "deleteDialogConfirm": "Confirmar solicitud",
+      "privacyPolicyTitle": "Política de privacidad",
+      "privacyPolicyDescription": "Consulta cómo se recopilan y utilizan tus datos.",
+      "privacyPolicyAction": "Consultar",
+      "privacyPolicyAriaLabel": "Consultar la política de privacidad (nueva ventana)"
     }
   },
   "welcome": {

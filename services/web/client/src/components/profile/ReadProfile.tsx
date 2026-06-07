@@ -1,13 +1,20 @@
 import { User } from "@/types/user";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { User as UserIcon } from "lucide-react";
+import { SquarePen, User as UserIcon } from "lucide-react";
+import { isEnterWithoutModifiers } from "@/utils/keyboard.utils";
+import ProfileLocaleSelect from "@/components/profile/ProfileLocaleSelect";
 
 interface Props {
   user: User | null;
+  onEdit: () => void;
+  isLoading?: boolean;
 }
-export default function ReadProfile({ user }: Props) {
+export default function ReadProfile({ user, onEdit, isLoading = false }: Props) {
   const t = useTranslations("ProfilePage");
+  const tEdit = useTranslations("ProfilePage.editProfile");
+  const tAuth = useTranslations("auth");
   return (
     <Card
       className="flex flex-col xl:flex-row overflow-hidden"
@@ -40,11 +47,27 @@ export default function ReadProfile({ user }: Props) {
             className="text-base sm:text-lg lg:text-xl font-semibold wrap-break-word"
             aria-label="Full name">{`${user?.firstName} ${user?.lastName}`}</p>
         </div>
-        <p
-          className="text-xs sm:text-sm text-muted-foreground break-all"
-          aria-label="Email address">
-          {user?.email}
-        </p>
+        <ProfileLocaleSelect />
+        <div className="flex flex-row items-center justify-between gap-2 sm:gap-3 min-w-0">
+          <p
+            className="text-xs sm:text-sm text-muted-foreground break-all min-w-0 flex-1"
+            aria-label="Email address">
+            {user?.email}
+          </p>
+          <Button
+            type="button"
+            onClick={onEdit}
+            disabled={isLoading}
+            className="shrink-0"
+            onKeyDown={(e) => {
+              if (isEnterWithoutModifiers(e) || e.key === " ") {
+                e.preventDefault();
+                onEdit();
+              }
+            }}>
+            <SquarePen aria-hidden="true" /> {isLoading ? tAuth("loading") : tEdit("updateProfile")}
+          </Button>
+        </div>
       </div>
     </Card>
   );

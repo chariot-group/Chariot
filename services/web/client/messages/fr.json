@@ -303,7 +303,9 @@
   },
   "Profile": {
     "profile": "Profil",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "wheelsUnit": "wheels",
+    "wheelsBalanceAria": "Solde de wheels actuel : {balance} wheels"
   },
   "payment": {
     "reloadSuccess": "Votre compte a été rechargé de {chars} wheels.",
@@ -377,6 +379,12 @@
   },
   "ProfilePage": {
     "pageTitle": "Profil utilisateur",
+    "sections": {
+      "profile": "Mon profil",
+      "security": "Sécurité",
+      "tokens": "Tokens",
+      "referral": "Parrainage"
+    },
     "changePasswordTitle": "Changer de mot de passe",
     "currentPassword": "Mot de passe actuel",
     "newPassword": "Nouveau mot de passe",
@@ -399,6 +407,13 @@
     "tokenBalanceAria": "Solde de tokens actuel : {balance} tokens",
     "tokenItemPurchase": "Achat du {date} — {label}, {amount} tokens crédités",
     "tokenItemExpense": "Dépense du {date} — {label}, {amount} tokens dépensés",
+    "languagePreference": "Langue",
+    "languagePreferenceAria": "Langue du site",
+    "languages": {
+      "fr": "🇫🇷 Français",
+      "en": "🇬🇧 Anglais",
+      "es": "🇪🇸 Espagnol"
+    },
     "changePassword": {
       "successMessage": "Mot de passe modifié avec succès",
       "errorMessage": "Échec de la modification du mot de passe",
@@ -426,6 +441,11 @@
     },
     "referral": {
       "yourCode": "Votre code parrain",
+      "tiersProgressAriaLabel": "Progression des paliers de parrainage",
+      "maxDiscountLabel": "Max",
+      "maxDiscountAriaLabel": "Réduction maximale possible : {discount} %",
+      "noApplicableDiscount": "0 %",
+      "tierSegmentAriaLabel": "{count, plural, one {# filleul} other {# filleuls}} : {discount} % de réduction",
       "copyCode": "Copier le code",
       "codeCopied": "Code copié !",
       "copyAriaLabel": "Copier le code parrain",
@@ -440,7 +460,44 @@
       "tiersTitle": "Paliers de parrainage",
       "tiersSubtitle": "Plus vous parrainez, plus vous économisez",
       "tierReferral": "filleul",
-      "tierReferrals": "filleuls"
+      "tierReferrals": "filleuls",
+      "currentDiscount": "Réduction disponible : {discount} %",
+      "nextTierGoal": "Encore {count, plural, one {# filleul} other {# filleuls}} pour {discount} %",
+      "maxTierReached": "Palier maximum atteint ({discount} %)",
+      "rulesTooltipAriaLabel": "Règles du parrainage",
+      "rulesTooltipTitle": "Comment fonctionne le parrainage ?",
+      "rulesTooltipReferee": "Votre filleul bénéficie de 15 % de réduction sur sa première commande (une seule utilisation).",
+      "rulesTooltipReferrer": "Vous gagnez un palier par filleul validé : 10 % dès 1 filleul, puis +5 % par filleul (max. 50 %).",
+      "rulesTooltipValidation": "Un filleul est validé après son premier achat payé.",
+      "rulesTooltipReset": "Votre palier repart à zéro après utilisation de votre réduction parrain.",
+      "rulesTooltipNotCumulative": "Non cumulable avec un code promo ou d'affiliation. Seule la réduction la plus avantageuse s'applique."
+    },
+    "gdpr": {
+      "title": "Données personnelles",
+      "description": "Exercez vos droits RGPD sur vos données personnelles.",
+      "exportTitle": "Exporter mes données de profil",
+      "exportDescription": "Téléchargez une copie de vos informations de profil (identité, solde et historique de tokens).",
+      "exportAction": "Télécharger",
+      "exporting": "Export en cours…",
+      "exportAriaLabel": "Télécharger une copie de mes données de profil",
+      "exportSuccess": "Vos données de profil ont été téléchargées.",
+      "exportError": "Impossible d'exporter vos données de profil. Veuillez réessayer.",
+      "dataRequestTitle": "Demander toutes mes données",
+      "dataRequestDescription": "Demandez par e-mail une copie complète de toutes vos données (campagnes, personnages, sessions, paiements, parrainage…).",
+      "dataRequestAction": "Contacter le support",
+      "dataRequestAriaLabel": "Demander par e-mail l'accès à l'ensemble de mes données personnelles",
+      "deleteTitle": "Supprimer mon compte",
+      "deleteDescription": "Demandez la suppression définitive de votre compte et de vos données associées.",
+      "deleteAction": "Supprimer mon compte",
+      "deleteAriaLabel": "Demander la suppression de mon compte",
+      "deleteDialogTitle": "Confirmer la suppression",
+      "deleteDialogDescription": "Cette action entraînera la suppression permanente de votre compte et de toutes vos données. Cette opération est irréversible. Un e-mail de confirmation vous sera demandé pour valider la demande.",
+      "deleteDialogCancel": "Annuler",
+      "deleteDialogConfirm": "Confirmer la demande",
+      "privacyPolicyTitle": "Politique de confidentialité",
+      "privacyPolicyDescription": "Consultez comment vos données sont collectées et utilisées.",
+      "privacyPolicyAction": "Consulter",
+      "privacyPolicyAriaLabel": "Consulter la politique de confidentialité (nouvelle fenêtre)"
     }
   },
   "welcome": {

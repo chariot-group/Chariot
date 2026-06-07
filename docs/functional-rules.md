@@ -1813,3 +1813,120 @@ Each initiative tracker row carries:
 - `services/adventure/api/src/resources/user/user.service.ts`
 - `services/payment/api/src/resources/stripe/stripe.service.ts`
 - `services/web/client/messages/{en,fr,es}.json`
+
+---
+
+## FR-025: Profile GDPR and Data Rights (Security Section)
+
+**Rule**: The profile page Security section must expose self-service GDPR data-rights actions for the authenticated user: export available account data, request a full data access report, and initiate account deletion. Until dedicated backend endpoints exist, export uses `GET /user/me` and formal requests are routed to the privacy contact email.
+
+**Context**: Users must be able to exercise GDPR rights (access, portability, erasure) from their account settings without contacting support for basic actions.
+
+**Requirements**:
+
+**Frontend (Web Client)**:
+
+- Location: `ProfilePage` → Security section (`profile-section-security`), below the password change card
+- Dedicated card titled via i18n (`ProfilePage.gdpr.title`)
+- Three actions minimum, each with title, short description, and accessible control:
+  1. **Export profile data**: downloads a JSON file built from a fresh `GET /user/me` response (profile fields and token history only); filename pattern `chariot-profile-YYYY-MM-DD.json`
+  2. **Request all my data**: opens a pre-filled `mailto:` to the privacy contact for a comprehensive subject access request covering all personal data (campaigns, groups, characters, sessions, payments, referral history, etc.)
+  3. **Delete my account**: opens a confirmation dialog explaining irreversibility; confirming opens a pre-filled `mailto:` deletion request (no silent deletion until backend `DELETE /user/me` exists)
+- Export payload MUST exclude internal auth identifiers (`keycloakId`, `createdBy`, `userId`) from all nested objects
+- Privacy contact email: `NEXT_PUBLIC_PRIVACY_EMAIL` with fallback `contact@chariot.tools`
+- Optional privacy policy link when `NEXT_PUBLIC_PRIVACY_POLICY_URL` is set
+- Loading/busy state on export (`aria-busy`); success/error toasts via existing toast hook
+- Follow FR-019 design baseline: Card, `rounded-[15px]`, responsive row layout, destructive variant for delete trigger
+
+**Accessibility**:
+
+- Each action control has an accessible name (`aria-label` or visible label)
+- Delete confirmation dialog is keyboard-operable and traps focus per existing Dialog primitive
+- Export loading state communicated with `aria-busy`
+
+**Prohibitions**:
+
+- Silently deleting an account from the UI without explicit user confirmation and audit trail
+- Exporting stale cached Redux user data without refreshing from API
+- Including internal auth identifiers (`keycloakId`, `createdBy`, `userId`) in user-facing export files or mailto bodies
+- Hardcoding untranslated user-facing strings
+
+**Tests**:
+
+- Unit: JSON export helper produces valid filename and JSON payload
+- Unit: mailto builders encode subject/body correctly
+- Component: GDPR card renders three actions with expected accessible labels
+- Component: delete dialog renders warning text
+
+**References**:
+
+- `services/web/client/src/components/profile/ProfileGdprActions.tsx`
+- `services/web/client/src/lib/gdpr.ts`
+- `services/web/client/src/app/[locale]/profile/page.tsx`
+- `services/web/client/messages/{en,fr,es}.json`
+- `docs/design.md` — sections 6.3, 9
+
+---
+
+## FR-026: Profile Language Preference
+
+**Rule**: The profile page profile-info card must expose a language preference control allowing the authenticated user to change the site locale. The selected locale must be persisted using the existing `user-preferred-locale` storage mechanism (localStorage and cookie) and the user must be redirected to the same page under the new locale prefix.
+
+**Scope**:
+
+- Web client profile page (`/[locale]/profile`)
+- Profile info card (`ReadProfile`) in read mode
+- Reuses existing i18n infrastructure (`useLocalePreference`, middleware cookie)
+
+**Requirements**:
+
+**Frontend (Web Client)**:
+
+- Location: profile info card, below identity fields and above or alongside contact actions
+- Control: single select listing all supported locales (`fr`, `en`, `es`)
+- Option labels MUST be translated in the active UI locale and prefixed with a flag emoji (same pattern as Codex `languageFilter`)
+- On change:
+  1. Persist preference via `saveStoredLocale` (`user-preferred-locale` in localStorage and cookie)
+  2. Navigate to the equivalent path with the new locale prefix (e.g. `/fr/profile` → `/en/profile`)
+- Current locale MUST be reflected as the selected value on render
+- No API call required
+
+**Keycloak SSO sync**:
+
+- Resolved locale preference (`localStorage` → URL prefix → browser detection) MUST be passed to Keycloak on:
+  - `keycloak.init` (`locale` init option → `ui_locales`)
+  - `keycloak.login` (including token-refresh re-login)
+  - `keycloak.register`
+- Register flow MUST NOT override an existing stored preference with browser detection alone
+
+**Accessibility** (FR-019):
+
+- Select control has an associated visible label and accessible name
+- Keyboard-operable via existing Select primitive (`Tab`, arrow keys, `Enter`)
+- Label/input association via `htmlFor` / `id`
+
+**Internationalization**:
+
+- Namespace: `ProfilePage`
+- Required keys (en/fr/es): `languagePreference`, `languagePreferenceAria`
+- Locale option labels live under `ProfilePage.languages.{fr,en,es}` with flag emoji + translated language name
+
+**Prohibitions**:
+
+- Introducing a new storage key for locale preference
+- Changing locale without updating URL prefix
+- Hardcoding untranslated user-facing strings
+
+**Tests**:
+
+- Unit: path locale replacement helper
+- Component: locale select renders with label and accessible name
+- Component: all supported locales appear as options
+
+**References**:
+
+- `services/web/client/src/hooks/useLocalePreference.ts`
+- `services/web/client/src/components/profile/ProfileLocaleSelect.tsx`
+- `services/web/client/src/components/profile/ReadProfile.tsx`
+- `services/web/client/docs/i18n.md`
+- `docs/design.md` — sections 8, 9
