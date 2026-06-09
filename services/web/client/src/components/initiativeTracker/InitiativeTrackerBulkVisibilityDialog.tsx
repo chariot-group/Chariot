@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Cog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -12,6 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  buildBulkVisibilityUpdatePayload,
+  BULK_VISIBILITY_FIELD_KEYS,
+  createBulkVisibilityDraft,
+  createBulkVisibilityTouchedState,
+  type BulkSelectionVisibilitySummary,
+} from "@/components/initiativeTracker/bulkSelection";
 import type { InitiativeTrackerPlayerFieldVisibility } from "@/store/slices/sessionSlice";
 
 type FieldKey = keyof InitiativeTrackerPlayerFieldVisibility;
@@ -19,6 +27,7 @@ type FieldKey = keyof InitiativeTrackerPlayerFieldVisibility;
 type InitiativeTrackerBulkVisibilityDialogProps = {
   open: boolean;
   selectedCount: number;
+  selectionSummary: BulkSelectionVisibilitySummary | null;
   labels: {
     title: string;
     description: string;
@@ -28,41 +37,26 @@ type InitiativeTrackerBulkVisibilityDialogProps = {
     playerDisplayNamePlaceholder: string;
     fieldsTitle: string;
     emptySelection: string;
-    apply: string;
+    configure: string;
     cancel: string;
     leaveInitiative: string;
     fields: Record<FieldKey, string>;
   };
   onOpenChange: (open: boolean) => void;
   onApply: (
-    visible: boolean,
-    playerFieldVisibility: InitiativeTrackerPlayerFieldVisibility,
-    playerDisplayName: string,
+    changes: {
+      visible?: boolean;
+      playerFieldVisibility?: Partial<InitiativeTrackerPlayerFieldVisibility>;
+    },
+    playerDisplayName?: string,
   ) => void;
   onLeaveInitiative: () => void;
-};
-
-const FIELD_KEYS: FieldKey[] = [
-  "name",
-  "initiative",
-  "hitPoints",
-  "armorClass",
-  "conditions",
-  "groupLabel",
-];
-
-const DEFAULT_BULK_FIELDS: InitiativeTrackerPlayerFieldVisibility = {
-  initiative: false,
-  name: true,
-  hitPoints: false,
-  armorClass: false,
-  conditions: false,
-  groupLabel: false,
 };
 
 export function InitiativeTrackerBulkVisibilityDialog({
   open,
   selectedCount,
+  selectionSummary,
   labels,
   onOpenChange,
   onApply,
@@ -75,6 +69,7 @@ export function InitiativeTrackerBulkVisibilityDialog({
       {open ? (
         <InitiativeTrackerBulkVisibilityDialogContent
           selectedCount={selectedCount}
+          selectionSummary={selectionSummary}
           labels={labels}
           onOpenChange={onOpenChange}
           onApply={onApply}
@@ -87,19 +82,29 @@ export function InitiativeTrackerBulkVisibilityDialog({
 
 function InitiativeTrackerBulkVisibilityDialogContent({
   selectedCount,
+  selectionSummary,
   labels,
   onOpenChange,
   onApply,
   onLeaveInitiative,
 }: Omit<InitiativeTrackerBulkVisibilityDialogProps, "open">) {
-  const [visible, setVisible] = React.useState(true);
-  const [fields, setFields] = React.useState<InitiativeTrackerPlayerFieldVisibility>(
-    () => ({ ...DEFAULT_BULK_FIELDS }),
-  );
-  const [playerDisplayName, setPlayerDisplayName] = React.useState("");
+  const [draft, setDraft] = React.useState(() => createBulkVisibilityDraft(selectionSummary));
+  const [touched, setTouched] = React.useState(() => createBulkVisibilityTouchedState());
+
+  React.useEffect(() => {
+    setDraft(createBulkVisibilityDraft(selectionSummary));
+    setTouched(createBulkVisibilityTouchedState());
+  }, [selectionSummary, selectedCount]);
 
   const toggleField = (key: FieldKey, checked: boolean) => {
-    setFields((current) => ({ ...current, [key]: checked }));
+    setDraft((current) => ({
+      ...current,
+      playerFieldVisibility: { ...current.playerFieldVisibility, [key]: checked },
+    }));
+    setTouched((current) => ({
+      ...current,
+      playerFieldVisibility: { ...current.playerFieldVisibility, [key]: true },
+    }));
   };
 
   const hasSelection = selectedCount > 0;
@@ -123,8 +128,11 @@ function InitiativeTrackerBulkVisibilityDialogContent({
         <div className="flex items-center gap-3">
           <Checkbox
             id="bulk-visibility-show-row"
-            checked={visible}
-            onCheckedChange={(checked) => setVisible(Boolean(checked))}
+            checked={draft.visible === "mixed" ? "indeterminate" : draft.visible}
+            onCheckedChange={(checked) => {
+              setDraft((current) => ({ ...current, visible: checked === "indeterminate" ? true : Boolean(checked) }));
+              setTouched((current) => ({ ...current, visible: true }));
+            }}
             className="size-5 cursor-pointer"
           />
           <Label
@@ -142,10 +150,17 @@ function InitiativeTrackerBulkVisibilityDialogContent({
           </Label>
           <Input
             id="bulk-visibility-player-display-name"
-            value={playerDisplayName}
-            onChange={(event) => setPlayerDisplayName(event.target.value)}
+            value={draft.playerDisplayName}
+            onChange={(event) => {
+              setDraft((current) => ({
+                ...current,
+                playerDisplayName: event.target.value,
+                playerDisplayNameMixed: false,
+              }));
+              setTouched((current) => ({ ...current, playerDisplayName: true }));
+            }}
             placeholder={labels.playerDisplayNamePlaceholder}
-            disabled={!visible}
+            disabled={draft.visible === false}
             className="rounded-[15px] bg-gray-middle-light text-white"
           />
           <p className="text-xs text-white/55">{labels.playerDisplayNameHint}</p>
@@ -153,18 +168,22 @@ function InitiativeTrackerBulkVisibilityDialogContent({
 
         <fieldset
           className="flex flex-col gap-2.5 rounded-[15px] border border-white/10 p-4"
-          disabled={!visible}>
+          disabled={draft.visible === false}>
           <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-white/55">
             {labels.fieldsTitle}
           </legend>
-          {FIELD_KEYS.map((key) => (
+          {BULK_VISIBILITY_FIELD_KEYS.map((key) => (
             <div
               key={key}
               className="flex items-center gap-3">
               <Checkbox
                 id={`bulk-visibility-field-${key}`}
-                checked={fields[key]}
-                disabled={!visible}
+                checked={
+                  draft.playerFieldVisibility[key] === "mixed"
+                    ? "indeterminate"
+                    : draft.playerFieldVisibility[key]
+                }
+                disabled={draft.visible === false}
                 onCheckedChange={(checked) => toggleField(key, Boolean(checked))}
                 className="size-5 cursor-pointer"
               />
@@ -201,10 +220,12 @@ function InitiativeTrackerBulkVisibilityDialogContent({
           type="button"
           disabled={!hasSelection}
           onClick={() => {
-            onApply(visible, fields, playerDisplayName.trim());
+            const payload = buildBulkVisibilityUpdatePayload(draft, touched);
+            onApply(payload.changes, payload.playerDisplayName);
             onOpenChange(false);
           }}>
-          {labels.apply}
+          <Cog className="size-4" aria-hidden="true" />
+          {labels.configure}
         </Button>
       </DialogFooter>
     </DialogContent>

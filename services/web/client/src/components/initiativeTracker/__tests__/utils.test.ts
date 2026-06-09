@@ -364,11 +364,29 @@ describe("FR-021 / FR-022 — player-safe battle snapshots", () => {
       battleStarted: true,
       activeTurnRowId: "hidden",
       currentRound: 2,
+      allowPlayerInitiativeInput: false,
     });
 
     expect(sanitized.initiativeTrackerRows.map((row) => row.id)).toEqual(["visible"]);
     expect(sanitized.activeTurnRowId).toBeNull();
     expect(sanitized.battleStarted).toBe(true);
     expect(sanitized.currentRound).toBe(2);
+  });
+
+  it("nominal: preserves GM initiative order for players even when initiative is hidden", () => {
+    const sanitized = sanitizeBattleStateSnapshotForPlayers({
+      initiativeTrackerRows: [
+        { ...visibleRow, id: "slow", characterId: "c-slow", initiative: 5, firstname: "Slow" },
+        { ...visibleRow, id: "fast", characterId: "c-fast", initiative: 20, firstname: "Fast" },
+      ],
+      battleInitialized: true,
+      battleStarted: true,
+      activeTurnRowId: "fast",
+      currentRound: 1,
+      allowPlayerInitiativeInput: false,
+    });
+
+    expect(sanitized.initiativeTrackerRows.map((row) => row.id)).toEqual(["fast", "slow"]);
+    expect(sanitized.initiativeTrackerRows.map((row) => row.initiative)).toEqual([0, 0]);
   });
 });

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { setKeycloakInstance } from "@/services/ApiService";
 import { saveStoredLocale, buildKeycloakAuthOptions, resolveAuthLocale } from "@/hooks/useLocalePreference";
 import { purgePersistedState } from "@/store";
+import { stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
 import { useTranslations } from "next-intl";
 
 interface KeycloakContextType {
@@ -149,10 +150,10 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
         visibilityHandlerRef.current = handleVisibilityChange;
-
-        setLoading(false);
       } catch (error) {
         console.error("Keycloak initialization failed", error);
+      } finally {
+        stripOidcCallbackParams();
         setLoading(false);
       }
     };
@@ -169,8 +170,6 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       }
     };
   }, []);
-
-  // Removed automatic URL cleaning that was causing infinite loop
 
   const login = () => {
     const { locale, redirectUri } = buildKeycloakAuthOptions(pathname);

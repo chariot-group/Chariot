@@ -211,6 +211,7 @@ describe("FR-021 — applyRemoteBattleState", () => {
         battleStarted: true,
         activeTurnRowId: "b",
         currentRound: 3,
+        allowPlayerInitiativeInput: false,
       }),
     );
 
@@ -231,6 +232,7 @@ describe("FR-021 — applyRemoteBattleState", () => {
         battleStarted: false,
         activeTurnRowId: null,
         currentRound: 1,
+        allowPlayerInitiativeInput: false,
       }),
     );
 
@@ -249,6 +251,7 @@ describe("FR-021 — applyRemoteBattleState", () => {
         battleStarted: false,
         activeTurnRowId: null,
         currentRound: 1,
+        allowPlayerInitiativeInput: false,
       }),
     );
 
@@ -266,6 +269,25 @@ describe("FR-021 — applyRemoteBattleState", () => {
     const normalized = normalizePlayerFieldVisibility(row.playerFieldVisibility, "npc", row.groupId);
     expect(normalized.name).toBe(true);
     expect(normalized.hitPoints).toBe(false);
+  });
+
+  it("nominal: preparatory player-initiative flag is mirrored from GM snapshot", () => {
+    let state = sessionReducer(undefined, setInitiativeTrackerRows([]));
+    state = sessionReducer(
+      state,
+      applyRemoteBattleState({
+        initiativeTrackerRows: [buildRow({ id: "prep" })],
+        battleInitialized: true,
+        battleStarted: false,
+        activeTurnRowId: null,
+        currentRound: 1,
+        allowPlayerInitiativeInput: true,
+      }),
+    );
+
+    expect(state.initBattleDraft.allowPlayerInitiativeInput).toBe(true);
+    expect(state.battleInitialized).toBe(true);
+    expect(state.battleStarted).toBe(false);
   });
 });
 
@@ -303,6 +325,46 @@ describe("FR-023 — bulk display configuration", () => {
     expect(state.initiativeTrackerRows.find((row) => row.id === "b")?.playerDisplayName).toBe("Mystery foes");
     expect(state.initiativeTrackerRows.find((row) => row.id === "c")?.playerDisplayName).toBe("C");
     expect(state.initiativeTrackerRows.find((row) => row.id === "a")?.playerFieldVisibility.hitPoints).toBe(true);
+  });
+
+  it("edge: partial field-visibility bulk changes preserve untouched visibility flags", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({
+          id: "a",
+          playerFieldVisibility: {
+            initiative: false,
+            name: true,
+            hitPoints: false,
+            armorClass: true,
+            conditions: false,
+            groupLabel: true,
+          },
+        }),
+      ]),
+    );
+
+    state = sessionReducer(
+      state,
+      updateInitiativeTrackerRowsBulk({
+        ids: ["a"],
+        changes: {
+          playerFieldVisibility: {
+            hitPoints: true,
+          },
+        },
+      }),
+    );
+
+    expect(state.initiativeTrackerRows[0].playerFieldVisibility).toEqual({
+      initiative: false,
+      name: true,
+      hitPoints: true,
+      armorClass: true,
+      conditions: false,
+      groupLabel: true,
+    });
   });
 
   it("edge: empty shared alias preserves existing aliases", () => {

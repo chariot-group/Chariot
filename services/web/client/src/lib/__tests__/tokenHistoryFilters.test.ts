@@ -6,7 +6,7 @@ import {
   TOKEN_HISTORY_FILTERS_STORAGE_KEY,
 } from "@/lib/tokenHistoryFilters";
 
-describe("FR-024 — token history filter persistence", () => {
+describe("FR-027 — token history filter persistence", () => {
   const store = new Map<string, string>();
 
   beforeEach(() => {

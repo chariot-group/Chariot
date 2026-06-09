@@ -10,19 +10,22 @@ ENV="${1:-dev}"
 case "$ENV" in
   dev)
     KEYCLOAK_HOST="keycloak"
+    KCADM_SERVER_URL="http://${KEYCLOAK_HOST}:8080/auth"
     SMTP_SSL="false"
     SMTP_STARTTLS="false"
     DISABLE_SSL_MASTER="true"
     ;;
   integ)
     KEYCLOAK_HOST="keycloak-integ"
-    SMTP_SSL="true"
+    KCADM_SERVER_URL="http://${KEYCLOAK_HOST}:8080"
+    SMTP_SSL="false"
     SMTP_STARTTLS="true"
     DISABLE_SSL_MASTER="false"
     ;;
   prod)
     KEYCLOAK_HOST="keycloak-prod"
-    SMTP_SSL="true"
+    KCADM_SERVER_URL="http://${KEYCLOAK_HOST}:8080"
+    SMTP_SSL="false"
     SMTP_STARTTLS="true"
     DISABLE_SSL_MASTER="false"
     ;;
@@ -34,12 +37,13 @@ esac
 
 echo "Starting Keycloak configuration for environment: $ENV"
 echo "Keycloak host: $KEYCLOAK_HOST"
+echo "Keycloak admin API: $KCADM_SERVER_URL"
 
 # Attendre que Keycloak soit vraiment disponible
 RETRIES=30
 COUNT=0
 until /opt/keycloak/bin/kcadm.sh config credentials \
-  --server "http://${KEYCLOAK_HOST}:8080/auth" \
+  --server "${KCADM_SERVER_URL}" \
   --realm master \
   --user "${KEYCLOAK_ADMIN_USER}" \
   --password "${KEYCLOAK_ADMIN_PASSWORD}" 2>&1; do

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -206,6 +207,12 @@ export class UserService {
         throw new NotFoundException(message);
       }
 
+      if (addHistoryDto.value > 0 && user.balance < addHistoryDto.value) {
+        const message = `Insufficient token balance for user #${keycloakId}`;
+        this.logger.warn(message, this.SERVICE_NAME);
+        throw new BadRequestException(message);
+      }
+
       user.history.push({
         date: new Date(),
         campaignName: addHistoryDto.campaignName,
@@ -248,6 +255,16 @@ export class UserService {
       this.logger.error(message, error.stack, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
+  }
+
+  async getBalance(keycloakId: string): Promise<number> {
+    const user = await this.userModel.findOne({ keycloakId }).exec();
+    if (!user) {
+      const message: string = `User #${keycloakId} not found in database`;
+      this.logger.error(message, null, this.SERVICE_NAME);
+      throw new NotFoundException(message);
+    }
+    return user.balance;
   }
 
   async addTokens(keycloakId: string, amount: number): Promise<void> {
