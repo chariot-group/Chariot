@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.6.1] - 07-06-2026
+
+### Added
+- Added free checkout flow for orders at 0 € or below the Stripe minimum charge amount (button "Obtenir gratuitement", no card payment required)
+- Added "Cadeau" line in checkout recap when a positive remainder below the Stripe minimum is waived
+- Added `stripe-charge.utils` and `POST /stripe/free-order` endpoint (payment service) for zero-amount orders without Stripe card payment
+- Added FR-013-C functional rule for below-minimum and free checkout orders
+- Added player initiative input during active combat (GM-controlled visibility)
+- Added bulk NPC visibility dialog in the initiative tracker
+- Added `stripOidcCallbackParams` to clean Keycloak OIDC callback query params after login (web + admin)
+- Added session WebSocket hardening: shared socket pool, reconnect grace period, roster merge, session-end dedup (FR-026)
+
+### Changed
+- `createPaymentIntent` and `updatePaymentIntent` now return `isFreeOrder` and use chargeable amount instead of raw discounted amount
+- Checkout session metadata includes gift amount in total discount
+- Initiative tracker: improved responsive layout, accessibility, and bulk selection UX
+- Battle tab: refactored action sections (display mode, filters, update panels)
+- Session participants now display usernames only (not first name + last name)
+- Payment service bumped to 1.0.1; adventure 2.5.1; gateway 2.4.1; session 1.2.1; admin 1.0.1
+
+### Fixed
+- Fixed promo codes at 99–100 % being displayed in checkout but charging the full price
+- Fixed promo codes at 99–100 % failing to update PaymentIntent amount (Stripe rejects amounts below minimum); order is now routed to the free-order flow instead
+- Fixed Stripe Elements context error when applying a 100 % promo code (`CheckoutFreeForm` / `CheckoutPaidForm` split)
+- PaymentIntent is cancelled when an order becomes non-chargeable to prevent accidental full-price payment
+- Fixed footer buttons visibility in checkout
+- Fixed session WebSocket regressions: double connections, false disconnect toasts on refresh, roster wipe on reconnect, duplicate session-end notices
+- Fixed gateway 429 rate-limit errors during session sync
+- Fixed Keycloak OIDC callback leaving stale query params in the URL
+- Fixed SSO SMTP configuration for integ/prod
+- Fixed character detail view edge case in session context
+
 ## [2.6.0] - 06-06-2026
 
 ### Added

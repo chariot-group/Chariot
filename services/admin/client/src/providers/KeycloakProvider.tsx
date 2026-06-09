@@ -3,6 +3,7 @@
 import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { setKeycloakInstance } from "@/services/ApiService";
+import { stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
 
 interface KeycloakContextType {
   keycloak: Keycloak | null;
@@ -88,6 +89,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         console.error("Keycloak init failed", err);
       } finally {
+        stripOidcCallbackParams();
         setLoading(false);
       }
     };

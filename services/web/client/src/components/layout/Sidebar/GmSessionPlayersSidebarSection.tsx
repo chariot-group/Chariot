@@ -14,9 +14,13 @@ import {
   selectSessionCode,
   selectSessionParticipants,
   selectCharacterSheetRemoteVersions,
+  selectSessionParticipantDisplayNames,
+  mergeSessionParticipantDisplayNames,
+  pruneSessionParticipantDisplayNames,
 } from "@/store/slices/sessionSlice";
 import { selectOpenSessionPlayers, setOpenSessionPlayers } from "@/store/slices/sidebarSlice";
-import UserService from "@/services/UserService";
+import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisplayNames";
 import { useSidebar } from "@/components/ui/sidebar";
 import characterService from "@/services/CharacterService";
 
@@ -38,7 +42,7 @@ export default function GmSessionPlayersSidebarSection() {
   const openSection = useAppSelector(selectOpenSessionPlayers);
   const remoteVersions = useAppSelector(selectCharacterSheetRemoteVersions);
 
-  const [displayNames, setDisplayNames] = React.useState<Record<string, string>>({});
+  const displayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const [characterLabels, setCharacterLabels] = React.useState<Record<string, string>>({});
 
   const locale = pathname?.split("/")[1] ?? "fr";
@@ -84,17 +88,10 @@ export default function GmSessionPlayersSidebarSection() {
   React.useEffect(() => {
     const rosterPresence = participantsRef.current.filter((p) => p.status !== "gameMaster");
     const rosterWithSheet = rosterPresence.filter((p) => p.characterId != null && p.characterId.length > 0);
-    const uids = new Set(rosterPresence.map((p) => p.userId));
     const cids = new Set(
       rosterWithSheet.map((p) => p.characterId).filter((id): id is string => Boolean(id && id.length > 0)),
     );
-    setDisplayNames((prev) => {
-      const next = { ...prev };
-      for (const k of Object.keys(next)) {
-        if (!uids.has(k)) delete next[k];
-      }
-      return next;
-    });
+    dispatch(pruneSessionParticipantDisplayNames());
     setCharacterLabels((prev) => {
       const next = { ...prev };
       for (const k of Object.keys(next)) {
@@ -102,7 +99,7 @@ export default function GmSessionPlayersSidebarSection() {
       }
       return next;
     });
-  }, [rosterStableKey]);
+  }, [dispatch, rosterStableKey]);
 
   const prevRemoteVersionsRef = React.useRef<Record<string, number>>({});
 
@@ -173,11 +170,12 @@ export default function GmSessionPlayersSidebarSection() {
         const nameUpdates: Record<string, string> = {};
         const charUpdates: Record<string, string> = {};
         for (const p of roster) {
-          try {
-            const u = await UserService.getUserById(p.userId);
-            nameUpdates[p.userId] = u.username?.trim() || p.userId;
-          } catch {
-            nameUpdates[p.userId] = p.userId;
+          const existing = displayNames[p.userId];
+          if (!existing || existing === SESSION_PARTICIPANT_NAME_LOADING) {
+            const label = await fetchSessionParticipantDisplayName(p.userId);
+            if (label !== SESSION_PARTICIPANT_NAME_LOADING) {
+              nameUpdates[p.userId] = label;
+            }
           }
           const cid = p.characterId?.trim();
           if (!cid) {
@@ -194,7 +192,9 @@ export default function GmSessionPlayersSidebarSection() {
           if (cancelled) return;
         }
         if (!cancelled) {
-          setDisplayNames((prev) => ({ ...prev, ...nameUpdates }));
+          if (Object.keys(nameUpdates).length > 0) {
+            dispatch(mergeSessionParticipantDisplayNames(nameUpdates));
+          }
           setCharacterLabels((prev) => ({ ...prev, ...charUpdates }));
         }
       })();
@@ -204,7 +204,7 @@ export default function GmSessionPlayersSidebarSection() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [contextMode, isGm, isInSession, rosterStableKey, sessionCode]);
+  }, [contextMode, dispatch, displayNames, isGm, isInSession, rosterStableKey, sessionCode]);
 
   if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || presenceRoster.length === 0) {
     return null;
@@ -247,7 +247,7 @@ export default function GmSessionPlayersSidebarSection() {
         className="my-2 flex mx-5 flex-col gap-1">
         {presenceRoster.map((p) => {
           const cid = p.characterId?.trim();
-          const userLabel = displayNames[p.userId] ?? p.userId;
+          const userLabel = displayNames[p.userId] ?? SESSION_PARTICIPANT_NAME_LOADING;
           const hasSheet = Boolean(cid);
           const charLabel = hasSheet ? (characterLabels[cid!] ?? cid!) : "";
           const href = cid

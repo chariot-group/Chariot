@@ -509,7 +509,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   }, [form, handleCancel, handleInvalid, onCreate]);
 
   return (
-    <main className="flex flex-col h-dvh overflow-hidden overflow-x-hidden">
+    <main className="flex flex-col flex-1 min-h-0 overflow-hidden overflow-x-hidden">
       <form
         id="character-create-form"
         className="flex flex-col flex-1 min-h-0"

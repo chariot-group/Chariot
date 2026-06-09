@@ -5,16 +5,25 @@ describe("FR-021 / FR-023 — battle state realtime broadcast gate", () => {
   it("edge: keeps initialized-but-not-started combat GM-only", () => {
     expect(
       shouldBroadcastBattleStateSnapshot(
-        { battleInitialized: true, battleStarted: false },
+        { battleInitialized: true, battleStarted: false, allowPlayerInitiativeInput: false },
         false,
       ),
     ).toBe(false);
   });
 
+  it("nominal: broadcasts initialized combat when player initiative entry is enabled", () => {
+    expect(
+      shouldBroadcastBattleStateSnapshot(
+        { battleInitialized: true, battleStarted: false, allowPlayerInitiativeInput: true },
+        false,
+      ),
+    ).toBe(true);
+  });
+
   it("edge: broadcasts started combat updates", () => {
     expect(
       shouldBroadcastBattleStateSnapshot(
-        { battleInitialized: true, battleStarted: true },
+        { battleInitialized: true, battleStarted: true, allowPlayerInitiativeInput: false },
         false,
       ),
     ).toBe(true);
@@ -23,7 +32,7 @@ describe("FR-021 / FR-023 — battle state realtime broadcast gate", () => {
   it("error: broadcasts the cleanup snapshot after a started combat ends", () => {
     expect(
       shouldBroadcastBattleStateSnapshot(
-        { battleInitialized: false, battleStarted: false },
+        { battleInitialized: false, battleStarted: false, allowPlayerInitiativeInput: false },
         true,
       ),
     ).toBe(true);
@@ -32,7 +41,7 @@ describe("FR-021 / FR-023 — battle state realtime broadcast gate", () => {
   it("edge: ignores empty combat state when nothing had been broadcast", () => {
     expect(
       shouldBroadcastBattleStateSnapshot(
-        { battleInitialized: false, battleStarted: false },
+        { battleInitialized: false, battleStarted: false, allowPlayerInitiativeInput: false },
         false,
       ),
     ).toBe(false);

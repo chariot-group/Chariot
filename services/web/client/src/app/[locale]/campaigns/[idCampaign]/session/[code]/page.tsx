@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/useToast";
 import { useSessionData } from "@/hooks/useSessionData";
 import type { SessionParticipant } from "@/services/SessionService";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
+import { useUser } from "@/hooks/useUser";
 import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useAppSelector } from "@/store/hooks";
 import { selectCampaigns } from "@/store/slices/campaignSlice";
@@ -16,7 +17,7 @@ import { Check, ChevronDown, Copy, Link, Loader2, Minus, Plus, Trash2 } from "lu
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
-import React, { useState, type Dispatch, type SetStateAction } from "react";
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
@@ -27,8 +28,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { selectSessionStatus } from "@/store/slices/sessionSlice";
+import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/sessionSlice";
 import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
+import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
@@ -36,6 +38,7 @@ export default function SessionPage() {
   const campaigns = useAppSelector(selectCampaigns);
   const campaign = campaigns.find((c) => c._id === idCampaign);
   const { token } = useKeycloak();
+  useUser({ autoFetch: true });
   const currentUser = useAppSelector(selectUser);
   const toast = useToast();
 
@@ -43,15 +46,19 @@ export default function SessionPage() {
   const sessionIsActive = sessionStatus == "activated";
   const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
-  const [tokensByUser, setTokensByUser] = useState<Record<string, number>>({});
+  const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
+  const [tokensByUser, setTokensByUser] = useState<Record<string, number>>(reduxTokensByUser);
   const [customAmount, setCustomAmount] = useState(1);
+
+  useEffect(() => {
+    setTokensByUser(reduxTokensByUser);
+  }, [reduxTokensByUser]);
 
   const {
     campaignLabel,
     participants,
     setParticipants,
     participantNames,
-    setParticipantNames,
     myCharacters,
     fetchCharacterDetails,
     getCharacterLabel,
@@ -73,7 +80,6 @@ export default function SessionPage() {
     currentUser,
     participants,
     setParticipants,
-    setParticipantNames,
     fetchCharacterDetails,
     tokensByUser,
     setTokensByUser,
@@ -171,7 +177,9 @@ export default function SessionPage() {
                         role="listitem"
                         className="bg-gray flex flex-col gap-2 p-3">
                         <div className="flex flex-row justify-between items-center gap-3">
-                          <span className="font-medium">{participantNames[participant.userId] ?? "..."}</span>
+                          <span className="font-medium">
+                            {participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING}
+                          </span>
                           {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
                           {participant.status === "connected" && (
                             <Badge variant={"secondary"}>{t("players.player")}</Badge>

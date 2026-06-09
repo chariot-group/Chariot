@@ -50,21 +50,21 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat font-sans overflow-hidden h-screen`}>
+        className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat font-sans overflow-hidden h-dvh`}>
         <NextIntlClientProvider messages={messages}>
           <KeycloakProvider>
             <ReduxProvider>
               <SessionCharacterSyncClientDynamic />
-              <SidebarProvider>
+              <SidebarProvider className="h-dvh min-h-0 overflow-hidden">
                 <AppSidebar />
 
-                <div className="flex w-full flex-col h-screen overflow-hidden relative">
+                <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative">
                   <PostLoginNavigator />
                   <LocaleDetector />
                   <ToastContainer />
                   <Header />
 
-                  {children}
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
                   {appVersion && (
                     <p className="absolute bottom-0 left-2 lg:inset-x-0 text-center text-[10px] text-white/55 select-none">Chariot v{appVersion}</p>
                   )}
