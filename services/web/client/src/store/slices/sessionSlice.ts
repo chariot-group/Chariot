@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
 import {
@@ -8,6 +8,7 @@ import {
     tickConditionEntries,
 } from '@/components/initiativeTracker/conditionDuration';
 import { SESSION_PARTICIPANTS_GROUP_ID } from '@/components/initiativeTracker/constants';
+import { SESSION_PARTICIPANT_NAME_LOADING } from '@/lib/formatSessionParticipantUserLabel';
 import {
     buildBattleTurnKey,
     canUndoBattleTurn,
@@ -19,6 +20,7 @@ import {
 
 export interface SessionInitBattleDraft {
     showAllOpponents: boolean;
+    allowPlayerInitiativeInput: boolean;
     selectedGroupIds: string[];
     expandedGroupIds: string[];
     excludedMembersByGroup: Record<string, string[]>;
@@ -179,6 +181,7 @@ export interface BattleStateSnapshot {
     battleStarted: boolean;
     activeTurnRowId: string | null;
     currentRound: number;
+    allowPlayerInitiativeInput: boolean;
 }
 
 export interface InitiativeTrackerRow {
@@ -258,6 +261,7 @@ export function createInitiativeTrackerRow(input: {
 
 const initialInitBattleDraft: SessionInitBattleDraft = {
     showAllOpponents: false,
+    allowPlayerInitiativeInput: false,
     selectedGroupIds: [],
     expandedGroupIds: [],
     excludedMembersByGroup: {},
@@ -285,6 +289,8 @@ export interface CurrentSessionState {
     characterSheetRemoteVersions: Record<string, number>;
     /** FR-021 — dernière fiche consultée par le MJ pendant la session (chemin absolu avec locale). */
     lastConsultedSheetPath: string | null;
+    /** Libellés affichables des participants (username ou prénom + nom). */
+    participantDisplayNames: Record<string, string>;
 }
 
 const initialState: CurrentSessionState = {
@@ -304,6 +310,7 @@ const initialState: CurrentSessionState = {
     turnsWithActions: [],
     characterSheetRemoteVersions: {},
     lastConsultedSheetPath: null,
+    participantDisplayNames: {},
 };
 
 const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow => {
@@ -321,6 +328,17 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
         ),
         visible: row.visible,
     });
+};
+
+const mergePlayerFieldVisibilityChange = (
+    row: InitiativeTrackerRow,
+    nextVisibility: Partial<InitiativeTrackerPlayerFieldVisibility> | undefined,
+) => {
+    if (!nextVisibility) return row.playerFieldVisibility;
+    return {
+        ...row.playerFieldVisibility,
+        ...nextVisibility,
+    };
 };
 
 const purgeTurnKeysForRow = (turnsWithActions: string[], rowId: string): string[] => {
@@ -444,6 +462,7 @@ const sessionSlice = createSlice({
             resetBattleTurnState(state);
             state.characterSheetRemoteVersions = {};
             state.lastConsultedSheetPath = null;
+            state.participantDisplayNames = {};
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
             state.status = action.payload;
@@ -458,6 +477,22 @@ const sessionSlice = createSlice({
         removeSessionParticipantByUserId: (state, action: PayloadAction<string>) => {
             const userId = action.payload;
             state.participants = state.participants.filter((p) => p.userId !== userId);
+            delete state.participantDisplayNames[userId];
+        },
+        mergeSessionParticipantDisplayNames: (state, action: PayloadAction<Record<string, string>>) => {
+            for (const [userId, label] of Object.entries(action.payload)) {
+                const trimmed = label?.trim();
+                if (!trimmed || trimmed === SESSION_PARTICIPANT_NAME_LOADING) continue;
+                state.participantDisplayNames[userId] = trimmed;
+            }
+        },
+        pruneSessionParticipantDisplayNames: (state) => {
+            const activeUserIds = new Set(state.participants.map((p) => p.userId));
+            for (const userId of Object.keys(state.participantDisplayNames)) {
+                if (!activeUserIds.has(userId)) {
+                    delete state.participantDisplayNames[userId];
+                }
+            }
         },
         setSessionTokensByUser: (state, action: PayloadAction<Record<string, number>>) => {
             state.tokensByUser = action.payload;
@@ -554,10 +589,14 @@ const sessionSlice = createSlice({
         ) => {
             const row = state.initiativeTrackerRows.find((item) => item.id === action.payload.id);
             if (!row) return;
+            const nextPlayerFieldVisibility = mergePlayerFieldVisibilityChange(
+                row,
+                action.payload.changes.playerFieldVisibility,
+            );
             Object.assign(row, action.payload.changes);
             if (action.payload.changes.playerFieldVisibility || action.payload.changes.kind) {
                 row.playerFieldVisibility = normalizePlayerFieldVisibility(
-                    row.playerFieldVisibility,
+                    nextPlayerFieldVisibility,
                     row.kind,
                     row.groupId,
                 );
@@ -573,7 +612,9 @@ const sessionSlice = createSlice({
             state,
             action: PayloadAction<{
                 ids: string[];
-                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>>;
+                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>> & {
+                    playerFieldVisibility?: Partial<InitiativeTrackerPlayerFieldVisibility>;
+                };
                 playerDisplayName?: string;
             }>,
         ) => {
@@ -583,6 +624,10 @@ const sessionSlice = createSlice({
             let changed = false;
             for (const row of state.initiativeTrackerRows) {
                 if (!rowIds.has(row.id)) continue;
+                const nextPlayerFieldVisibility = mergePlayerFieldVisibilityChange(
+                    row,
+                    action.payload.changes.playerFieldVisibility,
+                );
                 Object.assign(row, action.payload.changes);
                 if (typeof action.payload.playerDisplayName === 'string') {
                     const trimmedDisplayName = action.payload.playerDisplayName.trim();
@@ -592,7 +637,7 @@ const sessionSlice = createSlice({
                 }
                 if (action.payload.changes.playerFieldVisibility || action.payload.changes.kind) {
                     row.playerFieldVisibility = normalizePlayerFieldVisibility(
-                        row.playerFieldVisibility,
+                        nextPlayerFieldVisibility,
                         row.kind,
                         row.groupId,
                     );
@@ -615,6 +660,10 @@ const sessionSlice = createSlice({
             state.battleStarted = payload.battleStarted ?? false;
             state.activeTurnRowId = payload.activeTurnRowId ?? null;
             state.currentRound = payload.currentRound ?? 1;
+            state.initBattleDraft = {
+                ...state.initBattleDraft,
+                allowPlayerInitiativeInput: payload.allowPlayerInitiativeInput ?? false,
+            };
         },
         setLastConsultedSheetPath: (state, action: PayloadAction<string | null>) => {
             const path = action.payload?.trim() ?? '';
@@ -711,6 +760,8 @@ export const {
     touchRemoteCharacterSheet,
     applyRemoteBattleState,
     setLastConsultedSheetPath,
+    mergeSessionParticipantDisplayNames,
+    pruneSessionParticipantDisplayNames,
 } = sessionSlice.actions;
 
 export const selectCurrentSession = (state: RootState) => state.session;
@@ -720,6 +771,8 @@ export const selectSessionCampaignId = (state: RootState) => state.session.campa
 export const selectSessionStatus = (state: RootState) => state.session.status;
 export const selectSessionExpiresAt = (state: RootState) => state.session.expiresAt;
 export const selectSessionParticipants = (state: RootState) => state.session.participants;
+export const selectSessionParticipantDisplayNames = (state: RootState) =>
+    state.session.participantDisplayNames ?? {};
 export const selectSessionInitBattleDraft = (state: RootState) => state.session.initBattleDraft;
 export const selectInitiativeTrackerRows = (state: RootState) => state.session.initiativeTrackerRows;
 export const selectBattleInitialized = (state: RootState) => state.session.battleInitialized;
@@ -749,6 +802,7 @@ export const selectBattleStateSnapshot = (state: RootState): BattleStateSnapshot
     battleStarted: state.session.battleStarted,
     activeTurnRowId: state.session.activeTurnRowId,
     currentRound: state.session.currentRound,
+    allowPlayerInitiativeInput: state.session.initBattleDraft.allowPlayerInitiativeInput ?? false,
 });
 
 export default sessionSlice.reducer;

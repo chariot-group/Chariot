@@ -24,7 +24,7 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                 <TabsContent
                     key={tab}
                     value={tab}
-                    className="mt-0 focus:outline-none"
+                    className="mt-0 flex-none focus:outline-none"
                     role="tabpanel"
                     id={`${tab}-content`}
                     aria-labelledby={tab}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
     fetchUserStart,
@@ -62,21 +62,28 @@ export function useUser(options: UseUserOptions = {}) {
         dispatch(clearUser());
     }, [dispatch]);
 
+    const forceRefreshDoneRef = useRef(false);
+
     // Auto-fetch when authenticated and enabled
     useEffect(() => {
-        // Don't fetch if:
-        // - autoFetch is disabled
-        // - Keycloak is still loading
-        // - User is not authenticated
-        // - Already have user data and not forcing refresh
-        if (!autoFetch || keycloakLoading || !authenticated) {
+        if (!autoFetch || keycloakLoading || !authenticated || loading) {
             return;
         }
 
-        if (!user || forceRefresh) {
-            fetchUser();
+        // forceRefresh: une seule fois par montage (évite la boucle user → fetch → user)
+        if (forceRefresh) {
+            if (forceRefreshDoneRef.current) {
+                return;
+            }
+            forceRefreshDoneRef.current = true;
+            void fetchUser();
+            return;
         }
-    }, [autoFetch, keycloakLoading, authenticated, user, forceRefresh, fetchUser]);
+
+        if (!user && !error) {
+            void fetchUser();
+        }
+    }, [autoFetch, keycloakLoading, authenticated, user, loading, error, forceRefresh, fetchUser]);
 
     return {
         user,
