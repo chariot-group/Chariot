@@ -20,6 +20,11 @@ export function makeZodMessages(t: TranslationFunction) {
         invalidType: () => t('invalidTypeReceived'),
 
         /**
+         * Message pour valeur enum invalide
+         */
+        invalidOption: () => t('invalidOption'),
+
+        /**
          * Message pour .min() sur une string
          */
         minString: (min: number) => t('tooSmall.string.inclusive', { minimum: min }),
@@ -79,5 +84,15 @@ export function makeZodMessages(t: TranslationFunction) {
          */
         classLevelTotalsVsGlobalHitDice: (total: number, global: number) =>
             t('classLevelTotalsVsGlobalHitDice', { total, global }),
+
+        /**
+         * Une ligne de dégâts ne peut pas contenir plusieurs types.
+         */
+        singleDamageType: () => t('singleDamageType'),
+
+        /**
+         * Les types de dégâts d'une action doivent rester uniques.
+         */
+        uniqueActionDamageType: () => t('uniqueActionDamageType'),
     };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Character } from "@/types/character";
-import { Controller, UseFormReturn, useWatch, useFieldArray } from "react-hook-form";
+import { Controller, UseFormReturn, useWatch, useFieldArray, useFormState } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  CircleAlert,
   ArrowRightLeft,
   Plus,
   Trash2,
@@ -50,6 +51,11 @@ import { useCodexHealth } from "@/hooks/useCodexHealth";
 import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
 import React from "react";
+import {
+  getSpellIndicesWithErrors,
+  getSpellLevelsWithErrors,
+  getSpellUsesGroupsWithErrors,
+} from "@/components/character/characterFormErrors";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 const EMPTY_SPELLS: Spell[] = [];
@@ -119,6 +125,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const [isCodexDialogOpen, setIsCodexDialogOpen] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [preparationEditMode, setPreparationEditMode] = useState(false);
+  const { errors } = useFormState({ control: form.control });
 
   const { isAvailable: isCodexAvailable } = useCodexHealth();
 
@@ -157,6 +164,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     name: `spellcasting.${selectedSpellcastingIndex}.spells`,
   });
   const currentSpells: Spell[] = watchedSpells ?? EMPTY_SPELLS;
+  const spellIndicesWithErrors = new Set(getSpellIndicesWithErrors(errors, selectedSpellcastingIndex));
 
   const isInnate: boolean =
     useWatch({
@@ -619,6 +627,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     }, []);
     return acc;
   }, {});
+  const spellLevelsWithErrors = getSpellLevelsWithErrors(errors, selectedSpellcastingIndex, currentSpells);
 
   if (usesPreparedMechanic) {
     for (const lvl of levels) {
@@ -657,6 +666,12 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       .map(({ index }: { index: number }) => index);
     return acc;
   }, {});
+  const spellUsesGroupsWithErrors = getSpellUsesGroupsWithErrors(
+    errors,
+    selectedSpellcastingIndex,
+    currentSpells,
+    npcUsesKey,
+  );
 
   const allSpellAccordionKeys = !isInnate
     ? levels.filter((level) => (spellIndicesByLevel[level] ?? []).length > 0).map((level) => `level-${level}`)
@@ -696,6 +711,18 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       }, 0);
     }
   };
+
+  const renderErrorIndicator = (label: string) => (
+    <span className="inline-flex items-center text-red shrink-0">
+      <CircleAlert
+        className="size-4"
+        aria-hidden="true"
+      />
+      <span className="sr-only">{label}</span>
+    </span>
+  );
+
+  const errorCardClassName = "border-red/75 bg-red/8";
 
   return (
     <div
@@ -1183,6 +1210,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       const indices = spellIndicesByLevel[level] ?? [];
                       /** On n’affiche une section que si `indices.length > 0` : dès qu’un sort existe à ce niveau > 0, il faut pouvoir régler les emplacements. */
                       const hasSlots = level > 0;
+                      const hasLevelError = Boolean(spellLevelsWithErrors[level]);
 
                       return (
                         spellIndicesByLevel[level].length > 0 && (
@@ -1190,11 +1218,18 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                             key={level}
                             value={`level-${level}`}
                             className="flex flex-col gap-2 w-full content-center">
-                            <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
+                            <Card
+                              data-invalid={hasLevelError || undefined}
+                              aria-invalid={hasLevelError || undefined}
+                              className={cn(
+                                "flex flex-row justify-between gap-0 p-0 overflow-hidden",
+                                hasLevelError && errorCardClassName,
+                              )}>
                               <div className="relative w-full">
                                 <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
-                                  <h3 className={`text-base md:text-lg font-medium ${accentColor}`}>
-                                    {level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}
+                                  <h3 className={`inline-flex items-center gap-1.5 text-base md:text-lg font-medium ${accentColor}`}>
+                                    <span>{level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}</span>
+                                    {hasLevelError ? renderErrorIndicator(tMagic("spellCategoryContainsErrors")) : null}
                                   </h3>
                                 </AccordionTrigger>
                                 {hasSlots && (
@@ -1247,6 +1282,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     const spell = currentSpells[spellIndex];
                                     const spellName = spell?.name;
                                     const isSelected = selectedSpellIndex === spellIndex;
+                                    const hasSpellError = spellIndicesWithErrors.has(spellIndex);
+                                    const spellLabel = spellName || tMagic("newSpell");
                                     const showBookmarks = usesPreparedMechanic && level > 0;
                                     const prepEditRow = preparationEditMode && showBookmarks;
 
@@ -1266,15 +1303,24 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                                 openSpellDetail();
                                               }
                                             }}
-                                            className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 p-2 sm:px-3 md:px-4 flex-row items-center cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
+                                            data-invalid={hasSpellError || undefined}
+                                            className={cn(
+                                              `border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 p-2 sm:px-3 md:px-4 flex-row items-center cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`,
+                                              hasSpellError && errorCardClassName,
+                                            )}
                                             role="button"
                                             tabIndex={0}
-                                            aria-label={spellName || tMagic("newSpell")}>
+                                            aria-label={
+                                              hasSpellError
+                                                ? tMagic("spellContainsErrorsAria", { name: spellLabel })
+                                                : spellLabel
+                                            }>
                                             <span
                                               className={`truncate text-xs sm:text-sm md:text-base flex-1 min-w-0 ${isSelected ? "font-bold" : ""}`}
                                               aria-hidden="true">
-                                              {spellName || tMagic("newSpell")}
+                                              {spellLabel}
                                             </span>
+                                            {hasSpellError ? renderErrorIndicator(tMagic("spellContainsErrors")) : null}
                                           </Card>
                                         </li>
                                       );
@@ -1317,10 +1363,18 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                               openSpellDetail();
                                             }
                                           }}
-                                          className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 py-2 pl-2 pr-2 sm:pl-3 sm:pr-3 md:px-3 flex-row items-center cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
+                                          data-invalid={hasSpellError || undefined}
+                                          className={cn(
+                                            `border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 py-2 pl-2 pr-2 sm:pl-3 sm:pr-3 md:px-3 flex-row items-center cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`,
+                                            hasSpellError && errorCardClassName,
+                                          )}
                                           role="button"
                                           tabIndex={0}
-                                          aria-label={spellName || tMagic("newSpell")}>
+                                          aria-label={
+                                            hasSpellError
+                                              ? tMagic("spellContainsErrorsAria", { name: spellLabel })
+                                              : spellLabel
+                                          }>
                                           <div className="flex flex-row items-center gap-2 min-w-0 flex-1">
                                             <SpellPreparedPill
                                               isPrepared={spell?.prepared === true}
@@ -1339,8 +1393,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                                 isSelected && "font-bold",
                                               )}
                                               aria-hidden="true">
-                                              {spellName || tMagic("newSpell")}
+                                              {spellLabel}
                                             </span>
+                                            {hasSpellError ? renderErrorIndicator(tMagic("spellContainsErrors")) : null}
                                           </div>
                                         </Card>
                                       </li>
@@ -1367,17 +1422,25 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   {npcUsesGroups.map((uses) => {
                     const key = npcUsesKey(uses);
                     const indices = npcSpellIndicesByUses[key] ?? [];
+                    const hasUsesGroupError = Boolean(spellUsesGroupsWithErrors[key]);
 
                     return (
                       <AccordionItem
                         key={key}
                         value={key}
                         className="flex flex-col gap-2 w-full content-center">
-                        <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
+                        <Card
+                          data-invalid={hasUsesGroupError || undefined}
+                          aria-invalid={hasUsesGroupError || undefined}
+                          className={cn(
+                            "flex flex-row justify-between gap-0 p-0 overflow-hidden",
+                            hasUsesGroupError && errorCardClassName,
+                          )}>
                           <div className="relative w-full">
                             <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
-                              <h3 className={`text-base md:text-lg font-medium ${accentColor}`}>
-                                {uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}
+                              <h3 className={`inline-flex items-center gap-1.5 text-base md:text-lg font-medium ${accentColor}`}>
+                                <span>{uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}</span>
+                                {hasUsesGroupError ? renderErrorIndicator(tMagic("spellCategoryContainsErrors")) : null}
                               </h3>
                             </AccordionTrigger>
                           </div>
@@ -1392,6 +1455,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                 const spell = currentSpells[spellIndex];
                                 const spellName = spell?.name;
                                 const isSelected = selectedSpellIndex === spellIndex;
+                                const hasSpellError = spellIndicesWithErrors.has(spellIndex);
+                                const spellLabel = spellName || tMagic("newSpell");
 
                                 return (
                                   <li key={spellIndex}>
@@ -1407,15 +1472,24 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                           setShowMobileDetails(true);
                                         }
                                       }}
-                                      className={`border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`}
+                                      data-invalid={hasSpellError || undefined}
+                                      className={cn(
+                                        `border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`,
+                                        hasSpellError && errorCardClassName,
+                                      )}
                                       role="button"
                                       tabIndex={0}
-                                      aria-label={spellName || tMagic("newSpell")}>
-                                      <span
-                                        className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
-                                        aria-hidden="true">
-                                        {spellName || tMagic("newSpell")}
-                                      </span>
+                                      aria-label={
+                                        hasSpellError ? tMagic("spellContainsErrorsAria", { name: spellLabel }) : spellLabel
+                                      }>
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span
+                                          className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
+                                          aria-hidden="true">
+                                          {spellLabel}
+                                        </span>
+                                        {hasSpellError ? renderErrorIndicator(tMagic("spellContainsErrors")) : null}
+                                      </div>
                                       {uses !== null && (
                                         <span className="text-[10px] sm:text-xs text-muted-foreground">
                                           {spell?.used ?? 0} / {uses}

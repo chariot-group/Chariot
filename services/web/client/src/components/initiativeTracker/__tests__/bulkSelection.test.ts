@@ -35,7 +35,7 @@ const buildRow = (
   deathSavesFailures: overrides.deathSavesFailures ?? 0,
 });
 
-describe("FR-030 — bulk visibility selection summary", () => {
+describe("FR-031 — bulk visibility selection summary", () => {
   it("nominal: derives shared values when every selected row matches", () => {
     const rows = [
       buildRow({
@@ -113,7 +113,7 @@ describe("FR-030 — bulk visibility selection summary", () => {
   });
 });
 
-describe("FR-030 — bulk visibility partial update payload", () => {
+describe("FR-031 — bulk visibility partial update payload", () => {
   it("nominal: emits only touched values", () => {
     const summary = deriveBulkVisibilitySummary([
       buildRow({ id: "a" }),

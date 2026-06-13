@@ -2192,7 +2192,53 @@ Each initiative tracker row carries:
 - `docs/design.md` — sections 8, 9
 ---
 
-## FR-030: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+## FR-030: Web Client Form Field Validation Visibility
+
+**Rule**: Every web client form must expose validation errors at the field level, with precise user-facing messages and accessible links between invalid fields, their messages, and any parent tab or section that contains the error.
+
+**Scope**:
+
+- Applies to all forms in `services/web/client`, including character and NPC sheets.
+- Applies to client-side validation, API validation mapped back to form fields, and submit attempts blocked by invalid input.
+- Uses React Hook Form as the form state source of truth for validation state.
+
+**Requirements**:
+
+- A blocked submit may show a global toast, but the toast must not be the only error feedback.
+- Each invalid field must display a specific, translated error message next to or directly below the field.
+- Error messages caused by user input must explain the exact issue and expected correction when feasible.
+- Server/API validation errors that identify a field must be mapped to that field instead of being shown only as a global error.
+- Global form errors are reserved for failures that cannot be attributed to a specific field.
+- Invalid fields must expose `aria-invalid="true"` and use `aria-describedby` to reference their error message.
+- When a form is split across tabs or sections, each tab/section trigger containing invalid fields must show a visible and non-color-only error indicator.
+- If submit is blocked by errors in another tab, the user must be able to identify which tab contains the error without manually inspecting every tab.
+- Error indicators must remain compatible with keyboard navigation and screen readers.
+- Validation behavior and messages must be internationalized for supported locales.
+
+**Prohibitions**:
+
+- Showing only a generic toast such as "form cannot be submitted" when field-level errors exist.
+- Using a single global error for validation failures that are attributable to specific fields.
+- Hiding invalid field messages inside collapsed tabs without surfacing the tab/section error state.
+- Conveying tab or field error state by color alone.
+- Introducing form state management that bypasses React Hook Form for forms already using it.
+
+**Tests**:
+
+- Form submission with invalid visible fields renders field-level messages and marks inputs invalid.
+- Form submission with invalid fields in another tab marks that tab as containing errors.
+- API validation errors with field paths are displayed on the corresponding fields.
+- Global errors are shown only for non-field-specific failures.
+- Keyboard and screen-reader accessibility expose invalid field and tab error states.
+
+**References**:
+
+- `services/web/client/src/`
+- `services/web/client/src/components/character/`
+
+---
+
+## FR-031: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
 
 **Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
 
@@ -2230,3 +2276,4 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
+
