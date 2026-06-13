@@ -16,16 +16,14 @@ vi.mock("next-intl", () => ({
   },
 }));
 
-vi.mock("next/navigation", () => ({
-  usePathname: () => "/fr/profile",
-  useRouter: () => ({
-    push: vi.fn(),
-  }),
-}));
-
 describe("ProfileLocaleSelect", () => {
   it("renders the locale select with label and accessible name", () => {
-    const html = renderToStaticMarkup(<ProfileLocaleSelect />);
+    const html = renderToStaticMarkup(
+      <ProfileLocaleSelect
+        value="fr"
+        onValueChange={() => {}}
+      />,
+    );
 
     expect(html).toContain('id="profile-locale-select"');
     expect(html).toContain("Langue");
@@ -33,7 +31,12 @@ describe("ProfileLocaleSelect", () => {
   });
 
   it("renders a combobox bound to the locale preference label", () => {
-    const html = renderToStaticMarkup(<ProfileLocaleSelect />);
+    const html = renderToStaticMarkup(
+      <ProfileLocaleSelect
+        value="fr"
+        onValueChange={() => {}}
+      />,
+    );
 
     expect(html).toContain('role="combobox"');
     expect(html).toContain('for="profile-locale-select"');

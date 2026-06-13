@@ -2,30 +2,23 @@
 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { saveStoredLocale, replaceLocaleInPath } from "@/hooks/useLocalePreference";
 import { locales, type Locale } from "@/i18n/request";
-import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-const LOCALE_LABEL_KEYS: Record<Locale, "languages.fr" | "languages.en" | "languages.es"> = {
+export const LOCALE_LABEL_KEYS: Record<Locale, "languages.fr" | "languages.en" | "languages.es"> = {
   fr: "languages.fr",
   en: "languages.en",
   es: "languages.es",
 };
 
-export default function ProfileLocaleSelect() {
+interface ProfileLocaleSelectProps {
+  value: Locale;
+  onValueChange: (locale: Locale) => void;
+  disabled?: boolean;
+}
+
+export default function ProfileLocaleSelect({ value, onValueChange, disabled = false }: ProfileLocaleSelectProps) {
   const t = useTranslations("ProfilePage");
-  const pathname = usePathname();
-  const router = useRouter();
-  const currentLocale = (pathname.split("/")[1] || "fr") as Locale;
-
-  const handleLocaleChange = (newLocale: string) => {
-    const locale = newLocale as Locale;
-    if (!locales.includes(locale) || locale === currentLocale) return;
-
-    saveStoredLocale(locale);
-    router.push(replaceLocaleInPath(pathname, locale));
-  };
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
@@ -35,13 +28,14 @@ export default function ProfileLocaleSelect() {
         {t("languagePreference")}
       </Label>
       <Select
-        value={currentLocale}
-        onValueChange={handleLocaleChange}>
+        value={value}
+        onValueChange={(newLocale) => onValueChange(newLocale as Locale)}
+        disabled={disabled}>
         <SelectTrigger
           id="profile-locale-select"
           className="w-full sm:w-auto min-w-0"
           aria-label={t("languagePreferenceAria")}>
-          <SelectValue>{t(LOCALE_LABEL_KEYS[currentLocale])}</SelectValue>
+          <SelectValue>{t(LOCALE_LABEL_KEYS[value])}</SelectValue>
         </SelectTrigger>
         <SelectContent position="popper">
           {locales.map((locale) => (

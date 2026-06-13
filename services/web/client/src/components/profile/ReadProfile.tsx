@@ -4,7 +4,9 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { SquarePen, User as UserIcon } from "lucide-react";
 import { isEnterWithoutModifiers } from "@/utils/keyboard.utils";
-import ProfileLocaleSelect from "@/components/profile/ProfileLocaleSelect";
+import { LOCALE_LABEL_KEYS } from "@/components/profile/ProfileLocaleSelect";
+import { locales, type Locale } from "@/i18n/request";
+import { usePathname } from "next/navigation";
 
 interface Props {
   user: User | null;
@@ -15,6 +17,11 @@ export default function ReadProfile({ user, onEdit, isLoading = false }: Props) 
   const t = useTranslations("ProfilePage");
   const tEdit = useTranslations("ProfilePage.editProfile");
   const tAuth = useTranslations("auth");
+  const pathname = usePathname();
+  const currentLocale = (() => {
+    const segment = pathname.split("/")[1];
+    return locales.includes(segment as Locale) ? (segment as Locale) : "fr";
+  })();
   return (
     <Card
       className="flex flex-col xl:flex-row overflow-hidden"
@@ -47,7 +54,14 @@ export default function ReadProfile({ user, onEdit, isLoading = false }: Props) 
             className="text-base sm:text-lg lg:text-xl font-semibold wrap-break-word"
             aria-label="Full name">{`${user?.firstName} ${user?.lastName}`}</p>
         </div>
-        <ProfileLocaleSelect />
+        <div
+          className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0"
+          aria-label={t("languagePreferenceAria")}>
+          <span className="text-xs sm:text-sm text-muted-foreground shrink-0">
+            {t("languagePreference")}
+          </span>
+          <span className="text-xs sm:text-sm">{t(LOCALE_LABEL_KEYS[currentLocale])}</span>
+        </div>
         <div className="flex flex-row items-center justify-between gap-2 sm:gap-3 min-w-0">
           <p
             className="text-xs sm:text-sm text-muted-foreground break-all min-w-0 flex-1"
