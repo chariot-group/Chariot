@@ -43,7 +43,7 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "ioredis": "^5.11.0",
+    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^4.0.1",
     "nest-winston": "^1.10.2",
