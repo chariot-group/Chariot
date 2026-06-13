@@ -4,8 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ChevronRight, Users } from "lucide-react";
+import { ChevronRight, Swords } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectUser } from "@/store/slices/userSlice";
@@ -220,31 +221,31 @@ export default function GmSessionPlayersSidebarSection() {
 
   return (
     <Collapsible
-      className="rounded-[15px] border-2"
       open={openSection}
       onOpenChange={handleOpenChange}>
-      <CollapsibleTrigger
-        aria-expanded={openSection}
-        aria-controls="session-players-content"
-        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center gap-2 group/context focus-visible:border ${openSection ? "bg-white" : ""}`}>
-        <span className="flex min-w-0 items-center gap-2">
-          <Users
+      <div className="flex w-full items-center gap-1 rounded-[12px] bg-card py-2 px-1.5 pl-3">
+        <CollapsibleTrigger
+          aria-expanded={openSection}
+          aria-controls="session-players-content"
+          className="flex flex-1 min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
+          <ChevronRight
             aria-hidden="true"
-            className={`h-4 w-4 shrink-0 transition-colors group-hover/context:text-black ${openSection ? "text-black" : ""}`}
+            className={cn("h-4 w-4 shrink-0 transition-all duration-100", openSection && "rotate-90")}
           />
-          <span
-            className={`text-sm truncate group-hover/context:text-black ${openSection ? "text-black font-bold" : ""}`}>
+          <span className={cn("min-w-0 flex-1 truncate text-sm text-left", openSection && "font-bold")}>
             {t("sessionPlayers")}
           </span>
+        </CollapsibleTrigger>
+        <span className="flex shrink-0 items-center justify-center rounded-[8px] p-1.5">
+          <Swords
+            aria-hidden="true"
+            className="h-4 w-4 text-yellow"
+          />
         </span>
-        <ChevronRight
-          aria-hidden="true"
-          className={`w-5 h-5 group-hover/context:text-black transition-all duration-100 ${openSection ? "rotate-90 text-black" : ""}`}
-        />
-      </CollapsibleTrigger>
+      </div>
       <CollapsibleContent
         id="session-players-content"
-        className="my-2 flex mx-5 flex-col gap-1">
+        className="mt-1 ml-3 flex flex-col gap-1">
         {presenceRoster.map((p) => {
           const cid = p.characterId?.trim();
           const userLabel = displayNames[p.userId] ?? SESSION_PARTICIPANT_NAME_LOADING;
@@ -254,19 +255,32 @@ export default function GmSessionPlayersSidebarSection() {
             ? `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`
             : "";
           const isSelected = Boolean(cid && selectedCharacterId === cid);
-          const rowClasses = `w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 transition-all duration-100 focus-visible:ring-1 ${
-            hasSheet ? "hover:bg-card/50 cursor-pointer" : "cursor-default opacity-80"
-          } ${isSelected ? "bg-card/50 font-bold" : ""}`;
 
           const primaryLabel = hasSheet ? charLabel : t("sessionPlayerChoosingCharacter");
+          const inlineLabel = `${primaryLabel} – ${userLabel}`;
 
-          const inlineLabel = `${primaryLabel} (${userLabel})`;
+          const rowClasses = cn(
+            "relative w-full shrink-0 py-1.5 px-3 rounded-[12px] transition-all duration-150 flex flex-col gap-0 focus-visible:ring-1 focus-visible:ring-white/50",
+            hasSheet
+              ? cn("cursor-pointer", isSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10")
+              : "cursor-default opacity-60",
+          );
 
           const innerLabel = (
-            <span className="flex min-w-0 flex-1 items-center">
-              <span className="min-w-0 truncate">{primaryLabel}</span>
-              <span className="shrink-0">{` (${userLabel})`}</span>
-            </span>
+            <>
+              {isSelected && hasSheet && (
+                <span
+                  className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+              )}
+              <span className={cn("text-sm truncate w-full", !hasSheet && "italic")}>
+                {primaryLabel}
+              </span>
+              <span className={cn("text-xs truncate w-full", isSelected ? "text-black/50" : "text-white/50")}>
+                {userLabel}
+              </span>
+            </>
           );
 
           return (

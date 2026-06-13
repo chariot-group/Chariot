@@ -37,7 +37,7 @@
     "initBattle": "Initier un combat",
     "startBattle": "Lancer le combat",
     "reset": "Réinitialiser",
-    "returnToBattle": "Retour au combat",
+    "returnToBattle": "Combat",
     "joinSession": "Rejoindre la session",
     "joinSessionDialogTitle": "Rejoindre une session",
     "joinSessionErrorNotFound": "Aucune session trouvée pour ce code.",
@@ -45,7 +45,8 @@
     "joinSessionSelectCharacterPlaceholder": "Sélectionner un personnage",
     "comingSoon": "Bientôt disponible",
     "alreadyInSession": "Action impossible, vous êtes déjà dans une session",
-    "returnToSheet": "Retour à la fiche personnage",
+    "returnToSheet": "Personnage",
+    "sessionCharacter": "Personnage joué en session",
     "noLastSheet": "Aucune fiche consultée pour le moment",
     "noPlayerCharacter": "Aucun personnage sélectionné en session",
     "returnToSession": "Retourner à la session",
@@ -73,7 +74,10 @@
     "createCharacterDialogDescription": "Quel type de personnage souhaitez-vous créer ?",
     "playerCharacter": "Personnage joueur",
     "npcCharacter": "PNJ",
-    "npcCodexCharacter": "PNJ depuis Codex"
+    "npcCodexCharacter": "PNJ depuis Codex",
+    "gmSpaceAbbr": "MJ",
+    "playerSpaceShort": "Joueur",
+    "noCampaigns": "Aucune campagne"
   },
   "initTracker": {
     "noCharacters": "Aucun personnage",
