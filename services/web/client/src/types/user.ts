@@ -7,6 +7,7 @@ export interface User {
     avatar?: string;
     balance: number;
     history: History[];
+    preferredLocale?: 'fr' | 'en' | 'es';
 }
 
 export interface History {
@@ -19,6 +20,7 @@ export interface UpdateUserDto {
     firstName?: string;
     lastName?: string;
     email?: string;
+    preferredLocale?: 'fr' | 'en' | 'es';
 }
 
 export interface UserState {

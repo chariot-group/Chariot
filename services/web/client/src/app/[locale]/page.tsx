@@ -2,6 +2,7 @@
 
 import { useToast } from "@/hooks/useToast";
 import { useUser } from "@/hooks/useUser";
+import { refreshUserAfterPaymentSuccess } from "@/lib/paymentSuccessRefresh";
 import NavigationService from "@/services/NavigationService";
 import { useAppDispatch } from "@/store/hooks";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -39,18 +40,16 @@ export default function Home() {
 
     const handlePaymentSuccess = async () => {
       try {
-        const refreshedUser = await refreshUser();
-        const balanceDelta = Math.max((refreshedUser.balance ?? previousBalance) - previousBalance, 0);
-        const latestPositiveHistory = refreshedUser.history?.find((entry) => entry.value > 0)?.value ?? 0;
-        const charsAdded = balanceDelta > 0 ? balanceDelta : latestPositiveHistory;
-
-        if (charsAdded > 0) {
-          toast.success(t("reloadSuccess", { chars: charsAdded }));
-        } else {
-          toast.success(t("reloadSuccessUnknown"));
-        }
-      } catch {
-        toast.info(t("reloadPending"));
+        await refreshUserAfterPaymentSuccess({
+          refreshUser,
+          previousBalance,
+          toast,
+          messages: {
+            reloadSuccess: (values) => t("reloadSuccess", values),
+            reloadSuccessUnknown: () => t("reloadSuccessUnknown"),
+            reloadPending: () => t("reloadPending"),
+          },
+        });
       } finally {
         await new Promise((resolve) => setTimeout(resolve, 1500));
         try {

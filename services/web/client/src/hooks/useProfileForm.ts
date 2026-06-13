@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/useToast';
 import { useTranslations } from 'next-intl';
 import { UpdateUserDto } from '@/types/user';
 import { makeZodMessages } from '@/lib/zodErrorMap';
-import { replaceLocaleInPath, saveStoredLocale } from '@/hooks/useLocalePreference';
+import { replaceLocaleInPath, saveStoredLocale, getLocaleFromPathname, resolveProfileLocale } from '@/hooks/useLocalePreference';
 import { locales, type Locale } from '@/i18n/request';
 
 // Type definition for profile form data
@@ -22,11 +22,6 @@ export type ProfileFormData = {
     locale: Locale;
 };
 
-function getLocaleFromPathname(pathname: string): Locale {
-    const segment = pathname.split('/')[1];
-    return locales.includes(segment as Locale) ? (segment as Locale) : 'fr';
-}
-
 export function useProfileForm() {
     const { user, loading: isLoading } = useUser({ autoFetch: true });
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
@@ -36,7 +31,7 @@ export function useProfileForm() {
     const tZod = useTranslations('zodErrors');
     const pathname = usePathname();
     const router = useRouter();
-    const currentLocale = getLocaleFromPathname(pathname);
+    const currentLocale = getLocaleFromPathname(pathname) ?? 'fr';
 
     // Créer les messages Zod traduits
     const zm = makeZodMessages(tZod);
@@ -66,7 +61,7 @@ export function useProfileForm() {
                 firstName: user.firstName || '',
                 lastName: user.lastName || '',
                 email: user.email || '',
-                locale: currentLocale,
+                locale: resolveProfileLocale(user.preferredLocale, currentLocale),
             });
         }
     }, [user, form, currentLocale]);
@@ -80,6 +75,7 @@ export function useProfileForm() {
                 firstName: data.firstName,
                 lastName: data.lastName,
                 email: data.email,
+                preferredLocale: data.locale,
             };
 
             const updatedUser = await UserService.updateCurrentUser(updateData);
@@ -136,7 +132,7 @@ export function useProfileForm() {
                 firstName: user.firstName || '',
                 lastName: user.lastName || '',
                 email: user.email || '',
-                locale: currentLocale,
+                locale: resolveProfileLocale(user.preferredLocale, currentLocale),
             });
             setIsUpdating(false);
         }

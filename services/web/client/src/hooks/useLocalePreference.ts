@@ -82,6 +82,42 @@ export function getStoredLocale(): Locale | null {
 }
 
 /**
+ * Extracts the locale segment from a pathname, if present.
+ */
+export function getLocaleFromPathname(pathname: string): Locale | null {
+  const segment = pathname.split("/")[1];
+  return locales.includes(segment as Locale) ? (segment as Locale) : null;
+}
+
+/**
+ * Returns whether the account locale should replace the current URL locale.
+ */
+export function shouldSyncAccountLocale(
+  preferredLocale: Locale | undefined,
+  pathname: string,
+): preferredLocale is Locale {
+  if (!preferredLocale || !locales.includes(preferredLocale)) {
+    return false;
+  }
+
+  const urlLocale = getLocaleFromPathname(pathname);
+  return urlLocale !== null && urlLocale !== preferredLocale;
+}
+
+/**
+ * Resolves the locale shown in the profile form: account preference when set, otherwise URL locale.
+ */
+export function resolveProfileLocale(
+  preferredLocale: Locale | undefined,
+  urlLocale: Locale,
+): Locale {
+  if (preferredLocale && locales.includes(preferredLocale)) {
+    return preferredLocale;
+  }
+  return urlLocale;
+}
+
+/**
  * Replaces the locale segment in a pathname (e.g. `/fr/profile` → `/en/profile`).
  */
 export function replaceLocaleInPath(pathname: string, newLocale: Locale): string {
