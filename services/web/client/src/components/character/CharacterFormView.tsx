@@ -11,12 +11,14 @@ import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useMemo, useRef } from "react";
+import { useFormState } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 import { toast } from "react-toastify";
+import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -97,13 +99,13 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   }, [reduxCodexDraft, codexDataParam]);
 
   // Fonction pour changer d'onglet et mettre à jour l'URL
-  const handleTabChange = (newTab: string) => {
+  const handleTabChange = useCallback((newTab: string) => {
     const tab = newTab as CharacterTab;
     // Mettre à jour l'URL sans recharger la page
     const currentParams = new URLSearchParams(searchParams.toString());
     currentParams.set("tab", tab);
     router.replace(`?${currentParams.toString()}`, { scroll: false });
-  };
+  }, [router, searchParams]);
 
   const defaultSavingThrows = DEFAULT_SAVING_THROWS;
   const defaultMasteries = DEFAULT_MASTERIES;
@@ -263,6 +265,9 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       }
     },
   });
+
+  const { errors } = useFormState({ control: form.control });
+  const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
 
   const hasAppliedCodexDefaultsRef = useRef(false);
 
@@ -473,9 +478,12 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   }, [onCancel, router]);
 
   const handleInvalid = useCallback((errors: Record<string, unknown>) => {
-    console.error("[CharacterForm] Validation errors (form blocked submission):", JSON.stringify(errors, null, 2));
+    const firstErrorTab = getFirstCharacterTabWithError(errors);
+    if (firstErrorTab && firstErrorTab !== activeTab) {
+      handleTabChange(firstErrorTab);
+    }
     toast.error(tForm("createError"));
-  }, [tForm]);
+  }, [activeTab, handleTabChange, tForm]);
 
   useEffect(() => {
     const handleGlobalShortcuts = (event: KeyboardEvent) => {
@@ -543,6 +551,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
                     activeTab={activeTab}
                     listClassName="gap-1 lg:flex-wrap"
                     triggerClassName="grow-0"
+                    tabsWithErrors={tabsWithErrors}
                   />
                 </div>
               </div>

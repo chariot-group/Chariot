@@ -29,7 +29,7 @@ export function createCharacterSchema(zm: ZodMessages) {
         stats: StatsSchema.optional(),
         affinities: AffinitiesSchema.optional(),
         abilities: z.array(AbilitySchema(zm)).optional(),
-        spellcasting: z.array(SpellcastingSchema).optional(),
+        spellcasting: z.array(SpellcastingSchema(zm)).optional(),
         appearance: AppearanceSchema.optional(),
         background: BackgroundSchema.optional(),
         treasure: TreasureSchema.optional(),

@@ -88,8 +88,16 @@ export function usePasswordForm() {
             if (err instanceof Error) {
                 if (err.message.includes('incorrect')) {
                     errorMessage = t('incorrectPassword');
+                    form.setError('currentPassword', {
+                        type: 'server',
+                        message: errorMessage,
+                    });
                 } else if (err.message.includes('complexity')) {
                     errorMessage = t('complexityError');
+                    form.setError('newPassword', {
+                        type: 'server',
+                        message: errorMessage,
+                    });
                 } else if (err.message.includes('Network') || err.message.includes('fetch')) {
                     errorMessage = t('networkError');
                 }
