@@ -1,4 +1,4 @@
-import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
 import {
