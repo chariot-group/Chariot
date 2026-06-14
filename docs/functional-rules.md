@@ -1524,6 +1524,14 @@ Each rule has a unique identifier and must be tested.
 - If the player has no assigned character, **View Character Sheet** is disabled with an explanatory tooltip.
 - Once combat has been ended by the GM, the player MUST be redirected to their session character sheet and MUST no longer have access to **Return to Battle** for that finished combat.
 
+**Character Sheet Combat Footer**:
+
+- When a character sheet displays both character edit actions and active combat controls, the bottom area MUST avoid stacking two full-height footers.
+- The character edit actions and the combat controls MUST be composed into one compact bottom bar or into a single shared footer region.
+- The merged footer MUST keep all existing accessible names and keyboard interactions for edit/save/cancel, previous turn, next turn, combatant stat expansion, and visible stat links.
+- The merged footer MUST preserve GM-only turn controls and player read-only constraints from FR-018 and FR-021.
+- The merged footer MUST preserve mobile content visibility by keeping the vertical footprint compact and preventing horizontal overflow with long translated labels or combatant names.
+
 **Last Consulted Sheet Tracking**:
 
 - `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
@@ -2052,4 +2060,3 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
-

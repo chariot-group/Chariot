@@ -23,6 +23,7 @@ import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
+import { CombatBanner } from "@/components/character/CombatBanner";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -188,6 +189,86 @@ export default function CharacterDetailView({
     };
   }, [form, handleInvalid, isDirty, isEditing, onCancel, onUpdate, setIsEditing]);
 
+  const characterFooterActions = showEditControls ? (
+    <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
+      {isEditing ? (
+        <React.Fragment>
+          <Button
+            type="submit"
+            form="character-update-form"
+            disabled={isSaving || !isDirty}
+            tabIndex={0}
+            className={`
+              max-w-full min-w-0 lg:text-sm text-xs font-semibold
+              ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+              ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+              ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+              ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+              ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+            `}
+            aria-label={t("saveChanges")}
+            aria-busy={isSaving}>
+            <Save
+              className="lg:size-5 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{isSaving ? t("saving") : t("saveChanges")}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              onCancel();
+              setIsEditing(false);
+            }}
+            disabled={isSaving}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onCancel();
+                setIsEditing(false);
+              }
+            }}
+            className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+            aria-label={t("cancel")}>
+            <X
+              className="lg:size-5 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{t("cancel")}</span>
+          </Button>
+        </React.Fragment>
+      ) : (
+        <Button
+          type="button"
+          onClick={() => setIsEditing(true)}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsEditing(true);
+            }
+          }}
+          className={`
+            max-w-full min-w-0 lg:text-sm text-xs font-semibold
+            ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+            ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+            ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+            ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+            ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+          `}
+          aria-label={t("editCharacter")}>
+          <SquarePen
+            className="lg:size-5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span className="truncate">{t("editCharacter")}</span>
+        </Button>
+      )}
+    </div>
+  ) : null;
+
   return (
     <main
       className="flex flex-col flex-1 min-h-0 overflow-hidden"
@@ -315,88 +396,11 @@ export default function CharacterDetailView({
           </div>
         </Tabs>
 
-        {/* Footer avec boutons - fixe en bas */}
-        {showEditControls ? (
+        {isInSession ? (
+          <CombatBanner footerActions={characterFooterActions} />
+        ) : characterFooterActions ? (
           <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] border-t border-transparent">
-            <div className="w-full mx-auto flex flex-row-reverse gap-2">
-              {isEditing ? (
-                <React.Fragment>
-                  {/* Mode édition : boutons Annuler et Sauvegarder */}
-                  <Button
-                    type="submit"
-                    form="character-update-form"
-                    disabled={isSaving || !isDirty}
-                    tabIndex={0}
-                    className={`
-                  lg:text-sm text-xs font-semibold
-                  ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-                  ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-                  ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-                  ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-                  ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-                `}
-                    aria-label={t("saveChanges")}
-                    aria-busy={isSaving}>
-                    <Save
-                      className="lg:size-5 size-4"
-                      aria-hidden="true"
-                    />
-                    {isSaving ? t("saving") : t("saveChanges")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      onCancel();
-                      setIsEditing(false);
-                    }}
-                    disabled={isSaving}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onCancel();
-                        setIsEditing(false);
-                      }
-                    }}
-                    className="lg:text-sm text-xs font-semibold"
-                    aria-label={t("cancel")}>
-                    <X
-                      className="lg:size-5 size-4"
-                      aria-hidden="true"
-                    />
-                    {t("cancel")}
-                  </Button>
-                </React.Fragment>
-              ) : (
-                /* Mode lecture : bouton Modifier */
-                <Button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setIsEditing(true);
-                    }
-                  }}
-                  className={`
-                lg:text-sm text-xs font-semibold
-                ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-                ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-                ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-                ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-                ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-              `}
-                  aria-label={t("editCharacter")}>
-                  <SquarePen
-                    className="lg:size-5 size-4"
-                    aria-hidden="true"
-                  />
-                  {t("editCharacter")}
-                </Button>
-              )}
-            </div>
+            <div className="flex w-full justify-end">{characterFooterActions}</div>
           </div>
         ) : null}
       </form>
