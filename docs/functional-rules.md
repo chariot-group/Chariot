@@ -2060,3 +2060,49 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
+
+---
+
+## FR-029: Notification visuelle de révélation de combattant (vue joueur)
+
+**Rule**: Lorsqu'un combattant devient visible pour les joueurs (`visible: false → true`) pendant un combat actif, une animation de halo vert temporaire doit apparaître autour de ce combattant dans la vue joueur du tracker d'initiative ET dans la preview combat (CombatBanner).
+
+**Scope**:
+
+- S'applique uniquement en mode joueur (`mode === "player"`), jamais en mode MJ.
+- Concerne deux surfaces : la page tracker (`/initiativeTracker`) et la preview combat (`CombatBanner`) affichée sur les fiches personnage.
+- Complète FR-021 (modèle de visibilité joueur) sans en modifier les règles de filtrage ou de masquage.
+
+**Requirements**:
+
+- Lorsqu'un combattant apparaît pour la première fois dans la liste visible du joueur (transition `visible: false → true` ou ajout d'un nouveau combattant visible), un halo vert animé (`ring-2 ring-green/60 animate-pulse`) doit être appliqué à l'élément visuel correspondant pendant exactement **3 secondes**, puis disparaître.
+- Le halo utilise exclusivement le token `--green` du projet (FR-019). Aucune couleur hardcodée n'est autorisée.
+- La révélation ne doit pas être signalée par la couleur seule : une région `aria-live="polite"` doit annoncer le nom du combattant nouvellement révélé aux lecteurs d'écran.
+- La détection de transition est réalisée côté client par comparaison des IDs de lignes visibles entre les rendus successifs (hook dédié `useNewlyRevealedRows`).
+- Le halo s'applique au conteneur de la ligne dans le tracker, et au chip du carrousel dans la CombatBanner.
+- Un combattant révélé plusieurs fois (masqué puis révélé à nouveau) doit déclencher le halo à chaque nouvelle révélation.
+
+**Prohibitions**:
+
+- Afficher le halo en mode MJ.
+- Utiliser une couleur non issue du système de tokens du projet.
+- Conserver le halo au-delà de 3 secondes (pas d'état persistant).
+- Signaler la révélation par la couleur seule sans texte accessible.
+- Déclencher le halo au rechargement de page sur des lignes déjà présentes (uniquement sur les nouvelles apparitions pendant la session active).
+
+**Tests**:
+
+- Le halo vert apparaît sur la ligne tracker d'un combattant passant de `visible: false` à `visible: true` en mode joueur.
+- Le halo vert apparaît sur le chip du carrousel CombatBanner dans les mêmes conditions.
+- Le halo disparaît après 3 secondes.
+- Le halo ne s'affiche pas en mode MJ.
+- Une annonce `aria-live` est émise lors de la révélation.
+- Le rechargement de page ne déclenche pas le halo sur des lignes déjà visibles.
+- Un combattant masqué puis révélé à nouveau déclenche le halo une deuxième fois.
+
+**References**:
+
+- `services/web/client/src/hooks/useNewlyRevealedRows.ts` (hook dédié)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx`
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerTable.tsx`
+- `services/web/client/src/components/character/CombatBanner.tsx`

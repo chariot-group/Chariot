@@ -42,6 +42,7 @@ type InitiativeTrackerRowProps = {
   ownCharacterId?: string | null;
   ownCharacterSheetHref?: string | null;
   isActiveTurn?: boolean;
+  isNewlyRevealed?: boolean;
   initiativeLocked?: boolean;
   selectionEnabled?: boolean;
   isSelected?: boolean;
@@ -124,6 +125,7 @@ export function InitiativeTrackerRow({
   ownCharacterId = null,
   ownCharacterSheetHref = null,
   isActiveTurn = false,
+  isNewlyRevealed = false,
   initiativeLocked = false,
   selectionEnabled = false,
   isSelected = false,
@@ -248,6 +250,7 @@ export function InitiativeTrackerRow({
           ? "ring-2 ring-yellow/60"
           : "",
     isOwnCharacter && "ring-2 ring-white/30 ring-offset-1 ring-offset-background",
+    isNewlyRevealed && "shadow-[0_0_0_1.5px_rgba(154,226,1,0.65),0_0_14px_rgba(154,226,1,0.35)] animate-pulse",
   );
 
   const renderCharacterNameNode = () => {

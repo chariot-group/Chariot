@@ -18,6 +18,7 @@ import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
 import { formatRemainingConditionDuration } from "@/components/initiativeTracker/conditionDuration";
 import { cn } from "@/lib/utils";
 import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
+import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { RootState } from "@/store/index";
 import { selectIsGmMode } from "@/store/slices/environmentSlice";
@@ -98,6 +99,28 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
     () => sortedRows.find((row) => row.id === expandedRowId) ?? null,
     [sortedRows, expandedRowId],
   );
+
+  const newlyRevealedIds = useNewlyRevealedRows(isGm ? [] : sortedRows.map((r) => r.id));
+
+  const [liveAnnouncement, setLiveAnnouncement] = React.useState("");
+  const announcedRef = React.useRef(new Set<string>());
+  React.useEffect(() => {
+    if (isGm || newlyRevealedIds.size === 0) return;
+    for (const id of announcedRef.current) {
+      if (!newlyRevealedIds.has(id)) announcedRef.current.delete(id);
+    }
+    const toAnnounce = [...newlyRevealedIds].filter((id) => !announcedRef.current.has(id));
+    if (toAnnounce.length === 0) return;
+    toAnnounce.forEach((id) => announcedRef.current.add(id));
+    const names = toAnnounce.map((id) => {
+      const row = sortedRows.find((r) => r.id === id);
+      if (!row) return "???";
+      return row.playerFieldVisibility.name
+        ? (row.playerDisplayName?.trim() || characterName(row.firstname, row.lastname, row.surname) || t("unknownCombatant"))
+        : t("unknownCombatant");
+    });
+    setLiveAnnouncement(names.map((n) => `${n} — ${t("newlyCombatantRevealed")}`).join(". "));
+  }, [newlyRevealedIds, isGm, sortedRows, t]);
 
   // Auto-scroll le carrousel pour centrer le combattant actif
   React.useEffect(() => {
@@ -182,6 +205,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
 
   return (
     <div ref={containerRef} className="shrink-0 border-t border-white/10 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+      <div aria-live="polite" aria-atomic="true" className="sr-only">{liveAnnouncement}</div>
 
       {/* Actions d'édition — mobile : au-dessus de la zone combat, desktop : inline dans la nav */}
       {footerActions && (
@@ -257,6 +281,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
             const baseAriaLabel = isExpanded ? t("collapseStats", { name: displayName }) : t("expandStats", { name: displayName });
             const chipAriaLabel = isOwnCharacter ? `${baseAriaLabel} — ${t("ownCharacterLabel", { name: displayName })}` : baseAriaLabel;
 
+            const isNewlyRevealed = !isGm && newlyRevealedIds.has(row.id);
             return (
               <button
                 key={row.id}
@@ -273,6 +298,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   "cursor-pointer hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30",
                   isActive ? "opacity-100" : "opacity-40",
                   isExpanded && "bg-white/5 opacity-100 ring-1 ring-white/15",
+                  isNewlyRevealed && "opacity-100 rounded-[8px] bg-green/[0.08] shadow-[0_0_0_1.5px_rgba(154,226,1,0.65),0_0_10px_rgba(154,226,1,0.4)] animate-pulse",
                 )}>
                 <div
                   className={cn(

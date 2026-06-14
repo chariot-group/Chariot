@@ -209,6 +209,7 @@
       "endCombatConfirmAction": "Salir del combate",
       "endCombatCancelAction": "Seguir en combate",
       "unknownCombatant": "???",
+      "newlyCombatantRevealed": "ahora es visible en el combate",
       "previousTurn": "Anterior",
       "nextTurn": "Siguiente",
       "previousTurnHintAvailable": "Ninguna acción registrada en este turno — puedes corregir el avance.",

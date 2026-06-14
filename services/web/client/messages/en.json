@@ -209,6 +209,7 @@
       "endCombatConfirmAction": "Leave combat",
       "endCombatCancelAction": "Stay in combat",
       "unknownCombatant": "???",
+      "newlyCombatantRevealed": "is now visible in combat",
       "previousTurn": "Previous",
       "nextTurn": "Next",
       "previousTurnHintAvailable": "No action recorded this turn — you can undo the turn advance.",

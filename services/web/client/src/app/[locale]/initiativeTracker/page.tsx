@@ -622,6 +622,7 @@ export default function InitiativeTrackerPage() {
               />
             ) : null
           }
+          newlyCombatantRevealedLabel={!isGameMaster ? t("newlyCombatantRevealed") : undefined}
         />
 
         {isGameMaster && isInSession ? (

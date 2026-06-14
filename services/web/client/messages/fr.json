@@ -209,6 +209,7 @@
       "endCombatConfirmAction": "Quitter le combat",
       "endCombatCancelAction": "Rester sur le combat",
       "unknownCombatant": "???",
+      "newlyCombatantRevealed": "est maintenant visible dans le combat",
       "previousTurn": "Précédent",
       "nextTurn": "Suivant",
       "previousTurnHintAvailable": "Aucune action enregistrée sur ce tour — vous pouvez corriger le passage de tour.",
