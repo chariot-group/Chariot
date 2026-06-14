@@ -25,6 +25,11 @@ export function hasLevel0Spells(spellcasting: Spellcasting): boolean {
     return spellcasting.spells.some((spell) => spell.level === 0);
 }
 
+/** Au moins un sort de niveau 1 ou plus (hors cantrips). */
+export function hasLevel1OrHigherSpells(spellcasting: Spellcasting): boolean {
+    return (spellcasting.spells ?? []).some((spell) => Number(spell.level) >= 1);
+}
+
 /**
  * Récupère la liste des sorts d'un niveau donné
  */

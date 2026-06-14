@@ -32,6 +32,7 @@ import {
   classWithSpellPrepared,
   countPreparedSpellsInList,
   DICE_TYPES,
+  hasLevel1OrHigherSpells,
   numberSpellsPrepare,
   npcUsesKey,
   SPELL_SCHOOLS,
@@ -528,6 +529,24 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     }
   };
 
+  const selectedSpellcastingEarly = spellcastingList[selectedSpellcastingIndex];
+  const usesPreparedMechanicEarly =
+    isPlayer(character) &&
+    !isInnate &&
+    !!selectedSpellcastingEarly &&
+    classWithSpellPrepared({ ...(selectedSpellcastingEarly as Spellcasting), className: currentClassName });
+  const hasPrepEligibleSpellsEarly = hasLevel1OrHigherSpells({
+    ...(selectedSpellcastingEarly as Spellcasting),
+    spells: currentSpells,
+  });
+  const showPreparedSpellsButtonEarly = usesPreparedMechanicEarly && hasPrepEligibleSpellsEarly;
+
+  useEffect(() => {
+    if (!showPreparedSpellsButtonEarly && preparationEditMode) {
+      setPreparationEditMode(false);
+    }
+  }, [showPreparedSpellsButtonEarly, preparationEditMode]);
+
   // If no spellcasting, show interface to create first one
   if (spellcastingList.length === 0) {
     return (
@@ -582,6 +601,12 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const preparedSpellsCounted = usesPreparedMechanic ? countPreparedSpellsInList(currentSpells) : 0;
 
   const atPreparedLimit = usesPreparedMechanic && maxPreparedSlots > 0 && preparedSpellsCounted >= maxPreparedSlots;
+
+  const hasPrepEligibleSpells = hasLevel1OrHigherSpells({
+    ...(selectedSpellcasting as Spellcasting),
+    spells: currentSpells,
+  });
+  const showPreparedSpellsButton = usesPreparedMechanic && hasPrepEligibleSpells;
 
   // ── Prepared spells (calculated) ──
   const modSign = abilityMod >= 0 ? `+${abilityMod}` : `${abilityMod}`;
@@ -1097,7 +1122,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             <Card className="gap-2 p-3 sm:p-4 md:px-6 flex-row flex-wrap justify-between items-center shrink-0">
               <h3 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h3>
               <div className="flex items-center gap-2 flex-wrap justify-end">
-                {usesPreparedMechanic ? (
+                {showPreparedSpellsButton ? (
                   <Button
                     type="button"
                     variant={preparationEditMode ? "default" : "outline"}
@@ -1181,7 +1206,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               </div>
             </Card>
 
-            {usesPreparedMechanic && preparationEditMode ? (
+            {showPreparedSpellsButton && preparationEditMode ? (
               <div
                 className="rounded-[15px] border border-border bg-muted/40 px-3 py-2.5 sm:px-4 text-sm"
                 role="status">
