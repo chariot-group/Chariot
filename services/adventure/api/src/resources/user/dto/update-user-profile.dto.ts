@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export const SUPPORTED_USER_LOCALES = ['fr', 'en', 'es'] as const;
 export type SupportedUserLocale = (typeof SUPPORTED_USER_LOCALES)[number];
