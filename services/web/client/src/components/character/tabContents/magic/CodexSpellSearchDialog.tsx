@@ -12,7 +12,7 @@ import type { Locale } from "@/i18n/request";
 import CodexService, { CodexSpellItem } from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
-import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft, ChevronDown } from "lucide-react";
+import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft, ChevronDown, Check } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   codexDeclaredPreviewLangs,
@@ -39,11 +39,19 @@ interface CodexSpellSearchDialogProps {
   accentColor: string;
 }
 
+import {
+  isSpellQueued as isSpellQueuedInQueue,
+  queuedSpellKeys as buildQueuedSpellKeys,
+  toggleSpellInQueue,
+  type QueuedSpellEntry,
+} from "@/lib/codexSpellQueue";
+
 function SpellResultItem({
   spellItem,
   selectedLang,
   pinnedLang,
   isSelected,
+  isQueued,
   onSpellClick,
   tDialog,
   tMagic,
@@ -54,6 +62,7 @@ function SpellResultItem({
   /** En mode « toutes les langues », une ligne par langue : drapeau sur la carte */
   pinnedLang?: string | null;
   isSelected: boolean;
+  isQueued: boolean;
   onSpellClick: (spell: CodexSpellItem, lang: string) => void | Promise<void>;
   tDialog: (key: string) => string;
   tMagic: (key: string, values?: Record<string, unknown>) => string;
@@ -72,12 +81,18 @@ function SpellResultItem({
     onSpellClick(spellItem, displayLang);
   };
 
+  const resultKey = `${spellItem._id}:${displayLang}`;
+
   return (
     <Card
       onClick={handleCardClick}
-      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
-        isSelected ? "border-purple border-2 bg-purple/10" : ""
-      }`}>
+      className={cn(
+        "cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40",
+        isSelected && "border-purple border-2 bg-purple/10",
+        isQueued && !isSelected && "border-purple/60 bg-purple/5",
+      )}
+      aria-current={isSelected ? "true" : undefined}
+      data-spell-key={resultKey}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-1 min-w-0 gap-2 items-start">
@@ -110,6 +125,18 @@ function SpellResultItem({
           </div>
           <div className="flex flex-col items-end gap-1.5 shrink-0">
             <div className="flex gap-1.5">
+              {isQueued && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="cursor-help" aria-hidden="true">
+                      <Check className="size-5 text-purple" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tDialog("queuedInSelection")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               {spellItem.tag === 1 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -170,6 +197,7 @@ export default function CodexSpellSearchDialog({
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [previewLangResolving, setPreviewLangResolving] = useState(false);
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
+  const [spellQueue, setSpellQueue] = useState<QueuedSpellEntry[]>([]);
   const isLoadingRef = useRef(false);
   const spellPreviewScrollRef = useRef<HTMLDivElement>(null);
 
@@ -187,6 +215,10 @@ export default function CodexSpellSearchDialog({
       prev.includes(spellClass) ? prev.filter((value) => value !== spellClass) : [...prev, spellClass],
     );
   }, []);
+
+  const queuedSpellKeys = useMemo(() => buildQueuedSpellKeys(spellQueue), [spellQueue]);
+
+  const isCurrentSpellQueued = selectedSpellKey ? isSpellQueuedInQueue(spellQueue, selectedSpellKey) : false;
 
   useEffect(() => {
     if (!selectedSpellKey) return;
@@ -286,6 +318,7 @@ export default function CodexSpellSearchDialog({
       setShowMobileDetails(false);
       setPreviewLangResolving(false);
       setPreviewTranslationError(null);
+      setSpellQueue([]);
       setError(null);
       setCurrentPage(1);
       setHasMore(false);
@@ -380,11 +413,23 @@ export default function CodexSpellSearchDialog({
     setPreviewLangStack((s) => s.slice(0, -1));
   };
 
-  const handleValidate = () => {
+  const handleUseThisSpell = () => {
     if (selectedSpell) {
       onSpellSelected(selectedSpell);
       onOpenChange(false);
     }
+  };
+
+  const handleToggleQueueSelection = () => {
+    if (!selectedSpell || !selectedSpellKey) return;
+    setSpellQueue((prev) => toggleSpellInQueue(prev, selectedSpellKey, selectedSpell));
+  };
+
+  const handleAddSelection = () => {
+    if (spellQueue.length === 0) return;
+
+    spellQueue.forEach(({ spell }) => onSpellSelected(spell));
+    onOpenChange(false);
   };
 
   return (
@@ -511,13 +556,15 @@ export default function CodexSpellSearchDialog({
                           }
 
                           if (selectedLang) {
-                            const isSelected = selectedSpellKey === `${spellItem._id}:${selectedLang}`;
+                            const resultKey = `${spellItem._id}:${selectedLang}`;
+                            const isSelected = selectedSpellKey === resultKey;
                             return [
                               <SpellResultItem
                                 key={`${spellItem._id}-${selectedLang}`}
                                 spellItem={spellItem}
                                 selectedLang={selectedLang}
                                 isSelected={isSelected}
+                                isQueued={queuedSpellKeys.has(resultKey)}
                                 onSpellClick={handleSpellClick}
                                 tDialog={tDialog}
                                 tMagic={tMagic as (key: string, values?: Record<string, unknown>) => string}
@@ -526,19 +573,23 @@ export default function CodexSpellSearchDialog({
                             ];
                           }
 
-                          return codexSpellLangsVisibleInAllLanguagesSearch(spellItem, searchQuery).map((lang) => (
+                          return codexSpellLangsVisibleInAllLanguagesSearch(spellItem, searchQuery).map((lang) => {
+                            const resultKey = `${spellItem._id}:${lang}`;
+                            return (
                             <SpellResultItem
                               key={`${spellItem._id}-${lang}`}
                               spellItem={spellItem}
                               selectedLang={selectedLang}
                               pinnedLang={lang}
-                              isSelected={selectedSpellKey === `${spellItem._id}:${lang}`}
+                              isSelected={selectedSpellKey === resultKey}
+                              isQueued={queuedSpellKeys.has(resultKey)}
                               onSpellClick={handleSpellClick}
                               tDialog={tDialog}
                               tMagic={tMagic as (key: string, values?: Record<string, unknown>) => string}
                               t={tClasses}
                             />
-                          ));
+                            );
+                          });
                         })}
                       </div>
                       {/* Bouton Charger plus */}
@@ -636,20 +687,47 @@ export default function CodexSpellSearchDialog({
           </div>
         </div>
 
-        <DialogFooter className="px-6 pb-6 pt-4 border-t shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}>
-            {tDialog("cancel")}
-          </Button>
-          <Button
-            type="button"
-            onClick={handleValidate}
-            disabled={!selectedSpell}
-            className="bg-purple hover:bg-purple/90 text-white">
-            {tDialog("validate")}
-          </Button>
+        <DialogFooter className="px-6 pb-6 pt-4 border-t shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-h-5 w-full sm:w-auto">
+            {spellQueue.length > 0 ? (
+              <p
+                className="text-sm text-muted-foreground"
+                aria-live="polite">
+                {tDialog("selectionCount", { count: spellQueue.length })}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}>
+              {tDialog("cancel")}
+            </Button>
+            {spellQueue.length > 0 ? (
+              <Button
+                type="button"
+                onClick={handleAddSelection}
+                className="bg-purple hover:bg-purple/90 text-white">
+                {tDialog("addSelection", { count: spellQueue.length })}
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleToggleQueueSelection}
+              disabled={!selectedSpell || previewLangResolving}
+              aria-pressed={isCurrentSpellQueued}>
+              {isCurrentSpellQueued ? tDialog("removeFromSelection") : tDialog("selectThisSpell")}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleUseThisSpell}
+              disabled={!selectedSpell}
+              className="bg-purple hover:bg-purple/90 text-white">
+              {tDialog("useThisSpell")}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
