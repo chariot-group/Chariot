@@ -20,6 +20,7 @@ import ProfileGdprActions from "@/components/profile/ProfileGdprActions";
 import ProfileReferralSection from "@/components/profile/ProfileReferralSection";
 import ReadProfile from "@/components/profile/ReadProfile";
 import UpdateProfile from "@/components/profile/UpdateProfile";
+import ProfilePreferencesSection from "@/components/profile/ProfilePreferencesSection";
 import { isEnterWithModifiers } from "@/utils/keyboard.utils";
 import ShopDialog from "@/components/dialogs/Shop";
 import referralService, { type ReferralInfo } from "@/services/ReferralService";
@@ -153,6 +154,8 @@ export default function ProfilePage() {
             onCancel={onCancel}
           />
         )}
+
+        <ProfilePreferencesSection />
 
         <ProfileSection
           id="profile-section-tokens"

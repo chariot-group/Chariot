@@ -397,6 +397,7 @@
     "pageTitle": "User Profile",
     "sections": {
       "profile": "My profile",
+      "preferences": "Preferences",
       "security": "Security",
       "tokens": "Tokens",
       "referral": "Referral"

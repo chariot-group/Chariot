@@ -9,8 +9,6 @@ import { ProfileFormData } from "@/hooks/useProfileForm";
 import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
-import ProfileLocaleSelect from "@/components/profile/ProfileLocaleSelect";
-import type { Locale } from "@/i18n/request";
 
 interface Props {
   user: User | null;
@@ -159,17 +157,6 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
                   )}
                 />
               </div>
-              <Controller
-                name="locale"
-                control={form.control}
-                render={({ field }) => (
-                  <ProfileLocaleSelect
-                    value={field.value as Locale}
-                    onValueChange={field.onChange}
-                    disabled={isLoading}
-                  />
-                )}
-              />
             </div>
             <div className="flex flex-col gap-3 sm:gap-4">
               <Controller

@@ -398,6 +398,7 @@
     "pageTitle": "Profil utilisateur",
     "sections": {
       "profile": "Mon profil",
+      "preferences": "Préférences",
       "security": "Sécurité",
       "tokens": "Tokens",
       "referral": "Parrainage"

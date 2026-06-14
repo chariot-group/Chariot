@@ -2130,12 +2130,13 @@ Each initiative tracker row carries:
 
 ## FR-029: Profile Language Preference
 
-**Rule**: The profile page profile-info card must expose a language preference control allowing the authenticated user to change the site locale. The selected locale MUST be persisted on the user account (`preferredLocale` on the Adventure API user record) and mirrored to the existing `user-preferred-locale` client storage (localStorage and cookie). After authentication, the client MUST apply the account locale when it differs from the current URL prefix. The user must be redirected to the same page under the new locale prefix when the preference changes. Locale changes MUST be available in both read mode (immediate apply on select change) and edit mode (submitted with the profile form).
+**Rule**: The profile page MUST expose a dedicated preferences section (separate from the profile-info card) containing a language preference control allowing the authenticated user to change the site locale. The selected locale MUST be persisted on the user account (`preferredLocale` on the Adventure API user record) and mirrored to the existing `user-preferred-locale` client storage (localStorage and cookie). After authentication, the client MUST apply the account locale when it differs from the current URL prefix. The user must be redirected to the same page under the new locale prefix when the preference changes. Locale changes MUST apply immediately on select change and MUST NOT be bound to the profile edit form.
 
 **Scope**:
 
 - Web client profile page (`/[locale]/profile`)
-- Profile info card: interactive select in `ReadProfile` (immediate apply), editable select in `UpdateProfile` (via `useProfileForm`, applied on submit)
+- Preferences section: `ProfilePreferencesSection` with immediate-apply locale select (`ProfileLocaleSelectImmediate`)
+- Profile info card (`ReadProfile` / `UpdateProfile`): identity fields only (no locale control)
 - Adventure API user resource (`GET /user/me`, `PUT /user/me`)
 - Reuses existing i18n infrastructure (`useLocalePreference`, middleware cookie)
 
@@ -2150,19 +2151,14 @@ Each initiative tracker row carries:
 
 **Frontend (Web Client)**:
 
-- **Read mode** (`ReadProfile`): single select listing all supported locales; on change, persist immediately (API + client storage + navigation)
-- **Edit mode** (`UpdateProfile`): single select bound to the profile form state; applied on form submit together with other profile fields
+- **Preferences section** (`ProfilePreferencesSection`): single select listing all supported locales; on change, persist immediately (API + client storage + navigation)
+- The preferences section MUST remain visible regardless of profile read/edit mode
+- The profile edit form (`UpdateProfile` / `useProfileForm`) MUST NOT include a locale field
 - Option labels MUST be translated in the active UI locale and prefixed with a flag emoji (same pattern as Codex `languageFilter`)
-- On read-mode select change:
+- On locale select change:
   1. Send `preferredLocale` via `PUT /user/me`
   2. Persist preference via `saveStoredLocale` (`user-preferred-locale` in localStorage and cookie)
   3. Navigate to the equivalent path with the new locale prefix (e.g. `/fr/profile` → `/en/profile`)
-- On profile form submit:
-  1. Send `preferredLocale` with other profile fields via `PUT /user/me`
-  2. When locale value changed: persist preference via `saveStoredLocale` (`user-preferred-locale` in localStorage and cookie)
-  3. When locale value changed: navigate to the equivalent path with the new locale prefix (e.g. `/fr/profile` → `/en/profile`)
-- On profile form cancel: locale field MUST reset to account `preferredLocale` when set, otherwise current URL locale (no persistence, no navigation)
-- Form default locale MUST use account `preferredLocale` when set, otherwise current URL locale
 - After authentication, when `user.preferredLocale` is set and differs from the URL locale prefix, the client MUST call `saveStoredLocale` and redirect to the equivalent path under the account locale (via `AccountLocaleSync`)
 - `LocaleDetector` MUST NOT overwrite an existing stored locale with the URL prefix
 
@@ -2190,7 +2186,7 @@ Each initiative tracker row carries:
 **Internationalization**:
 
 - Namespace: `ProfilePage`
-- Required keys (en/fr/es): `languagePreference`, `languagePreferenceAria`
+- Required keys (en/fr/es): `sections.preferences`, `languagePreference`, `languagePreferenceAria`
 - Locale option labels live under `ProfilePage.languages.{fr,en,es}` with flag emoji + translated language name
 
 **Prohibitions**:
@@ -2215,6 +2211,7 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useLocalePreference.ts`
 - `services/web/client/src/components/profile/ProfileLocaleSelect.tsx`
 - `services/web/client/src/components/profile/ProfileLocaleSelectImmediate.tsx`
+- `services/web/client/src/components/profile/ProfilePreferencesSection.tsx`
 - `services/web/client/src/components/profile/ReadProfile.tsx`
 - `services/web/client/src/components/profile/UpdateProfile.tsx`
 - `services/web/client/src/hooks/useProfileForm.ts`

@@ -42,7 +42,7 @@ describe("ProfileLocaleSelectImmediate", () => {
     updateCurrentUserMock.mockResolvedValue({ preferredLocale: "en" });
   });
 
-  it("renders the locale select in read mode", () => {
+  it("renders the locale select in the preferences section", () => {
     const html = renderToStaticMarkup(<ProfileLocaleSelectImmediate />);
 
     expect(html).toContain('id="profile-locale-select"');

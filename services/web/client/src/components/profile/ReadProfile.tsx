@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { SquarePen, User as UserIcon } from "lucide-react";
 import { isEnterWithoutModifiers } from "@/utils/keyboard.utils";
-import ProfileLocaleSelectImmediate from "@/components/profile/ProfileLocaleSelectImmediate";
 
 interface Props {
   user: User | null;
@@ -47,7 +46,6 @@ export default function ReadProfile({ user, onEdit, isLoading = false }: Props) 
             className="text-base sm:text-lg lg:text-xl font-semibold wrap-break-word"
             aria-label="Full name">{`${user?.firstName} ${user?.lastName}`}</p>
         </div>
-        <ProfileLocaleSelectImmediate />
         <div className="flex flex-row items-center justify-between gap-2 sm:gap-3 min-w-0">
           <p
             className="text-xs sm:text-sm text-muted-foreground break-all min-w-0 flex-1"

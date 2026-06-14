@@ -397,6 +397,7 @@
     "pageTitle": "Perfil de usuario",
     "sections": {
       "profile": "Mi perfil",
+      "preferences": "Preferencias",
       "security": "Seguridad",
       "tokens": "Tokens",
       "referral": "Apadrinamiento"
