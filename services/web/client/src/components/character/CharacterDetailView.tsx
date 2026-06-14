@@ -397,7 +397,7 @@ export default function CharacterDetailView({
         </Tabs>
 
         {isInSession ? (
-          <CombatBanner footerActions={characterFooterActions} />
+          <CombatBanner characterId={character._id} footerActions={characterFooterActions} />
         ) : characterFooterActions ? (
           <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] border-t border-transparent">
             <div className="flex w-full justify-end">{characterFooterActions}</div>

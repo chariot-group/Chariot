@@ -247,11 +247,15 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
           {sortedRows.map((row) => {
             const isActive = row.id === activeTurnRowId;
             const isExpanded = row.id === expandedRowId;
+            const isOwnCharacter = !isGm && !!characterId && row.characterId === characterId;
             const displayName = isGm
               ? (characterName(row.firstname, row.lastname, row.surname) || row.playerDisplayName || t("unknownCombatant"))
               : row.playerFieldVisibility.name
                 ? (row.playerDisplayName?.trim() || characterName(row.firstname, row.lastname, row.surname) || t("unknownCombatant"))
                 : t("unknownCombatant");
+
+            const baseAriaLabel = isExpanded ? t("collapseStats", { name: displayName }) : t("expandStats", { name: displayName });
+            const chipAriaLabel = isOwnCharacter ? `${baseAriaLabel} — ${t("ownCharacterLabel", { name: displayName })}` : baseAriaLabel;
 
             return (
               <button
@@ -261,7 +265,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   else chipRefs.current.delete(row.id);
                 }}
                 type="button"
-                aria-label={isExpanded ? t("collapseStats", { name: displayName }) : t("expandStats", { name: displayName })}
+                aria-label={chipAriaLabel}
                 aria-expanded={isExpanded}
                 onClick={() => handleRowClick(row.id)}
                 className={cn(
@@ -275,14 +279,16 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                     "flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors",
                     isActive
                       ? "bg-purple text-white ring-2 ring-purple/40 ring-offset-1 ring-offset-transparent"
-                      : "bg-white/10 text-white/60",
+                      : isOwnCharacter
+                        ? "bg-blue/15 text-blue ring-2 ring-blue/40 ring-offset-1 ring-offset-transparent"
+                        : "bg-white/10 text-white/60",
                   )}>
                   <User className="size-3" />
                 </div>
                 <span
                   className={cn(
                     "max-w-[60px] truncate text-[10px] leading-tight",
-                    isActive ? "font-semibold text-white" : "text-white/60",
+                    isActive ? "font-semibold text-white" : isOwnCharacter ? "font-semibold text-blue" : "text-white/60",
                   )}>
                   {displayName}
                 </span>
