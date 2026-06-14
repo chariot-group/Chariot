@@ -1247,6 +1247,10 @@
           "all": "Toutes les classes",
           "ariaLabel": "Filtrer par classe"
         },
+        "levelFilter": {
+          "all": "Tous les niveaux",
+          "ariaLabel": "Filtrer par niveau de sort"
+        },
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",

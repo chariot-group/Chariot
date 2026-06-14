@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
+const SPELL_LEVELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+
 interface CodexSpellSearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -183,6 +185,7 @@ export default function CodexSpellSearchDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
   const [selectedClasses, setSelectedClasses] = useState<SpellClass[]>([]);
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [searchResults, setSearchResults] = useState<CodexSpellItem[]>([]);
   const [selectedSpell, setSelectedSpell] = useState<Partial<Spell> | null>(null);
   const [selectedCodexSpell, setSelectedCodexSpell] = useState<CodexSpellItem | null>(null);
@@ -233,9 +236,11 @@ export default function CodexSpellSearchDialog({
       append: boolean = false,
       apiLang?: string | null,
       apiClasses?: SpellClass[],
+      apiLevel?: number | null,
     ) => {
       const lang = apiLang !== undefined ? apiLang : selectedLang;
       const classes = apiClasses !== undefined ? apiClasses : selectedClasses;
+      const level = apiLevel !== undefined ? apiLevel : selectedLevel;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -258,6 +263,7 @@ export default function CodexSpellSearchDialog({
           page,
           ITEMS_PER_PAGE,
           classes.length > 0 ? classes : undefined,
+          level ?? undefined,
         );
         const newResults = response.data || [];
 
@@ -291,7 +297,7 @@ export default function CodexSpellSearchDialog({
         isLoadingRef.current = false;
       }
     },
-    [selectedLang, selectedClasses, tDialog, ITEMS_PER_PAGE],
+    [selectedLang, selectedClasses, selectedLevel, tDialog, ITEMS_PER_PAGE],
   );
 
   // Effet pour lancer la recherche avec debounce
@@ -302,7 +308,7 @@ export default function CodexSpellSearchDialog({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedLang, selectedClasses, searchSpells]);
+  }, [searchQuery, selectedLang, selectedClasses, selectedLevel, searchSpells]);
 
   // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
@@ -310,6 +316,7 @@ export default function CodexSpellSearchDialog({
       setSearchQuery("");
       setSelectedLang(userLocale);
       setSelectedClasses([]);
+      setSelectedLevel(null);
       setSearchResults([]);
       setSelectedSpell(null);
       setSelectedCodexSpell(null);
@@ -324,7 +331,7 @@ export default function CodexSpellSearchDialog({
       setHasMore(false);
       isLoadingRef.current = false;
       // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchSpells("", 1, false, userLocale, []);
+      searchSpells("", 1, false, userLocale, [], null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -458,7 +465,7 @@ export default function CodexSpellSearchDialog({
                   autoFocus
                 />
               </div>
-              <div className="flex w-full min-w-0 gap-2">
+              <div className="flex w-full min-w-0 flex-wrap gap-2">
                 {/* Filtre de langue */}
                 <Select
                   value={selectedLang ?? "all"}
@@ -477,6 +484,35 @@ export default function CodexSpellSearchDialog({
                     <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
                     <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
                     <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {/* Filtre par niveau de sort */}
+                <Select
+                  value={selectedLevel === null ? "all" : String(selectedLevel)}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setSelectedLevel(null);
+                      return;
+                    }
+                    const level = Number(value);
+                    if (Number.isInteger(level) && level >= 0 && level <= 9) {
+                      setSelectedLevel(level);
+                    }
+                  }}>
+                  <SelectTrigger
+                    className="min-w-0 flex-1"
+                    aria-label={tDialog("levelFilter.ariaLabel")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{tDialog("levelFilter.all")}</SelectItem>
+                    {SPELL_LEVELS.map((level) => (
+                      <SelectItem
+                        key={level}
+                        value={String(level)}>
+                        {level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 {/* Filtre par classe(s) */}

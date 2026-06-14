@@ -481,6 +481,7 @@ class CodexService {
      * @param page - Le numéro de page
      * @param offset - Le nombre d'éléments par page
      * @param classes - Filtre optionnel par une ou plusieurs classes de lanceur
+     * @param level - Filtre optionnel par niveau de sort (0–9, 0 = sort mineur)
      */
     async searchSpells(
         searchQuery: string,
@@ -488,6 +489,7 @@ class CodexService {
         page: number = 1,
         offset: number = 10,
         classes?: string[],
+        level?: number,
     ): Promise<CodexSpellResponse> {
         try {
             const params: Record<string, string | number | string[]> = {
@@ -507,6 +509,10 @@ class CodexService {
 
             if (classes && classes.length > 0) {
                 params.classes = classes.map(spellClassApiValue);
+            }
+
+            if (level !== undefined && level >= 0 && level <= 9) {
+                params.level = level;
             }
 
             const response = await this.client.get<CodexSpellResponse>('/spells', {

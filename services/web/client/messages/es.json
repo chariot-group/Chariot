@@ -1243,6 +1243,10 @@
           "all": "Todas las clases",
           "ariaLabel": "Filtrar por clase"
         },
+        "levelFilter": {
+          "all": "Todos los niveles",
+          "ariaLabel": "Filtrar por nivel de conjuro"
+        },
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",

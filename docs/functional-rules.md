@@ -2166,3 +2166,46 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/initiativeTracker/InitiativeTrackerVisibilityDialog.tsx` (FIELD_KEYS)
 - `services/web/client/src/components/initiativeTracker/bulkSelection.ts` (BULK_VISIBILITY_FIELD_KEYS)
 - `services/web/client/messages/{en|fr|es}.json` (visibilityDialog.fields.lifeStatus)
+
+---
+
+## FR-031: Codex Spell Search — Level Filter
+
+**Rule**: The Codex spell search dialog (`CodexSpellSearchDialog`) MUST allow filtering search results by a single D&D 5e spell level (0–9). The filter MUST be applied server-side via the Codex `/spells` API `level` query parameter.
+
+**Scope**:
+
+- Complements the existing name, language, and class filters in the Codex spell search dialog.
+- Applies only to spell search from the character magic tab; does not change monster Codex search.
+
+**Behavior**:
+
+- Users MUST be able to select at most one spell level (0 = cantrips through 9), or leave the filter unset for all levels.
+- When no level is selected, all levels are returned (no `level` param sent).
+- When a level is selected, it MUST be forwarded to the API as a single numeric `level` query parameter (0–9).
+- Changing the level filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening the dialog MUST reset the level filter to “all levels”.
+- Level labels in the filter UI MUST reuse existing magic-tab i18n keys (`cantrips` for level 0, `spellLevel` for levels 1–9).
+
+**Accessibility (FR-019)**:
+
+- The level filter control MUST expose an accessible name (`aria-label`) equivalent to the class filter pattern.
+- The level filter control MUST use the same single-select `Select` pattern as the language filter, with an accessible label.
+
+**Prohibitions**:
+
+- Client-side-only level filtering when the API supports the `level` param (pagination would be incorrect).
+- Hardcoded level labels bypassing i18n.
+- Sending invalid level values (outside 0–9).
+
+**Tests**:
+
+- `CodexService.searchSpells` forwards a selected level to `/spells` as a numeric query param.
+- `CodexService.searchSpells` omits `level` when the filter is unset.
+- API error propagation unchanged.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`

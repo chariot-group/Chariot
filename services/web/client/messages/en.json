@@ -1242,6 +1242,10 @@
           "all": "All classes",
           "ariaLabel": "Filter by class"
         },
+        "levelFilter": {
+          "all": "All levels",
+          "ariaLabel": "Filter by spell level"
+        },
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
