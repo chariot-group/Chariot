@@ -24,6 +24,7 @@ import {
   TRACKER_CELL_ALIGN,
   TRACKER_GRID_TEMPLATE_COLUMNS,
 } from "@/components/initiativeTracker/constants";
+import type { RowStatusAnimation } from "@/hooks/useStatusChangedRows";
 import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import {
@@ -43,6 +44,7 @@ type InitiativeTrackerRowProps = {
   ownCharacterSheetHref?: string | null;
   isActiveTurn?: boolean;
   isNewlyRevealed?: boolean;
+  statusChangeAnimation?: RowStatusAnimation | null;
   initiativeLocked?: boolean;
   selectionEnabled?: boolean;
   isSelected?: boolean;
@@ -101,6 +103,7 @@ type InitiativeTrackerRowProps = {
         initiative: string;
         name: string;
         hitPoints: string;
+        lifeStatus: string;
         armorClass: string;
         conditions: string;
         groupLabel: string;
@@ -126,6 +129,7 @@ export function InitiativeTrackerRow({
   ownCharacterSheetHref = null,
   isActiveTurn = false,
   isNewlyRevealed = false,
+  statusChangeAnimation = null,
   initiativeLocked = false,
   selectionEnabled = false,
   isSelected = false,
@@ -194,6 +198,7 @@ export function InitiativeTrackerRow({
   const statusLabel = labels.getStatusLabel(status);
   const showInitiative = !isPlayerView || fieldVis.initiative;
   const showHp = !isPlayerView || fieldVis.hitPoints;
+  const showLifeStatus = !isPlayerView || fieldVis.lifeStatus;
   const showAc = !isPlayerView || fieldVis.armorClass;
   const showConditions = !isPlayerView || fieldVis.conditions;
   const showGroupLabel = !isPlayerView || fieldVis.groupLabel;
@@ -201,21 +206,25 @@ export function InitiativeTrackerRow({
   const hpCellClassName = cn(
     "flex h-9 w-full min-w-[4.75rem] flex-col items-center justify-center gap-0 overflow-hidden rounded-[15px] bg-gray-middle-light px-2 tabular-nums",
     TRACKER_CELL_ALIGN.hitPoints,
-    hasTempHp && "min-h-10 py-0.5",
+    showHp && hasTempHp && "min-h-10 py-0.5",
   );
 
-  const StatusIcon = isDead ? Skull : isUnconscious ? HeartCrack : null;
+  const StatusIcon = showLifeStatus && (isDead ? Skull : isUnconscious ? HeartCrack : null);
   const statusIconColor = isDead ? "text-red" : "text-yellow";
 
   const hidden = <HiddenFieldPlaceholder label={labels.hiddenField} />;
   const compactHidden = <HiddenFieldPlaceholder label={labels.hiddenField} compact />;
 
-  const hpCellContent = showHp ? (
+  const hpCellContent = (
     <>
       <span className="flex items-center justify-center gap-1 text-sm font-medium leading-tight text-white">
-        <span>
-          {row.hitPoints}/{row.maxHitPoints ?? 0}
-        </span>
+        {showHp ? (
+          <span>
+            {row.hitPoints}/{row.maxHitPoints ?? 0}
+          </span>
+        ) : (
+          compactHidden
+        )}
         {StatusIcon ? (
           <StatusIcon
             aria-hidden="true"
@@ -223,20 +232,18 @@ export function InitiativeTrackerRow({
           />
         ) : null}
       </span>
-      {hasTempHp ? (
+      {showHp && hasTempHp ? (
         <span className="text-[10px] font-semibold leading-none text-blue-300">
           +{row.tempHitPoints}
           {labels.hpAbbr}
         </span>
       ) : null}
     </>
-  ) : (
-    compactHidden
   );
 
-  const rowBackgroundClass = isDead
+  const rowBackgroundClass = showLifeStatus && isDead
     ? "bg-red/35"
-    : isUnconscious
+    : showLifeStatus && isUnconscious
       ? "bg-yellow/30"
       : isActiveTurn
         ? "bg-blue/35"
@@ -244,13 +251,15 @@ export function InitiativeTrackerRow({
   const rowRingClass = cn(
     isActiveTurn
       ? "ring-2 ring-blue/60"
-      : isDead
+      : showLifeStatus && isDead
         ? "ring-2 ring-red/60"
-        : isUnconscious
+        : showLifeStatus && isUnconscious
           ? "ring-2 ring-yellow/60"
           : "",
     isOwnCharacter && "ring-2 ring-white/30 ring-offset-1 ring-offset-background",
     isNewlyRevealed && "shadow-[0_0_0_1.5px_rgba(154,226,1,0.65),0_0_14px_rgba(154,226,1,0.35)] animate-pulse",
+    statusChangeAnimation === "dead" && "shadow-[0_0_0_1.5px_rgba(255,45,45,0.65),0_0_14px_rgba(255,45,45,0.35)] animate-pulse",
+    statusChangeAnimation === "unconscious" && "shadow-[0_0_0_1.5px_rgba(255,196,0,0.65),0_0_14px_rgba(255,196,0,0.35)] animate-pulse",
   );
 
   const renderCharacterNameNode = () => {

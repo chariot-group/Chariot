@@ -180,6 +180,7 @@
           "initiative": "Score d'initiative",
           "name": "Nom",
           "hitPoints": "Points de vie",
+          "lifeStatus": "État vital (vivant / inconscient / mort)",
           "armorClass": "Classe d'armure",
           "conditions": "États",
           "groupLabel": "Nom du groupe"

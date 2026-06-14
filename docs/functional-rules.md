@@ -2106,3 +2106,63 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx`
 - `services/web/client/src/components/initiativeTracker/InitiativeTrackerTable.tsx`
 - `services/web/client/src/components/character/CombatBanner.tsx`
+
+---
+
+## FR-030: Découplage affichage HP / statut vital dans le tracker d'initiative
+
+**Rule**: L'affichage de la valeur numérique des points de vie (HP) et l'affichage visuel du statut vital (couleur de fond, icônes Skull/HeartCrack) dans le tracker d'initiative doivent être contrôlables indépendamment via deux flags distincts dans `playerFieldVisibility`.
+
+**Scope**:
+
+- Complète FR-021 (player field visibility) et FR-020 (visual treatment des statuts) sans les remplacer.
+- Le découplage ne s'applique qu'à la vue joueur ; la vue MJ affiche toujours le statut vital et les HP.
+
+**Champs**:
+
+- **`hitPoints`** (existant) : affiche/masque la valeur numérique HP (ex. `12/20 +3hp`) et les HP temporaires.
+- **`lifeStatus`** (nouveau) : affiche/masque la coloration de fond (rouge pour mort, jaune pour inconscient) et les icônes de statut (Skull, HeartCrack).
+
+**Valeurs par défaut** :
+
+- NPC : `lifeStatus: false` (cohérent avec le masquage par défaut des autres champs NPC)
+- PJ participants session (`__session_participants__`) : `lifeStatus: true` (cohérent avec la visibilité totale)
+
+**Combinaisons valides côté joueur** :
+
+| `hitPoints` | `lifeStatus` | Résultat                                                   |
+|-------------|--------------|-----------------------------------------------------------|
+| `true`      | `false`      | Valeur HP visible, fond neutre, aucune icône de statut    |
+| `false`     | `true`       | Fond coloré visible (rouge/jaune), HP masqués             |
+| `true`      | `true`       | HP et fond coloré visibles (comportement participants session) |
+| `false`     | `false`      | Tout masqué (comportement NPC par défaut)                 |
+
+**Comportement de l'icône de statut** :
+
+- L'icône (Skull / HeartCrack) est liée au `lifeStatus` et non au champ `hitPoints`.
+- Elle s'affiche uniquement quand `showLifeStatus === true` (toujours en vue MJ, conditionnellement en vue joueur).
+
+**Prohibitions** :
+
+- Lier l'affichage de l'icône de statut au flag `hitPoints` plutôt qu'au `lifeStatus`.
+- Appliquer le fond coloré / le ring de statut en vue joueur quand `lifeStatus: false`.
+- Masquer le statut vital en vue MJ quels que soient les flags joueur.
+
+**Tests** :
+
+- Vue joueur, `hitPoints: true, lifeStatus: false` : valeur HP affichée, fond neutre, aucune icône
+- Vue joueur, `hitPoints: false, lifeStatus: true` : fond rouge/jaune selon statut, HP masqués, aucune icône (aucun HP à côté duquel placer l'icône)
+- Vue joueur, `hitPoints: true, lifeStatus: true` : HP, fond et icône tous visibles
+- Vue joueur, `hitPoints: false, lifeStatus: false` : tout masqué
+- Vue MJ : statut vital et HP toujours visibles, indépendamment des flags
+- NPC par défaut : `lifeStatus: false` en valeur initiale
+- Participant session par défaut : `lifeStatus: true` en valeur initiale
+- `normalizePlayerFieldVisibility` restaure `lifeStatus` sur legacy rows sans le champ
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts` (interface, defaults, normalize)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx` (showLifeStatus flag)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerVisibilityDialog.tsx` (FIELD_KEYS)
+- `services/web/client/src/components/initiativeTracker/bulkSelection.ts` (BULK_VISIBILITY_FIELD_KEYS)
+- `services/web/client/messages/{en|fr|es}.json` (visibilityDialog.fields.lifeStatus)

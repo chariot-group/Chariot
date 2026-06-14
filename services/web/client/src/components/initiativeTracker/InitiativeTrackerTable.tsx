@@ -24,6 +24,7 @@ import {
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import { characterName, type InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
+import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
 
 export type InitiativeTrackerTableProps = {
   rows: InitiativeTrackerRow[];
@@ -51,7 +52,7 @@ export type InitiativeTrackerTableProps = {
   onRemoveMultipleFromInitiative?: (rowIds: string[]) => void;
   onUpdateMultipleRows?: (
     rowIds: string[],
-    changes: Partial<Omit<InitiativeTrackerRow, "id" | "playerDisplayName">> & {
+    changes: Omit<Partial<Omit<InitiativeTrackerRow, "id" | "playerDisplayName">>, "playerFieldVisibility"> & {
       playerFieldVisibility?: Partial<InitiativeTrackerRow["playerFieldVisibility"]>;
     },
     playerDisplayName?: string,
@@ -95,6 +96,7 @@ export type InitiativeTrackerTableProps = {
         initiative: string;
         name: string;
         hitPoints: string;
+        lifeStatus: string;
         armorClass: string;
         conditions: string;
         groupLabel: string;
@@ -155,6 +157,7 @@ export type InitiativeTrackerTableProps = {
       initiative: string;
       name: string;
       hitPoints: string;
+      lifeStatus: string;
       armorClass: string;
       conditions: string;
       groupLabel: string;
@@ -206,6 +209,7 @@ export function InitiativeTrackerTable({
   const [expandedRowIds, setExpandedRowIds] = React.useState<Set<string>>(() => new Set());
 
   const newlyRevealedIds = useNewlyRevealedRows(isPlayerView ? rows.map((r) => r.id) : []);
+  const statusChangedRows = useStatusChangedRows(rows, !isPlayerView);
 
   const [liveAnnouncement, setLiveAnnouncement] = React.useState("");
   const announcedRef = React.useRef(new Set<string>());
@@ -625,6 +629,7 @@ export function InitiativeTrackerTable({
             ownCharacterSheetHref={ownCharacterSheetHref}
             isActiveTurn={activeTurnRowId != null && row.id === activeTurnRowId}
             isNewlyRevealed={isPlayerView && newlyRevealedIds.has(row.id)}
+            statusChangeAnimation={statusChangedRows.get(row.id) ?? null}
             initiativeLocked={initiativeLocked}
             selectionEnabled={selectionEnabled}
             isSelected={selectedRowIds.has(row.id)}

@@ -35,6 +35,7 @@ export const BULK_VISIBILITY_FIELD_KEYS: (keyof InitiativeTrackerPlayerFieldVisi
   "name",
   "initiative",
   "hitPoints",
+  "lifeStatus",
   "armorClass",
   "conditions",
   "groupLabel",

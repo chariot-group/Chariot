@@ -180,6 +180,7 @@
           "initiative": "Initiative score",
           "name": "Name",
           "hitPoints": "Hit points",
+          "lifeStatus": "Vital status (alive / unconscious / dead)",
           "armorClass": "Armor class",
           "conditions": "Conditions",
           "groupLabel": "Group name"

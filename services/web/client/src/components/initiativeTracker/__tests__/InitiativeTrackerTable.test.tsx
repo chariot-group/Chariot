@@ -71,6 +71,7 @@ describe("InitiativeTrackerTable responsive header", () => {
             initiative: "Initiative",
             name: "Name",
             hitPoints: "Hit points",
+            lifeStatus: "Vital status",
             armorClass: "Armor class",
             conditions: "Conditions",
             groupLabel: "Group",

@@ -50,6 +50,7 @@ const FIELD_KEYS: FieldKey[] = [
   "name",
   "initiative",
   "hitPoints",
+  "lifeStatus",
   "armorClass",
   "conditions",
   "groupLabel",

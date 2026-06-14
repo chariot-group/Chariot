@@ -11,6 +11,7 @@ import {
   canUndoBattleTurn,
   characterName,
   filterRowsForPlayerView,
+  getInitiativeTrackerRowStatus,
   sanitizeInitiativeTrackerRowForPlayer,
   sortInitiativeTrackerRows,
 } from "@/components/initiativeTracker/utils";
@@ -19,6 +20,7 @@ import { formatRemainingConditionDuration } from "@/components/initiativeTracker
 import { cn } from "@/lib/utils";
 import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
+import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { RootState } from "@/store/index";
 import { selectIsGmMode } from "@/store/slices/environmentSlice";
@@ -101,6 +103,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
   );
 
   const newlyRevealedIds = useNewlyRevealedRows(isGm ? [] : sortedRows.map((r) => r.id));
+  const statusChangedRows = useStatusChangedRows(sortedRows, isGm);
 
   const [liveAnnouncement, setLiveAnnouncement] = React.useState("");
   const announcedRef = React.useRef(new Set<string>());
@@ -282,6 +285,12 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
             const chipAriaLabel = isOwnCharacter ? `${baseAriaLabel} — ${t("ownCharacterLabel", { name: displayName })}` : baseAriaLabel;
 
             const isNewlyRevealed = !isGm && newlyRevealedIds.has(row.id);
+            const statusAnimation = statusChangedRows.get(row.id);
+            const lifeStatusVisible = isGm || row.playerFieldVisibility.lifeStatus;
+            const rowStatus = lifeStatusVisible ? getInitiativeTrackerRowStatus(row) : "alive";
+            const isDead = rowStatus === "dead";
+            const isUnconscious = rowStatus === "unconscious";
+
             return (
               <button
                 key={row.id}
@@ -299,22 +308,36 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   isActive ? "opacity-100" : "opacity-40",
                   isExpanded && "bg-white/5 opacity-100 ring-1 ring-white/15",
                   isNewlyRevealed && "opacity-100 rounded-[8px] bg-green/[0.08] shadow-[0_0_0_1.5px_rgba(154,226,1,0.65),0_0_10px_rgba(154,226,1,0.4)] animate-pulse",
+                  !isNewlyRevealed && statusAnimation === "dead" && "opacity-100 rounded-[8px] shadow-[0_0_0_1.5px_rgba(255,45,45,0.65),0_0_10px_rgba(255,45,45,0.35)] animate-pulse",
+                  !isNewlyRevealed && statusAnimation === "unconscious" && "opacity-100 rounded-[8px] shadow-[0_0_0_1.5px_rgba(255,196,0,0.65),0_0_10px_rgba(255,196,0,0.35)] animate-pulse",
                 )}>
                 <div
                   className={cn(
                     "flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors",
                     isActive
                       ? "bg-purple text-white ring-2 ring-purple/40 ring-offset-1 ring-offset-transparent"
-                      : isOwnCharacter
-                        ? "bg-blue/15 text-blue ring-2 ring-blue/40 ring-offset-1 ring-offset-transparent"
-                        : "bg-white/10 text-white/60",
+                      : isDead
+                        ? "bg-red/25 text-red ring-2 ring-red/40 ring-offset-1 ring-offset-transparent"
+                        : isUnconscious
+                          ? "bg-yellow/20 text-yellow ring-2 ring-yellow/40 ring-offset-1 ring-offset-transparent"
+                          : isOwnCharacter
+                            ? "bg-blue/15 text-blue ring-2 ring-blue/40 ring-offset-1 ring-offset-transparent"
+                            : "bg-white/10 text-white/60",
                   )}>
                   <User className="size-3" />
                 </div>
                 <span
                   className={cn(
                     "max-w-[60px] truncate text-[10px] leading-tight",
-                    isActive ? "font-semibold text-white" : isOwnCharacter ? "font-semibold text-blue" : "text-white/60",
+                    isActive
+                      ? "font-semibold text-white"
+                      : isDead
+                        ? "font-semibold text-red"
+                        : isUnconscious
+                          ? "font-semibold text-yellow"
+                          : isOwnCharacter
+                            ? "font-semibold text-blue"
+                            : "text-white/60",
                   )}>
                   {displayName}
                 </span>
