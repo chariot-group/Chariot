@@ -61,6 +61,7 @@ export class UserService {
         avatar: keycloakUser.attributes?.avatar?.[0] || null,
         balance: user.balance,
         history: user.history,
+        preferredLocale: user.preferredLocale,
       };
 
       const message: string = `User #${id} found in ${end - start}ms`;
@@ -129,13 +130,20 @@ export class UserService {
 
   async updateUser(
     keycloakId: string,
-    updateData: { firstName?: string; lastName?: string; email?: string },
+    updateData: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      preferredLocale?: string;
+    },
   ): Promise<IResponse<UserInfoDto>> {
     try {
       const start: number = Date.now();
 
+      const { preferredLocale, ...keycloakUpdateData } = updateData;
+
       // Update user in Keycloak
-      await this.keycloakService.updateUser(keycloakId, updateData);
+      await this.keycloakService.updateUser(keycloakId, keycloakUpdateData);
 
       // Fetch updated user data from Keycloak
       const keycloakUser: UserRepresentation =
@@ -160,6 +168,11 @@ export class UserService {
         });
       }
 
+      if (preferredLocale !== undefined) {
+        user.preferredLocale = preferredLocale;
+        await user.save();
+      }
+
       const end: number = Date.now();
 
       const data: UserInfoDto = {
@@ -171,6 +184,7 @@ export class UserService {
         avatar: keycloakUser.attributes?.avatar?.[0] || null,
         balance: user.balance,
         history: user.history,
+        preferredLocale: user.preferredLocale,
       };
 
       const message: string = `User #${keycloakId} updated successfully in ${end - start}ms`;
@@ -240,6 +254,7 @@ export class UserService {
         avatar: keycloakUser.attributes?.avatar?.[0] || null,
         balance: user.balance,
         history: user.history,
+        preferredLocale: user.preferredLocale,
       };
 
       const message: string = `History entry added for user #${keycloakId} in ${end - start}ms`;

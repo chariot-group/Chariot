@@ -156,4 +156,21 @@ describe('UpdateUserProfileDto', () => {
     const errors = await validate(dto);
     expect(errors.length).toBe(0);
   });
+
+  it('should accept valid preferredLocale', async () => {
+    const dto = new UpdateUserProfileDto();
+    dto.preferredLocale = 'es';
+
+    const errors = await validate(dto);
+    expect(errors.length).toBe(0);
+  });
+
+  it('should reject invalid preferredLocale', async () => {
+    const dto = new UpdateUserProfileDto();
+    dto.preferredLocale = 'de' as 'fr';
+
+    const errors = await validate(dto);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].property).toBe('preferredLocale');
+  });
 });

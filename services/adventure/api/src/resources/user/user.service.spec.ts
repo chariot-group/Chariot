@@ -70,3 +70,92 @@ describe('UserService - addTokens', () => {
     );
   });
 });
+
+describe('UserService - updateUser preferredLocale', () => {
+  let service: UserService;
+  let userModel: {
+    findOne: jest.Mock;
+    create: jest.Mock;
+  };
+  let keycloakService: {
+    updateUser: jest.Mock;
+    getUserById: jest.Mock;
+  };
+
+  const keycloakId = '11111111-1111-4111-8111-111111111111';
+
+  beforeEach(async () => {
+    userModel = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+    };
+    keycloakService = {
+      updateUser: jest.fn().mockResolvedValue(undefined),
+      getUserById: jest.fn().mockResolvedValue({
+        id: keycloakId,
+        email: 'user@example.com',
+        username: 'player',
+        firstName: 'John',
+        lastName: 'Doe',
+        attributes: {},
+      }),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UserService,
+        { provide: getModelToken(User.name), useValue: userModel },
+        { provide: KeycloakService, useValue: keycloakService },
+      ],
+    }).compile();
+
+    service = module.get<UserService>(UserService);
+  });
+
+  it('nominal: persists preferredLocale on the user record', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const user = {
+      keycloakId,
+      balance: 1,
+      history: [],
+      preferredLocale: 'fr',
+      save,
+    };
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(user),
+    });
+
+    const response = await service.updateUser(keycloakId, {
+      firstName: 'John',
+      preferredLocale: 'es',
+    });
+
+    expect(keycloakService.updateUser).toHaveBeenCalledWith(keycloakId, {
+      firstName: 'John',
+    });
+    expect(user.preferredLocale).toBe('es');
+    expect(save).toHaveBeenCalled();
+    expect(response.data.preferredLocale).toBe('es');
+  });
+
+  it('edge: leaves preferredLocale unchanged when omitted', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const user = {
+      keycloakId,
+      balance: 1,
+      history: [],
+      preferredLocale: 'fr',
+      save,
+    };
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(user),
+    });
+
+    const response = await service.updateUser(keycloakId, {
+      firstName: 'Jane',
+    });
+
+    expect(save).not.toHaveBeenCalled();
+    expect(response.data.preferredLocale).toBe('fr');
+  });
+});
