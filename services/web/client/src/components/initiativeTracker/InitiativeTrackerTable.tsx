@@ -22,7 +22,9 @@ import {
   TRACKER_HEADER_ALIGN,
 } from "@/components/initiativeTracker/constants";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
-import type { InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
+import { characterName, type InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
+import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
+import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
 
 export type InitiativeTrackerTableProps = {
   rows: InitiativeTrackerRow[];
@@ -50,7 +52,7 @@ export type InitiativeTrackerTableProps = {
   onRemoveMultipleFromInitiative?: (rowIds: string[]) => void;
   onUpdateMultipleRows?: (
     rowIds: string[],
-    changes: Partial<Omit<InitiativeTrackerRow, "id" | "playerDisplayName">> & {
+    changes: Omit<Partial<Omit<InitiativeTrackerRow, "id" | "playerDisplayName">>, "playerFieldVisibility"> & {
       playerFieldVisibility?: Partial<InitiativeTrackerRow["playerFieldVisibility"]>;
     },
     playerDisplayName?: string,
@@ -94,6 +96,7 @@ export type InitiativeTrackerTableProps = {
         initiative: string;
         name: string;
         hitPoints: string;
+        lifeStatus: string;
         armorClass: string;
         conditions: string;
         groupLabel: string;
@@ -154,6 +157,7 @@ export type InitiativeTrackerTableProps = {
       initiative: string;
       name: string;
       hitPoints: string;
+      lifeStatus: string;
       armorClass: string;
       conditions: string;
       groupLabel: string;
@@ -162,6 +166,7 @@ export type InitiativeTrackerTableProps = {
   turnControls?: React.ReactNode;
   ownCharacterId?: string | null;
   ownCharacterSheetHref?: string | null;
+  newlyCombatantRevealedLabel?: string;
 };
 
 function getCompactHeaderLabel(label: string, length: number) {
@@ -195,12 +200,35 @@ export function InitiativeTrackerTable({
   turnControls,
   ownCharacterId = null,
   ownCharacterSheetHref = null,
+  newlyCombatantRevealedLabel,
 }: InitiativeTrackerTableProps) {
   const isPlayerView = mode === "player";
   const [selectionMode, setSelectionMode] = React.useState<"initiative" | "visibility" | null>(null);
   const [bulkVisibilityOpen, setBulkVisibilityOpen] = React.useState(false);
   const [selectedRowIds, setSelectedRowIds] = React.useState<Set<string>>(() => new Set());
   const [expandedRowIds, setExpandedRowIds] = React.useState<Set<string>>(() => new Set());
+
+  const newlyRevealedIds = useNewlyRevealedRows(isPlayerView ? rows.map((r) => r.id) : []);
+  const statusChangedRows = useStatusChangedRows(rows, !isPlayerView);
+
+  const [liveAnnouncement, setLiveAnnouncement] = React.useState("");
+  const announcedRef = React.useRef(new Set<string>());
+  React.useEffect(() => {
+    if (!isPlayerView || newlyRevealedIds.size === 0) return;
+    for (const id of announcedRef.current) {
+      if (!newlyRevealedIds.has(id)) announcedRef.current.delete(id);
+    }
+    const toAnnounce = [...newlyRevealedIds].filter((id) => !announcedRef.current.has(id));
+    if (toAnnounce.length === 0) return;
+    toAnnounce.forEach((id) => announcedRef.current.add(id));
+    const names = toAnnounce.map((id) => {
+      const row = rows.find((r) => r.id === id);
+      return row ? (characterName(row.firstname, row.lastname, row.surname) || row.playerDisplayName || "???") : "???";
+    });
+    setLiveAnnouncement(
+      names.map((n) => (newlyCombatantRevealedLabel ? `${n} — ${newlyCombatantRevealedLabel}` : n)).join(". "),
+    );
+  }, [newlyRevealedIds, isPlayerView, rows, newlyCombatantRevealedLabel]);
   const groupedInitiativeAvailable = !isPlayerView && !initiativeLocked && groupedInitiativeLabels != null;
   const bulkVisibilityAvailable = !isPlayerView && bulkVisibilityLabels != null;
   const selectionEnabled = selectionMode != null;
@@ -288,6 +316,7 @@ export function InitiativeTrackerTable({
 
   return (
     <div className="w-full min-w-0">
+      <div aria-live="polite" aria-atomic="true" className="sr-only">{liveAnnouncement}</div>
       <div className="hidden w-full max-w-full min-w-0 overflow-hidden rounded-[24px] bg-card text-xs font-bold text-white shadow-xl md:block lg:text-sm xl:text-base">
         <div
           className="grid w-full max-w-full min-w-0 items-center gap-x-1.5 px-2 py-2.5 lg:px-4 xl:gap-x-3 xl:px-5"
@@ -599,6 +628,8 @@ export function InitiativeTrackerTable({
             ownCharacterId={ownCharacterId}
             ownCharacterSheetHref={ownCharacterSheetHref}
             isActiveTurn={activeTurnRowId != null && row.id === activeTurnRowId}
+            isNewlyRevealed={isPlayerView && newlyRevealedIds.has(row.id)}
+            statusChangeAnimation={statusChangedRows.get(row.id) ?? null}
             initiativeLocked={initiativeLocked}
             selectionEnabled={selectionEnabled}
             isSelected={selectedRowIds.has(row.id)}

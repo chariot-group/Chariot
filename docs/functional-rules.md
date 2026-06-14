@@ -1524,6 +1524,14 @@ Each rule has a unique identifier and must be tested.
 - If the player has no assigned character, **View Character Sheet** is disabled with an explanatory tooltip.
 - Once combat has been ended by the GM, the player MUST be redirected to their session character sheet and MUST no longer have access to **Return to Battle** for that finished combat.
 
+**Character Sheet Combat Footer**:
+
+- When a character sheet displays both character edit actions and active combat controls, the bottom area MUST avoid stacking two full-height footers.
+- The character edit actions and the combat controls MUST be composed into one compact bottom bar or into a single shared footer region.
+- The merged footer MUST keep all existing accessible names and keyboard interactions for edit/save/cancel, previous turn, next turn, combatant stat expansion, and visible stat links.
+- The merged footer MUST preserve GM-only turn controls and player read-only constraints from FR-018 and FR-021.
+- The merged footer MUST preserve mobile content visibility by keeping the vertical footprint compact and preventing horizontal overflow with long translated labels or combatant names.
+
 **Last Consulted Sheet Tracking**:
 
 - `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
@@ -2053,3 +2061,108 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
 
+---
+
+## FR-029: Notification visuelle de révélation de combattant (vue joueur)
+
+**Rule**: Lorsqu'un combattant devient visible pour les joueurs (`visible: false → true`) pendant un combat actif, une animation de halo vert temporaire doit apparaître autour de ce combattant dans la vue joueur du tracker d'initiative ET dans la preview combat (CombatBanner).
+
+**Scope**:
+
+- S'applique uniquement en mode joueur (`mode === "player"`), jamais en mode MJ.
+- Concerne deux surfaces : la page tracker (`/initiativeTracker`) et la preview combat (`CombatBanner`) affichée sur les fiches personnage.
+- Complète FR-021 (modèle de visibilité joueur) sans en modifier les règles de filtrage ou de masquage.
+
+**Requirements**:
+
+- Lorsqu'un combattant apparaît pour la première fois dans la liste visible du joueur (transition `visible: false → true` ou ajout d'un nouveau combattant visible), un halo vert animé (`ring-2 ring-green/60 animate-pulse`) doit être appliqué à l'élément visuel correspondant pendant exactement **3 secondes**, puis disparaître.
+- Le halo utilise exclusivement le token `--green` du projet (FR-019). Aucune couleur hardcodée n'est autorisée.
+- La révélation ne doit pas être signalée par la couleur seule : une région `aria-live="polite"` doit annoncer le nom du combattant nouvellement révélé aux lecteurs d'écran.
+- La détection de transition est réalisée côté client par comparaison des IDs de lignes visibles entre les rendus successifs (hook dédié `useNewlyRevealedRows`).
+- Le halo s'applique au conteneur de la ligne dans le tracker, et au chip du carrousel dans la CombatBanner.
+- Un combattant révélé plusieurs fois (masqué puis révélé à nouveau) doit déclencher le halo à chaque nouvelle révélation.
+
+**Prohibitions**:
+
+- Afficher le halo en mode MJ.
+- Utiliser une couleur non issue du système de tokens du projet.
+- Conserver le halo au-delà de 3 secondes (pas d'état persistant).
+- Signaler la révélation par la couleur seule sans texte accessible.
+- Déclencher le halo au rechargement de page sur des lignes déjà présentes (uniquement sur les nouvelles apparitions pendant la session active).
+
+**Tests**:
+
+- Le halo vert apparaît sur la ligne tracker d'un combattant passant de `visible: false` à `visible: true` en mode joueur.
+- Le halo vert apparaît sur le chip du carrousel CombatBanner dans les mêmes conditions.
+- Le halo disparaît après 3 secondes.
+- Le halo ne s'affiche pas en mode MJ.
+- Une annonce `aria-live` est émise lors de la révélation.
+- Le rechargement de page ne déclenche pas le halo sur des lignes déjà visibles.
+- Un combattant masqué puis révélé à nouveau déclenche le halo une deuxième fois.
+
+**References**:
+
+- `services/web/client/src/hooks/useNewlyRevealedRows.ts` (hook dédié)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx`
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerTable.tsx`
+- `services/web/client/src/components/character/CombatBanner.tsx`
+
+---
+
+## FR-030: Découplage affichage HP / statut vital dans le tracker d'initiative
+
+**Rule**: L'affichage de la valeur numérique des points de vie (HP) et l'affichage visuel du statut vital (couleur de fond, icônes Skull/HeartCrack) dans le tracker d'initiative doivent être contrôlables indépendamment via deux flags distincts dans `playerFieldVisibility`.
+
+**Scope**:
+
+- Complète FR-021 (player field visibility) et FR-020 (visual treatment des statuts) sans les remplacer.
+- Le découplage ne s'applique qu'à la vue joueur ; la vue MJ affiche toujours le statut vital et les HP.
+
+**Champs**:
+
+- **`hitPoints`** (existant) : affiche/masque la valeur numérique HP (ex. `12/20 +3hp`) et les HP temporaires.
+- **`lifeStatus`** (nouveau) : affiche/masque la coloration de fond (rouge pour mort, jaune pour inconscient) et les icônes de statut (Skull, HeartCrack).
+
+**Valeurs par défaut** :
+
+- NPC : `lifeStatus: false` (cohérent avec le masquage par défaut des autres champs NPC)
+- PJ participants session (`__session_participants__`) : `lifeStatus: true` (cohérent avec la visibilité totale)
+
+**Combinaisons valides côté joueur** :
+
+| `hitPoints` | `lifeStatus` | Résultat                                                   |
+|-------------|--------------|-----------------------------------------------------------|
+| `true`      | `false`      | Valeur HP visible, fond neutre, aucune icône de statut    |
+| `false`     | `true`       | Fond coloré visible (rouge/jaune), HP masqués             |
+| `true`      | `true`       | HP et fond coloré visibles (comportement participants session) |
+| `false`     | `false`      | Tout masqué (comportement NPC par défaut)                 |
+
+**Comportement de l'icône de statut** :
+
+- L'icône (Skull / HeartCrack) est liée au `lifeStatus` et non au champ `hitPoints`.
+- Elle s'affiche uniquement quand `showLifeStatus === true` (toujours en vue MJ, conditionnellement en vue joueur).
+
+**Prohibitions** :
+
+- Lier l'affichage de l'icône de statut au flag `hitPoints` plutôt qu'au `lifeStatus`.
+- Appliquer le fond coloré / le ring de statut en vue joueur quand `lifeStatus: false`.
+- Masquer le statut vital en vue MJ quels que soient les flags joueur.
+
+**Tests** :
+
+- Vue joueur, `hitPoints: true, lifeStatus: false` : valeur HP affichée, fond neutre, aucune icône
+- Vue joueur, `hitPoints: false, lifeStatus: true` : fond rouge/jaune selon statut, HP masqués, aucune icône (aucun HP à côté duquel placer l'icône)
+- Vue joueur, `hitPoints: true, lifeStatus: true` : HP, fond et icône tous visibles
+- Vue joueur, `hitPoints: false, lifeStatus: false` : tout masqué
+- Vue MJ : statut vital et HP toujours visibles, indépendamment des flags
+- NPC par défaut : `lifeStatus: false` en valeur initiale
+- Participant session par défaut : `lifeStatus: true` en valeur initiale
+- `normalizePlayerFieldVisibility` restaure `lifeStatus` sur legacy rows sans le champ
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts` (interface, defaults, normalize)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx` (showLifeStatus flag)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerVisibilityDialog.tsx` (FIELD_KEYS)
+- `services/web/client/src/components/initiativeTracker/bulkSelection.ts` (BULK_VISIBILITY_FIELD_KEYS)
+- `services/web/client/messages/{en|fr|es}.json` (visibilityDialog.fields.lifeStatus)

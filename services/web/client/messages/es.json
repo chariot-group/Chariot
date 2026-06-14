@@ -184,6 +184,7 @@
           "initiative": "Puntuación de iniciativa",
           "name": "Nombre",
           "hitPoints": "Puntos de vida",
+          "lifeStatus": "Estado vital (vivo / inconsciente / muerto)",
           "armorClass": "Clase de armadura",
           "conditions": "Estados",
           "groupLabel": "Nombre del grupo"
@@ -200,6 +201,11 @@
         "configureShort": "Ajustar",
         "leaveInitiative": "Sacar la selección de la iniciativa"
       },
+      "yourTurn": "¡Es tu turno!",
+      "notYourTurn": "Turno de {name}",
+      "expandStats": "Mostrar estadísticas de {name}",
+      "collapseStats": "Ocultar estadísticas de {name}",
+      "noVisibleStats": "Sin estadísticas visibles",
       "roundIndicator": "Ronda {round}",
       "startCombat": "Iniciar combate",
       "endCombat": "Cerrar combate",
@@ -207,6 +213,8 @@
       "endCombatConfirmDescription": "Si confirmas, todo el mundo volverá a su hoja de personaje y el progreso del combate dejará de estar disponible.",
       "endCombatConfirmAction": "Salir del combate",
       "endCombatCancelAction": "Seguir en combate",
+      "unknownCombatant": "???",
+      "newlyCombatantRevealed": "ahora es visible en el combate",
       "previousTurn": "Anterior",
       "nextTurn": "Siguiente",
       "previousTurnHintAvailable": "Ninguna acción registrada en este turno — puedes corregir el avance.",

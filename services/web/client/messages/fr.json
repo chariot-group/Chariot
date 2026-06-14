@@ -184,6 +184,7 @@
           "initiative": "Score d'initiative",
           "name": "Nom",
           "hitPoints": "Points de vie",
+          "lifeStatus": "État vital (vivant / inconscient / mort)",
           "armorClass": "Classe d'armure",
           "conditions": "États",
           "groupLabel": "Nom du groupe"
@@ -200,6 +201,11 @@
         "configureShort": "Régler",
         "leaveInitiative": "Sortir la sélection de l'initiative"
       },
+      "yourTurn": "C'est votre tour !",
+      "notYourTurn": "Tour de {name}",
+      "expandStats": "Afficher les stats de {name}",
+      "collapseStats": "Masquer les stats de {name}",
+      "noVisibleStats": "Aucune statistique visible",
       "roundIndicator": "Manche {round}",
       "startCombat": "Lancer le combat",
       "endCombat": "Clôturer le combat",
@@ -207,6 +213,8 @@
       "endCombatConfirmDescription": "Si vous confirmez, tout le monde retournera sur sa fiche et l'avancement du combat ne sera plus accessible.",
       "endCombatConfirmAction": "Quitter le combat",
       "endCombatCancelAction": "Rester sur le combat",
+      "unknownCombatant": "???",
+      "newlyCombatantRevealed": "est maintenant visible dans le combat",
       "previousTurn": "Précédent",
       "nextTurn": "Suivant",
       "previousTurnHintAvailable": "Aucune action enregistrée sur ce tour — vous pouvez corriger le passage de tour.",

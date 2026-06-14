@@ -1,4 +1,4 @@
-import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
 import {
@@ -101,11 +101,12 @@ export function normalizeInitiativeTrackerConditionEntry(
 
 export type InitiativeTrackerRowKind = 'player' | 'npc';
 
-/** FR-021 — champs visibles pour les joueurs sur une ligne du tracker. */
+/** FR-021 / FR-030 — champs visibles pour les joueurs sur une ligne du tracker. */
 export interface InitiativeTrackerPlayerFieldVisibility {
     initiative: boolean;
     name: boolean;
     hitPoints: boolean;
+    lifeStatus: boolean;
     armorClass: boolean;
     conditions: boolean;
     groupLabel: boolean;
@@ -115,6 +116,7 @@ export const DEFAULT_NPC_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFieldVi
     initiative: false,
     name: true,
     hitPoints: false,
+    lifeStatus: false,
     armorClass: false,
     conditions: false,
     groupLabel: false,
@@ -124,6 +126,7 @@ export const DEFAULT_PLAYER_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFiel
     initiative: true,
     name: true,
     hitPoints: true,
+    lifeStatus: true,
     armorClass: true,
     conditions: true,
     groupLabel: true,
@@ -156,6 +159,7 @@ export function normalizePlayerFieldVisibility(
         initiative: typeof value.initiative === 'boolean' ? value.initiative : defaults.initiative,
         name: typeof value.name === 'boolean' ? value.name : defaults.name,
         hitPoints: typeof value.hitPoints === 'boolean' ? value.hitPoints : defaults.hitPoints,
+        lifeStatus: typeof value.lifeStatus === 'boolean' ? value.lifeStatus : defaults.lifeStatus,
         armorClass: typeof value.armorClass === 'boolean' ? value.armorClass : defaults.armorClass,
         conditions: typeof value.conditions === 'boolean' ? value.conditions : defaults.conditions,
         groupLabel: typeof value.groupLabel === 'boolean' ? value.groupLabel : defaults.groupLabel,
@@ -612,7 +616,7 @@ const sessionSlice = createSlice({
             state,
             action: PayloadAction<{
                 ids: string[];
-                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>> & {
+                changes: Omit<Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>>, 'playerFieldVisibility'> & {
                     playerFieldVisibility?: Partial<InitiativeTrackerPlayerFieldVisibility>;
                 };
                 playerDisplayName?: string;

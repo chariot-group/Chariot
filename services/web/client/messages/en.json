@@ -184,6 +184,7 @@
           "initiative": "Initiative score",
           "name": "Name",
           "hitPoints": "Hit points",
+          "lifeStatus": "Vital status (alive / unconscious / dead)",
           "armorClass": "Armor class",
           "conditions": "Conditions",
           "groupLabel": "Group name"
@@ -200,6 +201,11 @@
         "configureShort": "Set",
         "leaveInitiative": "Leave initiative for selection"
       },
+      "yourTurn": "It's your turn!",
+      "notYourTurn": "{name}'s turn",
+      "expandStats": "Show stats for {name}",
+      "collapseStats": "Hide stats for {name}",
+      "noVisibleStats": "No visible stats",
       "roundIndicator": "Round {round}",
       "startCombat": "Start combat",
       "endCombat": "End combat",
@@ -207,6 +213,8 @@
       "endCombatConfirmDescription": "If you confirm, everyone will return to their character sheet and combat progress will no longer be available.",
       "endCombatConfirmAction": "Leave combat",
       "endCombatCancelAction": "Stay in combat",
+      "unknownCombatant": "???",
+      "newlyCombatantRevealed": "is now visible in combat",
       "previousTurn": "Previous",
       "nextTurn": "Next",
       "previousTurnHintAvailable": "No action recorded this turn — you can undo the turn advance.",

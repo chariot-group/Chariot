@@ -24,6 +24,7 @@ export default function AppSidebar() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [headerTooltipVisible, setHeaderTooltipVisible] = useState(false);
   const t = useTranslations("sidebar");
+  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
 
   const handleMouseMoveHeader = (e: React.MouseEvent) => {
     setMousePos({
@@ -76,6 +77,11 @@ export default function AppSidebar() {
 
       <SidebarFooter className="bg-card sm:bg-transparent">
         <ActionButton />
+        {appVersion && (
+          <p className="select-none text-center text-[10px] leading-none text-white/45">
+            Chariot v{appVersion}
+          </p>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
