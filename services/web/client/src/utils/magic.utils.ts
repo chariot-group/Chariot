@@ -272,6 +272,13 @@ export function incrementSpellSlotUsedInSpellcastingList(
     });
 }
 
+/** Réattache le sort sélectionné à l’objet courant dans la liste (après PATCH / synchro WS). */
+export function rebindSelectedSpellToList(spells: Spell[], selected: Spell | null): Spell | null {
+    if (!selected) return null;
+    const idx = findSpellIndexInList(spells, selected);
+    return idx >= 0 ? spells[idx] : selected;
+}
+
 /** Index du sort (référence d’objet, puis nom + niveau + usesPerDay). */
 export function findSpellIndexInList(spells: Spell[], selected: Spell): number {
     const byRef = spells.indexOf(selected);

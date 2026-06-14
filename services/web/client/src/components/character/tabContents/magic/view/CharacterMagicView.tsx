@@ -29,6 +29,7 @@ import {
   getSpellsByUses,
   getRemainingSpellSlots,
   npcUsesKey,
+  rebindSelectedSpellToList,
   sortSpellsPreparedFirst,
 } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
@@ -235,6 +236,15 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
       setPreparationEditMode(false);
     }
   }, [showPreparedSpellsControlsEarly, preparationEditMode]);
+
+  // Conserver le sort affiché après PATCH / synchro session (nouvelles références d’objets).
+  useEffect(() => {
+    if (!activeSpellcasting || !selectedSpell) return;
+    const rebound = rebindSelectedSpellToList(activeSpellcasting.spells ?? [], selectedSpell);
+    if (rebound !== selectedSpell) {
+      setSelectedSpell(rebound);
+    }
+  }, [activeSpellcasting, selectedSpell]);
 
   if (!character.spellcasting || character.spellcasting.length === 0 || activeSpellcasting === null) {
     return (
