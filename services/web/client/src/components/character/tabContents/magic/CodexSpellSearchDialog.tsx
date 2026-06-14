@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import type { Locale } from "@/i18n/request";
 import CodexService, { CodexSpellItem } from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
-import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
+import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft, ChevronDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   codexDeclaredPreviewLangs,
@@ -20,6 +20,17 @@ import {
   codexSpellLangsVisibleInAllLanguagesSearch,
   codexSpellTranslationLooksUsable,
 } from "@/utils/codexLocale.utils";
+import type { SpellClass } from "@/constants/spellClasses";
+import { SPELL_CLASSES, spellClassTranslationKey } from "@/constants/spellClasses";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface CodexSpellSearchDialogProps {
   open: boolean;
@@ -144,6 +155,7 @@ export default function CodexSpellSearchDialog({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
+  const [selectedClasses, setSelectedClasses] = useState<SpellClass[]>([]);
   const [searchResults, setSearchResults] = useState<CodexSpellItem[]>([]);
   const [selectedSpell, setSelectedSpell] = useState<Partial<Spell> | null>(null);
   const [selectedCodexSpell, setSelectedCodexSpell] = useState<CodexSpellItem | null>(null);
@@ -163,6 +175,19 @@ export default function CodexSpellSearchDialog({
 
   const ITEMS_PER_PAGE = 20;
 
+  const classFilterLabel = useMemo(() => {
+    if (selectedClasses.length === 0) {
+      return tDialog("classFilter.all");
+    }
+    return selectedClasses.map((spellClass) => tClasses(spellClassTranslationKey(spellClass))).join(", ");
+  }, [selectedClasses, tClasses, tDialog]);
+
+  const toggleClassFilter = useCallback((spellClass: SpellClass) => {
+    setSelectedClasses((prev) =>
+      prev.includes(spellClass) ? prev.filter((value) => value !== spellClass) : [...prev, spellClass],
+    );
+  }, []);
+
   useEffect(() => {
     if (!selectedSpellKey) return;
     spellPreviewScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -170,8 +195,15 @@ export default function CodexSpellSearchDialog({
 
   // Recherche avec debounce
   const searchSpells = useCallback(
-    async (query: string, page: number = 1, append: boolean = false, apiLang?: string | null) => {
+    async (
+      query: string,
+      page: number = 1,
+      append: boolean = false,
+      apiLang?: string | null,
+      apiClasses?: SpellClass[],
+    ) => {
       const lang = apiLang !== undefined ? apiLang : selectedLang;
+      const classes = apiClasses !== undefined ? apiClasses : selectedClasses;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -188,7 +220,13 @@ export default function CodexSpellSearchDialog({
       setError(null);
 
       try {
-        const response = await CodexService.searchSpells(query, lang, page, ITEMS_PER_PAGE);
+        const response = await CodexService.searchSpells(
+          query,
+          lang,
+          page,
+          ITEMS_PER_PAGE,
+          classes.length > 0 ? classes : undefined,
+        );
         const newResults = response.data || [];
 
         // Vérifier si on a atteint la fin en comparant le nombre d'éléments reçus
@@ -221,7 +259,7 @@ export default function CodexSpellSearchDialog({
         isLoadingRef.current = false;
       }
     },
-    [selectedLang, tDialog, ITEMS_PER_PAGE],
+    [selectedLang, selectedClasses, tDialog, ITEMS_PER_PAGE],
   );
 
   // Effet pour lancer la recherche avec debounce
@@ -232,13 +270,14 @@ export default function CodexSpellSearchDialog({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedLang, searchSpells]);
+  }, [searchQuery, selectedLang, selectedClasses, searchSpells]);
 
   // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
     if (open) {
       setSearchQuery("");
       setSelectedLang(userLocale);
+      setSelectedClasses([]);
       setSearchResults([]);
       setSelectedSpell(null);
       setSelectedCodexSpell(null);
@@ -252,7 +291,7 @@ export default function CodexSpellSearchDialog({
       setHasMore(false);
       isLoadingRef.current = false;
       // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchSpells("", 1, false, userLocale);
+      searchSpells("", 1, false, userLocale, []);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -361,9 +400,9 @@ export default function CodexSpellSearchDialog({
           {/* Partie gauche : Recherche et résultats */}
           <div
             className={`flex flex-col gap-4 w-full lg:w-1/4 overflow-hidden min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
-            {/* Barre de recherche et filtre de langue */}
-            <div className="flex flex-col md:flex-row lg:flex-col gap-2 w-full">
-              <div className="relative flex-1">
+            {/* Barre de recherche et filtres */}
+            <div className="flex flex-col gap-2 w-full">
+              <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   type="text"
@@ -374,26 +413,60 @@ export default function CodexSpellSearchDialog({
                   autoFocus
                 />
               </div>
-              {/* Filtre de langue */}
-              <Select
-                value={selectedLang ?? "all"}
-                onValueChange={(value) => {
-                  if (value === "all") {
-                    setSelectedLang(null);
-                  } else if (value === "fr" || value === "en" || value === "es") {
-                    setSelectedLang(value);
-                  }
-                }}>
-                <SelectTrigger className="w-45">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
-                  <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
-                  <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
-                  <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex w-full min-w-0 gap-2">
+                {/* Filtre de langue */}
+                <Select
+                  value={selectedLang ?? "all"}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setSelectedLang(null);
+                    } else if (value === "fr" || value === "en" || value === "es") {
+                      setSelectedLang(value);
+                    }
+                  }}>
+                  <SelectTrigger className="min-w-0 flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
+                    <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
+                    <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
+                    <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {/* Filtre par classe(s) */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    type="button"
+                    aria-label={tDialog("classFilter.ariaLabel")}
+                    className={cn(
+                      "flex h-9 min-w-0 flex-1 cursor-pointer items-center justify-between gap-2 rounded-[15px] bg-gray-middle-light px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                      selectedClasses.length === 0 && "text-muted-foreground",
+                    )}>
+                    <span className="min-w-0 truncate text-left">{classFilterLabel}</span>
+                    <ChevronDown className="size-4 shrink-0 opacity-50" aria-hidden="true" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="max-h-60 min-w-48 w-(--radix-dropdown-menu-trigger-width) overflow-y-auto">
+                    <DropdownMenuItem
+                      className="font-medium"
+                      onSelect={() => setSelectedClasses([])}>
+                      {tDialog("classFilter.all")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {SPELL_CLASSES.map((spellClass) => (
+                      <DropdownMenuCheckboxItem
+                        key={spellClass}
+                        checked={selectedClasses.includes(spellClass)}
+                        onCheckedChange={() => toggleClassFilter(spellClass)}
+                        onSelect={(event) => event.preventDefault()}>
+                        {tClasses(spellClassTranslationKey(spellClass))}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
             {/* Résultats de recherche */}

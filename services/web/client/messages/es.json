@@ -1233,6 +1233,10 @@
           "en": "🇬🇧 Inglés",
           "es": "🇪🇸 Español"
         },
+        "classFilter": {
+          "all": "Todas las clases",
+          "ariaLabel": "Filtrar por clase"
+        },
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",

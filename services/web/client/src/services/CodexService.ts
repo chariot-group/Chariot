@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { spellClassApiValue } from '@/constants/spellClasses';
 import { Spell, NPC, Action, ActionUsageType } from '@/types/character';
 
 export interface CodexSpellTranslation {
@@ -479,15 +480,17 @@ class CodexService {
      * @param lang - La langue (fr, en, es) ou null pour toutes les langues
      * @param page - Le numéro de page
      * @param offset - Le nombre d'éléments par page
+     * @param classes - Filtre optionnel par une ou plusieurs classes de lanceur
      */
     async searchSpells(
         searchQuery: string,
         lang: string | null = null,
         page: number = 1,
-        offset: number = 10
+        offset: number = 10,
+        classes?: string[],
     ): Promise<CodexSpellResponse> {
         try {
-            const params: Record<string, string | number> = {
+            const params: Record<string, string | number | string[]> = {
                 page,
                 offset,
             };
@@ -502,8 +505,15 @@ class CodexService {
                 params.name = searchQuery.trim();
             }
 
+            if (classes && classes.length > 0) {
+                params.classes = classes.map(spellClassApiValue);
+            }
+
             const response = await this.client.get<CodexSpellResponse>('/spells', {
                 params,
+                paramsSerializer: {
+                    indexes: null,
+                },
             });
 
             return response.data;
@@ -560,18 +570,27 @@ class CodexService {
     }
 
     /**
-     * Vérifie si le service Codex est disponible
+     * Vérifie si le service Codex est disponible (statut HTTP uniquement, sans charger de sorts).
      * @returns true si le service est disponible, false sinon
      */
     async checkHealth(): Promise<boolean> {
         try {
-            // Utiliser l'endpoint /spells avec une requête minimale
-            await this.client.get('/spells', {
-                params: { page: 1, offset: 1 },
-                timeout: 3000
-            });
+            await this.client.head('/spells', { timeout: 3000 });
             return true;
         } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 405) {
+                try {
+                    await this.client.get('/spells', {
+                        params: { page: 1, offset: 1 },
+                        timeout: 3000,
+                    });
+                    return true;
+                } catch (fallbackError) {
+                    console.warn('Codex service is unavailable:', fallbackError);
+                    return false;
+                }
+            }
+
             console.warn('Codex service is unavailable:', error);
             return false;
         }
