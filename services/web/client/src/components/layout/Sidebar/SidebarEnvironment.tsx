@@ -1,110 +1,193 @@
 "use client";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { ContextMode, setContextMode, selectIsGmMode } from "@/store/slices/environmentSlice";
-import { selectOpenEnvironment, setOpenEnvironment } from "@/store/slices/sidebarSlice";
-import { ChevronRight, PlusCircleIcon } from "lucide-react";
+import { setContextMode, selectIsGmMode } from "@/store/slices/environmentSlice";
+import { selectSelectedCampaignId, setSelectedCampaign, setGroupToOpen } from "@/store/slices/campaignContextSlice";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BookOpen, Check, ChevronDown, Loader2, PlusCircleIcon, User } from "lucide-react";
 import { useTranslations } from "next-intl";
-import CampaignList from "@/components/layout/Sidebar/CampaignList";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
 import { toast } from "react-toastify";
 import { useRouter, usePathname } from "next/navigation";
-import NavigationService from "@/services/NavigationService";
-import { setSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useStore } from "react-redux";
 import { RootState } from "@/store";
+import NavigationService from "@/services/NavigationService";
+import { cn } from "@/lib/utils";
 
-/**
- * Environment selector component
- * Allows switching between player and GM modes
- * Displays campaign list for GM mode
- */
 export default function SidebarEnvironment() {
   const t = useTranslations("sidebar");
   const router = useRouter();
   const pathname = usePathname();
   const locale = pathname?.split("/")[1] || "fr";
   const dispatch = useAppDispatch();
-  const open = useAppSelector(selectOpenEnvironment);
-  const isGmMode = useAppSelector(selectIsGmMode);
   const store = useStore<RootState>();
+  const isGmMode = useAppSelector(selectIsGmMode);
+  const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
+  const { campaigns, loading, hasMore, loadingMore, loadMoreCampaigns } = useCampaigns({ autoFetch: false, pageSize: 5 });
 
-  /**
-   * Handle environment mode change
-   * When switching to player mode, redirect to first player character
-   * When switching to GM mode, close the environment selector
-   */
-  const changeEnvironment = async (environment: ContextMode) => {
-    dispatch(setContextMode(environment));
+  const switchToPlayer = async () => {
+    dispatch(setContextMode("player"));
+    dispatch(setSelectedCampaign(null));
 
-    if (environment === "player") {
-      dispatch(setSelectedCampaign(null));
+    const destination = await NavigationService.determinePlayerSpaceDestination(
+      locale,
+      dispatch,
+      store.getState.bind(store),
+    );
+    router.push(destination.path);
+    toast.info(t("environmentChanged", { space: t("playerSpace").toLocaleLowerCase() }));
+  };
 
-      // Redirect to first player character
-      const destination = await NavigationService.determinePlayerSpaceDestination(
-        locale,
-        dispatch,
-        store.getState.bind(store),
-      );
-      router.push(destination.path);
+  const handleCampaignSelect = async (campaignId: string) => {
+    dispatch(setSelectedCampaign(campaignId));
+    dispatch(setContextMode("gm"));
 
-      const spaceName = isGmMode ? t("gmSpace") : t("playerSpace");
-      toast.info(t("environmentChanged", { space: spaceName.toLocaleLowerCase() }));
+    const destination = await NavigationService.determineSpaceDestination(campaignId, locale);
+    if (destination.groupId) {
+      dispatch(setGroupToOpen(destination.groupId));
     }
+    router.push(destination.path);
   };
 
-  const handleOpenChange = (isOpen: boolean) => {
-    dispatch(setOpenEnvironment(isOpen));
-  };
+  const joueurActive = !isGmMode;
 
   return (
-    <Collapsible
-      className="rounded-[15px] border-2"
-      open={open}
-      onOpenChange={handleOpenChange}>
-      <CollapsibleTrigger
-        aria-expanded={open}
-        aria-controls="spaces-content"
-        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center group/environment focus-visible:border ${open ? "bg-white" : ""}`}>
-        <span className={`text-sm group-hover/environment:text-black ${open ? "text-black font-bold" : ""}`}>
-          {isGmMode ? t("gmSpace") : t("playerSpace")}
-        </span>
-        <ChevronRight
-          aria-hidden="true"
-          className={`w-5 h-5 group-hover/environment:text-black transition-all duration-100 ${open ? "rotate-90 text-black" : ""}`}
-        />
-      </CollapsibleTrigger>
-      <CollapsibleContent
-        id="spaces-content"
-        className="my-2 mx-5 flex min-h-0 min-w-0 flex-col gap-2">
-        <button
-          type="button"
-          onClick={() => changeEnvironment("player")}
-          aria-label={t("yourCharacters")}
-          className="sidebar-btn-white text-sm text-black cursor-pointer border bg-white transition-all duration-100 rounded-[12px] py-1.5 px-3 w-full text-left focus-visible:border">
-          {t("yourCharacters")}
-        </button>
-
-        <div
-          className="w-full border"
+    <div
+      className="flex gap-2"
+      role="group"
+      aria-label={t("yourSpaces")}>
+      {/* ── Joueur button — direct switch ── */}
+      <button
+        type="button"
+        onClick={switchToPlayer}
+        aria-pressed={joueurActive}
+        aria-label={t("playerSpace")}
+        className={cn(
+          "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[13px] border py-2 px-3 text-sm transition-all duration-150",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+          joueurActive
+            ? "border-white bg-white font-semibold text-black"
+            : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
+        )}>
+        <User
+          className="h-4 w-4 shrink-0"
           aria-hidden="true"
         />
+        <span className="truncate">{t("playerSpaceShort")}</span>
+      </button>
 
-        {/* Create campaign dialog */}
-        <CreateCampaignDialog>
+      {/* ── MJ button — opens campaign dropdown ── */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label={t("createCampaign")}
-            className="sidebar-btn-white text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
-            {t("createCampaign")}
-            <PlusCircleIcon className="w-5 h-5" />
+            aria-pressed={isGmMode}
+            aria-label={t("gmSpace")}
+            className={cn(
+              "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[13px] border py-2 px-3 text-sm transition-all duration-150",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+              isGmMode
+                ? "border-white bg-white font-semibold text-black"
+                : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
+            )}>
+            <BookOpen
+              className="h-4 w-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{t("gmSpaceAbbr")}</span>
+            <ChevronDown
+              className="ml-auto h-3 w-3 shrink-0 transition-transform duration-150 [[data-state=open]_&]:rotate-180"
+              aria-hidden="true"
+            />
           </button>
-        </CreateCampaignDialog>
+        </DropdownMenuTrigger>
 
-        {/* Campaign list */}
-        <CampaignList />
-      </CollapsibleContent>
-    </Collapsible>
+        <DropdownMenuContent
+          align="start"
+          sideOffset={8}
+          className="w-[--radix-dropdown-menu-trigger-width] rounded-[14px] border-white/12 bg-[#1f1f24] p-1.5">
+          {loading ? (
+            <div className="flex justify-center py-3">
+              <Loader2
+                className="h-4 w-4 animate-spin text-white/50"
+                aria-hidden
+              />
+            </div>
+          ) : campaigns.length === 0 ? (
+            <div className="px-3 py-2 text-xs text-white/40">{t("noCampaigns")}</div>
+          ) : (
+            <>
+              {campaigns.map((campaign) => {
+                const isSelected = selectedCampaignId === campaign._id && isGmMode;
+                return (
+                  <DropdownMenuItem
+                    key={campaign._id}
+                    onSelect={() => handleCampaignSelect(campaign._id)}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-white",
+                      "hover:bg-white/10 focus:bg-white/10 focus:text-white",
+                      isSelected && "font-medium",
+                    )}>
+                    <BookOpen
+                      className="h-4 w-4 shrink-0 text-white/40"
+                      aria-hidden="true"
+                    />
+                    <span className="min-w-0 flex-1 truncate">{campaign.label}</span>
+                    {isSelected && (
+                      <Check
+                        className="h-4 w-4 shrink-0 text-primary"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
+              {hasMore && (
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  onClick={() => void loadMoreCampaigns()}
+                  disabled={loadingMore}
+                  className="flex cursor-pointer items-center justify-center rounded-[10px] px-3 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white disabled:cursor-not-allowed disabled:opacity-50">
+                  {loadingMore ? (
+                    <Loader2
+                      className="h-3.5 w-3.5 animate-spin"
+                      aria-hidden
+                    />
+                  ) : (
+                    t("loadMoreCampaigns")
+                  )}
+                </DropdownMenuItem>
+              )}
+            </>
+          )}
+
+          <DropdownMenuSeparator className="mx-1 bg-white/10" />
+
+          <CreateCampaignDialog>
+            <DropdownMenuItem
+              asChild
+              onSelect={(e) => e.preventDefault()}
+              className="cursor-pointer rounded-[10px] px-3 py-2 text-sm text-white hover:bg-white/10 focus:bg-white/10">
+              <button
+                type="button"
+                className="flex w-full items-center gap-2">
+                <PlusCircleIcon
+                  className="h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                />
+                {t("createCampaign")}
+              </button>
+            </DropdownMenuItem>
+          </CreateCampaignDialog>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

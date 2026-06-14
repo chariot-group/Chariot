@@ -7,7 +7,7 @@ const STORAGE_KEY = 'chariot_redux_state';
 const PERSISTED_KEYS = [
     'environment',      // contextMode (player/GM)
     'campaignContext',  // selectedCampaignId
-    'sidebar',          // openEnvironment, openActiveGroups, openArchivedGroups
+    'sidebar',          // openArchivedGroups, openSessionPlayers
     'group',            // openGroupId
 ] as const;
 

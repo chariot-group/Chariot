@@ -2,14 +2,17 @@
 
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import { useState } from "react";
-import { Loader2, PlusCircleIcon } from "lucide-react";
+import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { cn } from "@/lib/utils";
+import { selectCurrentUserParticipant, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import { useUser } from "@/hooks/useUser";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +40,14 @@ export default function CharactersWithoutGroupList() {
   const router = useRouter();
 
   const dispatch = useAppDispatch();
+  const { user } = useUser();
+  const isInSession = useAppSelector(selectIsInSession);
+  const sessionStatus = useAppSelector(selectSessionStatus);
+  const currentParticipant = useAppSelector((state) =>
+    selectCurrentUserParticipant(state, user?.keycloakId ?? ""),
+  );
+  const sessionCharacterId =
+    isInSession && sessionStatus === "launched" ? (currentParticipant?.characterId ?? null) : null;
   const { setOpenMobile } = useSidebar();
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -96,9 +107,9 @@ export default function CharactersWithoutGroupList() {
         href="/characters/new/players"
         onClick={() => setOpenMobile(false)}
         aria-label={t("createCharacter")}
-        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border">
+        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
         {t("createCharacter")}
-        <PlusCircleIcon
+        <UserPlus
           aria-hidden="true"
           className="w-5 h-5"
         />
@@ -118,6 +129,7 @@ export default function CharactersWithoutGroupList() {
               .map((part) => (typeof part === "string" ? part.trim() : ""))
               .filter((part) => part.length > 0)
               .join(" ") || t("unnamedCharacter");
+          const isSessionCharacter = sessionCharacterId === character._id;
           return (
             <ContextMenu key={character._id ?? `character-${index}`}>
               <ContextMenuTrigger asChild>
@@ -126,16 +138,42 @@ export default function CharactersWithoutGroupList() {
                   aria-current={isSelected ? "page" : undefined}
                   aria-label={`${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
                   onClick={() => dispatch(clearSelectedCampaign())}
-                  className={`w-full shrink-0 border-2 cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center gap-1 group/character focus-visible:border ${isSelected ? "bg-white" : ""}`}>
+                  className={cn(
+                    "relative w-full shrink-0 cursor-pointer py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center gap-1 focus-visible:ring-1 focus-visible:ring-white/50",
+                    isSelected
+                      ? "bg-white pl-4 font-bold text-black"
+                      : "hover:bg-white/10",
+                  )}>
+                  {isSelected && (
+                    <span
+                      className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                      aria-hidden="true"
+                    />
+                  )}
                   <span
-                    className={`text-sm min-w-0 flex-1 truncate group-hover/character:font-bold group-hover/character:text-black ${isSelected ? "font-bold text-black" : ""}`}>
+                    className={cn(
+                      "text-sm min-w-0 flex-1 truncate",
+                      isSelected && "font-bold text-black",
+                    )}>
                     {displayName}
                   </span>
                   {classLabel && (
                     <span
-                      className={`text-sm shrink-0 whitespace-nowrap group-hover/character:font-bold group-hover/character:text-black ${isSelected ? "font-bold text-black" : ""}`}>
+                      className={cn(
+                        "text-sm shrink-0 whitespace-nowrap",
+                        isSelected && "font-bold text-black",
+                      )}>
                       ({classLabel})
                     </span>
+                  )}
+                  {isSessionCharacter && (
+                    <Swords
+                      aria-label={t("sessionCharacter")}
+                      className={cn(
+                        "ml-1 h-3.5 w-3.5 shrink-0",
+                        isSelected ? "text-primary" : "text-yellow",
+                      )}
+                    />
                   )}
                 </Link>
               </ContextMenuTrigger>

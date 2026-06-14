@@ -13,7 +13,6 @@ import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
 
 const TOOLTIP_CURSOR_OFFSET = 4;
-type TooltipScope = "header" | "content" | null;
 
 export default function AppSidebar() {
   useCampaigns({ autoFetch: true, pageSize: 5 });
@@ -22,19 +21,11 @@ export default function AppSidebar() {
   const sessionStatus = useAppSelector(selectSessionStatus);
   const contextMode = useAppSelector((state) => state.environment.contextMode);
   const isSessionLaunched = isInSession && sessionStatus === "launched";
-  const isContextDisabled = isSessionLaunched && contextMode !== "gm";
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [tooltipScope, setTooltipScope] = useState<TooltipScope>(null);
+  const [headerTooltipVisible, setHeaderTooltipVisible] = useState(false);
   const t = useTranslations("sidebar");
 
   const handleMouseMoveHeader = (e: React.MouseEvent) => {
-    setMousePos({
-      x: e.clientX,
-      y: e.clientY,
-    });
-  };
-
-  const handleMouseMoveContent = (e: React.MouseEvent) => {
     setMousePos({
       x: e.clientX,
       y: e.clientY,
@@ -45,9 +36,8 @@ export default function AppSidebar() {
     <Sidebar className="bg-card sm:bg-transparent text-white border-r border-sidebar-border">
       <SidebarHeader className="bg-card sm:bg-transparent">
         <div
-          className={`${contextMode !== "gm" ? "h-full" : ""}`}
-          onMouseEnter={isSessionLaunched ? () => setTooltipScope("header") : undefined}
-          onMouseLeave={isSessionLaunched ? () => setTooltipScope(null) : undefined}
+          onMouseEnter={isSessionLaunched ? () => setHeaderTooltipVisible(true) : undefined}
+          onMouseLeave={isSessionLaunched ? () => setHeaderTooltipVisible(false) : undefined}
           onMouseMove={isSessionLaunched ? handleMouseMoveHeader : undefined}>
           <div className={isSessionLaunched ? "pointer-events-none" : ""}>
             <SidebarEnvironment />
@@ -62,13 +52,9 @@ export default function AppSidebar() {
         <div
           className={cn(
             contextMode !== "gm" && "flex h-full min-h-0 flex-1 flex-col",
-          )}
-          onMouseEnter={isContextDisabled ? () => setTooltipScope("content") : undefined}
-          onMouseLeave={isContextDisabled ? () => setTooltipScope(null) : undefined}
-          onMouseMove={isContextDisabled ? handleMouseMoveContent : undefined}>
+          )}>
           <div
             className={cn(
-              isContextDisabled && "pointer-events-none",
               contextMode !== "gm" && "flex min-h-0 flex-1 flex-col",
             )}>
             <SidebarContext />
@@ -76,7 +62,7 @@ export default function AppSidebar() {
         </div>
       </SidebarContent>
 
-      {((isSessionLaunched && tooltipScope === "header") || (isContextDisabled && tooltipScope === "content")) && (
+      {isSessionLaunched && headerTooltipVisible && (
         <div
           role="tooltip"
           className="bg-foreground text-background z-50 w-50 rounded-[15px] px-3 py-1.5 text-xs text-balance pointer-events-none fixed"
