@@ -12,7 +12,18 @@ import type { Locale } from "@/i18n/request";
 import CodexService, { CodexSpellItem } from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
-import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft, ChevronDown, Check } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  BadgeCheck,
+  FileBadge,
+  ArrowLeft,
+  ChevronDown,
+  Check,
+  ListPlus,
+  ListMinus,
+  Layers,
+} from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   codexDeclaredPreviewLangs,
@@ -441,6 +452,9 @@ export default function CodexSpellSearchDialog({
     onOpenChange(false);
   };
 
+  const isMultiSelectionMode = spellQueue.length > 0;
+  const spellActionsDisabled = !selectedSpell || previewLangResolving;
+
   return (
     <Dialog
       open={open}
@@ -725,46 +739,109 @@ export default function CodexSpellSearchDialog({
           </div>
         </div>
 
-        <DialogFooter className="px-6 pb-6 pt-4 border-t shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-h-5 w-full sm:w-auto">
-            {spellQueue.length > 0 ? (
-              <p
-                className="text-sm text-muted-foreground"
-                aria-live="polite">
-                {tDialog("selectionCount", { count: spellQueue.length })}
-              </p>
-            ) : null}
-          </div>
-          <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
+        <DialogFooter className="shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:px-6 lg:py-4">
+          {isMultiSelectionMode ? (
+            <p
+              className="hidden text-sm font-medium text-purple lg:block"
+              aria-live="polite">
+              {tDialog("selectionCount", { count: spellQueue.length })}
+            </p>
+          ) : null}
+          <div className="flex w-full min-w-0 items-center justify-end gap-1.5 sm:gap-2 lg:w-auto">
             <Button
               type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}>
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              className="shrink-0">
               {tDialog("cancel")}
             </Button>
-            {spellQueue.length > 0 ? (
-              <Button
-                type="button"
-                onClick={handleAddSelection}
-                className="bg-purple hover:bg-purple/90 text-white">
-                {tDialog("addSelection", { count: spellQueue.length })}
-              </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleToggleQueueSelection}
-              disabled={!selectedSpell || previewLangResolving}
-              aria-pressed={isCurrentSpellQueued}>
-              {isCurrentSpellQueued ? tDialog("removeFromSelection") : tDialog("selectThisSpell")}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleUseThisSpell}
-              disabled={!selectedSpell}
-              className="bg-purple hover:bg-purple/90 text-white">
-              {tDialog("useThisSpell")}
-            </Button>
+
+            {(isMultiSelectionMode || selectedSpell) && (
+              <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 sm:border-l sm:border-border sm:pl-3">
+                {isMultiSelectionMode ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={handleToggleQueueSelection}
+                      disabled={spellActionsDisabled}
+                      aria-pressed={isCurrentSpellQueued}
+                      aria-label={
+                        isCurrentSpellQueued ? tDialog("removeFromSelection") : tDialog("selectThisSpell")
+                      }
+                      className={cn(
+                        "shrink-0 sm:size-auto sm:h-8 sm:px-3",
+                        isCurrentSpellQueued
+                          ? "border-destructive/50 text-destructive hover:bg-destructive/5"
+                          : "border-purple/40 text-purple hover:bg-purple/5",
+                      )}>
+                      {isCurrentSpellQueued ? (
+                        <ListMinus
+                          className="size-4"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <ListPlus
+                          className="size-4"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span className="hidden sm:inline">
+                        {isCurrentSpellQueued ? tDialog("removeFromSelection") : tDialog("selectThisSpell")}
+                      </span>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAddSelection}
+                      aria-label={tDialog("addSelection", { count: spellQueue.length })}
+                      className="h-8 shrink-0 gap-1 bg-purple px-2 hover:bg-purple/90 text-white sm:px-3">
+                      <Layers
+                        className="size-4 shrink-0"
+                        aria-hidden="true"
+                      />
+                      <span className="text-sm font-semibold tabular-nums sm:hidden">{spellQueue.length}</span>
+                      <span className="hidden truncate sm:inline">
+                        {tDialog("addSelection", { count: spellQueue.length })}
+                      </span>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={handleToggleQueueSelection}
+                      disabled={spellActionsDisabled}
+                      aria-pressed={isCurrentSpellQueued}
+                      aria-label={tDialog("selectThisSpell")}
+                      className="shrink-0 border-purple/40 text-purple hover:bg-purple/5 sm:size-auto sm:h-8 sm:px-3">
+                      <ListPlus
+                        className="size-4"
+                        aria-hidden="true"
+                      />
+                      <span className="hidden sm:inline">{tDialog("selectThisSpell")}</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon-sm"
+                      onClick={handleUseThisSpell}
+                      disabled={spellActionsDisabled}
+                      aria-label={tDialog("useThisSpell")}
+                      className="shrink-0 bg-purple hover:bg-purple/90 text-white sm:size-auto sm:h-8 sm:px-3">
+                      <Check
+                        className="size-4"
+                        aria-hidden="true"
+                      />
+                      <span className="hidden sm:inline">{tDialog("useThisSpell")}</span>
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>
