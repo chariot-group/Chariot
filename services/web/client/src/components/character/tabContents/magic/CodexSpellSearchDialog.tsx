@@ -23,7 +23,9 @@ import {
   ListPlus,
   ListMinus,
   Layers,
+  X,
 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   codexDeclaredPreviewLangs,
@@ -214,6 +216,7 @@ export default function CodexSpellSearchDialog({
   const [previewLangResolving, setPreviewLangResolving] = useState(false);
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const [spellQueue, setSpellQueue] = useState<QueuedSpellEntry[]>([]);
+  const [selectionDetailsOpen, setSelectionDetailsOpen] = useState(false);
   const isLoadingRef = useRef(false);
   const spellPreviewScrollRef = useRef<HTMLDivElement>(null);
 
@@ -339,6 +342,7 @@ export default function CodexSpellSearchDialog({
       setPreviewLangResolving(false);
       setPreviewTranslationError(null);
       setSpellQueue([]);
+      setSelectionDetailsOpen(false);
       setError(null);
       setCurrentPage(1);
       setHasMore(false);
@@ -451,6 +455,10 @@ export default function CodexSpellSearchDialog({
     spellQueue.forEach(({ spell }) => onSpellSelected(spell));
     onOpenChange(false);
   };
+
+  const handleRemoveFromQueue = useCallback((key: string) => {
+    setSpellQueue((prev) => prev.filter((entry) => entry.key !== key));
+  }, []);
 
   const isMultiSelectionMode = spellQueue.length > 0;
   const spellActionsDisabled = !selectedSpell || previewLangResolving;
@@ -739,13 +747,63 @@ export default function CodexSpellSearchDialog({
           </div>
         </div>
 
-        <DialogFooter className="shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:px-6 lg:py-4">
+        <DialogFooter className="shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4">
           {isMultiSelectionMode ? (
-            <p
-              className="hidden text-sm font-medium text-purple lg:block"
-              aria-live="polite">
-              {tDialog("selectionCount", { count: spellQueue.length })}
-            </p>
+            <Collapsible
+              open={selectionDetailsOpen}
+              onOpenChange={setSelectionDetailsOpen}
+              className="min-w-0 w-full lg:max-w-md lg:flex-1">
+              <CollapsibleTrigger
+                type="button"
+                aria-expanded={selectionDetailsOpen}
+                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-purple transition-colors hover:text-purple/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
+                <ChevronDown
+                  className={cn("size-4 shrink-0 transition-transform", selectionDetailsOpen && "rotate-180")}
+                  aria-hidden="true"
+                />
+                <span
+                  className="min-w-0 truncate"
+                  aria-live="polite">
+                  {tDialog("selectionCount", { count: spellQueue.length })}
+                </span>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2">
+                <ul
+                  aria-label={tDialog("selectionDetailsList")}
+                  className="max-h-36 overflow-y-auto rounded-[15px] border border-purple/20 bg-purple/5 p-1.5 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-purple/30">
+                  {spellQueue.map(({ key, spell }) => {
+                    const spellName = spell.name ?? tDialog("unknownSpell");
+                    const levelLabel =
+                      spell.level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level: spell.level ?? 0 });
+                    return (
+                      <li
+                        key={key}
+                        className="flex items-center gap-1 rounded-sm px-1.5 py-1 hover:bg-purple/10">
+                        <div className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">{spellName}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {levelLabel}
+                            {spell.school ? ` · ${spell.school}` : ""}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleRemoveFromQueue(key)}
+                          aria-label={tDialog("removeSpellFromSelection", { name: spellName })}
+                          className="size-7 shrink-0 text-muted-foreground hover:text-destructive">
+                          <X
+                            className="size-3.5"
+                            aria-hidden="true"
+                          />
+                        </Button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CollapsibleContent>
+            </Collapsible>
           ) : null}
           <div className="flex w-full min-w-0 items-center justify-end gap-1.5 sm:gap-2 lg:w-auto">
             <Button
@@ -768,9 +826,7 @@ export default function CodexSpellSearchDialog({
                       onClick={handleToggleQueueSelection}
                       disabled={spellActionsDisabled}
                       aria-pressed={isCurrentSpellQueued}
-                      aria-label={
-                        isCurrentSpellQueued ? tDialog("removeFromSelection") : tDialog("selectThisSpell")
-                      }
+                      aria-label={isCurrentSpellQueued ? tDialog("removeFromSelection") : tDialog("selectThisSpell")}
                       className={cn(
                         "shrink-0 sm:size-auto sm:h-8 sm:px-3",
                         isCurrentSpellQueued
