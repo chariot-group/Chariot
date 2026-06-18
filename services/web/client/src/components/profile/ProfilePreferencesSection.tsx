@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import ProfileLocaleSelectImmediate from "@/components/profile/ProfileLocaleSelectImmediate";
+import ProfileMeasurementUnitSelectImmediate from "@/components/profile/ProfileMeasurementUnitSelectImmediate";
 import ProfileSection from "@/components/profile/ProfileSection";
 import { useTranslations } from "next-intl";
 
@@ -19,7 +20,10 @@ export default function ProfilePreferencesSection() {
           className="sr-only">
           {t("sections.preferences")}
         </h3>
-        <ProfileLocaleSelectImmediate />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+          <ProfileLocaleSelectImmediate />
+          <ProfileMeasurementUnitSelectImmediate />
+        </div>
       </Card>
     </ProfileSection>
   );

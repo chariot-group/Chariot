@@ -444,6 +444,12 @@
       "en": "🇬🇧 Anglais",
       "es": "🇪🇸 Espagnol"
     },
+    "measurementUnitPreference": "Unités de mesure",
+    "measurementUnitPreferenceAria": "Unités de mesure préférées",
+    "measurementUnits": {
+      "metric": "Mètres (m, kg)",
+      "imperial": "Pieds / Pouces (ft, lbs)"
+    },
     "changePassword": {
       "successMessage": "Mot de passe modifié avec succès",
       "errorMessage": "Échec de la modification du mot de passe",

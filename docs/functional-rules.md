@@ -2417,3 +2417,36 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/initiativeTracker/InitiativeTrackerVisibilityDialog.tsx` (FIELD_KEYS)
 - `services/web/client/src/components/initiativeTracker/bulkSelection.ts` (BULK_VISIBILITY_FIELD_KEYS)
 - `services/web/client/messages/{en|fr|es}.json` (visibilityDialog.fields.lifeStatus)
+
+---
+
+## FR-031: Unité de mesure préférée
+
+**Rule**: Each user can choose a preferred measurement unit (`metric` or `imperial`) stored in their profile. The default value is `metric`.
+
+**Requirements**:
+
+- `preferredMeasurementUnit` field on the user model, accepting values `metric` or `imperial`
+- Editable from the profile page, Preferences section, alongside the language preference
+- Change is saved immediately (same pattern as `preferredLocale`)
+- Exposed in all user DTOs (`UpdateUserProfileDto`, `UserInfoDto`) and the frontend `User` / `UpdateUserDto` types
+- The stored preference is available globally for any future display formatting of size/weight values
+
+**Prohibitions**:
+
+- Applying conversion logic or display formatting in this ticket — only the preference storage and UI control are in scope here
+
+**Tests**:
+
+- Nominal: selecting `imperial` calls `updateCurrentUser` with `preferredMeasurementUnit: 'imperial'` and dispatches `updateUser`
+- Edge: selecting the already-active unit does nothing (no API call)
+- Failure: API error shows an error toast and does not change the stored preference
+
+**References**:
+
+- `services/adventure/api/src/resources/user/schemas/user.schema.ts`
+- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts`
+- `services/adventure/api/src/resources/user/dto/sub/user-info.dto.ts`
+- `services/web/client/src/types/user.ts`
+- `services/web/client/src/components/profile/ProfileMeasurementUnitSelect.tsx`
+- `services/web/client/src/components/profile/ProfileMeasurementUnitSelectImmediate.tsx`

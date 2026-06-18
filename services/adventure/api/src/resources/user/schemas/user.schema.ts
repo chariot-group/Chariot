@@ -45,6 +45,15 @@ export class User {
   })
   @Prop({ type: String, enum: ['fr', 'en', 'es'], required: false })
   preferredLocale?: string;
+
+  @ApiProperty({
+    example: 'metric',
+    description: 'User preferred measurement unit',
+    enum: ['metric', 'imperial'],
+    required: false,
+  })
+  @Prop({ type: String, enum: ['metric', 'imperial'], required: false })
+  preferredMeasurementUnit?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -63,4 +63,12 @@ export class UserInfoDto {
     required: false,
   })
   preferredLocale?: string;
+
+  @ApiProperty({
+    description: 'User preferred measurement unit',
+    example: 'metric',
+    enum: ['metric', 'imperial'],
+    required: false,
+  })
+  preferredMeasurementUnit?: string;
 }

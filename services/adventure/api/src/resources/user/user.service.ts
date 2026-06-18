@@ -62,6 +62,7 @@ export class UserService {
         balance: user.balance,
         history: user.history,
         preferredLocale: user.preferredLocale,
+        preferredMeasurementUnit: user.preferredMeasurementUnit,
       };
 
       const message: string = `User #${id} found in ${end - start}ms`;
@@ -135,12 +136,13 @@ export class UserService {
       lastName?: string;
       email?: string;
       preferredLocale?: string;
+      preferredMeasurementUnit?: string;
     },
   ): Promise<IResponse<UserInfoDto>> {
     try {
       const start: number = Date.now();
 
-      const { preferredLocale, ...keycloakUpdateData } = updateData;
+      const { preferredLocale, preferredMeasurementUnit, ...keycloakUpdateData } = updateData;
 
       // Update user in Keycloak
       await this.keycloakService.updateUser(keycloakId, keycloakUpdateData);
@@ -170,6 +172,11 @@ export class UserService {
 
       if (preferredLocale !== undefined) {
         user.preferredLocale = preferredLocale;
+      }
+      if (preferredMeasurementUnit !== undefined) {
+        user.preferredMeasurementUnit = preferredMeasurementUnit;
+      }
+      if (preferredLocale !== undefined || preferredMeasurementUnit !== undefined) {
         await user.save();
       }
 
@@ -185,6 +192,7 @@ export class UserService {
         balance: user.balance,
         history: user.history,
         preferredLocale: user.preferredLocale,
+        preferredMeasurementUnit: user.preferredMeasurementUnit,
       };
 
       const message: string = `User #${keycloakId} updated successfully in ${end - start}ms`;
@@ -255,6 +263,7 @@ export class UserService {
         balance: user.balance,
         history: user.history,
         preferredLocale: user.preferredLocale,
+        preferredMeasurementUnit: user.preferredMeasurementUnit,
       };
 
       const message: string = `History entry added for user #${keycloakId} in ${end - start}ms`;

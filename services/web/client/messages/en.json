@@ -443,6 +443,12 @@
       "en": "🇬🇧 English",
       "es": "🇪🇸 Spanish"
     },
+    "measurementUnitPreference": "Measurement units",
+    "measurementUnitPreferenceAria": "Preferred measurement units",
+    "measurementUnits": {
+      "metric": "Metres (m, kg)",
+      "imperial": "Feet / Inches (ft, lbs)"
+    },
     "changePassword": {
       "successMessage": "Password changed successfully",
       "errorMessage": "Failed to change password",
