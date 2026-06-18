@@ -12,7 +12,8 @@ export const SUPPORTED_USER_LOCALES = ['fr', 'en', 'es'] as const;
 export type SupportedUserLocale = (typeof SUPPORTED_USER_LOCALES)[number];
 
 export const SUPPORTED_MEASUREMENT_UNITS = ['metric', 'imperial'] as const;
-export type SupportedMeasurementUnit = (typeof SUPPORTED_MEASUREMENT_UNITS)[number];
+export type SupportedMeasurementUnit =
+  (typeof SUPPORTED_MEASUREMENT_UNITS)[number];
 
 export class UpdateUserProfileDto {
   @ApiProperty({

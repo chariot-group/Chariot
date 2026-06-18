@@ -144,7 +144,12 @@ export class UserService {
     try {
       const start: number = Date.now();
 
-      const { preferredLocale, preferredMeasurementUnit, showBothUnits, ...keycloakUpdateData } = updateData;
+      const {
+        preferredLocale,
+        preferredMeasurementUnit,
+        showBothUnits,
+        ...keycloakUpdateData
+      } = updateData;
 
       // Update user in Keycloak
       await this.keycloakService.updateUser(keycloakId, keycloakUpdateData);
@@ -181,7 +186,11 @@ export class UserService {
       if (showBothUnits !== undefined) {
         user.showBothUnits = showBothUnits;
       }
-      if (preferredLocale !== undefined || preferredMeasurementUnit !== undefined || showBothUnits !== undefined) {
+      if (
+        preferredLocale !== undefined ||
+        preferredMeasurementUnit !== undefined ||
+        showBothUnits !== undefined
+      ) {
         await user.save();
       }
 
