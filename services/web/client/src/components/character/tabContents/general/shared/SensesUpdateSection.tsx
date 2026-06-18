@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Controller, FieldValues, UseFormReturn, useFieldArray } from "react-hook-form";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
 interface SensesUpdateSectionProps {
   accentColor: string;
@@ -14,6 +15,7 @@ interface SensesUpdateSectionProps {
 
 export default function SensesUpdateSection({ accentColor, form, embedded = false }: SensesUpdateSectionProps) {
   const t = useTranslations("characterDetail.player.general");
+  const { displayFt, toFeet, unitLabel } = useDistanceUnit();
   const {
     fields: senseFields,
     append: appendSense,
@@ -88,15 +90,15 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
                     </label>
                     <Input
                       {...field}
-                      value={field.value ?? ""}
+                      value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
                       onChange={(event) => {
                         const value = event.target.value.trim();
-                        field.onChange(value === "" ? null : value);
+                        field.onChange(value === "" ? null : toFeet(Number(value)));
                       }}
                       id={`sense-value-${index}`}
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? `sense-value-${index}-error` : undefined}
-                      placeholder={t("senseValue")}
+                      placeholder={`${t("senseValue")} (${unitLabel})`}
                       type="number"
                       min="0"
                     />

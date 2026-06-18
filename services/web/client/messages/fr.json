@@ -860,6 +860,8 @@
       "hpAbbr": "PV",
       "feet": "pieds",
       "feetAbbr": "pi",
+      "meters": "mètres",
+      "metersAbbr": "m",
       "affinities": "Affinités",
       "resistances": "Résistances",
       "resistancesPlaceholder": "Feu, Froid...",

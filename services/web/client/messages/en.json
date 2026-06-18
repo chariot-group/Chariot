@@ -859,6 +859,8 @@
       "hpAbbr": "HP",
       "feet": "feet",
       "feetAbbr": "ft",
+      "meters": "meters",
+      "metersAbbr": "m",
       "affinities": "Affinities",
       "resistances": "Resistances",
       "resistancesPlaceholder": "Fire, Cold...",

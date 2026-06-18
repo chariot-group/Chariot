@@ -2450,3 +2450,48 @@ Each initiative tracker row carries:
 - `services/web/client/src/types/user.ts`
 - `services/web/client/src/components/profile/ProfileMeasurementUnitSelect.tsx`
 - `services/web/client/src/components/profile/ProfileMeasurementUnitSelectImmediate.tsx`
+
+---
+
+## FR-032: Conversion et affichage des unités de distance
+
+**Rule**: All distance values displayed in the application (speed, senses, action range, spell range) must respect the user's `preferredMeasurementUnit`. Values are always stored in **feet** in the database. Display and input use the unit chosen in the user's profile.
+
+**Conversion rate**: 5 ft = 1.5 m (factor 0.3 exact — i.e. 1 ft = 0.3 m).
+
+**Requirements**:
+
+- All numeric distance values (speed fields, sense ranges) stored in the DB remain in feet.
+- On display, values are converted to meters when `preferredMeasurementUnit === 'metric'`, left as-is for `'imperial'`.
+- Metric display rounds to 1 decimal place (e.g. 30 ft → 9 m, 5 ft → 1.5 m).
+- In edit forms, speed and sense range inputs show the value in the user's preferred unit; on submit, the value is converted back to feet before sending to the API.
+- String-based range fields (`action.range`, `spell.range`) stored as free-text (e.g. "30 ft.", "60/120 ft.", "Self") are parsed and converted for display only — the raw string is never altered in the DB.
+- Non-numeric range strings ("Touch", "Self", "Sight", "Unlimited") pass through unchanged.
+- The unit abbreviation shown next to values must match the locale and unit: "ft" / "pi" for imperial, "m" for metric.
+- A shared utility (`utils/unit.utils.ts`) and hook (`hooks/useDistanceUnit.ts`) are used for all conversions and unit label retrieval.
+
+**Prohibitions**:
+
+- Storing metric values in the database.
+- Applying conversion in server-side code — conversion is frontend-only display logic.
+- Hardcoding "ft" labels in display components; always use the unit-aware label from the hook.
+
+**Tests**:
+
+- Nominal: `feetToMeters(30)` returns `9`, `feetToMeters(5)` returns `1.5`.
+- Nominal: `metersToFeet(9)` returns `30`.
+- Nominal: `convertRangeString("30 ft.", "metric")` returns `"9 m"`.
+- Edge: `convertRangeString("60/120 ft.", "metric")` returns `"18/36 m"`.
+- Edge: `convertRangeString("Touch", "metric")` returns `"Touch"` (unchanged).
+- Edge: `convertRangeString("Self (10-foot cone)", "metric")` converts the numeric part.
+- Edge: `feetToMeters(0)` returns `0`.
+
+**References**:
+
+- `services/web/client/src/utils/unit.utils.ts`
+- `services/web/client/src/hooks/useDistanceUnit.ts`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`
+- `services/web/client/src/components/character/tabContents/shared/NpcStatistics.tsx`
+- `services/web/client/src/components/character/tabContents/general/shared/SensesSection.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`
+- `services/web/client/src/components/character/tabContents/magic/SpellDisplay.tsx`

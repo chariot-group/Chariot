@@ -6,6 +6,7 @@ import ShieldIcon from "@public/assets/icons/shield-icon.svg";
 import RunningIcon from "@public/assets/icons/running-icon.svg";
 import { NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 
 interface NpcStatisticsProps {
@@ -15,6 +16,7 @@ interface NpcStatisticsProps {
 
 export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) {
   const t = useTranslations("characterDetail.battle");
+  const { displayFt, unitLabel } = useDistanceUnit();
   const speed = npc.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
 
   const speedBadges = [
@@ -158,11 +160,11 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
                     className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
                     tabIndex={0}
                     role="img"
-                    aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${badge.value} ${t("feet")}`}>
+                    aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${displayFt(badge.value)} ${unitLabel}`}>
                     {badge.icon}
                     <span aria-hidden="true">
-                      {badge.value}
-                      {t("feetAbbr")}
+                      {displayFt(badge.value)}
+                      {unitLabel}
                     </span>
                   </div>
                 </TooltipTrigger>
