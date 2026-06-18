@@ -60,11 +60,9 @@ export default function SidebarContext() {
 
   return (
     <nav
-      className="flex flex-col gap-3 overflow-y-auto px-3 py-4"
+      className="flex flex-col gap-3 px-3 py-4 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
       aria-label={t("gmNavigation")}>
-      {selectedCampaign && (
-        <h2 className="shrink-0 text-lg text-white">{selectedCampaign.label}</h2>
-      )}
+      {selectedCampaign && <h2 className="shrink-0 text-lg text-white">{selectedCampaign.label}</h2>}
 
       {/* ── Active groups — shown directly, no collapsible wrapper ── */}
       <CreateGroupDialog
@@ -102,6 +100,8 @@ export default function SidebarContext() {
               onArchiveGroup={archiveGroup}
               onUnarchiveGroup={unarchiveGroup}
               onDeleteGroup={deleteGroup}
+              activeGroupsForMove={activeGroups}
+              onRefreshGroups={refreshGroups}
             />
 
             {hasMoreActive && (
@@ -139,9 +139,7 @@ export default function SidebarContext() {
                 aria-hidden="true"
                 className="h-4 w-4 shrink-0 text-white/50 transition-colors group-hover/arc:text-white"
               />
-              <span className="text-sm text-white/50 group-hover/arc:text-white">
-                {t("yourArchives")}
-              </span>
+              <span className="text-sm text-white/50 group-hover/arc:text-white">{t("yourArchives")}</span>
               <ChevronRight
                 aria-hidden="true"
                 className={cn(
@@ -155,9 +153,7 @@ export default function SidebarContext() {
               id="archived-groups-content"
               className="mt-1 flex flex-col gap-2">
               {archivedGroups.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-white/40">
-                  {t("noArchives")}
-                </div>
+                <div className="px-3 py-2 text-sm text-white/40">{t("noArchives")}</div>
               ) : (
                 <>
                   <GroupList
@@ -168,6 +164,8 @@ export default function SidebarContext() {
                     onArchiveGroup={archiveGroup}
                     onUnarchiveGroup={unarchiveGroup}
                     onDeleteGroup={deleteGroup}
+                    activeGroupsForMove={activeGroups}
+                    onRefreshGroups={refreshGroups}
                   />
 
                   {hasMoreArchived && (

@@ -2417,3 +2417,74 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/initiativeTracker/InitiativeTrackerVisibilityDialog.tsx` (FIELD_KEYS)
 - `services/web/client/src/components/initiativeTracker/bulkSelection.ts` (BULK_VISIBILITY_FIELD_KEYS)
 - `services/web/client/messages/{en|fr|es}.json` (visibilityDialog.fields.lifeStatus)
+
+---
+
+## FR-032: Sidebar Context Actions and Touch Alternatives
+
+**Rule**: Sidebar list items that support secondary actions (edit, delete, move, archive) MUST expose those actions via right-click context menu on desktop and via an equivalent touch-accessible interaction on tablet and mobile. Confirmation dialogs triggered from these actions MUST support keyboard validation and cancellation.
+
+**Scope**:
+
+- Player mode: characters in **Mes personnages**
+- GM mode: campaigns (environment selector), groups (active and archived), characters within groups (players and NPCs)
+
+**Requirements**:
+
+**Context menu actions (desktop — right-click)**:
+
+| Entity | Actions |
+| --- | --- |
+| Character in group (player or NPC) | Move to another group, Edit, Delete |
+| Character in **Mes personnages** | Edit, Delete |
+| Group | Edit (rename), Archive or Unarchive (section-dependent), Delete |
+| Campaign | Edit (rename), Delete |
+
+- **Edit character** MUST navigate to the character sheet with `?mode=edit` (existing CharacterDetailView behavior).
+- **Move character** MUST open a dialog listing other active groups in the current campaign; moving MUST persist via the character `groups` API and refresh sidebar group data.
+- **Delete** actions MUST open a confirmation dialog before irreversible deletion.
+- Destructive menu entries MUST use destructive styling consistent with existing sidebar patterns.
+
+**Touch and mobile alternatives**:
+
+- List rows in the sidebar (characters, groups) MUST reveal the same action set by **swiping left** on the row.
+- Swipe-revealed actions MUST mirror context-menu order and semantics.
+- Where swipe is not applicable (e.g. campaign items inside a dropdown), a visible overflow control (e.g. trailing action button) MUST expose the same actions.
+- Tapping the row still performs primary navigation; swipe/overflow MUST NOT block navigation.
+
+**Confirmation dialogs**:
+
+- **Enter** MUST confirm the primary/destructive action when focus is inside the dialog and no text input is focused.
+- **Escape** MUST cancel/close the dialog unless a blocking operation is in progress.
+- Applies to all sidebar-triggered delete confirmations and equivalent shared confirm dialog component.
+
+**Accessibility**:
+
+- Context menus and swipe actions MUST have accessible names (`aria-label`) aligned with FR-004.
+- Swipe action buttons MUST be keyboard-focusable when revealed.
+- Focus indicators MUST remain visible (WCAG AA).
+
+**Session constraints**:
+
+- When sidebar actions are disabled during an active session (existing `disabledInSession` behavior), context menus, swipe actions, and overflow controls MUST be disabled consistently.
+
+**Prohibitions**:
+
+- Desktop-only secondary actions without a touch/mobile equivalent.
+- Silent destructive operations without confirmation.
+- Divergent action sets between context menu and swipe for the same entity type.
+
+**Tests**:
+
+- Nominal: each entity type exposes expected actions via context menu.
+- Touch: swipe-left reveals actions and triggers the same handler as context menu.
+- Confirmation: Enter confirms, Escape cancels on delete dialogs.
+- Edge: move character excludes current group; delete redirects when viewing deleted entity.
+- Failure: confirm dialog ignores Enter while `isDeleting` / async in progress.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/` (sidebar components)
+- `services/web/client/src/components/ui/context-menu.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx` (`mode=edit`)
+- `docs/design.md` (visual baseline)

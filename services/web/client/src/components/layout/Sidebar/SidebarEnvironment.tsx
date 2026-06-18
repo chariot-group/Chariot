@@ -2,7 +2,12 @@
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setContextMode, selectIsGmMode } from "@/store/slices/environmentSlice";
-import { selectSelectedCampaignId, setSelectedCampaign, setGroupToOpen } from "@/store/slices/campaignContextSlice";
+import {
+  selectSelectedCampaignId,
+  setSelectedCampaign,
+  setGroupToOpen,
+  clearSelectedCampaign,
+} from "@/store/slices/campaignContextSlice";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import {
   DropdownMenu,
@@ -14,12 +19,18 @@ import {
 import { BookOpen, Check, ChevronDown, Loader2, PlusCircleIcon, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
+import { EditCampaignDialog } from "@/components/dialogs/EditCampaignDialog";
 import { toast } from "react-toastify";
 import { useRouter, usePathname } from "next/navigation";
 import { useStore } from "react-redux";
 import { RootState } from "@/store";
 import NavigationService from "@/services/NavigationService";
 import { cn } from "@/lib/utils";
+import * as React from "react";
+import { Campaign } from "@/types/campaign";
+import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
+import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 
 export default function SidebarEnvironment() {
   const t = useTranslations("sidebar");
@@ -30,7 +41,20 @@ export default function SidebarEnvironment() {
   const store = useStore<RootState>();
   const isGmMode = useAppSelector(selectIsGmMode);
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
-  const { campaigns, loading, hasMore, loadingMore, loadMoreCampaigns } = useCampaigns({ autoFetch: false, pageSize: 5 });
+  const {
+    campaigns,
+    loading,
+    hasMore,
+    loadingMore,
+    loadMoreCampaigns,
+    deleteCampaign,
+    refreshCampaigns,
+  } = useCampaigns({ autoFetch: false, pageSize: 5 });
+
+  const [openRowId, setOpenRowId] = React.useState<string | null>(null);
+  const [campaignToEdit, setCampaignToEdit] = React.useState<Campaign | null>(null);
+  const [campaignPendingDelete, setCampaignPendingDelete] = React.useState<Campaign | null>(null);
+  const [isDeletingCampaign, setIsDeletingCampaign] = React.useState(false);
 
   const switchToPlayer = async () => {
     dispatch(setContextMode("player"));
@@ -56,6 +80,61 @@ export default function SidebarEnvironment() {
     router.push(destination.path);
   };
 
+  const buildCampaignActions = React.useCallback(
+    (campaign: Campaign): SidebarActionItem[] => [
+      {
+        id: "edit",
+        label: t("edit"),
+        onSelect: () => setCampaignToEdit(campaign),
+      },
+      {
+        id: "delete",
+        label: t("delete"),
+        variant: "destructive",
+        onSelect: () => setCampaignPendingDelete(campaign),
+      },
+    ],
+    [t],
+  );
+
+  const handleConfirmDeleteCampaign = React.useCallback(async () => {
+    if (!campaignPendingDelete || isDeletingCampaign) return;
+
+    const deletedId = campaignPendingDelete._id;
+    const wasSelected = selectedCampaignId === deletedId;
+
+    try {
+      setIsDeletingCampaign(true);
+      await deleteCampaign(deletedId);
+      await refreshCampaigns();
+      setCampaignPendingDelete(null);
+
+      if (wasSelected) {
+        dispatch(clearSelectedCampaign());
+        const destination = await NavigationService.determinePostLoginDestination(
+          locale,
+          dispatch,
+          store.getState.bind(store),
+        );
+        router.replace(destination.path);
+      }
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
+    } finally {
+      setIsDeletingCampaign(false);
+    }
+  }, [
+    campaignPendingDelete,
+    deleteCampaign,
+    dispatch,
+    isDeletingCampaign,
+    locale,
+    refreshCampaigns,
+    router,
+    selectedCampaignId,
+    store,
+  ]);
+
   const joueurActive = !isGmMode;
 
   return (
@@ -63,7 +142,6 @@ export default function SidebarEnvironment() {
       className="flex gap-2"
       role="group"
       aria-label={t("yourSpaces")}>
-      {/* ── Joueur button — direct switch ── */}
       <button
         type="button"
         onClick={switchToPlayer}
@@ -83,8 +161,10 @@ export default function SidebarEnvironment() {
         <span className="truncate">{t("playerSpaceShort")}</span>
       </button>
 
-      {/* ── MJ button — opens campaign dropdown ── */}
-      <DropdownMenu>
+      <DropdownMenu
+        onOpenChange={(open) => {
+          if (!open) setOpenRowId(null);
+        }}>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
@@ -112,7 +192,7 @@ export default function SidebarEnvironment() {
         <DropdownMenuContent
           align="start"
           sideOffset={8}
-          className="w-[--radix-dropdown-menu-trigger-width] rounded-[14px] border-white/12 bg-[#1f1f24] p-1.5">
+          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto rounded-[14px] border-white/12 bg-[#1f1f24] p-1.5">
           {loading ? (
             <div className="flex justify-center py-3">
               <Loader2
@@ -126,35 +206,46 @@ export default function SidebarEnvironment() {
             <>
               {campaigns.map((campaign) => {
                 const isSelected = selectedCampaignId === campaign._id && isGmMode;
+                const campaignActions = buildCampaignActions(campaign);
+
                 return (
-                  <DropdownMenuItem
+                  <SidebarItemWithActions
                     key={campaign._id}
-                    onSelect={() => handleCampaignSelect(campaign._id)}
-                    className={cn(
-                      "flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-white",
-                      "hover:bg-white/10 focus:bg-white/10 focus:text-white",
-                      isSelected && "font-medium",
-                    )}>
-                    <BookOpen
-                      className="h-4 w-4 shrink-0 text-white/40"
-                      aria-hidden="true"
-                    />
-                    <span className="min-w-0 flex-1 truncate">{campaign.label}</span>
-                    {isSelected && (
-                      <Check
-                        className="h-4 w-4 shrink-0 text-primary"
+                    rowId={`campaign-${campaign._id}`}
+                    actions={campaignActions}
+                    openRowId={openRowId}
+                    onOpenRowIdChange={setOpenRowId}
+                    contextMenuLabel={t("campaignActions")}
+                    className="rounded-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => void handleCampaignSelect(campaign._id)}
+                      className={cn(
+                        "flex w-full cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-white",
+                        "hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+                        isSelected && "font-medium",
+                      )}>
+                      <BookOpen
+                        className="h-4 w-4 shrink-0 text-white/40"
                         aria-hidden="true"
                       />
-                    )}
-                  </DropdownMenuItem>
+                      <span className="min-w-0 flex-1 truncate text-left">{campaign.label}</span>
+                      {isSelected && (
+                        <Check
+                          className="h-4 w-4 shrink-0 text-primary"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </button>
+                  </SidebarItemWithActions>
                 );
               })}
               {hasMore && (
-                <DropdownMenuItem
-                  onSelect={(e) => e.preventDefault()}
+                <button
+                  type="button"
                   onClick={() => void loadMoreCampaigns()}
                   disabled={loadingMore}
-                  className="flex cursor-pointer items-center justify-center rounded-[10px] px-3 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white disabled:cursor-not-allowed disabled:opacity-50">
+                  className="flex w-full cursor-pointer items-center justify-center rounded-[10px] px-3 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50">
                   {loadingMore ? (
                     <Loader2
                       className="h-3.5 w-3.5 animate-spin"
@@ -163,7 +254,7 @@ export default function SidebarEnvironment() {
                   ) : (
                     t("loadMoreCampaigns")
                   )}
-                </DropdownMenuItem>
+                </button>
               )}
             </>
           )}
@@ -173,7 +264,7 @@ export default function SidebarEnvironment() {
           <CreateCampaignDialog>
             <DropdownMenuItem
               asChild
-              onSelect={(e) => e.preventDefault()}
+              onSelect={(event) => event.preventDefault()}
               className="cursor-pointer rounded-[10px] px-3 py-2 text-sm text-white hover:bg-white/10 focus:bg-white/10">
               <button
                 type="button"
@@ -188,6 +279,28 @@ export default function SidebarEnvironment() {
           </CreateCampaignDialog>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <EditCampaignDialog
+        campaign={campaignToEdit}
+        open={!!campaignToEdit}
+        onOpenChange={(open) => {
+          if (!open) setCampaignToEdit(null);
+        }}
+        onUpdated={refreshCampaigns}
+      />
+
+      <ConfirmDialog
+        open={!!campaignPendingDelete}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingCampaign) setCampaignPendingDelete(null);
+        }}
+        title={t("deleteCampaignDialogTitle")}
+        description={t("deleteCampaignDialogDescription")}
+        confirmLabel={t("delete")}
+        cancelLabel={t("cancel")}
+        onConfirm={handleConfirmDeleteCampaign}
+        isLoading={isDeletingCampaign}
+      />
     </div>
   );
 }
