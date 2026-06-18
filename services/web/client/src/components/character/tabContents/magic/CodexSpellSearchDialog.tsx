@@ -130,7 +130,9 @@ function SpellResultItem({
               {isQueued && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="cursor-help" aria-hidden="true">
+                    <div
+                      className="cursor-help"
+                      aria-hidden="true">
                       <Check className="size-5 text-purple" />
                     </div>
                   </TooltipTrigger>
@@ -510,7 +512,7 @@ export default function CodexSpellSearchDialog({
                       <SelectItem
                         key={level}
                         value={String(level)}>
-                        {level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}
+                        {level === 0 ? tMagic("cantrips") : tMagic("spellLevelShort", { level })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -525,7 +527,10 @@ export default function CodexSpellSearchDialog({
                       selectedClasses.length === 0 && "text-muted-foreground",
                     )}>
                     <span className="min-w-0 truncate text-left">{classFilterLabel}</span>
-                    <ChevronDown className="size-4 shrink-0 opacity-50" aria-hidden="true" />
+                    <ChevronDown
+                      className="size-4 shrink-0 opacity-50"
+                      aria-hidden="true"
+                    />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="start"
@@ -573,8 +578,7 @@ export default function CodexSpellSearchDialog({
                     ).length;
                   } else {
                     visibleCount = searchResults.reduce(
-                      (count, item) =>
-                        count + codexSpellLangsVisibleInAllLanguagesSearch(item, searchQuery).length,
+                      (count, item) => count + codexSpellLangsVisibleInAllLanguagesSearch(item, searchQuery).length,
                       0,
                     );
                   }
@@ -612,18 +616,18 @@ export default function CodexSpellSearchDialog({
                           return codexSpellLangsVisibleInAllLanguagesSearch(spellItem, searchQuery).map((lang) => {
                             const resultKey = `${spellItem._id}:${lang}`;
                             return (
-                            <SpellResultItem
-                              key={`${spellItem._id}-${lang}`}
-                              spellItem={spellItem}
-                              selectedLang={selectedLang}
-                              pinnedLang={lang}
-                              isSelected={selectedSpellKey === resultKey}
-                              isQueued={queuedSpellKeys.has(resultKey)}
-                              onSpellClick={handleSpellClick}
-                              tDialog={tDialog}
-                              tMagic={tMagic as (key: string, values?: Record<string, unknown>) => string}
-                              t={tClasses}
-                            />
+                              <SpellResultItem
+                                key={`${spellItem._id}-${lang}`}
+                                spellItem={spellItem}
+                                selectedLang={selectedLang}
+                                pinnedLang={lang}
+                                isSelected={selectedSpellKey === resultKey}
+                                isQueued={queuedSpellKeys.has(resultKey)}
+                                onSpellClick={handleSpellClick}
+                                tDialog={tDialog}
+                                tMagic={tMagic as (key: string, values?: Record<string, unknown>) => string}
+                                t={tClasses}
+                              />
                             );
                           });
                         })}
@@ -689,9 +693,7 @@ export default function CodexSpellSearchDialog({
                         availableLangs={langs}
                         currentLang={previewLang}
                         disabled={previewLangResolving}
-                        onSelectLang={(l) =>
-                          handleSpellClick(selectedCodexSpell, l, { fromPreviewLangBar: true })
-                        }
+                        onSelectLang={(l) => handleSpellClick(selectedCodexSpell, l, { fromPreviewLangBar: true })}
                         onUndo={handlePreviewLangUndo}
                         canUndo={previewLangStack.length > 0}
                         label={tDialog("preview.availableLanguages")}

@@ -1116,6 +1116,7 @@
       "cantrips": "Sorts mineurs",
       "noCantrips": "Aucun sort mineur",
       "spellLevel": "Sorts de niveau {level}",
+      "spellLevelShort": "Niveau {level}",
       "spellSlots": "{current}/{total}",
       "spellDetails": {
         "level": "Niveau",

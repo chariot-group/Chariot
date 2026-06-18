@@ -1112,6 +1112,7 @@
       "cantrips": "Conjuros menores",
       "noCantrips": "Sin conjuros menores",
       "spellLevel": "Conjuros de nivel {level}",
+      "spellLevelShort": "Nivel {level}",
       "spellSlots": "{current}/{total}",
       "spellDetails": {
         "level": "Nivel",

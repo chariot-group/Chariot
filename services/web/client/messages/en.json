@@ -1112,6 +1112,7 @@
       "cantrips": "Minor spells",
       "noCantrips": "No minor spells",
       "spellLevel": "Level {level} spells",
+      "spellLevelShort": "Level {level}",
       "spellSlots": "{current}/{total}",
       "spellDetails": {
         "level": "Level",
