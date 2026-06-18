@@ -36,6 +36,15 @@ export class User {
   @ApiProperty({ type: [History] })
   @Prop({ type: [History], default: [] })
   history: History[];
+
+  @ApiProperty({
+    example: 'fr',
+    description: 'User preferred UI locale',
+    enum: ['fr', 'en', 'es'],
+    required: false,
+  })
+  @Prop({ type: String, enum: ['fr', 'en', 'es'], required: false })
+  preferredLocale?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

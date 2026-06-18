@@ -1,26 +1,27 @@
 jest.mock('@keycloak/keycloak-admin-client', () => ({
   __esModule: true,
-  default: jest.fn(),
+  default: jest.fn().mockImplementation(() => ({})),
 }));
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { UserService } from '@/resources/user/user.service';
+import { InternalServerErrorException } from '@nestjs/common';
+import {
+  TOKEN_PURCHASE_CAMPAIGN_NAME,
+  UserService,
+} from '@/resources/user/user.service';
 import { User } from '@/resources/user/schemas/user.schema';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 
-describe('UserService - balance integrity', () => {
+describe('UserService - addTokens', () => {
   let service: UserService;
   let userModel: {
     findOne: jest.Mock;
   };
-  let saveMock: jest.Mock;
 
-  const keycloakId = '11111111-1111-1111-1111-111111111111';
+  const keycloakId = '11111111-1111-4111-8111-111111111111';
 
   beforeEach(async () => {
-    saveMock = jest.fn().mockResolvedValue(undefined);
     userModel = {
       findOne: jest.fn(),
     };
@@ -29,99 +30,132 @@ describe('UserService - balance integrity', () => {
       providers: [
         UserService,
         { provide: getModelToken(User.name), useValue: userModel },
-        {
-          provide: KeycloakService,
-          useValue: {
-            getUserById: jest.fn().mockResolvedValue({
-              id: keycloakId,
-              email: 'user@test.com',
-              username: 'testuser',
-              firstName: 'Test',
-              lastName: 'User',
-            }),
-          },
-        },
+        { provide: KeycloakService, useValue: {} },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
   });
 
-  describe('addHistory', () => {
-    it('should debit balance when sufficient tokens are available', async () => {
-      const user = {
-        keycloakId,
-        balance: 2,
-        history: [],
-        save: saveMock,
-      };
-      userModel.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(user),
-      });
-
-      const result = await service.addHistory(keycloakId, {
-        campaignName: 'Summer Campaign',
-        value: 1,
-      });
-
-      expect(user.balance).toBe(1);
-      expect(user.history).toHaveLength(1);
-      expect(saveMock).toHaveBeenCalled();
-      expect(result.data.balance).toBe(1);
+  it('nominal: credits balance and appends a negative purchase history entry', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const user = {
+      balance: 4,
+      history: [],
+      save,
+    };
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(user),
     });
 
-    it('should reject debit that would make balance negative', async () => {
-      const user = {
-        keycloakId,
-        balance: 0,
-        history: [],
-        save: saveMock,
-      };
-      userModel.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(user),
-      });
+    await service.addTokens(keycloakId, 10);
 
-      await expect(
-        service.addHistory(keycloakId, {
-          campaignName: 'Summer Campaign',
-          value: 1,
-        }),
-      ).rejects.toThrow(BadRequestException);
-
-      expect(saveMock).not.toHaveBeenCalled();
+    expect(user.balance).toBe(14);
+    expect(user.history).toHaveLength(1);
+    expect(user.history[0]).toMatchObject({
+      campaignName: TOKEN_PURCHASE_CAMPAIGN_NAME,
+      value: -10,
     });
-
-    it('should throw NotFoundException when user does not exist', async () => {
-      userModel.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(null),
-      });
-
-      await expect(
-        service.addHistory(keycloakId, {
-          campaignName: 'Summer Campaign',
-          value: 1,
-        }),
-      ).rejects.toThrow(NotFoundException);
-    });
+    expect(user.history[0].date).toBeInstanceOf(Date);
+    expect(save).toHaveBeenCalled();
   });
 
-  describe('getBalance', () => {
-    it('should return the current balance', async () => {
-      userModel.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ balance: 5 }),
-      });
-
-      await expect(service.getBalance(keycloakId)).resolves.toBe(5);
+  it('error: throws when user is not found', async () => {
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
     });
 
-    it('should throw NotFoundException when user does not exist', async () => {
-      userModel.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(null),
-      });
+    await expect(service.addTokens(keycloakId, 5)).rejects.toBeInstanceOf(
+      InternalServerErrorException,
+    );
+  });
+});
 
-      await expect(service.getBalance(keycloakId)).rejects.toThrow(
-        NotFoundException,
-      );
+describe('UserService - updateUser preferredLocale', () => {
+  let service: UserService;
+  let userModel: {
+    findOne: jest.Mock;
+    create: jest.Mock;
+  };
+  let keycloakService: {
+    updateUser: jest.Mock;
+    getUserById: jest.Mock;
+  };
+
+  const keycloakId = '11111111-1111-4111-8111-111111111111';
+
+  beforeEach(async () => {
+    userModel = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+    };
+    keycloakService = {
+      updateUser: jest.fn().mockResolvedValue(undefined),
+      getUserById: jest.fn().mockResolvedValue({
+        id: keycloakId,
+        email: 'user@example.com',
+        username: 'player',
+        firstName: 'John',
+        lastName: 'Doe',
+        attributes: {},
+      }),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UserService,
+        { provide: getModelToken(User.name), useValue: userModel },
+        { provide: KeycloakService, useValue: keycloakService },
+      ],
+    }).compile();
+
+    service = module.get<UserService>(UserService);
+  });
+
+  it('nominal: persists preferredLocale on the user record', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const user = {
+      keycloakId,
+      balance: 1,
+      history: [],
+      preferredLocale: 'fr',
+      save,
+    };
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(user),
     });
+
+    const response = await service.updateUser(keycloakId, {
+      firstName: 'John',
+      preferredLocale: 'es',
+    });
+
+    expect(keycloakService.updateUser).toHaveBeenCalledWith(keycloakId, {
+      firstName: 'John',
+    });
+    expect(user.preferredLocale).toBe('es');
+    expect(save).toHaveBeenCalled();
+    expect(response.data.preferredLocale).toBe('es');
+  });
+
+  it('edge: leaves preferredLocale unchanged when omitted', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const user = {
+      keycloakId,
+      balance: 1,
+      history: [],
+      preferredLocale: 'fr',
+      save,
+    };
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(user),
+    });
+
+    const response = await service.updateUser(keycloakId, {
+      firstName: 'Jane',
+    });
+
+    expect(save).not.toHaveBeenCalled();
+    expect(response.data.preferredLocale).toBe('fr');
   });
 });

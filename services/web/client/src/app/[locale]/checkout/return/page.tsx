@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { useUser } from "@/hooks/useUser";
 import paymentService, { CheckoutSessionStatus } from "@/services/PaymentService";
 import Logo from "@public/logo.svg";
 
@@ -22,6 +23,8 @@ function ReturnContent() {
   const [status, setStatus] = useState<CheckoutSessionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const { refreshUser, isAuthenticated } = useUser({ autoFetch: true });
+  const hasRefreshedUserRef = useRef(false);
 
   useEffect(() => {
     // New PaymentElement flow: redirect_status comes directly from Stripe or our router.push
@@ -58,6 +61,15 @@ function ReturnContent() {
     redirectStatus !== null
       ? redirectStatus === "succeeded" || redirectStatus === "processing"
       : status?.status === "complete";
+
+  useEffect(() => {
+    if (loading || !isSuccess || !isAuthenticated || hasRefreshedUserRef.current) {
+      return;
+    }
+
+    hasRefreshedUserRef.current = true;
+    void refreshUser();
+  }, [isAuthenticated, isSuccess, loading, refreshUser]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-[#0c0c0c] bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat px-4">

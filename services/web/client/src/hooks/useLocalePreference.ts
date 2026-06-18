@@ -82,6 +82,84 @@ export function getStoredLocale(): Locale | null {
 }
 
 /**
+ * Extracts the locale segment from a pathname, if present.
+ */
+export function getLocaleFromPathname(pathname: string): Locale | null {
+  const segment = pathname.split("/")[1];
+  return locales.includes(segment as Locale) ? (segment as Locale) : null;
+}
+
+/**
+ * Returns whether the account locale should replace the current URL locale.
+ */
+export function shouldSyncAccountLocale(
+  preferredLocale: Locale | undefined,
+  pathname: string,
+): preferredLocale is Locale {
+  if (!preferredLocale || !locales.includes(preferredLocale)) {
+    return false;
+  }
+
+  const urlLocale = getLocaleFromPathname(pathname);
+  return urlLocale !== null && urlLocale !== preferredLocale;
+}
+
+/**
+ * Resolves the locale shown in the profile form: account preference when set, otherwise URL locale.
+ */
+export function resolveProfileLocale(
+  preferredLocale: Locale | undefined,
+  urlLocale: Locale,
+): Locale {
+  if (preferredLocale && locales.includes(preferredLocale)) {
+    return preferredLocale;
+  }
+  return urlLocale;
+}
+
+/**
+ * Replaces the locale segment in a pathname (e.g. `/fr/profile` → `/en/profile`).
+ */
+export function replaceLocaleInPath(pathname: string, newLocale: Locale): string {
+    const segments = pathname.split("/");
+
+    if (segments.length > 1 && locales.includes(segments[1] as Locale)) {
+        segments[1] = newLocale;
+        return segments.join("/");
+    }
+
+    return `/${newLocale}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
+}
+
+/**
+ * Resolves the locale to use for auth flows (Keycloak SSO).
+ * Priority: stored preference → URL prefix → browser detection.
+ */
+export function resolveAuthLocale(pathname?: string): Locale {
+    const stored = getStoredLocale();
+    if (stored) return stored;
+
+    if (pathname) {
+        const fromPath = pathname.split("/")[1] as Locale;
+        if (locales.includes(fromPath)) return fromPath;
+    }
+
+    return detectBrowserLocale();
+}
+
+/**
+ * Builds Keycloak login/register options aligned with the user's locale preference.
+ */
+export function buildKeycloakAuthOptions(pathname: string): { locale: Locale; redirectUri: string } {
+    const locale = resolveAuthLocale(pathname);
+
+    return {
+        locale,
+        redirectUri: `${window.location.origin}/${locale}`,
+    };
+}
+
+/**
  * Saves preferred locale to localStorage and cookie (static function)
  */
 export function saveStoredLocale(locale: Locale): void {

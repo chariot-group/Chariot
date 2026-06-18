@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
+
+export const SUPPORTED_USER_LOCALES = ['fr', 'en', 'es'] as const;
+export type SupportedUserLocale = (typeof SUPPORTED_USER_LOCALES)[number];
 
 export class UpdateUserProfileDto {
   @ApiProperty({
@@ -32,4 +41,17 @@ export class UpdateUserProfileDto {
   @IsOptional()
   @IsEmail({}, { message: 'Email must be a valid email address' })
   email?: string;
+
+  @ApiProperty({
+    description: 'User preferred UI locale',
+    example: 'fr',
+    enum: SUPPORTED_USER_LOCALES,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(SUPPORTED_USER_LOCALES, {
+    message: 'Preferred locale must be one of: fr, en, es',
+  })
+  preferredLocale?: SupportedUserLocale;
 }

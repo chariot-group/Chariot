@@ -4,7 +4,7 @@ import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { setKeycloakInstance } from "@/services/ApiService";
-import { detectBrowserLocale, saveStoredLocale } from "@/hooks/useLocalePreference";
+import { saveStoredLocale, buildKeycloakAuthOptions, resolveAuthLocale } from "@/hooks/useLocalePreference";
 import { purgePersistedState } from "@/store";
 import { stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
 import { useTranslations } from "next-intl";
@@ -33,7 +33,6 @@ const KeycloakContext = createContext<KeycloakContextType>({
 
 export function KeycloakProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "fr";
   const t = useTranslations("auth");
 
   const [keycloak, setKeycloak] = useState<Keycloak | null>(null);
@@ -62,6 +61,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
           onLoad: "login-required",
           checkLoginIframe: false,
           pkceMethod: "S256",
+          locale: resolveAuthLocale(window.location.pathname),
         };
 
         const authenticated = await kc.init(initOptions);
@@ -126,7 +126,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
               .catch(() => {
                 setAuthenticated(false);
                 setToken(null);
-                kc.login();
+                const { locale, redirectUri } = buildKeycloakAuthOptions(window.location.pathname);
+                kc.login({ locale, redirectUri });
               });
           }, 60000); // Check every 60 seconds
         }
@@ -142,7 +143,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
               // Token expiré et refresh token mort → forcer reconnexion
               setAuthenticated(false);
               setToken(null);
-              kc.login();
+              const { locale, redirectUri } = buildKeycloakAuthOptions(window.location.pathname);
+              kc.login({ locale, redirectUri });
             });
         };
 
@@ -170,9 +172,10 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = () => {
+    const { locale, redirectUri } = buildKeycloakAuthOptions(pathname);
     keycloak?.login({
-      redirectUri: window.location.origin + `/${locale}`,
-      locale: locale,
+      redirectUri,
+      locale,
     });
   };
 
@@ -194,18 +197,19 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     }
 
     // Redirect to root after logout - Keycloak will handle the login page
+    const { redirectUri } = buildKeycloakAuthOptions(pathname);
     keycloak?.logout({
-      redirectUri: window.location.origin + `/${locale}`,
+      redirectUri,
     });
   };
 
   const register = () => {
-    const detectedLocale = detectBrowserLocale();
-    saveStoredLocale(detectedLocale);
+    const { locale, redirectUri } = buildKeycloakAuthOptions(pathname);
+    saveStoredLocale(locale);
 
     keycloak?.register({
-      redirectUri: window.location.origin + `/${detectedLocale}`,
-      locale: detectedLocale,
+      redirectUri,
+      locale,
     });
   };
 

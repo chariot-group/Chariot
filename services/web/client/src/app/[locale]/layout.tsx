@@ -5,6 +5,7 @@ import { KeycloakProvider } from "@/providers/KeycloakProvider";
 import ReduxProvider from "@/providers/ReduxProvider";
 import ToastContainer from "@/components/ToastContainer";
 import LocaleDetector from "@/components/LocaleDetector";
+import AccountLocaleSync from "@/components/AccountLocaleSync";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
@@ -60,6 +61,7 @@ export default async function RootLayout({
                 <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative">
                   <PostLoginNavigator />
                   <LocaleDetector />
+                  <AccountLocaleSync />
                   <ToastContainer />
                   <Header />
 

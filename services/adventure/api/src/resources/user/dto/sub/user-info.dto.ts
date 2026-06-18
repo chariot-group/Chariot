@@ -55,4 +55,12 @@ export class UserInfoDto {
   @ValidateNested({ each: true })
   @Type(() => HistoryDto)
   history: HistoryDto[];
+
+  @ApiProperty({
+    description: 'User preferred UI locale',
+    example: 'fr',
+    enum: ['fr', 'en', 'es'],
+    required: false,
+  })
+  preferredLocale?: string;
 }

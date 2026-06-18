@@ -1976,7 +1976,258 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-027: Web Client Form Field Validation Visibility
+## FR-027: Profile Token History with Purchase and Expense Filters
+
+**Rule**: The profile page must expose the authenticated user's token transaction history (not session history), with client-side filters to show purchases and/or expenses. Both transaction types must be recorded in the immutable `history` array defined in FR-008.
+
+**Scope**:
+
+- Web client profile page (`/[locale]/profile`)
+- Adventure API user history recording (`addHistory`, `addTokens`)
+- Complements FR-008 without changing its immutable-history constraint
+
+**Transaction Semantics** (aligned with `balance -= value` in `UserService.addHistory`):
+
+- **Expense (dépense)**: `value > 0` — decreases balance (e.g. tokens spent when a session is launched)
+- **Purchase (achat)**: `value < 0` — increases balance (e.g. tokens bought via Stripe checkout)
+
+**Backend Requirements**:
+
+- `addTokens` MUST append a history entry when crediting tokens after a successful purchase:
+  - `date`: transaction timestamp
+  - `campaignName`: fixed label `Shop` (displayed via i18n on the client)
+  - `value`: negative amount equal to credited tokens (e.g. credit 10 → `value: -10`)
+- Existing `addHistory` behavior for session spending (positive `value`) is unchanged
+
+**Frontend Requirements**:
+
+**Section identity**:
+
+- Section title and ARIA labels MUST use "Token history" wording (replacing "Session history")
+- List items MUST describe token purchases or expenses (not "session earned/spent" wording)
+
+**Default display**:
+
+- On first render, both transaction types are visible (purchases and expenses)
+- Entries are listed in reverse chronological order (most recent first)
+
+**Filters**:
+
+- Two independent toggle controls: **Purchases** and **Expenses**
+- Both toggles are enabled by default
+- Filtering is client-side on `user.history` using the sign of `value`
+- When at least one toggle is active, only matching entries are shown
+- When both toggles are disabled, the list shows an explicit empty-filter state (distinct from "no history at all")
+- Toggling filters MUST NOT trigger an API call
+- Filter toggle states MUST be persisted in `localStorage` under `chariot_token_history_filters` and restored on next profile visit
+- Invalid or missing persisted values MUST fall back to the default (both toggles enabled)
+
+**Visual treatment**:
+
+- Purchase rows SHOULD visually distinguish credits (e.g. green/`--green` amount prefix `+`)
+- Expense rows SHOULD visually distinguish debits (e.g. gray/`--gray-light` amount, no erroneous `+` prefix)
+- Reuse existing profile card/list patterns (FR-019): `bg-gray-middle-light`, `rounded-[15px]`, responsive gaps
+
+**Accessibility Requirements** (FR-019):
+
+- Filter group uses a semantic `fieldset` with visible `legend` or equivalent labelled region
+- Each filter toggle has an associated visible label and `aria-checked` state
+- Filter region has an accessible name (e.g. `aria-label` on `fieldset`)
+- History list retains `role="list"` / `role="listitem"` with updated `aria-label` per entry type
+- Keyboard: filter toggles reachable via `Tab`, operable via `Space`
+- Empty-filter state is exposed via `role="status"`
+
+**Internationalization**:
+
+- Namespace: `ProfilePage`
+- Required keys (en/fr/es):
+  - `tokenHistory` (section title)
+  - `filterPurchases`, `filterExpenses` (filter labels)
+  - `filterGroupLabel` (fieldset legend)
+  - `tokenItemPurchase`, `tokenItemExpense` (list item accessible names)
+  - `noFilteredHistory` (empty state when filters exclude all entries)
+- Deprecated keys (`sessionHistory`, `sessionItemEarned`, `sessionItemSpent`) MUST be removed or replaced
+
+**Prohibitions**:
+
+- Labelling the section "Session history" once this rule is active
+- Treating positive `value` as a purchase in filters or copy (positive = expense)
+- Omitting purchase entries from history after a successful token credit
+- Hiding both filter toggles with no way to restore default combined view
+- Using color alone to convey purchase vs expense (sign/prefix and accessible text mandatory)
+
+**Tests**:
+
+- **Backend**:
+  - `addTokens` appends a history entry with negative `value` and updates balance
+  - `addHistory` with positive `value` still decreases balance and appends expense entry
+- **Frontend**:
+  - Default view shows both purchases and expenses
+  - Purchases-only filter shows only `value < 0` entries
+  - Expenses-only filter shows only `value > 0` entries
+  - Both filters disabled shows `noFilteredHistory`
+  - Empty history shows existing `noHistory` message
+  - Accessible names differ between purchase and expense rows
+  - Filter keyboard interaction works
+  - Filter preferences are restored from `localStorage` on subsequent visits
+  - Corrupted `localStorage` payload falls back to default filters
+
+**References**:
+
+- `docs/functional-rules.md` — FR-008
+- `services/web/client/src/app/[locale]/profile/page.tsx`
+- `services/web/client/src/lib/tokenHistory.ts`
+- `services/web/client/src/lib/tokenHistoryFilters.ts`
+- `services/adventure/api/src/resources/user/user.service.ts`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `services/web/client/messages/{en,fr,es}.json`
+
+---
+
+## FR-028: Profile GDPR and Data Rights (Security Section)
+
+**Rule**: The profile page Security section must expose self-service GDPR data-rights actions for the authenticated user: export available account data, request a full data access report, and initiate account deletion. Until dedicated backend endpoints exist, export uses `GET /user/me` and formal requests are routed to the privacy contact email.
+
+**Context**: Users must be able to exercise GDPR rights (access, portability, erasure) from their account settings without contacting support for basic actions.
+
+**Requirements**:
+
+**Frontend (Web Client)**:
+
+- Location: `ProfilePage` → Security section (`profile-section-security`), below the password change card
+- Dedicated card titled via i18n (`ProfilePage.gdpr.title`)
+- Three actions minimum, each with title, short description, and accessible control:
+  1. **Export profile data**: downloads a JSON file built from a fresh `GET /user/me` response (profile fields and token history only); filename pattern `chariot-profile-YYYY-MM-DD.json`
+  2. **Request all my data**: opens a pre-filled `mailto:` to the privacy contact for a comprehensive subject access request covering all personal data (campaigns, groups, characters, sessions, payments, referral history, etc.)
+  3. **Delete my account**: opens a confirmation dialog explaining irreversibility; confirming opens a pre-filled `mailto:` deletion request (no silent deletion until backend `DELETE /user/me` exists)
+- Export payload MUST exclude internal auth identifiers (`keycloakId`, `createdBy`, `userId`) from all nested objects
+- Privacy contact email: `NEXT_PUBLIC_PRIVACY_EMAIL` with fallback `contact@chariot.tools`
+- Optional privacy policy link when `NEXT_PUBLIC_PRIVACY_POLICY_URL` is set
+- Loading/busy state on export (`aria-busy`); success/error toasts via existing toast hook
+- Follow FR-019 design baseline: Card, `rounded-[15px]`, responsive row layout, destructive variant for delete trigger
+
+**Accessibility**:
+
+- Each action control has an accessible name (`aria-label` or visible label)
+- Delete confirmation dialog is keyboard-operable and traps focus per existing Dialog primitive
+- Export loading state communicated with `aria-busy`
+
+**Prohibitions**:
+
+- Silently deleting an account from the UI without explicit user confirmation and audit trail
+- Exporting stale cached Redux user data without refreshing from API
+- Including internal auth identifiers (`keycloakId`, `createdBy`, `userId`) in user-facing export files or mailto bodies
+- Hardcoding untranslated user-facing strings
+
+**Tests**:
+
+- Unit: JSON export helper produces valid filename and JSON payload
+- Unit: mailto builders encode subject/body correctly
+- Component: GDPR card renders three actions with expected accessible labels
+- Component: delete dialog renders warning text
+
+**References**:
+
+- `services/web/client/src/components/profile/ProfileGdprActions.tsx`
+- `services/web/client/src/lib/gdpr.ts`
+- `services/web/client/src/app/[locale]/profile/page.tsx`
+- `services/web/client/messages/{en,fr,es}.json`
+- `docs/design.md` — sections 6.3, 9
+
+---
+
+## FR-029: Profile Language Preference
+
+**Rule**: The profile page MUST expose a dedicated preferences section (separate from the profile-info card) containing a language preference control allowing the authenticated user to change the site locale. The selected locale MUST be persisted on the user account (`preferredLocale` on the Adventure API user record) and mirrored to the existing `user-preferred-locale` client storage (localStorage and cookie). After authentication, the client MUST apply the account locale when it differs from the current URL prefix. The user must be redirected to the same page under the new locale prefix when the preference changes. Locale changes MUST apply immediately on select change and MUST NOT be bound to the profile edit form.
+
+**Scope**:
+
+- Web client profile page (`/[locale]/profile`)
+- Preferences section: `ProfilePreferencesSection` with immediate-apply locale select (`ProfileLocaleSelectImmediate`)
+- Profile info card (`ReadProfile` / `UpdateProfile`): identity fields only (no locale control)
+- Adventure API user resource (`GET /user/me`, `PUT /user/me`)
+- Reuses existing i18n infrastructure (`useLocalePreference`, middleware cookie)
+
+**Requirements**:
+
+**Backend (Adventure API)**:
+
+- User MongoDB schema MUST expose optional `preferredLocale` (`fr` | `en` | `es`)
+- `GET /user/me` MUST return `preferredLocale` when set
+- `PUT /user/me` MUST accept optional `preferredLocale` and persist it on the user record (Keycloak profile fields remain unchanged)
+- Invalid locale values MUST be rejected with validation error
+
+**Frontend (Web Client)**:
+
+- **Preferences section** (`ProfilePreferencesSection`): single select listing all supported locales; on change, persist immediately (API + client storage + navigation)
+- The preferences section MUST remain visible regardless of profile read/edit mode
+- The profile edit form (`UpdateProfile` / `useProfileForm`) MUST NOT include a locale field
+- Option labels MUST be translated in the active UI locale and prefixed with a flag emoji (same pattern as Codex `languageFilter`)
+- On locale select change:
+  1. Send `preferredLocale` via `PUT /user/me`
+  2. Persist preference via `saveStoredLocale` (`user-preferred-locale` in localStorage and cookie)
+  3. Navigate to the equivalent path with the new locale prefix (e.g. `/fr/profile` → `/en/profile`)
+- After authentication, when `user.preferredLocale` is set and differs from the URL locale prefix, the client MUST call `saveStoredLocale` and redirect to the equivalent path under the account locale (via `AccountLocaleSync`)
+- `LocaleDetector` MUST NOT overwrite an existing stored locale with the URL prefix
+
+**Locale resolution priority (authenticated)**:
+
+1. Account `preferredLocale` (after user fetch)
+2. Client storage (`user-preferred-locale` cookie / localStorage)
+3. URL prefix
+4. Browser detection
+
+**Keycloak SSO sync**:
+
+- Resolved locale preference (client storage → URL prefix → browser detection) MUST be passed to Keycloak on:
+  - `keycloak.init` (`locale` init option → `ui_locales`)
+  - `keycloak.login` (including token-refresh re-login)
+  - `keycloak.register`
+- Register flow MUST NOT override an existing stored preference with browser detection alone
+
+**Accessibility** (FR-019):
+
+- Select control has an associated visible label and accessible name
+- Keyboard-operable via existing Select primitive (`Tab`, arrow keys, `Enter`)
+- Label/input association via `htmlFor` / `id`
+
+**Internationalization**:
+
+- Namespace: `ProfilePage`
+- Required keys (en/fr/es): `sections.preferences`, `languagePreference`, `languagePreferenceAria`
+- Locale option labels live under `ProfilePage.languages.{fr,en,es}` with flag emoji + translated language name
+
+**Prohibitions**:
+
+- Introducing a new storage key for locale preference
+- Changing locale without updating URL prefix
+- Hardcoding untranslated user-facing strings
+
+**Tests**:
+
+- Unit: path locale replacement helper
+- Unit: account locale sync redirects when URL locale differs from `preferredLocale`
+- API: `preferredLocale` validation and persistence on `PUT /user/me`
+- Component: locale select renders with label and accessible name
+- Component: all supported locales appear as options
+
+**References**:
+
+- `services/adventure/api/src/resources/user/schemas/user.schema.ts`
+- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts`
+- `services/web/client/src/components/AccountLocaleSync.tsx`
+- `services/web/client/src/hooks/useLocalePreference.ts`
+- `services/web/client/src/components/profile/ProfileLocaleSelect.tsx`
+- `services/web/client/src/components/profile/ProfileLocaleSelectImmediate.tsx`
+- `services/web/client/src/components/profile/ProfilePreferencesSection.tsx`
+- `services/web/client/src/components/profile/ReadProfile.tsx`
+- `services/web/client/src/components/profile/UpdateProfile.tsx`
+- `services/web/client/src/hooks/useProfileForm.ts`
+- `services/web/client/docs/i18n.md`
+- `docs/design.md` — sections 8, 9
+---
+
+## FR-030: Web Client Form Field Validation Visibility
 
 **Rule**: Every web client form must expose validation errors at the field level, with precise user-facing messages and accessible links between invalid fields, their messages, and any parent tab or section that contains the error.
 
@@ -2022,7 +2273,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-028: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+## FR-031: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
 
 **Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
 
