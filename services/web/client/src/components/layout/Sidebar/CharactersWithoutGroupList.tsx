@@ -43,7 +43,6 @@ export default function CharactersWithoutGroupList() {
     isInSession && sessionStatus === "launched" ? (currentParticipant?.characterId ?? null) : null;
   const actionsDisabled = isInSession && sessionStatus === "launched";
   const { setOpenMobile } = useSidebar();
-  const [openRowId, setOpenRowId] = useState<string | null>(null);
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -150,12 +149,12 @@ export default function CharactersWithoutGroupList() {
           return (
             <SidebarItemWithActions
               key={character._id ?? `character-${index}`}
-              rowId={`player-character-${character._id}`}
               actions={characterActions}
               disabled={actionsDisabled}
-              openRowId={openRowId}
-              onOpenRowIdChange={setOpenRowId}
-              contextMenuLabel={t("characterActions")}>
+              contextMenuLabel={t("characterActions")}
+              overflowTriggerClassName={
+                isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+              }>
               <Link
                 href={`/characters/${character._id}`}
                 aria-current={isSelected ? "page" : undefined}

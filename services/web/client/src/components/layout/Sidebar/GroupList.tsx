@@ -52,7 +52,6 @@ export default function GroupList({
   const sessionStatus = useAppSelector(selectSessionStatus);
   const actionsDisabled = isInSession && sessionStatus === "launched";
 
-  const [openRowId, setOpenRowId] = React.useState<string | null>(null);
   const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
   const [groupToEdit, setGroupToEdit] = React.useState<Group | null>(null);
   const [characterPendingDelete, setCharacterPendingDelete] = React.useState<{
@@ -211,11 +210,8 @@ export default function GroupList({
             onOpenChange={() => onToggleGroup(group._id)}>
             <div className="flex w-full items-center gap-1 rounded-[12px] bg-card py-2 px-1.5 pl-3">
               <SidebarItemWithActions
-                rowId={`group-${group._id}`}
                 actions={groupActions}
                 disabled={actionsDisabled}
-                openRowId={openRowId}
-                onOpenRowIdChange={setOpenRowId}
                 contextMenuLabel={t("groupActions")}
                 className="min-w-0 flex-1">
                 <CollapsibleTrigger
@@ -263,12 +259,12 @@ export default function GroupList({
                   return (
                     <SidebarItemWithActions
                       key={character._id}
-                      rowId={`character-${character._id}`}
                       actions={characterActions}
                       disabled={actionsDisabled}
-                      openRowId={openRowId}
-                      onOpenRowIdChange={setOpenRowId}
-                      contextMenuLabel={t("characterActions")}>
+                      contextMenuLabel={t("characterActions")}
+                      overflowTriggerClassName={
+                        isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+                      }>
                       <Link
                         href={`/campaigns/${selectedCampaignId}/groups/${group._id}/characters/${character._id}`}
                         aria-current={isSelected ? "page" : undefined}

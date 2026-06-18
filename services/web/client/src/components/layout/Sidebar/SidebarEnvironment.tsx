@@ -51,7 +51,6 @@ export default function SidebarEnvironment() {
     refreshCampaigns,
   } = useCampaigns({ autoFetch: false, pageSize: 5 });
 
-  const [openRowId, setOpenRowId] = React.useState<string | null>(null);
   const [campaignToEdit, setCampaignToEdit] = React.useState<Campaign | null>(null);
   const [campaignPendingDelete, setCampaignPendingDelete] = React.useState<Campaign | null>(null);
   const [isDeletingCampaign, setIsDeletingCampaign] = React.useState(false);
@@ -161,10 +160,7 @@ export default function SidebarEnvironment() {
         <span className="truncate">{t("playerSpaceShort")}</span>
       </button>
 
-      <DropdownMenu
-        onOpenChange={(open) => {
-          if (!open) setOpenRowId(null);
-        }}>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
@@ -211,12 +207,10 @@ export default function SidebarEnvironment() {
                 return (
                   <SidebarItemWithActions
                     key={campaign._id}
-                    rowId={`campaign-${campaign._id}`}
                     actions={campaignActions}
-                    openRowId={openRowId}
-                    onOpenRowIdChange={setOpenRowId}
                     contextMenuLabel={t("campaignActions")}
-                    className="rounded-[10px]">
+                    className="rounded-[10px]"
+                    menuContentClassName="z-[100] w-56 rounded-[10px] border-white/12 bg-[#1f1f24] px-1.5 py-1.5 text-white shadow focus-visible:outline-none">
                     <button
                       type="button"
                       onClick={() => void handleCampaignSelect(campaign._id)}

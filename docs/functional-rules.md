@@ -2447,10 +2447,11 @@ Each initiative tracker row carries:
 
 **Touch and mobile alternatives**:
 
-- List rows in the sidebar (characters, groups) MUST reveal the same action set by **swiping left** on the row.
-- Swipe-revealed actions MUST mirror context-menu order and semantics.
-- Where swipe is not applicable (e.g. campaign items inside a dropdown), a visible overflow control (e.g. trailing action button) MUST expose the same actions.
-- Tapping the row still performs primary navigation; swipe/overflow MUST NOT block navigation.
+- List rows in the sidebar (characters, groups) MUST expose the same action set via a **trailing overflow control** (e.g. `⋯` menu button) on mobile and tablet viewports (below the `lg` breakpoint, 1024px).
+- The overflow menu MUST mirror context-menu order and semantics.
+- Campaign items inside the environment dropdown MUST use the same overflow control pattern (swipe is prohibited in scrollable containers).
+- Tapping the row still performs primary navigation; the overflow control MUST NOT block navigation.
+- Desktop viewports (`lg` and above) MUST keep right-click context menu as the primary secondary-action entry point.
 
 **Confirmation dialogs**:
 
@@ -2460,24 +2461,24 @@ Each initiative tracker row carries:
 
 **Accessibility**:
 
-- Context menus and swipe actions MUST have accessible names (`aria-label`) aligned with FR-004.
-- Swipe action buttons MUST be keyboard-focusable when revealed.
+- Context menus and overflow menus MUST have accessible names (`aria-label`) aligned with FR-004.
+- Overflow trigger buttons MUST be keyboard-focusable and operable with Enter/Space.
 - Focus indicators MUST remain visible (WCAG AA).
 
 **Session constraints**:
 
-- When sidebar actions are disabled during an active session (existing `disabledInSession` behavior), context menus, swipe actions, and overflow controls MUST be disabled consistently.
+- When sidebar actions are disabled during an active session (existing `disabledInSession` behavior), context menus and overflow controls MUST be disabled consistently.
 
 **Prohibitions**:
 
 - Desktop-only secondary actions without a touch/mobile equivalent.
 - Silent destructive operations without confirmation.
-- Divergent action sets between context menu and swipe for the same entity type.
+- Divergent action sets between context menu and overflow menu for the same entity type.
 
 **Tests**:
 
 - Nominal: each entity type exposes expected actions via context menu.
-- Touch: swipe-left reveals actions and triggers the same handler as context menu.
+- Touch: overflow menu reveals actions and triggers the same handler as context menu.
 - Confirmation: Enter confirms, Escape cancels on delete dialogs.
 - Edge: move character excludes current group; delete redirects when viewing deleted entity.
 - Failure: confirm dialog ignores Enter while `isDeleting` / async in progress.
