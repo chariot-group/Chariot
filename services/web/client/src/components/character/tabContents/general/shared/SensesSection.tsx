@@ -11,13 +11,17 @@ interface SensesSectionProps {
 
 export default function SensesSection({ senses = [], accentColor, embedded = false }: SensesSectionProps) {
   const t = useTranslations("characterDetail.player.general");
-  const { displayFt, unitLabel } = useDistanceUnit();
+  const { displayFt, unitLabel, secondaryFt, secondaryUnitLabel } = useDistanceUnit();
   const hasRange = (value: Sense["value"]) => value !== null && value !== undefined && Number(value) > 0;
   const visibleSenses = senses.filter((sense) => sense.name || hasRange(sense.value));
   const formattedSenses = visibleSenses
     .map((sense) => {
       const name = sense.name || t("unnamedSense");
-      return hasRange(sense.value) ? `${name} (${displayFt(Number(sense.value))}${unitLabel})` : name;
+      if (!hasRange(sense.value)) return name;
+      const ft = Number(sense.value);
+      const primary = `${displayFt(ft)}${unitLabel}`;
+      const secondary = secondaryFt ? ` (${secondaryFt(ft)}${secondaryUnitLabel})` : "";
+      return `${name} (${primary}${secondary})`;
     })
     .join(", ");
 

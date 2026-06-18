@@ -63,6 +63,7 @@ export class UserService {
         history: user.history,
         preferredLocale: user.preferredLocale,
         preferredMeasurementUnit: user.preferredMeasurementUnit,
+        showBothUnits: user.showBothUnits,
       };
 
       const message: string = `User #${id} found in ${end - start}ms`;
@@ -137,12 +138,13 @@ export class UserService {
       email?: string;
       preferredLocale?: string;
       preferredMeasurementUnit?: string;
+      showBothUnits?: boolean;
     },
   ): Promise<IResponse<UserInfoDto>> {
     try {
       const start: number = Date.now();
 
-      const { preferredLocale, preferredMeasurementUnit, ...keycloakUpdateData } = updateData;
+      const { preferredLocale, preferredMeasurementUnit, showBothUnits, ...keycloakUpdateData } = updateData;
 
       // Update user in Keycloak
       await this.keycloakService.updateUser(keycloakId, keycloakUpdateData);
@@ -176,7 +178,10 @@ export class UserService {
       if (preferredMeasurementUnit !== undefined) {
         user.preferredMeasurementUnit = preferredMeasurementUnit;
       }
-      if (preferredLocale !== undefined || preferredMeasurementUnit !== undefined) {
+      if (showBothUnits !== undefined) {
+        user.showBothUnits = showBothUnits;
+      }
+      if (preferredLocale !== undefined || preferredMeasurementUnit !== undefined || showBothUnits !== undefined) {
         await user.save();
       }
 
@@ -193,6 +198,7 @@ export class UserService {
         history: user.history,
         preferredLocale: user.preferredLocale,
         preferredMeasurementUnit: user.preferredMeasurementUnit,
+        showBothUnits: user.showBothUnits,
       };
 
       const message: string = `User #${keycloakId} updated successfully in ${end - start}ms`;
@@ -264,6 +270,7 @@ export class UserService {
         history: user.history,
         preferredLocale: user.preferredLocale,
         preferredMeasurementUnit: user.preferredMeasurementUnit,
+        showBothUnits: user.showBothUnits,
       };
 
       const message: string = `History entry added for user #${keycloakId} in ${end - start}ms`;

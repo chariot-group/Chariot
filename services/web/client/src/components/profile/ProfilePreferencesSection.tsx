@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import ProfileLocaleSelectImmediate from "@/components/profile/ProfileLocaleSelectImmediate";
 import ProfileMeasurementUnitSelectImmediate from "@/components/profile/ProfileMeasurementUnitSelectImmediate";
+import ProfileShowBothUnitsCheckbox from "@/components/profile/ProfileShowBothUnitsCheckbox";
 import ProfileSection from "@/components/profile/ProfileSection";
 import { useTranslations } from "next-intl";
 
@@ -24,6 +25,7 @@ export default function ProfilePreferencesSection() {
           <ProfileLocaleSelectImmediate />
           <ProfileMeasurementUnitSelectImmediate />
         </div>
+        <ProfileShowBothUnitsCheckbox />
       </Card>
     </ProfileSection>
   );

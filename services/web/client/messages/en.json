@@ -449,6 +449,8 @@
       "metric": "Metres (m, kg)",
       "imperial": "Feet / Inches (ft, lbs)"
     },
+    "showBothUnits": "Show both units",
+    "showBothUnitsDescription": "Display the secondary unit alongside the primary one",
     "changePassword": {
       "successMessage": "Password changed successfully",
       "errorMessage": "Failed to change password",
@@ -874,8 +876,8 @@
       "eyes": "Eyes",
       "age": "Age",
       "skin": "Skin",
-      "height": "Height (m)",
-      "weight": "Weight (kg)",
+      "height": "Height",
+      "weight": "Weight",
       "hair": "Hair",
       "alliesAndOrgs": "Allies and Organizations",
       "bonds": "Bonds",

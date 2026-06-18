@@ -71,4 +71,11 @@ export class UserInfoDto {
     required: false,
   })
   preferredMeasurementUnit?: string;
+
+  @ApiProperty({
+    description: 'Show both metric and imperial units simultaneously',
+    example: false,
+    required: false,
+  })
+  showBothUnits?: boolean;
 }

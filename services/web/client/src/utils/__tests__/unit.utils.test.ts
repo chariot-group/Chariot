@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { feetToMeters, metersToFeet, convertRangeString, displayDistanceFt } from "../unit.utils";
+import {
+  feetToMeters, metersToFeet, convertRangeString, convertRangeStringBoth, displayDistanceFt,
+  feetToCm, cmToFeet, lbsToKg, kgToLbs,
+} from "../unit.utils";
 
 describe("feetToMeters", () => {
   it("converts 30ft to 9m", () => {
@@ -71,5 +74,47 @@ describe("convertRangeString", () => {
 
   it("handles range without dot", () => {
     expect(convertRangeString("60 feet", "metric")).toBe("18 m");
+  });
+});
+
+describe("convertRangeStringBoth", () => {
+  it("appends original ft value in parentheses", () => {
+    expect(convertRangeStringBoth("30 ft.")).toBe("9 m (30 ft.)");
+  });
+
+  it("handles dual ranges", () => {
+    expect(convertRangeStringBoth("60/120 ft.")).toBe("18/36 m (60/120 ft.)");
+  });
+
+  it("passes through non-numeric strings unchanged", () => {
+    expect(convertRangeStringBoth("Touch")).toBe("Touch");
+  });
+});
+
+describe("feetToCm / cmToFeet", () => {
+  it("converts 6ft to 183cm", () => {
+    expect(feetToCm(6)).toBe(183);
+  });
+
+  it("converts 0ft to 0cm", () => {
+    expect(feetToCm(0)).toBe(0);
+  });
+
+  it("converts 183cm back to ~6ft", () => {
+    expect(cmToFeet(183)).toBeCloseTo(6, 0);
+  });
+});
+
+describe("lbsToKg / kgToLbs", () => {
+  it("converts 150lbs to ~68kg", () => {
+    expect(lbsToKg(150)).toBeCloseTo(68, 0);
+  });
+
+  it("converts 0lbs to 0kg", () => {
+    expect(lbsToKg(0)).toBe(0);
+  });
+
+  it("converts 68kg back to ~150lbs", () => {
+    expect(kgToLbs(68)).toBeCloseTo(150, 0);
   });
 });

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsOptional,
@@ -70,4 +71,13 @@ export class UpdateUserProfileDto {
     message: 'Preferred measurement unit must be one of: metric, imperial',
   })
   preferredMeasurementUnit?: SupportedMeasurementUnit;
+
+  @ApiProperty({
+    description: 'Show both metric and imperial units simultaneously',
+    example: false,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  showBothUnits?: boolean;
 }

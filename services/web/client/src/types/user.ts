@@ -9,6 +9,7 @@ export interface User {
     history: History[];
     preferredLocale?: 'fr' | 'en' | 'es';
     preferredMeasurementUnit?: 'metric' | 'imperial';
+    showBothUnits?: boolean;
 }
 
 export interface History {
@@ -23,6 +24,7 @@ export interface UpdateUserDto {
     email?: string;
     preferredLocale?: 'fr' | 'en' | 'es';
     preferredMeasurementUnit?: 'metric' | 'imperial';
+    showBothUnits?: boolean;
 }
 
 export interface UserState {

@@ -30,7 +30,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useActiveSessionCode();
   const [healthDialogOpen, setHealthDialogOpen] = useState(false);
-  const { displayFt, unitLabel } = useDistanceUnit();
+  const { displayFt, unitLabel, secondaryFt, secondaryUnitLabel } = useDistanceUnit();
   const speed = player.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
   const canEditHealthInSession = isInSession && Boolean(onCharacterUpdate);
 
@@ -176,11 +176,13 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
                     className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
                     tabIndex={0}
                     role="img"
-                    aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${displayFt(badge.value)} ${unitLabel}`}>
+                    aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${displayFt(badge.value)} ${unitLabel}${secondaryFt ? ` (${secondaryFt(badge.value)} ${secondaryUnitLabel})` : ""}`}>
                     {badge.icon}
-                    <span aria-hidden="true">
-                      {displayFt(badge.value)}
-                      {unitLabel}
+                    <span aria-hidden="true" className="flex items-baseline gap-0.5">
+                      <span>{displayFt(badge.value)}{unitLabel}</span>
+                      {secondaryFt && (
+                        <span className="text-[0.75em] text-muted-foreground/60 font-normal">({secondaryFt(badge.value)}{secondaryUnitLabel})</span>
+                      )}
                     </span>
                   </div>
                 </TooltipTrigger>
