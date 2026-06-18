@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../index';
+import type { RootState } from '@/store';
 import { Group, GroupState } from '@/types/campaign';
 
 const initialState: GroupState = {

@@ -2417,3 +2417,79 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/initiativeTracker/InitiativeTrackerVisibilityDialog.tsx` (FIELD_KEYS)
 - `services/web/client/src/components/initiativeTracker/bulkSelection.ts` (BULK_VISIBILITY_FIELD_KEYS)
 - `services/web/client/messages/{en|fr|es}.json` (visibilityDialog.fields.lifeStatus)
+
+---
+
+## FR-027: Release Notes and New Version Detection
+
+**Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
+
+**Requirements**:
+
+**Release Note Content**:
+
+- Release notes are stored as static versioned files in `services/web/client/src/data/release-notes/`.
+- Each version file exports a `ReleaseNote` object with: `version` (semver string), `date` (ISO date), and `translations` (record keyed by `SupportedLocale`).
+- Each translation contains a `title` and an array of `highlights` (icon + user-friendly text).
+- Highlights MUST be written in plain user-facing language, NOT as raw changelog entries.
+- All three supported locales (`fr`, `en`, `es`) MUST be present in every `ReleaseNote`.
+- `CURRENT_APP_VERSION` is exported from `src/data/release-notes/index.ts` and must be bumped alongside `package.json` on each release.
+
+**Version Seen Tracking**:
+
+- A dedicated Redux slice `releaseNotes` (persisted per user via `makePersistConfig`) stores `lastSeenVersion: string | null`.
+- The action `markVersionSeen(version)` updates the stored version.
+- The `releaseNotes` key is included in the Redux persist whitelist.
+
+**Auto-Detection Modal**:
+
+- `ReleaseNotesProvider` (client component mounted in `app/[locale]/layout.tsx`) checks on mount whether `authenticated === true && !loading && lastSeenVersion !== CURRENT_APP_VERSION`.
+- If the condition is met, the `ReleaseNotesModal` is opened automatically.
+- On close (button or Escape), `markVersionSeen(CURRENT_APP_VERSION)` is dispatched; the modal does not reappear for that version.
+- The modal displays the current version's notes by default.
+- A `Select` allows navigating to previous versions without closing the modal.
+- The locale is derived from the URL pathname prefix.
+
+**Profile Page Entry Point**:
+
+- The profile page exposes a "Voir les nouveautés" button (localized) that opens the same `ReleaseNotesModal`.
+- When opened from the profile page, closing does NOT dispatch `markVersionSeen` (`readOnly={true}`).
+
+**Accessibility Requirements (FR-019)**:
+
+- `DialogContent` includes `aria-describedby` pointing to the notes description region.
+- The version `Select` has an `aria-label`.
+- Highlight icons are `aria-hidden="true"`; text carries the semantic content.
+- Focus trap behavior is inherited from Shadcn `Dialog`.
+- Keyboard: Escape closes and marks version seen; Tab navigates to the close button and version selector.
+
+**Prohibitions**:
+
+- Storing release note content in i18n message files (content lives in data files).
+- Showing the modal to unauthenticated users.
+- Re-showing the modal for an already-seen version.
+- Dispatching `markVersionSeen` when the modal is opened in `readOnly` mode (profile page).
+- Hardcoding the current version anywhere other than `src/data/release-notes/index.ts`.
+
+**Tests**:
+
+- `releaseNotesSlice`: `markVersionSeen` updates `lastSeenVersion`; initial state is `null`.
+- `ReleaseNotesProvider`: does not open modal when `lastSeenVersion === CURRENT_APP_VERSION`.
+- `ReleaseNotesProvider`: opens modal when authenticated and version unseen.
+- `ReleaseNotesProvider`: does not open modal when unauthenticated.
+- `ReleaseNotesModal`: dispatches `markVersionSeen` on close when `readOnly={false}`.
+- `ReleaseNotesModal`: does NOT dispatch `markVersionSeen` on close when `readOnly={true}`.
+- `ReleaseNotesModal`: Select renders all versions from `ALL_RELEASE_NOTES`.
+- `ReleaseNotesModal`: switching Select updates displayed content without closing.
+- `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
+
+**References**:
+
+- `services/web/client/src/data/release-notes/` (version data files)
+- `services/web/client/src/store/slices/releaseNotesSlice.ts`
+- `services/web/client/src/store/index.ts` (persist whitelist)
+- `services/web/client/src/components/dialogs/ReleaseNotesModal.tsx`
+- `services/web/client/src/components/ReleaseNotesProvider.tsx`
+- `services/web/client/src/app/[locale]/layout.tsx` (provider mount)
+- `services/web/client/src/app/[locale]/profile/page.tsx` (profile entry point)
+- `services/web/client/messages/{fr|en|es}.json` (releaseNotes i18n keys)
