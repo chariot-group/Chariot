@@ -21,11 +21,11 @@ export default function ProfilePreferencesSection() {
           className="sr-only">
           {t("sections.preferences")}
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6 sm:items-end">
           <ProfileLocaleSelectImmediate />
           <ProfileMeasurementUnitSelectImmediate />
+          <ProfileShowBothUnitsCheckbox />
         </div>
-        <ProfileShowBothUnitsCheckbox />
       </Card>
     </ProfileSection>
   );
