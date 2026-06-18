@@ -166,7 +166,7 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
     };
 
     const buttonClass = showLabel
-        ? "h-8 shrink-0 border-border/70 bg-background/60 px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+        ? "h-8 shrink-0 border-border/70 bg-background/60 px-3 text-xs font-medium text-foreground hover:bg-accent disabled:pointer-events-none disabled:opacity-50 disabled:text-muted-foreground"
         : "shrink-0 size-9 sm:size-10 border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white disabled:pointer-events-none disabled:opacity-50";
 
     const triggerButton = (

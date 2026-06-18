@@ -217,7 +217,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
       {onCharacterUpdate && (
         <div className="mt-1 border-t border-border/60 px-2 pt-3">
           <div className="flex justify-end">
-            <div className="flex flex-row gap-2 sm:flex-col xl:flex-row">
+            <div className="flex flex-wrap gap-2 sm:flex-col xl:flex-row">
               <ShortRestButton
                 player={player}
                 isInSession={isInSession}
