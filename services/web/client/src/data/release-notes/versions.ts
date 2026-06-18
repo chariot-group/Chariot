@@ -12,7 +12,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'La connexion à une session est plus robuste : plus de déconnexions fantômes lors d\'un rechargement de page ni de doubles connexions.' },
           { text: 'Les joueurs peuvent maintenant saisir leur initiative pendant la phase de préparation du combat, si le MJ le permet.' },
           { text: 'Le MJ peut définir en masse la visibilité de plusieurs PNJ en une seule action dans le tracker d\'initiative.' },
-          { text: 'Corrections : codes promo à 99–100 % affichant le plein tarif, footer de paiement masqué, paramètres Keycloak résiduels dans l\'URL.' },
+          { text: 'Corrections : codes promo à 99–100 % affichant le plein tarif, footer de paiement masqué, et redirection incorrecte après connexion.' },
         ],
       },
       en: {
@@ -22,7 +22,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'Session connections are now more reliable: no more ghost disconnections on page refresh or duplicate connections.' },
           { text: 'Players can now enter their initiative during the combat preparation phase, if the GM allows it.' },
           { text: 'The GM can bulk-set the visibility of multiple NPCs in a single action from the initiative tracker.' },
-          { text: 'Fixes: 99–100% promo codes showing full price, hidden payment footer, stale Keycloak URL parameters.' },
+          { text: 'Fixes: 99–100% promo codes showing full price, hidden payment footer, and incorrect redirect after login.' },
         ],
       },
       es: {
@@ -32,7 +32,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'La conexión a una sesión es más fiable: sin desconexiones fantasma al recargar la página ni conexiones duplicadas.' },
           { text: 'Los jugadores pueden ahora introducir su iniciativa durante la fase de preparación del combate, si el DJ lo permite.' },
           { text: 'El DJ puede configurar la visibilidad de varios PNJ en masa en una sola acción desde el rastreador de iniciativa.' },
-          { text: 'Correcciones: códigos promocionales al 99–100 % mostrando el precio completo, pie de pago oculto, parámetros residuales de Keycloak en la URL.' },
+          { text: 'Correcciones: códigos promocionales al 99–100 % mostrando el precio completo, pie de pago oculto, y redirección incorrecta al iniciar sesión.' },
         ],
       },
     },
@@ -153,7 +153,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
         title: 'Sessions de jeu & améliorations Codex',
         highlights: [
           { text: 'Nouveau service de session : rejoignez une partie en temps réel avec votre groupe.' },
-          { text: 'La version de l\'application est désormais visible en bas de l\'interface.' },
           { text: 'Le Codex est maintenant accessible dans toutes les langues de l\'application.' },
         ],
       },
@@ -161,7 +160,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
         title: 'Game sessions & Codex improvements',
         highlights: [
           { text: 'New session service: join a game in real time with your group.' },
-          { text: 'The application version is now visible at the bottom of the interface.' },
           { text: 'The Codex is now accessible in all application languages.' },
         ],
       },
@@ -169,7 +167,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
         title: 'Sesiones de juego & mejoras del Codex',
         highlights: [
           { text: 'Nuevo servicio de sesión: únete a una partida en tiempo real con tu grupo.' },
-          { text: 'La versión de la aplicación ahora es visible en la parte inferior de la interfaz.' },
           { text: 'El Codex ahora es accesible en todos los idiomas de la aplicación.' },
         ],
       },
@@ -182,7 +179,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
       fr: {
         title: 'Formulaires puissants & UX enrichie',
         highlights: [
-          { text: 'Indicateurs visuels d\'environnement : le logo rouge distingue clairement l\'environnement de test de la production.' },
           { text: 'Calculatrice rapide de PV dans toutes les fiches : +/- pour ajuster, = pour définir une valeur exacte (PV actuels, temporaires et max).' },
           { text: 'Raccourcis clavier dans tous les formulaires : Entrée pour valider, Échap pour annuler.' },
           { text: 'Support des actions bonus : créez des actions de type "Bonus Action" et retrouvez-les filtrées dans la fiche de combat.' },
@@ -193,7 +189,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
       en: {
         title: 'Powerful forms & richer UX',
         highlights: [
-          { text: 'Environment indicators: the red logo clearly distinguishes the test environment from production.' },
           { text: 'Quick HP calculator on all sheets: +/- to adjust, = to set an exact value (current, temp, and max HP).' },
           { text: 'Keyboard shortcuts in all forms: Enter to submit, Escape to cancel.' },
           { text: 'Bonus action support: create "Bonus Action" actions and find them filtered on the combat sheet.' },
@@ -204,7 +199,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
       es: {
         title: 'Formularios potentes & UX enriquecida',
         highlights: [
-          { text: 'Indicadores de entorno: el logo rojo distingue claramente el entorno de pruebas de la producción.' },
           { text: 'Calculadora rápida de PV en todas las fichas: +/- para ajustar, = para definir un valor exacto (PV actuales, temporales y máximos).' },
           { text: 'Atajos de teclado en todos los formularios: Intro para confirmar, Escape para cancelar.' },
           { text: 'Soporte de acciones bonus: crea acciones de tipo "Acción de bonus" y encuéntralas filtradas en la ficha de combate.' },
@@ -221,25 +215,25 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
       fr: {
         title: 'Achats & création depuis le Codex',
         highlights: [
-          { text: 'Gestion des achats Stripe intégrée : rechargez vos tokens directement depuis l\'application.' },
+          { text: 'Rechargez vos tokens directement depuis l\'application, sans quitter Chariot.' },
           { text: 'Créez un personnage ou un PNJ directement depuis une entrée du Codex en un clic.' },
-          { text: 'Nouveau formulaire d\'ajout et de modification pour les entités (personnages et PNJ).' },
+          { text: 'Nouveau formulaire de création et d\'édition pour les personnages et les PNJ.' },
         ],
       },
       en: {
         title: 'Purchases & creation from the Codex',
         highlights: [
-          { text: 'Integrated Stripe purchases: top up your tokens directly from the app.' },
+          { text: 'Top up your tokens directly from the app, without leaving Chariot.' },
           { text: 'Create a character or NPC directly from a Codex entry in one click.' },
-          { text: 'New add and edit form for entities (characters and NPCs).' },
+          { text: 'New creation and edit form for characters and NPCs.' },
         ],
       },
       es: {
         title: 'Compras & creación desde el Codex',
         highlights: [
-          { text: 'Compras Stripe integradas: recarga tus tokens directamente desde la aplicación.' },
+          { text: 'Recarga tus tokens directamente desde la aplicación, sin salir de Chariot.' },
           { text: 'Crea un personaje o PNJ directamente desde una entrada del Codex en un clic.' },
-          { text: 'Nuevo formulario de añadir y editar para entidades (personajes y PNJ).' },
+          { text: 'Nuevo formulario de creación y edición para personajes y PNJ.' },
         ],
       },
     },
@@ -252,30 +246,30 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
         title: 'Lancement de Chariot',
         highlights: [
           { text: 'Bienvenue sur Chariot ! L\'application de gestion de personnages D&D est en ligne.' },
-          { text: 'Authentification sécurisée via Keycloak SSO avec préférence de langue synchronisée (FR, EN, ES).' },
+          { text: 'Connexion sécurisée avec votre préférence de langue mémorisée (FR, EN, ES).' },
           { text: 'Navigation contextuelle : la barre latérale s\'adapte à votre rôle (Joueur ou Maître du Jeu).' },
           { text: 'Fiches de personnages complètes pour les joueurs et les PNJ : informations générales, combat, magie, inventaire, histoire.' },
-          { text: 'Page de profil avec historique de tokens et intégration Keycloak.' },
+          { text: 'Page de profil avec historique de vos tokens.' },
         ],
       },
       en: {
         title: 'Chariot launch',
         highlights: [
           { text: 'Welcome to Chariot! The D&D character management app is live.' },
-          { text: 'Secure authentication via Keycloak SSO with synchronized language preference (FR, EN, ES).' },
+          { text: 'Secure login with your language preference saved (FR, EN, ES).' },
           { text: 'Contextual navigation: the sidebar adapts to your role (Player or Game Master).' },
           { text: 'Full character sheets for players and NPCs: general info, combat, magic, inventory, history.' },
-          { text: 'Profile page with token history and Keycloak integration.' },
+          { text: 'Profile page with your token history.' },
         ],
       },
       es: {
         title: 'Lanzamiento de Chariot',
         highlights: [
           { text: '¡Bienvenido a Chariot! La aplicación de gestión de personajes de D&D está en línea.' },
-          { text: 'Autenticación segura mediante Keycloak SSO con preferencia de idioma sincronizada (FR, EN, ES).' },
+          { text: 'Inicio de sesión seguro con tu preferencia de idioma guardada (FR, EN, ES).' },
           { text: 'Navegación contextual: la barra lateral se adapta a tu rol (Jugador o Maestro del Juego).' },
           { text: 'Fichas de personaje completas para jugadores y PNJ: información general, combate, magia, inventario, historia.' },
-          { text: 'Página de perfil con historial de tokens e integración con Keycloak.' },
+          { text: 'Página de perfil con tu historial de tokens.' },
         ],
       },
     },
