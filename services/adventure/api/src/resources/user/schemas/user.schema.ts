@@ -45,6 +45,23 @@ export class User {
   })
   @Prop({ type: String, enum: ['fr', 'en', 'es'], required: false })
   preferredLocale?: string;
+
+  @ApiProperty({
+    example: 'metric',
+    description: 'User preferred measurement unit',
+    enum: ['metric', 'imperial'],
+    required: false,
+  })
+  @Prop({ type: String, enum: ['metric', 'imperial'], required: false })
+  preferredMeasurementUnit?: string;
+
+  @ApiProperty({
+    example: false,
+    description: 'Show both metric and imperial units simultaneously',
+    required: false,
+  })
+  @Prop({ type: Boolean, required: false, default: false })
+  showBothUnits?: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

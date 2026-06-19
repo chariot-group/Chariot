@@ -1,8 +1,17 @@
 import { NextIntlClientProvider } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
 import type { Action } from "@/types/character";
+
+const createTestStore = () =>
+  configureStore({
+    reducer: {
+      user: (state = { user: { preferredMeasurementUnit: "imperial" }, loading: false, error: null, lastFetch: null }) => state,
+    },
+  });
 
 const messages = {
   characterDetail: {
@@ -33,16 +42,18 @@ const messages = {
 };
 
 const renderActionSection = (actions: Action[]) => renderToStaticMarkup(
-  <NextIntlClientProvider
-    locale="en"
-    timeZone="UTC"
-    messages={messages}>
-    <ActionSection
-      title="Actions"
-      actions={actions}
-      accentColor="text-red"
-    />
-  </NextIntlClientProvider>,
+  <Provider store={createTestStore()}>
+    <NextIntlClientProvider
+      locale="en"
+      timeZone="UTC"
+      messages={messages}>
+      <ActionSection
+        title="Actions"
+        actions={actions}
+        accentColor="text-red"
+      />
+    </NextIntlClientProvider>
+  </Provider>,
 );
 
 describe("ActionSection accessibility", () => {

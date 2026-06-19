@@ -444,6 +444,14 @@
       "en": "🇬🇧 Anglais",
       "es": "🇪🇸 Espagnol"
     },
+    "measurementUnitPreference": "Unités de mesure",
+    "measurementUnitPreferenceAria": "Unités de mesure préférées",
+    "measurementUnits": {
+      "metric": "Mètres (m, kg)",
+      "imperial": "Pieds / Pouces (ft, lbs)"
+    },
+    "showBothUnits": "Afficher les deux unités",
+    "showBothUnitsDescription": "Afficher l'unité secondaire à côté de l'unité principale",
     "changePassword": {
       "successMessage": "Mot de passe modifié avec succès",
       "errorMessage": "Échec de la modification du mot de passe",
@@ -854,6 +862,8 @@
       "hpAbbr": "PV",
       "feet": "pieds",
       "feetAbbr": "pi",
+      "meters": "mètres",
+      "metersAbbr": "m",
       "affinities": "Affinités",
       "resistances": "Résistances",
       "resistancesPlaceholder": "Feu, Froid...",
@@ -867,8 +877,8 @@
       "eyes": "Yeux",
       "age": "Âge",
       "skin": "Peau",
-      "height": "Taille (m)",
-      "weight": "Poids (kg)",
+      "height": "Taille",
+      "weight": "Poids",
       "hair": "Cheveux",
       "alliesAndOrgs": "Alliés et organisations",
       "bonds": "Liens",
