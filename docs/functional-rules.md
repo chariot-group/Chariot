@@ -2493,3 +2493,81 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/layout.tsx` (provider mount)
 - `services/web/client/src/app/[locale]/profile/page.tsx` (profile entry point)
 - `services/web/client/messages/{fr|en|es}.json` (releaseNotes i18n keys)
+
+---
+
+## FR-031: Unité de mesure préférée
+
+**Rule**: Each user can choose a preferred measurement unit (`metric` or `imperial`) stored in their profile. The default value is `metric`.
+
+**Requirements**:
+
+- `preferredMeasurementUnit` field on the user model, accepting values `metric` or `imperial`
+- Editable from the profile page, Preferences section, alongside the language preference
+- Change is saved immediately (same pattern as `preferredLocale`)
+- Exposed in all user DTOs (`UpdateUserProfileDto`, `UserInfoDto`) and the frontend `User` / `UpdateUserDto` types
+- The stored preference is available globally for any future display formatting of size/weight values
+
+**Prohibitions**:
+
+- Applying conversion logic or display formatting in this ticket — only the preference storage and UI control are in scope here
+
+**Tests**:
+
+- Nominal: selecting `imperial` calls `updateCurrentUser` with `preferredMeasurementUnit: 'imperial'` and dispatches `updateUser`
+- Edge: selecting the already-active unit does nothing (no API call)
+- Failure: API error shows an error toast and does not change the stored preference
+
+**References**:
+
+- `services/adventure/api/src/resources/user/schemas/user.schema.ts`
+- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts`
+- `services/adventure/api/src/resources/user/dto/sub/user-info.dto.ts`
+- `services/web/client/src/types/user.ts`
+- `services/web/client/src/components/profile/ProfileMeasurementUnitSelect.tsx`
+- `services/web/client/src/components/profile/ProfileMeasurementUnitSelectImmediate.tsx`
+
+---
+
+## FR-032: Conversion et affichage des unités de distance
+
+**Rule**: All distance values displayed in the application (speed, senses, action range, spell range) must respect the user's `preferredMeasurementUnit`. Values are always stored in **feet** in the database. Display and input use the unit chosen in the user's profile.
+
+**Conversion rate**: 5 ft = 1.5 m (factor 0.3 exact — i.e. 1 ft = 0.3 m).
+
+**Requirements**:
+
+- All numeric distance values (speed fields, sense ranges) stored in the DB remain in feet.
+- On display, values are converted to meters when `preferredMeasurementUnit === 'metric'`, left as-is for `'imperial'`.
+- Metric display rounds to 1 decimal place (e.g. 30 ft → 9 m, 5 ft → 1.5 m).
+- In edit forms, speed and sense range inputs show the value in the user's preferred unit; on submit, the value is converted back to feet before sending to the API.
+- String-based range fields (`action.range`, `spell.range`) stored as free-text (e.g. "30 ft.", "60/120 ft.", "Self") are parsed and converted for display only — the raw string is never altered in the DB.
+- Non-numeric range strings ("Touch", "Self", "Sight", "Unlimited") pass through unchanged.
+- The unit abbreviation shown next to values must match the locale and unit: "ft" / "pi" for imperial, "m" for metric.
+- A shared utility (`utils/unit.utils.ts`) and hook (`hooks/useDistanceUnit.ts`) are used for all conversions and unit label retrieval.
+
+**Prohibitions**:
+
+- Storing metric values in the database.
+- Applying conversion in server-side code — conversion is frontend-only display logic.
+- Hardcoding "ft" labels in display components; always use the unit-aware label from the hook.
+
+**Tests**:
+
+- Nominal: `feetToMeters(30)` returns `9`, `feetToMeters(5)` returns `1.5`.
+- Nominal: `metersToFeet(9)` returns `30`.
+- Nominal: `convertRangeString("30 ft.", "metric")` returns `"9 m"`.
+- Edge: `convertRangeString("60/120 ft.", "metric")` returns `"18/36 m"`.
+- Edge: `convertRangeString("Touch", "metric")` returns `"Touch"` (unchanged).
+- Edge: `convertRangeString("Self (10-foot cone)", "metric")` converts the numeric part.
+- Edge: `feetToMeters(0)` returns `0`.
+
+**References**:
+
+- `services/web/client/src/utils/unit.utils.ts`
+- `services/web/client/src/hooks/useDistanceUnit.ts`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`
+- `services/web/client/src/components/character/tabContents/shared/NpcStatistics.tsx`
+- `services/web/client/src/components/character/tabContents/general/shared/SensesSection.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`
+- `services/web/client/src/components/character/tabContents/magic/SpellDisplay.tsx`

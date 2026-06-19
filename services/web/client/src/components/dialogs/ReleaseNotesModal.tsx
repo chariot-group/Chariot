@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { ALL_RELEASE_NOTES, CURRENT_APP_VERSION } from "@/data/release-notes";
 import type { ReleaseNote, SupportedLocale } from "@/data/release-notes";
@@ -155,6 +156,9 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
         className="sm:max-w-[580px] h-[460px] flex flex-col gap-0 p-0 overflow-hidden"
         aria-describedby="release-notes-description"
       >
+        <VisuallyHidden>
+          <DialogTitle>{t("title")}</DialogTitle>
+        </VisuallyHidden>
         <div className="flex flex-1 min-h-0">
           <VersionSidebar
             notes={ALL_RELEASE_NOTES}
