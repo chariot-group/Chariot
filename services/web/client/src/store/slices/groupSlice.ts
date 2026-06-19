@@ -253,6 +253,7 @@ export const selectOpenGroupId = (state: RootState) => state.group.openGroupId;
 export const selectActiveGroupsPage = (state: RootState) => state.group.activePage;
 export const selectArchivedGroupsPage = (state: RootState) => state.group.archivedPage;
 export const selectActiveGroupsHasMore = (state: RootState) => state.group.activeHasMore;
+export const selectActiveGroupsTotal = (state: RootState) => state.group.activeTotal;
 export const selectArchivedGroupsHasMore = (state: RootState) => state.group.archivedHasMore;
 
 export default groupSlice.reducer;

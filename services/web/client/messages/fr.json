@@ -49,6 +49,8 @@
     "moveCharacterDialogTitle": "Déplacer le personnage",
     "moveCharacterDialogDescription": "Choisissez le groupe de destination pour {name}.",
     "moveCharacterSelectGroup": "Groupe de destination",
+    "moveCharacterSearchGroupPlaceholder": "Rechercher un groupe par nom",
+    "moveCharacterNoSearchResult": "Aucun groupe trouvé.",
     "moveCharacterConfirm": "Déplacer",
     "moveCharacterNoTargetGroups": "Aucun autre groupe actif disponible.",
     "launchSession": "Lancer une session",

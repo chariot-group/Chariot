@@ -7,6 +7,7 @@ import { Character as GroupCharacter, Group } from "@/types/campaign";
 import Link from "next/link";
 import { useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
+import { selectActiveGroupsHasMore, selectActiveGroupsTotal } from "@/store/slices/groupSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -18,6 +19,7 @@ import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
+import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
 import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 
 interface GroupListProps {
@@ -28,7 +30,7 @@ interface GroupListProps {
   onArchiveGroup: (groupId: string) => Promise<void>;
   onUnarchiveGroup: (groupId: string) => Promise<void>;
   onDeleteGroup: (groupId: string) => Promise<void>;
-  activeGroupsForMove: Group[];
+  loadedActiveGroupIds: string[];
   onRefreshGroups: () => Promise<void>;
 }
 
@@ -40,12 +42,14 @@ export default function GroupList({
   onArchiveGroup,
   onUnarchiveGroup,
   onDeleteGroup,
-  activeGroupsForMove,
+  loadedActiveGroupIds,
   onRefreshGroups,
 }: GroupListProps) {
   const t = useTranslations("sidebar");
   const router = useRouter();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
+  const activeGroupsTotal = useAppSelector(selectActiveGroupsTotal);
+  const activeGroupsHasMore = useAppSelector(selectActiveGroupsHasMore);
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
@@ -163,7 +167,15 @@ export default function GroupList({
 
       const items: SidebarActionItem[] = [];
 
-      if (activeGroupsForMove.some((group) => group._id !== groupId)) {
+      if (
+        canMoveCharacterToAnotherGroup({
+          isArchivedSection,
+          activeGroupsTotal,
+          activeGroupsHasMore,
+          loadedActiveGroupIds,
+          currentGroupId: groupId,
+        })
+      ) {
         items.push({
           id: "move",
           label: t("move"),
@@ -190,7 +202,7 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsForMove, isMobile, router, selectedCampaignId, setOpenMobile, t],
+    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, isArchivedSection, isMobile, loadedActiveGroupIds, router, selectedCampaignId, setOpenMobile, t],
   );
 
   if (groups.length === 0) {
@@ -335,8 +347,8 @@ export default function GroupList({
 
       <MoveCharacterDialog
         character={characterToMove?.character ?? null}
+        campaignId={selectedCampaignId}
         currentGroupId={characterToMove?.groupId ?? ""}
-        targetGroups={activeGroupsForMove}
         open={!!characterToMove}
         onOpenChange={(open) => {
           if (!open) setCharacterToMove(null);
