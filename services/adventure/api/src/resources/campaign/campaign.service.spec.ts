@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CampaignService } from './campaign.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Campaign } from './schemas/campaign.schema';
+import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Types } from 'mongoose';
@@ -54,7 +54,7 @@ describe('CampaignService - create', () => {
 
     const loggerSpy = jest
       .spyOn(service['logger'], 'verbose')
-      .mockImplementation(() => {});
+      .mockImplementation(() => { });
 
     const result = await service.create(mockCampaignDto, userId);
 
@@ -85,7 +85,7 @@ describe('CampaignService - create', () => {
     campaignModel.create.mockRejectedValue(new Error('DB failure'));
     const loggerSpy = jest
       .spyOn(service['logger'], 'error')
-      .mockImplementation(() => {});
+      .mockImplementation(() => { });
 
     await expect(service.create(mockCampaignDto, userId)).rejects.toThrow(
       InternalServerErrorException,
