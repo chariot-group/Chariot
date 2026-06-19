@@ -79,6 +79,7 @@
     "duplicateCharacterDialogTitle": "Duplicate character",
     "duplicateCharacterDialogDescription": "Choose a name for the new character.",
     "duplicateCharacterNameLabel": "Character name",
+    "duplicateCharacterCountLabel": "Number of copies",
     "duplicateCharacterCreate": "Create",
     "duplicateCharacterCreateAndMove": "Create in another group",
     "duplicateCharacterSuccess": "Character duplicated successfully.",

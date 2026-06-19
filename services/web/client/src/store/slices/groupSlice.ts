@@ -192,6 +192,17 @@ const groupSlice = createSlice({
                 },
             ];
         },
+        removeCharacterFromGroup: (
+            state,
+            action: PayloadAction<{ groupId: string; characterId: string }>,
+        ) => {
+            const { groupId, characterId } = action.payload;
+            const target =
+                state.activeGroups.find((g) => g._id === groupId) ??
+                state.archivedGroups.find((g) => g._id === groupId);
+            if (!target) return;
+            target.characters = target.characters.filter((c) => c._id !== characterId);
+        },
         upsertCharacterInGroups: (
             state,
             action: PayloadAction<{
@@ -238,6 +249,7 @@ export const {
     clearGroups,
     invalidateCache,
     addCharacterToGroup,
+    removeCharacterFromGroup,
     upsertCharacterInGroups,
 } = groupSlice.actions;
 

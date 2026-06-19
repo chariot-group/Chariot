@@ -7,7 +7,7 @@ import { Character as GroupCharacter, Group } from "@/types/campaign";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { addCharacterToGroup } from "@/store/slices/groupSlice";
+import { addCharacterToGroup, removeCharacterFromGroup } from "@/store/slices/groupSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -20,6 +20,7 @@ import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
+import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
 import { showToast } from "@/lib/toast";
 import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 
@@ -71,7 +72,7 @@ export default function GroupList({
     groupId: string;
   } | null>(null);
   const [pendingMoveAfterDuplicate, setPendingMoveAfterDuplicate] = React.useState<{
-    character: GroupCharacter;
+    characters: GroupCharacter[];
     groupId: string;
   } | null>(null);
 
@@ -136,6 +137,7 @@ export default function GroupList({
       source: GroupCharacter,
       groupId: string,
       name: string,
+      count: number,
       andMove = false,
     ) => {
       if (!selectedCampaignId) return;
@@ -145,40 +147,40 @@ export default function GroupList({
         const { _id, createdBy, deletedAt, groups, ...rest } = full;
         const isNpc = !("progression" in full);
         const type = isNpc ? "npcs" : "players";
-        const payload = {
-          ...rest,
-          firstname: name,
-          lastname: "",
-          groups: [groupId],
-        };
-        const created = await CharacterService.createCharacter(type, payload as typeof rest);
 
-        // Optimistic Redux update — does not reset openGroupId or trigger a full sidebar reload
-        dispatch(
-          addCharacterToGroup({
-            groupId,
-            character: {
-              _id: created._id,
-              firstname: created.firstname,
-              lastname: created.lastname,
-              surname: created.surname,
-            },
-          }),
-        );
+        const createdChars: GroupCharacter[] = [];
+        for (let i = 0; i < count; i++) {
+          const copyName = i === 0 ? name : `${name} ${i + 1}`;
+          const payload = { ...rest, firstname: copyName, lastname: "", groups: [groupId] };
+          const created = await CharacterService.createCharacter(type, payload as typeof rest);
 
-        showToast(t("duplicateCharacterSuccess"), "success");
+          dispatch(
+            addCharacterToGroup({
+              groupId,
+              character: {
+                _id: created._id,
+                firstname: created.firstname,
+                lastname: created.lastname,
+                surname: created.surname,
+              },
+            }),
+          );
 
-        if (andMove) {
-          const createdAsGroupChar: GroupCharacter = {
+          createdChars.push({
             _id: created._id,
             firstname: created.firstname,
             lastname: created.lastname,
             surname: created.surname,
             userId: source.userId,
-          };
-          setPendingMoveAfterDuplicate({ character: createdAsGroupChar, groupId });
-        } else {
-          router.push(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${created._id}`);
+          });
+        }
+
+        showToast(t("duplicateCharacterSuccess"), "success");
+
+        if (andMove && createdChars.length > 0) {
+          setPendingMoveAfterDuplicate({ characters: createdChars, groupId });
+        } else if (count === 1 && createdChars.length === 1) {
+          router.push(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${createdChars[0]._id}`);
           if (isMobile) setOpenMobile(false);
         }
       } catch {
@@ -421,14 +423,29 @@ export default function GroupList({
       />
 
       <MoveCharacterDialog
-        character={pendingMoveAfterDuplicate?.character ?? null}
+        character={pendingMoveAfterDuplicate?.characters[0] ?? null}
         currentGroupId={pendingMoveAfterDuplicate?.groupId ?? ""}
         targetGroups={activeGroupsForMove}
         open={!!pendingMoveAfterDuplicate}
         onOpenChange={(open) => {
           if (!open) setPendingMoveAfterDuplicate(null);
         }}
-        onMoved={onRefreshGroups}
+        onMoved={async (targetGroupId) => {
+          const pending = pendingMoveAfterDuplicate;
+          if (!pending) return;
+          // Move remaining copies (first one already moved by MoveCharacterDialog)
+          await Promise.all(
+            pending.characters.slice(1).map((c) =>
+              moveCharacterToGroup(c._id, pending.groupId, targetGroupId),
+            ),
+          );
+          // Surgical Redux update — avoid full sidebar refetch
+          for (const c of pending.characters) {
+            dispatch(removeCharacterFromGroup({ groupId: pending.groupId, characterId: c._id }));
+            dispatch(addCharacterToGroup({ groupId: targetGroupId, character: c }));
+          }
+          setPendingMoveAfterDuplicate(null);
+        }}
       />
 
       <DuplicateCharacterDialog
@@ -437,11 +454,11 @@ export default function GroupList({
         onOpenChange={(open) => {
           if (!open) setCharacterToDuplicate(null);
         }}
-        onDuplicate={(name) =>
-          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, false)
+        onDuplicate={(name, count) =>
+          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, false)
         }
-        onDuplicateAndMove={(name) =>
-          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, true)
+        onDuplicateAndMove={(name, count) =>
+          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, true)
         }
       />
     </div>

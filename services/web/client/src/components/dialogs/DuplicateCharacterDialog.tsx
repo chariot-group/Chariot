@@ -29,9 +29,9 @@ interface DuplicateCharacterDialogProps {
   character: { firstname: string; lastname?: string } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onDuplicate: (name: string) => Promise<void>;
+  onDuplicate: (name: string, count: number) => Promise<void>;
   /** When provided, shows a secondary "Create in another group" button */
-  onDuplicateAndMove?: (name: string) => Promise<void>;
+  onDuplicateAndMove?: (name: string, count: number) => Promise<void>;
 }
 
 export function DuplicateCharacterDialog({
@@ -47,14 +47,18 @@ export function DuplicateCharacterDialog({
   const defaultName = React.useMemo(() => buildDuplicateName(character), [character]);
 
   const [name, setName] = React.useState(defaultName);
+  const [countStr, setCountStr] = React.useState("1");
   const [isCreating, setIsCreating] = React.useState(false);
 
   React.useEffect(() => {
     if (open) {
       setName(defaultName);
+      setCountStr("1");
       setIsCreating(false);
     }
   }, [open, defaultName]);
+
+  const count = Math.max(1, Math.min(99, parseInt(countStr, 10) || 1));
 
   const trimmedName = name.trim();
   const canSubmit = trimmedName.length > 0 && !isCreating;
@@ -63,7 +67,7 @@ export function DuplicateCharacterDialog({
     if (!canSubmit) return;
     setIsCreating(true);
     try {
-      await onDuplicate(trimmedName);
+      await onDuplicate(trimmedName, count);
       onOpenChange(false);
     } catch {
       // error toast handled by caller
@@ -76,7 +80,7 @@ export function DuplicateCharacterDialog({
     if (!canSubmit || !onDuplicateAndMove) return;
     setIsCreating(true);
     try {
-      await onDuplicateAndMove(trimmedName);
+      await onDuplicateAndMove(trimmedName, count);
       onOpenChange(false);
     } catch {
       // error toast handled by caller
@@ -104,18 +108,35 @@ export function DuplicateCharacterDialog({
           <DialogDescription>{t("duplicateCharacterDialogDescription")}</DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-2 py-2">
-          <Label htmlFor="duplicate-character-name">{t("duplicateCharacterNameLabel")}</Label>
-          <Input
-            id="duplicate-character-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
-            disabled={isCreating}
-            className="rounded-[12px]"
-            aria-label={t("duplicateCharacterNameLabel")}
-          />
+        <div className="flex items-end gap-3 py-2">
+          <div className="flex-1 grid gap-2">
+            <Label htmlFor="duplicate-character-name">{t("duplicateCharacterNameLabel")}</Label>
+            <Input
+              id="duplicate-character-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              disabled={isCreating}
+              className="rounded-[12px]"
+              aria-label={t("duplicateCharacterNameLabel")}
+            />
+          </div>
+          <div className="w-20 grid gap-2">
+            <Label htmlFor="duplicate-character-count">{t("duplicateCharacterCountLabel")}</Label>
+            <Input
+              id="duplicate-character-count"
+              type="number"
+              min={1}
+              max={99}
+              value={countStr}
+              onChange={(e) => setCountStr(e.target.value)}
+              onBlur={() => setCountStr(String(count))}
+              disabled={isCreating}
+              className="rounded-[12px]"
+              aria-label={t("duplicateCharacterCountLabel")}
+            />
+          </div>
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">

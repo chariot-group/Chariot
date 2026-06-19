@@ -23,7 +23,7 @@ interface MoveCharacterDialogProps {
   targetGroups: Group[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onMoved?: () => void | Promise<void>;
+  onMoved?: (targetGroupId: string) => void | Promise<void>;
 }
 
 export function MoveCharacterDialog({
@@ -56,7 +56,7 @@ export function MoveCharacterDialog({
     setIsMoving(true);
     try {
       await moveCharacterToGroup(character._id, currentGroupId, selectedGroupId);
-      await onMoved?.();
+      await onMoved?.(selectedGroupId);
       onOpenChange(false);
     } catch (error) {
       console.error("Error moving character:", error);

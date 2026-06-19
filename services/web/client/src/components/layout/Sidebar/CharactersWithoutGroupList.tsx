@@ -82,22 +82,21 @@ export default function CharactersWithoutGroupList() {
     }
   };
 
-  const handleDuplicateCharacter = async (character: Character, name: string) => {
+  const handleDuplicateCharacter = async (character: Character, name: string, count: number) => {
     if (!isPlayer(character)) return;
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, createdBy, deletedAt, groups, ...rest } = character;
-      const payload = {
-        ...rest,
-        firstname: name,
-        lastname: "",
-        groups: [] as [],
-      };
-      const created = await CharacterService.createCharacter("players", payload);
-      // Optimistic Redux update — prepends the new character without resetting pagination
-      dispatch(upsertCharacterWithoutGroup(created as Character));
+      let lastCreated: Character | null = null;
+      for (let i = 0; i < count; i++) {
+        const copyName = i === 0 ? name : `${name} ${i + 1}`;
+        const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
+        const created = await CharacterService.createCharacter("players", payload);
+        dispatch(upsertCharacterWithoutGroup(created as Character));
+        lastCreated = created as Character;
+      }
       showToast(t("duplicateCharacterSuccess"), "success");
-      router.push(`/characters/${created._id}`);
+      if (count === 1 && lastCreated) router.push(`/characters/${lastCreated._id}`);
     } catch {
       showToast(t("duplicateCharacterError"), "error");
       throw new Error("duplicate failed");
@@ -273,7 +272,7 @@ export default function CharactersWithoutGroupList() {
         onOpenChange={(open) => {
           if (!open) setCharacterToDuplicate(null);
         }}
-        onDuplicate={(name) => handleDuplicateCharacter(characterToDuplicate!, name)}
+        onDuplicate={(name, count) => handleDuplicateCharacter(characterToDuplicate!, name, count)}
       />
     </nav>
   );
