@@ -2,8 +2,10 @@
 
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Info } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/useToast";
 import UserService from "@/services/UserService";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -33,26 +35,27 @@ export default function ProfileShowBothUnitsCheckbox() {
   );
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id="show-both-units"
-          checked={current}
-          onCheckedChange={(checked) => handleChange(Boolean(checked))}
-          disabled={isSaving}
-          aria-describedby="show-both-units-desc"
-        />
-        <Label
-          htmlFor="show-both-units"
-          className="text-sm font-medium cursor-pointer">
-          {t("showBothUnits")}
-        </Label>
-      </div>
-      <p
-        id="show-both-units-desc"
-        className="text-xs text-muted-foreground pl-6">
-        {t("showBothUnitsDescription")}
-      </p>
+    <div className="flex items-center gap-2 sm:self-end sm:mb-[10px]">
+      <Checkbox
+        id="show-both-units"
+        checked={current}
+        onCheckedChange={(checked) => handleChange(Boolean(checked))}
+        disabled={isSaving}
+      />
+      <Label
+        htmlFor="show-both-units"
+        className="text-sm font-medium cursor-pointer">
+        {t("showBothUnits")}
+      </Label>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Info
+            className="size-3.5 text-muted-foreground cursor-help shrink-0"
+            aria-label={t("showBothUnitsDescription")}
+          />
+        </TooltipTrigger>
+        <TooltipContent>{t("showBothUnitsDescription")}</TooltipContent>
+      </Tooltip>
     </div>
   );
 }
