@@ -23,6 +23,7 @@ import UpdateProfile from "@/components/profile/UpdateProfile";
 import ProfilePreferencesSection from "@/components/profile/ProfilePreferencesSection";
 import { isEnterWithModifiers } from "@/utils/keyboard.utils";
 import ShopDialog from "@/components/dialogs/Shop";
+import { ReleaseNotesModal } from "@/components/dialogs/ReleaseNotesModal";
 import referralService, { type ReferralInfo } from "@/services/ReferralService";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -57,6 +58,7 @@ export default function ProfilePage() {
   } = useProfileForm();
 
   const [showShopDialog, setShowShopDialog] = useState<boolean>(false);
+  const [showReleaseNotes, setShowReleaseNotes] = useState<boolean>(false);
   const [historyFilters, setHistoryFilters] = useState<TokenHistoryFilters>(() => loadTokenHistoryFilters());
 
   useEffect(() => {
@@ -155,7 +157,7 @@ export default function ProfilePage() {
           />
         )}
 
-        <ProfilePreferencesSection />
+        <ProfilePreferencesSection onViewReleaseNotes={() => setShowReleaseNotes(true)} />
 
         <ProfileSection
           id="profile-section-tokens"
@@ -550,6 +552,11 @@ export default function ProfilePage() {
             <ProfileGdprActions />
           </div>
         </ProfileSection>
+
+        <ReleaseNotesModal
+          open={showReleaseNotes}
+          onClose={() => setShowReleaseNotes(false)}
+        />
       </div>
     </main>
   );

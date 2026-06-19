@@ -80,9 +80,14 @@ Create the release ticket:
 - Title: "Release vX.Y.Z" (e.g., "Release v1.3.0")
 - Description:
   - List of key features to include
-  - Checklist of release steps
+  - Checklist of release steps (see Appendix E)
   - Link to this workflow guide
   - Version type (MAJOR/MINOR/PATCH) with rationale
+- Checklist in the ticket body:
+  - [ ] CHANGELOG.md updated
+  - [ ] Release note written in all locales (`fr`, `en`, `es`) — `services/web/client/src/data/release-notes/versions`
+  - [ ] `package.json` version bumped
+  - [ ] Tests pass on integ
 - Labels: `release`
 - Milestone: Create a corresponding milestone if needed (e.g., `v1.3.0`)
 - Assignees: Release Manager + second developer
@@ -140,6 +145,12 @@ Edit CHANGELOG.md:
 ## [1.2.0] - 2024-10-28
 ...
 ```
+
+Write the in-app release note in all supported locales (`fr`, `en`, `es`):
+- Create the versioned file in `services/web/client/src/data/release-notes/` (e.g., `v1.3.0.ts`)
+- Fill the `translations` record for each locale with a `title` and `highlights` written in plain user-facing language (see FR-027)
+- Bump `CURRENT_APP_VERSION` in `src/data/release-notes/index.ts` to match the new version
+- All three locales MUST be present — do not ship with a missing translation
 
 Update version in code:
 ```json
@@ -475,7 +486,8 @@ Format: MAJOR.MINOR.PATCH (e.g., v2.3.1)
 ### E. Pre-release checklist
 - [ ] Tickets done/moved
 - [ ] Changelog updated
-- [ ] Version bumped
+- [ ] Release note written in all locales (`fr`, `en`, `es`) and `CURRENT_APP_VERSION` bumped
+- [ ] Version bumped in `package.json`
 - [ ] Tests pass
 - [ ] No debug code
 - [ ] Env vars verified

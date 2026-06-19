@@ -414,6 +414,12 @@
       "tokens": "Tokens",
       "referral": "Referral"
     },
+    "releaseNotes": {
+      "label": "What's new in the app",
+      "openButton": "View release notes",
+      "muteLabel": "Don't show release notes automatically on login",
+      "muteAriaLabel": "Stop showing release notes automatically on startup"
+    },
     "changePasswordTitle": "Change Password",
     "currentPassword": "Current password",
     "newPassword": "New password",
@@ -1461,5 +1467,12 @@
   },
   "sessionTime": {
     "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left."
+  },
+  "releaseNotes": {
+    "title": "What's new",
+    "close": "Close",
+    "versionLabel": "v{version}",
+    "versionSelectAriaLabel": "Navigate to a previous version",
+    "latest": "Current"
   }
 }

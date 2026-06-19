@@ -414,6 +414,12 @@
       "tokens": "Tokens",
       "referral": "Apadrinamiento"
     },
+    "releaseNotes": {
+      "label": "Novedades de la aplicación",
+      "openButton": "Ver las novedades",
+      "muteLabel": "No mostrar las novedades automáticamente al iniciar sesión",
+      "muteAriaLabel": "Dejar de mostrar las novedades automáticamente al iniciar"
+    },
     "changePasswordTitle": "Cambiar contraseña",
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
@@ -1462,5 +1468,12 @@
   },
   "sessionTime": {
     "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
+  },
+  "releaseNotes": {
+    "title": "Novedades",
+    "close": "Cerrar",
+    "versionLabel": "v{version}",
+    "versionSelectAriaLabel": "Navegar a una versión anterior",
+    "latest": "Actual"
   }
 }

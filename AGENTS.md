@@ -175,3 +175,16 @@ Existing test anchors:
 - [ ] Confirmed gateway broadcasts use persisted authoritative data, not optimistic client payload alone.
 - [ ] Planned tests for nominal + reconnect/race + failure case.
 - [ ] For UI-facing changes: accessibility remains in scope (FR-019).
+
+## 11) Technical Constraints
+
+### 11.1 No Relative Imports
+
+All TypeScript/JavaScript imports MUST use `@/` path aliases. Relative paths (`./` or `../`) are **forbidden** in all source files.
+
+- **Correct**: `import { foo } from "@/lib/foo";`
+- **Forbidden**: `import { foo } from "./foo";` or `import { foo } from "../../lib/foo";`
+
+This applies to all files under `services/web/client/src/`. The `@/` alias resolves to `src/`.
+
+When writing or editing any file, the agent MUST verify that no relative imports are introduced. If fixing or refactoring existing code that contains relative imports, the agent MUST convert them to `@/` aliases as part of the change.
