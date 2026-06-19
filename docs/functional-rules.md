@@ -2438,7 +2438,10 @@ Each initiative tracker row carries:
 | Character in group (player or NPC) | Move to another group, Edit, Delete |
 | Character in **Mes personnages** | Edit, Delete |
 | Group | Edit (rename), Archive or Unarchive (section-dependent), Delete |
+| Archives section header | Delete all archived groups (only when at least one archived group exists) |
 | Campaign | Edit (rename), Delete |
+
+- **Delete all archived groups** (archives section header) MUST open a confirmation dialog stating the number of groups to delete; on confirm, MUST permanently delete every archived group in the current campaign (full campaign archived list, not only the currently loaded sidebar page); MUST refresh sidebar group data once after completion; MUST redirect navigation when the user is viewing a deleted archived group (same rules as single group delete).
 
 - **Edit character** MUST navigate to the character sheet with `?mode=edit` (existing CharacterDetailView behavior).
 - **Move character** MUST open a dialog listing other groups (active and archived) in the current campaign; archived targets MUST be visually distinguishable in the list; moving MUST persist via the character `groups` API and refresh sidebar group data.

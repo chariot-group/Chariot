@@ -34,23 +34,9 @@ import { useToast } from '@/hooks/useToast';
 import { usePathname, useRouter } from 'next/navigation';
 import { RootState } from '@/store';
 import { useStore } from 'react-redux';
+import { normalizeGroupIdList } from '@/lib/normalizeGroupIdList';
 
 const GROUPS_PAGE_SIZE = 5;
-
-function normalizeGroupIdList(items: unknown[] | undefined): string[] {
-    if (!items || !Array.isArray(items)) {
-        return [];
-    }
-    return items
-        .map((item) => {
-            if (typeof item === 'string') return item;
-            if (typeof item === 'object' && item !== null && '_id' in item) {
-                return (item as { _id?: string })._id;
-            }
-            return undefined;
-        })
-        .filter((id: string | undefined): id is string => Boolean(id));
-}
 
 /**
  * Hook personnalisé pour gérer les groupes d'une campagne
@@ -308,6 +294,33 @@ export function useGroups() {
         [selectedCampaignId, fetchGroups, success, toastError],
     );
 
+    const redirectAfterDeletedGroups = useCallback(
+        async (deletedGroupIds: string[]) => {
+            const localeFromPath = pathname?.split('/')[1] || 'fr';
+            const viewingDeletedGroup = deletedGroupIds.some((groupId) => pathname?.includes(`/groups/${groupId}`));
+
+            if (!viewingDeletedGroup) {
+                return;
+            }
+
+            try {
+                const destination = await NavigationService.determinePostLoginDestination(
+                    localeFromPath,
+                    dispatch,
+                    store.getState.bind(store),
+                );
+
+                dispatch(setOpenGroup(null));
+                router.replace(destination.path);
+            } catch (navigationError) {
+                console.error('Failed to determine destination after group deletion:', navigationError);
+                dispatch(setOpenGroup(null));
+                router.replace(`/${localeFromPath}/welcome`);
+            }
+        },
+        [dispatch, pathname, router, store],
+    );
+
     /**
      * Supprime un groupe définitivement
      */
@@ -317,25 +330,7 @@ export function useGroups() {
                 await GroupService.deleteGroup(groupId);
 
                 await fetchGroups();
-
-                const localeFromPath = pathname?.split('/')[1] || 'fr';
-
-                if (pathname?.includes(`/groups/${groupId}`)) {
-                    try {
-                        const destination = await NavigationService.determinePostLoginDestination(
-                            localeFromPath,
-                            dispatch,
-                            store.getState.bind(store),
-                        );
-
-                        dispatch(setOpenGroup(null));
-                        router.replace(destination.path);
-                    } catch (navigationError) {
-                        console.error('Failed to determine destination after group deletion:', navigationError);
-                        dispatch(setOpenGroup(null));
-                        router.replace(`/${localeFromPath}/welcome`);
-                    }
-                }
+                await redirectAfterDeletedGroups([groupId]);
 
                 success('Group deleted');
             } catch (e) {
@@ -344,8 +339,38 @@ export function useGroups() {
                 throw e;
             }
         },
-        [dispatch, fetchGroups, pathname, router, success, toastError, store],
+        [fetchGroups, redirectAfterDeletedGroups, success, toastError],
     );
+
+    /**
+     * Supprime tous les groupes archivés de la campagne courante.
+     */
+    const deleteAllArchivedGroups = useCallback(async () => {
+        if (!selectedCampaignId) {
+            throw new Error('No campaign selected');
+        }
+
+        try {
+            const campaign = await CampaignService.getCampaignById(selectedCampaignId);
+            const archivedIds = normalizeGroupIdList(campaign.groups?.archived as unknown[]);
+
+            if (archivedIds.length === 0) {
+                return;
+            }
+
+            for (const groupId of archivedIds) {
+                await GroupService.deleteGroup(groupId);
+            }
+
+            await fetchGroups();
+            await redirectAfterDeletedGroups(archivedIds);
+            success('All archived groups deleted');
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Failed to delete archived groups';
+            toastError(message);
+            throw e;
+        }
+    }, [fetchGroups, redirectAfterDeletedGroups, selectedCampaignId, success, toastError]);
 
     useEffect(() => {
         if (!selectedCampaignId) {
@@ -384,5 +409,6 @@ export function useGroups() {
         archiveGroup,
         unarchiveGroup,
         deleteGroup,
+        deleteAllArchivedGroups,
     };
 }
