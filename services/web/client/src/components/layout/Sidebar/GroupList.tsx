@@ -5,7 +5,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronRight, UserPlus } from "lucide-react";
 import { Character as GroupCharacter, Group } from "@/types/campaign";
 import Link from "next/link";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { removeCharacterFromGroup } from "@/store/slices/groupSlice";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { selectActiveGroupsHasMore, selectActiveGroupsTotal, selectArchivedGroupsHasMore, selectArchivedGroupsTotal } from "@/store/slices/groupSlice";
 import { usePathname, useRouter } from "next/navigation";
@@ -48,6 +49,7 @@ export default function GroupList({
   onRefreshGroups,
 }: GroupListProps) {
   const t = useTranslations("sidebar");
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const activeGroupsTotal = useAppSelector(selectActiveGroupsTotal);
@@ -101,7 +103,7 @@ export default function GroupList({
       setIsDeletingCharacter(true);
       await CharacterService.deleteCharacter(deletingCharacterId);
       setCharacterPendingDelete(null);
-      await onRefreshGroups();
+      dispatch(removeCharacterFromGroup({ groupId, characterId: deletingCharacterId }));
 
       if (selectedCharacterId === deletingCharacterId) {
         const remainingGroup = groups.find((group) => group._id === groupId);
@@ -119,9 +121,9 @@ export default function GroupList({
     }
   }, [
     characterPendingDelete,
+    dispatch,
     groups,
     isDeletingCharacter,
-    onRefreshGroups,
     router,
     selectedCampaignId,
     selectedCharacterId,
