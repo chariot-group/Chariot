@@ -12,7 +12,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'La connexion à une session est plus robuste : plus de déconnexions fantômes lors d\'un rechargement de page ni de doubles connexions.' },
           { text: 'Les joueurs peuvent maintenant saisir leur initiative pendant la phase de préparation du combat, si le MJ le permet.' },
           { text: 'Le MJ peut définir en masse la visibilité de plusieurs PNJ en une seule action dans le tracker d\'initiative.' },
-          { text: 'Corrections : codes promo à 99–100 % affichant le plein tarif, footer de paiement masqué, et redirection incorrecte après connexion.' },
         ],
       },
       en: {
@@ -22,7 +21,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'Session connections are now more reliable: no more ghost disconnections on page refresh or duplicate connections.' },
           { text: 'Players can now enter their initiative during the combat preparation phase, if the GM allows it.' },
           { text: 'The GM can bulk-set the visibility of multiple NPCs in a single action from the initiative tracker.' },
-          { text: 'Fixes: 99–100% promo codes showing full price, hidden payment footer, and incorrect redirect after login.' },
         ],
       },
       es: {
@@ -32,7 +30,6 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'La conexión a una sesión es más fiable: sin desconexiones fantasma al recargar la página ni conexiones duplicadas.' },
           { text: 'Los jugadores pueden ahora introducir su iniciativa durante la fase de preparación del combate, si el DJ lo permite.' },
           { text: 'El DJ puede configurar la visibilidad de varios PNJ en masa en una sola acción desde el rastreador de iniciativa.' },
-          { text: 'Correcciones: códigos promocionales al 99–100 % mostrando el precio completo, pie de pago oculto, y redirección incorrecta al iniciar sesión.' },
         ],
       },
     },

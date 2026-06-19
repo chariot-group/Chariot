@@ -1463,6 +1463,6 @@
     "close": "Close",
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navigate to a previous version",
-    "latest": "current"
+    "latest": "Current"
   }
 }
