@@ -1,24 +1,30 @@
 export function canMoveCharacterToAnotherGroup(params: {
-  isArchivedSection: boolean;
   activeGroupsTotal: number;
   activeGroupsHasMore: boolean;
+  archivedGroupsTotal: number;
+  archivedGroupsHasMore: boolean;
   loadedActiveGroupIds: string[];
+  loadedArchivedGroupIds: string[];
   currentGroupId: string;
 }): boolean {
-  const { isArchivedSection, activeGroupsTotal, activeGroupsHasMore, loadedActiveGroupIds, currentGroupId } =
-    params;
+  const {
+    activeGroupsTotal,
+    activeGroupsHasMore,
+    archivedGroupsTotal,
+    archivedGroupsHasMore,
+    loadedActiveGroupIds,
+    loadedArchivedGroupIds,
+    currentGroupId,
+  } = params;
 
-  if (isArchivedSection) {
-    return activeGroupsTotal > 0 || activeGroupsHasMore;
-  }
-
-  if (activeGroupsTotal > 1) {
+  if (activeGroupsTotal + archivedGroupsTotal > 1) {
     return true;
   }
 
-  if (activeGroupsHasMore) {
+  if (activeGroupsHasMore || archivedGroupsHasMore) {
     return true;
   }
 
-  return loadedActiveGroupIds.some((id) => id !== currentGroupId);
+  const allLoadedGroupIds = [...loadedActiveGroupIds, ...loadedArchivedGroupIds];
+  return allLoadedGroupIds.some((id) => id !== currentGroupId);
 }

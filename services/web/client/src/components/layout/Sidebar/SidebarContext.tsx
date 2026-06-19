@@ -101,6 +101,7 @@ export default function SidebarContext() {
               onUnarchiveGroup={unarchiveGroup}
               onDeleteGroup={deleteGroup}
               loadedActiveGroupIds={activeGroups.map((group) => group._id)}
+              loadedArchivedGroupIds={archivedGroups.map((group) => group._id)}
               onRefreshGroups={refreshGroups}
             />
 
@@ -165,6 +166,7 @@ export default function SidebarContext() {
                     onUnarchiveGroup={unarchiveGroup}
                     onDeleteGroup={deleteGroup}
                     loadedActiveGroupIds={activeGroups.map((group) => group._id)}
+                    loadedArchivedGroupIds={archivedGroups.map((group) => group._id)}
                     onRefreshGroups={refreshGroups}
                   />
 

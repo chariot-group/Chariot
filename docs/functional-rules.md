@@ -2441,7 +2441,7 @@ Each initiative tracker row carries:
 | Campaign | Edit (rename), Delete |
 
 - **Edit character** MUST navigate to the character sheet with `?mode=edit` (existing CharacterDetailView behavior).
-- **Move character** MUST open a dialog listing other active groups in the current campaign; moving MUST persist via the character `groups` API and refresh sidebar group data.
+- **Move character** MUST open a dialog listing other groups (active and archived) in the current campaign; archived targets MUST be visually distinguishable in the list; moving MUST persist via the character `groups` API and refresh sidebar group data.
 - **Delete** actions MUST open a confirmation dialog before irreversible deletion.
 - Destructive menu entries MUST use destructive styling consistent with existing sidebar patterns.
 

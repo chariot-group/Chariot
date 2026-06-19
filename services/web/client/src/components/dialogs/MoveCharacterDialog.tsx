@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { SearchableSelect } from "@/components/ui/searchable-select";
+import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Group } from "@/types/campaign";
@@ -27,8 +27,44 @@ interface MoveCharacterDialogProps {
   onMoved?: () => void | Promise<void>;
 }
 
-export function filterMoveTargetGroups(groups: Group[], currentGroupId: string): Group[] {
+export type MoveTargetGroup = Group & { isArchived: boolean };
+
+export function filterMoveTargetGroups(groups: MoveTargetGroup[], currentGroupId: string): MoveTargetGroup[] {
   return groups.filter((group) => group._id !== currentGroupId);
+}
+
+export function sortMoveTargetGroups(groups: MoveTargetGroup[]): MoveTargetGroup[] {
+  return [...groups].sort((left, right) => {
+    if (left.isArchived !== right.isArchived) {
+      return left.isArchived ? 1 : -1;
+    }
+
+    return left.label.localeCompare(right.label, undefined, { sensitivity: "base" });
+  });
+}
+
+export async function fetchMoveTargetGroups(campaignId: string): Promise<MoveTargetGroup[]> {
+  const [activeGroups, archivedGroups] = await Promise.all([
+    GroupService.getAllGroupsByCampaign(campaignId, "active"),
+    GroupService.getAllGroupsByCampaign(campaignId, "archived"),
+  ]);
+
+  return sortMoveTargetGroups([
+    ...activeGroups.map((group) => ({ ...group, isArchived: false })),
+    ...archivedGroups.map((group) => ({ ...group, isArchived: true })),
+  ]);
+}
+
+export function buildMoveGroupOptions(
+  groups: MoveTargetGroup[],
+  archivedBadgeLabel: string,
+): SearchableSelectOption[] {
+  return groups.map((group) => ({
+    value: group._id,
+    label: group.label,
+    description: group.isArchived ? archivedBadgeLabel : undefined,
+    inputLabel: group.isArchived ? `${group.label} (${archivedBadgeLabel})` : group.label,
+  }));
 }
 
 export function MoveCharacterDialog({
@@ -41,7 +77,7 @@ export function MoveCharacterDialog({
 }: MoveCharacterDialogProps) {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
-  const [targetGroups, setTargetGroups] = React.useState<Group[]>([]);
+  const [targetGroups, setTargetGroups] = React.useState<MoveTargetGroup[]>([]);
   const [isLoadingGroups, setIsLoadingGroups] = React.useState(false);
   const [selectedGroupId, setSelectedGroupId] = React.useState<string | null>(null);
   const [isMoving, setIsMoving] = React.useState(false);
@@ -61,9 +97,9 @@ export function MoveCharacterDialog({
     const loadTargetGroups = async () => {
       setIsLoadingGroups(true);
       try {
-        const allActiveGroups = await GroupService.getAllGroupsByCampaign(campaignId, "active");
+        const groups = await fetchMoveTargetGroups(campaignId);
         if (mounted) {
-          setTargetGroups(allActiveGroups);
+          setTargetGroups(groups);
         }
       } catch (error) {
         console.error("Error loading target groups for move:", error);
@@ -117,8 +153,8 @@ export function MoveCharacterDialog({
   };
 
   const groupOptions = React.useMemo(
-    () => availableGroups.map((group) => ({ value: group._id, label: group.label })),
-    [availableGroups],
+    () => buildMoveGroupOptions(availableGroups, t("moveCharacterArchivedGroupBadge")),
+    [availableGroups, t],
   );
 
   const moveGroupSelectId = React.useId();

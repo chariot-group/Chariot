@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { filterMoveTargetGroups } from "@/components/dialogs/MoveCharacterDialog";
+import {
+  buildMoveGroupOptions,
+  filterMoveTargetGroups,
+  sortMoveTargetGroups,
+  type MoveTargetGroup,
+} from "@/components/dialogs/MoveCharacterDialog";
 import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
-import type { Group } from "@/types/campaign";
 
-const group = (id: string, label: string): Group =>
+const group = (id: string, label: string, isArchived = false): MoveTargetGroup =>
   ({
     _id: id,
     label,
     characters: [],
-  }) as Group;
+    isArchived,
+  }) as MoveTargetGroup;
 
 describe("filterMoveTargetGroups", () => {
   it("excludes the current group from move targets", () => {
@@ -22,40 +27,73 @@ describe("filterMoveTargetGroups", () => {
   });
 });
 
+describe("sortMoveTargetGroups", () => {
+  it("lists active groups before archived groups", () => {
+    const sorted = sortMoveTargetGroups([
+      group("a2", "Beta", true),
+      group("a1", "Alpha", true),
+      group("g2", "Delta"),
+      group("g1", "Charlie"),
+    ]);
+
+    expect(sorted.map((item) => item._id)).toEqual(["g1", "g2", "a1", "a2"]);
+  });
+});
+
+describe("buildMoveGroupOptions", () => {
+  it("adds an archived badge and input label for archived groups", () => {
+    expect(buildMoveGroupOptions([group("g1", "Active"), group("a1", "Old", true)], "Archivé")).toEqual([
+      { value: "g1", label: "Active", description: undefined, inputLabel: "Active" },
+      {
+        value: "a1",
+        label: "Old",
+        description: "Archivé",
+        inputLabel: "Old (Archivé)",
+      },
+    ]);
+  });
+});
+
 describe("canMoveCharacterToAnotherGroup", () => {
-  it("shows move in active section when more active groups exist beyond pagination", () => {
+  it("shows move when more active groups exist beyond pagination", () => {
     expect(
       canMoveCharacterToAnotherGroup({
-        isArchivedSection: false,
         activeGroupsTotal: 10,
         activeGroupsHasMore: true,
+        archivedGroupsTotal: 0,
+        archivedGroupsHasMore: false,
         loadedActiveGroupIds: ["g1", "g2", "g3"],
+        loadedArchivedGroupIds: [],
         currentGroupId: "g1",
       }),
     ).toBe(true);
   });
 
-  it("hides move in active section when only one active group exists", () => {
+  it("shows move when only archived groups can receive the character", () => {
     expect(
       canMoveCharacterToAnotherGroup({
-        isArchivedSection: false,
         activeGroupsTotal: 1,
         activeGroupsHasMore: false,
+        archivedGroupsTotal: 2,
+        archivedGroupsHasMore: false,
         loadedActiveGroupIds: ["g1"],
+        loadedArchivedGroupIds: ["a1", "a2"],
+        currentGroupId: "g1",
+      }),
+    ).toBe(true);
+  });
+
+  it("hides move when only one group exists in the campaign", () => {
+    expect(
+      canMoveCharacterToAnotherGroup({
+        activeGroupsTotal: 1,
+        activeGroupsHasMore: false,
+        archivedGroupsTotal: 0,
+        archivedGroupsHasMore: false,
+        loadedActiveGroupIds: ["g1"],
+        loadedArchivedGroupIds: [],
         currentGroupId: "g1",
       }),
     ).toBe(false);
-  });
-
-  it("shows move in archived section when at least one active group exists", () => {
-    expect(
-      canMoveCharacterToAnotherGroup({
-        isArchivedSection: true,
-        activeGroupsTotal: 3,
-        activeGroupsHasMore: false,
-        loadedActiveGroupIds: ["g1", "g2", "g3"],
-        currentGroupId: "archived-1",
-      }),
-    ).toBe(true);
   });
 });

@@ -7,7 +7,7 @@ import { Character as GroupCharacter, Group } from "@/types/campaign";
 import Link from "next/link";
 import { useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectActiveGroupsHasMore, selectActiveGroupsTotal } from "@/store/slices/groupSlice";
+import { selectActiveGroupsHasMore, selectActiveGroupsTotal, selectArchivedGroupsHasMore, selectArchivedGroupsTotal } from "@/store/slices/groupSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -31,6 +31,7 @@ interface GroupListProps {
   onUnarchiveGroup: (groupId: string) => Promise<void>;
   onDeleteGroup: (groupId: string) => Promise<void>;
   loadedActiveGroupIds: string[];
+  loadedArchivedGroupIds: string[];
   onRefreshGroups: () => Promise<void>;
 }
 
@@ -43,6 +44,7 @@ export default function GroupList({
   onUnarchiveGroup,
   onDeleteGroup,
   loadedActiveGroupIds,
+  loadedArchivedGroupIds,
   onRefreshGroups,
 }: GroupListProps) {
   const t = useTranslations("sidebar");
@@ -50,6 +52,8 @@ export default function GroupList({
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const activeGroupsTotal = useAppSelector(selectActiveGroupsTotal);
   const activeGroupsHasMore = useAppSelector(selectActiveGroupsHasMore);
+  const archivedGroupsTotal = useAppSelector(selectArchivedGroupsTotal);
+  const archivedGroupsHasMore = useAppSelector(selectArchivedGroupsHasMore);
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
@@ -169,10 +173,12 @@ export default function GroupList({
 
       if (
         canMoveCharacterToAnotherGroup({
-          isArchivedSection,
           activeGroupsTotal,
           activeGroupsHasMore,
+          archivedGroupsTotal,
+          archivedGroupsHasMore,
           loadedActiveGroupIds,
+          loadedArchivedGroupIds,
           currentGroupId: groupId,
         })
       ) {
@@ -202,7 +208,7 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, isArchivedSection, isMobile, loadedActiveGroupIds, router, selectedCampaignId, setOpenMobile, t],
+    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, router, selectedCampaignId, setOpenMobile, t],
   );
 
   if (groups.length === 0) {

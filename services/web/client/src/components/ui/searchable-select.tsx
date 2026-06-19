@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 export type SearchableSelectOption = {
   label: string;
   value: string;
+  description?: React.ReactNode;
+  inputLabel?: string;
 };
 
 interface SearchableSelectProps {
@@ -56,8 +58,8 @@ export function SearchableSelect({
   }, [options, query]);
 
   const syncQueryWithSelection = React.useCallback(() => {
-    setQuery(selectedOption?.label ?? "");
-  }, [selectedOption?.label]);
+    setQuery(selectedOption?.inputLabel ?? selectedOption?.label ?? "");
+  }, [selectedOption?.inputLabel, selectedOption?.label]);
 
   React.useEffect(() => {
     if (!open) {
@@ -86,7 +88,7 @@ export function SearchableSelect({
   const selectOption = (nextValue: string) => {
     onChange(nextValue);
     const option = options.find((item) => item.value === nextValue);
-    setQuery(option?.label ?? "");
+    setQuery(option?.inputLabel ?? option?.label ?? "");
     setOpen(false);
   };
 
@@ -197,10 +199,19 @@ export function SearchableSelect({
                       }
                     }}
                     className={cn(
-                      "w-full cursor-pointer rounded-[12px] px-3 py-2 text-left text-sm transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+                      "flex w-full cursor-pointer items-center justify-between gap-2 rounded-[12px] px-3 py-2 text-left text-sm transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
                       isSelected && "bg-white font-semibold text-black",
                     )}>
                     <span className="truncate">{option.label}</span>
+                    {option.description ? (
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-[8px] px-1.5 py-0.5 text-xs",
+                          isSelected ? "bg-black/10 text-black/70" : "bg-white/10 text-white/60",
+                        )}>
+                        {option.description}
+                      </span>
+                    ) : null}
                   </div>
                 );
               })

@@ -255,5 +255,6 @@ export const selectArchivedGroupsPage = (state: RootState) => state.group.archiv
 export const selectActiveGroupsHasMore = (state: RootState) => state.group.activeHasMore;
 export const selectActiveGroupsTotal = (state: RootState) => state.group.activeTotal;
 export const selectArchivedGroupsHasMore = (state: RootState) => state.group.archivedHasMore;
+export const selectArchivedGroupsTotal = (state: RootState) => state.group.archivedTotal;
 
 export default groupSlice.reducer;
