@@ -5,8 +5,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronRight, UserPlus } from "lucide-react";
 import { Character as GroupCharacter, Group } from "@/types/campaign";
 import Link from "next/link";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
+import { addCharacterToGroup } from "@/store/slices/groupSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -16,8 +17,10 @@ import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/Sideb
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
+import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
+import { showToast } from "@/lib/toast";
 import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 
 interface GroupListProps {
@@ -45,6 +48,7 @@ export default function GroupList({
 }: GroupListProps) {
   const t = useTranslations("sidebar");
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -59,6 +63,14 @@ export default function GroupList({
     groupId: string;
   } | null>(null);
   const [characterToMove, setCharacterToMove] = React.useState<{
+    character: GroupCharacter;
+    groupId: string;
+  } | null>(null);
+  const [characterToDuplicate, setCharacterToDuplicate] = React.useState<{
+    character: GroupCharacter;
+    groupId: string;
+  } | null>(null);
+  const [pendingMoveAfterDuplicate, setPendingMoveAfterDuplicate] = React.useState<{
     character: GroupCharacter;
     groupId: string;
   } | null>(null);
@@ -119,6 +131,64 @@ export default function GroupList({
     selectedCharacterId,
   ]);
 
+  const handleDuplicateCharacter = React.useCallback(
+    async (
+      source: GroupCharacter,
+      groupId: string,
+      name: string,
+      andMove = false,
+    ) => {
+      if (!selectedCampaignId) return;
+      try {
+        const full = await CharacterService.getCharacterById(source._id);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _id, createdBy, deletedAt, groups, ...rest } = full;
+        const isNpc = !("progression" in full);
+        const type = isNpc ? "npcs" : "players";
+        const payload = {
+          ...rest,
+          firstname: name,
+          lastname: "",
+          groups: [groupId],
+        };
+        const created = await CharacterService.createCharacter(type, payload as typeof rest);
+
+        // Optimistic Redux update — does not reset openGroupId or trigger a full sidebar reload
+        dispatch(
+          addCharacterToGroup({
+            groupId,
+            character: {
+              _id: created._id,
+              firstname: created.firstname,
+              lastname: created.lastname,
+              surname: created.surname,
+            },
+          }),
+        );
+
+        showToast(t("duplicateCharacterSuccess"), "success");
+
+        if (andMove) {
+          const createdAsGroupChar: GroupCharacter = {
+            _id: created._id,
+            firstname: created.firstname,
+            lastname: created.lastname,
+            surname: created.surname,
+            userId: source.userId,
+          };
+          setPendingMoveAfterDuplicate({ character: createdAsGroupChar, groupId });
+        } else {
+          router.push(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${created._id}`);
+          if (isMobile) setOpenMobile(false);
+        }
+      } catch {
+        showToast(t("duplicateCharacterError"), "error");
+        throw new Error("duplicate failed");
+      }
+    },
+    [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
+  );
+
   const buildGroupActions = React.useCallback(
     (group: Group): SidebarActionItem[] => {
       if (actionsDisabled) return [];
@@ -162,6 +232,12 @@ export default function GroupList({
       if (actionsDisabled || !selectedCampaignId) return [];
 
       const items: SidebarActionItem[] = [];
+
+      items.push({
+        id: "duplicate",
+        label: t("duplicate"),
+        onSelect: () => setCharacterToDuplicate({ character, groupId }),
+      });
 
       if (activeGroupsForMove.some((group) => group._id !== groupId)) {
         items.push({
@@ -342,6 +418,31 @@ export default function GroupList({
           if (!open) setCharacterToMove(null);
         }}
         onMoved={onRefreshGroups}
+      />
+
+      <MoveCharacterDialog
+        character={pendingMoveAfterDuplicate?.character ?? null}
+        currentGroupId={pendingMoveAfterDuplicate?.groupId ?? ""}
+        targetGroups={activeGroupsForMove}
+        open={!!pendingMoveAfterDuplicate}
+        onOpenChange={(open) => {
+          if (!open) setPendingMoveAfterDuplicate(null);
+        }}
+        onMoved={onRefreshGroups}
+      />
+
+      <DuplicateCharacterDialog
+        character={characterToDuplicate?.character ?? null}
+        open={!!characterToDuplicate}
+        onOpenChange={(open) => {
+          if (!open) setCharacterToDuplicate(null);
+        }}
+        onDuplicate={(name) =>
+          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, false)
+        }
+        onDuplicateAndMove={(name) =>
+          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, true)
+        }
       />
     </div>
   );

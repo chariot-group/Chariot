@@ -2489,3 +2489,72 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/ui/context-menu.tsx`
 - `services/web/client/src/components/character/CharacterDetailView.tsx` (`mode=edit`)
 - `docs/design.md` (visual baseline)
+
+---
+
+## FR-028 : Duplication de personnage
+
+**Règle** : Un utilisateur peut dupliquer un personnage (joueur ou PNJ) depuis le menu contextuel (clic droit bureau / bouton `…` mobile). La duplication ouvre une modale de confirmation avec un nom proposé et éditable, et deux variantes de création.
+
+**Champ d'application** :
+- **Espace joueur** (`CharactersWithoutGroupList`) : personnages joueurs sans groupe. La copie est créée sans groupe, appartenant au même utilisateur.
+- **Espace MJ** (`GroupList`) : personnages dans un groupe de campagne. La copie est créée dans le même groupe par défaut (bouton « Créer ») ou dans un groupe au choix (bouton « Créer dans un autre groupe »).
+
+**Modale de confirmation (`DuplicateCharacterDialog`)** :
+
+- S'ouvre lorsque l'utilisateur sélectionne l'action « Dupliquer » dans le menu contextuel ou le menu overflow.
+- Affiche un champ de texte prérempli avec le nom proposé : `"<firstname> <lastname> 2"` (ou `"<firstname> 2"` si pas de nom de famille, ou simplement `"2"` si les deux sont vides). Le suffixe est incrémenté (`2`, `3`…) si le nom proposé correspond déjà à un personnage existant dans la liste visible (vérification locale uniquement).
+- Le champ est éditable et autofocusé à l'ouverture.
+- La validation par **Entrée** déclenche le bouton « Créer » (action primaire), sauf si le champ de texte est vide.
+- **Escape** ferme la modale sans création.
+
+**Deux boutons de confirmation** :
+
+1. **Créer** (action primaire) : crée le personnage dans le groupe courant (espace MJ) ou sans groupe (espace joueur), puis ferme la modale. Redirige vers la fiche du personnage créé.
+2. **Créer dans un autre groupe** (espace MJ uniquement) : crée le personnage dans le même groupe, puis ouvre immédiatement la `MoveCharacterDialog` sur le personnage nouvellement créé pour le déplacer. N'est pas disponible dans l'espace joueur.
+
+**Logique de duplication (côté client)** :
+
+- Aucun nouvel endpoint backend n'est requis.
+- Le frontend copie l'ensemble des champs du personnage source, à l'exclusion de : `_id`, `createdAt`, `updatedAt`, `deletedAt`.
+- Le `firstname` du personnage copié est remplacé par la valeur saisie dans le champ de la modale ; `lastname` et `surname` sont préservés tels quels sauf si le nom proposé est une chaîne complète (auquel cas `lastname` est effacé).
+- Pour un personnage joueur dupliqué dans l'espace MJ : le tableau `groups` conserve l'identifiant du groupe courant.
+- Pour un personnage joueur dupliqué dans l'espace joueur : le tableau `groups` est `[]`.
+- Appel : `CharacterService.createCharacter(type, payload)`.
+- Toast de succès affichée après création (`characterActions.duplicate.success`).
+- Toast d'erreur affichée en cas d'échec API (`characterActions.duplicate.error`).
+
+**Accessibilité (FR-019)** :
+
+- L'option « Dupliquer » est accessible au clavier dans le menu contextuel et le menu overflow.
+- Le champ de nom dans la modale est associé à un `<label>` visible.
+- Les deux boutons ont un accessible name distinct.
+- Focus visible sur tous les éléments interactifs de la modale.
+- Escape et Enter respectent les conventions de FR-027 (Confirmation dialogs).
+
+**Interdictions** :
+
+- Modifier l'original lors de la duplication.
+- Fermer la modale sans annuler lorsqu'une opération de création est en cours.
+- Afficher « Créer dans un autre groupe » dans l'espace joueur (sans groupe).
+- Lancer la création avec un nom vide.
+- Nécessiter un nouvel endpoint backend.
+
+**Tests** :
+
+- Nominal : dupliquer un joueur sans groupe → nouveau personnage sans groupe, nom `"<nom> 2"`, toast succès, redirection vers la fiche.
+- Nominal : dupliquer un PNJ dans un groupe → même groupe, nom `"<nom> 2"`, toast succès.
+- Edge : nom vide dans la modale → bouton « Créer » désactivé.
+- Edge : Escape ferme la modale sans déclencher de création.
+- Edge : Enter dans le champ déclenche « Créer » (action primaire).
+- « Créer dans un autre groupe » → crée le personnage puis ouvre `MoveCharacterDialog`.
+- Failure : échec API → toast erreur, modale reste ouverte.
+- Accessibilité : champ autofocusé, label visible, focus visible sur boutons.
+
+**Références** :
+
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx` (à créer)
+- `services/web/client/src/services/CharacterService.ts`
+- `services/web/client/src/components/dialogs/MoveCharacterDialog.tsx`
