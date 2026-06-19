@@ -1,6 +1,7 @@
 "use client";
 
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
+import { removeCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { useState } from "react";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -27,7 +28,7 @@ import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sideb
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");
   const tClass = useTranslations("classes");
-  const { characters, loading, loadingMore, hasMore, loadMoreCharacters, refetch, error } = usePlayersWithoutGroup(10, {
+  const { characters, loading, loadingMore, hasMore, loadMoreCharacters, error } = usePlayersWithoutGroup(10, {
     autoFetch: false,
   });
   const router = useRouter();
@@ -62,7 +63,7 @@ export default function CharactersWithoutGroupList() {
       setIsDeleting(true);
       await CharacterService.deleteCharacter(deletingCharacterId);
       setCharacterPendingDelete(null);
-      await refetch();
+      dispatch(removeCharacterWithoutGroup(deletingCharacterId));
 
       if (selectedCharacterId === deletingCharacterId) {
         if (nextCharacter?._id) {
