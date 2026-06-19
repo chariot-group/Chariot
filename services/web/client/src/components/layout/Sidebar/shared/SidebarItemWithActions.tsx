@@ -83,36 +83,38 @@ export function SidebarItemWithActions({
   if (showOverflowMenu) {
     return (
       <div className={cn("flex min-w-0 items-stretch", className)}>
-        <div className="min-w-0 flex-1">{children}</div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label={contextMenuLabel}
-              onClick={(event) => event.stopPropagation()}
-              onPointerDown={(event) => event.stopPropagation()}
-              className={cn(
-                "flex shrink-0 cursor-pointer items-center justify-center self-center rounded-[8px] p-1.5 transition-all duration-100",
-                "focus-visible:outline-none focus-visible:ring-1",
-                overflowTriggerClassName ?? defaultOverflowTriggerClassName,
-              )}>
-              <MoreVertical
-                className="h-4 w-4"
-                aria-hidden="true"
+        <div className="flex min-w-0 flex-1 items-center">
+          {children}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label={contextMenuLabel}
+                onClick={(event) => event.stopPropagation()}
+                onPointerDown={(event) => event.stopPropagation()}
+                className={cn(
+                  "mr-0.5 flex shrink-0 cursor-pointer items-center justify-center self-center rounded-[8px] p-1.5 transition-all duration-100",
+                  "focus-visible:outline-none focus-visible:ring-1",
+                  overflowTriggerClassName ?? defaultOverflowTriggerClassName,
+                )}>
+                <MoreVertical
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={4}
+              className={menuContentClassName ?? defaultMenuContentClassName}
+              aria-label={contextMenuLabel}>
+              <SidebarActionMenuItems
+                actions={actions}
+                variant="dropdown"
               />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            sideOffset={4}
-            className={menuContentClassName ?? defaultMenuContentClassName}
-            aria-label={contextMenuLabel}>
-            <SidebarActionMenuItems
-              actions={actions}
-              variant="dropdown"
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     );
   }

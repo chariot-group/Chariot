@@ -282,6 +282,10 @@ export default function GroupList({
                       actions={characterActions}
                       disabled={actionsDisabled}
                       contextMenuLabel={t("characterActions")}
+                      className={cn(
+                        "rounded-[12px] transition-all duration-100",
+                        isSelected ? "bg-white text-black" : "hover:bg-white/10",
+                      )}
                       overflowTriggerClassName={
                         isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
                       }>
@@ -291,8 +295,8 @@ export default function GroupList({
                         aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
                         title={`${character.firstname} ${character.lastname}`}
                         className={cn(
-                          "relative flex w-full cursor-pointer items-center gap-2 rounded-[12px] py-2 px-3 text-sm transition-all duration-100 focus-visible:ring-1 focus-visible:ring-white/50",
-                          isSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10",
+                          "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                          isSelected && "pl-4 font-bold text-black",
                         )}
                         onClick={() => {
                           if (isMobile) setOpenMobile(false);

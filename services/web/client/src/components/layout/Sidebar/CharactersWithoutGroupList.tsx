@@ -153,6 +153,10 @@ export default function CharactersWithoutGroupList() {
               actions={characterActions}
               disabled={actionsDisabled}
               contextMenuLabel={t("characterActions")}
+              className={cn(
+                "rounded-[12px] transition-all duration-150",
+                isSelected ? "bg-white text-black" : "hover:bg-white/10",
+              )}
               overflowTriggerClassName={
                 isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
               }>
@@ -162,10 +166,8 @@ export default function CharactersWithoutGroupList() {
                 aria-label={`${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
                 onClick={() => dispatch(clearSelectedCampaign())}
                 className={cn(
-                  "relative w-full shrink-0 cursor-pointer py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center gap-1 focus-visible:ring-1 focus-visible:ring-white/50",
-                  isSelected
-                    ? "bg-white pl-4 font-bold text-black"
-                    : "hover:bg-white/10",
+                  "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                  isSelected && "pl-4 font-bold text-black",
                 )}>
                 {isSelected && (
                   <span
