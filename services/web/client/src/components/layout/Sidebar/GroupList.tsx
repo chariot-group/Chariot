@@ -228,12 +228,32 @@ export default function GroupList({
             key={group._id}
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
-            <div className="flex w-full items-center gap-1 rounded-[12px] bg-card py-2 px-1.5 pl-3">
+            <div className="flex w-full items-center rounded-[12px] bg-card py-2 px-1.5 pl-3">
               <SidebarItemWithActions
                 actions={groupActions}
                 disabled={actionsDisabled}
                 contextMenuLabel={t("groupActions")}
-                className="min-w-0 flex-1">
+                className="min-w-0 flex-1"
+                trailingBeforeOverflow={
+                  !isArchivedSection && selectedCampaignId ? (
+                    <CreateCharacterDialog
+                      campaignId={selectedCampaignId}
+                      groupId={group._id}>
+                      <button
+                        type="button"
+                        aria-label={t("createCharacter")}
+                        className={cn(
+                          "flex shrink-0 cursor-pointer items-center justify-center rounded-[8px] p-1.5 text-white/40 transition-all duration-100",
+                          "hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+                        )}>
+                        <UserPlus
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </CreateCharacterDialog>
+                  ) : undefined
+                }>
                 <CollapsibleTrigger
                   aria-expanded={isOpen}
                   aria-controls={`group-${group._id}-content`}
@@ -247,25 +267,6 @@ export default function GroupList({
                   </span>
                 </CollapsibleTrigger>
               </SidebarItemWithActions>
-
-              {!isArchivedSection && selectedCampaignId && (
-                <CreateCharacterDialog
-                  campaignId={selectedCampaignId}
-                  groupId={group._id}>
-                  <button
-                    type="button"
-                    aria-label={t("createCharacter")}
-                    className={cn(
-                      "flex shrink-0 cursor-pointer items-center justify-center rounded-[8px] p-1.5 text-white/40 transition-all duration-100",
-                      "hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
-                    )}>
-                    <UserPlus
-                      className="h-4 w-4"
-                      aria-hidden="true"
-                    />
-                  </button>
-                </CreateCharacterDialog>
-              )}
             </div>
 
             <CollapsibleContent
