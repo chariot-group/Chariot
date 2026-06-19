@@ -55,4 +55,27 @@ export class UserInfoDto {
   @ValidateNested({ each: true })
   @Type(() => HistoryDto)
   history: HistoryDto[];
+
+  @ApiProperty({
+    description: 'User preferred UI locale',
+    example: 'fr',
+    enum: ['fr', 'en', 'es'],
+    required: false,
+  })
+  preferredLocale?: string;
+
+  @ApiProperty({
+    description: 'User preferred measurement unit',
+    example: 'metric',
+    enum: ['metric', 'imperial'],
+    required: false,
+  })
+  preferredMeasurementUnit?: string;
+
+  @ApiProperty({
+    description: 'Show both metric and imperial units simultaneously',
+    example: false,
+    required: false,
+  })
+  showBothUnits?: boolean;
 }

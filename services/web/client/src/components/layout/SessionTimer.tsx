@@ -42,12 +42,13 @@ export default function SessionTimer() {
 
   return (
     <Tooltip>
-      <TooltipTrigger className="absolute -left-25 flex items-center gap-1.5 w-full">
+      <TooltipTrigger className="absolute right-full mr-1.5 flex items-center gap-1.5">
         <Link
           href={`/campaigns/${session.campaignId}/session/${session.code}`}
           className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
           <Timer className="w-4 h-4 shrink-0" />
-          <span>{formatDuration(remaining)}</span>
+          <span className="sm:hidden">{formatDuration(remaining).slice(0, 5)}</span>
+          <span className="hidden sm:inline">{formatDuration(remaining)}</span>
         </Link>
       </TooltipTrigger>
       <TooltipContent className="w-100">{t("tooltip")}</TooltipContent>

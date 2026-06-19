@@ -4,10 +4,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { LogOut, User } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useKeycloak } from "@/providers/KeycloakProvider";
+import Token from "@public/assets/token.svg";
 
 export default function Profile() {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,6 +78,24 @@ export default function Profile() {
         role="menu"
         aria-label={t("profile")}
         className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-12 sm:top-14 right-0 text-popover-foreground rounded-[15px] border shadow-lg z-50">
+        <div
+          className="px-2 py-1.5 text-sm whitespace-nowrap border-b border-border"
+          role="status"
+          aria-live="polite"
+          aria-label={t("wheelsBalanceAria", { balance: user?.balance ?? 0 })}>
+          <span
+            className="flex items-center gap-1.5 font-semibold text-sm sm:text-base"
+            aria-hidden="true">
+            {user?.balance ?? 0}
+            <Image
+              src={Token}
+              alt=""
+              aria-hidden="true"
+              className="w-4 h-4 sm:w-5 sm:h-5"
+            />
+            <span className="font-normal text-muted-foreground">{t("wheelsUnit")}</span>
+          </span>
+        </div>
         <div className="px-2 py-1.5 text-sm focus-visible:border hover:font-bold whitespace-nowrap">
           <Link
             className="flex items-center gap-2 rounded-[15px]"

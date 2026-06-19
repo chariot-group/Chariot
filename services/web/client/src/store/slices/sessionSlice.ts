@@ -101,7 +101,7 @@ export function normalizeInitiativeTrackerConditionEntry(
 
 export type InitiativeTrackerRowKind = 'player' | 'npc';
 
-/** FR-021 / FR-030 — champs visibles pour les joueurs sur une ligne du tracker. */
+/** FR-021 / FR-033 — champs visibles pour les joueurs sur une ligne du tracker. */
 export interface InitiativeTrackerPlayerFieldVisibility {
     initiative: boolean;
     name: boolean;
