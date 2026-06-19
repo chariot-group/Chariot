@@ -751,7 +751,8 @@ export default function CodexSpellSearchDialog({
           </div>
         </div>
 
-        <DialogFooter className="shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4">
+        <DialogFooter
+          className={`shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
           {isMultiSelectionMode ? (
             <Collapsible
               open={selectionDetailsOpen}
