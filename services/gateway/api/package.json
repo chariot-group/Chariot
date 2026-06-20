@@ -1,6 +1,6 @@
 {
   "name": "chariot-gateway",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "Chariot API Gateway - Centralized routing, authentication, and rate limiting",
   "author": "Chariot Team",
   "private": true,
@@ -74,7 +74,12 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": ["ts-jest", { "tsconfig": "tsconfig.json" }]
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "tsconfig": "tsconfig.json"
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
