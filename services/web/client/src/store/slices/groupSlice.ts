@@ -203,6 +203,13 @@ const groupSlice = createSlice({
             if (!target) return;
             target.characters = target.characters.filter((c) => c._id !== characterId);
         },
+        addGroupToStore: (state, action: PayloadAction<Group>) => {
+            const group = action.payload;
+            const alreadyExists = state.activeGroups.some((g) => g._id === group._id);
+            if (alreadyExists) return;
+            state.activeGroups = [...state.activeGroups, group];
+            state.activeTotal += 1;
+        },
         upsertCharacterInGroups: (
             state,
             action: PayloadAction<{
@@ -251,6 +258,7 @@ export const {
     addCharacterToGroup,
     removeCharacterFromGroup,
     upsertCharacterInGroups,
+    addGroupToStore,
 } = groupSlice.actions;
 
 export const selectGroupsCampaignId = (state: RootState) => state.group.groupsCampaignId;

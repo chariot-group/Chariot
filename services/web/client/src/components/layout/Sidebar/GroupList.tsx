@@ -7,7 +7,7 @@ import { Character as GroupCharacter, Group } from "@/types/campaign";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { addCharacterToGroup, removeCharacterFromGroup } from "@/store/slices/groupSlice";
+import { addCharacterToGroup, addGroupToStore, removeCharacterFromGroup } from "@/store/slices/groupSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -18,8 +18,10 @@ import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog"
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
+import { DuplicateGroupDialog } from "@/components/dialogs/DuplicateGroupDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
+import GroupService from "@/services/GroupService";
 import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
 import { showToast } from "@/lib/toast";
 import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
@@ -71,6 +73,7 @@ export default function GroupList({
     character: GroupCharacter;
     groupId: string;
   } | null>(null);
+  const [groupToDuplicate, setGroupToDuplicate] = React.useState<Group | null>(null);
   const [pendingMoveAfterDuplicate, setPendingMoveAfterDuplicate] = React.useState<{
     characters: GroupCharacter[];
     groupId: string;
@@ -191,6 +194,68 @@ export default function GroupList({
     [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
   );
 
+  const handleDuplicateGroup = React.useCallback(
+    async (source: Group, label: string, count: number) => {
+      if (!selectedCampaignId) return;
+      try {
+        let firstCreatedGroupId: string | null = null;
+        let firstCharId: string | null = null;
+
+        for (let i = 0; i < count; i++) {
+          const copyLabel = i === 0 ? label : `${label} ${i + 1}`;
+          const newGroup = await GroupService.createGroup(selectedCampaignId, { label: copyLabel });
+
+          const createdCharacters: GroupCharacter[] = [];
+          for (const member of source.characters) {
+            const full = await CharacterService.getCharacterById(member._id);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _id, createdBy, deletedAt, groups, ...rest } = full;
+            const isNpc = !("progression" in full);
+            const type = isNpc ? "npcs" : "players";
+            const created = await CharacterService.createCharacter(type, {
+              ...rest,
+              groups: [newGroup._id],
+            } as typeof rest);
+            createdCharacters.push({
+              _id: created._id,
+              firstname: created.firstname,
+              lastname: created.lastname,
+              surname: created.surname,
+              userId: member.userId,
+            });
+          }
+
+          dispatch(
+            addGroupToStore({
+              ...newGroup,
+              characters: createdCharacters,
+            }),
+          );
+
+          if (i === 0) {
+            firstCreatedGroupId = newGroup._id;
+            firstCharId = createdCharacters[0]?._id ?? null;
+          }
+        }
+
+        showToast(t("duplicateGroupSuccess", { count }), "success");
+
+        if (firstCreatedGroupId) {
+          if (firstCharId) {
+            router.push(
+              `/campaigns/${selectedCampaignId}/groups/${firstCreatedGroupId}/characters/${firstCharId}`,
+            );
+          }
+          if (isMobile) setOpenMobile(false);
+        }
+      } catch {
+        showToast(t("duplicateGroupError"), "error");
+        throw new Error("group duplicate failed");
+      }
+    },
+    [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
+  );
+
   const buildGroupActions = React.useCallback(
     (group: Group): SidebarActionItem[] => {
       if (actionsDisabled) return [];
@@ -202,6 +267,14 @@ export default function GroupList({
           onSelect: () => setGroupToEdit(group),
         },
       ];
+
+      if (!isArchivedSection) {
+        items.push({
+          id: "duplicate",
+          label: t("duplicate"),
+          onSelect: () => setGroupToDuplicate(group),
+        });
+      }
 
       if (isArchivedSection) {
         items.push({
@@ -460,6 +533,15 @@ export default function GroupList({
         onDuplicateAndMove={(name, count) =>
           handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, true)
         }
+      />
+
+      <DuplicateGroupDialog
+        group={groupToDuplicate}
+        open={!!groupToDuplicate}
+        onOpenChange={(open) => {
+          if (!open) setGroupToDuplicate(null);
+        }}
+        onDuplicate={(label, count) => handleDuplicateGroup(groupToDuplicate!, label, count)}
       />
     </div>
   );

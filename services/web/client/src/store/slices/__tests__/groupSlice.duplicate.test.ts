@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import groupReducer, {
   addCharacterToGroup,
+  addGroupToStore,
   clearGroups,
   setOpenGroup,
 } from "@/store/slices/groupSlice";
@@ -58,5 +59,29 @@ describe("FR-028 — groupSlice — duplication optimistic update", () => {
     expect(state.openGroupId).toContain("g1");
     state = groupReducer(state, clearGroups());
     expect(state.openGroupId).toHaveLength(0);
+  });
+});
+
+describe("FR-029 — groupSlice — addGroupToStore", () => {
+  const newGroup = buildGroup({ _id: "g-new", label: "Orcs 2", characters: [{ _id: "c1", firstname: "Orc", lastname: "", surname: "", userId: "" }] });
+
+  it("nominal: inserts a new group into activeGroups and increments activeTotal", () => {
+    const state = groupReducer(undefined, addGroupToStore(newGroup));
+    expect(state.activeGroups).toHaveLength(1);
+    expect(state.activeGroups[0]._id).toBe("g-new");
+    expect(state.activeTotal).toBe(1);
+  });
+
+  it("edge: does not insert a group with duplicate _id", () => {
+    let state = groupReducer(undefined, addGroupToStore(newGroup));
+    state = groupReducer(state, addGroupToStore(newGroup));
+    expect(state.activeGroups).toHaveLength(1);
+    expect(state.activeTotal).toBe(1);
+  });
+
+  it("edge: preserves openGroupId when a new group is added", () => {
+    let state = groupReducer(undefined, setOpenGroup("g1"));
+    state = groupReducer(state, addGroupToStore(newGroup));
+    expect(state.openGroupId).toContain("g1");
   });
 });

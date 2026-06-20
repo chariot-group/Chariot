@@ -2558,3 +2558,66 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx` (à créer)
 - `services/web/client/src/services/CharacterService.ts`
 - `services/web/client/src/components/dialogs/MoveCharacterDialog.tsx`
+
+---
+
+## FR-029 : Duplication de groupe
+
+**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-028 côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
+
+**Périmètre** :
+- Groupes actifs uniquement (`GroupList`, section non-archivée). L'action de duplication n'apparaît pas en section archivée.
+- Indisponible en session active (`actionsDisabled`).
+
+**Modale (`DuplicateGroupDialog`)** :
+- Champ label prérempli avec `"<label du groupe source> 2"`, éditable, autofocusé.
+- Champ count (entier 1–99, défaut 1).
+- Bouton **Créer** (action primaire) : déclenché aussi par **Enter** si label non vide.
+- **Escape** ferme sans création.
+- Bouton désactivé si label vide ou opération en cours.
+
+**Comportement après création** :
+- Les groupes sont créés séquentiellement. Les personnages de chaque groupe sont créés séquentiellement via `CharacterService.createCharacter`.
+- Un seul toast de succès après la fin : `"N groupe(s) dupliqué(s) avec succès."`.
+- Toast d'erreur unique en cas d'échec API.
+- Mise à jour optimiste du store Redux via `addGroupToStore` pour chaque groupe créé.
+- Redirection vers le premier groupe créé (`/{locale}/campaigns/{campaignId}/groups/{groupId}/characters/{firstCharId}` ou, si le groupe source est vide, le nouveau groupe vide ne déclenche pas de redirection par personnage).
+
+**Logique de duplication (côté frontend)** :
+- Aucun nouvel endpoint backend requis.
+- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-028).
+- Créer le groupe via `GroupService.createGroup(campaignId, { label })`.
+- Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
+- Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
+
+**Accessibilité (FR-019)** :
+- L'option « Dupliquer » est accessible au clavier dans le menu contextuel et le menu overflow des groupes.
+- Champ label associé à un `<label>` visible, autofocusé à l'ouverture.
+- Boutons avec accessible names distincts.
+- Focus visible sur tous les éléments interactifs.
+- Escape et Enter respectent les conventions de FR-027.
+
+**Interdictions** :
+- Afficher l'action « Dupliquer » sur les groupes archivés.
+- Afficher l'action « Dupliquer » en session active.
+- Créer avec un label vide.
+- Modifier le groupe source.
+- Nécessiter un nouvel endpoint backend.
+
+**Tests** :
+- Nominal : dupliquer un groupe avec 2 personnages → nouveau groupe avec 2 personnages re-créés, label `"<label> 2"`, toast succès, redirection vers premier personnage du nouveau groupe.
+- Nominal : count = 3 → 3 groupes créés avec labels `"<label> 2"`, `"<label> 3"`, `"<label> 4"`.
+- Edge : groupe source sans personnage → groupe vide créé, toast succès.
+- Edge : label vide → bouton Créer désactivé.
+- Edge : Escape ferme sans création.
+- Edge : Enter déclenche Créer si label non vide.
+- Failure : échec API → toast erreur, modale reste ouverte.
+- `addGroupToStore` insère le groupe dans `activeGroups` sans doublon.
+- L'action « Dupliquer » n'apparaît pas sur les groupes archivés.
+
+**Références** :
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/dialogs/DuplicateGroupDialog.tsx`
+- `services/web/client/src/services/GroupService.ts`
+- `services/web/client/src/services/CharacterService.ts`
+- `services/web/client/src/store/slices/groupSlice.ts`
