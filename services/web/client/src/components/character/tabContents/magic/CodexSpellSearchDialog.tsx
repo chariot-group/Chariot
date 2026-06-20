@@ -44,6 +44,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import {
+  createPortaledFilterOpenTracker,
+  shouldPreventDialogDismissForPortaledFilter,
+} from "@/lib/portaledFilterOpenTracker";
 
 const SPELL_LEVELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 
@@ -219,6 +223,15 @@ export default function CodexSpellSearchDialog({
   const [selectionDetailsOpen, setSelectionDetailsOpen] = useState(false);
   const isLoadingRef = useRef(false);
   const spellPreviewScrollRef = useRef<HTMLDivElement>(null);
+  const portaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+
+  const handlePortaledFilterOpenChange = useCallback((isOpen: boolean) => {
+    portaledFilterOpenTrackerRef.current.notifyOpenChange(isOpen);
+  }, []);
+
+  const shouldPreventDialogOutsideDismiss = useCallback((target: EventTarget | null) => {
+    return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTrackerRef.current, target);
+  }, []);
 
   const ITEMS_PER_PAGE = 20;
 
@@ -328,6 +341,8 @@ export default function CodexSpellSearchDialog({
 
   // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
+    portaledFilterOpenTrackerRef.current.reset();
+
     if (open) {
       setSearchQuery("");
       setSelectedLang(userLocale);
@@ -467,15 +482,33 @@ export default function CodexSpellSearchDialog({
     <Dialog
       open={open}
       onOpenChange={onOpenChange}>
-      <DialogContent className="sm:w-4/5 h-[90vh] flex flex-col p-0">
+      <DialogContent
+        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        onPointerDownOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onFocusOutside={(event) => {
+          if (shouldPreventDialogOutsideDismiss(event.target)) {
+            event.preventDefault();
+          }
+        }}>
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
+        <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
           {/* Partie gauche : Recherche et résultats */}
           <div
-            className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
+            className={`relative z-10 flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
             {/* Barre de recherche et filtres */}
             <div className="flex shrink-0 flex-col gap-2 w-full overflow-visible">
               <div className="relative w-full">
@@ -492,92 +525,102 @@ export default function CodexSpellSearchDialog({
               <div className="flex w-full min-w-0 flex-col gap-2 overflow-visible">
                 <div className="flex w-full min-w-0 gap-2">
                   {/* Filtre de langue */}
-                  <Select
-                    value={selectedLang ?? "all"}
-                    onValueChange={(value) => {
-                      if (value === "all") {
-                        setSelectedLang(null);
-                      } else if (value === "fr" || value === "en" || value === "es") {
-                        setSelectedLang(value);
-                      }
-                    }}>
-                    <SelectTrigger className="min-w-0 flex-1 focus-visible:ring-inset">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
-                      <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
-                      <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
-                      <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="relative min-w-0 flex-1">
+                    <Select
+                      value={selectedLang ?? "all"}
+                      onOpenChange={handlePortaledFilterOpenChange}
+                      onValueChange={(value) => {
+                        if (value === "all") {
+                          setSelectedLang(null);
+                        } else if (value === "fr" || value === "en" || value === "es") {
+                          setSelectedLang(value);
+                        }
+                      }}>
+                      <SelectTrigger className="w-full min-w-0 flex-1 focus-visible:ring-inset">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
+                        <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
+                        <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
+                        <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   {/* Filtre par niveau de sort */}
-                  <Select
-                    value={selectedLevel === null ? "all" : String(selectedLevel)}
-                    onValueChange={(value) => {
-                      if (value === "all") {
-                        setSelectedLevel(null);
-                        return;
-                      }
-                      const level = Number(value);
-                      if (Number.isInteger(level) && level >= 0 && level <= 9) {
-                        setSelectedLevel(level);
-                      }
-                    }}>
-                    <SelectTrigger
-                      className="min-w-0 flex-1 focus-visible:ring-inset"
-                      aria-label={tDialog("levelFilter.ariaLabel")}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{tDialog("levelFilter.all")}</SelectItem>
-                      {SPELL_LEVELS.map((level) => (
-                        <SelectItem
-                          key={level}
-                          value={String(level)}>
-                          {level === 0 ? tMagic("cantrips") : tMagic("spellLevelShort", { level })}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="relative min-w-0 flex-1">
+                    <Select
+                      value={selectedLevel === null ? "all" : String(selectedLevel)}
+                      onOpenChange={handlePortaledFilterOpenChange}
+                      onValueChange={(value) => {
+                        if (value === "all") {
+                          setSelectedLevel(null);
+                          return;
+                        }
+                        const level = Number(value);
+                        if (Number.isInteger(level) && level >= 0 && level <= 9) {
+                          setSelectedLevel(level);
+                        }
+                      }}>
+                      <SelectTrigger
+                        className="w-full min-w-0 flex-1 focus-visible:ring-inset"
+                        aria-label={tDialog("levelFilter.ariaLabel")}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{tDialog("levelFilter.all")}</SelectItem>
+                        {SPELL_LEVELS.map((level) => (
+                          <SelectItem
+                            key={level}
+                            value={String(level)}>
+                            {level === 0 ? tMagic("cantrips") : tMagic("spellLevelShort", { level })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 {/* Filtre par classe(s) */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    type="button"
-                    aria-label={tDialog("classFilter.ariaLabel")}
-                    className={cn(
-                      "flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-[15px] bg-gray-middle-light px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50",
-                      selectedClasses.length === 0 && "text-muted-foreground",
-                    )}>
-                    <span className="min-w-0 truncate text-left">{classFilterLabel}</span>
-                    <ChevronDown
-                      className="size-4 shrink-0 opacity-50"
-                      aria-hidden="true"
-                    />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="start"
-                    className="max-h-60 min-w-48 w-(--radix-dropdown-menu-trigger-width) overflow-hidden p-0">
-                    <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-                      <DropdownMenuItem
-                        className="font-medium"
-                        onSelect={() => setSelectedClasses([])}>
-                        {tDialog("classFilter.all")}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      {SPELL_CLASSES.map((spellClass) => (
-                        <DropdownMenuCheckboxItem
-                          key={spellClass}
-                          checked={selectedClasses.includes(spellClass)}
-                          onCheckedChange={() => toggleClassFilter(spellClass)}
-                          onSelect={(event) => event.preventDefault()}>
-                          {tClasses(spellClassTranslationKey(spellClass))}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="relative w-full">
+                  <DropdownMenu
+                    modal={false}
+                    onOpenChange={handlePortaledFilterOpenChange}>
+                    <DropdownMenuTrigger
+                      type="button"
+                      aria-label={tDialog("classFilter.ariaLabel")}
+                      className={cn(
+                        "flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-[15px] bg-gray-middle-light px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50",
+                        selectedClasses.length === 0 && "text-muted-foreground",
+                      )}>
+                      <span className="min-w-0 truncate text-left">{classFilterLabel}</span>
+                      <ChevronDown
+                        className="size-4 shrink-0 opacity-50"
+                        aria-hidden="true"
+                      />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      className="max-h-60 min-w-48 w-full overflow-hidden p-0">
+                      <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                        <DropdownMenuItem
+                          className="font-medium"
+                          onSelect={() => setSelectedClasses([])}>
+                          {tDialog("classFilter.all")}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {SPELL_CLASSES.map((spellClass) => (
+                          <DropdownMenuCheckboxItem
+                            key={spellClass}
+                            checked={selectedClasses.includes(spellClass)}
+                            onCheckedChange={() => toggleClassFilter(spellClass)}
+                            onSelect={(event) => event.preventDefault()}>
+                            {tClasses(spellClassTranslationKey(spellClass))}
+                          </DropdownMenuCheckboxItem>
+                        ))}
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             </div>
 
