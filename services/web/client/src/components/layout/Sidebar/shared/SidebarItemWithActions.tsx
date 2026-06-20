@@ -141,13 +141,15 @@ export function SidebarItemWithActions({
     return (
       <div className={cn("flex min-w-0 items-center gap-1", className)}>
         <div className="min-w-0 flex-1">{children}</div>
-        {trailingBeforeOverflow}
-        <SidebarOverflowDropdown
-          actions={actions}
-          contextMenuLabel={contextMenuLabel}
-          overflowTriggerClassName={overflowTriggerClassName}
-          menuContentClassName={menuContentClassName}
-        />
+        <div className="flex items-center">
+          {trailingBeforeOverflow}
+          <SidebarOverflowDropdown
+            actions={actions}
+            contextMenuLabel={contextMenuLabel}
+            overflowTriggerClassName={overflowTriggerClassName}
+            menuContentClassName={menuContentClassName}
+          />
+        </div>
       </div>
     );
   }
