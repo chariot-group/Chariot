@@ -2901,3 +2901,78 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/GroupService.ts`
 - `services/web/client/src/services/CharacterService.ts`
 - `services/web/client/src/store/slices/groupSlice.ts`
+
+---
+
+## FR-027 : Liens rapides configurables dans la sidebar
+
+**Règle** : Le MJ et le joueur peuvent ajouter, consulter et supprimer des liens externes (liens rapides) dans leur sidebar respective. Chaque lien est rattaché soit à une campagne (visible dans l'espace MJ sous la campagne concernée), soit à aucune campagne (visible dans l'espace joueur). Les liens sont persistés côté backend et isolés par utilisateur.
+
+### Structure d'un lien rapide
+
+- `icon` : identifiant d'une icône parmi une liste prédéfinie côté frontend (string, non vide)
+- `url` : URL externe valide (string, commence par `http://` ou `https://`)
+- `label` : libellé visible (string, non vide, max 60 caractères)
+- `campaignId` : identifiant MongoDB de la campagne associée, ou `null` pour l'espace joueur
+- `createdBy` : `keycloakId` de l'utilisateur propriétaire (renseigné côté backend depuis le JWT)
+
+### Backend (Adventure API)
+
+- Nouvelle ressource `quick-link` dans `services/adventure/api/src/resources/quick-link/`
+- Endpoints :
+  - `POST /quick-links` : créer un lien (body : `icon`, `url`, `label`, `campaignId?`)
+  - `GET /quick-links` : lister les liens de l'utilisateur authentifié (filtre optionnel : `?campaignId=<id>` ou `?scope=player`)
+  - `PATCH /quick-links/:id` : modifier `icon`, `url` et/ou `label` d'un lien existant (body partiel) ; `campaignId` n'est pas modifiable après création
+  - `DELETE /quick-links/:id` : supprimer un lien (le lien doit appartenir à l'utilisateur authentifié)
+- `createdBy` est toujours issu de `request.user.keycloakId`, jamais du body
+- Validation :
+  - `url` doit être une URL valide (commence par `http://` ou `https://`)
+  - `label` requis, non vide, max 60 caractères
+  - `icon` requis, valeur parmi la liste prédéfinie acceptée par le backend
+  - `campaignId` optionnel ; si fourni, doit être un ObjectId MongoDB valide
+- Un utilisateur ne peut pas modifier ou supprimer les liens d'un autre utilisateur (403 si `createdBy` ne correspond pas)
+
+### Frontend (Web Client)
+
+- **Espace joueur** (`contextMode !== "gm"`) : affiche la section "Liens rapides" sous la liste des personnages, avec les liens dont `campaignId === null`
+- **Espace MJ** (`contextMode === "gm"`) : affiche la section "Liens rapides" sous chaque campagne dans la sidebar, avec les liens dont `campaignId === campaign._id`
+- **Sélection d'icône** : liste prédéfinie d'icônes Lucide présentée sous forme de grille dans le dialog de création ; l'utilisateur ne saisit pas de nom d'icône
+- **Icônes prédéfinies** (liste non exhaustive, à affiner) : `Link`, `BookOpen`, `Map`, `Dice5`, `Scroll`, `Music`, `Globe`, `Youtube`, `Twitch`, `FileText`, `Image`, `Video`
+- **Ajout** : bouton "+" ou "Ajouter un lien" dans la section, ouvre un dialog avec les champs label, url, et sélection d'icône
+- **Modification** : action contextuelle "Modifier" (via `SidebarItemWithActions`) sur chaque lien, ouvre le dialog pré-rempli avec les valeurs existantes ; le bouton de validation affiche "Modifier" en mode édition
+- **Suppression** : action contextuelle (via `SidebarItemWithActions`) sur chaque lien
+- **Clic sur un lien** : ouvre l'URL dans un nouvel onglet (`target="_blank"`, `rel="noopener noreferrer"`)
+- Les liens sont chargés via un hook dédié (`useQuickLinks`) qui appelle le backend
+- Le state local est géré dans le hook (pas de Redux slice dédié pour les liens rapides)
+
+### Accessibilité
+
+- Chaque lien externe possède un `aria-label` mentionnant qu'il s'ouvre dans un nouvel onglet
+- La grille de sélection d'icônes est navigable au clavier (focus visible, activation par Enter/Space)
+- Le bouton de suppression a un `aria-label` explicite
+
+### Interdictions
+
+- Accepter `createdBy` depuis le body de la requête
+- Afficher les liens d'un autre utilisateur
+- Permettre une URL sans protocole `http(s)`
+- Laisser l'utilisateur saisir un nom d'icône Lucide en texte libre
+- Ouvrir les liens dans le même onglet
+
+### Tests
+
+- **Nominal** : créer un lien avec `campaignId` → visible dans l'espace MJ sous la bonne campagne
+- **Nominal** : créer un lien sans `campaignId` → visible dans l'espace joueur
+- **Nominal** : modifier un lien → mises à jour visibles immédiatement dans la sidebar
+- **Nominal** : supprimer un lien → disparaît de la sidebar
+- **Edge** : URL sans `https://` → rejetée côté backend (400) et bloquée côté frontend (validation)
+- **Edge** : label vide → bouton Créer désactivé côté frontend, rejeté côté backend (400)
+- **Edge** : tentative de suppression d'un lien appartenant à un autre utilisateur → 403
+- **Failure** : erreur réseau à la création → toast erreur, dialog reste ouvert
+
+**Références** :
+- `services/adventure/api/src/resources/quick-link/` (à créer)
+- `services/web/client/src/services/QuickLinkService.ts` (à créer)
+- `services/web/client/src/hooks/useQuickLinks.ts` (à créer)
+- `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx` (à créer)
+- `services/web/client/src/components/dialogs/AddQuickLinkDialog.tsx` (à créer)

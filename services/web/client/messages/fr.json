@@ -120,7 +120,32 @@
     "npcCodexCharacter": "PNJ depuis Codex",
     "gmSpaceAbbr": "MJ",
     "playerSpaceShort": "Joueur",
-    "noCampaigns": "Aucune campagne"
+    "noCampaigns": "Aucune campagne",
+    "quickLinks": {
+      "title": "Liens rapides",
+      "addLinkAriaLabel": "Ajouter un lien rapide",
+      "addLinkTitle": "Ajouter un lien rapide",
+      "addLinkDescription": "Choisissez une icône, un titre et une URL.",
+      "iconLabel": "Icône",
+      "labelField": "Titre",
+      "labelPlaceholder": "Ex : Règles D&D",
+      "urlField": "URL",
+      "urlHint": "L'URL doit commencer par http:// ou https://",
+      "opensInNewTab": "s'ouvre dans un nouvel onglet",
+      "deleteLinkAriaLabel": "Supprimer le lien {label}",
+      "deleteLinkDialogTitle": "Supprimer le lien",
+      "deleteLinkDialogDescription": "Êtes-vous sûr de vouloir supprimer ce lien ? Cette action est irréversible.",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "addError": "Échec de l'ajout du lien.",
+      "deleteError": "Échec de la suppression du lien.",
+      "linkActions": "Actions sur le lien {label}",
+      "edit": "Modifier",
+      "editLinkTitle": "Modifier le lien rapide",
+      "editLinkDescription": "Modifiez l'icône, le titre ou l'URL.",
+      "editLinkSave": "Modifier",
+      "editError": "Échec de la modification du lien."
+    }
   },
   "initTracker": {
     "noCharacters": "Aucun personnage",
