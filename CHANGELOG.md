@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.7.1] - 20-06-2026
+
+### Fixed
+- Fixed Codex spell search dialog closing when dismissing the class, language, or level filter: portaled Radix menus now render inside the dialog layer and outside-dismiss is suppressed while a filter is open (production race condition)
+
 ## [2.7.0] - 20-06-2026
 
 ### Added
