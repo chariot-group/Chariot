@@ -2136,7 +2136,87 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-029: Profile Language Preference
+## FR-029: GM Guest Character in Session Participants Group
+
+**Rule**: During an active launched session, the Game Master MUST be able to temporarily promote one of their campaign characters to the session participants group. This association is session-scoped only: it is automatically revoked when the session ends, and can be revoked manually at any time.
+
+**Scope**:
+
+- Applies only when `sessionStatus === "launched"` and the user is the GM.
+- Works with any character belonging to any of the GM's campaign groups (active or archived groups visible in the sidebar).
+- Complements FR-018 (mid-combat add), FR-021 (player tracker visibility), and FR-026 (WebSocket lifecycle) without overriding their rules.
+
+**Entry Point**:
+
+- The GM triggers the action from the character's context menu (right-click on desktop, "…" menu on mobile) in the sidebar GroupList.
+- When a session is launched, the character context menu MUST expose:
+  - **🎭 Rejoindre la session** — when the character is not yet a guest in the session participants group.
+  - **🎭 Quitter la session** — when the character is already a guest (to remove it).
+- Normal character actions (edit, move, delete, duplicate) MUST be hidden while a session is launched (existing behavior unchanged).
+
+**State Management**:
+
+- Redux slice `session` MUST hold `gmGuestCharacterIds: string[]` listing character IDs currently promoted.
+- `addGmGuestCharacterToSession(characterId)` adds the ID to the list.
+- `removeGmGuestCharacterFromSession(characterId)` removes the ID from the list.
+- `clearCurrentSession` MUST reset `gmGuestCharacterIds` to `[]`.
+- `gmGuestCharacterIds` is persisted in Redux Persist as part of the `session` slice.
+
+**Sidebar Section (GmSessionPlayersSidebarSection)**:
+
+- GM guest characters MUST appear in the "Joueurs (session)" sidebar section, below connected players.
+- Each guest entry MUST display the character name and a `🎭` indicator to distinguish them from real players.
+- Guest entries are clickable links to the character sheet (same URL pattern as regular session participants).
+
+**Battle Configuration (InitBattleDialog / AddCombatantsDialog)**:
+
+- When `buildSessionParticipantsGroup` is called, GM guest characters MUST be included in the resulting `__session_participants__` group alongside real players.
+- If a GM guest character's data is already loaded in the campaign groups (`allGroups`), it is reused from there. Otherwise it is fetched from the character API.
+
+**Initiative Tracker Integration**:
+
+- If a battle is already initialized when the GM promotes a character, `appendInitiativeTrackerRows` MUST be dispatched immediately with a row built from the character's data.
+- The guest character row uses `groupId = SESSION_PARTICIPANTS_GROUP_ID`.
+- Unlike real session-participant rows, the GM guest row is **NOT** locked to full visibility. The GM can configure its `visible` flag and `playerFieldVisibility` as for any other tracker row (same defaults as NPC rows).
+- The row is identified by `isGmGuest: true` on `InitiativeTrackerRow` to distinguish it from locked player rows.
+- `applyPlayerRowVisibilityRules` MUST skip the "lock to full visibility" override for rows where `isGmGuest === true`.
+- When the GM removes the guest character (via "🎭 Quitter la session"), if a battle is initialized, `removeInitiativeTrackerRow` MUST be dispatched for the guest row.
+- When the session ends (`clearCurrentSession`), all guest tracker rows are removed as part of the existing tracker reset.
+
+**Prohibitions**:
+
+- Showing the session guest action to non-GM users.
+- Showing the session guest action when no session is launched.
+- Allowing GM guest characters to be locked to full visibility (they are always GM-configurable).
+- Broadcasting GM guest character assignments via WebSocket (purely client-side, session-scoped).
+- Persisting the `gmGuestCharacterIds` across sessions (reset in `clearCurrentSession`).
+
+**Accessibility (FR-019)**:
+
+- The "Rejoindre la session" / "Quitter la session" menu items MUST be keyboard-reachable via the existing `SidebarItemWithActions` context menu.
+- Guest character entries in the sidebar section MUST have appropriate `aria-label` distinguishing them from real players.
+
+**Tests**:
+
+- Nominal: GM adds a character → it appears in sidebar section and tracker (if battle initialized).
+- Nominal: GM removes a character → it disappears from sidebar section and tracker row.
+- Nominal: Session ends → `gmGuestCharacterIds` resets to `[]`, tracker rows cleared.
+- Edge: Battle not initialized when character is added → no tracker row dispatched.
+- Edge: Battle initialized when character is added → tracker row appears immediately.
+- Edge: `applyPlayerRowVisibilityRules` skips guest rows (`isGmGuest === true`).
+- Error: Non-GM user never sees the session guest action.
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
+- `services/web/client/messages/{en,fr,es}.json`
+
+---
+
+## FR-030: Profile Language Preference
 
 **Rule**: The profile page MUST expose a dedicated preferences section (separate from the profile-info card) containing a language preference control allowing the authenticated user to change the site locale. The selected locale MUST be persisted on the user account (`preferredLocale` on the Adventure API user record) and mirrored to the existing `user-preferred-locale` client storage (localStorage and cookie). After authentication, the client MUST apply the account locale when it differs from the current URL prefix. The user must be redirected to the same page under the new locale prefix when the preference changes. Locale changes MUST apply immediately on select change and MUST NOT be bound to the profile edit form.
 

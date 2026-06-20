@@ -33,7 +33,19 @@ import GroupService from "@/services/GroupService";
 import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
 import { showToast } from "@/lib/toast";
 import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
-import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import {
+  selectIsInSession,
+  selectSessionStatus,
+  selectGmGuestCharacterIds,
+  addGmGuestCharacterToSession,
+  removeGmGuestCharacterFromSession,
+  appendInitiativeTrackerRows,
+  removeInitiativeTrackerRow,
+  selectBattleInitialized,
+  createInitiativeTrackerRow,
+} from "@/store/slices/sessionSlice";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
+import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
 
 interface GroupListProps {
   groups: Group[];
@@ -72,6 +84,8 @@ export default function GroupList({
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
+  const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const battleInitialized = useAppSelector(selectBattleInitialized);
   const actionsDisabled = isInSession && sessionStatus === "launched";
 
   const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
@@ -317,9 +331,61 @@ export default function GroupList({
     [actionsDisabled, isArchivedSection, onArchiveGroup, onUnarchiveGroup, t],
   );
 
+  const handleAddGmGuestToSession = React.useCallback(
+    async (character: GroupCharacter) => {
+      dispatch(addGmGuestCharacterToSession(character._id));
+      if (!battleInitialized) return;
+      try {
+        const full = await CharacterService.getCharacterById(character._id);
+        const row = createInitiativeTrackerRow({
+          groupId: SESSION_PARTICIPANTS_GROUP_ID,
+          groupLabel: SESSION_PARTICIPANTS_GROUP_LABEL,
+          characterId: full._id,
+          firstname: full.firstname ?? "",
+          lastname: full.lastname ?? "",
+          surname: full.surname ?? "",
+          avatar: full.avatar ?? "",
+          hitPoints: full.stats?.currentHitPoints ?? 0,
+          maxHitPoints: full.stats?.maxHitPoints ?? 0,
+          tempHitPoints: full.stats?.tempHitPoints ?? 0,
+          armorClass: full.stats?.armorClass ?? 10,
+          kind: "progression" in full ? "player" : "npc",
+        });
+        dispatch(appendInitiativeTrackerRows([{ ...row, isGmGuest: true }]));
+      } catch {
+        /* tracker add non-bloquant */
+      }
+    },
+    [battleInitialized, dispatch],
+  );
+
+  const handleRemoveGmGuestFromSession = React.useCallback(
+    (character: GroupCharacter) => {
+      dispatch(removeGmGuestCharacterFromSession(character._id));
+      if (battleInitialized) {
+        dispatch(removeInitiativeTrackerRow(`${SESSION_PARTICIPANTS_GROUP_ID}:${character._id}`));
+      }
+    },
+    [battleInitialized, dispatch],
+  );
+
   const buildCharacterActions = React.useCallback(
     (character: GroupCharacter, groupId: string): SidebarActionItem[] => {
-      if (actionsDisabled || !selectedCampaignId) return [];
+      if (!selectedCampaignId) return [];
+
+      if (actionsDisabled) {
+        const isGuest = gmGuestCharacterIds.includes(character._id);
+        return [
+          {
+            id: isGuest ? "removeFromSession" : "addToSession",
+            label: isGuest ? t("removeFromSession") : t("addToSession"),
+            onSelect: () =>
+              isGuest
+                ? handleRemoveGmGuestFromSession(character)
+                : void handleAddGmGuestToSession(character),
+          },
+        ];
+      }
 
       const items: SidebarActionItem[] = [];
 
@@ -366,7 +432,7 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, router, selectedCampaignId, setOpenMobile, t],
+    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, gmGuestCharacterIds, handleAddGmGuestToSession, handleRemoveGmGuestFromSession, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, router, selectedCampaignId, setOpenMobile, t],
   );
 
   if (groups.length === 0) {
@@ -437,7 +503,7 @@ export default function GroupList({
                     <SidebarItemWithActions
                       key={character._id}
                       actions={characterActions}
-                      disabled={actionsDisabled}
+                      disabled={characterActions.length === 0}
                       contextMenuLabel={t("characterActions")}
                       className={cn(
                         "rounded-[12px] transition-all duration-100",
