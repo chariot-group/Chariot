@@ -2901,3 +2901,33 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/GroupService.ts`
 - `services/web/client/src/services/CharacterService.ts`
 - `services/web/client/src/store/slices/groupSlice.ts`
+
+---
+
+## FR-034 : Navigation interne locale-aware
+
+**Règle** : Toute navigation interne vers une page de l'application DOIT utiliser les utilitaires exportés par `@/i18n/navigation` (basés sur `createNavigation` de next-intl). L'usage de `window.location.href` pour la navigation interne est interdit.
+
+**Exigences** :
+
+- `useRouter`, `Link`, `usePathname` et `redirect` sont importés depuis `@/i18n/navigation`, jamais depuis `next/navigation` pour les navigations internes localisées.
+- Les services (classes non-React) qui déclenchent une navigation DOIVENT retourner les données nécessaires (ex. : `{ campaignId, code }`) et laisser le composant appelant effectuer le `router.push`.
+- Pour les liens externes (URL tiers) et les liens de protocole (`mailto:`, `tel:`), utiliser un élément `<a href>` natif rendu directement dans le JSX — jamais `window.location.href`.
+
+**Interdictions** :
+
+- `window.location.href = '/...'` pour toute navigation interne.
+- Importer `useRouter` ou `Link` depuis `next/navigation` pour des routes localisées.
+- Laisser la logique de navigation dans un service ou une classe utilitaire.
+
+**Tests** :
+
+- Nominal : la navigation vers une page localisée préfixe correctement la locale dans l'URL.
+- Edge : un changement de locale préserve le chemin de la page courante.
+- Failure : l'absence de locale dans le path ne provoque pas de redirection 404.
+
+**Références** :
+- `services/web/client/src/i18n/navigation.ts`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/services/SessionService.ts`
+- `services/web/client/src/components/profile/ProfileGdprActions.tsx`
