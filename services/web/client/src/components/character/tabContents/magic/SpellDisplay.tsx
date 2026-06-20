@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { formatDamageFormula } from "@/utils/spell-damage.utils";
 import { formatSignedBonus } from "@/utils/attack.utils";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
 interface SpellDisplayProps {
   spell: Spell | null;
@@ -37,6 +38,7 @@ export default function SpellDisplay({
   const tMagic = useTranslations("characterDetail.magic");
   const tClasses = useTranslations("classes");
   const tGeneral = useTranslations("characterDetail.player");
+  const { convertRange } = useDistanceUnit();
 
   if (!spell) {
     return null;
@@ -121,7 +123,7 @@ export default function SpellDisplay({
           <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>
             {tMagic("spellDetails.range")}:
           </span>
-          <span className="text-sm md:text-base wrap-break-word">{spell.range}</span>
+          <span className="text-sm md:text-base wrap-break-word">{convertRange(spell.range)}</span>
         </Card>
         <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
           <span className={`${accentColor} font-semibold text-sm md:text-base shrink-0`}>

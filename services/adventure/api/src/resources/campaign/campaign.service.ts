@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   HttpException,
   Injectable,
   InternalServerErrorException,
@@ -200,16 +199,6 @@ export class CampaignService {
       const start: number = Date.now();
 
       const existingCampaign: Campaign = await this.campaignModel.findById(id);
-
-      // Handle label update attempt
-      if (
-        updateCampaignDto.label &&
-        updateCampaignDto.label !== existingCampaign.label
-      ) {
-        const message: string = `Campaign label cannot be modified`;
-        this.logger.error(message, null, this.SERVICE_NAME);
-        throw new BadRequestException(message);
-      }
 
       // Handle groups update if present
       if (updateCampaignDto.groups) {

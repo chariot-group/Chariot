@@ -35,7 +35,7 @@ const buildRow = (
   deathSavesFailures: overrides.deathSavesFailures ?? 0,
 });
 
-describe("FR-024 — bulk visibility selection summary", () => {
+describe("FR-031 — bulk visibility selection summary", () => {
   it("nominal: derives shared values when every selected row matches", () => {
     const rows = [
       buildRow({
@@ -46,6 +46,7 @@ describe("FR-024 — bulk visibility selection summary", () => {
           initiative: false,
           name: true,
           hitPoints: false,
+          lifeStatus: false,
           armorClass: false,
           conditions: false,
           groupLabel: false,
@@ -59,6 +60,7 @@ describe("FR-024 — bulk visibility selection summary", () => {
           initiative: false,
           name: true,
           hitPoints: false,
+          lifeStatus: false,
           armorClass: false,
           conditions: false,
           groupLabel: false,
@@ -73,6 +75,7 @@ describe("FR-024 — bulk visibility selection summary", () => {
         initiative: false,
         name: true,
         hitPoints: false,
+        lifeStatus: false,
         armorClass: false,
         conditions: false,
         groupLabel: false,
@@ -91,6 +94,7 @@ describe("FR-024 — bulk visibility selection summary", () => {
           initiative: true,
           name: false,
           hitPoints: true,
+          lifeStatus: false,
           armorClass: false,
           conditions: false,
           groupLabel: false,
@@ -105,6 +109,7 @@ describe("FR-024 — bulk visibility selection summary", () => {
         initiative: "mixed",
         name: "mixed",
         hitPoints: "mixed",
+        lifeStatus: false,
         armorClass: false,
         conditions: false,
         groupLabel: false,
@@ -113,7 +118,7 @@ describe("FR-024 — bulk visibility selection summary", () => {
   });
 });
 
-describe("FR-024 — bulk visibility partial update payload", () => {
+describe("FR-031 — bulk visibility partial update payload", () => {
   it("nominal: emits only touched values", () => {
     const summary = deriveBulkVisibilitySummary([
       buildRow({ id: "a" }),
@@ -147,6 +152,7 @@ describe("FR-024 — bulk visibility partial update payload", () => {
         initiative: "mixed",
         name: true,
         hitPoints: "mixed",
+        lifeStatus: false,
         armorClass: false,
         conditions: false,
         groupLabel: false,

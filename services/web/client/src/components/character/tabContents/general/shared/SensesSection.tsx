@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Sense } from "@/types/character";
 import { useTranslations } from "next-intl";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
 interface SensesSectionProps {
   senses?: Sense[];
@@ -10,13 +11,17 @@ interface SensesSectionProps {
 
 export default function SensesSection({ senses = [], accentColor, embedded = false }: SensesSectionProps) {
   const t = useTranslations("characterDetail.player.general");
-  const tBattle = useTranslations("characterDetail.battle");
+  const { displayFt, unitLabel, secondaryFt, secondaryUnitLabel } = useDistanceUnit();
   const hasRange = (value: Sense["value"]) => value !== null && value !== undefined && Number(value) > 0;
   const visibleSenses = senses.filter((sense) => sense.name || hasRange(sense.value));
   const formattedSenses = visibleSenses
     .map((sense) => {
       const name = sense.name || t("unnamedSense");
-      return hasRange(sense.value) ? `${name} (${sense.value}${tBattle("feetAbbr")})` : name;
+      if (!hasRange(sense.value)) return name;
+      const ft = Number(sense.value);
+      const primary = `${displayFt(ft)}${unitLabel}`;
+      const secondary = secondaryFt ? ` (${secondaryFt(ft)}${secondaryUnitLabel})` : "";
+      return `${name} (${primary}${secondary})`;
     })
     .join(", ");
 

@@ -1524,6 +1524,14 @@ Each rule has a unique identifier and must be tested.
 - If the player has no assigned character, **View Character Sheet** is disabled with an explanatory tooltip.
 - Once combat has been ended by the GM, the player MUST be redirected to their session character sheet and MUST no longer have access to **Return to Battle** for that finished combat.
 
+**Character Sheet Combat Footer**:
+
+- When a character sheet displays both character edit actions and active combat controls, the bottom area MUST avoid stacking two full-height footers.
+- The character edit actions and the combat controls MUST be composed into one compact bottom bar or into a single shared footer region.
+- The merged footer MUST keep all existing accessible names and keyboard interactions for edit/save/cancel, previous turn, next turn, combatant stat expansion, and visible stat links.
+- The merged footer MUST preserve GM-only turn controls and player read-only constraints from FR-018 and FR-021.
+- The merged footer MUST preserve mobile content visibility by keeping the vertical footprint compact and preventing horizontal overflow with long translated labels or combatant names.
+
 **Last Consulted Sheet Tracking**:
 
 - `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
@@ -1968,7 +1976,384 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-026: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+## FR-027: Profile Token History with Purchase and Expense Filters
+
+**Rule**: The profile page must expose the authenticated user's token transaction history (not session history), with client-side filters to show purchases and/or expenses. Both transaction types must be recorded in the immutable `history` array defined in FR-008.
+
+**Scope**:
+
+- Web client profile page (`/[locale]/profile`)
+- Adventure API user history recording (`addHistory`, `addTokens`)
+- Complements FR-008 without changing its immutable-history constraint
+
+**Transaction Semantics** (aligned with `balance -= value` in `UserService.addHistory`):
+
+- **Expense (dépense)**: `value > 0` — decreases balance (e.g. tokens spent when a session is launched)
+- **Purchase (achat)**: `value < 0` — increases balance (e.g. tokens bought via Stripe checkout)
+
+**Backend Requirements**:
+
+- `addTokens` MUST append a history entry when crediting tokens after a successful purchase:
+  - `date`: transaction timestamp
+  - `campaignName`: fixed label `Shop` (displayed via i18n on the client)
+  - `value`: negative amount equal to credited tokens (e.g. credit 10 → `value: -10`)
+- Existing `addHistory` behavior for session spending (positive `value`) is unchanged
+
+**Frontend Requirements**:
+
+**Section identity**:
+
+- Section title and ARIA labels MUST use "Token history" wording (replacing "Session history")
+- List items MUST describe token purchases or expenses (not "session earned/spent" wording)
+
+**Default display**:
+
+- On first render, both transaction types are visible (purchases and expenses)
+- Entries are listed in reverse chronological order (most recent first)
+
+**Filters**:
+
+- Two independent toggle controls: **Purchases** and **Expenses**
+- Both toggles are enabled by default
+- Filtering is client-side on `user.history` using the sign of `value`
+- When at least one toggle is active, only matching entries are shown
+- When both toggles are disabled, the list shows an explicit empty-filter state (distinct from "no history at all")
+- Toggling filters MUST NOT trigger an API call
+- Filter toggle states MUST be persisted in `localStorage` under `chariot_token_history_filters` and restored on next profile visit
+- Invalid or missing persisted values MUST fall back to the default (both toggles enabled)
+
+**Visual treatment**:
+
+- Purchase rows SHOULD visually distinguish credits (e.g. green/`--green` amount prefix `+`)
+- Expense rows SHOULD visually distinguish debits (e.g. gray/`--gray-light` amount, no erroneous `+` prefix)
+- Reuse existing profile card/list patterns (FR-019): `bg-gray-middle-light`, `rounded-[15px]`, responsive gaps
+
+**Accessibility Requirements** (FR-019):
+
+- Filter group uses a semantic `fieldset` with visible `legend` or equivalent labelled region
+- Each filter toggle has an associated visible label and `aria-checked` state
+- Filter region has an accessible name (e.g. `aria-label` on `fieldset`)
+- History list retains `role="list"` / `role="listitem"` with updated `aria-label` per entry type
+- Keyboard: filter toggles reachable via `Tab`, operable via `Space`
+- Empty-filter state is exposed via `role="status"`
+
+**Internationalization**:
+
+- Namespace: `ProfilePage`
+- Required keys (en/fr/es):
+  - `tokenHistory` (section title)
+  - `filterPurchases`, `filterExpenses` (filter labels)
+  - `filterGroupLabel` (fieldset legend)
+  - `tokenItemPurchase`, `tokenItemExpense` (list item accessible names)
+  - `noFilteredHistory` (empty state when filters exclude all entries)
+- Deprecated keys (`sessionHistory`, `sessionItemEarned`, `sessionItemSpent`) MUST be removed or replaced
+
+**Prohibitions**:
+
+- Labelling the section "Session history" once this rule is active
+- Treating positive `value` as a purchase in filters or copy (positive = expense)
+- Omitting purchase entries from history after a successful token credit
+- Hiding both filter toggles with no way to restore default combined view
+- Using color alone to convey purchase vs expense (sign/prefix and accessible text mandatory)
+
+**Tests**:
+
+- **Backend**:
+  - `addTokens` appends a history entry with negative `value` and updates balance
+  - `addHistory` with positive `value` still decreases balance and appends expense entry
+- **Frontend**:
+  - Default view shows both purchases and expenses
+  - Purchases-only filter shows only `value < 0` entries
+  - Expenses-only filter shows only `value > 0` entries
+  - Both filters disabled shows `noFilteredHistory`
+  - Empty history shows existing `noHistory` message
+  - Accessible names differ between purchase and expense rows
+  - Filter keyboard interaction works
+  - Filter preferences are restored from `localStorage` on subsequent visits
+  - Corrupted `localStorage` payload falls back to default filters
+
+**References**:
+
+- `docs/functional-rules.md` — FR-008
+- `services/web/client/src/app/[locale]/profile/page.tsx`
+- `services/web/client/src/lib/tokenHistory.ts`
+- `services/web/client/src/lib/tokenHistoryFilters.ts`
+- `services/adventure/api/src/resources/user/user.service.ts`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `services/web/client/messages/{en,fr,es}.json`
+
+---
+
+## FR-028: Profile GDPR and Data Rights (Security Section)
+
+**Rule**: The profile page Security section must expose self-service GDPR data-rights actions for the authenticated user: export available account data, request a full data access report, and initiate account deletion. Until dedicated backend endpoints exist, export uses `GET /user/me` and formal requests are routed to the privacy contact email.
+
+**Context**: Users must be able to exercise GDPR rights (access, portability, erasure) from their account settings without contacting support for basic actions.
+
+**Requirements**:
+
+**Frontend (Web Client)**:
+
+- Location: `ProfilePage` → Security section (`profile-section-security`), below the password change card
+- Dedicated card titled via i18n (`ProfilePage.gdpr.title`)
+- Three actions minimum, each with title, short description, and accessible control:
+  1. **Export profile data**: downloads a JSON file built from a fresh `GET /user/me` response (profile fields and token history only); filename pattern `chariot-profile-YYYY-MM-DD.json`
+  2. **Request all my data**: opens a pre-filled `mailto:` to the privacy contact for a comprehensive subject access request covering all personal data (campaigns, groups, characters, sessions, payments, referral history, etc.)
+  3. **Delete my account**: opens a confirmation dialog explaining irreversibility; confirming opens a pre-filled `mailto:` deletion request (no silent deletion until backend `DELETE /user/me` exists)
+- Export payload MUST exclude internal auth identifiers (`keycloakId`, `createdBy`, `userId`) from all nested objects
+- Privacy contact email: `NEXT_PUBLIC_PRIVACY_EMAIL` with fallback `contact@chariot.tools`
+- Optional privacy policy link when `NEXT_PUBLIC_PRIVACY_POLICY_URL` is set
+- Loading/busy state on export (`aria-busy`); success/error toasts via existing toast hook
+- Follow FR-019 design baseline: Card, `rounded-[15px]`, responsive row layout, destructive variant for delete trigger
+
+**Accessibility**:
+
+- Each action control has an accessible name (`aria-label` or visible label)
+- Delete confirmation dialog is keyboard-operable and traps focus per existing Dialog primitive
+- Export loading state communicated with `aria-busy`
+
+**Prohibitions**:
+
+- Silently deleting an account from the UI without explicit user confirmation and audit trail
+- Exporting stale cached Redux user data without refreshing from API
+- Including internal auth identifiers (`keycloakId`, `createdBy`, `userId`) in user-facing export files or mailto bodies
+- Hardcoding untranslated user-facing strings
+
+**Tests**:
+
+- Unit: JSON export helper produces valid filename and JSON payload
+- Unit: mailto builders encode subject/body correctly
+- Component: GDPR card renders three actions with expected accessible labels
+- Component: delete dialog renders warning text
+
+**References**:
+
+- `services/web/client/src/components/profile/ProfileGdprActions.tsx`
+- `services/web/client/src/lib/gdpr.ts`
+- `services/web/client/src/app/[locale]/profile/page.tsx`
+- `services/web/client/messages/{en,fr,es}.json`
+- `docs/design.md` — sections 6.3, 9
+
+---
+
+## FR-029: GM Guest Character in Session Participants Group
+
+**Rule**: During an active launched session, the Game Master MUST be able to temporarily promote one of their campaign characters to the session participants group. This association is session-scoped only: it is automatically revoked when the session ends, and can be revoked manually at any time.
+
+**Scope**:
+
+- Applies only when `sessionStatus === "launched"` and the user is the GM.
+- Works with any character belonging to any of the GM's campaign groups (active or archived groups visible in the sidebar).
+- Complements FR-018 (mid-combat add), FR-021 (player tracker visibility), and FR-026 (WebSocket lifecycle) without overriding their rules.
+
+**Entry Point**:
+
+- The GM triggers the action from the character's context menu (right-click on desktop, "…" menu on mobile) in the sidebar GroupList.
+- When a session is launched, the character context menu MUST expose:
+  - **🎭 Rejoindre la session** — when the character is not yet a guest in the session participants group.
+  - **🎭 Quitter la session** — when the character is already a guest (to remove it).
+- Normal character actions (edit, move, delete, duplicate) MUST be hidden while a session is launched (existing behavior unchanged).
+
+**State Management**:
+
+- Redux slice `session` MUST hold `gmGuestCharacterIds: string[]` listing character IDs currently promoted.
+- `addGmGuestCharacterToSession(characterId)` adds the ID to the list.
+- `removeGmGuestCharacterFromSession(characterId)` removes the ID from the list.
+- `clearCurrentSession` MUST reset `gmGuestCharacterIds` to `[]`.
+- `gmGuestCharacterIds` is persisted in Redux Persist as part of the `session` slice.
+
+**Sidebar Section (GmSessionPlayersSidebarSection)**:
+
+- GM guest characters MUST appear in the "Joueurs (session)" sidebar section, below connected players.
+- Each guest entry MUST display the character name and a `🎭` indicator to distinguish them from real players.
+- Guest entries are clickable links to the character sheet (same URL pattern as regular session participants).
+
+**Battle Configuration (InitBattleDialog / AddCombatantsDialog)**:
+
+- When `buildSessionParticipantsGroup` is called, GM guest characters MUST be included in the resulting `__session_participants__` group alongside real players.
+- If a GM guest character's data is already loaded in the campaign groups (`allGroups`), it is reused from there. Otherwise it is fetched from the character API.
+
+**Initiative Tracker Integration**:
+
+- If a battle is already initialized when the GM promotes a character, `appendInitiativeTrackerRows` MUST be dispatched immediately with a row built from the character's data.
+- The guest character row uses `groupId = SESSION_PARTICIPANTS_GROUP_ID`.
+- Unlike real session-participant rows, the GM guest row is **NOT** locked to full visibility. The GM can configure its `visible` flag and `playerFieldVisibility` as for any other tracker row (same defaults as NPC rows).
+- The row is identified by `isGmGuest: true` on `InitiativeTrackerRow` to distinguish it from locked player rows.
+- `applyPlayerRowVisibilityRules` MUST skip the "lock to full visibility" override for rows where `isGmGuest === true`.
+- When the GM removes the guest character (via "🎭 Quitter la session"), if a battle is initialized, `removeInitiativeTrackerRow` MUST be dispatched for the guest row.
+- When the session ends (`clearCurrentSession`), all guest tracker rows are removed as part of the existing tracker reset.
+
+**Prohibitions**:
+
+- Showing the session guest action to non-GM users.
+- Showing the session guest action when no session is launched.
+- Allowing GM guest characters to be locked to full visibility (they are always GM-configurable).
+- Broadcasting GM guest character assignments via WebSocket (purely client-side, session-scoped).
+- Persisting the `gmGuestCharacterIds` across sessions (reset in `clearCurrentSession`).
+
+**Accessibility (FR-019)**:
+
+- The "Rejoindre la session" / "Quitter la session" menu items MUST be keyboard-reachable via the existing `SidebarItemWithActions` context menu.
+- Guest character entries in the sidebar section MUST have appropriate `aria-label` distinguishing them from real players.
+
+**Tests**:
+
+- Nominal: GM adds a character → it appears in sidebar section and tracker (if battle initialized).
+- Nominal: GM removes a character → it disappears from sidebar section and tracker row.
+- Nominal: Session ends → `gmGuestCharacterIds` resets to `[]`, tracker rows cleared.
+- Edge: Battle not initialized when character is added → no tracker row dispatched.
+- Edge: Battle initialized when character is added → tracker row appears immediately.
+- Edge: `applyPlayerRowVisibilityRules` skips guest rows (`isGmGuest === true`).
+- Error: Non-GM user never sees the session guest action.
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
+- `services/web/client/messages/{en,fr,es}.json`
+
+---
+
+## FR-030: Profile Language Preference
+
+**Rule**: The profile page MUST expose a dedicated preferences section (separate from the profile-info card) containing a language preference control allowing the authenticated user to change the site locale. The selected locale MUST be persisted on the user account (`preferredLocale` on the Adventure API user record) and mirrored to the existing `user-preferred-locale` client storage (localStorage and cookie). After authentication, the client MUST apply the account locale when it differs from the current URL prefix. The user must be redirected to the same page under the new locale prefix when the preference changes. Locale changes MUST apply immediately on select change and MUST NOT be bound to the profile edit form.
+
+**Scope**:
+
+- Web client profile page (`/[locale]/profile`)
+- Preferences section: `ProfilePreferencesSection` with immediate-apply locale select (`ProfileLocaleSelectImmediate`)
+- Profile info card (`ReadProfile` / `UpdateProfile`): identity fields only (no locale control)
+- Adventure API user resource (`GET /user/me`, `PUT /user/me`)
+- Reuses existing i18n infrastructure (`useLocalePreference`, middleware cookie)
+
+**Requirements**:
+
+**Backend (Adventure API)**:
+
+- User MongoDB schema MUST expose optional `preferredLocale` (`fr` | `en` | `es`)
+- `GET /user/me` MUST return `preferredLocale` when set
+- `PUT /user/me` MUST accept optional `preferredLocale` and persist it on the user record (Keycloak profile fields remain unchanged)
+- Invalid locale values MUST be rejected with validation error
+
+**Frontend (Web Client)**:
+
+- **Preferences section** (`ProfilePreferencesSection`): single select listing all supported locales; on change, persist immediately (API + client storage + navigation)
+- The preferences section MUST remain visible regardless of profile read/edit mode
+- The profile edit form (`UpdateProfile` / `useProfileForm`) MUST NOT include a locale field
+- Option labels MUST be translated in the active UI locale and prefixed with a flag emoji (same pattern as Codex `languageFilter`)
+- On locale select change:
+  1. Send `preferredLocale` via `PUT /user/me`
+  2. Persist preference via `saveStoredLocale` (`user-preferred-locale` in localStorage and cookie)
+  3. Navigate to the equivalent path with the new locale prefix (e.g. `/fr/profile` → `/en/profile`)
+- After authentication, when `user.preferredLocale` is set and differs from the URL locale prefix, the client MUST call `saveStoredLocale` and redirect to the equivalent path under the account locale (via `AccountLocaleSync`)
+- `LocaleDetector` MUST NOT overwrite an existing stored locale with the URL prefix
+
+**Locale resolution priority (authenticated)**:
+
+1. Account `preferredLocale` (after user fetch)
+2. Client storage (`user-preferred-locale` cookie / localStorage)
+3. URL prefix
+4. Browser detection
+
+**Keycloak SSO sync**:
+
+- Resolved locale preference (client storage → URL prefix → browser detection) MUST be passed to Keycloak on:
+  - `keycloak.init` (`locale` init option → `ui_locales`)
+  - `keycloak.login` (including token-refresh re-login)
+  - `keycloak.register`
+- Register flow MUST NOT override an existing stored preference with browser detection alone
+
+**Accessibility** (FR-019):
+
+- Select control has an associated visible label and accessible name
+- Keyboard-operable via existing Select primitive (`Tab`, arrow keys, `Enter`)
+- Label/input association via `htmlFor` / `id`
+
+**Internationalization**:
+
+- Namespace: `ProfilePage`
+- Required keys (en/fr/es): `sections.preferences`, `languagePreference`, `languagePreferenceAria`
+- Locale option labels live under `ProfilePage.languages.{fr,en,es}` with flag emoji + translated language name
+
+**Prohibitions**:
+
+- Introducing a new storage key for locale preference
+- Changing locale without updating URL prefix
+- Hardcoding untranslated user-facing strings
+
+**Tests**:
+
+- Unit: path locale replacement helper
+- Unit: account locale sync redirects when URL locale differs from `preferredLocale`
+- API: `preferredLocale` validation and persistence on `PUT /user/me`
+- Component: locale select renders with label and accessible name
+- Component: all supported locales appear as options
+
+**References**:
+
+- `services/adventure/api/src/resources/user/schemas/user.schema.ts`
+- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts`
+- `services/web/client/src/components/AccountLocaleSync.tsx`
+- `services/web/client/src/hooks/useLocalePreference.ts`
+- `services/web/client/src/components/profile/ProfileLocaleSelect.tsx`
+- `services/web/client/src/components/profile/ProfileLocaleSelectImmediate.tsx`
+- `services/web/client/src/components/profile/ProfilePreferencesSection.tsx`
+- `services/web/client/src/components/profile/ReadProfile.tsx`
+- `services/web/client/src/components/profile/UpdateProfile.tsx`
+- `services/web/client/src/hooks/useProfileForm.ts`
+- `services/web/client/docs/i18n.md`
+- `docs/design.md` — sections 8, 9
+---
+
+## FR-030: Web Client Form Field Validation Visibility
+
+**Rule**: Every web client form must expose validation errors at the field level, with precise user-facing messages and accessible links between invalid fields, their messages, and any parent tab or section that contains the error.
+
+**Scope**:
+
+- Applies to all forms in `services/web/client`, including character and NPC sheets.
+- Applies to client-side validation, API validation mapped back to form fields, and submit attempts blocked by invalid input.
+- Uses React Hook Form as the form state source of truth for validation state.
+
+**Requirements**:
+
+- A blocked submit may show a global toast, but the toast must not be the only error feedback.
+- Each invalid field must display a specific, translated error message next to or directly below the field.
+- Error messages caused by user input must explain the exact issue and expected correction when feasible.
+- Server/API validation errors that identify a field must be mapped to that field instead of being shown only as a global error.
+- Global form errors are reserved for failures that cannot be attributed to a specific field.
+- Invalid fields must expose `aria-invalid="true"` and use `aria-describedby` to reference their error message.
+- When a form is split across tabs or sections, each tab/section trigger containing invalid fields must show a visible and non-color-only error indicator.
+- If submit is blocked by errors in another tab, the user must be able to identify which tab contains the error without manually inspecting every tab.
+- Error indicators must remain compatible with keyboard navigation and screen readers.
+- Validation behavior and messages must be internationalized for supported locales.
+
+**Prohibitions**:
+
+- Showing only a generic toast such as "form cannot be submitted" when field-level errors exist.
+- Using a single global error for validation failures that are attributable to specific fields.
+- Hiding invalid field messages inside collapsed tabs without surfacing the tab/section error state.
+- Conveying tab or field error state by color alone.
+- Introducing form state management that bypasses React Hook Form for forms already using it.
+
+**Tests**:
+
+- Form submission with invalid visible fields renders field-level messages and marks inputs invalid.
+- Form submission with invalid fields in another tab marks that tab as containing errors.
+- API validation errors with field paths are displayed on the corresponding fields.
+- Global errors are shown only for non-field-specific failures.
+- Keyboard and screen-reader accessibility expose invalid field and tab error states.
+
+**References**:
+
+- `services/web/client/src/`
+- `services/web/client/src/components/character/`
+
+---
+
+## FR-031: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
 
 **Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
 
@@ -2006,3 +2391,513 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/initiativeTracker/page.tsx`
 - `services/web/client/src/components/initiativeTracker/`
 - `services/web/client/src/store/slices/sessionSlice.ts`
+
+---
+
+## FR-032: Notification visuelle de révélation de combattant (vue joueur)
+
+**Rule**: Lorsqu'un combattant devient visible pour les joueurs (`visible: false → true`) pendant un combat actif, une animation de halo vert temporaire doit apparaître autour de ce combattant dans la vue joueur du tracker d'initiative ET dans la preview combat (CombatBanner).
+
+**Scope**:
+
+- S'applique uniquement en mode joueur (`mode === "player"`), jamais en mode MJ.
+- Concerne deux surfaces : la page tracker (`/initiativeTracker`) et la preview combat (`CombatBanner`) affichée sur les fiches personnage.
+- Complète FR-021 (modèle de visibilité joueur) sans en modifier les règles de filtrage ou de masquage.
+
+**Requirements**:
+
+- Lorsqu'un combattant apparaît pour la première fois dans la liste visible du joueur (transition `visible: false → true` ou ajout d'un nouveau combattant visible), un halo vert animé (`ring-2 ring-green/60 animate-pulse`) doit être appliqué à l'élément visuel correspondant pendant exactement **3 secondes**, puis disparaître.
+- Le halo utilise exclusivement le token `--green` du projet (FR-019). Aucune couleur hardcodée n'est autorisée.
+- La révélation ne doit pas être signalée par la couleur seule : une région `aria-live="polite"` doit annoncer le nom du combattant nouvellement révélé aux lecteurs d'écran.
+- La détection de transition est réalisée côté client par comparaison des IDs de lignes visibles entre les rendus successifs (hook dédié `useNewlyRevealedRows`).
+- Le halo s'applique au conteneur de la ligne dans le tracker, et au chip du carrousel dans la CombatBanner.
+- Un combattant révélé plusieurs fois (masqué puis révélé à nouveau) doit déclencher le halo à chaque nouvelle révélation.
+
+**Prohibitions**:
+
+- Afficher le halo en mode MJ.
+- Utiliser une couleur non issue du système de tokens du projet.
+- Conserver le halo au-delà de 3 secondes (pas d'état persistant).
+- Signaler la révélation par la couleur seule sans texte accessible.
+- Déclencher le halo au rechargement de page sur des lignes déjà présentes (uniquement sur les nouvelles apparitions pendant la session active).
+
+**Tests**:
+
+- Le halo vert apparaît sur la ligne tracker d'un combattant passant de `visible: false` à `visible: true` en mode joueur.
+- Le halo vert apparaît sur le chip du carrousel CombatBanner dans les mêmes conditions.
+- Le halo disparaît après 3 secondes.
+- Le halo ne s'affiche pas en mode MJ.
+- Une annonce `aria-live` est émise lors de la révélation.
+- Le rechargement de page ne déclenche pas le halo sur des lignes déjà visibles.
+- Un combattant masqué puis révélé à nouveau déclenche le halo une deuxième fois.
+
+**References**:
+
+- `services/web/client/src/hooks/useNewlyRevealedRows.ts` (hook dédié)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx`
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerTable.tsx`
+- `services/web/client/src/components/character/CombatBanner.tsx`
+
+---
+
+## FR-033: Découplage affichage HP / statut vital dans le tracker d'initiative
+
+**Rule**: L'affichage de la valeur numérique des points de vie (HP) et l'affichage visuel du statut vital (couleur de fond, icônes Skull/HeartCrack) dans le tracker d'initiative doivent être contrôlables indépendamment via deux flags distincts dans `playerFieldVisibility`.
+
+**Scope**:
+
+- Complète FR-021 (player field visibility) et FR-020 (visual treatment des statuts) sans les remplacer.
+- Le découplage ne s'applique qu'à la vue joueur ; la vue MJ affiche toujours le statut vital et les HP.
+
+**Champs**:
+
+- **`hitPoints`** (existant) : affiche/masque la valeur numérique HP (ex. `12/20 +3hp`) et les HP temporaires.
+- **`lifeStatus`** (nouveau) : affiche/masque la coloration de fond (rouge pour mort, jaune pour inconscient) et les icônes de statut (Skull, HeartCrack).
+
+**Valeurs par défaut** :
+
+- NPC : `lifeStatus: false` (cohérent avec le masquage par défaut des autres champs NPC)
+- PJ participants session (`__session_participants__`) : `lifeStatus: true` (cohérent avec la visibilité totale)
+
+**Combinaisons valides côté joueur** :
+
+| `hitPoints` | `lifeStatus` | Résultat                                                   |
+|-------------|--------------|-----------------------------------------------------------|
+| `true`      | `false`      | Valeur HP visible, fond neutre, aucune icône de statut    |
+| `false`     | `true`       | Fond coloré visible (rouge/jaune), HP masqués             |
+| `true`      | `true`       | HP et fond coloré visibles (comportement participants session) |
+| `false`     | `false`      | Tout masqué (comportement NPC par défaut)                 |
+
+**Comportement de l'icône de statut** :
+
+- L'icône (Skull / HeartCrack) est liée au `lifeStatus` et non au champ `hitPoints`.
+- Elle s'affiche uniquement quand `showLifeStatus === true` (toujours en vue MJ, conditionnellement en vue joueur).
+
+**Prohibitions** :
+
+- Lier l'affichage de l'icône de statut au flag `hitPoints` plutôt qu'au `lifeStatus`.
+- Appliquer le fond coloré / le ring de statut en vue joueur quand `lifeStatus: false`.
+- Masquer le statut vital en vue MJ quels que soient les flags joueur.
+
+**Tests** :
+
+- Vue joueur, `hitPoints: true, lifeStatus: false` : valeur HP affichée, fond neutre, aucune icône
+- Vue joueur, `hitPoints: false, lifeStatus: true` : fond rouge/jaune selon statut, HP masqués, aucune icône (aucun HP à côté duquel placer l'icône)
+- Vue joueur, `hitPoints: true, lifeStatus: true` : HP, fond et icône tous visibles
+- Vue joueur, `hitPoints: false, lifeStatus: false` : tout masqué
+- Vue MJ : statut vital et HP toujours visibles, indépendamment des flags
+- NPC par défaut : `lifeStatus: false` en valeur initiale
+- Participant session par défaut : `lifeStatus: true` en valeur initiale
+- `normalizePlayerFieldVisibility` restaure `lifeStatus` sur legacy rows sans le champ
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts` (interface, defaults, normalize)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx` (showLifeStatus flag)
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerVisibilityDialog.tsx` (FIELD_KEYS)
+- `services/web/client/src/components/initiativeTracker/bulkSelection.ts` (BULK_VISIBILITY_FIELD_KEYS)
+- `services/web/client/messages/{en|fr|es}.json` (visibilityDialog.fields.lifeStatus)
+
+---
+
+## FR-034: Codex Spell Search — Level Filter
+
+**Rule**: The Codex spell search dialog (`CodexSpellSearchDialog`) MUST allow filtering search results by a single D&D 5e spell level (0–9). The filter MUST be applied server-side via the Codex `/spells` API `level` query parameter.
+
+**Scope**:
+
+- Complements the existing name, language, and class filters in the Codex spell search dialog.
+- Applies only to spell search from the character magic tab; does not change monster Codex search.
+
+**Behavior**:
+
+- Users MUST be able to select at most one spell level (0 = cantrips through 9), or leave the filter unset for all levels.
+- When no level is selected, all levels are returned (no `level` param sent).
+- When a level is selected, it MUST be forwarded to the API as a single numeric `level` query parameter (0–9).
+- Changing the level filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening the dialog MUST reset the level filter to “all levels”.
+- Level labels in the filter UI MUST reuse existing magic-tab i18n keys (`cantrips` for level 0, `spellLevel` for levels 1–9).
+
+**Accessibility (FR-019)**:
+
+- The level filter control MUST expose an accessible name (`aria-label`) equivalent to the class filter pattern.
+- The level filter control MUST use the same single-select `Select` pattern as the language filter, with an accessible label.
+
+**Prohibitions**:
+
+- Client-side-only level filtering when the API supports the `level` param (pagination would be incorrect).
+- Hardcoded level labels bypassing i18n.
+- Sending invalid level values (outside 0–9).
+
+**Tests**:
+
+- `CodexService.searchSpells` forwards a selected level to `/spells` as a numeric query param.
+- `CodexService.searchSpells` omits `level` when the filter is unset.
+- API error propagation unchanged.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
+## FR-035: Release Notes and New Version Detection
+
+**Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
+
+**Requirements**:
+
+**Release Note Content**:
+
+- Release notes are stored as static versioned files in `services/web/client/src/data/release-notes/`.
+- Each version file exports a `ReleaseNote` object with: `version` (semver string), `date` (ISO date), and `translations` (record keyed by `SupportedLocale`).
+- Each translation contains a `title` and an array of `highlights` (icon + user-friendly text).
+- Highlights MUST be written in plain user-facing language, NOT as raw changelog entries.
+- All three supported locales (`fr`, `en`, `es`) MUST be present in every `ReleaseNote`.
+- `CURRENT_APP_VERSION` is exported from `src/data/release-notes/index.ts` and must be bumped alongside `package.json` on each release.
+
+**Version Seen Tracking**:
+
+- A dedicated Redux slice `releaseNotes` (persisted per user via `makePersistConfig`) stores `lastSeenVersion: string | null`.
+- The action `markVersionSeen(version)` updates the stored version.
+- The `releaseNotes` key is included in the Redux persist whitelist.
+
+**Auto-Detection Modal**:
+
+- `ReleaseNotesProvider` (client component mounted in `app/[locale]/layout.tsx`) checks on mount whether `authenticated === true && !loading && lastSeenVersion !== CURRENT_APP_VERSION`.
+- If the condition is met, the `ReleaseNotesModal` is opened automatically.
+- On close (button or Escape), `markVersionSeen(CURRENT_APP_VERSION)` is dispatched; the modal does not reappear for that version.
+- The modal displays the current version's notes by default.
+- A `Select` allows navigating to previous versions without closing the modal.
+- The locale is derived from the URL pathname prefix.
+
+**Profile Page Entry Point**:
+
+- The profile page exposes a "Voir les nouveautés" button (localized) that opens the same `ReleaseNotesModal`.
+- When opened from the profile page, closing does NOT dispatch `markVersionSeen` (`readOnly={true}`).
+
+**Accessibility Requirements (FR-019)**:
+
+- `DialogContent` includes `aria-describedby` pointing to the notes description region.
+- The version `Select` has an `aria-label`.
+- Highlight icons are `aria-hidden="true"`; text carries the semantic content.
+- Focus trap behavior is inherited from Shadcn `Dialog`.
+- Keyboard: Escape closes and marks version seen; Tab navigates to the close button and version selector.
+
+**Prohibitions**:
+
+- Storing release note content in i18n message files (content lives in data files).
+- Showing the modal to unauthenticated users.
+- Re-showing the modal for an already-seen version.
+- Dispatching `markVersionSeen` when the modal is opened in `readOnly` mode (profile page).
+- Hardcoding the current version anywhere other than `src/data/release-notes/index.ts`.
+
+**Tests**:
+
+- `releaseNotesSlice`: `markVersionSeen` updates `lastSeenVersion`; initial state is `null`.
+- `ReleaseNotesProvider`: does not open modal when `lastSeenVersion === CURRENT_APP_VERSION`.
+- `ReleaseNotesProvider`: opens modal when authenticated and version unseen.
+- `ReleaseNotesProvider`: does not open modal when unauthenticated.
+- `ReleaseNotesModal`: dispatches `markVersionSeen` on close when `readOnly={false}`.
+- `ReleaseNotesModal`: does NOT dispatch `markVersionSeen` on close when `readOnly={true}`.
+- `ReleaseNotesModal`: Select renders all versions from `ALL_RELEASE_NOTES`.
+- `ReleaseNotesModal`: switching Select updates displayed content without closing.
+- `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
+
+**References**:
+
+- `services/web/client/src/data/release-notes/` (version data files)
+- `services/web/client/src/store/slices/releaseNotesSlice.ts`
+- `services/web/client/src/store/index.ts` (persist whitelist)
+- `services/web/client/src/components/dialogs/ReleaseNotesModal.tsx`
+- `services/web/client/src/components/ReleaseNotesProvider.tsx`
+- `services/web/client/src/app/[locale]/layout.tsx` (provider mount)
+- `services/web/client/src/app/[locale]/profile/page.tsx` (profile entry point)
+- `services/web/client/src/messages/{fr|en|es}.json` (releaseNotes i18n keys)
+
+---
+
+## FR-036: Unité de mesure préférée
+
+**Rule**: Each user can choose a preferred measurement unit (`metric` or `imperial`) stored in their profile. The default value is `metric`.
+
+**Requirements**:
+
+- `preferredMeasurementUnit` field on the user model, accepting values `metric` or `imperial`
+- Editable from the profile page, Preferences section, alongside the language preference
+- Change is saved immediately (same pattern as `preferredLocale`)
+- Exposed in all user DTOs (`UpdateUserProfileDto`, `UserInfoDto`) and the frontend `User` / `UpdateUserDto` types
+- The stored preference is available globally for any future display formatting of size/weight values
+
+**Prohibitions**:
+
+- Applying conversion logic or display formatting in this ticket — only the preference storage and UI control are in scope here
+
+**Tests**:
+
+- Nominal: selecting `imperial` calls `updateCurrentUser` with `preferredMeasurementUnit: 'imperial'` and dispatches `updateUser`
+- Edge: selecting the already-active unit does nothing (no API call)
+- Failure: API error shows an error toast and does not change the stored preference
+
+**References**:
+
+- `services/adventure/api/src/resources/user/schemas/user.schema.ts`
+- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts`
+- `services/adventure/api/src/resources/user/dto/sub/user-info.dto.ts`
+- `services/web/client/src/types/user.ts`
+- `services/web/client/src/components/profile/ProfileMeasurementUnitSelect.tsx`
+- `services/web/client/src/components/profile/ProfileMeasurementUnitSelectImmediate.tsx`
+
+---
+
+## FR-037: Conversion et affichage des unités de distance
+
+**Rule**: All distance values displayed in the application (speed, senses, action range, spell range) must respect the user's `preferredMeasurementUnit`. Values are always stored in **feet** in the database. Display and input use the unit chosen in the user's profile.
+
+**Conversion rate**: 5 ft = 1.5 m (factor 0.3 exact — i.e. 1 ft = 0.3 m).
+
+**Requirements**:
+
+- All numeric distance values (speed fields, sense ranges) stored in the DB remain in feet.
+- On display, values are converted to meters when `preferredMeasurementUnit === 'metric'`, left as-is for `'imperial'`.
+- Metric display rounds to 1 decimal place (e.g. 30 ft → 9 m, 5 ft → 1.5 m).
+- In edit forms, speed and sense range inputs show the value in the user's preferred unit; on submit, the value is converted back to feet before sending to the API.
+- String-based range fields (`action.range`, `spell.range`) stored as free-text (e.g. "30 ft.", "60/120 ft.", "Self") are parsed and converted for display only — the raw string is never altered in the DB.
+- Non-numeric range strings ("Touch", "Self", "Sight", "Unlimited") pass through unchanged.
+- The unit abbreviation shown next to values must match the locale and unit: "ft" / "pi" for imperial, "m" for metric.
+- A shared utility (`utils/unit.utils.ts`) and hook (`hooks/useDistanceUnit.ts`) are used for all conversions and unit label retrieval.
+
+**Prohibitions**:
+
+- Storing metric values in the database.
+- Applying conversion in server-side code — conversion is frontend-only display logic.
+- Hardcoding "ft" labels in display components; always use the unit-aware label from the hook.
+
+**Tests**:
+
+- Nominal: `feetToMeters(30)` returns `9`, `feetToMeters(5)` returns `1.5`.
+- Nominal: `metersToFeet(9)` returns `30`.
+- Nominal: `convertRangeString("30 ft.", "metric")` returns `"9 m"`.
+- Edge: `convertRangeString("60/120 ft.", "metric")` returns `"18/36 m"`.
+- Edge: `convertRangeString("Touch", "metric")` returns `"Touch"` (unchanged).
+- Edge: `convertRangeString("Self (10-foot cone)", "metric")` converts the numeric part.
+- Edge: `feetToMeters(0)` returns `0`.
+
+**References**:
+
+- `services/web/client/src/utils/unit.utils.ts`
+- `services/web/client/src/hooks/useDistanceUnit.ts`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`
+- `services/web/client/src/components/character/tabContents/shared/NpcStatistics.tsx`
+- `services/web/client/src/components/character/tabContents/general/shared/SensesSection.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`
+- `services/web/client/src/components/character/tabContents/magic/SpellDisplay.tsx`
+
+---
+
+## FR-033: Sidebar Context Actions and Touch Alternatives
+
+**Rule**: Sidebar list items that support secondary actions (edit, delete, move, archive) MUST expose those actions via right-click context menu on desktop and via an equivalent touch-accessible interaction on tablet and mobile. Confirmation dialogs triggered from these actions MUST support keyboard validation and cancellation.
+
+**Scope**:
+
+- Player mode: characters in **Mes personnages**
+- GM mode: campaigns (environment selector), groups (active and archived), characters within groups (players and NPCs)
+
+**Requirements**:
+
+**Context menu actions (desktop — right-click)**:
+
+| Entity | Actions |
+| --- | --- |
+| Character in group (player or NPC) | Move to another group, Edit, Delete |
+| Character in **Mes personnages** | Edit, Delete |
+| Group | Edit (rename), Archive or Unarchive (section-dependent), Delete |
+| Archives section header | Delete all archived groups (only when at least one archived group exists) |
+| Campaign | Edit (rename), Delete |
+
+- **Delete all archived groups** (archives section header) MUST open a confirmation dialog stating the number of groups to delete; on confirm, MUST permanently delete every archived group in the current campaign (full campaign archived list, not only the currently loaded sidebar page); MUST refresh sidebar group data once after completion; MUST redirect navigation when the user is viewing a deleted archived group (same rules as single group delete).
+
+- **Edit character** MUST navigate to the character sheet with `?mode=edit` (existing CharacterDetailView behavior).
+- **Move character** MUST open a dialog listing other groups (active and archived) in the current campaign; archived targets MUST be visually distinguishable in the list; moving MUST persist via the character `groups` API and refresh sidebar group data.
+- **Delete** actions MUST open a confirmation dialog before irreversible deletion.
+- Destructive menu entries MUST use destructive styling consistent with existing sidebar patterns.
+
+**Touch and mobile alternatives**:
+
+- List rows in the sidebar (characters, groups) MUST expose the same action set via a **trailing overflow control** (e.g. `⋯` menu button) on mobile and tablet viewports (below the `lg` breakpoint, 1024px).
+- The overflow menu MUST mirror context-menu order and semantics.
+- Campaign items inside the environment dropdown MUST use the same overflow control pattern (swipe is prohibited in scrollable containers).
+- Tapping the row still performs primary navigation; the overflow control MUST NOT block navigation.
+- Desktop viewports (`lg` and above) MUST keep right-click context menu as the primary secondary-action entry point.
+
+**Confirmation dialogs**:
+
+- **Enter** MUST confirm the primary/destructive action when focus is inside the dialog and no text input is focused.
+- **Escape** MUST cancel/close the dialog unless a blocking operation is in progress.
+- Applies to all sidebar-triggered delete confirmations and equivalent shared confirm dialog component.
+
+**Accessibility**:
+
+- Context menus and overflow menus MUST have accessible names (`aria-label`) aligned with FR-004.
+- Overflow trigger buttons MUST be keyboard-focusable and operable with Enter/Space.
+- Focus indicators MUST remain visible (WCAG AA).
+
+**Session constraints**:
+
+- When sidebar actions are disabled during an active session (existing `disabledInSession` behavior), context menus and overflow controls MUST be disabled consistently.
+
+**Prohibitions**:
+
+- Desktop-only secondary actions without a touch/mobile equivalent.
+- Silent destructive operations without confirmation.
+- Divergent action sets between context menu and overflow menu for the same entity type.
+
+**Tests**:
+
+- Nominal: each entity type exposes expected actions via context menu.
+- Touch: overflow menu reveals actions and triggers the same handler as context menu.
+- Confirmation: Enter confirms, Escape cancels on delete dialogs.
+- Edge: move character excludes current group; delete redirects when viewing deleted entity.
+- Failure: confirm dialog ignores Enter while `isDeleting` / async in progress.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/` (sidebar components)
+- `services/web/client/src/components/ui/context-menu.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx` (`mode=edit`)
+- `docs/design.md` (visual baseline)
+
+---
+
+## FR-028 : Duplication de personnage
+
+**Règle** : Un utilisateur peut dupliquer un personnage (joueur ou PNJ) depuis le menu contextuel (clic droit bureau / bouton `…` mobile). La duplication ouvre une modale de confirmation avec un nom proposé et éditable, et deux variantes de création.
+
+**Champ d'application** :
+- **Espace joueur** (`CharactersWithoutGroupList`) : personnages joueurs sans groupe. La copie est créée sans groupe, appartenant au même utilisateur.
+- **Espace MJ** (`GroupList`) : personnages dans un groupe de campagne. La copie est créée dans le même groupe par défaut (bouton « Créer ») ou dans un groupe au choix (bouton « Créer dans un autre groupe »).
+
+**Modale de confirmation (`DuplicateCharacterDialog`)** :
+
+- S'ouvre lorsque l'utilisateur sélectionne l'action « Dupliquer » dans le menu contextuel ou le menu overflow.
+- Affiche un champ de texte prérempli avec le nom proposé : `"<firstname> <lastname> 2"` (ou `"<firstname> 2"` si pas de nom de famille, ou simplement `"2"` si les deux sont vides). Le suffixe est incrémenté (`2`, `3`…) si le nom proposé correspond déjà à un personnage existant dans la liste visible (vérification locale uniquement).
+- Le champ est éditable et autofocusé à l'ouverture.
+- La validation par **Entrée** déclenche le bouton « Créer » (action primaire), sauf si le champ de texte est vide.
+- **Escape** ferme la modale sans création.
+
+**Deux boutons de confirmation** :
+
+1. **Créer** (action primaire) : crée le personnage dans le groupe courant (espace MJ) ou sans groupe (espace joueur), puis ferme la modale. Redirige vers la fiche du personnage créé.
+2. **Créer dans un autre groupe** (espace MJ uniquement) : crée le personnage dans le même groupe, puis ouvre immédiatement la `MoveCharacterDialog` sur le personnage nouvellement créé pour le déplacer. N'est pas disponible dans l'espace joueur.
+
+**Logique de duplication (côté client)** :
+
+- Aucun nouvel endpoint backend n'est requis.
+- Le frontend copie l'ensemble des champs du personnage source, à l'exclusion de : `_id`, `createdAt`, `updatedAt`, `deletedAt`.
+- Le `firstname` du personnage copié est remplacé par la valeur saisie dans le champ de la modale ; `lastname` et `surname` sont préservés tels quels sauf si le nom proposé est une chaîne complète (auquel cas `lastname` est effacé).
+- Pour un personnage joueur dupliqué dans l'espace MJ : le tableau `groups` conserve l'identifiant du groupe courant.
+- Pour un personnage joueur dupliqué dans l'espace joueur : le tableau `groups` est `[]`.
+- Appel : `CharacterService.createCharacter(type, payload)`.
+- Toast de succès affichée après création (`characterActions.duplicate.success`).
+- Toast d'erreur affichée en cas d'échec API (`characterActions.duplicate.error`).
+
+**Accessibilité (FR-019)** :
+
+- L'option « Dupliquer » est accessible au clavier dans le menu contextuel et le menu overflow.
+- Le champ de nom dans la modale est associé à un `<label>` visible.
+- Les deux boutons ont un accessible name distinct.
+- Focus visible sur tous les éléments interactifs de la modale.
+- Escape et Enter respectent les conventions de FR-027 (Confirmation dialogs).
+
+**Interdictions** :
+
+- Modifier l'original lors de la duplication.
+- Fermer la modale sans annuler lorsqu'une opération de création est en cours.
+- Afficher « Créer dans un autre groupe » dans l'espace joueur (sans groupe).
+- Lancer la création avec un nom vide.
+- Nécessiter un nouvel endpoint backend.
+
+**Tests** :
+
+- Nominal : dupliquer un joueur sans groupe → nouveau personnage sans groupe, nom `"<nom> 2"`, toast succès, redirection vers la fiche.
+- Nominal : dupliquer un PNJ dans un groupe → même groupe, nom `"<nom> 2"`, toast succès.
+- Edge : nom vide dans la modale → bouton « Créer » désactivé.
+- Edge : Escape ferme la modale sans déclencher de création.
+- Edge : Enter dans le champ déclenche « Créer » (action primaire).
+- « Créer dans un autre groupe » → crée le personnage puis ouvre `MoveCharacterDialog`.
+- Failure : échec API → toast erreur, modale reste ouverte.
+- Accessibilité : champ autofocusé, label visible, focus visible sur boutons.
+
+**Références** :
+
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx` (à créer)
+- `services/web/client/src/services/CharacterService.ts`
+- `services/web/client/src/components/dialogs/MoveCharacterDialog.tsx`
+
+---
+
+## FR-029 : Duplication de groupe
+
+**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-028 côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
+
+**Périmètre** :
+- Groupes actifs uniquement (`GroupList`, section non-archivée). L'action de duplication n'apparaît pas en section archivée.
+- Indisponible en session active (`actionsDisabled`).
+
+**Modale (`DuplicateGroupDialog`)** :
+- Champ label prérempli avec `"<label du groupe source> 2"`, éditable, autofocusé.
+- Champ count (entier 1–99, défaut 1).
+- Bouton **Créer** (action primaire) : déclenché aussi par **Enter** si label non vide.
+- **Escape** ferme sans création.
+- Bouton désactivé si label vide ou opération en cours.
+
+**Comportement après création** :
+- Les groupes sont créés séquentiellement. Les personnages de chaque groupe sont créés séquentiellement via `CharacterService.createCharacter`.
+- Un seul toast de succès après la fin : `"N groupe(s) dupliqué(s) avec succès."`.
+- Toast d'erreur unique en cas d'échec API.
+- Mise à jour optimiste du store Redux via `addGroupToStore` pour chaque groupe créé.
+- Redirection vers le premier groupe créé (`/{locale}/campaigns/{campaignId}/groups/{groupId}/characters/{firstCharId}` ou, si le groupe source est vide, le nouveau groupe vide ne déclenche pas de redirection par personnage).
+
+**Logique de duplication (côté frontend)** :
+- Aucun nouvel endpoint backend requis.
+- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-028).
+- Créer le groupe via `GroupService.createGroup(campaignId, { label })`.
+- Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
+- Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
+
+**Accessibilité (FR-019)** :
+- L'option « Dupliquer » est accessible au clavier dans le menu contextuel et le menu overflow des groupes.
+- Champ label associé à un `<label>` visible, autofocusé à l'ouverture.
+- Boutons avec accessible names distincts.
+- Focus visible sur tous les éléments interactifs.
+- Escape et Enter respectent les conventions de FR-027.
+
+**Interdictions** :
+- Afficher l'action « Dupliquer » sur les groupes archivés.
+- Afficher l'action « Dupliquer » en session active.
+- Créer avec un label vide.
+- Modifier le groupe source.
+- Nécessiter un nouvel endpoint backend.
+
+**Tests** :
+- Nominal : dupliquer un groupe avec 2 personnages → nouveau groupe avec 2 personnages re-créés, label `"<label> 2"`, toast succès, redirection vers premier personnage du nouveau groupe.
+- Nominal : count = 3 → 3 groupes créés avec labels `"<label> 2"`, `"<label> 3"`, `"<label> 4"`.
+- Edge : groupe source sans personnage → groupe vide créé, toast succès.
+- Edge : label vide → bouton Créer désactivé.
+- Edge : Escape ferme sans création.
+- Edge : Enter déclenche Créer si label non vide.
+- Failure : échec API → toast erreur, modale reste ouverte.
+- `addGroupToStore` insère le groupe dans `activeGroups` sans doublon.
+- L'action « Dupliquer » n'apparaît pas sur les groupes archivés.
+
+**Références** :
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/dialogs/DuplicateGroupDialog.tsx`
+- `services/web/client/src/services/GroupService.ts`
+- `services/web/client/src/services/CharacterService.ts`
+- `services/web/client/src/store/slices/groupSlice.ts`

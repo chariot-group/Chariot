@@ -1,5 +1,45 @@
 # Changelog
 
+## [2.7.1] - 20-06-2026
+
+### Fixed
+- Fixed Codex spell search dialog closing when dismissing the class, language, or level filter: portaled Radix menus now render inside the dialog layer and outside-dismiss is suppressed while a filter is open (production race condition)
+
+## [2.7.0] - 20-06-2026
+
+### Added
+- Added spell filtering by class in the magic tab
+- Added spell filtering by spell level in the magic tab
+- Added "Select this spell" button alongside "Cast this spell" to allow multi-spell selection before batch-adding them to a list
+- Added combat quick view in the initiative tracker: tooltip showing AC, HP, and active effects per character; GM-only interaction bar; per-player character visibility restriction; user icons replacing character images; animated green halo when a character becomes visible to players; animated red halo on character death; GM-configurable character status
+- Added right-click context menu actions: move, duplicate, delete, and edit on characters, groups, campaigns, and NPCs; accessible via left-swipe on touch/tablet viewports
+- Added keyboard shortcuts for confirmation modals: `Enter` to confirm, `Escape` to cancel
+- Added entity duplication from right-click: duplicate a group, a character within its group, a character to "My Characters", or a character to another group
+- Added ability to temporarily place an allied NPC in the player group for the duration of a session
+- Added token transaction history on the profile page (replaces session history): shows purchases and expenses by default, filterable by type
+- Added Wheels balance in the profile popover
+- Added unit preference on the profile page: choose between metric (m) and imperial (ft), with optional dual display (primary unit + converted equivalent in parentheses)
+- Added unit conversion throughout the app: all distance/range fields convert between ft and m based on user preference
+- Added language preference section on the profile page
+- Added GDPR controls on the profile page (delete account, change password) in a dedicated "Danger zone" section
+- Added in-app release notes modal: shown on first login after a new release; previous releases browsable from the modal and from the profile page; content authored in source and auto-translated
+- Added referral section redesign: reduced footprint on the profile page
+
+### Changed
+- Spellcaster "Prepare spells" button is now hidden when the character has no level-1 or higher spells available
+- Fixed spell reload issue in session: casting a spell no longer resets the magic tab view, keeping the just-cast spell visible
+- Improved form error indicators: errors now highlight the specific fields/sections causing validation failures
+- Sidebar visual refresh: reduced nested-box effect, improved spacing clarity, and unified hover states
+- Profile page refactored into distinct sections (not cards) for better visual hierarchy
+- Rest buttons (short and long) color corrected: no longer appear disabled; responsive layout fixed
+- Session counter no longer overflows onto the logo on mobile viewport
+
+### Fixed
+- Fixed all campaigns not displaying on mobile
+- Fixed session counter overflow on the logo in mobile view
+- Fixed rest button colors appearing disabled (too dark)
+- Fixed rest button responsive layout
+
 ## [2.6.1] - 07-06-2026
 
 ### Added

@@ -24,6 +24,7 @@ import {
   TRACKER_CELL_ALIGN,
   TRACKER_GRID_TEMPLATE_COLUMNS,
 } from "@/components/initiativeTracker/constants";
+import type { RowStatusAnimation } from "@/hooks/useStatusChangedRows";
 import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import {
@@ -42,6 +43,8 @@ type InitiativeTrackerRowProps = {
   ownCharacterId?: string | null;
   ownCharacterSheetHref?: string | null;
   isActiveTurn?: boolean;
+  isNewlyRevealed?: boolean;
+  statusChangeAnimation?: RowStatusAnimation | null;
   initiativeLocked?: boolean;
   selectionEnabled?: boolean;
   isSelected?: boolean;
@@ -100,6 +103,7 @@ type InitiativeTrackerRowProps = {
         initiative: string;
         name: string;
         hitPoints: string;
+        lifeStatus: string;
         armorClass: string;
         conditions: string;
         groupLabel: string;
@@ -124,6 +128,8 @@ export function InitiativeTrackerRow({
   ownCharacterId = null,
   ownCharacterSheetHref = null,
   isActiveTurn = false,
+  isNewlyRevealed = false,
+  statusChangeAnimation = null,
   initiativeLocked = false,
   selectionEnabled = false,
   isSelected = false,
@@ -146,19 +152,24 @@ export function InitiativeTrackerRow({
   const [visibilityOpen, setVisibilityOpen] = React.useState(false);
 
   const gmName = characterName(row.firstname, row.lastname, row.surname);
-  const isOwnCharacter = Boolean(isPlayerView && ownCharacterId && row.characterId === ownCharacterId);
-  const playerResolvedName = isPlayerView ? (isOwnCharacter ? gmName : resolvePlayerTrackerDisplayName(row)) : gmName;
+  const isOwnCharacter = Boolean(
+    isPlayerView && ownCharacterId && row.characterId === ownCharacterId,
+  );
+  const playerResolvedName = isPlayerView
+    ? isOwnCharacter
+      ? gmName
+      : resolvePlayerTrackerDisplayName(row)
+    : gmName;
   const displayName = playerResolvedName ?? gmName;
   const showHiddenName = isPlayerView && !isOwnCharacter && playerResolvedName == null;
   const gmAliasDisplayName = row.playerDisplayName?.trim() ?? "";
-  const showGmAliasSubtitle = !isPlayerView && shouldShowGmPlayerAliasSubtitle(gmName, gmAliasDisplayName);
+  const showGmAliasSubtitle =
+    !isPlayerView && shouldShowGmPlayerAliasSubtitle(gmName, gmAliasDisplayName);
 
   const renderCharacterNameText = (primary: string, className = "") => (
     <span className={cn("flex w-full max-w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden", className)}>
       <span className="flex min-w-0 items-center gap-2">
-        <span
-          className="block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white"
-          title={primary}>
+        <span className="block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white" title={primary}>
           {primary}
         </span>
         {isOwnCharacter ? (
@@ -187,6 +198,7 @@ export function InitiativeTrackerRow({
   const statusLabel = labels.getStatusLabel(status);
   const showInitiative = !isPlayerView || fieldVis.initiative;
   const showHp = !isPlayerView || fieldVis.hitPoints;
+  const showLifeStatus = !isPlayerView || fieldVis.lifeStatus;
   const showAc = !isPlayerView || fieldVis.armorClass;
   const showConditions = !isPlayerView || fieldVis.conditions;
   const showGroupLabel = !isPlayerView || fieldVis.groupLabel;
@@ -194,26 +206,25 @@ export function InitiativeTrackerRow({
   const hpCellClassName = cn(
     "flex h-9 w-full min-w-[4.75rem] flex-col items-center justify-center gap-0 overflow-hidden rounded-[15px] bg-gray-middle-light px-2 tabular-nums",
     TRACKER_CELL_ALIGN.hitPoints,
-    hasTempHp && "min-h-10 py-0.5",
+    showHp && hasTempHp && "min-h-10 py-0.5",
   );
 
-  const StatusIcon = isDead ? Skull : isUnconscious ? HeartCrack : null;
+  const StatusIcon = showLifeStatus && (isDead ? Skull : isUnconscious ? HeartCrack : null);
   const statusIconColor = isDead ? "text-red" : "text-yellow";
 
   const hidden = <HiddenFieldPlaceholder label={labels.hiddenField} />;
-  const compactHidden = (
-    <HiddenFieldPlaceholder
-      label={labels.hiddenField}
-      compact
-    />
-  );
+  const compactHidden = <HiddenFieldPlaceholder label={labels.hiddenField} compact />;
 
-  const hpCellContent = showHp ? (
+  const hpCellContent = (
     <>
       <span className="flex items-center justify-center gap-1 text-sm font-medium leading-tight text-white">
-        <span>
-          {row.hitPoints}/{row.maxHitPoints ?? 0}
-        </span>
+        {showHp ? (
+          <span>
+            {row.hitPoints}/{row.maxHitPoints ?? 0}
+          </span>
+        ) : (
+          compactHidden
+        )}
         {StatusIcon ? (
           <StatusIcon
             aria-hidden="true"
@@ -221,27 +232,34 @@ export function InitiativeTrackerRow({
           />
         ) : null}
       </span>
-      {hasTempHp ? (
+      {showHp && hasTempHp ? (
         <span className="text-[10px] font-semibold leading-none text-blue-300">
           +{row.tempHitPoints}
           {labels.hpAbbr}
         </span>
       ) : null}
     </>
-  ) : (
-    compactHidden
   );
 
-  const rowBackgroundClass = isDead
+  const rowBackgroundClass = showLifeStatus && isDead
     ? "bg-red/35"
-    : isUnconscious
+    : showLifeStatus && isUnconscious
       ? "bg-yellow/30"
       : isActiveTurn
         ? "bg-blue/35"
         : "bg-gray";
   const rowRingClass = cn(
-    isActiveTurn ? "ring-2 ring-blue/60" : isDead ? "ring-2 ring-red/60" : isUnconscious ? "ring-2 ring-yellow/60" : "",
+    isActiveTurn
+      ? "ring-2 ring-blue/60"
+      : showLifeStatus && isDead
+        ? "ring-2 ring-red/60"
+        : showLifeStatus && isUnconscious
+          ? "ring-2 ring-yellow/60"
+          : "",
     isOwnCharacter && "ring-2 ring-white/30 ring-offset-1 ring-offset-background",
+    isNewlyRevealed && "shadow-[0_0_0_1.5px_rgba(154,226,1,0.65),0_0_14px_rgba(154,226,1,0.35)] animate-pulse",
+    statusChangeAnimation === "dead" && "shadow-[0_0_0_1.5px_rgba(255,45,45,0.65),0_0_14px_rgba(255,45,45,0.35)] animate-pulse",
+    statusChangeAnimation === "unconscious" && "shadow-[0_0_0_1.5px_rgba(255,196,0,0.65),0_0_14px_rgba(255,196,0,0.35)] animate-pulse",
   );
 
   const renderCharacterNameNode = () => {
@@ -318,11 +336,7 @@ export function InitiativeTrackerRow({
         </span>
       </>
     ) : isPlayerView ? (
-      detail ? (
-        hidden
-      ) : (
-        compactHidden
-      )
+      detail ? hidden : compactHidden
     ) : (
       <span className={cn("block min-w-0 max-w-full text-base text-white/70", detail ? "break-words" : "truncate")}>
         {labels.otherGroup}
@@ -344,12 +358,7 @@ export function InitiativeTrackerRow({
   const hasTabletExpansion = rowConditions.length > 1;
 
   const renderInitiativeCell = (compact = false) => (
-    <div
-      className={cn(
-        "flex w-full min-w-0 items-center",
-        !compact && TRACKER_CELL_ALIGN.initiative,
-        hasTabletExpansion && "pl-5",
-      )}>
+    <div className={cn("flex w-full min-w-0 items-center", !compact && TRACKER_CELL_ALIGN.initiative, hasTabletExpansion && "pl-5")}>
       {showInitiative ? (
         initiativeLocked || (isPlayerView && !isOwnCharacter) ? (
           <div
@@ -389,15 +398,9 @@ export function InitiativeTrackerRow({
         onClick={onToggleExpanded}
         className="absolute left-2 top-1/2 hidden size-7 -translate-y-1/2 rounded-full text-white/65 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 md:inline-flex lg:hidden">
         {isExpanded ? (
-          <ChevronDown
-            className="size-4"
-            aria-hidden="true"
-          />
+          <ChevronDown className="size-4" aria-hidden="true" />
         ) : (
-          <ChevronRight
-            className="size-4"
-            aria-hidden="true"
-          />
+          <ChevronRight className="size-4" aria-hidden="true" />
         )}
       </Button>
     ) : null;
@@ -419,7 +422,9 @@ export function InitiativeTrackerRow({
           {hpCellContent}
         </button>
       ) : (
-        <div className={cn(hpCellClassName, "text-sm font-medium", compact && "min-w-[5.25rem]")}>{hpCellContent}</div>
+        <div className={cn(hpCellClassName, "text-sm font-medium", compact && "min-w-[5.25rem]")}>
+          {hpCellContent}
+        </div>
       )}
     </div>
   );
@@ -446,10 +451,7 @@ export function InitiativeTrackerRow({
                 badgeClassName,
               )}
               title={badgeText}>
-              <Icon
-                aria-hidden="true"
-                className="size-3.5 shrink-0"
-              />
+              <Icon aria-hidden="true" className="size-3.5 shrink-0" />
               <span className="min-w-0 truncate">{badgeText}</span>
             </span>
           );
@@ -501,9 +503,8 @@ export function InitiativeTrackerRow({
   return (
     <>
       <div
-        className={`relative hidden w-full max-w-full min-w-0 items-center gap-x-2 rounded-[22px] py-3 pr-3 text-sm text-white shadow-lg transition-colors lg:gap-x-3 lg:px-5 lg:text-base md:grid ${
-          hasTabletExpansion ? "pl-5 lg:pl-5" : "pl-3 lg:pl-5"
-        } ${rowBackgroundClass} ${rowRingClass}`}
+        className={`relative hidden w-full max-w-full min-w-0 items-center gap-x-2 rounded-[22px] py-3 pr-3 text-sm text-white shadow-lg transition-colors lg:gap-x-3 lg:px-5 lg:text-base md:grid ${hasTabletExpansion ? "pl-5 lg:pl-5" : "pl-3 lg:pl-5"
+          } ${rowBackgroundClass} ${rowRingClass}`}
         style={{ gridTemplateColumns }}
         data-status={status}
         aria-label={status === "alive" ? undefined : statusLabel}>
@@ -542,8 +543,7 @@ export function InitiativeTrackerRow({
 
         {renderConditionsCell()}
 
-        <span
-          className={`flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden ${TRACKER_CELL_ALIGN.group}`}>
+        <span className={`flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden ${TRACKER_CELL_ALIGN.group}`}>
           {groupContent}
         </span>
       </div>
@@ -591,20 +591,16 @@ export function InitiativeTrackerRow({
               onClick={onToggleExpanded}
               className="size-9 shrink-0 rounded-[12px] text-white/75 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40">
               {isExpanded ? (
-                <ChevronDown
-                  className="size-5"
-                  aria-hidden="true"
-                />
+                <ChevronDown className="size-5" aria-hidden="true" />
               ) : (
-                <ChevronRight
-                  className="size-5"
-                  aria-hidden="true"
-                />
+                <ChevronRight className="size-5" aria-hidden="true" />
               )}
             </Button>
           </div>
 
-          <div className="min-w-0 max-w-full overflow-hidden pt-1 text-left">{renderCharacterNameNode()}</div>
+          <div className="min-w-0 max-w-full overflow-hidden pt-1 text-left">
+            {renderCharacterNameNode()}
+          </div>
 
           <div className="flex min-w-0 flex-col items-end gap-1">
             {isActiveTurn ? (
@@ -667,7 +663,9 @@ export function InitiativeTrackerRow({
               labels.visibilityDialog.fields.groupLabel,
               <span className="flex min-w-0 items-start gap-2 overflow-hidden">{renderGroupContent(true)}</span>,
             )}
-            {showGmAliasSubtitle ? renderDetailItem(labels.playerDisplayNameSubtitle, gmAliasDisplayName) : null}
+            {showGmAliasSubtitle
+              ? renderDetailItem(labels.playerDisplayNameSubtitle, gmAliasDisplayName)
+              : null}
           </dl>
 
           <div className="mt-2 rounded-[15px] bg-black/10 px-3 py-2">
@@ -685,7 +683,9 @@ export function InitiativeTrackerRow({
           open={visibilityOpen}
           onOpenChange={setVisibilityOpen}
           labels={labels.visibilityDialog}
-          onLeaveInitiative={onRemoveFromInitiative ? () => onRemoveFromInitiative(row.id) : undefined}
+          onLeaveInitiative={
+            onRemoveFromInitiative ? () => onRemoveFromInitiative(row.id) : undefined
+          }
           onApply={(visible, playerFieldVisibility, playerDisplayName) => {
             onUpdateRow(row.id, {
               visible,

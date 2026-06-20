@@ -5,10 +5,12 @@ import { KeycloakProvider } from "@/providers/KeycloakProvider";
 import ReduxProvider from "@/providers/ReduxProvider";
 import ToastContainer from "@/components/ToastContainer";
 import LocaleDetector from "@/components/LocaleDetector";
+import AccountLocaleSync from "@/components/AccountLocaleSync";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
 import PostLoginNavigator from "@/components/PostLoginNavigator";
+import ReleaseNotesProvider from "@/components/ReleaseNotesProvider";
 import SessionCharacterSyncClientDynamic from "@/components/SessionCharacterSyncClientDynamic";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/Sidebar";
@@ -45,7 +47,6 @@ export default async function RootLayout({
 }>) {
   const { locale } = await params;
   const messages = await getMessages();
-  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
 
   return (
     <html lang={locale}>
@@ -60,14 +61,13 @@ export default async function RootLayout({
 
                 <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative">
                   <PostLoginNavigator />
+                  <ReleaseNotesProvider />
                   <LocaleDetector />
+                  <AccountLocaleSync />
                   <ToastContainer />
                   <Header />
 
                   <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
-                  {appVersion && (
-                    <p className="absolute bottom-0 left-2 lg:inset-x-0 text-center text-[10px] text-white/55 select-none">Chariot v{appVersion}</p>
-                  )}
                 </div>
               </SidebarProvider>
             </ReduxProvider>

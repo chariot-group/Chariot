@@ -4,8 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ChevronRight, Users } from "lucide-react";
+import { ChevronRight, Swords } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectUser } from "@/store/slices/userSlice";
@@ -17,12 +18,16 @@ import {
   selectSessionParticipantDisplayNames,
   mergeSessionParticipantDisplayNames,
   pruneSessionParticipantDisplayNames,
+  selectGmGuestCharacterIds,
 } from "@/store/slices/sessionSlice";
 import { selectOpenSessionPlayers, setOpenSessionPlayers } from "@/store/slices/sidebarSlice";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisplayNames";
 import { useSidebar } from "@/components/ui/sidebar";
 import characterService from "@/services/CharacterService";
+import { removeGmGuestCharacterFromSession, selectBattleInitialized, removeInitiativeTrackerRow } from "@/store/slices/sessionSlice";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
+import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 
 const ROSTER_FETCH_DEBOUNCE_MS = 220;
 
@@ -43,7 +48,10 @@ export default function GmSessionPlayersSidebarSection() {
   const remoteVersions = useAppSelector(selectCharacterSheetRemoteVersions);
 
   const displayNames = useAppSelector(selectSessionParticipantDisplayNames);
+  const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const battleInitialized = useAppSelector(selectBattleInitialized);
   const [characterLabels, setCharacterLabels] = React.useState<Record<string, string>>({});
+  const [guestLabels, setGuestLabels] = React.useState<Record<string, string>>({});
 
   const locale = pathname?.split("/")[1] ?? "fr";
 
@@ -206,7 +214,28 @@ export default function GmSessionPlayersSidebarSection() {
     };
   }, [contextMode, dispatch, displayNames, isGm, isInSession, rosterStableKey, sessionCode]);
 
-  if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || presenceRoster.length === 0) {
+  React.useEffect(() => {
+    if (!isInSession || contextMode !== "gm" || !isGm || gmGuestCharacterIds.length === 0) return;
+    let cancelled = false;
+    void (async () => {
+      const updates: Record<string, string> = {};
+      for (const cid of gmGuestCharacterIds) {
+        try {
+          const ch = await characterService.getCharacterById(cid, { sessionCode: sessionCode ?? undefined });
+          let label = ch.firstname?.trim() ?? "";
+          if (ch.lastname) label += ` ${ch.lastname.trim()}`;
+          updates[cid] = label.trim() || cid;
+        } catch {
+          updates[cid] = cid;
+        }
+        if (cancelled) return;
+      }
+      if (!cancelled) setGuestLabels((prev) => ({ ...prev, ...updates }));
+    })();
+    return () => { cancelled = true; };
+  }, [contextMode, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
+
+  if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
     return null;
   }
 
@@ -220,31 +249,34 @@ export default function GmSessionPlayersSidebarSection() {
 
   return (
     <Collapsible
-      className="rounded-[15px] border-2"
       open={openSection}
       onOpenChange={handleOpenChange}>
-      <CollapsibleTrigger
-        aria-expanded={openSection}
-        aria-controls="session-players-content"
-        className={`w-full cursor-pointer hover:bg-white py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center gap-2 group/context focus-visible:border ${openSection ? "bg-white" : ""}`}>
-        <span className="flex min-w-0 items-center gap-2">
-          <Users
+      <div className="flex w-full items-center gap-1 rounded-[12px] bg-card py-2 px-1.5 pl-3">
+        <CollapsibleTrigger
+          aria-expanded={openSection}
+          aria-controls="session-players-content"
+          className="flex flex-1 min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
+          <ChevronRight
             aria-hidden="true"
-            className={`h-4 w-4 shrink-0 transition-colors group-hover/context:text-black ${openSection ? "text-black" : ""}`}
+            className={cn("h-4 w-4 shrink-0 transition-all duration-100", openSection && "rotate-90")}
           />
-          <span
-            className={`text-sm truncate group-hover/context:text-black ${openSection ? "text-black font-bold" : ""}`}>
+          <span className={cn("min-w-0 flex-1 truncate text-sm text-left", openSection && "font-bold")}>
             {t("sessionPlayers")}
           </span>
+        </CollapsibleTrigger>
+        <span className="flex shrink-0 items-center justify-center rounded-[8px] p-1.5">
+          <Swords
+            aria-hidden="true"
+            className="h-4 w-4 text-yellow"
+          />
         </span>
-        <ChevronRight
-          aria-hidden="true"
-          className={`w-5 h-5 group-hover/context:text-black transition-all duration-100 ${openSection ? "rotate-90 text-black" : ""}`}
-        />
-      </CollapsibleTrigger>
+      </div>
       <CollapsibleContent
         id="session-players-content"
-        className="my-2 flex mx-5 flex-col gap-1">
+        className="mt-1 ml-3 flex flex-col gap-1">
+        {presenceRoster.length === 0 && gmGuestCharacterIds.length === 0 && (
+          <div className="px-3 py-1 text-sm text-white/40">{t("noCharacters")}</div>
+        )}
         {presenceRoster.map((p) => {
           const cid = p.characterId?.trim();
           const userLabel = displayNames[p.userId] ?? SESSION_PARTICIPANT_NAME_LOADING;
@@ -254,40 +286,103 @@ export default function GmSessionPlayersSidebarSection() {
             ? `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`
             : "";
           const isSelected = Boolean(cid && selectedCharacterId === cid);
-          const rowClasses = `w-full text-xs py-1.5 px-3 rounded-[8px] flex items-center gap-2 transition-all duration-100 focus-visible:ring-1 ${
-            hasSheet ? "hover:bg-card/50 cursor-pointer" : "cursor-default opacity-80"
-          } ${isSelected ? "bg-card/50 font-bold" : ""}`;
 
           const primaryLabel = hasSheet ? charLabel : t("sessionPlayerChoosingCharacter");
+          const inlineLabel = `${primaryLabel} – ${userLabel}`;
 
-          const inlineLabel = `${primaryLabel} (${userLabel})`;
-
-          const innerLabel = (
-            <span className="flex min-w-0 flex-1 items-center">
-              <span className="min-w-0 truncate">{primaryLabel}</span>
-              <span className="shrink-0">{` (${userLabel})`}</span>
-            </span>
+          const rowClasses = cn(
+            "relative w-full shrink-0 py-1.5 px-3 rounded-[12px] transition-all duration-150 flex flex-col gap-0 focus-visible:ring-1 focus-visible:ring-white/50",
+            hasSheet
+              ? cn("cursor-pointer", isSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10")
+              : "cursor-default opacity-60",
           );
 
-          return hasSheet ? (
-            <Link
-              key={`${p.userId}-${cid ?? "pending"}`}
-              href={href}
-              aria-current={isSelected ? "page" : undefined}
-              aria-label={inlineLabel}
-              className={rowClasses}
-              onClick={() => {
-                if (isMobile) setOpenMobile(false);
-              }}>
-              {innerLabel}
-            </Link>
-          ) : (
-            <div
-              key={`${p.userId}-${cid ?? "pending"}`}
-              className={rowClasses}
-              aria-label={inlineLabel}>
-              {innerLabel}
-            </div>
+          const innerLabel = (
+            <>
+              {isSelected && hasSheet && (
+                <span
+                  className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+              )}
+              <span className={cn("text-sm truncate w-full", !hasSheet && "italic")}>
+                {primaryLabel}
+              </span>
+              <span className={cn("text-xs truncate w-full", isSelected ? "text-black/50" : "text-white/50")}>
+                {userLabel}
+              </span>
+            </>
+          );
+
+          return (
+            hasSheet ? (
+              <Link
+                key={`${p.userId}-${cid ?? "pending"}`}
+                href={href}
+                aria-current={isSelected ? "page" : undefined}
+                aria-label={inlineLabel}
+                className={rowClasses}
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                }}>
+                {innerLabel}
+              </Link>
+            ) : (
+              <div
+                key={`${p.userId}-${cid ?? "pending"}`}
+                className={rowClasses}
+                aria-label={inlineLabel}>
+                {innerLabel}
+              </div>
+            )
+          );
+        })}
+        {gmGuestCharacterIds.map((cid) => {
+          const label = guestLabels[cid] ?? cid;
+          const href = `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`;
+          const isSelected = selectedCharacterId === cid;
+          const guestActions = [
+            {
+              id: "removeFromSession",
+              label: t("removeFromSession"),
+              onSelect: () => {
+                dispatch(removeGmGuestCharacterFromSession(cid));
+                if (battleInitialized) {
+                  dispatch(removeInitiativeTrackerRow(`${SESSION_PARTICIPANTS_GROUP_ID}:${cid}`));
+                }
+              },
+            },
+          ];
+          return (
+            <SidebarItemWithActions
+              key={`gm-guest-${cid}`}
+              actions={guestActions}
+              contextMenuLabel={t("characterActions")}
+              className={cn(
+                "rounded-[12px] transition-all duration-100",
+                isSelected ? "bg-white text-black" : "hover:bg-white/10",
+              )}>
+              <Link
+                href={href}
+                aria-current={isSelected ? "page" : undefined}
+                aria-label={`${label} – ${t("gmGuestCharacter")}`}
+                className={cn(
+                  "relative flex min-w-0 flex-1 cursor-pointer flex-col gap-0 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                  isSelected && "pl-4 font-bold text-black",
+                )}
+                onClick={() => { if (isMobile) setOpenMobile(false); }}>
+                {isSelected && (
+                  <span
+                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="truncate w-full text-sm">{label}</span>
+                <span className={cn("truncate w-full text-xs", isSelected ? "text-black/50" : "text-white/50")}>
+                  {t("gmGuestCharacter")}
+                </span>
+              </Link>
+            </SidebarItemWithActions>
           );
         })}
       </CollapsibleContent>

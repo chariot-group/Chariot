@@ -101,11 +101,12 @@ export function normalizeInitiativeTrackerConditionEntry(
 
 export type InitiativeTrackerRowKind = 'player' | 'npc';
 
-/** FR-021 — champs visibles pour les joueurs sur une ligne du tracker. */
+/** FR-021 / FR-033 — champs visibles pour les joueurs sur une ligne du tracker. */
 export interface InitiativeTrackerPlayerFieldVisibility {
     initiative: boolean;
     name: boolean;
     hitPoints: boolean;
+    lifeStatus: boolean;
     armorClass: boolean;
     conditions: boolean;
     groupLabel: boolean;
@@ -115,6 +116,7 @@ export const DEFAULT_NPC_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFieldVi
     initiative: false,
     name: true,
     hitPoints: false,
+    lifeStatus: false,
     armorClass: false,
     conditions: false,
     groupLabel: false,
@@ -124,6 +126,7 @@ export const DEFAULT_PLAYER_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFiel
     initiative: true,
     name: true,
     hitPoints: true,
+    lifeStatus: true,
     armorClass: true,
     conditions: true,
     groupLabel: true,
@@ -156,15 +159,16 @@ export function normalizePlayerFieldVisibility(
         initiative: typeof value.initiative === 'boolean' ? value.initiative : defaults.initiative,
         name: typeof value.name === 'boolean' ? value.name : defaults.name,
         hitPoints: typeof value.hitPoints === 'boolean' ? value.hitPoints : defaults.hitPoints,
+        lifeStatus: typeof value.lifeStatus === 'boolean' ? value.lifeStatus : defaults.lifeStatus,
         armorClass: typeof value.armorClass === 'boolean' ? value.armorClass : defaults.armorClass,
         conditions: typeof value.conditions === 'boolean' ? value.conditions : defaults.conditions,
         groupLabel: typeof value.groupLabel === 'boolean' ? value.groupLabel : defaults.groupLabel,
     };
 }
 
-/** FR-021 — seuls les PJ du groupe « participants session » restent visibles et non masquables. */
+/** FR-021 / FR-029 — seuls les PJ non-MJ du groupe « participants session » sont non masquables. */
 export function applyPlayerRowVisibilityRules(row: InitiativeTrackerRow): InitiativeTrackerRow {
-    if (!isSessionParticipantTrackerRow(row)) {
+    if (!isSessionParticipantTrackerRow(row) || row.isGmGuest) {
         return row;
     }
     return {
@@ -208,6 +212,8 @@ export interface InitiativeTrackerRow {
     kind: InitiativeTrackerRowKind;
     /** FR-020 — miroir de `deathSaves.failures` (uniquement pertinent pour `kind === 'player'`). */
     deathSavesFailures: number;
+    /** FR-029 — personnage MJ promu temporairement dans le groupe participants session. */
+    isGmGuest?: boolean;
 }
 
 /** FR-018 / FR-021 — fabrique une ligne tracker (setup ou ajout en cours de combat). */
@@ -291,6 +297,8 @@ export interface CurrentSessionState {
     lastConsultedSheetPath: string | null;
     /** Libellés affichables des participants (username ou prénom + nom). */
     participantDisplayNames: Record<string, string>;
+    /** FR-029 — IDs des personnages MJ temporairement promus dans le groupe participants session. */
+    gmGuestCharacterIds: string[];
 }
 
 const initialState: CurrentSessionState = {
@@ -311,6 +319,7 @@ const initialState: CurrentSessionState = {
     characterSheetRemoteVersions: {},
     lastConsultedSheetPath: null,
     participantDisplayNames: {},
+    gmGuestCharacterIds: [],
 };
 
 const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow => {
@@ -463,6 +472,7 @@ const sessionSlice = createSlice({
             state.characterSheetRemoteVersions = {};
             state.lastConsultedSheetPath = null;
             state.participantDisplayNames = {};
+            state.gmGuestCharacterIds = [];
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
             state.status = action.payload;
@@ -612,7 +622,7 @@ const sessionSlice = createSlice({
             state,
             action: PayloadAction<{
                 ids: string[];
-                changes: Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>> & {
+                changes: Omit<Partial<Omit<InitiativeTrackerRow, 'id' | 'playerDisplayName'>>, 'playerFieldVisibility'> & {
                     playerFieldVisibility?: Partial<InitiativeTrackerPlayerFieldVisibility>;
                 };
                 playerDisplayName?: string;
@@ -733,6 +743,19 @@ const sessionSlice = createSlice({
             if (!id) return;
             state.characterSheetRemoteVersions[id] = (state.characterSheetRemoteVersions[id] ?? 0) + 1;
         },
+        /** FR-029 — ajoute un personnage MJ dans le groupe participants session. */
+        addGmGuestCharacterToSession: (state, action: PayloadAction<string>) => {
+            const id = action.payload.trim();
+            if (!id || (state.gmGuestCharacterIds ?? []).includes(id)) return;
+            if (!state.gmGuestCharacterIds) state.gmGuestCharacterIds = [];
+            state.gmGuestCharacterIds.push(id);
+        },
+        /** FR-029 — retire un personnage MJ du groupe participants session. */
+        removeGmGuestCharacterFromSession: (state, action: PayloadAction<string>) => {
+            const id = action.payload.trim();
+            if (!id) return;
+            state.gmGuestCharacterIds = (state.gmGuestCharacterIds ?? []).filter((cid) => cid !== id);
+        },
     },
 });
 
@@ -762,6 +785,8 @@ export const {
     setLastConsultedSheetPath,
     mergeSessionParticipantDisplayNames,
     pruneSessionParticipantDisplayNames,
+    addGmGuestCharacterToSession,
+    removeGmGuestCharacterFromSession,
 } = sessionSlice.actions;
 
 export const selectCurrentSession = (state: RootState) => state.session;
@@ -792,6 +817,8 @@ export const selectCurrentUserParticipant = (state: RootState, userId: string) =
 export const selectSessionTokensByUser = (state: RootState) => state.session.tokensByUser;
 export const selectCharacterSheetRemoteVersions = (state: RootState) =>
     state.session.characterSheetRemoteVersions ?? {};
+export const selectGmGuestCharacterIds = (state: RootState) =>
+    state.session.gmGuestCharacterIds ?? [];
 
 export const selectLastConsultedSheetPath = (state: RootState) =>
     state.session.lastConsultedSheetPath ?? null;

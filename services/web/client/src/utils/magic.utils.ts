@@ -25,6 +25,11 @@ export function hasLevel0Spells(spellcasting: Spellcasting): boolean {
     return spellcasting.spells.some((spell) => spell.level === 0);
 }
 
+/** Au moins un sort de niveau 1 ou plus (hors cantrips). */
+export function hasLevel1OrHigherSpells(spellcasting: Spellcasting): boolean {
+    return (spellcasting.spells ?? []).some((spell) => Number(spell.level) >= 1);
+}
+
 /**
  * Récupère la liste des sorts d'un niveau donné
  */
@@ -265,6 +270,13 @@ export function incrementSpellSlotUsedInSpellcastingList(
             },
         };
     });
+}
+
+/** Réattache le sort sélectionné à l’objet courant dans la liste (après PATCH / synchro WS). */
+export function rebindSelectedSpellToList(spells: Spell[], selected: Spell | null): Spell | null {
+    if (!selected) return null;
+    const idx = findSpellIndexInList(spells, selected);
+    return idx >= 0 ? spells[idx] : selected;
 }
 
 /** Index du sort (référence d’objet, puis nom + niveau + usesPerDay). */

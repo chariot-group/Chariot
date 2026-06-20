@@ -22,6 +22,8 @@ import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement }
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
+import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
+import { CombatBanner } from "@/components/character/CombatBanner";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -79,13 +81,13 @@ export default function CharacterDetailView({
   const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
 
   // Fonction pour changer d'onglet et mettre à jour l'URL
-  const handleTabChange = (newTab: string) => {
+  const handleTabChange = React.useCallback((newTab: string) => {
     const tab = newTab as CharacterTab;
     // Mettre à jour l'URL sans recharger la page
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
     router.replace(`?${params.toString()}`, { scroll: false });
-  };
+  }, [router, searchParams]);
 
   // Déterminer le type de personnage
   const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
@@ -106,7 +108,16 @@ export default function CharacterDetailView({
   });
 
   // Abonnement explicite (sinon isDirty ne met pas à jour le footer quand seuls des champs imbriqués changent, ex. abilities)
-  const { isDirty } = useFormState({ control: form.control });
+  const { errors, isDirty } = useFormState({ control: form.control });
+  const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
+
+  const handleInvalid = React.useCallback((errors: Record<string, unknown>) => {
+    const firstErrorTab = getFirstCharacterTabWithError(errors);
+    if (firstErrorTab && firstErrorTab !== activeTab) {
+      handleTabChange(firstErrorTab);
+    }
+    toast.error(t("updateError"));
+  }, [activeTab, handleTabChange, t, toast]);
 
   useEffect(() => {
     if (!playedBySubjectId) {
@@ -168,7 +179,7 @@ export default function CharacterDetailView({
 
       event.preventDefault();
       event.stopPropagation();
-      form.handleSubmit(onUpdate, () => toast.error(t("updateError")))();
+      form.handleSubmit(onUpdate, handleInvalid)();
     };
 
     window.addEventListener("keydown", handleGlobalShortcuts, true);
@@ -176,7 +187,87 @@ export default function CharacterDetailView({
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcuts, true);
     };
-  }, [form, isDirty, isEditing, onCancel, onUpdate, setIsEditing, t, toast]);
+  }, [form, handleInvalid, isDirty, isEditing, onCancel, onUpdate, setIsEditing]);
+
+  const characterFooterActions = showEditControls ? (
+    <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
+      {isEditing ? (
+        <React.Fragment>
+          <Button
+            type="submit"
+            form="character-update-form"
+            disabled={isSaving || !isDirty}
+            tabIndex={0}
+            className={`
+              max-w-full min-w-0 lg:text-sm text-xs font-semibold
+              ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+              ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+              ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+              ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+              ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+            `}
+            aria-label={t("saveChanges")}
+            aria-busy={isSaving}>
+            <Save
+              className="lg:size-5 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{isSaving ? t("saving") : t("saveChanges")}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              onCancel();
+              setIsEditing(false);
+            }}
+            disabled={isSaving}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onCancel();
+                setIsEditing(false);
+              }
+            }}
+            className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+            aria-label={t("cancel")}>
+            <X
+              className="lg:size-5 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{t("cancel")}</span>
+          </Button>
+        </React.Fragment>
+      ) : (
+        <Button
+          type="button"
+          onClick={() => setIsEditing(true)}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsEditing(true);
+            }
+          }}
+          className={`
+            max-w-full min-w-0 lg:text-sm text-xs font-semibold
+            ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+            ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+            ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+            ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+            ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+          `}
+          aria-label={t("editCharacter")}>
+          <SquarePen
+            className="lg:size-5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span className="truncate">{t("editCharacter")}</span>
+        </Button>
+      )}
+    </div>
+  ) : null;
 
   return (
     <main
@@ -191,7 +282,7 @@ export default function CharacterDetailView({
             return;
           }
 
-          form.handleSubmit(onUpdate)(event);
+          form.handleSubmit(onUpdate, handleInvalid)(event);
         }}
         onKeyDown={(event) => {
           if (isEnterWithModifiers(event)) {
@@ -285,6 +376,7 @@ export default function CharacterDetailView({
                     activeTab={activeTab}
                     listClassName="gap-1 lg:flex-wrap"
                     triggerClassName="grow-0"
+                    tabsWithErrors={isEditing ? tabsWithErrors : undefined}
                   />
                 </div>
               </div>
@@ -304,88 +396,11 @@ export default function CharacterDetailView({
           </div>
         </Tabs>
 
-        {/* Footer avec boutons - fixe en bas */}
-        {showEditControls ? (
+        {isInSession ? (
+          <CombatBanner characterId={character._id} footerActions={characterFooterActions} />
+        ) : characterFooterActions ? (
           <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] border-t border-transparent">
-            <div className="w-full mx-auto flex flex-row-reverse gap-2">
-              {isEditing ? (
-                <React.Fragment>
-                  {/* Mode édition : boutons Annuler et Sauvegarder */}
-                  <Button
-                    type="submit"
-                    form="character-update-form"
-                    disabled={isSaving || !isDirty}
-                    tabIndex={0}
-                    className={`
-                  lg:text-sm text-xs font-semibold
-                  ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-                  ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-                  ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-                  ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-                  ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-                `}
-                    aria-label={t("saveChanges")}
-                    aria-busy={isSaving}>
-                    <Save
-                      className="lg:size-5 size-4"
-                      aria-hidden="true"
-                    />
-                    {isSaving ? t("saving") : t("saveChanges")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      onCancel();
-                      setIsEditing(false);
-                    }}
-                    disabled={isSaving}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onCancel();
-                        setIsEditing(false);
-                      }
-                    }}
-                    className="lg:text-sm text-xs font-semibold"
-                    aria-label={t("cancel")}>
-                    <X
-                      className="lg:size-5 size-4"
-                      aria-hidden="true"
-                    />
-                    {t("cancel")}
-                  </Button>
-                </React.Fragment>
-              ) : (
-                /* Mode lecture : bouton Modifier */
-                <Button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setIsEditing(true);
-                    }
-                  }}
-                  className={`
-                lg:text-sm text-xs font-semibold
-                ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-                ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-                ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-                ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-                ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-              `}
-                  aria-label={t("editCharacter")}>
-                  <SquarePen
-                    className="lg:size-5 size-4"
-                    aria-hidden="true"
-                  />
-                  {t("editCharacter")}
-                </Button>
-              )}
-            </div>
+            <div className="flex w-full justify-end">{characterFooterActions}</div>
           </div>
         ) : null}
       </form>

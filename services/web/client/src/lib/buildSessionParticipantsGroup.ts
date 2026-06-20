@@ -79,6 +79,7 @@ export async function buildSessionParticipantsGroup(
     campaignId: string,
     participantDisplayNames: Record<string, string>,
     sessionCode?: string | null,
+    gmGuestCharacterIds?: string[],
 ): Promise<SessionParticipantsBattleGroup> {
     const nonGameMasterParticipants = participants.filter((participant) => participant.status !== "gameMaster");
     const resolvedDisplayNames = await enrichParticipantDisplayNames(
@@ -145,6 +146,33 @@ export async function buildSessionParticipantsGroup(
             },
         );
     });
+
+    if (gmGuestCharacterIds && gmGuestCharacterIds.length > 0) {
+        const missingGuestIds = gmGuestCharacterIds.filter((id) => !uniqueCharacters.has(id));
+        const fetchedGuests = await Promise.allSettled(
+            missingGuestIds.map((id) => characterService.getCharacterById(id, { sessionCode })),
+        );
+        fetchedGuests.forEach((result) => {
+            if (result.status !== "fulfilled") return;
+            const ch = result.value;
+            fetchedCharacterById.set(ch._id, {
+                _id: ch._id,
+                firstname: ch.firstname,
+                lastname: ch.lastname,
+                surname: ch.surname,
+                createdBy: ch.createdBy,
+                progression: (ch as Player).progression,
+            });
+        });
+
+        for (const guestId of gmGuestCharacterIds) {
+            if (uniqueCharacters.has(guestId)) continue;
+            const existing = characterById.get(guestId) ?? fetchedCharacterById.get(guestId);
+            if (existing) {
+                uniqueCharacters.set(guestId, existing);
+            }
+        }
+    }
 
     const now = new Date().toISOString();
 

@@ -15,6 +15,8 @@ import { Model } from 'mongoose';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
 import { AddHistoryDto } from '@/resources/user/dto/add-history.dto';
 
+export const TOKEN_PURCHASE_CAMPAIGN_NAME = 'Shop';
+
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
@@ -59,6 +61,9 @@ export class UserService {
         avatar: keycloakUser.attributes?.avatar?.[0] || null,
         balance: user.balance,
         history: user.history,
+        preferredLocale: user.preferredLocale,
+        preferredMeasurementUnit: user.preferredMeasurementUnit,
+        showBothUnits: user.showBothUnits,
       };
 
       const message: string = `User #${id} found in ${end - start}ms`;
@@ -127,13 +132,27 @@ export class UserService {
 
   async updateUser(
     keycloakId: string,
-    updateData: { firstName?: string; lastName?: string; email?: string },
+    updateData: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      preferredLocale?: string;
+      preferredMeasurementUnit?: string;
+      showBothUnits?: boolean;
+    },
   ): Promise<IResponse<UserInfoDto>> {
     try {
       const start: number = Date.now();
 
+      const {
+        preferredLocale,
+        preferredMeasurementUnit,
+        showBothUnits,
+        ...keycloakUpdateData
+      } = updateData;
+
       // Update user in Keycloak
-      await this.keycloakService.updateUser(keycloakId, updateData);
+      await this.keycloakService.updateUser(keycloakId, keycloakUpdateData);
 
       // Fetch updated user data from Keycloak
       const keycloakUser: UserRepresentation =
@@ -158,6 +177,23 @@ export class UserService {
         });
       }
 
+      if (preferredLocale !== undefined) {
+        user.preferredLocale = preferredLocale;
+      }
+      if (preferredMeasurementUnit !== undefined) {
+        user.preferredMeasurementUnit = preferredMeasurementUnit;
+      }
+      if (showBothUnits !== undefined) {
+        user.showBothUnits = showBothUnits;
+      }
+      if (
+        preferredLocale !== undefined ||
+        preferredMeasurementUnit !== undefined ||
+        showBothUnits !== undefined
+      ) {
+        await user.save();
+      }
+
       const end: number = Date.now();
 
       const data: UserInfoDto = {
@@ -169,6 +205,9 @@ export class UserService {
         avatar: keycloakUser.attributes?.avatar?.[0] || null,
         balance: user.balance,
         history: user.history,
+        preferredLocale: user.preferredLocale,
+        preferredMeasurementUnit: user.preferredMeasurementUnit,
+        showBothUnits: user.showBothUnits,
       };
 
       const message: string = `User #${keycloakId} updated successfully in ${end - start}ms`;
@@ -238,6 +277,9 @@ export class UserService {
         avatar: keycloakUser.attributes?.avatar?.[0] || null,
         balance: user.balance,
         history: user.history,
+        preferredLocale: user.preferredLocale,
+        preferredMeasurementUnit: user.preferredMeasurementUnit,
+        showBothUnits: user.showBothUnits,
       };
 
       const message: string = `History entry added for user #${keycloakId} in ${end - start}ms`;
@@ -277,6 +319,11 @@ export class UserService {
       }
 
       user.balance += amount;
+      user.history.push({
+        date: new Date(),
+        campaignName: TOKEN_PURCHASE_CAMPAIGN_NAME,
+        value: -amount,
+      });
       await user.save();
 
       const end: number = Date.now();

@@ -5,6 +5,7 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { Select as SelectPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
+import { useDialogPortalContainer } from "@/components/ui/dialog-portal-container";
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return (
@@ -63,33 +64,46 @@ function SelectContent({
   children,
   position = "item-aligned",
   align = "center",
+  portalled = true,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Content>) {
-  return (
-    <SelectPrimitive.Portal>
-      <SelectPrimitive.Content
-        data-slot="select-content"
+}: React.ComponentProps<typeof SelectPrimitive.Content> & {
+  portalled?: boolean;
+}) {
+  const dialogPortalContainer = useDialogPortalContainer();
+  const resolvedPosition = portalled ? position : "popper";
+
+  const content = (
+    <SelectPrimitive.Content
+      data-slot="select-content"
+      className={cn(
+        "bg-gray-middle-light data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-[15px] border shadow-md",
+        resolvedPosition === "popper" &&
+          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+        !portalled && "absolute",
+        className,
+      )}
+      position={resolvedPosition}
+      align={align}
+      {...props}>
+      <SelectScrollUpButton />
+      <SelectPrimitive.Viewport
         className={cn(
-          "bg-gray-middle-light data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-[15px] border shadow-md",
-          position === "popper" &&
-            "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-          className,
-        )}
-        position={position}
-        align={align}
-        {...props}>
-        <SelectScrollUpButton />
-        <SelectPrimitive.Viewport
-          className={cn(
-            "p-1",
-            position === "popper" &&
-              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1",
-          )}>
-          {children}
-        </SelectPrimitive.Viewport>
-        <SelectScrollDownButton />
-      </SelectPrimitive.Content>
-    </SelectPrimitive.Portal>
+          "p-1",
+          resolvedPosition === "popper" &&
+            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1",
+        )}>
+        {children}
+      </SelectPrimitive.Viewport>
+      <SelectScrollDownButton />
+    </SelectPrimitive.Content>
+  );
+
+  if (!portalled) {
+    return content;
+  }
+
+  return (
+    <SelectPrimitive.Portal container={dialogPortalContainer ?? undefined}>{content}</SelectPrimitive.Portal>
   );
 }
 

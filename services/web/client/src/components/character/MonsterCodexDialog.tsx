@@ -357,9 +357,9 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
         <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
           {/* Partie gauche : Recherche et résultats */}
           <div
-            className={`flex flex-col gap-4 w-full lg:w-1/4 overflow-hidden min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
+            className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
             {/* Barre de recherche et filtre de langue */}
-            <div className="flex flex-col md:flex-row lg:flex-col gap-2 w-full">
+            <div className="flex shrink-0 flex-col gap-2 w-full overflow-visible md:flex-row lg:flex-col">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
@@ -381,7 +381,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                     setSelectedLang(value);
                   }
                 }}>
-                <SelectTrigger className="w-45">
+                <SelectTrigger className="w-full focus-visible:ring-inset md:w-45 lg:w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

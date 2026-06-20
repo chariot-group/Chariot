@@ -244,59 +244,88 @@ const HealingDetailsSchema = z.object({
     bonus: z.coerce.number().nullable().optional(),
 }).nullish();
 
-export const SpellSchema = z.object({
-    name: z.string().optional(),
-    level: numericInput(true),
-    school: z.string().optional(),
-    description: z.string().optional(),
-    components: z.array(z.string()).optional(),
-    castingTime: z.string().optional(),
-    duration: z.string().optional(),
-    range: z.string().optional(),
-    effectType: z.enum(['attack', 'heal', 'utility']).optional(),
-    damage: z.string().optional(),
-    healing: z.string().optional(),
-    damageDetails: DamageDetailsSchema,
-    healingDetails: HealingDetailsSchema,
-    usesPerDay: z.number().nullable().optional(),
-    used: numericInput(true),
-    prepared: z.boolean().optional(),
-});
+const EFFECT_TYPE_VALUES = ['attack', 'heal', 'utility'] as const;
+
+function normalizeSpellEffectType(value: unknown): unknown {
+    if (typeof value !== 'string') return value;
+
+    const normalizedValue = value.trim().toLowerCase();
+    const localizedEffectTypes: Record<string, typeof EFFECT_TYPE_VALUES[number]> = {
+        attack: 'attack',
+        attaque: 'attack',
+        ataque: 'attack',
+        heal: 'heal',
+        soin: 'heal',
+        curación: 'heal',
+        curacion: 'heal',
+        utility: 'utility',
+        utilitaire: 'utility',
+        utilitario: 'utility',
+    };
+
+    return localizedEffectTypes[normalizedValue] ?? value;
+}
+
+export function SpellSchema(zm: ZodMessages) {
+    return z.object({
+        name: z.string().optional(),
+        level: numericInput(true),
+        school: z.string().optional(),
+        description: z.string().optional(),
+        components: z.array(z.string()).optional(),
+        castingTime: z.string().optional(),
+        duration: z.string().optional(),
+        range: z.string().optional(),
+        effectType: z.preprocess(
+            normalizeSpellEffectType,
+            z.enum(EFFECT_TYPE_VALUES, { message: zm.invalidOption() }).optional(),
+        ),
+        damage: z.string().optional(),
+        healing: z.string().optional(),
+        damageDetails: DamageDetailsSchema,
+        healingDetails: HealingDetailsSchema,
+        usesPerDay: z.number().nullable().optional(),
+        used: numericInput(true),
+        prepared: z.boolean().optional(),
+    });
+}
 
 export const SpellSlotSchema = z.object({
     total: numericInput(true),
     used: numericInput(true),
 });
 
-export const SpellcastingSchema = z.object({
-    className: z.string().optional(),
-    ability: z.string().optional(),
-    saveDC: numericInput(true),
-    attackBonus: numericInput(true),
-    isInnate: z.boolean().optional(),
-    spellSlotsByLevel: z.record(z.string(), SpellSlotSchema).optional(),
-    spellSlotsByUses: z.preprocess((val) => {
-        if (val === null || val === undefined) return val;
-        // RHF peut avoir converti un objet à clés numériques en tableau
-        if (Array.isArray(val)) {
-            const obj: Record<string, unknown> = {};
-            (val as unknown[]).forEach((item, i) => {
-                if (item != null) obj[`k${i}`] = item;
-            });
-            return obj;
-        }
-        if (typeof val === 'object') {
-            const obj: Record<string, unknown> = {};
-            for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
-                obj[/^\d+$/.test(k) ? `k${k}` : k] = v;
+export function SpellcastingSchema(zm: ZodMessages) {
+    return z.object({
+        className: z.string().optional(),
+        ability: z.string().optional(),
+        saveDC: numericInput(true),
+        attackBonus: numericInput(true),
+        isInnate: z.boolean().optional(),
+        spellSlotsByLevel: z.record(z.string(), SpellSlotSchema).optional(),
+        spellSlotsByUses: z.preprocess((val) => {
+            if (val === null || val === undefined) return val;
+            // RHF peut avoir converti un objet à clés numériques en tableau
+            if (Array.isArray(val)) {
+                const obj: Record<string, unknown> = {};
+                (val as unknown[]).forEach((item, i) => {
+                    if (item != null) obj[`k${i}`] = item;
+                });
+                return obj;
             }
-            return obj;
-        }
-        return val;
-    }, z.record(z.string(), z.number().nullable()).optional()),
-    totalSlots: numericInput(true),
-    spells: z.array(SpellSchema).optional(),
-});
+            if (typeof val === 'object') {
+                const obj: Record<string, unknown> = {};
+                for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+                    obj[/^\d+$/.test(k) ? `k${k}` : k] = v;
+                }
+                return obj;
+            }
+            return val;
+        }, z.record(z.string(), z.number().nullable()).optional()),
+        totalSlots: numericInput(true),
+        spells: z.array(SpellSchema(zm)).optional(),
+    });
+}
 
 // ===== Appearance =====
 export const AppearanceSchema = z.object({
@@ -349,17 +378,19 @@ export const ConditionsSchema = z.object({
 });
 
 // ===== Actions =====
-export const DamageSchema = z.object({
-    dice: z.string().optional(),
-    applyAbilityBonus: z.boolean().optional(),
-    type: z
-        .string()
-        .trim()
-        .optional()
-        .refine((value) => !value || !/\s/.test(value), {
-            message: "Only one damage type is allowed per damage entry.",
-        }),
-});
+export function DamageSchema(zm: ZodMessages) {
+    return z.object({
+        dice: z.string().optional(),
+        applyAbilityBonus: z.boolean().optional(),
+        type: z
+            .string()
+            .trim()
+            .optional()
+            .refine((value) => !value || !/\s/.test(value), {
+                message: zm.singleDamageType(),
+            }),
+    });
+}
 
 export const DifficultyClassSchema = z.object({
     dcType: z.preprocess(
@@ -396,7 +427,7 @@ export function ActionSchema(zm: ZodMessages) {
             attackAbility: AbilityScoreKeyEnum.optional(),
             description: z.string().optional(),
             attackBonus: numericInput(true),
-            damage: z.array(DamageSchema).optional(),
+            damage: z.array(DamageSchema(zm)).optional(),
             range: z.string().optional(),
             dc: DifficultyClassSchema.optional().nullable(),
             cost: numericInput(true),
@@ -411,7 +442,7 @@ export function ActionSchema(zm: ZodMessages) {
                 if (seenTypes.has(normalizedType)) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: "Each damage type must be unique within an action.",
+                        message: zm.uniqueActionDamageType(),
                         path: ["damage", damageIndex, "type"],
                     });
                     return;

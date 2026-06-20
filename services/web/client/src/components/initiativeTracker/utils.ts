@@ -185,13 +185,23 @@ export function sanitizeInitiativeTrackerRowForPlayer(row: InitiativeTrackerRow)
     lastname: fieldVis.name ? row.lastname : "",
     surname: fieldVis.name ? row.surname : "",
     initiative: fieldVis.initiative ? row.initiative : 0,
-    hitPoints: fieldVis.hitPoints ? row.hitPoints : 1,
+    // Quand lifeStatus est visible mais pas les HP, on transmet un HP signé
+    // (≤ 0 si mort/inconscient, 1 sinon) sans révéler la valeur exacte.
+    hitPoints: fieldVis.hitPoints
+      ? row.hitPoints
+      : fieldVis.lifeStatus
+        ? Math.min(row.hitPoints, 1)
+        : 1,
     maxHitPoints: fieldVis.hitPoints ? row.maxHitPoints : 0,
     tempHitPoints: fieldVis.hitPoints ? row.tempHitPoints : 0,
     armorClass: fieldVis.armorClass ? row.armorClass : 0,
     conditions: fieldVis.conditions ? row.conditions : [],
     groupLabel: fieldVis.groupLabel ? row.groupLabel : "",
-    deathSavesFailures: fieldVis.hitPoints ? row.deathSavesFailures : 0,
+    deathSavesFailures: fieldVis.hitPoints
+      ? row.deathSavesFailures
+      : fieldVis.lifeStatus
+        ? row.deathSavesFailures
+        : 0,
   };
 }
 

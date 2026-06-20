@@ -15,7 +15,7 @@ import {
   BookOpen,
   BookOpenCheck,
 } from "lucide-react";
-import { useState, useRef, useCallback, type CSSProperties } from "react";
+import { useState, useRef, useCallback, useEffect, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
   classWithSpellPrepared,
@@ -23,11 +23,13 @@ import {
   findSpellIndexInList,
   getSpellByLevel,
   hasLevel0Spells,
+  hasLevel1OrHigherSpells,
   numberSpellsPrepare,
   getNpcUsesGroups,
   getSpellsByUses,
   getRemainingSpellSlots,
   npcUsesKey,
+  rebindSelectedSpellToList,
   sortSpellsPreparedFirst,
 } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
@@ -219,6 +221,31 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
     [activeSpellcasting, character, onCharacterUpdate, sessionCode, toast, tMagic],
   );
 
+  const appliesPrepMechanicEarly =
+    activeSpellcasting !== null &&
+    isPlayer(character) &&
+    classWithSpellPrepared(activeSpellcasting) &&
+    !(activeSpellcasting.isInnate ?? false);
+  const hasPrepEligibleSpellsEarly =
+    activeSpellcasting !== null && hasLevel1OrHigherSpells(activeSpellcasting);
+  const showPreparedSpellsControlsEarly =
+    appliesPrepMechanicEarly && Boolean(onCharacterUpdate) && hasPrepEligibleSpellsEarly;
+
+  useEffect(() => {
+    if (!showPreparedSpellsControlsEarly && preparationEditMode) {
+      setPreparationEditMode(false);
+    }
+  }, [showPreparedSpellsControlsEarly, preparationEditMode]);
+
+  // Conserver le sort affiché après PATCH / synchro session (nouvelles références d’objets).
+  useEffect(() => {
+    if (!activeSpellcasting || !selectedSpell) return;
+    const rebound = rebindSelectedSpellToList(activeSpellcasting.spells ?? [], selectedSpell);
+    if (rebound !== selectedSpell) {
+      setSelectedSpell(rebound);
+    }
+  }, [activeSpellcasting, selectedSpell]);
+
   if (!character.spellcasting || character.spellcasting.length === 0 || activeSpellcasting === null) {
     return (
       <div
@@ -232,7 +259,10 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
 
   const isInnate = activeSpellcasting.isInnate ?? false;
   const appliesPrepMechanic = isPlayer(character) && classWithSpellPrepared(activeSpellcasting) && !isInnate;
-  const showPreparedSpellsControls = appliesPrepMechanic && Boolean(onCharacterUpdate);
+  const hasPrepEligibleSpells = hasLevel1OrHigherSpells(activeSpellcasting);
+  const showPreparedSpellsControls =
+    appliesPrepMechanic && Boolean(onCharacterUpdate) && hasPrepEligibleSpells;
+
   const allAccordionValues = isInnate
     ? getNpcUsesGroups(activeSpellcasting)
         .filter((uses) => getSpellsByUses(activeSpellcasting, uses).length > 0)

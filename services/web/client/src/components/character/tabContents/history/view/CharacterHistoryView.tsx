@@ -3,6 +3,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Character } from "@/types/character";
 import { Cake, Eye, PersonStanding, Ruler, Scissors, Weight } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
 interface CharacterHistoryViewProps {
   character: Character;
@@ -12,6 +13,10 @@ interface CharacterHistoryViewProps {
 export default function CharacterHistoryView({ character, accentColor }: CharacterHistoryViewProps) {
   const t = useTranslations("characterDetail.history");
   const tBattle = useTranslations("characterDetail.battle");
+  const {
+    displayHeight, heightLabel, secondaryHeight, secondaryHeightLabel,
+    displayWeight, weightLabel, secondaryWeight, secondaryWeightLabel,
+  } = useDistanceUnit();
 
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-4">
@@ -66,7 +71,14 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 <span className="text-xs font-medium">{t("height")}</span>
               </div>
               <span className="text-sm pl-6 wrap-break-words flex flex-row items-center gap-1">
-                {character?.appearance?.height}
+                {character?.appearance?.height != null ? (
+                  <span className="flex items-baseline gap-1">
+                    <span>{displayHeight(Number(character.appearance.height))}{heightLabel}</span>
+                    {secondaryHeight && (
+                      <span className="text-[0.75em] text-muted-foreground/60">({secondaryHeight(Number(character.appearance.height))}{secondaryHeightLabel})</span>
+                    )}
+                  </span>
+                ) : null}
                 <Tooltip>
                   <TooltipTrigger>
                     ({tBattle(`sizesAbbr.${character?.stats?.size}` as Parameters<typeof t>[0])})
@@ -85,7 +97,16 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("weight")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.weight}</span>
+              <span className="text-sm pl-6 wrap-break-words flex items-baseline gap-1">
+                {character?.appearance?.weight != null ? (
+                  <>
+                    <span>{displayWeight(Number(character.appearance.weight))}{weightLabel}</span>
+                    {secondaryWeight && (
+                      <span className="text-[0.75em] text-muted-foreground/60">({secondaryWeight(Number(character.appearance.weight))}{secondaryWeightLabel})</span>
+                    )}
+                  </>
+                ) : null}
+              </span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">

@@ -1,4 +1,5 @@
 import { User } from "@/types/user";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { User as UserIcon } from "lucide-react";
@@ -20,6 +21,7 @@ interface Props {
 export default function UpdateProfile({ user, form, isLoading, onSubmit, onCancel }: Props) {
   const t = useTranslations("ProfilePage");
   const tEdit = useTranslations("ProfilePage.editProfile");
+  const tAuth = useTranslations("auth");
 
   useEffect(() => {
     const handleGlobalShortcuts = (event: KeyboardEvent) => {
@@ -156,38 +158,57 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
                 />
               </div>
             </div>
-            <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation={"vertical"}>
-                  <label
-                    htmlFor="email"
-                    className="sr-only">
-                    {tEdit("email")}
-                  </label>
-                  <Input
-                    {...field}
-                    id="email"
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "email-error" : undefined}
-                    aria-required="true"
-                    placeholder={tEdit("email")}
-                    autoComplete="email"
-                    type="email"
-                    disabled={isLoading}
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="email-error"
-                      errors={[fieldState.error]}
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation={"vertical"}>
+                    <label
+                      htmlFor="email"
+                      className="sr-only">
+                      {tEdit("email")}
+                    </label>
+                    <Input
+                      {...field}
+                      id="email"
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "email-error" : undefined}
+                      aria-required="true"
+                      placeholder={tEdit("email")}
+                      autoComplete="email"
+                      type="email"
+                      disabled={isLoading}
                     />
-                  )}
-                </Field>
-              )}
-            />
+                    {fieldState.error && (
+                      <FieldError
+                        id="email-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
+                  </Field>
+                )}
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isLoading}
+                  aria-label={tEdit("cancelUpdate")}>
+                  {tEdit("cancelUpdate")}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading || !form.formState.isValid}
+                  aria-label={tEdit("updateProfile")}
+                  aria-busy={isLoading}>
+                  {isLoading ? tAuth("loading") : tEdit("updateProfile")}
+                </Button>
+              </div>
+            </div>
           </FieldGroup>
         </form>
       </div>

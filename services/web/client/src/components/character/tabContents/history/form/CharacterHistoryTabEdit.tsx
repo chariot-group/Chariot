@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { Cake, Eye, PersonStanding, Ruler, Scale, Scissors } from "lucide-react";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import { Textarea } from "@/components/ui/textarea";
 
 interface CharacterHistoryTabEditProps {
@@ -13,6 +14,7 @@ interface CharacterHistoryTabEditProps {
 
 export default function CharacterHistoryTabEdit({ accentColor, form }: CharacterHistoryTabEditProps) {
   const t = useTranslations("characterDetail.history");
+  const { displayHeight, heightLabel, toHeightFeet, displayWeight, weightLabel, toWeightLbs } = useDistanceUnit();
 
   return (
     <div
@@ -160,18 +162,19 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                       className="shrink-0 w-4 h-4"
                       aria-hidden="true"
                     />
-                    {t("height")}
+                    {t("height")} <span className="text-muted-foreground font-normal">({heightLabel})</span>
                   </label>
                   <Input
                     {...field}
                     min={0}
-                    value={field.value ?? ""}
+                    value={field.value != null && field.value !== "" ? displayHeight(Number(field.value)) : ""}
+                    onChange={(e) => field.onChange(e.target.value !== "" ? toHeightFeet(Number(e.target.value)) : "")}
                     id="appearance-height"
                     tabIndex={4}
                     step={0.1}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-height-error" : undefined}
-                    placeholder={t("height")}
+                    placeholder={`${t("height")} (${heightLabel})`}
                     type="number"
                   />
                   {fieldState.error && (
@@ -199,18 +202,19 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                       className="shrink-0 w-4 h-4"
                       aria-hidden="true"
                     />
-                    {t("weight")}
+                    {t("weight")} <span className="text-muted-foreground font-normal">({weightLabel})</span>
                   </label>
                   <Input
                     {...field}
                     min={0}
                     step={0.1}
-                    value={field.value ?? ""}
+                    value={field.value != null && field.value !== "" ? displayWeight(Number(field.value)) : ""}
+                    onChange={(e) => field.onChange(e.target.value !== "" ? toWeightLbs(Number(e.target.value)) : "")}
                     id="appearance-weight"
                     tabIndex={5}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-weight-error" : undefined}
-                    placeholder={t("weight")}
+                    placeholder={`${t("weight")} (${weightLabel})`}
                     type="number"
                   />
                   {fieldState.error && (
