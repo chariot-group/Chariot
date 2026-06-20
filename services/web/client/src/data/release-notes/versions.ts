@@ -2,6 +2,51 @@ import type { ReleaseNote } from '@/data/release-notes/types';
 
 export const ALL_RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '2.7.0',
+    date: '2026-06-20',
+    translations: {
+      fr: {
+        title: 'Sidebar repensée, vue combat & nouveau profil',
+        highlights: [
+          { text: 'La barre latérale a été entièrement revue : meilleure séparation des espaces joueur et MJ, hiérarchie visuelle plus claire et navigation plus intuitive.' },
+          { text: 'Clic droit sur les éléments de la sidebar : déplacer, dupliquer, modifier, supprimer — et même chose accessible via "..." sur mobile et tablette.' },
+          { text: 'Dupliquez vos groupes et personnages en quelques clics. Placez temporairement un personnage non-joueur dans le groupe des joueurs le temps d\'une session.' },
+          { text: 'Vue rapide du combat : consultez n\'importe quelle fiche sans perdre le fil de l\'initiative.' },
+          { text: 'Les erreurs dans les formulaires de personnage indiquent maintenant précisément l\'onglet ou le champ à corriger.' },
+          { text: 'Filtres de sorts dans l\'ajout via Codex (par classe et niveau) et sélection multiple pour ajouter plusieurs sorts en une seule fois.' },
+          { text: 'Page profil entièrement redessinée, avec préférences de langue et d\'unité (m / ft avec affichage double optionnel).' },
+          { text: 'Ce module de notes de version — vous lisez actuellement la 2.7.0. Retrouvez les versions précédentes depuis votre profil.' },
+        ],
+      },
+      en: {
+        title: 'Redesigned sidebar, combat view & new profile',
+        highlights: [
+          { text: 'The sidebar has been completely reworked: clearer separation between player and GM spaces, improved visual hierarchy, and more intuitive navigation.' },
+          { text: 'Right-click on sidebar items to move, duplicate, edit, or delete — accessible via "..." on mobile and tablet.' },
+          { text: 'Duplicate groups and characters in a few clicks. Temporarily place an NPC in the player group for the duration of a session.' },
+          { text: 'Combat quick view: browse any character sheet without losing track of the initiative order.' },
+          { text: 'Character form errors now pinpoint exactly which tab or field needs attention.' },
+          { text: 'Spell filters in Codex-based spell addition (by class and level), plus multi-select to add several spells at once.' },
+          { text: 'Fully redesigned profile page, with language and unit preferences (m / ft with optional dual display).' },
+          { text: 'This release notes module — you are reading 2.7.0 right now. Browse previous versions from your profile.' },
+        ],
+      },
+      es: {
+        title: 'Barra lateral rediseñada, vista de combate & nuevo perfil',
+        highlights: [
+          { text: 'La barra lateral ha sido completamente renovada: mejor separación entre los espacios de jugador y DJ, jerarquía visual más clara y navegación más intuitiva.' },
+          { text: 'Clic derecho en los elementos de la barra lateral: mover, duplicar, editar, eliminar — accesible via "..." en móvil y tableta.' },
+          { text: 'Duplica grupos y personajes en pocos clics. Coloca temporalmente un PNJ en el grupo de jugadores durante una sesión.' },
+          { text: 'Vista rápida de combate: consulta cualquier ficha sin perder el hilo de la iniciativa.' },
+          { text: 'Los errores en los formularios de personaje ahora indican exactamente qué pestaña o campo necesita atención.' },
+          { text: 'Filtros de hechizos en la adición vía Codex (por clase y nivel), y selección múltiple para añadir varios hechizos a la vez.' },
+          { text: 'Página de perfil completamente rediseñada, con preferencias de idioma y unidad (m / ft con visualización doble opcional).' },
+          { text: 'Este módulo de notas de versión — estás leyendo la 2.7.0 ahora mismo. Consulta versiones anteriores desde tu perfil.' },
+        ],
+      },
+    },
+  },
+  {
     version: '2.6.1',
     date: '2026-06-07',
     translations: {
