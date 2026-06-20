@@ -2136,7 +2136,87 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-029: Profile Language Preference
+## FR-029: GM Guest Character in Session Participants Group
+
+**Rule**: During an active launched session, the Game Master MUST be able to temporarily promote one of their campaign characters to the session participants group. This association is session-scoped only: it is automatically revoked when the session ends, and can be revoked manually at any time.
+
+**Scope**:
+
+- Applies only when `sessionStatus === "launched"` and the user is the GM.
+- Works with any character belonging to any of the GM's campaign groups (active or archived groups visible in the sidebar).
+- Complements FR-018 (mid-combat add), FR-021 (player tracker visibility), and FR-026 (WebSocket lifecycle) without overriding their rules.
+
+**Entry Point**:
+
+- The GM triggers the action from the character's context menu (right-click on desktop, "…" menu on mobile) in the sidebar GroupList.
+- When a session is launched, the character context menu MUST expose:
+  - **🎭 Rejoindre la session** — when the character is not yet a guest in the session participants group.
+  - **🎭 Quitter la session** — when the character is already a guest (to remove it).
+- Normal character actions (edit, move, delete, duplicate) MUST be hidden while a session is launched (existing behavior unchanged).
+
+**State Management**:
+
+- Redux slice `session` MUST hold `gmGuestCharacterIds: string[]` listing character IDs currently promoted.
+- `addGmGuestCharacterToSession(characterId)` adds the ID to the list.
+- `removeGmGuestCharacterFromSession(characterId)` removes the ID from the list.
+- `clearCurrentSession` MUST reset `gmGuestCharacterIds` to `[]`.
+- `gmGuestCharacterIds` is persisted in Redux Persist as part of the `session` slice.
+
+**Sidebar Section (GmSessionPlayersSidebarSection)**:
+
+- GM guest characters MUST appear in the "Joueurs (session)" sidebar section, below connected players.
+- Each guest entry MUST display the character name and a `🎭` indicator to distinguish them from real players.
+- Guest entries are clickable links to the character sheet (same URL pattern as regular session participants).
+
+**Battle Configuration (InitBattleDialog / AddCombatantsDialog)**:
+
+- When `buildSessionParticipantsGroup` is called, GM guest characters MUST be included in the resulting `__session_participants__` group alongside real players.
+- If a GM guest character's data is already loaded in the campaign groups (`allGroups`), it is reused from there. Otherwise it is fetched from the character API.
+
+**Initiative Tracker Integration**:
+
+- If a battle is already initialized when the GM promotes a character, `appendInitiativeTrackerRows` MUST be dispatched immediately with a row built from the character's data.
+- The guest character row uses `groupId = SESSION_PARTICIPANTS_GROUP_ID`.
+- Unlike real session-participant rows, the GM guest row is **NOT** locked to full visibility. The GM can configure its `visible` flag and `playerFieldVisibility` as for any other tracker row (same defaults as NPC rows).
+- The row is identified by `isGmGuest: true` on `InitiativeTrackerRow` to distinguish it from locked player rows.
+- `applyPlayerRowVisibilityRules` MUST skip the "lock to full visibility" override for rows where `isGmGuest === true`.
+- When the GM removes the guest character (via "🎭 Quitter la session"), if a battle is initialized, `removeInitiativeTrackerRow` MUST be dispatched for the guest row.
+- When the session ends (`clearCurrentSession`), all guest tracker rows are removed as part of the existing tracker reset.
+
+**Prohibitions**:
+
+- Showing the session guest action to non-GM users.
+- Showing the session guest action when no session is launched.
+- Allowing GM guest characters to be locked to full visibility (they are always GM-configurable).
+- Broadcasting GM guest character assignments via WebSocket (purely client-side, session-scoped).
+- Persisting the `gmGuestCharacterIds` across sessions (reset in `clearCurrentSession`).
+
+**Accessibility (FR-019)**:
+
+- The "Rejoindre la session" / "Quitter la session" menu items MUST be keyboard-reachable via the existing `SidebarItemWithActions` context menu.
+- Guest character entries in the sidebar section MUST have appropriate `aria-label` distinguishing them from real players.
+
+**Tests**:
+
+- Nominal: GM adds a character → it appears in sidebar section and tracker (if battle initialized).
+- Nominal: GM removes a character → it disappears from sidebar section and tracker row.
+- Nominal: Session ends → `gmGuestCharacterIds` resets to `[]`, tracker rows cleared.
+- Edge: Battle not initialized when character is added → no tracker row dispatched.
+- Edge: Battle initialized when character is added → tracker row appears immediately.
+- Edge: `applyPlayerRowVisibilityRules` skips guest rows (`isGmGuest === true`).
+- Error: Non-GM user never sees the session guest action.
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
+- `services/web/client/messages/{en,fr,es}.json`
+
+---
+
+## FR-030: Profile Language Preference
 
 **Rule**: The profile page MUST expose a dedicated preferences section (separate from the profile-info card) containing a language preference control allowing the authenticated user to change the site locale. The selected locale MUST be persisted on the user account (`preferredLocale` on the Adventure API user record) and mirrored to the existing `user-preferred-locale` client storage (localStorage and cookie). After authentication, the client MUST apply the account locale when it differs from the current URL prefix. The user must be redirected to the same page under the new locale prefix when the preference changes. Locale changes MUST apply immediately on select change and MUST NOT be bound to the profile edit form.
 
@@ -2647,155 +2727,134 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/CharacterDetailView.tsx` (`mode=edit`)
 - `docs/design.md` (visual baseline)
 
-## FR-027: Release Notes and New Version Detection
+---
 
-**Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
+## FR-028 : Duplication de personnage
 
-**Requirements**:
+**Règle** : Un utilisateur peut dupliquer un personnage (joueur ou PNJ) depuis le menu contextuel (clic droit bureau / bouton `…` mobile). La duplication ouvre une modale de confirmation avec un nom proposé et éditable, et deux variantes de création.
 
-**Release Note Content**:
+**Champ d'application** :
+- **Espace joueur** (`CharactersWithoutGroupList`) : personnages joueurs sans groupe. La copie est créée sans groupe, appartenant au même utilisateur.
+- **Espace MJ** (`GroupList`) : personnages dans un groupe de campagne. La copie est créée dans le même groupe par défaut (bouton « Créer ») ou dans un groupe au choix (bouton « Créer dans un autre groupe »).
 
-- Release notes are stored as static versioned files in `services/web/client/src/data/release-notes/`.
-- Each version file exports a `ReleaseNote` object with: `version` (semver string), `date` (ISO date), and `translations` (record keyed by `SupportedLocale`).
-- Each translation contains a `title` and an array of `highlights` (icon + user-friendly text).
-- Highlights MUST be written in plain user-facing language, NOT as raw changelog entries.
-- All three supported locales (`fr`, `en`, `es`) MUST be present in every `ReleaseNote`.
-- `CURRENT_APP_VERSION` is exported from `src/data/release-notes/index.ts` and must be bumped alongside `package.json` on each release.
+**Modale de confirmation (`DuplicateCharacterDialog`)** :
 
-**Version Seen Tracking**:
+- S'ouvre lorsque l'utilisateur sélectionne l'action « Dupliquer » dans le menu contextuel ou le menu overflow.
+- Affiche un champ de texte prérempli avec le nom proposé : `"<firstname> <lastname> 2"` (ou `"<firstname> 2"` si pas de nom de famille, ou simplement `"2"` si les deux sont vides). Le suffixe est incrémenté (`2`, `3`…) si le nom proposé correspond déjà à un personnage existant dans la liste visible (vérification locale uniquement).
+- Le champ est éditable et autofocusé à l'ouverture.
+- La validation par **Entrée** déclenche le bouton « Créer » (action primaire), sauf si le champ de texte est vide.
+- **Escape** ferme la modale sans création.
 
-- A dedicated Redux slice `releaseNotes` (persisted per user via `makePersistConfig`) stores `lastSeenVersion: string | null`.
-- The action `markVersionSeen(version)` updates the stored version.
-- The `releaseNotes` key is included in the Redux persist whitelist.
+**Deux boutons de confirmation** :
 
-**Auto-Detection Modal**:
+1. **Créer** (action primaire) : crée le personnage dans le groupe courant (espace MJ) ou sans groupe (espace joueur), puis ferme la modale. Redirige vers la fiche du personnage créé.
+2. **Créer dans un autre groupe** (espace MJ uniquement) : crée le personnage dans le même groupe, puis ouvre immédiatement la `MoveCharacterDialog` sur le personnage nouvellement créé pour le déplacer. N'est pas disponible dans l'espace joueur.
 
-- `ReleaseNotesProvider` (client component mounted in `app/[locale]/layout.tsx`) checks on mount whether `authenticated === true && !loading && lastSeenVersion !== CURRENT_APP_VERSION`.
-- If the condition is met, the `ReleaseNotesModal` is opened automatically.
-- On close (button or Escape), `markVersionSeen(CURRENT_APP_VERSION)` is dispatched; the modal does not reappear for that version.
-- The modal displays the current version's notes by default.
-- A `Select` allows navigating to previous versions without closing the modal.
-- The locale is derived from the URL pathname prefix.
+**Logique de duplication (côté client)** :
 
-**Profile Page Entry Point**:
+- Aucun nouvel endpoint backend n'est requis.
+- Le frontend copie l'ensemble des champs du personnage source, à l'exclusion de : `_id`, `createdAt`, `updatedAt`, `deletedAt`.
+- Le `firstname` du personnage copié est remplacé par la valeur saisie dans le champ de la modale ; `lastname` et `surname` sont préservés tels quels sauf si le nom proposé est une chaîne complète (auquel cas `lastname` est effacé).
+- Pour un personnage joueur dupliqué dans l'espace MJ : le tableau `groups` conserve l'identifiant du groupe courant.
+- Pour un personnage joueur dupliqué dans l'espace joueur : le tableau `groups` est `[]`.
+- Appel : `CharacterService.createCharacter(type, payload)`.
+- Toast de succès affichée après création (`characterActions.duplicate.success`).
+- Toast d'erreur affichée en cas d'échec API (`characterActions.duplicate.error`).
 
-- The profile page exposes a "Voir les nouveautés" button (localized) that opens the same `ReleaseNotesModal`.
-- When opened from the profile page, closing does NOT dispatch `markVersionSeen` (`readOnly={true}`).
+**Accessibilité (FR-019)** :
 
-**Accessibility Requirements (FR-019)**:
+- L'option « Dupliquer » est accessible au clavier dans le menu contextuel et le menu overflow.
+- Le champ de nom dans la modale est associé à un `<label>` visible.
+- Les deux boutons ont un accessible name distinct.
+- Focus visible sur tous les éléments interactifs de la modale.
+- Escape et Enter respectent les conventions de FR-027 (Confirmation dialogs).
 
-- `DialogContent` includes `aria-describedby` pointing to the notes description region.
-- The version `Select` has an `aria-label`.
-- Highlight icons are `aria-hidden="true"`; text carries the semantic content.
-- Focus trap behavior is inherited from Shadcn `Dialog`.
-- Keyboard: Escape closes and marks version seen; Tab navigates to the close button and version selector.
+**Interdictions** :
 
-**Prohibitions**:
+- Modifier l'original lors de la duplication.
+- Fermer la modale sans annuler lorsqu'une opération de création est en cours.
+- Afficher « Créer dans un autre groupe » dans l'espace joueur (sans groupe).
+- Lancer la création avec un nom vide.
+- Nécessiter un nouvel endpoint backend.
 
-- Storing release note content in i18n message files (content lives in data files).
-- Showing the modal to unauthenticated users.
-- Re-showing the modal for an already-seen version.
-- Dispatching `markVersionSeen` when the modal is opened in `readOnly` mode (profile page).
-- Hardcoding the current version anywhere other than `src/data/release-notes/index.ts`.
+**Tests** :
 
-**Tests**:
+- Nominal : dupliquer un joueur sans groupe → nouveau personnage sans groupe, nom `"<nom> 2"`, toast succès, redirection vers la fiche.
+- Nominal : dupliquer un PNJ dans un groupe → même groupe, nom `"<nom> 2"`, toast succès.
+- Edge : nom vide dans la modale → bouton « Créer » désactivé.
+- Edge : Escape ferme la modale sans déclencher de création.
+- Edge : Enter dans le champ déclenche « Créer » (action primaire).
+- « Créer dans un autre groupe » → crée le personnage puis ouvre `MoveCharacterDialog`.
+- Failure : échec API → toast erreur, modale reste ouverte.
+- Accessibilité : champ autofocusé, label visible, focus visible sur boutons.
 
-- `releaseNotesSlice`: `markVersionSeen` updates `lastSeenVersion`; initial state is `null`.
-- `ReleaseNotesProvider`: does not open modal when `lastSeenVersion === CURRENT_APP_VERSION`.
-- `ReleaseNotesProvider`: opens modal when authenticated and version unseen.
-- `ReleaseNotesProvider`: does not open modal when unauthenticated.
-- `ReleaseNotesModal`: dispatches `markVersionSeen` on close when `readOnly={false}`.
-- `ReleaseNotesModal`: does NOT dispatch `markVersionSeen` on close when `readOnly={true}`.
-- `ReleaseNotesModal`: Select renders all versions from `ALL_RELEASE_NOTES`.
-- `ReleaseNotesModal`: switching Select updates displayed content without closing.
-- `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
+**Références** :
 
-**References**:
-
-- `services/web/client/src/data/release-notes/` (version data files)
-- `services/web/client/src/store/slices/releaseNotesSlice.ts`
-- `services/web/client/src/store/index.ts` (persist whitelist)
-- `services/web/client/src/components/dialogs/ReleaseNotesModal.tsx`
-- `services/web/client/src/components/ReleaseNotesProvider.tsx`
-- `services/web/client/src/app/[locale]/layout.tsx` (provider mount)
-- `services/web/client/src/app/[locale]/profile/page.tsx` (profile entry point)
-- `services/web/client/messages/{fr|en|es}.json` (releaseNotes i18n keys)
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx` (à créer)
+- `services/web/client/src/services/CharacterService.ts`
+- `services/web/client/src/components/dialogs/MoveCharacterDialog.tsx`
 
 ---
 
-## FR-031: Unité de mesure préférée
+## FR-029 : Duplication de groupe
 
-**Rule**: Each user can choose a preferred measurement unit (`metric` or `imperial`) stored in their profile. The default value is `metric`.
+**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-028 côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
 
-**Requirements**:
+**Périmètre** :
+- Groupes actifs uniquement (`GroupList`, section non-archivée). L'action de duplication n'apparaît pas en section archivée.
+- Indisponible en session active (`actionsDisabled`).
 
-- `preferredMeasurementUnit` field on the user model, accepting values `metric` or `imperial`
-- Editable from the profile page, Preferences section, alongside the language preference
-- Change is saved immediately (same pattern as `preferredLocale`)
-- Exposed in all user DTOs (`UpdateUserProfileDto`, `UserInfoDto`) and the frontend `User` / `UpdateUserDto` types
-- The stored preference is available globally for any future display formatting of size/weight values
+**Modale (`DuplicateGroupDialog`)** :
+- Champ label prérempli avec `"<label du groupe source> 2"`, éditable, autofocusé.
+- Champ count (entier 1–99, défaut 1).
+- Bouton **Créer** (action primaire) : déclenché aussi par **Enter** si label non vide.
+- **Escape** ferme sans création.
+- Bouton désactivé si label vide ou opération en cours.
 
-**Prohibitions**:
+**Comportement après création** :
+- Les groupes sont créés séquentiellement. Les personnages de chaque groupe sont créés séquentiellement via `CharacterService.createCharacter`.
+- Un seul toast de succès après la fin : `"N groupe(s) dupliqué(s) avec succès."`.
+- Toast d'erreur unique en cas d'échec API.
+- Mise à jour optimiste du store Redux via `addGroupToStore` pour chaque groupe créé.
+- Redirection vers le premier groupe créé (`/{locale}/campaigns/{campaignId}/groups/{groupId}/characters/{firstCharId}` ou, si le groupe source est vide, le nouveau groupe vide ne déclenche pas de redirection par personnage).
 
-- Applying conversion logic or display formatting in this ticket — only the preference storage and UI control are in scope here
+**Logique de duplication (côté frontend)** :
+- Aucun nouvel endpoint backend requis.
+- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-028).
+- Créer le groupe via `GroupService.createGroup(campaignId, { label })`.
+- Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
+- Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
 
-**Tests**:
+**Accessibilité (FR-019)** :
+- L'option « Dupliquer » est accessible au clavier dans le menu contextuel et le menu overflow des groupes.
+- Champ label associé à un `<label>` visible, autofocusé à l'ouverture.
+- Boutons avec accessible names distincts.
+- Focus visible sur tous les éléments interactifs.
+- Escape et Enter respectent les conventions de FR-027.
 
-- Nominal: selecting `imperial` calls `updateCurrentUser` with `preferredMeasurementUnit: 'imperial'` and dispatches `updateUser`
-- Edge: selecting the already-active unit does nothing (no API call)
-- Failure: API error shows an error toast and does not change the stored preference
+**Interdictions** :
+- Afficher l'action « Dupliquer » sur les groupes archivés.
+- Afficher l'action « Dupliquer » en session active.
+- Créer avec un label vide.
+- Modifier le groupe source.
+- Nécessiter un nouvel endpoint backend.
 
-**References**:
+**Tests** :
+- Nominal : dupliquer un groupe avec 2 personnages → nouveau groupe avec 2 personnages re-créés, label `"<label> 2"`, toast succès, redirection vers premier personnage du nouveau groupe.
+- Nominal : count = 3 → 3 groupes créés avec labels `"<label> 2"`, `"<label> 3"`, `"<label> 4"`.
+- Edge : groupe source sans personnage → groupe vide créé, toast succès.
+- Edge : label vide → bouton Créer désactivé.
+- Edge : Escape ferme sans création.
+- Edge : Enter déclenche Créer si label non vide.
+- Failure : échec API → toast erreur, modale reste ouverte.
+- `addGroupToStore` insère le groupe dans `activeGroups` sans doublon.
+- L'action « Dupliquer » n'apparaît pas sur les groupes archivés.
 
-- `services/adventure/api/src/resources/user/schemas/user.schema.ts`
-- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts`
-- `services/adventure/api/src/resources/user/dto/sub/user-info.dto.ts`
-- `services/web/client/src/types/user.ts`
-- `services/web/client/src/components/profile/ProfileMeasurementUnitSelect.tsx`
-- `services/web/client/src/components/profile/ProfileMeasurementUnitSelectImmediate.tsx`
-
----
-
-## FR-032: Conversion et affichage des unités de distance
-
-**Rule**: All distance values displayed in the application (speed, senses, action range, spell range) must respect the user's `preferredMeasurementUnit`. Values are always stored in **feet** in the database. Display and input use the unit chosen in the user's profile.
-
-**Conversion rate**: 5 ft = 1.5 m (factor 0.3 exact — i.e. 1 ft = 0.3 m).
-
-**Requirements**:
-
-- All numeric distance values (speed fields, sense ranges) stored in the DB remain in feet.
-- On display, values are converted to meters when `preferredMeasurementUnit === 'metric'`, left as-is for `'imperial'`.
-- Metric display rounds to 1 decimal place (e.g. 30 ft → 9 m, 5 ft → 1.5 m).
-- In edit forms, speed and sense range inputs show the value in the user's preferred unit; on submit, the value is converted back to feet before sending to the API.
-- String-based range fields (`action.range`, `spell.range`) stored as free-text (e.g. "30 ft.", "60/120 ft.", "Self") are parsed and converted for display only — the raw string is never altered in the DB.
-- Non-numeric range strings ("Touch", "Self", "Sight", "Unlimited") pass through unchanged.
-- The unit abbreviation shown next to values must match the locale and unit: "ft" / "pi" for imperial, "m" for metric.
-- A shared utility (`utils/unit.utils.ts`) and hook (`hooks/useDistanceUnit.ts`) are used for all conversions and unit label retrieval.
-
-**Prohibitions**:
-
-- Storing metric values in the database.
-- Applying conversion in server-side code — conversion is frontend-only display logic.
-- Hardcoding "ft" labels in display components; always use the unit-aware label from the hook.
-
-**Tests**:
-
-- Nominal: `feetToMeters(30)` returns `9`, `feetToMeters(5)` returns `1.5`.
-- Nominal: `metersToFeet(9)` returns `30`.
-- Nominal: `convertRangeString("30 ft.", "metric")` returns `"9 m"`.
-- Edge: `convertRangeString("60/120 ft.", "metric")` returns `"18/36 m"`.
-- Edge: `convertRangeString("Touch", "metric")` returns `"Touch"` (unchanged).
-- Edge: `convertRangeString("Self (10-foot cone)", "metric")` converts the numeric part.
-- Edge: `feetToMeters(0)` returns `0`.
-
-**References**:
-
-- `services/web/client/src/utils/unit.utils.ts`
-- `services/web/client/src/hooks/useDistanceUnit.ts`
-- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`
-- `services/web/client/src/components/character/tabContents/shared/NpcStatistics.tsx`
-- `services/web/client/src/components/character/tabContents/general/shared/SensesSection.tsx`
-- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`
-- `services/web/client/src/components/character/tabContents/magic/SpellDisplay.tsx`
->>>>>>> develop
+**Références** :
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/dialogs/DuplicateGroupDialog.tsx`
+- `services/web/client/src/services/GroupService.ts`
+- `services/web/client/src/services/CharacterService.ts`
+- `services/web/client/src/store/slices/groupSlice.ts`

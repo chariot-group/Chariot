@@ -106,8 +106,13 @@ export function SearchableSelect({
       return;
     }
 
-    setOpen(false);
-    syncQueryWithSelection();
+    // Label clicks with htmlFor re-focus the input after blur — defer close so
+    // the browser has time to move focus before we check.
+    setTimeout(() => {
+      if (document.activeElement === inputRef.current) return;
+      setOpen(false);
+      syncQueryWithSelection();
+    }, 0);
   };
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -137,10 +142,38 @@ export function SearchableSelect({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const handleSelectedButtonClick = () => {
+    setQuery("");
+    setOpen(true);
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  };
+
   return (
     <div
       ref={containerRef}
       className={cn("relative w-full", className)}>
+      {selectedOption && !open ? (
+        <button
+          type="button"
+          id={id}
+          aria-labelledby={ariaLabelledBy}
+          disabled={disabled}
+          onClick={handleSelectedButtonClick}
+          className={cn(
+            "flex w-full cursor-pointer items-center justify-between gap-2 rounded-[15px] bg-gray-middle-light px-3 py-2 text-left text-sm shadow-xs transition-colors",
+            "hover:bg-gray-middle-light/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+            disabled && "cursor-not-allowed opacity-50",
+          )}>
+          <span className="truncate">{selectedOption.inputLabel ?? selectedOption.label}</span>
+          {selectedOption.description ? (
+            <span className="shrink-0 rounded-[8px] bg-white/10 px-1.5 py-0.5 text-xs text-white/60">
+              {selectedOption.description}
+            </span>
+          ) : null}
+        </button>
+      ) : (
       <div className="flex w-full items-center gap-2 rounded-[15px] bg-gray-middle-light px-3 py-2 shadow-xs">
         <Input
           ref={inputRef}
@@ -163,6 +196,7 @@ export function SearchableSelect({
           className="h-auto rounded-none bg-transparent px-0 py-0 text-sm shadow-none focus-visible:border-none focus-visible:ring-none"
         />
       </div>
+      )}
 
       {open && (
         <div

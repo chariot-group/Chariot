@@ -18,12 +18,16 @@ import {
   selectSessionParticipantDisplayNames,
   mergeSessionParticipantDisplayNames,
   pruneSessionParticipantDisplayNames,
+  selectGmGuestCharacterIds,
 } from "@/store/slices/sessionSlice";
 import { selectOpenSessionPlayers, setOpenSessionPlayers } from "@/store/slices/sidebarSlice";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisplayNames";
 import { useSidebar } from "@/components/ui/sidebar";
 import characterService from "@/services/CharacterService";
+import { removeGmGuestCharacterFromSession, selectBattleInitialized, removeInitiativeTrackerRow } from "@/store/slices/sessionSlice";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
+import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 
 const ROSTER_FETCH_DEBOUNCE_MS = 220;
 
@@ -44,7 +48,10 @@ export default function GmSessionPlayersSidebarSection() {
   const remoteVersions = useAppSelector(selectCharacterSheetRemoteVersions);
 
   const displayNames = useAppSelector(selectSessionParticipantDisplayNames);
+  const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const battleInitialized = useAppSelector(selectBattleInitialized);
   const [characterLabels, setCharacterLabels] = React.useState<Record<string, string>>({});
+  const [guestLabels, setGuestLabels] = React.useState<Record<string, string>>({});
 
   const locale = pathname?.split("/")[1] ?? "fr";
 
@@ -207,7 +214,28 @@ export default function GmSessionPlayersSidebarSection() {
     };
   }, [contextMode, dispatch, displayNames, isGm, isInSession, rosterStableKey, sessionCode]);
 
-  if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || presenceRoster.length === 0) {
+  React.useEffect(() => {
+    if (!isInSession || contextMode !== "gm" || !isGm || gmGuestCharacterIds.length === 0) return;
+    let cancelled = false;
+    void (async () => {
+      const updates: Record<string, string> = {};
+      for (const cid of gmGuestCharacterIds) {
+        try {
+          const ch = await characterService.getCharacterById(cid, { sessionCode: sessionCode ?? undefined });
+          let label = ch.firstname?.trim() ?? "";
+          if (ch.lastname) label += ` ${ch.lastname.trim()}`;
+          updates[cid] = label.trim() || cid;
+        } catch {
+          updates[cid] = cid;
+        }
+        if (cancelled) return;
+      }
+      if (!cancelled) setGuestLabels((prev) => ({ ...prev, ...updates }));
+    })();
+    return () => { cancelled = true; };
+  }, [contextMode, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
+
+  if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
     return null;
   }
 
@@ -246,6 +274,9 @@ export default function GmSessionPlayersSidebarSection() {
       <CollapsibleContent
         id="session-players-content"
         className="mt-1 ml-3 flex flex-col gap-1">
+        {presenceRoster.length === 0 && gmGuestCharacterIds.length === 0 && (
+          <div className="px-3 py-1 text-sm text-white/40">{t("noCharacters")}</div>
+        )}
         {presenceRoster.map((p) => {
           const cid = p.characterId?.trim();
           const userLabel = displayNames[p.userId] ?? SESSION_PARTICIPANT_NAME_LOADING;
@@ -304,6 +335,54 @@ export default function GmSessionPlayersSidebarSection() {
                 {innerLabel}
               </div>
             )
+          );
+        })}
+        {gmGuestCharacterIds.map((cid) => {
+          const label = guestLabels[cid] ?? cid;
+          const href = `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`;
+          const isSelected = selectedCharacterId === cid;
+          const guestActions = [
+            {
+              id: "removeFromSession",
+              label: t("removeFromSession"),
+              onSelect: () => {
+                dispatch(removeGmGuestCharacterFromSession(cid));
+                if (battleInitialized) {
+                  dispatch(removeInitiativeTrackerRow(`${SESSION_PARTICIPANTS_GROUP_ID}:${cid}`));
+                }
+              },
+            },
+          ];
+          return (
+            <SidebarItemWithActions
+              key={`gm-guest-${cid}`}
+              actions={guestActions}
+              contextMenuLabel={t("characterActions")}
+              className={cn(
+                "rounded-[12px] transition-all duration-100",
+                isSelected ? "bg-white text-black" : "hover:bg-white/10",
+              )}>
+              <Link
+                href={href}
+                aria-current={isSelected ? "page" : undefined}
+                aria-label={`${label} – ${t("gmGuestCharacter")}`}
+                className={cn(
+                  "relative flex min-w-0 flex-1 cursor-pointer flex-col gap-0 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                  isSelected && "pl-4 font-bold text-black",
+                )}
+                onClick={() => { if (isMobile) setOpenMobile(false); }}>
+                {isSelected && (
+                  <span
+                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="truncate w-full text-sm">{label}</span>
+                <span className={cn("truncate w-full text-xs", isSelected ? "text-black/50" : "text-white/50")}>
+                  {t("gmGuestCharacter")}
+                </span>
+              </Link>
+            </SidebarItemWithActions>
           );
         })}
       </CollapsibleContent>

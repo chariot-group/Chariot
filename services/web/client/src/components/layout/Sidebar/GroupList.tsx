@@ -6,9 +6,16 @@ import { ChevronRight, UserPlus } from "lucide-react";
 import { Character as GroupCharacter, Group } from "@/types/campaign";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { removeCharacterFromGroup } from "@/store/slices/groupSlice";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { selectActiveGroupsHasMore, selectActiveGroupsTotal, selectArchivedGroupsHasMore, selectArchivedGroupsTotal } from "@/store/slices/groupSlice";
+import {
+  addCharacterToGroup,
+  addGroupToStore,
+  removeCharacterFromGroup,
+  selectActiveGroupsHasMore,
+  selectActiveGroupsTotal,
+  selectArchivedGroupsHasMore,
+  selectArchivedGroupsTotal,
+} from "@/store/slices/groupSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -18,10 +25,27 @@ import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/Sideb
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
+import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
+import { DuplicateGroupDialog } from "@/components/dialogs/DuplicateGroupDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
+import GroupService from "@/services/GroupService";
+import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
+import { showToast } from "@/lib/toast";
 import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
-import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import {
+  selectIsInSession,
+  selectSessionStatus,
+  selectGmGuestCharacterIds,
+  addGmGuestCharacterToSession,
+  removeGmGuestCharacterFromSession,
+  appendInitiativeTrackerRows,
+  removeInitiativeTrackerRow,
+  selectBattleInitialized,
+  createInitiativeTrackerRow,
+} from "@/store/slices/sessionSlice";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
+import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
 
 interface GroupListProps {
   groups: Group[];
@@ -60,6 +84,8 @@ export default function GroupList({
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
+  const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const battleInitialized = useAppSelector(selectBattleInitialized);
   const actionsDisabled = isInSession && sessionStatus === "launched";
 
   const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
@@ -70,6 +96,15 @@ export default function GroupList({
   } | null>(null);
   const [characterToMove, setCharacterToMove] = React.useState<{
     character: GroupCharacter;
+    groupId: string;
+  } | null>(null);
+  const [characterToDuplicate, setCharacterToDuplicate] = React.useState<{
+    character: GroupCharacter;
+    groupId: string;
+  } | null>(null);
+  const [groupToDuplicate, setGroupToDuplicate] = React.useState<Group | null>(null);
+  const [pendingMoveAfterDuplicate, setPendingMoveAfterDuplicate] = React.useState<{
+    characters: GroupCharacter[];
     groupId: string;
   } | null>(null);
 
@@ -129,6 +164,127 @@ export default function GroupList({
     selectedCharacterId,
   ]);
 
+  const handleDuplicateCharacter = React.useCallback(
+    async (
+      source: GroupCharacter,
+      groupId: string,
+      name: string,
+      count: number,
+      andMove = false,
+    ) => {
+      if (!selectedCampaignId) return;
+      try {
+        const full = await CharacterService.getCharacterById(source._id);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _id, createdBy, deletedAt, groups, ...rest } = full;
+        const isNpc = !("progression" in full);
+        const type = isNpc ? "npcs" : "players";
+
+        const createdChars: GroupCharacter[] = [];
+        for (let i = 0; i < count; i++) {
+          const copyName = i === 0 ? name : `${name} ${i + 1}`;
+          const payload = { ...rest, firstname: copyName, lastname: "", groups: [groupId] };
+          const created = await CharacterService.createCharacter(type, payload as typeof rest);
+
+          dispatch(
+            addCharacterToGroup({
+              groupId,
+              character: {
+                _id: created._id,
+                firstname: created.firstname,
+                lastname: created.lastname,
+                surname: created.surname,
+              },
+            }),
+          );
+
+          createdChars.push({
+            _id: created._id,
+            firstname: created.firstname,
+            lastname: created.lastname,
+            surname: created.surname,
+            userId: source.userId,
+          });
+        }
+
+        showToast(t("duplicateCharacterSuccess"), "success");
+
+        if (andMove && createdChars.length > 0) {
+          setPendingMoveAfterDuplicate({ characters: createdChars, groupId });
+        } else if (count === 1 && createdChars.length === 1) {
+          router.push(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${createdChars[0]._id}`);
+          if (isMobile) setOpenMobile(false);
+        }
+      } catch {
+        showToast(t("duplicateCharacterError"), "error");
+        throw new Error("duplicate failed");
+      }
+    },
+    [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
+  );
+
+  const handleDuplicateGroup = React.useCallback(
+    async (source: Group, label: string, count: number) => {
+      if (!selectedCampaignId) return;
+      try {
+        let firstCreatedGroupId: string | null = null;
+        let firstCharId: string | null = null;
+
+        for (let i = 0; i < count; i++) {
+          const copyLabel = i === 0 ? label : `${label} ${i + 1}`;
+          const newGroup = await GroupService.createGroup(selectedCampaignId, { label: copyLabel });
+
+          const createdCharacters: GroupCharacter[] = [];
+          for (const member of source.characters) {
+            const full = await CharacterService.getCharacterById(member._id);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _id, createdBy, deletedAt, groups, ...rest } = full;
+            const isNpc = !("progression" in full);
+            const type = isNpc ? "npcs" : "players";
+            const created = await CharacterService.createCharacter(type, {
+              ...rest,
+              groups: [newGroup._id],
+            } as typeof rest);
+            createdCharacters.push({
+              _id: created._id,
+              firstname: created.firstname,
+              lastname: created.lastname,
+              surname: created.surname,
+              userId: member.userId,
+            });
+          }
+
+          dispatch(
+            addGroupToStore({
+              ...newGroup,
+              characters: createdCharacters,
+            }),
+          );
+
+          if (i === 0) {
+            firstCreatedGroupId = newGroup._id;
+            firstCharId = createdCharacters[0]?._id ?? null;
+          }
+        }
+
+        showToast(t("duplicateGroupSuccess", { count }), "success");
+
+        if (firstCreatedGroupId) {
+          if (firstCharId) {
+            router.push(
+              `/campaigns/${selectedCampaignId}/groups/${firstCreatedGroupId}/characters/${firstCharId}`,
+            );
+          }
+          if (isMobile) setOpenMobile(false);
+        }
+      } catch {
+        showToast(t("duplicateGroupError"), "error");
+        throw new Error("group duplicate failed");
+      }
+    },
+    [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
+  );
+
   const buildGroupActions = React.useCallback(
     (group: Group): SidebarActionItem[] => {
       if (actionsDisabled) return [];
@@ -140,6 +296,14 @@ export default function GroupList({
           onSelect: () => setGroupToEdit(group),
         },
       ];
+
+      if (!isArchivedSection) {
+        items.push({
+          id: "duplicate",
+          label: t("duplicate"),
+          onSelect: () => setGroupToDuplicate(group),
+        });
+      }
 
       if (isArchivedSection) {
         items.push({
@@ -167,11 +331,69 @@ export default function GroupList({
     [actionsDisabled, isArchivedSection, onArchiveGroup, onUnarchiveGroup, t],
   );
 
+  const handleAddGmGuestToSession = React.useCallback(
+    async (character: GroupCharacter) => {
+      dispatch(addGmGuestCharacterToSession(character._id));
+      if (!battleInitialized) return;
+      try {
+        const full = await CharacterService.getCharacterById(character._id);
+        const row = createInitiativeTrackerRow({
+          groupId: SESSION_PARTICIPANTS_GROUP_ID,
+          groupLabel: SESSION_PARTICIPANTS_GROUP_LABEL,
+          characterId: full._id,
+          firstname: full.firstname ?? "",
+          lastname: full.lastname ?? "",
+          surname: full.surname ?? "",
+          avatar: full.avatar ?? "",
+          hitPoints: full.stats?.currentHitPoints ?? 0,
+          maxHitPoints: full.stats?.maxHitPoints ?? 0,
+          tempHitPoints: full.stats?.tempHitPoints ?? 0,
+          armorClass: full.stats?.armorClass ?? 10,
+          kind: "progression" in full ? "player" : "npc",
+        });
+        dispatch(appendInitiativeTrackerRows([{ ...row, isGmGuest: true }]));
+      } catch {
+        /* tracker add non-bloquant */
+      }
+    },
+    [battleInitialized, dispatch],
+  );
+
+  const handleRemoveGmGuestFromSession = React.useCallback(
+    (character: GroupCharacter) => {
+      dispatch(removeGmGuestCharacterFromSession(character._id));
+      if (battleInitialized) {
+        dispatch(removeInitiativeTrackerRow(`${SESSION_PARTICIPANTS_GROUP_ID}:${character._id}`));
+      }
+    },
+    [battleInitialized, dispatch],
+  );
+
   const buildCharacterActions = React.useCallback(
     (character: GroupCharacter, groupId: string): SidebarActionItem[] => {
-      if (actionsDisabled || !selectedCampaignId) return [];
+      if (!selectedCampaignId) return [];
+
+      if (actionsDisabled) {
+        const isGuest = gmGuestCharacterIds.includes(character._id);
+        return [
+          {
+            id: isGuest ? "removeFromSession" : "addToSession",
+            label: isGuest ? t("removeFromSession") : t("addToSession"),
+            onSelect: () =>
+              isGuest
+                ? handleRemoveGmGuestFromSession(character)
+                : void handleAddGmGuestToSession(character),
+          },
+        ];
+      }
 
       const items: SidebarActionItem[] = [];
+
+      items.push({
+        id: "duplicate",
+        label: t("duplicate"),
+        onSelect: () => setCharacterToDuplicate({ character, groupId }),
+      });
 
       if (
         canMoveCharacterToAnotherGroup({
@@ -210,7 +432,7 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, router, selectedCampaignId, setOpenMobile, t],
+    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, gmGuestCharacterIds, handleAddGmGuestToSession, handleRemoveGmGuestFromSession, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, router, selectedCampaignId, setOpenMobile, t],
   );
 
   if (groups.length === 0) {
@@ -281,7 +503,7 @@ export default function GroupList({
                     <SidebarItemWithActions
                       key={character._id}
                       actions={characterActions}
-                      disabled={actionsDisabled}
+                      disabled={characterActions.length === 0}
                       contextMenuLabel={t("characterActions")}
                       className={cn(
                         "rounded-[12px] transition-all duration-100",
@@ -367,6 +589,53 @@ export default function GroupList({
           if (!open) setCharacterToMove(null);
         }}
         onMoved={onRefreshGroups}
+      />
+
+      <MoveCharacterDialog
+        character={pendingMoveAfterDuplicate?.characters[0] ?? null}
+        campaignId={selectedCampaignId}
+        currentGroupId={pendingMoveAfterDuplicate?.groupId ?? ""}
+        open={!!pendingMoveAfterDuplicate}
+        onOpenChange={(open) => {
+          if (!open) setPendingMoveAfterDuplicate(null);
+        }}
+        onMovedToGroup={async (targetGroupId) => {
+          const pending = pendingMoveAfterDuplicate;
+          if (!pending) return;
+          await Promise.all(
+            pending.characters.slice(1).map((c) =>
+              moveCharacterToGroup(c._id, pending.groupId, targetGroupId),
+            ),
+          );
+          for (const c of pending.characters) {
+            dispatch(removeCharacterFromGroup({ groupId: pending.groupId, characterId: c._id }));
+            dispatch(addCharacterToGroup({ groupId: targetGroupId, character: c }));
+          }
+          setPendingMoveAfterDuplicate(null);
+        }}
+      />
+
+      <DuplicateCharacterDialog
+        character={characterToDuplicate?.character ?? null}
+        open={!!characterToDuplicate}
+        onOpenChange={(open) => {
+          if (!open) setCharacterToDuplicate(null);
+        }}
+        onDuplicate={(name, count) =>
+          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, false)
+        }
+        onDuplicateAndMove={(name, count) =>
+          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, true)
+        }
+      />
+
+      <DuplicateGroupDialog
+        group={groupToDuplicate}
+        open={!!groupToDuplicate}
+        onOpenChange={(open) => {
+          if (!open) setGroupToDuplicate(null);
+        }}
+        onDuplicate={(label, count) => handleDuplicateGroup(groupToDuplicate!, label, count)}
       />
     </div>
   );

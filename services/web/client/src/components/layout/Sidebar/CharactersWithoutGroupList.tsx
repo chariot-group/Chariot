@@ -18,7 +18,10 @@ import { Character } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
+import { showToast } from "@/lib/toast";
+import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -46,6 +49,7 @@ export default function CharactersWithoutGroupList() {
   const { setOpenMobile } = useSidebar();
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [characterToDuplicate, setCharacterToDuplicate] = useState<Character | null>(null);
 
   const pathname = usePathname();
 
@@ -79,10 +83,36 @@ export default function CharactersWithoutGroupList() {
     }
   };
 
+  const handleDuplicateCharacter = async (character: Character, name: string, count: number) => {
+    if (!isPlayer(character)) return;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _id, createdBy, deletedAt, groups, ...rest } = character;
+      let lastCreated: Character | null = null;
+      for (let i = 0; i < count; i++) {
+        const copyName = i === 0 ? name : `${name} ${i + 1}`;
+        const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
+        const created = await CharacterService.createCharacter("players", payload);
+        dispatch(upsertCharacterWithoutGroup(created as Character));
+        lastCreated = created as Character;
+      }
+      showToast(t("duplicateCharacterSuccess"), "success");
+      if (count === 1 && lastCreated) router.push(`/characters/${lastCreated._id}`);
+    } catch {
+      showToast(t("duplicateCharacterError"), "error");
+      throw new Error("duplicate failed");
+    }
+  };
+
   const buildCharacterActions = (character: Character): SidebarActionItem[] => {
     if (actionsDisabled) return [];
 
     return [
+      {
+        id: "duplicate",
+        label: t("duplicate"),
+        onSelect: () => setCharacterToDuplicate(character),
+      },
       {
         id: "edit",
         label: t("edit"),
@@ -237,6 +267,15 @@ export default function CharactersWithoutGroupList() {
         cancelLabel={t("cancel")}
         onConfirm={handleDeleteCharacter}
         isLoading={isDeleting}
+      />
+
+      <DuplicateCharacterDialog
+        character={characterToDuplicate}
+        open={!!characterToDuplicate}
+        onOpenChange={(open) => {
+          if (!open) setCharacterToDuplicate(null);
+        }}
+        onDuplicate={(name, count) => handleDuplicateCharacter(characterToDuplicate!, name, count)}
       />
     </nav>
   );

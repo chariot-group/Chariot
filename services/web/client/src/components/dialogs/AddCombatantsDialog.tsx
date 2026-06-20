@@ -24,6 +24,7 @@ import {
   selectCurrentSession,
   selectInitiativeTrackerRows,
   selectSessionParticipantDisplayNames,
+  selectGmGuestCharacterIds,
 } from "@/store/slices/sessionSlice";
 import {
   buildSessionParticipantsGroup,
@@ -77,6 +78,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const session = useAppSelector(selectCurrentSession);
   const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
+  const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
 
   const inCombatCharacterIds = React.useMemo(
@@ -153,6 +155,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
           selectedCampaignId,
           participantDisplayNames,
           session?.code,
+          gmGuestCharacterIds,
         );
         setGroups([...allGroups, sessionGroup]);
       } finally {
@@ -164,7 +167,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     return () => {
       mounted = false;
     };
-  }, [open, selectedCampaignId, session?.code, session?.participants, participantDisplayNames]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, gmGuestCharacterIds, participantDisplayNames]);
 
   React.useEffect(() => {
     if (!open) {

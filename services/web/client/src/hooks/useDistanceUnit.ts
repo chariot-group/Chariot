@@ -64,7 +64,6 @@ export function useDistanceUnit() {
       secondaryWeight: showBoth ? (lbs: number) => (isMetric(unit) ? lbs : lbsToKg(lbs)) : null,
       toWeightLbs: (value: number) => (isMetric(unit) ? kgToLbs(value) : value),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [unit, showBoth, unitLabel, secondaryUnitLabel],
   );
 }

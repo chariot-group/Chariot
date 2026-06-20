@@ -20,6 +20,7 @@ import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import {
   selectCurrentSession,
   selectSessionParticipantDisplayNames,
+  selectGmGuestCharacterIds,
   setInitiativeTrackerRows,
   setSessionInitBattleDraft,
   createInitiativeTrackerRow,
@@ -131,6 +132,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const session = useAppSelector(selectCurrentSession);
   const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
+  const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
 
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -186,6 +188,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           selectedCampaignId,
           participantDisplayNames,
           session?.code,
+          gmGuestCharacterIds,
         );
 
         const groupsWithSessionParticipants = [...allGroups, sessionParticipantsGroup];
@@ -229,7 +232,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initBattleDraft is only read once on open to restore draft state; including it would retrigger loadGroups on every user interaction
-  }, [open, selectedCampaignId, session?.code, session?.participants, participantDisplayNames]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, gmGuestCharacterIds, participantDisplayNames]);
 
   const selectedGroups = React.useMemo(() => {
     const selectedIds = new Set(selectedGroupIds);

@@ -25,6 +25,7 @@ interface MoveCharacterDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onMoved?: () => void | Promise<void>;
+  onMovedToGroup?: (targetGroupId: string) => void | Promise<void>;
 }
 
 export type MoveTargetGroup = Group & { isArchived: boolean };
@@ -74,6 +75,7 @@ export function MoveCharacterDialog({
   open,
   onOpenChange,
   onMoved,
+  onMovedToGroup,
 }: MoveCharacterDialogProps) {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
@@ -131,6 +133,7 @@ export function MoveCharacterDialog({
     setIsMoving(true);
     try {
       await moveCharacterToGroup(character._id, currentGroupId, selectedGroupId);
+      await onMovedToGroup?.(selectedGroupId);
       await onMoved?.();
       onOpenChange(false);
     } catch (error) {
