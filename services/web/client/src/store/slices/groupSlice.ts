@@ -223,6 +223,22 @@ const groupSlice = createSlice({
             updateGroupCharacters(state.activeGroups);
             updateGroupCharacters(state.archivedGroups);
         },
+        removeCharacterFromGroup: (
+            state,
+            action: PayloadAction<{ groupId: string; characterId: string }>,
+        ) => {
+            const { groupId, characterId } = action.payload;
+
+            const targetGroup =
+                state.activeGroups.find((group) => group._id === groupId) ??
+                state.archivedGroups.find((group) => group._id === groupId);
+
+            if (!targetGroup) return;
+
+            targetGroup.characters = targetGroup.characters.filter(
+                (existing) => existing._id !== characterId,
+            );
+        },
     },
 });
 
@@ -239,6 +255,7 @@ export const {
     invalidateCache,
     addCharacterToGroup,
     upsertCharacterInGroups,
+    removeCharacterFromGroup,
 } = groupSlice.actions;
 
 export const selectGroupsCampaignId = (state: RootState) => state.group.groupsCampaignId;
@@ -253,6 +270,8 @@ export const selectOpenGroupId = (state: RootState) => state.group.openGroupId;
 export const selectActiveGroupsPage = (state: RootState) => state.group.activePage;
 export const selectArchivedGroupsPage = (state: RootState) => state.group.archivedPage;
 export const selectActiveGroupsHasMore = (state: RootState) => state.group.activeHasMore;
+export const selectActiveGroupsTotal = (state: RootState) => state.group.activeTotal;
 export const selectArchivedGroupsHasMore = (state: RootState) => state.group.archivedHasMore;
+export const selectArchivedGroupsTotal = (state: RootState) => state.group.archivedTotal;
 
 export default groupSlice.reducer;

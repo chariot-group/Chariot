@@ -1,12 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CampaignService } from './campaign.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Campaign } from './schemas/campaign.schema';
+import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
-import {
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { MetricsModule } from '@/metrics/metrics.module';
 
@@ -317,15 +314,22 @@ describe('CampaignService - update', () => {
     expect(result).toHaveProperty('data');
   });
 
-  it('should reject update if label changes', async () => {
+  it('should update campaign label successfully', async () => {
     campaignModel.findById.mockResolvedValue(existingCampaign);
+    campaignModel.exec.mockResolvedValue({
+      ...existingCampaign,
+      label: 'New Label',
+    });
 
-    await expect(
-      service.update(campaignId, { label: 'New Label' }),
-    ).rejects.toThrow(BadRequestException);
+    const result = await service.update(campaignId, { label: 'New Label' });
 
     expect(groupModel.updateMany).not.toHaveBeenCalled();
-    expect(campaignModel.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(campaignModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      campaignId,
+      expect.objectContaining({ label: 'New Label' }),
+      { new: true },
+    );
+    expect(result).toHaveProperty('data');
   });
 
   it('should throw InternalServerErrorException on unexpected error', async () => {

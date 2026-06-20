@@ -1,6 +1,7 @@
 "use client";
 
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
+import { removeCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { useState } from "react";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -9,22 +10,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useSidebar } from "@/components/ui/sidebar";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { cn } from "@/lib/utils";
 import { selectCurrentUserParticipant, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 import { useUser } from "@/hooks/useUser";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import CharacterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
+import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
+import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -34,7 +28,7 @@ import { isPlayer } from "@/utils/global.utils";
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");
   const tClass = useTranslations("classes");
-  const { characters, loading, loadingMore, hasMore, loadMoreCharacters, refetch, error } = usePlayersWithoutGroup(10, {
+  const { characters, loading, loadingMore, hasMore, loadMoreCharacters, error } = usePlayersWithoutGroup(10, {
     autoFetch: false,
   });
   const router = useRouter();
@@ -48,6 +42,7 @@ export default function CharactersWithoutGroupList() {
   );
   const sessionCharacterId =
     isInSession && sessionStatus === "launched" ? (currentParticipant?.characterId ?? null) : null;
+  const actionsDisabled = isInSession && sessionStatus === "launched";
   const { setOpenMobile } = useSidebar();
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -55,7 +50,7 @@ export default function CharactersWithoutGroupList() {
   const pathname = usePathname();
 
   const selectedCharacterId = pathname?.includes("/characters/")
-    ? pathname.split("/characters/")[1]?.split("/")[0]
+    ? pathname.split("/characters/")[1]?.split("/")[0]?.split("?")[0]
     : null;
 
   const handleDeleteCharacter = async () => {
@@ -68,7 +63,7 @@ export default function CharactersWithoutGroupList() {
       setIsDeleting(true);
       await CharacterService.deleteCharacter(deletingCharacterId);
       setCharacterPendingDelete(null);
-      await refetch();
+      dispatch(removeCharacterWithoutGroup(deletingCharacterId));
 
       if (selectedCharacterId === deletingCharacterId) {
         if (nextCharacter?._id) {
@@ -82,6 +77,27 @@ export default function CharactersWithoutGroupList() {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const buildCharacterActions = (character: Character): SidebarActionItem[] => {
+    if (actionsDisabled) return [];
+
+    return [
+      {
+        id: "edit",
+        label: t("edit"),
+        onSelect: () => {
+          router.push(`/characters/${character._id}?mode=edit`);
+          setOpenMobile(false);
+        },
+      },
+      {
+        id: "delete",
+        label: t("delete"),
+        variant: "destructive",
+        onSelect: () => setCharacterPendingDelete(character),
+      },
+    ];
   };
 
   if (loading && characters.length === 0) {
@@ -102,7 +118,6 @@ export default function CharactersWithoutGroupList() {
       aria-label={t("playerNavigation")}>
       <h2 className="shrink-0 text-lg text-white">{t("yourCharacters")}</h2>
 
-      {/* Create character button */}
       <Link
         href="/characters/new/players"
         onClick={() => setOpenMobile(false)}
@@ -115,7 +130,7 @@ export default function CharactersWithoutGroupList() {
         />
       </Link>
 
-      <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain scroll-smooth py-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth py-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
         {characters.map((character, index) => {
           const isSelected = selectedCharacterId === character._id;
           const classLabel = isPlayer(character)
@@ -130,63 +145,63 @@ export default function CharactersWithoutGroupList() {
               .filter((part) => part.length > 0)
               .join(" ") || t("unnamedCharacter");
           const isSessionCharacter = sessionCharacterId === character._id;
+          const characterActions = buildCharacterActions(character);
+
           return (
-            <ContextMenu key={character._id ?? `character-${index}`}>
-              <ContextMenuTrigger asChild>
-                <Link
-                  href={`/characters/${character._id}`}
-                  aria-current={isSelected ? "page" : undefined}
-                  aria-label={`${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
-                  onClick={() => dispatch(clearSelectedCampaign())}
+            <SidebarItemWithActions
+              key={character._id ?? `character-${index}`}
+              actions={characterActions}
+              disabled={actionsDisabled}
+              contextMenuLabel={t("characterActions")}
+              className={cn(
+                "rounded-[12px] transition-all duration-150",
+                isSelected ? "bg-white text-black" : "hover:bg-white/10",
+              )}
+              overflowTriggerClassName={
+                isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+              }>
+              <Link
+                href={`/characters/${character._id}`}
+                aria-current={isSelected ? "page" : undefined}
+                aria-label={`${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
+                onClick={() => dispatch(clearSelectedCampaign())}
+                className={cn(
+                  "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                  isSelected && "pl-4 font-bold text-black",
+                )}>
+                {isSelected && (
+                  <span
+                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                )}
+                <span
                   className={cn(
-                    "relative w-full shrink-0 cursor-pointer py-1.5 px-3 rounded-[12px] transition-all duration-150 flex justify-between items-center gap-1 focus-visible:ring-1 focus-visible:ring-white/50",
-                    isSelected
-                      ? "bg-white pl-4 font-bold text-black"
-                      : "hover:bg-white/10",
+                    "text-sm min-w-0 flex-1 truncate",
+                    isSelected && "font-bold text-black",
                   )}>
-                  {isSelected && (
-                    <span
-                      className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                      aria-hidden="true"
-                    />
-                  )}
+                  {displayName}
+                </span>
+                {classLabel && (
                   <span
                     className={cn(
-                      "text-sm min-w-0 flex-1 truncate",
+                      "text-sm shrink-0 whitespace-nowrap",
                       isSelected && "font-bold text-black",
                     )}>
-                    {displayName}
+                    ({classLabel})
                   </span>
-                  {classLabel && (
-                    <span
-                      className={cn(
-                        "text-sm shrink-0 whitespace-nowrap",
-                        isSelected && "font-bold text-black",
-                      )}>
-                      ({classLabel})
-                    </span>
-                  )}
-                  {isSessionCharacter && (
-                    <Swords
-                      aria-label={t("sessionCharacter")}
-                      className={cn(
-                        "ml-1 h-3.5 w-3.5 shrink-0",
-                        isSelected ? "text-primary" : "text-yellow",
-                      )}
-                    />
-                  )}
-                </Link>
-              </ContextMenuTrigger>
-              <ContextMenuContent
-                className="w-56 bg-card rounded-[12px] py-1.5 px-1.5 shadow focus-visible:outline-none"
-                aria-label={t("characterActions")}>
-                <ContextMenuItem
-                  className="cursor-pointer focus-visible:border rounded-[8px] px-2 py-1.5 text-sm text-red-500 hover:text-red-600 focus:text-red-600"
-                  onClick={() => setCharacterPendingDelete(character)}>
-                  {t("delete")}
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
+                )}
+                {isSessionCharacter && (
+                  <Swords
+                    aria-label={t("sessionCharacter")}
+                    className={cn(
+                      "ml-1 h-3.5 w-3.5 shrink-0",
+                      isSelected ? "text-primary" : "text-yellow",
+                    )}
+                  />
+                )}
+              </Link>
+            </SidebarItemWithActions>
           );
         })}
 
@@ -211,37 +226,18 @@ export default function CharactersWithoutGroupList() {
         )}
       </div>
 
-      {characterPendingDelete && (
-        <Dialog
-          open={!!characterPendingDelete}
-          onOpenChange={(open) => {
-            if (!open && !isDeleting) setCharacterPendingDelete(null);
-          }}>
-          <DialogContent className="sm:max-w-sm rounded-[15px] bg-card">
-            <DialogHeader>
-              <DialogTitle>{t("deleteCharacterDialogTitle")}</DialogTitle>
-              <DialogDescription>{t("deleteCharacterDialogDescription")}</DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCharacterPendingDelete(null)}
-                disabled={isDeleting}>
-                {t("cancel")}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                className="text-black"
-                onClick={handleDeleteCharacter}
-                disabled={isDeleting}>
-                {t("delete")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <ConfirmDialog
+        open={!!characterPendingDelete}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setCharacterPendingDelete(null);
+        }}
+        title={t("deleteCharacterDialogTitle")}
+        description={t("deleteCharacterDialogDescription")}
+        confirmLabel={t("delete")}
+        cancelLabel={t("cancel")}
+        onConfirm={handleDeleteCharacter}
+        isLoading={isDeleting}
+      />
     </nav>
   );
 }

@@ -5,16 +5,20 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronRight, Archive, Loader2, LayersPlus } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGroups } from "@/hooks/useGroups";
 import GroupList from "@/components/layout/Sidebar/GroupList";
 import { selectSelectedCampaign } from "@/store/slices/campaignSlice";
 import { selectOpenArchivedGroups, setOpenArchivedGroups } from "@/store/slices/sidebarSlice";
 import { selectGroupToOpen, setGroupToOpen } from "@/store/slices/campaignContextSlice";
-import { setOpenGroup } from "@/store/slices/groupSlice";
+import { selectArchivedGroupsTotal, setOpenGroup } from "@/store/slices/groupSlice";
 import CharactersWithoutGroupList from "@/components/layout/Sidebar/CharactersWithoutGroupList";
 import { CreateGroupDialog } from "@/components/dialogs/CreateGroupDialog";
 import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessionPlayersSidebarSection";
+import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
+import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
+import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 import { cn } from "@/lib/utils";
 
 export default function SidebarContext() {
@@ -24,6 +28,12 @@ export default function SidebarContext() {
   const selectedCampaign = useAppSelector(selectSelectedCampaign);
   const openArchived = useAppSelector(selectOpenArchivedGroups);
   const groupToOpen = useAppSelector(selectGroupToOpen);
+  const archivedGroupsTotal = useAppSelector(selectArchivedGroupsTotal);
+  const isInSession = useAppSelector(selectIsInSession);
+  const sessionStatus = useAppSelector(selectSessionStatus);
+  const actionsDisabled = isInSession && sessionStatus === "launched";
+  const [isDeleteAllArchivedPending, setIsDeleteAllArchivedPending] = useState(false);
+  const [isDeletingAllArchived, setIsDeletingAllArchived] = useState(false);
   const {
     activeGroups,
     archivedGroups,
@@ -41,7 +51,35 @@ export default function SidebarContext() {
     archiveGroup,
     unarchiveGroup,
     deleteGroup,
+    deleteAllArchivedGroups,
   } = useGroups();
+
+  const archivedSectionActions = useMemo((): SidebarActionItem[] => {
+    if (actionsDisabled || archivedGroupsTotal === 0) {
+      return [];
+    }
+
+    return [
+      {
+        id: "delete-all-archived",
+        label: t("deleteAllArchivedGroups"),
+        variant: "destructive",
+        onSelect: () => setIsDeleteAllArchivedPending(true),
+      },
+    ];
+  }, [actionsDisabled, archivedGroupsTotal, t]);
+
+  const handleConfirmDeleteAllArchived = useCallback(async () => {
+    if (isDeletingAllArchived) return;
+
+    try {
+      setIsDeletingAllArchived(true);
+      await deleteAllArchivedGroups();
+      setIsDeleteAllArchivedPending(false);
+    } finally {
+      setIsDeletingAllArchived(false);
+    }
+  }, [deleteAllArchivedGroups, isDeletingAllArchived]);
 
   const handleOpenArchived = (isOpen: boolean) => {
     dispatch(setOpenArchivedGroups(isOpen));
@@ -60,11 +98,9 @@ export default function SidebarContext() {
 
   return (
     <nav
-      className="flex flex-col gap-3 overflow-y-auto px-3 py-4"
+      className="flex flex-col gap-3 px-3 py-4 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
       aria-label={t("gmNavigation")}>
-      {selectedCampaign && (
-        <h2 className="shrink-0 text-lg text-white">{selectedCampaign.label}</h2>
-      )}
+      {selectedCampaign && <h2 className="shrink-0 text-lg text-white">{selectedCampaign.label}</h2>}
 
       {/* ── Active groups — shown directly, no collapsible wrapper ── */}
       <CreateGroupDialog
@@ -102,6 +138,9 @@ export default function SidebarContext() {
               onArchiveGroup={archiveGroup}
               onUnarchiveGroup={unarchiveGroup}
               onDeleteGroup={deleteGroup}
+              loadedActiveGroupIds={activeGroups.map((group) => group._id)}
+              loadedArchivedGroupIds={archivedGroups.map((group) => group._id)}
+              onRefreshGroups={refreshGroups}
             />
 
             {hasMoreActive && (
@@ -128,36 +167,38 @@ export default function SidebarContext() {
           <Collapsible
             open={openArchived}
             onOpenChange={handleOpenArchived}>
-            <CollapsibleTrigger
-              aria-expanded={openArchived}
-              aria-controls="archived-groups-content"
-              className={cn(
-                "group/arc flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-1.5 transition-all duration-150",
-                "hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
-              )}>
-              <Archive
-                aria-hidden="true"
-                className="h-4 w-4 shrink-0 text-white/50 transition-colors group-hover/arc:text-white"
-              />
-              <span className="text-sm text-white/50 group-hover/arc:text-white">
-                {t("yourArchives")}
-              </span>
-              <ChevronRight
-                aria-hidden="true"
+            <SidebarItemWithActions
+              actions={archivedSectionActions}
+              disabled={actionsDisabled}
+              contextMenuLabel={t("archivedSectionActions")}
+              className="w-full">
+              <CollapsibleTrigger
+                aria-expanded={openArchived}
+                aria-controls="archived-groups-content"
                 className={cn(
-                  "ml-auto h-4 w-4 text-white/40 transition-all duration-100 group-hover/arc:text-white",
-                  openArchived && "rotate-90",
-                )}
-              />
-            </CollapsibleTrigger>
+                  "group/arc flex w-full cursor-pointer items-center gap-2 rounded-[12px] px-3 py-1.5 transition-all duration-150",
+                  "hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+                )}>
+                <Archive
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 text-white/50 transition-colors group-hover/arc:text-white"
+                />
+                <span className="text-sm text-white/50 group-hover/arc:text-white">{t("yourArchives")}</span>
+                <ChevronRight
+                  aria-hidden="true"
+                  className={cn(
+                    "ml-auto h-4 w-4 text-white/40 transition-all duration-100 group-hover/arc:text-white",
+                    openArchived && "rotate-90",
+                  )}
+                />
+              </CollapsibleTrigger>
+            </SidebarItemWithActions>
 
             <CollapsibleContent
               id="archived-groups-content"
               className="mt-1 flex flex-col gap-2">
               {archivedGroups.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-white/40">
-                  {t("noArchives")}
-                </div>
+                <div className="px-3 py-2 text-sm text-white/40">{t("noArchives")}</div>
               ) : (
                 <>
                   <GroupList
@@ -168,6 +209,9 @@ export default function SidebarContext() {
                     onArchiveGroup={archiveGroup}
                     onUnarchiveGroup={unarchiveGroup}
                     onDeleteGroup={deleteGroup}
+                    loadedActiveGroupIds={activeGroups.map((group) => group._id)}
+                    loadedArchivedGroupIds={archivedGroups.map((group) => group._id)}
+                    onRefreshGroups={refreshGroups}
                   />
 
                   {hasMoreArchived && (
@@ -192,6 +236,19 @@ export default function SidebarContext() {
               )}
             </CollapsibleContent>
           </Collapsible>
+
+          <ConfirmDialog
+            open={isDeleteAllArchivedPending}
+            onOpenChange={(open) => {
+              if (!open && !isDeletingAllArchived) setIsDeleteAllArchivedPending(false);
+            }}
+            title={t("deleteAllArchivedGroupsDialogTitle")}
+            description={t("deleteAllArchivedGroupsDialogDescription", { count: archivedGroupsTotal })}
+            confirmLabel={t("delete")}
+            cancelLabel={t("cancel")}
+            onConfirm={handleConfirmDeleteAllArchived}
+            isLoading={isDeletingAllArchived}
+          />
         </>
       )}
     </nav>

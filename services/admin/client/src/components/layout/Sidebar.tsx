@@ -46,7 +46,10 @@ function NavLink({
   }
 
   return (
-    <Link href={href} onClick={onNavigate} className={className}>
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={className}>
       <Icon className="h-4 w-4 flex-shrink-0" />
       <span>{label}</span>
     </Link>
@@ -91,7 +94,8 @@ export function Sidebar() {
             collapsible>
             {navItems.map((item) => {
               if (item.type === "link") {
-                const active = !item.external && (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href));
+                const active =
+                  !item.external && (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href));
                 return (
                   <NavLink
                     key={item.href}
