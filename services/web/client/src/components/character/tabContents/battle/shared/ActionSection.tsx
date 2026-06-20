@@ -7,6 +7,7 @@ import { ArrowUpDown, ListChevronsDownUp, ListChevronsUpDown } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatSignedBonus } from "@/utils/attack.utils";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
 interface ActionSectionProps {
   title: string;
@@ -26,6 +27,7 @@ const normalizeUsageType = (usageType?: string): ActionUsageType => {
 const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
   const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
+  const { convertRange } = useDistanceUnit();
   const sectionId = useId();
   const headingId = `${sectionId}-heading`;
 
@@ -219,7 +221,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                           </span>
                         ))
                         : "-"}
-                      {action.range && ` (${action.range})`}
+                      {action.range && ` (${convertRange(action.range)})`}
                     </span>
                   </Card>
                   {action.description && (

@@ -11,4 +11,5 @@ body:
       description: Les étapes pour mettre en prod.
       value: |
         - [ ] J'ai mis à jour et daté le changelog
+        - [ ] J'ai mis à jour et daté le versions.ts
         - [ ] J'ai mis à jour les `package.json` et `package-lock.json`

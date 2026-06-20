@@ -21,10 +21,10 @@ export default function ProfileLocaleSelect({ value, onValueChange, disabled = f
   const t = useTranslations("ProfilePage");
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full min-w-0">
+    <div className="flex flex-col gap-2 w-full min-w-0">
       <Label
         htmlFor="profile-locale-select"
-        className="text-sm font-medium shrink-0">
+        className="text-sm font-medium">
         {t("languagePreference")}
       </Label>
       <Select
@@ -33,7 +33,7 @@ export default function ProfileLocaleSelect({ value, onValueChange, disabled = f
         disabled={disabled}>
         <SelectTrigger
           id="profile-locale-select"
-          className="w-full sm:w-48 shrink-0"
+          className="w-full shrink-0"
           aria-label={t("languagePreferenceAria")}>
           <SelectValue>{t(LOCALE_LABEL_KEYS[value])}</SelectValue>
         </SelectTrigger>

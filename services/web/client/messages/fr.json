@@ -440,6 +440,12 @@
       "tokens": "Tokens",
       "referral": "Parrainage"
     },
+    "releaseNotes": {
+      "label": "Nouveautés de l'application",
+      "openButton": "Voir les nouveautés",
+      "muteLabel": "Ne plus afficher les nouveautés automatiquement à la connexion",
+      "muteAriaLabel": "Ne plus afficher automatiquement les nouveautés au démarrage"
+    },
     "changePasswordTitle": "Changer de mot de passe",
     "currentPassword": "Mot de passe actuel",
     "newPassword": "Nouveau mot de passe",
@@ -469,6 +475,14 @@
       "en": "🇬🇧 Anglais",
       "es": "🇪🇸 Espagnol"
     },
+    "measurementUnitPreference": "Unités de mesure",
+    "measurementUnitPreferenceAria": "Unités de mesure préférées",
+    "measurementUnits": {
+      "metric": "Mètres (m, kg)",
+      "imperial": "Pieds / Pouces (ft, lbs)"
+    },
+    "showBothUnits": "Afficher les deux unités",
+    "showBothUnitsDescription": "Afficher l'unité secondaire à côté de l'unité principale",
     "changePassword": {
       "successMessage": "Mot de passe modifié avec succès",
       "errorMessage": "Échec de la modification du mot de passe",
@@ -879,6 +893,8 @@
       "hpAbbr": "PV",
       "feet": "pieds",
       "feetAbbr": "pi",
+      "meters": "mètres",
+      "metersAbbr": "m",
       "affinities": "Affinités",
       "resistances": "Résistances",
       "resistancesPlaceholder": "Feu, Froid...",
@@ -892,8 +908,8 @@
       "eyes": "Yeux",
       "age": "Âge",
       "skin": "Peau",
-      "height": "Taille (m)",
-      "weight": "Poids (kg)",
+      "height": "Taille",
+      "weight": "Poids",
       "hair": "Cheveux",
       "alliesAndOrgs": "Alliés et organisations",
       "bonds": "Liens",
@@ -1481,5 +1497,12 @@
   },
   "sessionTime": {
     "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée."
+  },
+  "releaseNotes": {
+    "title": "Nouveautés",
+    "close": "Fermer",
+    "versionLabel": "v{version}",
+    "versionSelectAriaLabel": "Naviguer vers une version précédente",
+    "latest": "Actuelle"
   }
 }

@@ -63,4 +63,19 @@ export class UserInfoDto {
     required: false,
   })
   preferredLocale?: string;
+
+  @ApiProperty({
+    description: 'User preferred measurement unit',
+    example: 'metric',
+    enum: ['metric', 'imperial'],
+    required: false,
+  })
+  preferredMeasurementUnit?: string;
+
+  @ApiProperty({
+    description: 'Show both metric and imperial units simultaneously',
+    example: false,
+    required: false,
+  })
+  showBothUnits?: boolean;
 }

@@ -11,6 +11,10 @@ vi.mock("next-intl", () => ({
       "languages.fr": "🇫🇷 Français",
       "languages.en": "🇬🇧 Anglais",
       "languages.es": "🇪🇸 Espagnol",
+      measurementUnitPreference: "Unités de mesure",
+      measurementUnitPreferenceAria: "Unités de mesure préférées",
+      "measurementUnits.metric": "Mètres (m, kg)",
+      "measurementUnits.imperial": "Pieds / Pouces (ft, lbs)",
     };
     return labels[key] ?? key;
   },
@@ -31,6 +35,7 @@ vi.mock("@/services/UserService", () => ({
 
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => vi.fn(),
+  useAppSelector: () => "metric",
 }));
 
 vi.mock("@/hooks/useToast", () => ({
