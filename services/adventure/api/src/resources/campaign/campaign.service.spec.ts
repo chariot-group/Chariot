@@ -54,7 +54,7 @@ describe('CampaignService - create', () => {
 
     const loggerSpy = jest
       .spyOn(service['logger'], 'verbose')
-      .mockImplementation(() => { });
+      .mockImplementation(() => {});
 
     const result = await service.create(mockCampaignDto, userId);
 
@@ -85,7 +85,7 @@ describe('CampaignService - create', () => {
     campaignModel.create.mockRejectedValue(new Error('DB failure'));
     const loggerSpy = jest
       .spyOn(service['logger'], 'error')
-      .mockImplementation(() => { });
+      .mockImplementation(() => {});
 
     await expect(service.create(mockCampaignDto, userId)).rejects.toThrow(
       InternalServerErrorException,
