@@ -1238,6 +1238,7 @@
       "cantrips": "Sorts mineurs",
       "noCantrips": "Aucun sort mineur",
       "spellLevel": "Sorts de niveau {level}",
+      "spellLevelShort": "Niveau {level}",
       "spellSlots": "{current}/{total}",
       "spellDetails": {
         "level": "Niveau",
@@ -1348,6 +1349,15 @@
         "searching": "Recherche en cours...",
         "selectSpell": "Sélectionnez un sort pour voir les détails",
         "validate": "Ajouter ce sort",
+        "useThisSpell": "Utiliser ce sort",
+        "selectThisSpell": "Sélectionner ce sort",
+        "removeFromSelection": "Retirer de la sélection",
+        "queuedInSelection": "Dans la sélection",
+        "addSelection": "Ajouter la sélection ({count})",
+        "selectionCount": "{count, plural, one {# sort sélectionné} other {# sorts sélectionnés}}",
+        "selectionDetailsList": "Sorts sélectionnés",
+        "removeSpellFromSelection": "Retirer {name} de la sélection",
+        "unknownSpell": "Sort sans nom",
         "cancel": "Annuler",
         "loadMore": "Charger plus",
         "error": "Erreur lors de la recherche",
@@ -1358,6 +1368,14 @@
           "fr": "🇫🇷 Français",
           "en": "🇬🇧 English",
           "es": "🇪🇸 Español"
+        },
+        "classFilter": {
+          "all": "Toutes les classes",
+          "ariaLabel": "Filtrer par classe"
+        },
+        "levelFilter": {
+          "all": "Tous les niveaux",
+          "ariaLabel": "Filtrer par niveau de sort"
         },
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",

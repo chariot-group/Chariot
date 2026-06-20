@@ -1234,6 +1234,7 @@
       "cantrips": "Minor spells",
       "noCantrips": "No minor spells",
       "spellLevel": "Level {level} spells",
+      "spellLevelShort": "Level {level}",
       "spellSlots": "{current}/{total}",
       "spellDetails": {
         "level": "Level",
@@ -1343,6 +1344,15 @@
         "searching": "Searching...",
         "selectSpell": "Select a spell to view details",
         "validate": "Add this spell",
+        "useThisSpell": "Use this spell",
+        "selectThisSpell": "Select this spell",
+        "removeFromSelection": "Remove from selection",
+        "queuedInSelection": "In selection",
+        "addSelection": "Add selection ({count})",
+        "selectionCount": "{count, plural, one {# spell selected} other {# spells selected}}",
+        "selectionDetailsList": "Selected spells",
+        "removeSpellFromSelection": "Remove {name} from selection",
+        "unknownSpell": "Unnamed spell",
         "cancel": "Cancel",
         "loadMore": "Load more",
         "error": "Error while searching",
@@ -1353,6 +1363,14 @@
           "fr": "🇫🇷 French",
           "en": "🇬🇧 English",
           "es": "🇪🇸 Spanish"
+        },
+        "classFilter": {
+          "all": "All classes",
+          "ariaLabel": "Filter by class"
+        },
+        "levelFilter": {
+          "all": "All levels",
+          "ariaLabel": "Filter by spell level"
         },
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",

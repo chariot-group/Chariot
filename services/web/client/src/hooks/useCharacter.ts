@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, type Dispatch, type SetStateAction } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
 import CharacterService from '@/services/CharacterService';
 import { Character } from '@/types/character';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -17,6 +17,18 @@ import {
     selectCharactersWithoutGroupLastFetch,
     clearCharacters,
 } from '@/store/slices/characterSlice';
+
+/**
+ * True when refetching an already-loaded sheet (WS sync / local echo) — no full-screen loader.
+ */
+export function isCharacterSheetBackgroundRefresh(
+    loadedCharacterId: string | null | undefined,
+    requestedCharacterId: string,
+): boolean {
+    const loaded = loadedCharacterId?.trim();
+    const requested = requestedCharacterId.trim();
+    return Boolean(loaded && requested && loaded === requested);
+}
 
 interface UseCharacterReturn {
     character: Character | null;
@@ -44,10 +56,15 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
     const [character, setCharacter] = useState<Character | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const loadedCharacterIdRef = useRef<string | null>(null);
 
     const remoteVersion = useAppSelector((s) =>
         characterId ? ((s.session.characterSheetRemoteVersions ?? {})[characterId] ?? 0) : 0,
     );
+
+    useEffect(() => {
+        loadedCharacterIdRef.current = null;
+    }, [characterId]);
 
     const fetchCharacter = useCallback(async () => {
         if (!characterId) {
@@ -80,13 +97,18 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
         }
 
         let cancelled = false;
+        const isBackgroundRefresh = isCharacterSheetBackgroundRefresh(loadedCharacterIdRef.current, characterId);
+
         void (async () => {
             try {
-                setLoading(true);
+                if (!isBackgroundRefresh) {
+                    setLoading(true);
+                }
                 setError(null);
                 const data = await CharacterService.getCharacterById(characterId, { sessionCode });
                 if (!cancelled) {
                     setCharacter(data);
+                    loadedCharacterIdRef.current = characterId;
                 }
             } catch (err) {
                 if (!cancelled) {
@@ -95,7 +117,7 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
                     console.error('Error fetching character:', err);
                 }
             } finally {
-                if (!cancelled) {
+                if (!cancelled && !isBackgroundRefresh) {
                     setLoading(false);
                 }
             }
