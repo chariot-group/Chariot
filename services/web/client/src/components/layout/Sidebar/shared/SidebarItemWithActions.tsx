@@ -21,6 +21,8 @@ export interface SidebarItemWithActionsProps {
   className?: string;
   overflowTriggerClassName?: string;
   menuContentClassName?: string;
+  /** Rendered before the trailing overflow control (e.g. primary row actions). */
+  trailingBeforeOverflow?: React.ReactNode;
 }
 
 const defaultOverflowTriggerClassName =
@@ -65,6 +67,50 @@ function SidebarActionMenuItems({
   ));
 }
 
+function SidebarOverflowDropdown({
+  actions,
+  contextMenuLabel,
+  overflowTriggerClassName,
+  menuContentClassName,
+}: {
+  actions: SidebarActionItem[];
+  contextMenuLabel: string;
+  overflowTriggerClassName?: string;
+  menuContentClassName?: string;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={contextMenuLabel}
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+          className={cn(
+            "flex shrink-0 cursor-pointer items-center justify-center self-center rounded-[8px] p-1.5 transition-all duration-100",
+            "focus-visible:outline-none focus-visible:ring-1",
+            overflowTriggerClassName ?? defaultOverflowTriggerClassName,
+          )}>
+          <MoreVertical
+            className="h-4 w-4"
+            aria-hidden="true"
+          />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={4}
+        className={menuContentClassName ?? defaultMenuContentClassName}
+        aria-label={contextMenuLabel}>
+        <SidebarActionMenuItems
+          actions={actions}
+          variant="dropdown"
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function SidebarItemWithActions({
   actions,
   children,
@@ -73,46 +119,56 @@ export function SidebarItemWithActions({
   className,
   overflowTriggerClassName,
   menuContentClassName,
+  trailingBeforeOverflow,
 }: SidebarItemWithActionsProps) {
   const showOverflowMenu = useIsTabletOrMobile();
+  const hasActions = !disabled && actions.length > 0;
 
-  if (disabled || actions.length === 0) {
+  if (!hasActions) {
+    if (trailingBeforeOverflow) {
+      return (
+        <div className={cn("flex min-w-0 items-center gap-1", className)}>
+          <div className="min-w-0 flex-1">{children}</div>
+          {trailingBeforeOverflow}
+        </div>
+      );
+    }
+
     return <div className={className}>{children}</div>;
   }
 
   if (showOverflowMenu) {
     return (
-      <div className={cn("flex min-w-0 items-stretch", className)}>
+      <div className={cn("flex min-w-0 items-center gap-1", className)}>
         <div className="min-w-0 flex-1">{children}</div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label={contextMenuLabel}
-              onClick={(event) => event.stopPropagation()}
-              onPointerDown={(event) => event.stopPropagation()}
-              className={cn(
-                "flex shrink-0 cursor-pointer items-center justify-center self-center rounded-[8px] p-1.5 transition-all duration-100",
-                "focus-visible:outline-none focus-visible:ring-1",
-                overflowTriggerClassName ?? defaultOverflowTriggerClassName,
-              )}>
-              <MoreVertical
-                className="h-4 w-4"
-                aria-hidden="true"
-              />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            sideOffset={4}
+        {trailingBeforeOverflow}
+        <SidebarOverflowDropdown
+          actions={actions}
+          contextMenuLabel={contextMenuLabel}
+          overflowTriggerClassName={overflowTriggerClassName}
+          menuContentClassName={menuContentClassName}
+        />
+      </div>
+    );
+  }
+
+  if (trailingBeforeOverflow) {
+    return (
+      <div className={cn("flex min-w-0 items-center gap-1", className)}>
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            <div className="min-w-0 flex-1">{children}</div>
+          </ContextMenuTrigger>
+          <ContextMenuContent
             className={menuContentClassName ?? defaultMenuContentClassName}
             aria-label={contextMenuLabel}>
             <SidebarActionMenuItems
               actions={actions}
-              variant="dropdown"
+              variant="context"
             />
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </ContextMenuContent>
+        </ContextMenu>
+        {trailingBeforeOverflow}
       </div>
     );
   }

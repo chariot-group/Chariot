@@ -30,6 +30,10 @@
     "move": "Mover",
     "cancel": "Cancelar",
     "groupActions": "Acciones del grupo",
+    "archivedSectionActions": "Acciones de archivos",
+    "deleteAllArchivedGroups": "Eliminar todos los grupos archivados",
+    "deleteAllArchivedGroupsDialogTitle": "Eliminar todos los grupos archivados",
+    "deleteAllArchivedGroupsDialogDescription": "¿Estás seguro de que quieres eliminar {count, plural, one {# grupo archivado} other {# grupos archivados}}? Esta acción no se puede deshacer.",
     "characterActions": "Acciones del personaje",
     "campaignActions": "Acciones de la campaña",
     "deleteGroupDialogTitle": "Eliminar grupo",
@@ -49,8 +53,11 @@
     "moveCharacterDialogTitle": "Mover personaje",
     "moveCharacterDialogDescription": "Elige el grupo de destino para {name}.",
     "moveCharacterSelectGroup": "Grupo de destino",
+    "moveCharacterSearchGroupPlaceholder": "Buscar grupos por nombre",
+    "moveCharacterNoSearchResult": "No se encontró ningún grupo.",
+    "moveCharacterArchivedGroupBadge": "Archivado",
     "moveCharacterConfirm": "Mover",
-    "moveCharacterNoTargetGroups": "No hay otro grupo activo disponible.",
+    "moveCharacterNoTargetGroups": "No hay otro grupo disponible.",
     "launchSession": "Iniciar sesión",
     "initBattle": "Inicializar batalla",
     "startBattle": "Comenzar batalla",
@@ -447,6 +454,12 @@
       "tokens": "Tokens",
       "referral": "Apadrinamiento"
     },
+    "releaseNotes": {
+      "label": "Novedades de la aplicación",
+      "openButton": "Ver las novedades",
+      "muteLabel": "No mostrar las novedades automáticamente al iniciar sesión",
+      "muteAriaLabel": "Dejar de mostrar las novedades automáticamente al iniciar"
+    },
     "changePasswordTitle": "Cambiar contraseña",
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña",
@@ -476,6 +489,14 @@
       "en": "🇬🇧 Inglés",
       "es": "🇪🇸 Español"
     },
+    "measurementUnitPreference": "Unidades de medida",
+    "measurementUnitPreferenceAria": "Unidades de medida preferidas",
+    "measurementUnits": {
+      "metric": "Metros (m, kg)",
+      "imperial": "Pies / Pulgadas (ft, lbs)"
+    },
+    "showBothUnits": "Mostrar ambas unidades",
+    "showBothUnitsDescription": "Mostrar la unidad secundaria junto a la principal",
     "changePassword": {
       "successMessage": "Contraseña cambiada correctamente",
       "errorMessage": "Error al cambiar la contraseña",
@@ -886,6 +907,8 @@
       "hpAbbr": "PG",
       "feet": "pies",
       "feetAbbr": "ft",
+      "meters": "metros",
+      "metersAbbr": "m",
       "affinities": "Afinidades",
       "resistances": "Resistencias",
       "resistancesPlaceholder": "Fuego, Frío...",
@@ -899,8 +922,8 @@
       "eyes": "Ojos",
       "age": "Edad",
       "skin": "Piel",
-      "height": "Altura (m)",
-      "weight": "Peso (kg)",
+      "height": "Altura",
+      "weight": "Peso",
       "hair": "Cabello",
       "alliesAndOrgs": "Aliados y organizaciones",
       "bonds": "Vínculos",
@@ -1485,5 +1508,12 @@
   },
   "sessionTime": {
     "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
+  },
+  "releaseNotes": {
+    "title": "Novedades",
+    "close": "Cerrar",
+    "versionLabel": "v{version}",
+    "versionSelectAriaLabel": "Navegar a una versión anterior",
+    "latest": "Actual"
   }
 }

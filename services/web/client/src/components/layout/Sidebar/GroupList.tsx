@@ -7,7 +7,15 @@ import { Character as GroupCharacter, Group } from "@/types/campaign";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { addCharacterToGroup, addGroupToStore, removeCharacterFromGroup } from "@/store/slices/groupSlice";
+import {
+  addCharacterToGroup,
+  addGroupToStore,
+  removeCharacterFromGroup,
+  selectActiveGroupsHasMore,
+  selectActiveGroupsTotal,
+  selectArchivedGroupsHasMore,
+  selectArchivedGroupsTotal,
+} from "@/store/slices/groupSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -24,6 +32,7 @@ import CharacterService from "@/services/CharacterService";
 import GroupService from "@/services/GroupService";
 import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
 import { showToast } from "@/lib/toast";
+import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
 import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 
 interface GroupListProps {
@@ -34,7 +43,8 @@ interface GroupListProps {
   onArchiveGroup: (groupId: string) => Promise<void>;
   onUnarchiveGroup: (groupId: string) => Promise<void>;
   onDeleteGroup: (groupId: string) => Promise<void>;
-  activeGroupsForMove: Group[];
+  loadedActiveGroupIds: string[];
+  loadedArchivedGroupIds: string[];
   onRefreshGroups: () => Promise<void>;
 }
 
@@ -46,13 +56,18 @@ export default function GroupList({
   onArchiveGroup,
   onUnarchiveGroup,
   onDeleteGroup,
-  activeGroupsForMove,
+  loadedActiveGroupIds,
+  loadedArchivedGroupIds,
   onRefreshGroups,
 }: GroupListProps) {
   const t = useTranslations("sidebar");
-  const router = useRouter();
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
+  const activeGroupsTotal = useAppSelector(selectActiveGroupsTotal);
+  const activeGroupsHasMore = useAppSelector(selectActiveGroupsHasMore);
+  const archivedGroupsTotal = useAppSelector(selectArchivedGroupsTotal);
+  const archivedGroupsHasMore = useAppSelector(selectArchivedGroupsHasMore);
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
@@ -109,7 +124,7 @@ export default function GroupList({
       setIsDeletingCharacter(true);
       await CharacterService.deleteCharacter(deletingCharacterId);
       setCharacterPendingDelete(null);
-      await onRefreshGroups();
+      dispatch(removeCharacterFromGroup({ groupId, characterId: deletingCharacterId }));
 
       if (selectedCharacterId === deletingCharacterId) {
         const remainingGroup = groups.find((group) => group._id === groupId);
@@ -127,9 +142,9 @@ export default function GroupList({
     }
   }, [
     characterPendingDelete,
+    dispatch,
     groups,
     isDeletingCharacter,
-    onRefreshGroups,
     router,
     selectedCampaignId,
     selectedCharacterId,
@@ -314,7 +329,17 @@ export default function GroupList({
         onSelect: () => setCharacterToDuplicate({ character, groupId }),
       });
 
-      if (activeGroupsForMove.some((group) => group._id !== groupId)) {
+      if (
+        canMoveCharacterToAnotherGroup({
+          activeGroupsTotal,
+          activeGroupsHasMore,
+          archivedGroupsTotal,
+          archivedGroupsHasMore,
+          loadedActiveGroupIds,
+          loadedArchivedGroupIds,
+          currentGroupId: groupId,
+        })
+      ) {
         items.push({
           id: "move",
           label: t("move"),
@@ -341,7 +366,7 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsForMove, isMobile, router, selectedCampaignId, setOpenMobile, t],
+    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, router, selectedCampaignId, setOpenMobile, t],
   );
 
   if (groups.length === 0) {
@@ -359,16 +384,36 @@ export default function GroupList({
             key={group._id}
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
-            <div className="flex w-full items-center gap-1 rounded-[12px] bg-card py-2 px-1.5 pl-3">
+            <div className="flex w-full items-center rounded-[12px] bg-card py-2 px-1.5 pl-3">
               <SidebarItemWithActions
                 actions={groupActions}
                 disabled={actionsDisabled}
                 contextMenuLabel={t("groupActions")}
-                className="min-w-0 flex-1">
+                className="min-w-0 flex-1"
+                trailingBeforeOverflow={
+                  !isArchivedSection && selectedCampaignId ? (
+                    <CreateCharacterDialog
+                      campaignId={selectedCampaignId}
+                      groupId={group._id}>
+                      <button
+                        type="button"
+                        aria-label={t("createCharacter")}
+                        className={cn(
+                          "flex shrink-0 cursor-pointer items-center justify-center rounded-[8px] p-1.5 text-white/40 transition-all duration-100",
+                          "hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+                        )}>
+                        <UserPlus
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </CreateCharacterDialog>
+                  ) : undefined
+                }>
                 <CollapsibleTrigger
                   aria-expanded={isOpen}
                   aria-controls={`group-${group._id}-content`}
-                  className="flex h-full w-full min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
+                  className="flex w-full min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
                   <ChevronRight
                     aria-hidden="true"
                     className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
@@ -378,25 +423,6 @@ export default function GroupList({
                   </span>
                 </CollapsibleTrigger>
               </SidebarItemWithActions>
-
-              {!isArchivedSection && selectedCampaignId && (
-                <CreateCharacterDialog
-                  campaignId={selectedCampaignId}
-                  groupId={group._id}>
-                  <button
-                    type="button"
-                    aria-label={t("createCharacter")}
-                    className={cn(
-                      "flex shrink-0 cursor-pointer items-center justify-center rounded-[8px] p-1.5 text-white/40 transition-all duration-100",
-                      "hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
-                    )}>
-                    <UserPlus
-                      className="h-4 w-4"
-                      aria-hidden="true"
-                    />
-                  </button>
-                </CreateCharacterDialog>
-              )}
             </div>
 
             <CollapsibleContent
@@ -413,6 +439,10 @@ export default function GroupList({
                       actions={characterActions}
                       disabled={actionsDisabled}
                       contextMenuLabel={t("characterActions")}
+                      className={cn(
+                        "rounded-[12px] transition-all duration-100",
+                        isSelected ? "bg-white text-black" : "hover:bg-white/10",
+                      )}
                       overflowTriggerClassName={
                         isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
                       }>
@@ -422,8 +452,8 @@ export default function GroupList({
                         aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
                         title={`${character.firstname} ${character.lastname}`}
                         className={cn(
-                          "relative flex w-full cursor-pointer items-center gap-2 rounded-[12px] py-2 px-3 text-sm transition-all duration-100 focus-visible:ring-1 focus-visible:ring-white/50",
-                          isSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10",
+                          "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                          isSelected && "pl-4 font-bold text-black",
                         )}
                         onClick={() => {
                           if (isMobile) setOpenMobile(false);
@@ -486,8 +516,8 @@ export default function GroupList({
 
       <MoveCharacterDialog
         character={characterToMove?.character ?? null}
+        campaignId={selectedCampaignId}
         currentGroupId={characterToMove?.groupId ?? ""}
-        targetGroups={activeGroupsForMove}
         open={!!characterToMove}
         onOpenChange={(open) => {
           if (!open) setCharacterToMove(null);
@@ -497,22 +527,20 @@ export default function GroupList({
 
       <MoveCharacterDialog
         character={pendingMoveAfterDuplicate?.characters[0] ?? null}
+        campaignId={selectedCampaignId}
         currentGroupId={pendingMoveAfterDuplicate?.groupId ?? ""}
-        targetGroups={activeGroupsForMove}
         open={!!pendingMoveAfterDuplicate}
         onOpenChange={(open) => {
           if (!open) setPendingMoveAfterDuplicate(null);
         }}
-        onMoved={async (targetGroupId) => {
+        onMovedToGroup={async (targetGroupId) => {
           const pending = pendingMoveAfterDuplicate;
           if (!pending) return;
-          // Move remaining copies (first one already moved by MoveCharacterDialog)
           await Promise.all(
             pending.characters.slice(1).map((c) =>
               moveCharacterToGroup(c._id, pending.groupId, targetGroupId),
             ),
           );
-          // Surgical Redux update — avoid full sidebar refetch
           for (const c of pending.characters) {
             dispatch(removeCharacterFromGroup({ groupId: pending.groupId, characterId: c._id }));
             dispatch(addCharacterToGroup({ groupId: targetGroupId, character: c }));

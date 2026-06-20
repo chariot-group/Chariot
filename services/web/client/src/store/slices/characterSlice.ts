@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../index';
+import type { RootState } from '@/store';
 import { Character } from '@/types/character';
 
 interface CharacterState {
@@ -110,6 +110,16 @@ const characterSlice = createSlice({
             state.hasMoreWithoutGroup = state.charactersWithoutGroup.length < state.totalWithoutGroup;
         },
 
+        removeCharacterWithoutGroup: (state, action: PayloadAction<string>) => {
+            const characterId = action.payload;
+            const existingIndex = state.charactersWithoutGroup.findIndex((item) => item._id === characterId);
+            if (existingIndex === -1) return;
+
+            state.charactersWithoutGroup.splice(existingIndex, 1);
+            state.totalWithoutGroup = Math.max(0, state.totalWithoutGroup - 1);
+            state.hasMoreWithoutGroup = state.charactersWithoutGroup.length < state.totalWithoutGroup;
+        },
+
         // All characters
         fetchAllCharactersStart: (state) => {
             state.loadingAll = true;
@@ -156,6 +166,7 @@ export const {
     fetchAllCharactersSuccess,
     fetchAllCharactersFailure,
     upsertCharacterWithoutGroup,
+    removeCharacterWithoutGroup,
     clearCharacters,
     invalidateCharacterCache,
 } = characterSlice.actions;

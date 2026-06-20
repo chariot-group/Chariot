@@ -2420,7 +2420,161 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-032: Sidebar Context Actions and Touch Alternatives
+## FR-027: Release Notes and New Version Detection
+
+**Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
+
+**Requirements**:
+
+**Release Note Content**:
+
+- Release notes are stored as static versioned files in `services/web/client/src/data/release-notes/`.
+- Each version file exports a `ReleaseNote` object with: `version` (semver string), `date` (ISO date), and `translations` (record keyed by `SupportedLocale`).
+- Each translation contains a `title` and an array of `highlights` (icon + user-friendly text).
+- Highlights MUST be written in plain user-facing language, NOT as raw changelog entries.
+- All three supported locales (`fr`, `en`, `es`) MUST be present in every `ReleaseNote`.
+- `CURRENT_APP_VERSION` is exported from `src/data/release-notes/index.ts` and must be bumped alongside `package.json` on each release.
+
+**Version Seen Tracking**:
+
+- A dedicated Redux slice `releaseNotes` (persisted per user via `makePersistConfig`) stores `lastSeenVersion: string | null`.
+- The action `markVersionSeen(version)` updates the stored version.
+- The `releaseNotes` key is included in the Redux persist whitelist.
+
+**Auto-Detection Modal**:
+
+- `ReleaseNotesProvider` (client component mounted in `app/[locale]/layout.tsx`) checks on mount whether `authenticated === true && !loading && lastSeenVersion !== CURRENT_APP_VERSION`.
+- If the condition is met, the `ReleaseNotesModal` is opened automatically.
+- On close (button or Escape), `markVersionSeen(CURRENT_APP_VERSION)` is dispatched; the modal does not reappear for that version.
+- The modal displays the current version's notes by default.
+- A `Select` allows navigating to previous versions without closing the modal.
+- The locale is derived from the URL pathname prefix.
+
+**Profile Page Entry Point**:
+
+- The profile page exposes a "Voir les nouveautés" button (localized) that opens the same `ReleaseNotesModal`.
+- When opened from the profile page, closing does NOT dispatch `markVersionSeen` (`readOnly={true}`).
+
+**Accessibility Requirements (FR-019)**:
+
+- `DialogContent` includes `aria-describedby` pointing to the notes description region.
+- The version `Select` has an `aria-label`.
+- Highlight icons are `aria-hidden="true"`; text carries the semantic content.
+- Focus trap behavior is inherited from Shadcn `Dialog`.
+- Keyboard: Escape closes and marks version seen; Tab navigates to the close button and version selector.
+
+**Prohibitions**:
+
+- Storing release note content in i18n message files (content lives in data files).
+- Showing the modal to unauthenticated users.
+- Re-showing the modal for an already-seen version.
+- Dispatching `markVersionSeen` when the modal is opened in `readOnly` mode (profile page).
+- Hardcoding the current version anywhere other than `src/data/release-notes/index.ts`.
+
+**Tests**:
+
+- `releaseNotesSlice`: `markVersionSeen` updates `lastSeenVersion`; initial state is `null`.
+- `ReleaseNotesProvider`: does not open modal when `lastSeenVersion === CURRENT_APP_VERSION`.
+- `ReleaseNotesProvider`: opens modal when authenticated and version unseen.
+- `ReleaseNotesProvider`: does not open modal when unauthenticated.
+- `ReleaseNotesModal`: dispatches `markVersionSeen` on close when `readOnly={false}`.
+- `ReleaseNotesModal`: does NOT dispatch `markVersionSeen` on close when `readOnly={true}`.
+- `ReleaseNotesModal`: Select renders all versions from `ALL_RELEASE_NOTES`.
+- `ReleaseNotesModal`: switching Select updates displayed content without closing.
+- `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
+
+**References**:
+
+- `services/web/client/src/data/release-notes/` (version data files)
+- `services/web/client/src/store/slices/releaseNotesSlice.ts`
+- `services/web/client/src/store/index.ts` (persist whitelist)
+- `services/web/client/src/components/dialogs/ReleaseNotesModal.tsx`
+- `services/web/client/src/components/ReleaseNotesProvider.tsx`
+- `services/web/client/src/app/[locale]/layout.tsx` (provider mount)
+- `services/web/client/src/app/[locale]/profile/page.tsx` (profile entry point)
+- `services/web/client/src/messages/{fr|en|es}.json` (releaseNotes i18n keys)
+
+---
+
+## FR-031: Unité de mesure préférée
+
+**Rule**: Each user can choose a preferred measurement unit (`metric` or `imperial`) stored in their profile. The default value is `metric`.
+
+**Requirements**:
+
+- `preferredMeasurementUnit` field on the user model, accepting values `metric` or `imperial`
+- Editable from the profile page, Preferences section, alongside the language preference
+- Change is saved immediately (same pattern as `preferredLocale`)
+- Exposed in all user DTOs (`UpdateUserProfileDto`, `UserInfoDto`) and the frontend `User` / `UpdateUserDto` types
+- The stored preference is available globally for any future display formatting of size/weight values
+
+**Prohibitions**:
+
+- Applying conversion logic or display formatting in this ticket — only the preference storage and UI control are in scope here
+
+**Tests**:
+
+- Nominal: selecting `imperial` calls `updateCurrentUser` with `preferredMeasurementUnit: 'imperial'` and dispatches `updateUser`
+- Edge: selecting the already-active unit does nothing (no API call)
+- Failure: API error shows an error toast and does not change the stored preference
+
+**References**:
+
+- `services/adventure/api/src/resources/user/schemas/user.schema.ts`
+- `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts`
+- `services/adventure/api/src/resources/user/dto/sub/user-info.dto.ts`
+- `services/web/client/src/types/user.ts`
+- `services/web/client/src/components/profile/ProfileMeasurementUnitSelect.tsx`
+- `services/web/client/src/components/profile/ProfileMeasurementUnitSelectImmediate.tsx`
+
+---
+
+## FR-032: Conversion et affichage des unités de distance
+
+**Rule**: All distance values displayed in the application (speed, senses, action range, spell range) must respect the user's `preferredMeasurementUnit`. Values are always stored in **feet** in the database. Display and input use the unit chosen in the user's profile.
+
+**Conversion rate**: 5 ft = 1.5 m (factor 0.3 exact — i.e. 1 ft = 0.3 m).
+
+**Requirements**:
+
+- All numeric distance values (speed fields, sense ranges) stored in the DB remain in feet.
+- On display, values are converted to meters when `preferredMeasurementUnit === 'metric'`, left as-is for `'imperial'`.
+- Metric display rounds to 1 decimal place (e.g. 30 ft → 9 m, 5 ft → 1.5 m).
+- In edit forms, speed and sense range inputs show the value in the user's preferred unit; on submit, the value is converted back to feet before sending to the API.
+- String-based range fields (`action.range`, `spell.range`) stored as free-text (e.g. "30 ft.", "60/120 ft.", "Self") are parsed and converted for display only — the raw string is never altered in the DB.
+- Non-numeric range strings ("Touch", "Self", "Sight", "Unlimited") pass through unchanged.
+- The unit abbreviation shown next to values must match the locale and unit: "ft" / "pi" for imperial, "m" for metric.
+- A shared utility (`utils/unit.utils.ts`) and hook (`hooks/useDistanceUnit.ts`) are used for all conversions and unit label retrieval.
+
+**Prohibitions**:
+
+- Storing metric values in the database.
+- Applying conversion in server-side code — conversion is frontend-only display logic.
+- Hardcoding "ft" labels in display components; always use the unit-aware label from the hook.
+
+**Tests**:
+
+- Nominal: `feetToMeters(30)` returns `9`, `feetToMeters(5)` returns `1.5`.
+- Nominal: `metersToFeet(9)` returns `30`.
+- Nominal: `convertRangeString("30 ft.", "metric")` returns `"9 m"`.
+- Edge: `convertRangeString("60/120 ft.", "metric")` returns `"18/36 m"`.
+- Edge: `convertRangeString("Touch", "metric")` returns `"Touch"` (unchanged).
+- Edge: `convertRangeString("Self (10-foot cone)", "metric")` converts the numeric part.
+- Edge: `feetToMeters(0)` returns `0`.
+
+**References**:
+
+- `services/web/client/src/utils/unit.utils.ts`
+- `services/web/client/src/hooks/useDistanceUnit.ts`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`
+- `services/web/client/src/components/character/tabContents/shared/NpcStatistics.tsx`
+- `services/web/client/src/components/character/tabContents/general/shared/SensesSection.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`
+- `services/web/client/src/components/character/tabContents/magic/SpellDisplay.tsx`
+
+---
+
+## FR-033: Sidebar Context Actions and Touch Alternatives
 
 **Rule**: Sidebar list items that support secondary actions (edit, delete, move, archive) MUST expose those actions via right-click context menu on desktop and via an equivalent touch-accessible interaction on tablet and mobile. Confirmation dialogs triggered from these actions MUST support keyboard validation and cancellation.
 
@@ -2438,10 +2592,13 @@ Each initiative tracker row carries:
 | Character in group (player or NPC) | Move to another group, Edit, Delete |
 | Character in **Mes personnages** | Edit, Delete |
 | Group | Edit (rename), Archive or Unarchive (section-dependent), Delete |
+| Archives section header | Delete all archived groups (only when at least one archived group exists) |
 | Campaign | Edit (rename), Delete |
 
+- **Delete all archived groups** (archives section header) MUST open a confirmation dialog stating the number of groups to delete; on confirm, MUST permanently delete every archived group in the current campaign (full campaign archived list, not only the currently loaded sidebar page); MUST refresh sidebar group data once after completion; MUST redirect navigation when the user is viewing a deleted archived group (same rules as single group delete).
+
 - **Edit character** MUST navigate to the character sheet with `?mode=edit` (existing CharacterDetailView behavior).
-- **Move character** MUST open a dialog listing other active groups in the current campaign; moving MUST persist via the character `groups` API and refresh sidebar group data.
+- **Move character** MUST open a dialog listing other groups (active and archived) in the current campaign; archived targets MUST be visually distinguishable in the list; moving MUST persist via the character `groups` API and refresh sidebar group data.
 - **Delete** actions MUST open a confirmation dialog before irreversible deletion.
 - Destructive menu entries MUST use destructive styling consistent with existing sidebar patterns.
 

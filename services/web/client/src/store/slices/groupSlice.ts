@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../index';
+import type { RootState } from '@/store';
 import { Group, GroupState } from '@/types/campaign';
 
 const initialState: GroupState = {
@@ -241,6 +241,22 @@ const groupSlice = createSlice({
             updateGroupCharacters(state.activeGroups);
             updateGroupCharacters(state.archivedGroups);
         },
+        removeCharacterFromGroup: (
+            state,
+            action: PayloadAction<{ groupId: string; characterId: string }>,
+        ) => {
+            const { groupId, characterId } = action.payload;
+
+            const targetGroup =
+                state.activeGroups.find((group) => group._id === groupId) ??
+                state.archivedGroups.find((group) => group._id === groupId);
+
+            if (!targetGroup) return;
+
+            targetGroup.characters = targetGroup.characters.filter(
+                (existing) => existing._id !== characterId,
+            );
+        },
     },
 });
 
@@ -273,6 +289,8 @@ export const selectOpenGroupId = (state: RootState) => state.group.openGroupId;
 export const selectActiveGroupsPage = (state: RootState) => state.group.activePage;
 export const selectArchivedGroupsPage = (state: RootState) => state.group.archivedPage;
 export const selectActiveGroupsHasMore = (state: RootState) => state.group.activeHasMore;
+export const selectActiveGroupsTotal = (state: RootState) => state.group.activeTotal;
 export const selectArchivedGroupsHasMore = (state: RootState) => state.group.archivedHasMore;
+export const selectArchivedGroupsTotal = (state: RootState) => state.group.archivedTotal;
 
 export default groupSlice.reducer;

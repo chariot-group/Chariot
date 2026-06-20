@@ -8,6 +8,8 @@ export interface User {
     balance: number;
     history: History[];
     preferredLocale?: 'fr' | 'en' | 'es';
+    preferredMeasurementUnit?: 'metric' | 'imperial';
+    showBothUnits?: boolean;
 }
 
 export interface History {
@@ -21,6 +23,8 @@ export interface UpdateUserDto {
     lastName?: string;
     email?: string;
     preferredLocale?: 'fr' | 'en' | 'es';
+    preferredMeasurementUnit?: 'metric' | 'imperial';
+    showBothUnits?: boolean;
 }
 
 export interface UserState {

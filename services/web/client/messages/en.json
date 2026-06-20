@@ -30,6 +30,10 @@
     "move": "Move",
     "cancel": "Cancel",
     "groupActions": "Group actions",
+    "archivedSectionActions": "Archive actions",
+    "deleteAllArchivedGroups": "Delete all archived groups",
+    "deleteAllArchivedGroupsDialogTitle": "Delete all archived groups",
+    "deleteAllArchivedGroupsDialogDescription": "Are you sure you want to delete {count, plural, one {# archived group} other {# archived groups}}? This action cannot be undone.",
     "characterActions": "Character actions",
     "campaignActions": "Campaign actions",
     "deleteGroupDialogTitle": "Delete group",
@@ -49,8 +53,11 @@
     "moveCharacterDialogTitle": "Move character",
     "moveCharacterDialogDescription": "Choose the destination group for {name}.",
     "moveCharacterSelectGroup": "Destination group",
+    "moveCharacterSearchGroupPlaceholder": "Search groups by name",
+    "moveCharacterNoSearchResult": "No group found.",
+    "moveCharacterArchivedGroupBadge": "Archived",
     "moveCharacterConfirm": "Move",
-    "moveCharacterNoTargetGroups": "No other active group available.",
+    "moveCharacterNoTargetGroups": "No other group available.",
     "launchSession": "Launch Session",
     "initBattle": "Initialize Battle",
     "startBattle": "Start Battle",
@@ -447,6 +454,12 @@
       "tokens": "Tokens",
       "referral": "Referral"
     },
+    "releaseNotes": {
+      "label": "What's new in the app",
+      "openButton": "View release notes",
+      "muteLabel": "Don't show release notes automatically on login",
+      "muteAriaLabel": "Stop showing release notes automatically on startup"
+    },
     "changePasswordTitle": "Change Password",
     "currentPassword": "Current password",
     "newPassword": "New password",
@@ -476,6 +489,14 @@
       "en": "🇬🇧 English",
       "es": "🇪🇸 Spanish"
     },
+    "measurementUnitPreference": "Measurement units",
+    "measurementUnitPreferenceAria": "Preferred measurement units",
+    "measurementUnits": {
+      "metric": "Metres (m, kg)",
+      "imperial": "Feet / Inches (ft, lbs)"
+    },
+    "showBothUnits": "Show both units",
+    "showBothUnitsDescription": "Display the secondary unit alongside the primary one",
     "changePassword": {
       "successMessage": "Password changed successfully",
       "errorMessage": "Failed to change password",
@@ -886,6 +907,8 @@
       "hpAbbr": "HP",
       "feet": "feet",
       "feetAbbr": "ft",
+      "meters": "meters",
+      "metersAbbr": "m",
       "affinities": "Affinities",
       "resistances": "Resistances",
       "resistancesPlaceholder": "Fire, Cold...",
@@ -899,8 +922,8 @@
       "eyes": "Eyes",
       "age": "Age",
       "skin": "Skin",
-      "height": "Height (m)",
-      "weight": "Weight (kg)",
+      "height": "Height",
+      "weight": "Weight",
       "hair": "Hair",
       "alliesAndOrgs": "Allies and Organizations",
       "bonds": "Bonds",
@@ -1484,5 +1507,12 @@
   },
   "sessionTime": {
     "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left."
+  },
+  "releaseNotes": {
+    "title": "What's new",
+    "close": "Close",
+    "versionLabel": "v{version}",
+    "versionSelectAriaLabel": "Navigate to a previous version",
+    "latest": "Current"
   }
 }

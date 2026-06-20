@@ -11,6 +11,7 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
 import { useToast } from "@/hooks/useToast";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 
@@ -22,6 +23,7 @@ interface NpcStatisticsUpdateProps {
 export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatisticsUpdateProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
+  const { displayFt, toFeet, unitLabel } = useDistanceUnit();
   const currentHitPointsValue = Number(form.watch("stats.currentHitPoints") ?? 0);
   const maxHitPointsValue = Number(form.watch("stats.maxHitPoints") ?? 0);
   const safeCurrentHitPoints = Number.isFinite(currentHitPointsValue) ? Math.max(0, currentHitPointsValue) : 0;
@@ -234,7 +236,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   />
                   <Input
                     {...field}
-                    value={field.value ?? ""}
+                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
+                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
                     id="speed-walk"
                     type="number"
                     inputMode="decimal"
@@ -242,6 +245,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     min={0}
                     className="text-sm"
                   />
+                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -267,7 +271,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   />
                   <Input
                     {...field}
-                    value={field.value ?? ""}
+                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
+                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
                     id="speed-climb"
                     type="number"
                     inputMode="decimal"
@@ -275,6 +280,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     className="text-sm"
                     min={0}
                   />
+                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -300,7 +306,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   />
                   <Input
                     {...field}
-                    value={field.value ?? ""}
+                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
+                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
                     id="speed-swim"
                     type="number"
                     inputMode="decimal"
@@ -308,6 +315,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     min={0}
                     className="text-sm"
                   />
+                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -333,7 +341,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   />
                   <Input
                     {...field}
-                    value={field.value ?? ""}
+                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
+                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
                     id="speed-fly"
                     type="number"
                     inputMode="decimal"
@@ -341,6 +350,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     className="text-sm"
                     min={0}
                   />
+                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -366,7 +376,8 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   />
                   <Input
                     {...field}
-                    value={field.value ?? ""}
+                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
+                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
                     id="speed-burrow"
                     type="number"
                     inputMode="decimal"
@@ -374,6 +385,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     className="text-sm"
                     min={0}
                   />
+                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
                 </div>
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>

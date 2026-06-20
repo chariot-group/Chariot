@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CampaignService } from './campaign.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Campaign } from './schemas/campaign.schema';
+import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Types } from 'mongoose';
