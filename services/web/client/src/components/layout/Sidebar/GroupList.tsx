@@ -368,7 +368,7 @@ export default function GroupList({
                 <CollapsibleTrigger
                   aria-expanded={isOpen}
                   aria-controls={`group-${group._id}-content`}
-                  className="flex w-full min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
+                  className="flex h-full w-full min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
                   <ChevronRight
                     aria-hidden="true"
                     className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}

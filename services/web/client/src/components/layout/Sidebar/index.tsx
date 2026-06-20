@@ -34,8 +34,8 @@ export default function AppSidebar() {
   };
 
   return (
-    <Sidebar className="bg-card sm:bg-transparent text-white border-r border-sidebar-border">
-      <SidebarHeader className="bg-card sm:bg-transparent">
+    <Sidebar className="sm:bg-transparent text-white border-r border-sidebar-border">
+      <SidebarHeader className="sm:bg-transparent">
         <div
           onMouseEnter={isSessionLaunched ? () => setHeaderTooltipVisible(true) : undefined}
           onMouseLeave={isSessionLaunched ? () => setHeaderTooltipVisible(false) : undefined}
@@ -47,7 +47,7 @@ export default function AppSidebar() {
       </SidebarHeader>
       <SidebarContent
         className={cn(
-          "bg-card sm:bg-transparent",
+          "sm:bg-transparent",
           contextMode !== "gm" && "overflow-hidden",
         )}>
         <div
