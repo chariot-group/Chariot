@@ -22,6 +22,7 @@ import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipant
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
     clearCurrentSession,
+    closeSessionLobby,
     mergeSessionParticipantDisplayNames,
     selectIsInSession,
     selectSessionParticipants,
@@ -178,7 +179,7 @@ export function useSessionSocket({
         destroySessionSocket();
         socketRef.current = null;
         dispatch(clearCurrentSession());
-        routerRef.current.push(`/${localeRef.current}/welcome`);
+        dispatch(closeSessionLobby());
     });
 
     useEffect(() => {
@@ -406,6 +407,8 @@ export function useSessionSocket({
                 myParticipantBefore?.characterId ??
                 (userId != null ? mappedParticipants?.find((p) => p.userId === userId)?.characterId : undefined);
 
+            dispatch(closeSessionLobby());
+
             if (myParticipantBefore?.status === "gameMaster") {
                 dispatch(setContextMode("gm"));
                 if (campaignId) {
@@ -491,8 +494,8 @@ export function useSessionSocket({
                 }
             }
             dispatch(clearCurrentSession());
+            dispatch(closeSessionLobby());
             toast.info(t("toast.leaveSuccess"));
-            router.push(`/${locale}/welcome`);
         };
 
         if (socket?.connected) {
@@ -590,7 +593,7 @@ export function useSessionSocket({
 
     const handleDismissSessionEnd = () => {
         dispatch(clearCurrentSession());
-        router.push(`/${locale}/welcome`);
+        dispatch(closeSessionLobby());
     };
 
     const handleCloseSession = () => {

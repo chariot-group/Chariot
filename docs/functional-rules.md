@@ -2901,3 +2901,50 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/GroupService.ts`
 - `services/web/client/src/services/CharacterService.ts`
 - `services/web/client/src/store/slices/groupSlice.ts`
+---
+
+## FR-027: Session Lobby as Modal Overlay
+
+**Règle** : Le lobby de session (participants, dépôt de tokens, lancement) DOIT être affiché dans une modale Dialog superposée à la page courante, et non dans une page dédiée.
+
+**Exigences** :
+
+- Le contenu du lobby est extrait dans un composant `SessionLobbyContent` acceptant `code` et `campaignId` en props.
+- Un composant `SessionLobbyDialog` encapsule `SessionLobbyContent` dans le composant `Dialog` existant (`components/ui/dialog.tsx`), contrôlé par l'état Redux `session.sessionLobbyOpen` (boolean).
+- `SessionLobbyDialog` est rendu une seule fois dans le layout racine (`app/[locale]/layout.tsx`).
+- `session.sessionLobbyOpen` est initialisé à `false` et remis à `false` lors de la réhydratation (non persisté).
+- Deux actions Redux sont exposées : `openSessionLobby` et `closeSessionLobby`.
+- Tous les points de navigation internes qui faisaient `router.push(…/session/[code])` dispatche désormais `openSessionLobby` :
+  - `ActionButton` (état `returnToSession`)
+  - `JoinSessionDialog` (après join réussi)
+  - `SessionCharacterSyncClient` (redirect vers lobby)
+  - `SessionTimer` (le lien devient un bouton)
+- La route `/campaigns/[idCampaign]/session/[code]` est conservée comme fallback pour les accès directs par URL : la page dispatche `openSessionLobby` et redirige vers la page campaign parente.
+- La modale est large (`max-w-5xl`) et scrollable en interne pour accommoder la liste de participants et le panneau de code session.
+- La fermeture via Échap ou clic hors de la modale dispatche `closeSessionLobby`.
+
+**Accessibilité** :
+- La modale respecte les attributs ARIA du composant `Dialog` existant (`aria-modal`, `role="dialog"`, `aria-labelledby`).
+- Le focus est capturé dans la modale à l'ouverture et restitué à l'élément déclencheur à la fermeture.
+
+**Interdictions** :
+- Dupliquer la logique de socket dans `SessionLobbyContent` (réutiliser `useSessionSocket` inchangé).
+- Persister `sessionLobbyOpen` dans le stockage Redux Persist.
+- Rendre `SessionLobbyDialog` en dehors du layout racine.
+
+**Tests** :
+- Nominal : clic sur "Retour à la session" dans ActionButton → modale s'ouvre avec les participants.
+- Nominal : rejoindre une session via `JoinSessionDialog` → modale lobby s'ouvre après le join.
+- Edge : fermeture via Échap → dispatch `closeSessionLobby`, modale fermée.
+- Edge : réhydratation Redux → `sessionLobbyOpen` est `false` quelle que soit la valeur persistée.
+- Failure : `code` ou `campaignId` absents du state → modale ne s'ouvre pas.
+
+**Références** :
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/components/dialogs/SessionLobbyDialog.tsx`
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/app/[locale]/layout.tsx`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/dialogs/JoinSessionDialog.tsx`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/components/layout/SessionTimer.tsx`

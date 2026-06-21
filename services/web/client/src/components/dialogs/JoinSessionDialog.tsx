@@ -20,8 +20,7 @@ import sessionService from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
 import { useAppDispatch } from "@/store/hooks";
-import { setCurrentSession } from "@/store/slices/sessionSlice";
-import { usePathname, useRouter } from "next/navigation";
+import { setCurrentSession, openSessionLobby } from "@/store/slices/sessionSlice";
 
 interface JoinSessionDialogProps {
   /** The element that opens the dialog (e.g. a Button). Optional when using controlled mode. */
@@ -30,25 +29,26 @@ interface JoinSessionDialogProps {
   open?: boolean;
   /** Controlled open state handler. Required when `open` is provided. */
   onOpenChange?: (open: boolean) => void;
+  /** Pre-filled session code (e.g. from ?join=CODE URL param). */
+  initialCode?: string;
 }
 
 export function JoinSessionDialog({
   children,
   open: openProp,
   onOpenChange: onOpenChangeProp,
+  initialCode = "",
 }: JoinSessionDialogProps) {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  const pathname = usePathname();
 
   const isControlled = openProp !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isControlled ? openProp : internalOpen;
   const setOpen = isControlled ? (val: boolean) => onOpenChangeProp?.(val) : setInternalOpen;
 
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode);
   const [characterId, setCharacterId] = useState("");
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loadingCharacters, setLoadingCharacters] = useState(false);
@@ -82,9 +82,7 @@ export function JoinSessionDialog({
       await sessionService.joinSession(code, characterId);
 
       dispatch(setCurrentSession({ code, campaignId: session.creatorCampaignId }));
-
-      const locale = pathname?.split("/")[1] || "fr";
-      router.push(`/${locale}/campaigns/${session.creatorCampaignId}/session/${code}`);
+      dispatch(openSessionLobby());
 
       setOpen(false);
       setCode("");

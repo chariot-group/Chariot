@@ -34,7 +34,7 @@ export type SessionEntity = {
 };
 
 class SessionService {
-    async createSession(campaignId: string): Promise<void> {
+    async createSession(campaignId: string): Promise<{ code: string }> {
         const gatewayUrl = process.env.NEXT_PUBLIC_API_URL;
 
         if (!gatewayUrl) {
@@ -46,8 +46,7 @@ class SessionService {
             { campaignId },
         );
 
-        const code = response.data.data.code;
-        window.location.href = `/campaigns/${campaignId}/session/${code}`;
+        return { code: response.data.data.code };
     }
 
     async getSession(code: string): Promise<SessionEntity> {
