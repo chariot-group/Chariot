@@ -13,6 +13,7 @@ import { useAppSelector } from "@/store/hooks";
 import { selectCampaigns } from "@/store/slices/campaignSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import Token from "@public/assets/token.svg";
+import { QRCodeSVG } from "qrcode.react";
 import { Check, ChevronDown, Copy, Link, Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -317,8 +318,8 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
           {/* Session code section */}
           <aside
             aria-labelledby="session-lobby-code-heading"
-            className="shrink-0 lg:col-span-1">
-            <Card className="flex flex-col gap-0 p-4 sm:p-6">
+            className="shrink-0 lg:col-span-1 flex flex-row lg:flex-col gap-4 lg:items-start">
+            <Card className="flex flex-col gap-0 p-4 sm:p-6 flex-1 lg:flex-none lg:w-full">
               <h2
                 id="session-lobby-code-heading"
                 className="text-base sm:text-lg font-bold mb-4">
@@ -364,6 +365,18 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                   </TooltipContent>
                 </Tooltip>
               </div>
+            </Card>
+            <Card
+              className="flex flex-col items-center gap-4 p-4 sm:p-6 flex-1 lg:flex-none"
+              aria-label={t("sessionCode.qrCodeAriaLabel")}>
+              <h2 className="text-base sm:text-lg font-bold self-start">{t("sessionCode.qrCodeHeading")}</h2>
+              <QRCodeSVG
+                value={typeof window !== "undefined" ? (() => { const url = new URL(window.location.href); url.searchParams.set("join", code); return url.toString(); })() : `?join=${code}`}
+                size={160}
+                bgColor="#ffffff"
+                fgColor="#19191c"
+                className="rounded-none"
+              />
             </Card>
           </aside>
         </div>
