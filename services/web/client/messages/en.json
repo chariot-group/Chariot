@@ -46,6 +46,14 @@
     "editGroupDialogDescription": "Rename your group.",
     "groupUpdatedSuccess": "Group {name} updated successfully!",
     "groupUpdateFailed": "Failed to update group",
+    "groupArchivedSuccess": "Group archived successfully.",
+    "groupArchiveFailed": "Failed to archive group",
+    "groupUnarchivedSuccess": "Group restored successfully.",
+    "groupUnarchiveFailed": "Failed to restore group",
+    "groupDeletedSuccess": "Group deleted successfully.",
+    "groupDeleteFailed": "Failed to delete group",
+    "allArchivedGroupsDeletedSuccess": "All archived groups have been deleted.",
+    "allArchivedGroupsDeleteFailed": "Failed to delete archived groups",
     "editCampaignDialogTitle": "Edit campaign",
     "editCampaignDialogDescription": "Rename your campaign.",
     "campaignUpdatedSuccess": "Campaign {name} updated successfully!",
@@ -844,7 +852,7 @@
       "abilityCounterCurrent": "Current uses",
       "abilityCounterShort": "{current} / {max}",
       "abilityUse": "Use",
-      "abilityUseAria": "Use {name}, {current} out of {max} uses",
+      "abilityUseAria": "Use {name}, {current} of {max} uses remaining",
       "abilityUseLimitReached": "Maximum uses reached",
       "abilityUseError": "Could not save use",
       "abilityRemove": "Remove this ability",
@@ -862,6 +870,10 @@
       "attackDC": "Attack/DC:",
       "damageType": "Damage/Type:",
       "range": "Range",
+      "rangeNormal": "Normal range",
+      "rangeLong": "Long range",
+      "addLongRange": "Add long range",
+      "removeLongRange": "Remove long range",
       "description": "Description:",
       "type": "Type",
       "usageType": "Action type",
@@ -1190,7 +1202,7 @@
         "classLevelExceeds": "Total exceeds global level",
         "classLevelExceedsGlobal": "Total class levels ({total}) exceeds global level ({global})",
         "classLevelInfo": "This class level: {classLevel} | Total: {totalLevel}/{globalLevel}",
-        "addSecondClass": "Add a second class"
+        "addSecondClass": "Add multiclass"
       }
     },
     "npc": {

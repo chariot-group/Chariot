@@ -14,15 +14,16 @@ describe("CharacterDetailView merged footer", () => {
     const source = readSource();
 
     expect(source).toContain("const characterFooterActions = showEditControls ? (");
-    expect(source).toContain("<CombatBanner footerActions={characterFooterActions} />");
+    expect(source).toContain("<CombatBanner characterId={character._id} footerActions={characterFooterActions} />");
   });
 
   it("edge: keeps one footer path for in-session character sheets", () => {
     const source = readSource();
-    const combatFooterMatches = source.match(/<CombatBanner footerActions=\{characterFooterActions\} \/>/g) ?? [];
+    const combatFooterMatches = source.match(/<CombatBanner characterId=\{character\._id\} footerActions=\{characterFooterActions\} \/>/g) ?? [];
 
     expect(combatFooterMatches).toHaveLength(1);
+    expect(source).not.toContain("sticky bottom-0");
     expect(source).not.toContain("{isInSession && <CombatBanner />}");
-    expect(source.indexOf("<CombatBanner footerActions={characterFooterActions} />")).toBeLessThan(source.indexOf("</form>"));
+    expect(source.indexOf("<CombatBanner characterId={character._id} footerActions={characterFooterActions} />")).toBeLessThan(source.indexOf("</form>"));
   });
 });

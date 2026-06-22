@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { StoredUnitNumberInput } from "@/components/ui/stored-unit-number-input";
 import { Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Controller, FieldValues, UseFormReturn, useFieldArray } from "react-hook-form";
@@ -88,13 +89,13 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
                       className="sr-only">
                       {t("senseValue")}
                     </label>
-                    <Input
+                    <StoredUnitNumberInput
                       {...field}
-                      value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                      onChange={(event) => {
-                        const value = event.target.value.trim();
-                        field.onChange(value === "" ? null : toFeet(Number(value)));
-                      }}
+                      storedValue={field.value}
+                      onStoredChange={field.onChange}
+                      toDisplay={displayFt}
+                      toStored={toFeet}
+                      emptyValue={null}
                       id={`sense-value-${index}`}
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? `sense-value-${index}-error` : undefined}

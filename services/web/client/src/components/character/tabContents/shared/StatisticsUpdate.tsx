@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { StoredUnitNumberInput } from "@/components/ui/stored-unit-number-input";
 import { useTranslations } from "next-intl";
 import { Controller, useFieldArray, UseFormReturn, FieldValues } from "react-hook-form";
 import { Bird, Dices, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
@@ -247,10 +248,12 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     aria-hidden="true"
                     className="size-6 brightness-0 invert"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-walk"
                     type="number"
                     inputMode="decimal"
@@ -282,10 +285,12 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     className="text-white"
                     aria-hidden="true"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-climb"
                     type="number"
                     inputMode="decimal"
@@ -317,10 +322,12 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     className="text-white"
                     aria-hidden="true"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-swim"
                     type="number"
                     inputMode="decimal"
@@ -352,10 +359,12 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     className="text-white"
                     aria-hidden="true"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-fly"
                     type="number"
                     inputMode="decimal"
@@ -387,10 +396,12 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                     className="text-white"
                     aria-hidden="true"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-burrow"
                     type="number"
                     inputMode="decimal"
