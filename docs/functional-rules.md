@@ -3089,3 +3089,35 @@ Each initiative tracker row carries:
 
 - `services/web/client/src/components/character/tabContents/shared/AbilitiesSection.tsx`
 - `services/web/client/messages/{fr|en|es}.json` (clés `characterDetail.battle.abilityCounterShort`, `abilityUseAria`)
+
+---
+
+## FR-028: Affichage de la version de l'application
+
+**Rule**: La version de l'application Chariot doit être affichée dans la section Préférences de la page Profil, à proximité du bouton d'ouverture des notes de version. Elle ne doit PAS apparaître dans la sidebar.
+
+**Requirements**:
+
+- Source : `process.env.NEXT_PUBLIC_APP_VERSION`
+- Affichage conditionnel : uniquement si la variable d'environnement est définie et non vide
+- Format : `Chariot v{version}`
+- Style : discret (texte petit, opacité réduite), cohérent avec les métadonnées secondaires existantes
+- Position : dans `ProfilePreferencesSection`, au sein du bloc notes de version
+
+**Prohibitions**:
+
+- Afficher la version dans la sidebar ou dans le layout global
+- Afficher la version si `NEXT_PUBLIC_APP_VERSION` n'est pas définie
+
+**Tests**:
+
+- `ProfilePreferencesSection` affiche "Chariot v{x}" quand `NEXT_PUBLIC_APP_VERSION` est défini
+- `ProfilePreferencesSection` n'affiche pas la version quand la variable est absente
+- `Sidebar/index.tsx` ne contient plus de référence à la version de l'application
+
+**References**:
+
+- `services/web/client/src/components/profile/ProfilePreferencesSection.tsx`
+- `services/web/client/src/components/layout/Sidebar/index.tsx`
+- `services/web/client/src/components/layout/Sidebar/__tests__/SidebarFooterVersion.test.ts`
+- `services/web/client/src/components/profile/__tests__/ProfilePreferencesSection.test.tsx`
