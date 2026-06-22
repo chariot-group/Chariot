@@ -57,7 +57,7 @@ This project follows a **microservices architecture** with:
    # Edit .env with your configuration
    # ⚠️ All environment variables are REQUIRED
    ```
-5. **Follow** the [installation guide](README.md#-quick-start)  
+5. **Follow** the [installation guide](README.md#-quick-start) (including [Docker Desktop requirements](README.md#docker-desktop-macos))  
 6. **Create** a branch following our [branching policy](docs/development/BRANCHING_POLICY.md)  
 7. **Develop** following the technical standards  
 8. **Test** your changes in all environments

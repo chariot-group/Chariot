@@ -2973,3 +2973,139 @@ Each initiative tracker row carries:
 **Références** :
 
 - `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+
+---
+
+## FR-044 : Liens rapides configurables dans la sidebar
+
+**Règle** : Le MJ et le joueur peuvent ajouter, consulter et supprimer des liens externes (liens rapides) dans leur sidebar respective. Chaque lien est rattaché soit à une campagne (visible dans l'espace MJ sous la campagne concernée), soit à aucune campagne (visible dans l'espace joueur). Les liens sont persistés côté backend et isolés par utilisateur.
+
+### Structure d'un lien rapide
+
+- `icon` : identifiant d'une icône parmi une liste prédéfinie côté frontend (string, non vide)
+- `url` : URL externe valide (string, commence par `http://` ou `https://`)
+- `label` : libellé visible (string, non vide, max 60 caractères)
+- `campaignId` : identifiant MongoDB de la campagne associée, ou `null` pour l'espace joueur
+- `createdBy` : `keycloakId` de l'utilisateur propriétaire (renseigné côté backend depuis le JWT)
+
+### Backend (Adventure API)
+
+- Nouvelle ressource `quick-link` dans `services/adventure/api/src/resources/quick-link/`
+- Endpoints :
+  - `POST /quick-links` : créer un lien (body : `icon`, `url`, `label`, `campaignId?`)
+  - `GET /quick-links` : lister les liens de l'utilisateur authentifié (filtre optionnel : `?campaignId=<id>` ou `?scope=player`)
+  - `PATCH /quick-links/:id` : modifier `icon`, `url` et/ou `label` d'un lien existant (body partiel) ; `campaignId` n'est pas modifiable après création
+  - `DELETE /quick-links/:id` : supprimer un lien (le lien doit appartenir à l'utilisateur authentifié)
+- `createdBy` est toujours issu de `request.user.keycloakId`, jamais du body
+- Validation :
+  - `url` doit être une URL valide (commence par `http://` ou `https://`)
+  - `label` requis, non vide, max 60 caractères
+  - `icon` requis, valeur parmi la liste prédéfinie acceptée par le backend
+  - `campaignId` optionnel ; si fourni, doit être un ObjectId MongoDB valide
+- Un utilisateur ne peut pas modifier ou supprimer les liens d'un autre utilisateur (403 si `createdBy` ne correspond pas)
+
+### Frontend (Web Client)
+
+- **Espace joueur** (`contextMode !== "gm"`) : affiche la section "Liens rapides" sous la liste des personnages, avec les liens dont `campaignId === null`
+- **Espace MJ** (`contextMode === "gm"`) : affiche la section "Liens rapides" sous chaque campagne dans la sidebar, avec les liens dont `campaignId === campaign._id`
+- **Sélection d'icône** : liste prédéfinie d'icônes Lucide présentée sous forme de grille dans le dialog de création ; l'utilisateur ne saisit pas de nom d'icône
+- **Icônes prédéfinies** (liste non exhaustive, à affiner) : `Link`, `BookOpen`, `Map`, `Dice5`, `Scroll`, `Music`, `Globe`, `Youtube`, `Twitch`, `FileText`, `Image`, `Video`
+- **Ajout** : bouton "+" ou "Ajouter un lien" dans la section, ouvre un dialog avec les champs label, url, et sélection d'icône
+- **Modification** : action contextuelle "Modifier" (via `SidebarItemWithActions`) sur chaque lien, ouvre le dialog pré-rempli avec les valeurs existantes ; le bouton de validation affiche "Modifier" en mode édition
+- **Suppression** : action contextuelle (via `SidebarItemWithActions`) sur chaque lien
+- **Clic sur un lien** : ouvre l'URL dans un nouvel onglet (`target="_blank"`, `rel="noopener noreferrer"`)
+- Les liens sont chargés via un hook dédié (`useQuickLinks`) qui appelle le backend
+- Le state local est géré dans le hook (pas de Redux slice dédié pour les liens rapides)
+
+### Accessibilité
+
+- Chaque lien externe possède un `aria-label` mentionnant qu'il s'ouvre dans un nouvel onglet
+- La grille de sélection d'icônes est navigable au clavier (focus visible, activation par Enter/Space)
+- Le bouton de suppression a un `aria-label` explicite
+
+### Interdictions
+
+- Accepter `createdBy` depuis le body de la requête
+- Afficher les liens d'un autre utilisateur
+- Permettre une URL sans protocole `http(s)`
+- Laisser l'utilisateur saisir un nom d'icône Lucide en texte libre
+- Ouvrir les liens dans le même onglet
+
+### Tests
+
+- **Nominal** : créer un lien avec `campaignId` → visible dans l'espace MJ sous la bonne campagne
+- **Nominal** : créer un lien sans `campaignId` → visible dans l'espace joueur
+- **Nominal** : modifier un lien → mises à jour visibles immédiatement dans la sidebar
+- **Nominal** : supprimer un lien → disparaît de la sidebar
+- **Edge** : URL sans `https://` → rejetée côté backend (400) et bloquée côté frontend (validation)
+- **Edge** : label vide → bouton Créer désactivé côté frontend, rejeté côté backend (400)
+- **Edge** : tentative de suppression d'un lien appartenant à un autre utilisateur → 403
+- **Failure** : erreur réseau à la création → toast erreur, dialog reste ouvert
+
+**Références** :
+- `services/adventure/api/src/resources/quick-link/`
+- `services/web/client/src/services/QuickLinkService.ts`
+- `services/web/client/src/hooks/useQuickLinks.ts`
+- `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx`
+- `services/web/client/src/components/dialogs/AddQuickLinkDialog.tsx`
+
+---
+
+## FR-045 : Collapse/expand de la section Liens rapides
+
+**Règle** : La section "Liens rapides" dans la sidebar dispose d'un bouton toggle permettant de replier ou déplier la liste des liens.
+
+### Comportement
+
+- Le toggle est intégré à l'en-tête de section (clic sur le titre ou sur un chevron adjacent).
+- Quand la section est **repliée**, seul l'en-tête reste visible (titre, icône, chevron). La liste des liens est masquée. Le bouton "+" d'ajout reste accessible.
+- Quand la section est **dépliée** (état par défaut), la liste complète des liens est affichée.
+- L'état collapsed/expanded est persisté en `localStorage` avec une clé distinguant le contexte (`gm` vs `player`) : `quicklinks-collapsed:gm` / `quicklinks-collapsed:player`.
+- L'état persist aux rechargements de page.
+
+### Accessibilité
+
+- Le bouton toggle possède un `aria-label` dynamique : "Replier les liens rapides" (quand déplié) / "Déplier les liens rapides" (quand replié).
+- Le chevron est animé (rotation 180°) pour indiquer visuellement l'état.
+- La liste utilise `aria-hidden` ou est retirée du DOM quand repliée (pour éviter la navigation au clavier sur des éléments non visibles).
+
+### Interdictions
+
+- Masquer le bouton "+" en état replié.
+- Oublier de persister l'état entre les rechargements.
+
+### Tests
+
+- **Nominal** : cliquer sur le toggle replie la section → la liste est masquée, le chevron pivote.
+- **Nominal** : cliquer à nouveau déplie la section → la liste réapparaît.
+- **Edge** : l'état replié survit à un rechargement de page (localStorage).
+- **Edge** : en état replié, le bouton "+" reste cliquable et ouvre le dialog d'ajout.
+
+**Références** :
+- `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx`
+
+---
+
+## FR-046 : Hauteur maximale de la section Liens rapides
+
+**Règle** : La liste des liens rapides est contrainte en hauteur pour ne jamais déformer ou agrandir la sidebar, quel que soit le nombre de liens ajoutés.
+
+### Comportement
+
+- La liste (`<ul>`) est limitée à une hauteur maximale équivalente à environ 5 liens visibles.
+- Si le nombre de liens dépasse cette limite, un défilement interne (`overflow-y: auto`) s'active sur la liste uniquement.
+- La sidebar elle-même ne scroll jamais à cause des liens rapides.
+- La section en-tête (titre + chevron + bouton +) reste toujours visible au-dessus de la liste scrollable.
+
+### Interdictions
+
+- Laisser la liste s'étendre sans limite et pousser le footer ou le contenu de la sidebar.
+- Appliquer le scroll sur la sidebar entière plutôt que sur la liste seule.
+
+### Tests
+
+- **Nominal** : avec ≤ 5 liens, pas de scrollbar visible.
+- **Edge** : avec > 5 liens, la liste affiche une scrollbar interne et la sidebar garde sa hauteur.
+
+**Références** :
+- `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx`

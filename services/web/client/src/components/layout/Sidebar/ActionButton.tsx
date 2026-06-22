@@ -81,7 +81,6 @@ export function ActionButton() {
 
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const battleStarted = useAppSelector(selectBattleStarted);
-  const initBattleDraft = useAppSelector(selectSessionInitBattleDraft);
   const isInitiativeTrackerPage = currentPage.endsWith("/initiativeTracker");
   const isCharacterPage = currentPage.includes("/characters/") && !currentPage.includes("/characters/new");
 
