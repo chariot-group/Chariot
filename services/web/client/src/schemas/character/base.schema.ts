@@ -285,8 +285,8 @@ export function SpellSchema(zm: ZodMessages) {
 }
 
 export const SpellSlotSchema = z.object({
-    total: numericInput(true),
-    used: numericInput(true),
+    total: z.preprocess(toOptionalInt, z.number().int().min(1).optional()),
+    used: z.preprocess(toOptionalInt, z.number().int().min(0).optional()),
 });
 
 export function SpellcastingSchema(zm: ZodMessages) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { makeZodMessages } from "@/lib/zodErrorMap";
-import { AbilitySchema, SpellcastingSchema } from "@/schemas/character/base.schema";
+import { AbilitySchema, SpellcastingSchema, SpellSlotSchema } from "@/schemas/character/base.schema";
 
 const messages: Record<string, string> = {
   invalidOption: "Option traduite invalide",
@@ -57,6 +57,29 @@ describe("AbilitySchema", () => {
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.path).toEqual(["counterCurrent"]);
     expect(result.error?.issues[0]?.message).toBe(messages.abilityCounterOrder);
+  });
+});
+
+describe("SpellSlotSchema", () => {
+  it("accepts an empty total while editing spell slots", () => {
+    const result = SpellSlotSchema.safeParse({ total: "", used: 0 });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.total).toBeUndefined();
+    }
+  });
+
+  it("accepts undefined total during editing", () => {
+    const result = SpellSlotSchema.safeParse({ used: 2 });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("validates total minimum when a value is provided", () => {
+    const result = SpellSlotSchema.safeParse({ total: 0, used: 0 });
+
+    expect(result.success).toBe(false);
   });
 });
 

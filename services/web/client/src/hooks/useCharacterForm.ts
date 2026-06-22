@@ -251,6 +251,37 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
             }
         }
 
+        const spellcasting = (sanitizedData as Record<string, unknown>).spellcasting;
+        if (Array.isArray(spellcasting)) {
+            (sanitizedData as Record<string, unknown>).spellcasting = spellcasting.map((sc: unknown) => {
+                if (typeof sc !== 'object' || sc === null) return sc;
+                const row = sc as Record<string, unknown>;
+                const byLevel = row.spellSlotsByLevel;
+                if (!byLevel || typeof byLevel !== 'object' || Array.isArray(byLevel)) return sc;
+
+                const nextByLevel: Record<string, { total: number; used: number }> = {};
+                for (const [levelKey, slot] of Object.entries(byLevel as Record<string, unknown>)) {
+                    if (typeof slot !== 'object' || slot === null) continue;
+                    const s = slot as Record<string, unknown>;
+                    const totalRaw = s.total;
+                    const totalEmpty =
+                        totalRaw === undefined || totalRaw === null || totalRaw === '';
+                    const parsedTotal = totalEmpty ? 1 : Number(totalRaw);
+                    const total =
+                        Number.isFinite(parsedTotal) && parsedTotal >= 1 ? Math.floor(parsedTotal) : 1;
+
+                    const usedRaw = s.used;
+                    const usedEmpty = usedRaw === undefined || usedRaw === null || usedRaw === '';
+                    const parsedUsed = usedEmpty ? 0 : Number(usedRaw);
+                    const used =
+                        Number.isFinite(parsedUsed) && parsedUsed >= 0 ? Math.floor(parsedUsed) : 0;
+
+                    nextByLevel[levelKey] = { total, used: Math.min(used, total) };
+                }
+                return { ...row, spellSlotsByLevel: nextByLevel };
+            });
+        }
+
         return sanitizedData as TFormValues & { groups?: unknown[] };
     };
 
