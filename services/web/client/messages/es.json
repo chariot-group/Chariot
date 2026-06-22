@@ -1480,7 +1480,9 @@
       "copySuccess": "¡Copiado!",
       "copyAriaLabel": "Copiar el código de sesión al portapapeles",
       "copyLinkAriaLabel": "Copiar el enlace de la sesión al portapapeles",
-      "copyLink": "Copiar enlace"
+      "copyLink": "Copiar enlace",
+      "qrCodeHeading": "Escanear para unirse",
+      "qrCodeAriaLabel": "Código QR para unirse a la sesión"
     },
     "toast": {
       "sessionNotFound": "Sesión no encontrada",
