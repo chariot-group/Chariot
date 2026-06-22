@@ -3,6 +3,20 @@
 This document centralizes all functional rules for the Chariot project.  
 Each rule has a unique identifier and must be tested.
 
+## Rule identifier convention
+
+**Legacy rules (`FR-001` … `FR-037`)** use sequential numeric IDs. These IDs are **frozen** — never renumber, reuse, or extend them.
+
+**New rules** MUST use a stable slug ID: `FR-{domain}-{feature}` (kebab-case, English).  
+Examples: `FR-sidebar-quick-links`, `FR-character-duplicate`, `FR-session-join-qr-code`.
+
+When adding a rule:
+
+1. Choose a slug from the feature domain — do **not** pick the next sequential number.
+2. Search this file to confirm the slug is unique.
+3. Append the new rule at the **end** of this file (reduces merge conflicts across parallel branches).
+4. Sub-rules or variants SHOULD be `###` sections inside the parent rule, not numeric suffixes (avoid `FR-027-B`).
+
 ---
 
 ## FR-001: Logging System Standardization
@@ -2307,7 +2321,7 @@ Each initiative tracker row carries:
 - `docs/design.md` — sections 8, 9
 ---
 
-## FR-030: Web Client Form Field Validation Visibility
+## FR-form-field-validation: Web Client Form Field Validation Visibility
 
 **Rule**: Every web client form must expose validation errors at the field level, with precise user-facing messages and accessible links between invalid fields, their messages, and any parent tab or section that contains the error.
 
@@ -2697,7 +2711,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-033: Sidebar Context Actions and Touch Alternatives
+## FR-sidebar-context-actions: Sidebar Context Actions and Touch Alternatives
 
 **Rule**: Sidebar list items that support secondary actions (edit, delete, move, archive) MUST expose those actions via right-click context menu on desktop and via an equivalent touch-accessible interaction on tablet and mobile. Confirmation dialogs triggered from these actions MUST support keyboard validation and cancellation.
 
@@ -2772,7 +2786,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-028 : Duplication de personnage
+## FR-character-duplicate: Duplication de personnage
 
 **Règle** : Un utilisateur peut dupliquer un personnage (joueur ou PNJ) depuis le menu contextuel (clic droit bureau / bouton `…` mobile). La duplication ouvre une modale de confirmation avec un nom proposé et éditable, et deux variantes de création.
 
@@ -2810,7 +2824,7 @@ Each initiative tracker row carries:
 - Le champ de nom dans la modale est associé à un `<label>` visible.
 - Les deux boutons ont un accessible name distinct.
 - Focus visible sur tous les éléments interactifs de la modale.
-- Escape et Enter respectent les conventions de FR-027 (Confirmation dialogs).
+- Escape et Enter respectent les conventions de FR-sidebar-context-actions (Confirmation dialogs).
 
 **Interdictions** :
 
@@ -2841,9 +2855,9 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-029 : Duplication de groupe
+## FR-group-duplicate: Duplication de groupe
 
-**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-028 côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
+**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-character-duplicate côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
 
 **Périmètre** :
 - Groupes actifs uniquement (`GroupList`, section non-archivée). L'action de duplication n'apparaît pas en section archivée.
@@ -2865,7 +2879,7 @@ Each initiative tracker row carries:
 
 **Logique de duplication (côté frontend)** :
 - Aucun nouvel endpoint backend requis.
-- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-028).
+- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-character-duplicate).
 - Créer le groupe via `GroupService.createGroup(campaignId, { label })`.
 - Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
 - Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
@@ -2875,7 +2889,7 @@ Each initiative tracker row carries:
 - Champ label associé à un `<label>` visible, autofocusé à l'ouverture.
 - Boutons avec accessible names distincts.
 - Focus visible sur tous les éléments interactifs.
-- Escape et Enter respectent les conventions de FR-027.
+- Escape et Enter respectent les conventions de FR-sidebar-context-actions.
 
 **Interdictions** :
 - Afficher l'action « Dupliquer » sur les groupes archivés.
@@ -2904,7 +2918,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-027 : Liens rapides configurables dans la sidebar
+## FR-sidebar-quick-links: Liens rapides configurables dans la sidebar
 
 **Règle** : Le MJ et le joueur peuvent ajouter, consulter et supprimer des liens externes (liens rapides) dans leur sidebar respective. Chaque lien est rattaché soit à une campagne (visible dans l'espace MJ sous la campagne concernée), soit à aucune campagne (visible dans l'espace joueur). Les liens sont persistés côté backend et isolés par utilisateur.
 
@@ -2979,7 +2993,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-027-B : Collapse/expand de la section Liens rapides
+### Collapse/expand de la section Liens rapides
 
 **Règle** : La section "Liens rapides" dans la sidebar dispose d'un bouton toggle permettant de replier ou déplier la liste des liens.
 
@@ -3014,7 +3028,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-027-C : Hauteur maximale de la section Liens rapides
+### Hauteur maximale de la section Liens rapides
 
 **Règle** : La liste des liens rapides est contrainte en hauteur pour ne jamais déformer ou agrandir la sidebar, quel que soit le nombre de liens ajoutés.
 
@@ -3040,7 +3054,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-038 : QR Code de rejoindre une session
+## FR-session-join-qr-code: QR Code de rejoindre une session
 
 **Règle** : La page session DOIT afficher, sous la card du code de session, une card contenant un QR code encodant l'URL de la session. Tous les participants (MJ et joueurs) peuvent voir ce QR code.
 

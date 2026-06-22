@@ -6,7 +6,7 @@ import { useUser } from "@/hooks/useUser";
 import { replaceLocaleInPath, saveStoredLocale, shouldSyncAccountLocale } from "@/hooks/useLocalePreference";
 
 /**
- * Applies the authenticated user's account locale when it differs from the URL prefix (FR-029).
+ * Applies the authenticated user's account locale when it differs from the URL prefix (FR-030).
  */
 export default function AccountLocaleSync() {
   const pathname = usePathname();

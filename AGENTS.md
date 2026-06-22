@@ -44,9 +44,11 @@ If the request is **Covered**:
 If the request is **Missing rule**:
 
 1. The agent MUST draft and write a new functional rule in `docs/functional-rules.md`.
-2. The rule SHOULD be concise, testable, and implementation-agnostic (except essential technical constraints).
-3. After writing the rule, the agent MUST stop and request explicit functional confirmation.
-4. The agent MUST NOT start implementation before confirmation.
+2. The rule MUST use a stable slug identifier: `FR-{domain}-{feature}` (kebab-case, English). Legacy numeric IDs (`FR-001` … `FR-037`) are frozen — do NOT assign the next sequential number.
+3. The agent MUST append the new rule at the **end** of `docs/functional-rules.md` to reduce merge conflicts across parallel branches.
+4. The rule SHOULD be concise, testable, and implementation-agnostic (except essential technical constraints).
+5. After writing the rule, the agent MUST stop and request explicit functional confirmation.
+6. The agent MUST NOT start implementation before confirmation.
 
 ## 5) Branch C - Functional Conflict
 
