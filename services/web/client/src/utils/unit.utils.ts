@@ -91,12 +91,30 @@ export const WEIGHT_UNIT_LABEL: Record<MeasurementUnit, string> = {
 };
 
 const FEET_RANGE_PATTERN = /^(\d+(?:\.\d+)?)\s*ft\.?$/i;
+const FEET_DUAL_RANGE_PATTERN = /^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*ft\.?$/i;
 
 /** Parses a canonical stored range such as "30 ft." into its feet value. */
 export function parseStoredFeetRange(stored: string): number | null {
   const match = stored.match(FEET_RANGE_PATTERN);
   if (!match) return null;
   return parseFloat(match[1]);
+}
+
+/** Parses a canonical dual range such as "80/320 ft." into [normalFeet, longFeet], or null. */
+export function parseStoredFeetDualRange(stored: string): [number, number] | null {
+  const match = stored.match(FEET_DUAL_RANGE_PATTERN);
+  if (!match) return null;
+  return [parseFloat(match[1]), parseFloat(match[2])];
+}
+
+/** Formats two feet values into the canonical dual range string "X/Y ft.". */
+export function formatStoredFeetDualRange(normalFt: number, longFt: number): string {
+  return `${normalFt}/${longFt} ft.`;
+}
+
+/** Returns true if the stored value is a dual range "X/Y ft." format. */
+export function isStoredFeetDualRange(stored: string): boolean {
+  return FEET_DUAL_RANGE_PATTERN.test(stored.trim());
 }
 
 /** Formats a feet value into the canonical stored range string. */

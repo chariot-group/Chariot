@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   feetToMeters, metersToFeet, convertRangeString, convertRangeStringBoth, displayDistanceFt,
   feetToCm, cmToFeet, lbsToKg, kgToLbs, parseStoredFeetRange, storedFeetRangeToDisplayText,
+  parseStoredFeetDualRange, formatStoredFeetDualRange, isStoredFeetDualRange,
 } from "../unit.utils";
 
 describe("feetToMeters", () => {
@@ -139,5 +140,46 @@ describe("parseStoredFeetRange / storedFeetRangeToDisplayText", () => {
 
   it("converts stored feet range to metric display text", () => {
     expect(storedFeetRangeToDisplayText("30 ft.", (ft) => displayDistanceFt(ft, "metric"))).toBe("9");
+  });
+});
+
+describe("parseStoredFeetDualRange", () => {
+  it("parses canonical dual range strings", () => {
+    expect(parseStoredFeetDualRange("80/320 ft.")).toEqual([80, 320]);
+    expect(parseStoredFeetDualRange("60/120 ft.")).toEqual([60, 120]);
+    expect(parseStoredFeetDualRange("30/120 ft")).toEqual([30, 120]);
+  });
+
+  it("returns null for single range strings", () => {
+    expect(parseStoredFeetDualRange("30 ft.")).toBeNull();
+  });
+
+  it("returns null for free-text ranges", () => {
+    expect(parseStoredFeetDualRange("Touch")).toBeNull();
+    expect(parseStoredFeetDualRange("Self")).toBeNull();
+  });
+});
+
+describe("formatStoredFeetDualRange", () => {
+  it("formats two feet values into canonical dual range string", () => {
+    expect(formatStoredFeetDualRange(80, 320)).toBe("80/320 ft.");
+    expect(formatStoredFeetDualRange(30, 120)).toBe("30/120 ft.");
+  });
+});
+
+describe("isStoredFeetDualRange", () => {
+  it("returns true for dual range strings", () => {
+    expect(isStoredFeetDualRange("80/320 ft.")).toBe(true);
+    expect(isStoredFeetDualRange("60/120 ft.")).toBe(true);
+  });
+
+  it("returns false for single range strings", () => {
+    expect(isStoredFeetDualRange("30 ft.")).toBe(false);
+  });
+
+  it("returns false for free-text ranges", () => {
+    expect(isStoredFeetDualRange("Touch")).toBe(false);
+    expect(isStoredFeetDualRange("Self")).toBe(false);
+    expect(isStoredFeetDualRange("")).toBe(false);
   });
 });

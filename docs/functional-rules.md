@@ -3121,3 +3121,46 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/layout/Sidebar/index.tsx`
 - `services/web/client/src/components/layout/Sidebar/__tests__/SidebarFooterVersion.test.ts`
 - `services/web/client/src/components/profile/__tests__/ProfilePreferencesSection.test.tsx`
+
+---
+
+## FR-039 : Saisie de portée double dans les actions de personnage
+
+**Règle** : Lorsqu'une action a une portée double (portée normale / portée longue), l'interface d'édition doit proposer deux champs numériques distincts. La valeur stockée reste un string canonique `"X/Y ft."`. La détection du mode double se fait automatiquement à partir de la valeur stockée.
+
+**Exigences** :
+
+- Format stocké canonique pour portée double : `"X/Y ft."` (ex. `"80/320 ft."`)
+- En édition, si la valeur stockée correspond à `"X/Y ft."`, deux inputs numériques sont affichés (portée normale | portée longue)
+- Un bouton toggle permet de basculer entre mode portée simple et mode portée double
+- Passage simple → double : la valeur simple devient la portée normale, portée longue initialisée vide
+- Passage double → simple : la portée normale seule est conservée, la portée longue est supprimée sans avertissement
+- La saisie respecte l'unité préférée de l'utilisateur (FR-037) : conversion m ↔ ft à la volée
+- Le label "/" entre les deux inputs indique visuellement la séparation normale/longue
+- Les inputs sont accessibles : `aria-label` distinct pour portée normale et portée longue
+- Valeur incomplète (portée longue vide) → stockée comme portée simple `"X ft."`
+- Les valeurs texte libres ("Touch", "Self") ne sont pas affectées (rétrocompatibilité)
+
+**Prohibitions** :
+
+- Modifier le format de stockage en base — le champ `range` reste un string
+- Supprimer la compatibilité avec les valeurs texte libres existantes
+
+**Tests** :
+
+- Nominal : saisie `24` / `96` (m) → stocké `"80/320 ft."`
+- Nominal : saisie `9` / vide (m) → stocké `"30 ft."` (portée simple)
+- Edge : valeur stockée `"60/120 ft."` → deux inputs pré-remplis `18` et `36` (m)
+- Edge : valeur stockée `"Touch"` → non affectée (mode actuel conservé)
+- Toggle double → simple : portée longue supprimée, portée normale conservée
+- `parseStoredFeetDualRange("80/320 ft.")` → `[80, 320]`
+- `parseStoredFeetDualRange("30 ft.")` → `null`
+- `formatStoredFeetDualRange(80, 320)` → `"80/320 ft."`
+- `isStoredFeetDualRange("80/320 ft.")` → `true`
+
+**References** :
+
+- `services/web/client/src/utils/unit.utils.ts`
+- `services/web/client/src/hooks/useStoredFeetDualRangeInput.ts`
+- `services/web/client/src/components/ui/stored-unit-feet-dual-range-input.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionUpdateSection.tsx`

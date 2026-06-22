@@ -86,13 +86,13 @@ const AbilitiesSection = ({
 
   return (
     <Card
-      className={`gap-0.5 p-4 md:px-6 h-fit ${className}`}
+      className={`gap-0.5 p-4 md:px-6 h-fit min-w-0 w-full ${className}`}
       role="region"
       aria-labelledby={headingId}>
-      <div className="flex flex-row justify-between">
+      <div className="flex min-w-0 flex-row justify-between gap-2">
         <h2
           id={headingId}
-          className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+          className={`min-w-0 flex-1 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>
           {title}
         </h2>
         <div className="flex justify-end shrink-0">

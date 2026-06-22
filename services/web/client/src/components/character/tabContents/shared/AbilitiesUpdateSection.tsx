@@ -55,12 +55,12 @@ const AbilitiesUpdateSection = ({
 
   return (
     <Card
-      className="gap-3 p-4 md:px-6 h-fit"
+      className="gap-3 p-4 md:px-6 h-fit min-w-0 w-full"
       role="region"
       aria-label={title}>
-      <div className="flex flex-row justify-between items-center">
-        <h2 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{title}</h2>
-        <div className="flex items-center gap-2">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className={`min-w-0 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>{title}</h2>
+        <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
           <Button
             type="button"
             variant="ghost"
@@ -79,7 +79,7 @@ const AbilitiesUpdateSection = ({
             }}
             className="flex items-center gap-2">
             <Plus className="size-4" />
-            <span className="hidden sm:block">{tEdit("add")}</span>
+            <span className="hidden xl:inline">{tEdit("add")}</span>
           </Button>
           <button
             type="button"
@@ -377,27 +377,28 @@ const AbilitiesUpdateSection = ({
                         )}
                         <fieldset className="min-w-0 border-0 p-0 m-0 sm:col-span-2">
                           <legend className="sr-only">{tBattle("abilityCounterResetLegend")}</legend>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                          <div className="grid grid-cols-1 gap-2">
                             <Controller
                               name={`${fieldArrayName}.${index}.counterResetsOnShortRest`}
                               control={form.control}
                               render={({ field: srField }) => (
-                                <div className="flex w-full min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                                <div className="flex w-full min-w-0 min-h-10 items-start gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
                                   <Clock
-                                    size={24}
-                                    className="shrink-0 text-white"
+                                    size={20}
+                                    className="mt-0.5 shrink-0 text-white sm:size-6"
                                     aria-hidden
                                   />
                                   <Checkbox
                                     id={`${fieldArrayName}-counterResetShort-${index}`}
                                     checked={srField.value === true}
                                     onCheckedChange={(c) => srField.onChange(c === true)}
-                                    className="shrink-0"
+                                    className="mt-0.5 shrink-0"
                                   />
                                   <Label
                                     htmlFor={`${fieldArrayName}-counterResetShort-${index}`}
-                                    className="min-w-0 flex-1 cursor-pointer text-sm font-normal leading-snug">
-                                    {tBattle("abilityCounterResetShortRest")}
+                                    className="min-w-0 flex-1 cursor-pointer text-xs sm:text-sm font-normal leading-snug break-words">
+                                    <span className="2xl:hidden">{tBattle("abilityCounterResetShortRestShort")}</span>
+                                    <span className="hidden 2xl:inline">{tBattle("abilityCounterResetShortRest")}</span>
                                   </Label>
                                 </div>
                               )}
@@ -406,22 +407,23 @@ const AbilitiesUpdateSection = ({
                               name={`${fieldArrayName}.${index}.counterResetsOnLongRest`}
                               control={form.control}
                               render={({ field: lrField }) => (
-                                <div className="flex w-full min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                                <div className="flex w-full min-w-0 min-h-10 items-start gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
                                   <Moon
-                                    size={24}
-                                    className="shrink-0 text-white"
+                                    size={20}
+                                    className="mt-0.5 shrink-0 text-white sm:size-6"
                                     aria-hidden
                                   />
                                   <Checkbox
                                     id={`${fieldArrayName}-counterResetLong-${index}`}
                                     checked={lrField.value === true}
                                     onCheckedChange={(c) => lrField.onChange(c === true)}
-                                    className="shrink-0"
+                                    className="mt-0.5 shrink-0"
                                   />
                                   <Label
                                     htmlFor={`${fieldArrayName}-counterResetLong-${index}`}
-                                    className="min-w-0 flex-1 cursor-pointer text-sm font-normal leading-snug">
-                                    {tBattle("abilityCounterResetLongRest")}
+                                    className="min-w-0 flex-1 cursor-pointer text-xs sm:text-sm font-normal leading-snug break-words">
+                                    <span className="2xl:hidden">{tBattle("abilityCounterResetLongRestShort")}</span>
+                                    <span className="hidden 2xl:inline">{tBattle("abilityCounterResetLongRest")}</span>
                                   </Label>
                                 </div>
                               )}

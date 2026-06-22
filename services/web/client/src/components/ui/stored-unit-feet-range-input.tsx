@@ -5,6 +5,7 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { useStoredFeetRangeInput } from "@/hooks/useStoredFeetRangeInput";
 import { parseStoredFeetRange } from "@/utils/unit.utils";
+import { cn } from "@/lib/utils";
 
 interface StoredUnitFeetRangeInputProps extends Omit<React.ComponentProps<typeof Input>, "value" | "onChange"> {
   storedValue: string;
@@ -12,6 +13,7 @@ interface StoredUnitFeetRangeInputProps extends Omit<React.ComponentProps<typeof
   toStored: (displayValue: number) => number;
   toDisplay: (storedFeet: number) => number;
   unitLabel?: string;
+  containerClassName?: string;
 }
 
 export function StoredUnitFeetRangeInput({
@@ -20,6 +22,7 @@ export function StoredUnitFeetRangeInput({
   toStored,
   toDisplay,
   unitLabel,
+  containerClassName,
   onFocus,
   onBlur,
   ref: externalRef,
@@ -37,17 +40,21 @@ export function StoredUnitFeetRangeInput({
     displayNumeric || storedFeet != null || (storedValue.trim() === "" && trimmedDisplay === "");
   const showUnitLabel = storedFeet != null || displayNumeric;
 
+  const { type: explicitType, ...restInputProps } = inputProps;
+  const resolvedType = explicitType ?? (isNumericRange ? "number" : "text");
+
   return (
-    <div className="flex items-center gap-1 w-full sm:w-auto sm:max-w-48">
+    <div className={cn("flex min-w-0 items-center gap-1 w-full max-w-full", containerClassName)}>
       <Input
-        {...inputProps}
+        {...restInputProps}
         ref={externalRef}
-        type={isNumericRange ? "number" : "text"}
+        type={resolvedType}
         inputMode={isNumericRange ? "decimal" : "text"}
-        min={isNumericRange ? 0 : undefined}
-        step={isNumericRange ? "any" : undefined}
+        min={resolvedType === "number" && isNumericRange ? 0 : undefined}
+        step={resolvedType === "number" && isNumericRange ? "any" : undefined}
         value={rangeInput.value}
         onChange={rangeInput.onChange}
+        className={cn("min-w-0 flex-1 w-full", restInputProps.className)}
         onFocus={(event) => {
           rangeInput.onFocus(event);
           onFocus?.(event);

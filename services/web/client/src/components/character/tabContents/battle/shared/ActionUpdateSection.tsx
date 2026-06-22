@@ -14,7 +14,7 @@ import {
 } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useState } from "react";
-import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
+import { Plus, X, Trash2, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,6 +27,7 @@ import {
   getProficiencyBonusFromChallengeRating,
 } from "@/utils/attack.utils";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
+import { formatStoredFeetDualRange, parseStoredFeetDualRange, parseStoredFeetRange, formatStoredFeetRange } from "@/utils/unit.utils";
 
 interface ActionUpdateSectionProps {
   title: string;
@@ -79,6 +80,7 @@ const ActionUpdateSection = ({
   const headingId = `${sectionId}-heading`;
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
+  const [expandedLongRanges, setExpandedLongRanges] = useState<Set<string>>(new Set());
   const hasActions = fields.length > 0;
 
   const watchedActions = form.watch(fieldArrayName) as
@@ -191,13 +193,13 @@ const ActionUpdateSection = ({
     <section
       className="flex flex-col gap-2 w-full"
       aria-labelledby={headingId}>
-      <Card className="gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between">
+      <Card className="gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between min-w-0 w-full">
         <h2
           id={headingId}
-          className={`min-w-0 flex-1 text-xl sm:text-2xl font-semibold ${accentColor}`}>
+          className={`min-w-0 flex-1 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>
           {title}
         </h2>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <Button
             type="button"
             variant="ghost"
@@ -226,12 +228,12 @@ const ActionUpdateSection = ({
               className="size-4"
               aria-hidden="true"
             />
-            <span className="hidden sm:block">{tEdit("add")}</span>
+            <span className="hidden xl:inline">{tEdit("add")}</span>
           </Button>
           <Button
             type="button"
             variant="ghost"
-            size="icon-sm"
+            size="icon"
             onClick={() => {
               if (!hasActions) return;
               if (openAccordionValues.length > 0) {
@@ -249,9 +251,15 @@ const ActionUpdateSection = ({
             }
             aria-expanded={openAccordionValues.length > 0}>
             {openAccordionValues.length > 0 ? (
-              <ListChevronsDownUp aria-hidden="true" />
+              <ListChevronsDownUp
+                className="size-5"
+                aria-hidden="true"
+              />
             ) : (
-              <ListChevronsUpDown aria-hidden="true" />
+              <ListChevronsUpDown
+                className="size-5"
+                aria-hidden="true"
+              />
             )}
             <span className="sr-only">
               {openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
@@ -304,14 +312,12 @@ const ActionUpdateSection = ({
                   <div className="relative py-3 px-3 md:py-2 md:px-6">
                     <AccordionTrigger
                       id={triggerId}
-                      className="w-full items-center gap-2 pr-10"
+                      className="w-full min-w-0 items-center gap-2 pr-10"
                       aria-label={t("actionDetailsForIndex", { index: index + 1 })}>
-                      <div className="truncate flex items-center gap-1">
-                        <span className={`text-base md:text-lg font-medium text-left truncate`}>{actionName}</span>
-                        <span className="text-base md:text-lg font-medium text-left">
-                          {` (${t(`usageTypeOptions.${usageType}`)})`}
-                        </span>
-                      </div>
+                      <span className="min-w-0 flex-1 truncate text-base md:text-lg font-medium text-left">
+                        {actionName}
+                        {` (${t(`usageTypeOptions.${usageType}`)})`}
+                      </span>
                     </AccordionTrigger>
                     <Button
                       type="button"
@@ -333,7 +339,7 @@ const ActionUpdateSection = ({
                 <AccordionContent>
                   <div
                     id={contentId}
-                    className="flex flex-wrap gap-2 items-start"
+                    className="flex flex-wrap gap-2 items-start min-w-0 w-full"
                     role="region"
                     aria-labelledby={triggerId}>
                     <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
@@ -657,7 +663,7 @@ const ActionUpdateSection = ({
                         }}
                       />
                     </Card>
-                    <Card className="sm:items-center flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2 py-3 px-3 md:py-4 md:px-6">
+                    <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full min-w-0">
                       <label
                         id={rangeLabelId}
                         htmlFor={`${actionItemId}-range`}
@@ -667,19 +673,124 @@ const ActionUpdateSection = ({
                       <Controller
                         name={`${fieldArrayName}.${index}.range`}
                         control={form.control}
-                        render={({ field: rangeField }) => (
-                          <StoredUnitFeetRangeInput
-                            id={`${actionItemId}-range`}
-                            aria-labelledby={rangeLabelId}
-                            placeholder={t("range")}
-                            storedValue={rangeField.value ?? ""}
-                            onStoredChange={rangeField.onChange}
-                            onBlur={rangeField.onBlur}
-                            toDisplay={displayFt}
-                            toStored={toFeet}
-                            unitLabel={unitLabel}
-                          />
-                        )}
+                        render={({ field: rangeField }) => {
+                          const storedRange = rangeField.value ?? "";
+                          const dual = parseStoredFeetDualRange(storedRange);
+                          const normalStored = dual ? formatStoredFeetRange(dual[0]) : storedRange;
+                          const longStored = dual ? formatStoredFeetRange(dual[1]) : "";
+                          const isLongExpanded = longStored !== "" || expandedLongRanges.has(field.id);
+
+                          const handleNormalChange = (newNormal: string) => {
+                            // User typed "X/Y" directly — parse as dual range using current unit
+                            const dualFreeText = newNormal.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
+                            if (dualFreeText) {
+                              rangeField.onChange(
+                                formatStoredFeetDualRange(toFeet(parseFloat(dualFreeText[1])), toFeet(parseFloat(dualFreeText[2]))),
+                              );
+                              return;
+                            }
+                            const longFt = parseStoredFeetRange(longStored);
+                            const normalFt = parseStoredFeetRange(newNormal);
+                            if (normalFt != null && longFt != null) {
+                              rangeField.onChange(formatStoredFeetDualRange(normalFt, longFt));
+                            } else {
+                              rangeField.onChange(newNormal);
+                            }
+                          };
+
+                          const handleLongChange = (newLong: string) => {
+                            if (!newLong) {
+                              rangeField.onChange(normalStored);
+                              setExpandedLongRanges((prev) => {
+                                const next = new Set(prev);
+                                next.delete(field.id);
+                                return next;
+                              });
+                              return;
+                            }
+                            const normalFt = parseStoredFeetRange(normalStored);
+                            const longFt = parseStoredFeetRange(newLong);
+                            if (normalFt != null && longFt != null) {
+                              rangeField.onChange(formatStoredFeetDualRange(normalFt, longFt));
+                            }
+                          };
+
+                          return (
+                            <div className="flex flex-wrap items-center gap-x-1 gap-y-2 min-w-0 w-full">
+                              <StoredUnitFeetRangeInput
+                                id={`${actionItemId}-range`}
+                                aria-labelledby={rangeLabelId}
+                                aria-label={t("rangeNormal")}
+                                placeholder={t("range")}
+                                storedValue={normalStored}
+                                onStoredChange={handleNormalChange}
+                                onBlur={rangeField.onBlur}
+                                toDisplay={displayFt}
+                                toStored={toFeet}
+                                unitLabel={isLongExpanded ? undefined : unitLabel}
+                                type="text"
+                                containerClassName={
+                                  isLongExpanded ? "min-w-0 flex-1 basis-24 max-w-full" : "min-w-0 w-full max-w-full"
+                                }
+                              />
+                              {isLongExpanded ? (
+                                <>
+                                  <span
+                                    className="text-sm text-muted-foreground shrink-0 px-0.5"
+                                    aria-hidden="true">
+                                    /
+                                  </span>
+                                  <StoredUnitFeetRangeInput
+                                    aria-label={t("rangeLong")}
+                                    placeholder="—"
+                                    storedValue={longStored}
+                                    onStoredChange={handleLongChange}
+                                    onBlur={rangeField.onBlur}
+                                    toDisplay={displayFt}
+                                    toStored={toFeet}
+                                    unitLabel={unitLabel}
+                                    type="text"
+                                    containerClassName="min-w-0 flex-1 basis-24 max-w-full"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    onClick={() => {
+                                      rangeField.onChange(normalStored);
+                                      setExpandedLongRanges((prev) => {
+                                        const next = new Set(prev);
+                                        next.delete(field.id);
+                                        return next;
+                                      });
+                                    }}
+                                    aria-label={t("removeLongRange")}
+                                    className="text-muted-foreground hover:text-foreground shrink-0">
+                                    <X
+                                      className="size-3"
+                                      aria-hidden="true"
+                                    />
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  onClick={() =>
+                                    setExpandedLongRanges((prev) => new Set([...prev, field.id]))
+                                  }
+                                  aria-label={t("addLongRange")}
+                                  className="text-muted-foreground hover:text-foreground shrink-0">
+                                  <Plus
+                                    className="size-3"
+                                    aria-hidden="true"
+                                  />
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        }}
                       />
                     </Card>
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
