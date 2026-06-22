@@ -199,10 +199,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       }
       const t = entry.total;
       const u = entry.used;
-      if (t === undefined || t === null || Number.isNaN(Number(t))) {
+      if (t === undefined || t === null) {
+        form.setValue(`${slotPath}.total`, 1, { shouldDirty: true });
+      } else if (t !== "" && Number.isNaN(Number(t))) {
         form.setValue(`${slotPath}.total`, 1, { shouldDirty: true });
       }
-      if (u === undefined || u === null || Number.isNaN(Number(u))) {
+      if (u === undefined || u === null) {
+        form.setValue(`${slotPath}.used`, 0, { shouldDirty: true });
+      } else if (u !== "" && Number.isNaN(Number(u))) {
         form.setValue(`${slotPath}.used`, 0, { shouldDirty: true });
       }
     }
@@ -1265,26 +1269,45 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                     <Controller
                                       name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total`}
                                       control={form.control}
-                                      render={({ field }) => {
-                                        const parsed = Number(field.value);
-                                        const display = Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+                                      render={({ field, fieldState }) => {
+                                        const slotTotalPath =
+                                          `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total` as const;
                                         return (
                                           <Input
-                                            {...field}
-                                            value={display}
+                                            name={field.name}
+                                            ref={field.ref}
+                                            value={
+                                              field.value === undefined || field.value === null || field.value === ""
+                                                ? ""
+                                                : String(field.value)
+                                            }
                                             className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
                                             type="number"
-                                            min={1}
+                                            inputMode="numeric"
+                                            aria-invalid={fieldState.invalid}
                                             onClick={(e) => e.stopPropagation()}
                                             aria-label={tMagic("spellSlotsTotalForLevel", { level })}
                                             onChange={(e) => {
                                               const raw = e.target.value;
                                               if (raw === "") {
-                                                field.onChange(1);
+                                                field.onChange("");
+                                                form.clearErrors(slotTotalPath);
                                                 return;
                                               }
                                               const next = Number(raw);
-                                              field.onChange(Number.isFinite(next) ? next : 1);
+                                              if (!Number.isFinite(next)) return;
+                                              field.onChange(next);
+                                              form.clearErrors(slotTotalPath);
+                                            }}
+                                            onBlur={() => {
+                                              const raw = form.getValues(slotTotalPath);
+                                              if (raw === "" || raw === undefined || raw === null) {
+                                                form.clearErrors(slotTotalPath);
+                                                field.onBlur();
+                                                return;
+                                              }
+                                              field.onBlur();
+                                              void form.trigger(slotTotalPath);
                                             }}
                                           />
                                         );

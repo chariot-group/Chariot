@@ -1,5 +1,6 @@
 import { Player } from "@/types/character";
 import { Controller, UseFormReturn, useFieldArray, FieldValues, useFormState } from "react-hook-form";
+import { useEffect } from "react";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -84,6 +85,14 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
     control: form.control,
     name: "class",
   });
+
+  // Garantit qu'il y a toujours au moins une rangée de classe à l'affichage
+  useEffect(() => {
+    if (classFields.length === 0) {
+      appendClass({ name: undefined, subclass: "", level: 1, hitDice: 0 });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
