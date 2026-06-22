@@ -326,7 +326,7 @@ export default function SessionPage() {
           {/* Session code section */}
           <aside
             aria-labelledby="session-code-heading"
-            className="order-first xl:order-last xl:col-span-1 flex flex-col gap-4">
+            className="order-first xl:order-last xl:col-span-1 flex flex-col sm:flex-row xl:flex-col gap-4">
             <Card className="flex flex-col gap-0 p-4 sm:p-6">
               <h2
                 id="session-code-heading"
