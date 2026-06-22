@@ -13,6 +13,14 @@ import PP from "@public/assets/pieces/platinum-piece.svg";
 import CP from "@public/assets/pieces/copper-piece.svg";
 import { Textarea } from "@/components/ui/textarea";
 
+const COIN_FIELDS = [
+  { key: "pp", icon: PP, labelKey: "platinumPieces", placeholderKey: "pp", id: "inventory-pp" },
+  { key: "gp", icon: GP, labelKey: "goldPieces", placeholderKey: "gp", id: "inventory-gp" },
+  { key: "ep", icon: EP, labelKey: "electrumPieces", placeholderKey: "ep", id: "inventory-ep" },
+  { key: "sp", icon: SP, labelKey: "silverPieces", placeholderKey: "sp", id: "inventory-sp" },
+  { key: "cp", icon: CP, labelKey: "copperPieces", placeholderKey: "cp", id: "inventory-cp" },
+] as const;
+
 interface CharacterInventoryTabEditProps {
   accentColor: string;
   form: UseFormReturn<FieldValues>;
@@ -41,206 +49,49 @@ export default function CharacterInventoryTabEdit({ accentColor, form }: Charact
             className="flex flex-wrap gap-2 "
             role="group"
             aria-label={t("coins")}>
-            <Controller
-              name="treasure.pp"
-              control={form.control}
-              render={({ field, fieldState }) => {
-                return (
-                  <Field
-                    className="shrink-0 w-auto"
-                    data-invalid={fieldState.invalid}
-                    orientation="horizontal">
-                    <div className="relative">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Input
-                            className="w-24 pr-8"
-                            {...field}
-                            value={field.value ?? ""}
-                            id="inventory-pp"
-                            aria-label={t("platinumPieces")}
-                            aria-invalid={fieldState.invalid}
-                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("pp")}
-                            min={0}
-                            type="number"
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t("platinumPieces")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Image
-                        src={PP}
-                        alt=""
-                        aria-hidden="true"
-                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
-                      />
-                    </div>
-                  </Field>
-                );
-              }}
-            />
-            <Controller
-              name="treasure.gp"
-              control={form.control}
-              render={({ field, fieldState }) => {
-                return (
-                  <Field
-                    className="shrink-0 w-auto"
-                    data-invalid={fieldState.invalid}
-                    orientation="horizontal">
-                    <div className="relative">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Input
-                            className="w-24 pr-8"
-                            {...field}
-                            value={field.value ?? ""}
-                            id="inventory-gp"
-                            aria-label={t("goldPieces")}
-                            aria-invalid={fieldState.invalid}
-                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("gp")}
-                            min={0}
-                            type="number"
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t("goldPieces")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Image
-                        src={GP}
-                        alt=""
-                        aria-hidden="true"
-                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
-                      />
-                    </div>
-                  </Field>
-                );
-              }}
-            />
-            <Controller
-              name="treasure.ep"
-              control={form.control}
-              render={({ field, fieldState }) => {
-                return (
-                  <Field
-                    className="shrink-0 w-auto"
-                    data-invalid={fieldState.invalid}
-                    orientation="horizontal">
-                    <div className="relative">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Input
-                            className="w-24 pr-8"
-                            {...field}
-                            value={field.value ?? ""}
-                            id="inventory-ep"
-                            aria-label={t("electrumPieces")}
-                            aria-invalid={fieldState.invalid}
-                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("ep")}
-                            type="number"
-                            min={0}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t("electrumPieces")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Image
-                        src={EP}
-                        alt=""
-                        aria-hidden="true"
-                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
-                      />
-                    </div>
-                  </Field>
-                );
-              }}
-            />
-            <Controller
-              name="treasure.sp"
-              control={form.control}
-              render={({ field, fieldState }) => {
-                return (
-                  <Field
-                    className="shrink-0 w-auto"
-                    data-invalid={fieldState.invalid}
-                    orientation="horizontal">
-                    <div className="relative">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Input
-                            className="w-24 pr-8"
-                            {...field}
-                            value={field.value ?? ""}
-                            id="inventory-sp"
-                            aria-label={t("silverPieces")}
-                            aria-invalid={fieldState.invalid}
-                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("sp")}
-                            type="number"
-                            min={0}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t("silverPieces")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Image
-                        src={SP}
-                        alt=""
-                        aria-hidden="true"
-                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
-                      />
-                    </div>
-                  </Field>
-                );
-              }}
-            />
-            <Controller
-              name="treasure.cp"
-              control={form.control}
-              render={({ field, fieldState }) => {
-                return (
-                  <Field
-                    className="shrink-0 w-auto"
-                    data-invalid={fieldState.invalid}
-                    orientation="horizontal">
-                    <div className="relative">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Input
-                            className="w-24 pr-8"
-                            {...field}
-                            value={field.value ?? ""}
-                            id="inventory-cp"
-                            aria-label={t("copperPieces")}
-                            aria-invalid={fieldState.invalid}
-                            aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                            placeholder={t("cp")}
-                            type="number"
-                            min={0}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t("copperPieces")}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Image
-                        src={CP}
-                        alt=""
-                        aria-hidden="true"
-                        className="size-4 sm:size-5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
-                      />
-                    </div>
-                  </Field>
-                );
-              }}
-            />
+            {COIN_FIELDS.map(({ key, icon, labelKey, placeholderKey, id }) => (
+              <Controller
+                key={key}
+                name={`treasure.${key}`}
+                control={form.control}
+                render={({ field, fieldState }) => {
+                  return (
+                    <Field
+                      className="shrink-0 w-auto"
+                      data-invalid={fieldState.invalid}
+                      orientation="horizontal">
+                      <div className="relative w-28">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Input
+                              className="w-full pl-8"
+                              {...field}
+                              value={field.value ?? ""}
+                              id={id}
+                              aria-label={t(labelKey)}
+                              aria-invalid={fieldState.invalid}
+                              aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
+                              placeholder={t(placeholderKey)}
+                              min={0}
+                              type="number"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t(labelKey)}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Image
+                          src={icon}
+                          alt=""
+                          aria-hidden="true"
+                          className="pointer-events-none absolute left-2.5 top-1/2 z-10 size-4 -translate-y-1/2 sm:size-5"
+                        />
+                      </div>
+                    </Field>
+                  );
+                }}
+              />
+            ))}
           </div>
           {(treasureErrors?.pp ||
             treasureErrors?.gp ||
