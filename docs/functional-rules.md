@@ -3103,3 +3103,108 @@ Each initiative tracker row carries:
 **Références**:
 
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
+
+---
+
+## FR-028 : Affichage du compteur de capacités et traits
+
+**Règle** : Les capacités et traits dotés d'un compteur (`hasCounter: true`, `counterMax` défini) doivent afficher les **utilisations restantes** sous la forme `remaining / max`, où `remaining = counterMax - counterCurrent`. Ce nombre décrémente à chaque usage, alignant le comportement visuel sur les emplacements de sort.
+
+**Exigences** :
+
+- Le compteur affiché représente les **utilisations restantes** : `remaining = counterMax - counterCurrent`.
+- Format d'affichage : `{remaining} / {max}` (ex. « 3 / 5 » au lieu de « 2 / 5 » pour 2 utilisations consommées sur 5).
+- La valeur interne `counterCurrent` reste un compteur ascendant (0 → max) ; seul l'affichage est inversé.
+- Les libellés ARIA doivent également refléter le nombre d'utilisations restantes.
+- Le bouton « Utiliser » reste désactivé lorsque `remaining === 0` (comportement inchangé).
+
+**Interdictions** :
+
+- Modifier la structure de données (`counterCurrent`) ou la logique d'incrémentation.
+- Afficher `counterCurrent / counterMax` (utilisations consommées) à la place des utilisations restantes.
+
+**Tests** :
+
+- Capacité avec `counterCurrent: 0`, `counterMax: 3` → affiche « 3 / 3 ».
+- Après une utilisation (`counterCurrent: 1`) → affiche « 2 / 3 ».
+- Capacité épuisée (`counterCurrent: 3`) → affiche « 0 / 3 » et bouton désactivé.
+
+**Références** :
+
+- `services/web/client/src/components/character/tabContents/shared/AbilitiesSection.tsx`
+- `services/web/client/messages/{fr|en|es}.json` (clés `characterDetail.battle.abilityCounterShort`, `abilityUseAria`)
+
+---
+
+## FR-028: Affichage de la version de l'application
+
+**Rule**: La version de l'application Chariot doit être affichée dans la section Préférences de la page Profil, à proximité du bouton d'ouverture des notes de version. Elle ne doit PAS apparaître dans la sidebar.
+
+**Requirements**:
+
+- Source : `process.env.NEXT_PUBLIC_APP_VERSION`
+- Affichage conditionnel : uniquement si la variable d'environnement est définie et non vide
+- Format : `Chariot v{version}`
+- Style : discret (texte petit, opacité réduite), cohérent avec les métadonnées secondaires existantes
+- Position : dans `ProfilePreferencesSection`, au sein du bloc notes de version
+
+**Prohibitions**:
+
+- Afficher la version dans la sidebar ou dans le layout global
+- Afficher la version si `NEXT_PUBLIC_APP_VERSION` n'est pas définie
+
+**Tests**:
+
+- `ProfilePreferencesSection` affiche "Chariot v{x}" quand `NEXT_PUBLIC_APP_VERSION` est défini
+- `ProfilePreferencesSection` n'affiche pas la version quand la variable est absente
+- `Sidebar/index.tsx` ne contient plus de référence à la version de l'application
+
+**References**:
+
+- `services/web/client/src/components/profile/ProfilePreferencesSection.tsx`
+- `services/web/client/src/components/layout/Sidebar/index.tsx`
+- `services/web/client/src/components/layout/Sidebar/__tests__/SidebarFooterVersion.test.ts`
+- `services/web/client/src/components/profile/__tests__/ProfilePreferencesSection.test.tsx`
+
+---
+
+## FR-039 : Saisie de portée double dans les actions de personnage
+
+**Règle** : Lorsqu'une action a une portée double (portée normale / portée longue), l'interface d'édition doit proposer deux champs numériques distincts. La valeur stockée reste un string canonique `"X/Y ft."`. La détection du mode double se fait automatiquement à partir de la valeur stockée.
+
+**Exigences** :
+
+- Format stocké canonique pour portée double : `"X/Y ft."` (ex. `"80/320 ft."`)
+- En édition, si la valeur stockée correspond à `"X/Y ft."`, deux inputs numériques sont affichés (portée normale | portée longue)
+- Un bouton toggle permet de basculer entre mode portée simple et mode portée double
+- Passage simple → double : la valeur simple devient la portée normale, portée longue initialisée vide
+- Passage double → simple : la portée normale seule est conservée, la portée longue est supprimée sans avertissement
+- La saisie respecte l'unité préférée de l'utilisateur (FR-037) : conversion m ↔ ft à la volée
+- Le label "/" entre les deux inputs indique visuellement la séparation normale/longue
+- Les inputs sont accessibles : `aria-label` distinct pour portée normale et portée longue
+- Valeur incomplète (portée longue vide) → stockée comme portée simple `"X ft."`
+- Les valeurs texte libres ("Touch", "Self") ne sont pas affectées (rétrocompatibilité)
+
+**Prohibitions** :
+
+- Modifier le format de stockage en base — le champ `range` reste un string
+- Supprimer la compatibilité avec les valeurs texte libres existantes
+
+**Tests** :
+
+- Nominal : saisie `24` / `96` (m) → stocké `"80/320 ft."`
+- Nominal : saisie `9` / vide (m) → stocké `"30 ft."` (portée simple)
+- Edge : valeur stockée `"60/120 ft."` → deux inputs pré-remplis `18` et `36` (m)
+- Edge : valeur stockée `"Touch"` → non affectée (mode actuel conservé)
+- Toggle double → simple : portée longue supprimée, portée normale conservée
+- `parseStoredFeetDualRange("80/320 ft.")` → `[80, 320]`
+- `parseStoredFeetDualRange("30 ft.")` → `null`
+- `formatStoredFeetDualRange(80, 320)` → `"80/320 ft."`
+- `isStoredFeetDualRange("80/320 ft.")` → `true`
+
+**References** :
+
+- `services/web/client/src/utils/unit.utils.ts`
+- `services/web/client/src/hooks/useStoredFeetDualRangeInput.ts`
+- `services/web/client/src/components/ui/stored-unit-feet-dual-range-input.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionUpdateSection.tsx`

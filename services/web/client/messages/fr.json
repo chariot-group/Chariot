@@ -46,6 +46,14 @@
     "editGroupDialogDescription": "Renommez votre groupe.",
     "groupUpdatedSuccess": "Groupe {name} mis à jour avec succès !",
     "groupUpdateFailed": "Échec de la mise à jour du groupe",
+    "groupArchivedSuccess": "Groupe archivé avec succès.",
+    "groupArchiveFailed": "Échec de l'archivage du groupe",
+    "groupUnarchivedSuccess": "Groupe restauré avec succès.",
+    "groupUnarchiveFailed": "Échec de la restauration du groupe",
+    "groupDeletedSuccess": "Groupe supprimé avec succès.",
+    "groupDeleteFailed": "Échec de la suppression du groupe",
+    "allArchivedGroupsDeletedSuccess": "Tous les groupes archivés ont été supprimés.",
+    "allArchivedGroupsDeleteFailed": "Échec de la suppression des groupes archivés",
     "editCampaignDialogTitle": "Modifier la campagne",
     "editCampaignDialogDescription": "Renommez votre campagne.",
     "campaignUpdatedSuccess": "Campagne {name} mise à jour avec succès !",
@@ -845,7 +853,7 @@
       "abilityCounterCurrent": "Utilisations actuelles",
       "abilityCounterShort": "{current} / {max}",
       "abilityUse": "Utiliser",
-      "abilityUseAria": "Utiliser {name}, {current} sur {max}",
+      "abilityUseAria": "Utiliser {name}, {current} utilisation(s) restante(s) sur {max}",
       "abilityUseLimitReached": "Plafond d'utilisations atteint",
       "abilityUseError": "Impossible d'enregistrer l'utilisation",
       "abilityRemove": "Supprimer cette capacité",
@@ -863,6 +871,10 @@
       "attackDC": "Attaque/DD :",
       "damageType": "Dégâts/Type :",
       "range": "Portée",
+      "rangeNormal": "Portée normale",
+      "rangeLong": "Portée longue",
+      "addLongRange": "Ajouter portée longue",
+      "removeLongRange": "Supprimer portée longue",
       "description": "Description :",
       "type": "Type",
       "usageType": "Type d'action",
@@ -1194,7 +1206,7 @@
         "classLevelExceeds": "Total supérieur au niveau global",
         "classLevelExceedsGlobal": "Total des niveaux de classe ({total}) dépasse le niveau global ({global})",
         "classLevelInfo": "Niveau de cette classe : {classLevel} | Total : {totalLevel}/{globalLevel}",
-        "addSecondClass": "Ajouter une seconde classe"
+        "addSecondClass": "Ajouter une multiclasse"
       }
     },
     "npc": {

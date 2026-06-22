@@ -192,7 +192,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
 
   if (!battleStarted || sortedRows.length === 0) {
     return footerActions ? (
-      <div className="shrink-0 border-t border-white/10 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:px-4">
+      <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
         <div className="flex w-full justify-end">{footerActions}</div>
       </div>
     ) : null;

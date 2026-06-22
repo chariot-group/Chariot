@@ -213,37 +213,43 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
       {/* Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
         {/* Actions Standards */}
-        <ActionUpdateSection
-          title={t("actions")}
-          form={form}
-          fieldArrayName="actions.standard"
-          fields={standardActionsFields}
-          append={appendStandardAction}
-          remove={removeStandardAction}
-          accentColor={accentColor}
-        />
+        <div className="min-w-0">
+          <ActionUpdateSection
+            title={t("actions")}
+            form={form}
+            fieldArrayName="actions.standard"
+            fields={standardActionsFields}
+            append={appendStandardAction}
+            remove={removeStandardAction}
+            accentColor={accentColor}
+          />
+        </div>
 
         {/* Actions Légendaires */}
-        <ActionUpdateSection
-          title={t("legendaryActions")}
-          form={form}
-          fieldArrayName="actions.legendary"
-          fields={legendaryActionsFields}
-          append={appendLegendaryAction}
-          remove={removeLegendaryAction}
-          accentColor={accentColor}
-        />
+        <div className="min-w-0">
+          <ActionUpdateSection
+            title={t("legendaryActions")}
+            form={form}
+            fieldArrayName="actions.legendary"
+            fields={legendaryActionsFields}
+            append={appendLegendaryAction}
+            remove={removeLegendaryAction}
+            accentColor={accentColor}
+          />
+        </div>
 
         {/* Actions de Repaire */}
-        <ActionUpdateSection
-          title={t("lairActions")}
-          form={form}
-          fieldArrayName="actions.lair"
-          fields={lairActionsFields}
-          append={appendLairAction}
-          remove={removeLairAction}
-          accentColor={accentColor}
-        />
+        <div className="min-w-0">
+          <ActionUpdateSection
+            title={t("lairActions")}
+            form={form}
+            fieldArrayName="actions.lair"
+            fields={lairActionsFields}
+            append={appendLairAction}
+            remove={removeLairAction}
+            accentColor={accentColor}
+          />
+        </div>
       </div>
     </div>
   );

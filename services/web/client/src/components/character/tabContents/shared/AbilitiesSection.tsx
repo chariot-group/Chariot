@@ -86,18 +86,20 @@ const AbilitiesSection = ({
 
   return (
     <Card
-      className={`gap-0.5 p-4 md:px-6 h-fit ${className}`}
+      className={`gap-0.5 p-4 md:px-6 h-fit min-w-0 w-full ${className}`}
       role="region"
       aria-labelledby={headingId}>
-      <div className="flex flex-row justify-between">
+      <div className="flex min-w-0 flex-row justify-between gap-2">
         <h2
           id={headingId}
-          className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+          className={`min-w-0 flex-1 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>
           {title}
         </h2>
         <div className="flex justify-end shrink-0">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => {
               if (!hasAbilities) return;
               if (openAccordionValues.length > 0) {
@@ -107,11 +109,21 @@ const AbilitiesSection = ({
               }
             }}
             disabled={!hasAbilities}
-            className={`text-sm pr-3 py-2 focus:outline-none ${hasAbilities ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
+            className={accentColor}
             aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             aria-expanded={openAccordionValues.length > 0}>
-            {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-          </button>
+            {openAccordionValues.length > 0 ? (
+              <ListChevronsDownUp
+                className="size-5"
+                aria-hidden="true"
+              />
+            ) : (
+              <ListChevronsUpDown
+                className="size-5"
+                aria-hidden="true"
+              />
+            )}
+          </Button>
         </div>
       </div>
       {showRestLegend && (
@@ -147,6 +159,7 @@ const AbilitiesSection = ({
           const current = ability.counterCurrent ?? 0;
           const hasCounter = ability.hasCounter === true;
           const max = ability.counterMax;
+          const remaining = typeof max === "number" ? max - current : 0;
           const atLimit = hasCounter && typeof max === "number" && current >= max;
           const canPressUse = hasCounter && typeof max === "number" && !atLimit;
           const useBusy = loadingIndex === index;
@@ -207,8 +220,8 @@ const AbilitiesSection = ({
                       {hasCounter && typeof max === "number" && (
                         <span
                           className="tabular-nums font-medium whitespace-nowrap"
-                          aria-label={t("abilityCounterShort", { current, max })}>
-                          {t("abilityCounterShort", { current, max })}
+                          aria-label={t("abilityCounterShort", { current: remaining, max })}>
+                          {t("abilityCounterShort", { current: remaining, max })}
                         </span>
                       )}
                     </span>
@@ -232,7 +245,7 @@ const AbilitiesSection = ({
                               size="sm"
                               className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                               disabled
-                              aria-label={`${t("abilityUseAria", { name: ability.name, current, max })}. ${t("abilityUseLimitReached")}`}>
+                              aria-label={`${t("abilityUseAria", { name: ability.name, current: remaining, max })}. ${t("abilityUseLimitReached")}`}>
                               {t("abilityUse")}
                             </Button>
                           </span>
@@ -247,7 +260,7 @@ const AbilitiesSection = ({
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                         disabled={!canPressUse || useBusy}
                         aria-busy={useBusy}
-                        aria-label={t("abilityUseAria", { name: ability.name, current, max })}
+                        aria-label={t("abilityUseAria", { name: ability.name, current: remaining, max })}
                         onClick={() => handleUse(index)}>
                         {useBusy ? (
                           <Loader2

@@ -210,14 +210,8 @@ export function AbilitySchema(zm: ZodMessages) {
                 })
                 .superRefine((a, ctx) => {
                     if (!a.hasCounter) return;
-                    if (a.counterMax === undefined) {
-                        ctx.addIssue({
-                            code: z.ZodIssueCode.custom,
-                            message: zm.required(),
-                            path: ['counterMax'],
-                        });
-                        return;
-                    }
+                    // Plafond vide en édition : pas de contrainte d'ordre (défaut appliqué à l'enregistrement).
+                    if (a.counterMax === undefined) return;
                     const current = a.counterCurrent ?? 0;
                     if (current > a.counterMax) {
                         ctx.addIssue({
@@ -291,8 +285,8 @@ export function SpellSchema(zm: ZodMessages) {
 }
 
 export const SpellSlotSchema = z.object({
-    total: numericInput(true),
-    used: numericInput(true),
+    total: z.preprocess(toOptionalInt, z.number().int().min(1).optional()),
+    used: z.preprocess(toOptionalInt, z.number().int().min(0).optional()),
 });
 
 export function SpellcastingSchema(zm: ZodMessages) {
