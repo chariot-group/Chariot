@@ -299,7 +299,7 @@ export interface CurrentSessionState {
     participantDisplayNames: Record<string, string>;
     /** FR-029 — IDs des personnages MJ temporairement promus dans le groupe participants session. */
     gmGuestCharacterIds: string[];
-    /** FR-027 — contrôle l'ouverture de la modale lobby session (non persisté). */
+    /** FR-042 — contrôle l'ouverture de la modale lobby session (non persisté). */
     sessionLobbyOpen: boolean;
 }
 
@@ -759,11 +759,11 @@ const sessionSlice = createSlice({
             if (!id) return;
             state.gmGuestCharacterIds = (state.gmGuestCharacterIds ?? []).filter((cid) => cid !== id);
         },
-        /** FR-027 — ouvre la modale lobby session. */
+        /** FR-042 — ouvre la modale lobby session. */
         openSessionLobby: (state) => {
             state.sessionLobbyOpen = true;
         },
-        /** FR-027 — ferme la modale lobby session. */
+        /** FR-042 — ferme la modale lobby session. */
         closeSessionLobby: (state) => {
             state.sessionLobbyOpen = false;
         },

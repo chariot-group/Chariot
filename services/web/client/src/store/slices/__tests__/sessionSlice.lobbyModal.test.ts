@@ -12,7 +12,7 @@ const baseState: CurrentSessionState = sessionReducer(undefined, { type: "@@init
 const makeRootState = (session: CurrentSessionState): RootState =>
     ({ session } as unknown as RootState);
 
-describe("FR-027 — session lobby modal", () => {
+describe("FR-042 — session lobby modal", () => {
     it("nominal: initialState has sessionLobbyOpen = false", () => {
         expect(baseState.sessionLobbyOpen).toBe(false);
     });

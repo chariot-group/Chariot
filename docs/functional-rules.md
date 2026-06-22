@@ -2772,7 +2772,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-028 : Duplication de personnage
+## FR-040 : Duplication de personnage
 
 **Règle** : Un utilisateur peut dupliquer un personnage (joueur ou PNJ) depuis le menu contextuel (clic droit bureau / bouton `…` mobile). La duplication ouvre une modale de confirmation avec un nom proposé et éditable, et deux variantes de création.
 
@@ -2810,7 +2810,7 @@ Each initiative tracker row carries:
 - Le champ de nom dans la modale est associé à un `<label>` visible.
 - Les deux boutons ont un accessible name distinct.
 - Focus visible sur tous les éléments interactifs de la modale.
-- Escape et Enter respectent les conventions de FR-027 (Confirmation dialogs).
+- Escape et Enter respectent les conventions de confirmation des modales (FR-033 Sidebar).
 
 **Interdictions** :
 
@@ -2841,9 +2841,9 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-029 : Duplication de groupe
+## FR-041 : Duplication de groupe
 
-**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-028 côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
+**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-040 côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
 
 **Périmètre** :
 - Groupes actifs uniquement (`GroupList`, section non-archivée). L'action de duplication n'apparaît pas en section archivée.
@@ -2865,7 +2865,7 @@ Each initiative tracker row carries:
 
 **Logique de duplication (côté frontend)** :
 - Aucun nouvel endpoint backend requis.
-- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-028).
+- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-040).
 - Créer le groupe via `GroupService.createGroup(campaignId, { label })`.
 - Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
 - Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
@@ -2875,7 +2875,7 @@ Each initiative tracker row carries:
 - Champ label associé à un `<label>` visible, autofocusé à l'ouverture.
 - Boutons avec accessible names distincts.
 - Focus visible sur tous les éléments interactifs.
-- Escape et Enter respectent les conventions de FR-027.
+- Escape et Enter respectent les conventions de confirmation des modales (FR-033 Sidebar).
 
 **Interdictions** :
 - Afficher l'action « Dupliquer » sur les groupes archivés.
@@ -2901,9 +2901,10 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/GroupService.ts`
 - `services/web/client/src/services/CharacterService.ts`
 - `services/web/client/src/store/slices/groupSlice.ts`
+
 ---
 
-## FR-027: Session Lobby as Modal Overlay
+## FR-042: Session Lobby as Modal Overlay
 
 **Règle** : Le lobby de session (participants, dépôt de tokens, lancement) DOIT être affiché dans une modale Dialog superposée à la page courante, et non dans une page dédiée.
 
@@ -2919,7 +2920,7 @@ Each initiative tracker row carries:
   - `JoinSessionDialog` (après join réussi)
   - `SessionCharacterSyncClient` (redirect vers lobby)
   - `SessionTimer` (le lien devient un bouton)
-- La route `/campaigns/[idCampaign]/session/[code]` est conservée comme fallback pour les accès directs par URL : la page dispatche `openSessionLobby` et redirige vers la page campaign parente.
+- La route `/campaigns/[idCampaign]/session/[code]` est conservée comme fallback pour les accès directs par URL : la page redirige vers `/{locale}/welcome?join={code}` (ouverture du flux de join via `SessionJoinParamListener`).
 - La modale est large (`max-w-5xl`) et scrollable en interne pour accommoder la liste de participants et le panneau de code session.
 - La fermeture via Échap ou clic hors de la modale dispatche `closeSessionLobby`.
 
@@ -2948,3 +2949,27 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/dialogs/JoinSessionDialog.tsx`
 - `services/web/client/src/components/SessionCharacterSyncClient.tsx`
 - `services/web/client/src/components/layout/SessionTimer.tsx`
+- `services/web/client/src/components/SessionJoinParamListener.tsx`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
+
+---
+
+## FR-043: QR Code de rejoindre une session
+
+**Règle** : Le lobby de session (modale FR-042) DOIT afficher, sous la card du code de session, une card contenant un QR code encodant l'URL de rejoindre la session. Tous les participants (MJ et joueurs) peuvent voir ce QR code.
+
+**Exigences** :
+
+- La card QR code est affichée sous la card du code de session, dans la colonne latérale (`aside`) de `SessionLobbyContent`.
+- Le QR code encode l'URL courante avec le paramètre `join` : `{window.location.href}?join={code}` (même format que le bouton « Copier le lien »).
+- Le QR code DOIT avoir un fond blanc et un contraste suffisant (couleur sombre) pour être lisible par les scanners mobiles.
+- La card DOIT inclure un label accessible (`aria-label`) décrivant le QR code.
+
+**Tests** :
+
+- Nominal : la card QR code est affichée dans le lobby session avec un QR code valide.
+- Edge : l'URL encodée contient bien le paramètre `join` avec le bon `code`.
+
+**Références** :
+
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
