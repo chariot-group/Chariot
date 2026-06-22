@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   feetToMeters, metersToFeet, convertRangeString, convertRangeStringBoth, displayDistanceFt,
-  feetToCm, cmToFeet, lbsToKg, kgToLbs,
+  feetToCm, cmToFeet, lbsToKg, kgToLbs, parseStoredFeetRange, storedFeetRangeToDisplayText,
 } from "../unit.utils";
 
 describe("feetToMeters", () => {
@@ -33,6 +33,10 @@ describe("metersToFeet", () => {
 
   it("converts 0m to 0ft", () => {
     expect(metersToFeet(0)).toBe(0);
+  });
+
+  it("preserves 23m through feet round-trip", () => {
+    expect(feetToMeters(metersToFeet(23))).toBe(23);
   });
 });
 
@@ -116,5 +120,24 @@ describe("lbsToKg / kgToLbs", () => {
 
   it("converts 68kg back to ~150lbs", () => {
     expect(kgToLbs(68)).toBeCloseTo(150, 0);
+  });
+
+  it("preserves 25kg through lbs round-trip", () => {
+    expect(lbsToKg(kgToLbs(25))).toBe(25);
+  });
+});
+
+describe("parseStoredFeetRange / storedFeetRangeToDisplayText", () => {
+  it("parses canonical feet range strings", () => {
+    expect(parseStoredFeetRange("30 ft.")).toBe(30);
+    expect(parseStoredFeetRange("60 ft")).toBe(60);
+  });
+
+  it("returns null for free-text ranges", () => {
+    expect(parseStoredFeetRange("Self")).toBeNull();
+  });
+
+  it("converts stored feet range to metric display text", () => {
+    expect(storedFeetRangeToDisplayText("30 ft.", (ft) => displayDistanceFt(ft, "metric"))).toBe("9");
   });
 });

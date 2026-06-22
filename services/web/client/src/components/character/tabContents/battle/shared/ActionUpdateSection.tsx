@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StoredUnitFeetRangeInput } from "@/components/ui/stored-unit-feet-range-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Controller,
@@ -26,7 +27,6 @@ import {
   getProficiencyBonusFromChallengeRating,
 } from "@/utils/attack.utils";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
-import { metersToFeet, feetToMeters } from "@/utils/unit.utils";
 
 interface ActionUpdateSectionProps {
   title: string;
@@ -74,7 +74,7 @@ const ActionUpdateSection = ({
   const tEdit = useTranslations("characterDetail.edit");
   const tCommon = useTranslations("common");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
-  const { isMetric, unitLabel } = useDistanceUnit();
+  const { displayFt, toFeet, unitLabel } = useDistanceUnit();
   const sectionId = useId();
   const headingId = `${sectionId}-heading`;
 
@@ -667,38 +667,19 @@ const ActionUpdateSection = ({
                       <Controller
                         name={`${fieldArrayName}.${index}.range`}
                         control={form.control}
-                        render={({ field: rangeField }) => {
-                          // Stored as "X ft." — parse the feet value for display
-                          const stored = rangeField.value ?? "";
-                          const ftMatch = stored.match(/^(\d+(?:\.\d+)?)\s*ft\.?$/i);
-                          const displayValue = ftMatch
-                            ? String(isMetric ? feetToMeters(parseFloat(ftMatch[1])) : parseFloat(ftMatch[1]))
-                            : stored;
-
-                          return (
-                            <div className="flex items-center gap-1 w-full sm:w-auto sm:max-w-48">
-                              <Input
-                                id={`${actionItemId}-range`}
-                                aria-labelledby={rangeLabelId}
-                                placeholder={t("range")}
-                                value={displayValue}
-                                onChange={(e) => {
-                                  const val = e.target.value.trim();
-                                  const num = parseFloat(val);
-                                  if (val !== "" && !isNaN(num)) {
-                                    const feet = isMetric ? metersToFeet(num) : num;
-                                    rangeField.onChange(`${feet} ft.`);
-                                  } else {
-                                    rangeField.onChange(val);
-                                  }
-                                }}
-                              />
-                              {ftMatch && (
-                                <span className="text-xs text-muted-foreground shrink-0">{unitLabel}</span>
-                              )}
-                            </div>
-                          );
-                        }}
+                        render={({ field: rangeField }) => (
+                          <StoredUnitFeetRangeInput
+                            id={`${actionItemId}-range`}
+                            aria-labelledby={rangeLabelId}
+                            placeholder={t("range")}
+                            storedValue={rangeField.value ?? ""}
+                            onStoredChange={rangeField.onChange}
+                            onBlur={rangeField.onBlur}
+                            toDisplay={displayFt}
+                            toStored={toFeet}
+                            unitLabel={unitLabel}
+                          />
+                        )}
                       />
                     </Card>
                     <Card className="flex flex-col gap-2 py-3 px-3 md:py-4 md:px-6 w-full">
