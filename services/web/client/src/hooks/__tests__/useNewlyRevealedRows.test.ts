@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { findNewIds, REVEAL_DURATION_MS } from "@/hooks/useNewlyRevealedRows";
 
-describe("FR-032 — findNewIds (useNewlyRevealedRows core logic)", () => {
+describe("FR-033 — findNewIds (useNewlyRevealedRows core logic)", () => {
   it("nominal: returns IDs present in current but not in prev", () => {
     const prev = new Set(["a", "b"]);
     expect(findNewIds(prev, ["a", "b", "c"])).toEqual(["c"]);
@@ -32,7 +32,7 @@ describe("FR-032 — findNewIds (useNewlyRevealedRows core logic)", () => {
     expect(findNewIds(prev, [])).toEqual([]);
   });
 
-  it("nominal: REVEAL_DURATION_MS is 3000 ms as specified by FR-032", () => {
+  it("nominal: REVEAL_DURATION_MS is 3000 ms as specified by FR-033", () => {
     expect(REVEAL_DURATION_MS).toBe(3000);
   });
 });

@@ -2307,7 +2307,7 @@ Each initiative tracker row carries:
 - `docs/design.md` — sections 8, 9
 ---
 
-## FR-030: Web Client Form Field Validation Visibility
+## FR-031: Web Client Form Field Validation Visibility
 
 **Rule**: Every web client form must expose validation errors at the field level, with precise user-facing messages and accessible links between invalid fields, their messages, and any parent tab or section that contains the error.
 
@@ -2353,7 +2353,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-031: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+## FR-032: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
 
 **Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
 
@@ -2394,7 +2394,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-032: Notification visuelle de révélation de combattant (vue joueur)
+## FR-033: Notification visuelle de révélation de combattant (vue joueur)
 
 **Rule**: Lorsqu'un combattant devient visible pour les joueurs (`visible: false → true`) pendant un combat actif, une animation de halo vert temporaire doit apparaître autour de ce combattant dans la vue joueur du tracker d'initiative ET dans la preview combat (CombatBanner).
 
@@ -2440,7 +2440,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-033: Découplage affichage HP / statut vital dans le tracker d'initiative
+## FR-034: Découplage affichage HP / statut vital dans le tracker d'initiative
 
 **Rule**: L'affichage de la valeur numérique des points de vie (HP) et l'affichage visuel du statut vital (couleur de fond, icônes Skull/HeartCrack) dans le tracker d'initiative doivent être contrôlables indépendamment via deux flags distincts dans `playerFieldVisibility`.
 
@@ -2500,7 +2500,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-034: Codex Spell Search — Level Filter
+## FR-035: Codex Spell Search — Level Filter
 
 **Rule**: The Codex spell search dialog (`CodexSpellSearchDialog`) MUST allow filtering search results by a single D&D 5e spell level (0–9). The filter MUST be applied server-side via the Codex `/spells` API `level` query parameter.
 
@@ -2543,7 +2543,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-035: Release Notes and New Version Detection
+## FR-036: Release Notes and New Version Detection
 
 **Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
 
@@ -2619,7 +2619,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-036: Unité de mesure préférée
+## FR-037: Unité de mesure préférée
 
 **Rule**: Each user can choose a preferred measurement unit (`metric` or `imperial`) stored in their profile. The default value is `metric`.
 
@@ -2652,7 +2652,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-037: Conversion et affichage des unités de distance
+## FR-038: Conversion et affichage des unités de distance
 
 **Rule**: All distance values displayed in the application (speed, senses, action range, spell range) must respect the user's `preferredMeasurementUnit`. Values are always stored in **feet** in the database. Display and input use the unit chosen in the user's profile.
 
@@ -2697,7 +2697,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-033: Sidebar Context Actions and Touch Alternatives
+## FR-039: Sidebar Context Actions and Touch Alternatives
 
 **Rule**: Sidebar list items that support secondary actions (edit, delete, move, archive) MUST expose those actions via right-click context menu on desktop and via an equivalent touch-accessible interaction on tablet and mobile. Confirmation dialogs triggered from these actions MUST support keyboard validation and cancellation.
 
@@ -2772,7 +2772,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-028 : Duplication de personnage
+## FR-040 : Duplication de personnage
 
 **Règle** : Un utilisateur peut dupliquer un personnage (joueur ou PNJ) depuis le menu contextuel (clic droit bureau / bouton `…` mobile). La duplication ouvre une modale de confirmation avec un nom proposé et éditable, et deux variantes de création.
 
@@ -2810,7 +2810,7 @@ Each initiative tracker row carries:
 - Le champ de nom dans la modale est associé à un `<label>` visible.
 - Les deux boutons ont un accessible name distinct.
 - Focus visible sur tous les éléments interactifs de la modale.
-- Escape et Enter respectent les conventions de FR-027 (Confirmation dialogs).
+- Escape et Enter respectent les conventions de FR-039 (Confirmation dialogs).
 
 **Interdictions** :
 
@@ -2841,9 +2841,9 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-029 : Duplication de groupe
+## FR-041 : Duplication de groupe
 
-**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-028 côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
+**Règle** : Un utilisateur peut dupliquer un groupe depuis le menu contextuel (clic droit / bouton `…`). La duplication ouvre une modale permettant de saisir un label et un nombre de copies (1–99). Chaque copie est un nouveau groupe dont le label est le nom saisi (suffixé ` 2`, ` 3`… si plusieurs copies), et dont les membres sont re-créés par duplication individuelle (même logique que FR-040 côté frontend : `CharacterService.createCharacter` sans `_id/createdAt/updatedAt/deletedAt/groups/createdBy`).
 
 **Périmètre** :
 - Groupes actifs uniquement (`GroupList`, section non-archivée). L'action de duplication n'apparaît pas en section archivée.
@@ -2865,7 +2865,7 @@ Each initiative tracker row carries:
 
 **Logique de duplication (côté frontend)** :
 - Aucun nouvel endpoint backend requis.
-- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-028).
+- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-040).
 - Créer le groupe via `GroupService.createGroup(campaignId, { label })`.
 - Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
 - Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
@@ -2875,7 +2875,7 @@ Each initiative tracker row carries:
 - Champ label associé à un `<label>` visible, autofocusé à l'ouverture.
 - Boutons avec accessible names distincts.
 - Focus visible sur tous les éléments interactifs.
-- Escape et Enter respectent les conventions de FR-027.
+- Escape et Enter respectent les conventions de FR-039.
 
 **Interdictions** :
 - Afficher l'action « Dupliquer » sur les groupes archivés.
@@ -2904,7 +2904,37 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-027 : Liens rapides configurables dans la sidebar
+## FR-042 : Navigation interne locale-aware
+
+**Règle** : Toute navigation interne vers une page de l'application DOIT utiliser les utilitaires exportés par `@/i18n/navigation` (basés sur `createNavigation` de next-intl). L'usage de `window.location.href` pour la navigation interne est interdit.
+
+**Exigences** :
+
+- `useRouter`, `Link`, `usePathname` et `redirect` sont importés depuis `@/i18n/navigation`, jamais depuis `next/navigation` pour les navigations internes localisées.
+- Les services (classes non-React) qui déclenchent une navigation DOIVENT retourner les données nécessaires (ex. : `{ campaignId, code }`) et laisser le composant appelant effectuer le `router.push`.
+- Pour les liens externes (URL tiers) et les liens de protocole (`mailto:`, `tel:`), utiliser un élément `<a href>` natif rendu directement dans le JSX — jamais `window.location.href`.
+
+**Interdictions** :
+
+- `window.location.href = '/...'` pour toute navigation interne.
+- Importer `useRouter` ou `Link` depuis `next/navigation` pour des routes localisées.
+- Laisser la logique de navigation dans un service ou une classe utilitaire.
+
+**Tests** :
+
+- Nominal : la navigation vers une page localisée préfixe correctement la locale dans l'URL.
+- Edge : un changement de locale préserve le chemin de la page courante.
+- Failure : l'absence de locale dans le path ne provoque pas de redirection 404.
+
+**Références** :
+- `services/web/client/src/i18n/navigation.ts`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/services/SessionService.ts`
+- `services/web/client/src/components/profile/ProfileGdprActions.tsx`
+
+---
+
+## FR-043 : Liens rapides configurables dans la sidebar
 
 **Règle** : Le MJ et le joueur peuvent ajouter, consulter et supprimer des liens externes (liens rapides) dans leur sidebar respective. Chaque lien est rattaché soit à une campagne (visible dans l'espace MJ sous la campagne concernée), soit à aucune campagne (visible dans l'espace joueur). Les liens sont persistés côté backend et isolés par utilisateur.
 
@@ -2971,15 +3001,15 @@ Each initiative tracker row carries:
 - **Failure** : erreur réseau à la création → toast erreur, dialog reste ouvert
 
 **Références** :
-- `services/adventure/api/src/resources/quick-link/` (à créer)
-- `services/web/client/src/services/QuickLinkService.ts` (à créer)
-- `services/web/client/src/hooks/useQuickLinks.ts` (à créer)
-- `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx` (à créer)
-- `services/web/client/src/components/dialogs/AddQuickLinkDialog.tsx` (à créer)
+- `services/adventure/api/src/resources/quick-link/`
+- `services/web/client/src/services/QuickLinkService.ts`
+- `services/web/client/src/hooks/useQuickLinks.ts`
+- `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx`
+- `services/web/client/src/components/dialogs/AddQuickLinkDialog.tsx`
 
 ---
 
-## FR-027-B : Collapse/expand de la section Liens rapides
+## FR-044 : Collapse/expand de la section Liens rapides
 
 **Règle** : La section "Liens rapides" dans la sidebar dispose d'un bouton toggle permettant de replier ou déplier la liste des liens.
 
@@ -3014,7 +3044,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-027-C : Hauteur maximale de la section Liens rapides
+## FR-045 : Hauteur maximale de la section Liens rapides
 
 **Règle** : La liste des liens rapides est contrainte en hauteur pour ne jamais déformer ou agrandir la sidebar, quel que soit le nombre de liens ajoutés.
 
@@ -3040,7 +3070,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-038 : QR Code de rejoindre une session
+## FR-046 : QR Code de rejoindre une session
 
 **Règle** : La page session DOIT afficher, sous la card du code de session, une card contenant un QR code encodant l'URL de la session. Tous les participants (MJ et joueurs) peuvent voir ce QR code.
 

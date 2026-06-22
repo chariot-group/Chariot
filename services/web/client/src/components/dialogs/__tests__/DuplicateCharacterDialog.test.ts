@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildDuplicateName } from "@/components/dialogs/DuplicateCharacterDialog";
 
-describe("FR-028 — DuplicateCharacterDialog — buildDuplicateName", () => {
+describe("FR-040 — DuplicateCharacterDialog — buildDuplicateName", () => {
   it("nominal: appends '2' after first and last name", () => {
     expect(buildDuplicateName({ firstname: "Aragorn", lastname: "Telcontar" })).toBe("Aragorn Telcontar 2");
   });
@@ -31,7 +31,7 @@ describe("FR-028 — DuplicateCharacterDialog — buildDuplicateName", () => {
   });
 });
 
-describe("FR-028 — multi-copy naming", () => {
+describe("FR-040 — multi-copy naming", () => {
   const copyName = (base: string, i: number) => (i === 0 ? base : `${base} ${i + 1}`);
 
   it("nominal: first copy keeps name as-is", () => {

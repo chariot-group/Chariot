@@ -25,7 +25,7 @@ const buildCharacter = (overrides: Partial<Character> & { _id: string }): Charac
     ...overrides,
   }) as Character;
 
-describe("FR-028 — characterSlice — duplication optimistic update", () => {
+describe("FR-040 — characterSlice — duplication optimistic update", () => {
   it("nominal: upsertCharacterWithoutGroup prepends a new character to an existing list", () => {
     const page1 = buildCharacter({ _id: "c1", firstname: "Existing" });
     let state = characterReducer(
