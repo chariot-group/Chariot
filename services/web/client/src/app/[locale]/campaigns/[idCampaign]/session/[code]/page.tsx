@@ -376,13 +376,14 @@ export default function SessionPage() {
               className="flex flex-col items-center gap-4 p-4 sm:p-6"
               aria-label={t("sessionCode.qrCodeAriaLabel")}>
               <h2 className="text-base sm:text-lg font-bold self-start">{t("sessionCode.qrCodeHeading")}</h2>
-              <QRCodeSVG
-                value={typeof window !== "undefined" ? `${window.location.origin}/campaigns/${idCampaign}/session/${code}` : `/campaigns/${idCampaign}/session/${code}`}
-                size={160}
-                bgColor="#ffffff"
-                fgColor="#19191c"
-                className="rounded-none"
-              />
+              <div className="bg-white p-3 rounded-[15px]">
+                <QRCodeSVG
+                  value={typeof window !== "undefined" ? `${window.location.origin}/campaigns/${idCampaign}/session/${code}` : `/campaigns/${idCampaign}/session/${code}`}
+                  size={160}
+                  bgColor="#ffffff"
+                  fgColor="#19191c"
+                />
+              </div>
             </Card>
           </aside>
         </div>
