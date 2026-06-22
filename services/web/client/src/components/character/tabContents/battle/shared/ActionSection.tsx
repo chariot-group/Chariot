@@ -100,7 +100,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
           </Button>
         </div>
         <div
-          className="flex flex-row flex-wrap items-center gap-1"
+          className="flex flex-row flex-nowrap items-center gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           role="group"
           aria-label={t("usageTypePriorityGroup", { section: title })}>
           {ACTION_USAGE_OPTIONS.map((option) => {
@@ -113,7 +113,7 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
               <Button
                 type="button"
                 size="sm"
-                className={`h-7 px-2 text-xs ${!isAvailable ? "opacity-45 grayscale cursor-default!" : ""}`}
+                className={`h-7 shrink-0 px-2 text-xs ${!isAvailable ? "opacity-45 grayscale cursor-default!" : ""}`}
                 variant={isSelected ? "default" : "outline"}
                 aria-disabled={!isAvailable}
                 aria-pressed={isSelected}

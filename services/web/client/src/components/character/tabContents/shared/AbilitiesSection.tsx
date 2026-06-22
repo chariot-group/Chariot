@@ -96,8 +96,10 @@ const AbilitiesSection = ({
           {title}
         </h2>
         <div className="flex justify-end shrink-0">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => {
               if (!hasAbilities) return;
               if (openAccordionValues.length > 0) {
@@ -107,11 +109,21 @@ const AbilitiesSection = ({
               }
             }}
             disabled={!hasAbilities}
-            className={`text-sm pr-3 py-2 focus:outline-none ${hasAbilities ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
+            className={accentColor}
             aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             aria-expanded={openAccordionValues.length > 0}>
-            {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-          </button>
+            {openAccordionValues.length > 0 ? (
+              <ListChevronsDownUp
+                className="size-5"
+                aria-hidden="true"
+              />
+            ) : (
+              <ListChevronsUpDown
+                className="size-5"
+                aria-hidden="true"
+              />
+            )}
+          </Button>
         </div>
       </div>
       {showRestLegend && (

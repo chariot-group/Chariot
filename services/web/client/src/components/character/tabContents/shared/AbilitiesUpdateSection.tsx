@@ -58,9 +58,9 @@ const AbilitiesUpdateSection = ({
       className="gap-3 p-4 md:px-6 h-fit min-w-0 w-full"
       role="region"
       aria-label={title}>
-      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className={`min-w-0 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>{title}</h2>
-        <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
+      <div className="flex min-w-0 flex-row items-center justify-between gap-2">
+        <h2 className={`min-w-0 flex-1 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>{title}</h2>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <Button
             type="button"
             variant="ghost"
@@ -81,8 +81,10 @@ const AbilitiesUpdateSection = ({
             <Plus className="size-4" />
             <span className="hidden xl:inline">{tEdit("add")}</span>
           </Button>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => {
               if (!hasAbilities) return;
               if (openAccordionValues.length > 0) {
@@ -92,11 +94,21 @@ const AbilitiesUpdateSection = ({
               }
             }}
             disabled={!hasAbilities}
-            className={`text-sm p-2 focus:outline-none ${hasAbilities ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
+            className={accentColor}
             aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             aria-expanded={openAccordionValues.length > 0}>
-            {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-          </button>
+            {openAccordionValues.length > 0 ? (
+              <ListChevronsDownUp
+                className="size-5"
+                aria-hidden="true"
+              />
+            ) : (
+              <ListChevronsUpDown
+                className="size-5"
+                aria-hidden="true"
+              />
+            )}
+          </Button>
         </div>
       </div>
       {fields.length > 0 && (

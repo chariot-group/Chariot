@@ -386,7 +386,7 @@ export default function CharacterDetailView({
           {/* Contenu des onglets - scrollable (min-h-0 pour que les enfants h-full / flex-1 se calent sur la hauteur utile) */}
           <div
             id="characterScrollView"
-            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
             <CharacterTabPanels
               character={character}
               form={form}
@@ -399,7 +399,7 @@ export default function CharacterDetailView({
         {isInSession ? (
           <CombatBanner characterId={character._id} footerActions={characterFooterActions} />
         ) : characterFooterActions ? (
-          <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] border-t border-transparent">
+          <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
             <div className="flex w-full justify-end">{characterFooterActions}</div>
           </div>
         ) : null}
