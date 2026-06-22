@@ -1198,7 +1198,7 @@
         "classLevelExceeds": "Total exceeds global level",
         "classLevelExceedsGlobal": "Total class levels ({total}) exceeds global level ({global})",
         "classLevelInfo": "This class level: {classLevel} | Total: {totalLevel}/{globalLevel}",
-        "addSecondClass": "Add a second class"
+        "addSecondClass": "Add multiclass"
       }
     },
     "npc": {

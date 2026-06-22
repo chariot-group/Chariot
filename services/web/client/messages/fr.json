@@ -1202,7 +1202,7 @@
         "classLevelExceeds": "Total supérieur au niveau global",
         "classLevelExceedsGlobal": "Total des niveaux de classe ({total}) dépasse le niveau global ({global})",
         "classLevelInfo": "Niveau de cette classe : {classLevel} | Total : {totalLevel}/{globalLevel}",
-        "addSecondClass": "Ajouter une seconde classe"
+        "addSecondClass": "Ajouter une multiclasse"
       }
     },
     "npc": {
