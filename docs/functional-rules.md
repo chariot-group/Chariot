@@ -2976,3 +2976,63 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useQuickLinks.ts` (à créer)
 - `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx` (à créer)
 - `services/web/client/src/components/dialogs/AddQuickLinkDialog.tsx` (à créer)
+---
+
+## FR-027-B : Collapse/expand de la section Liens rapides
+
+**Règle** : La section "Liens rapides" dans la sidebar dispose d'un bouton toggle permettant de replier ou déplier la liste des liens.
+
+### Comportement
+
+- Le toggle est intégré à l'en-tête de section (clic sur le titre ou sur un chevron adjacent).
+- Quand la section est **repliée**, seul l'en-tête reste visible (titre, icône, chevron). La liste des liens est masquée. Le bouton "+" d'ajout reste accessible.
+- Quand la section est **dépliée** (état par défaut), la liste complète des liens est affichée.
+- L'état collapsed/expanded est persisté en `localStorage` avec une clé distinguant le contexte (`gm` vs `player`) : `quicklinks-collapsed:gm` / `quicklinks-collapsed:player`.
+- L'état persist aux rechargements de page.
+
+### Accessibilité
+
+- Le bouton toggle possède un `aria-label` dynamique : "Replier les liens rapides" (quand déplié) / "Déplier les liens rapides" (quand replié).
+- Le chevron est animé (rotation 180°) pour indiquer visuellement l'état.
+- La liste utilise `aria-hidden` ou est retirée du DOM quand repliée (pour éviter la navigation au clavier sur des éléments non visibles).
+
+### Interdictions
+
+- Masquer le bouton "+" en état replié.
+- Oublier de persister l'état entre les rechargements.
+
+### Tests
+
+- **Nominal** : cliquer sur le toggle replie la section → la liste est masquée, le chevron pivote.
+- **Nominal** : cliquer à nouveau déplie la section → la liste réapparaît.
+- **Edge** : l'état replié survit à un rechargement de page (localStorage).
+- **Edge** : en état replié, le bouton "+" reste cliquable et ouvre le dialog d'ajout.
+
+**Références** :
+- `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx`
+
+---
+
+## FR-027-C : Hauteur maximale de la section Liens rapides
+
+**Règle** : La liste des liens rapides est contrainte en hauteur pour ne jamais déformer ou agrandir la sidebar, quel que soit le nombre de liens ajoutés.
+
+### Comportement
+
+- La liste (`<ul>`) est limitée à une hauteur maximale équivalente à environ 5 liens visibles.
+- Si le nombre de liens dépasse cette limite, un défilement interne (`overflow-y: auto`) s'active sur la liste uniquement.
+- La sidebar elle-même ne scroll jamais à cause des liens rapides.
+- La section en-tête (titre + chevron + bouton +) reste toujours visible au-dessus de la liste scrollable.
+
+### Interdictions
+
+- Laisser la liste s'étendre sans limite et pousser le footer ou le contenu de la sidebar.
+- Appliquer le scroll sur la sidebar entière plutôt que sur la liste seule.
+
+### Tests
+
+- **Nominal** : avec ≤ 5 liens, pas de scrollbar visible.
+- **Edge** : avec > 5 liens, la liste affiche une scrollbar interne et la sidebar garde sa hauteur.
+
+**Références** :
+- `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx`

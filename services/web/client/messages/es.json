@@ -144,7 +144,9 @@
       "editLinkTitle": "Editar enlace rápido",
       "editLinkDescription": "Actualiza el icono, el título o la URL.",
       "editLinkSave": "Guardar cambios",
-      "editError": "Error al modificar el enlace."
+      "editError": "Error al modificar el enlace.",
+      "collapseAriaLabel": "Contraer los enlaces rápidos",
+      "expandAriaLabel": "Expandir los enlaces rápidos"
     }
   },
   "initTracker": {

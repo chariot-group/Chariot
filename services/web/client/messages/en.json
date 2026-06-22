@@ -144,7 +144,9 @@
       "editLinkTitle": "Edit quick link",
       "editLinkDescription": "Update the icon, title or URL.",
       "editLinkSave": "Save changes",
-      "editError": "Failed to update the link."
+      "editError": "Failed to update the link.",
+      "collapseAriaLabel": "Collapse quick links",
+      "expandAriaLabel": "Expand quick links"
     }
   },
   "initTracker": {

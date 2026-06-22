@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Link as LinkIcon, Plus } from "lucide-react";
+import { ChevronDown, ExternalLink, Link as LinkIcon, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQuickLinks } from "@/hooks/useQuickLinks";
 import { AddQuickLinkDialog } from "@/components/dialogs/AddQuickLinkDialog";
@@ -8,7 +8,7 @@ import { getIconByName } from "@/lib/quickLinkIcons";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { showToast } from "@/lib/toast";
 import type { QuickLink } from "@/types/quickLink";
@@ -18,12 +18,28 @@ interface QuickLinksListProps {
   disabled?: boolean;
 }
 
+function getCollapseStorageKey(campaignId?: string | null) {
+  return campaignId ? "quicklinks-collapsed:gm" : "quicklinks-collapsed:player";
+}
+
 export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListProps) {
   const t = useTranslations("sidebar.quickLinks");
   const { links, addLink, updateLink, removeLink } = useQuickLinks(campaignId);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingLink, setEditingLink] = useState<QuickLink | null>(null);
+
+  const storageKey = getCollapseStorageKey(campaignId);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(storageKey) === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, String(collapsed));
+  }, [collapsed, storageKey]);
+
+  const toggleCollapsed = () => setCollapsed((prev) => !prev);
 
   const handleDelete = async () => {
     if (!pendingDeleteId || isDeleting) return;
@@ -71,13 +87,24 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
   return (
     <div className="flex flex-col gap-1.5 shrink-0">
       <div className="flex items-center justify-between px-1">
-        <span className="flex items-center gap-1.5 text-xs font-medium text-white/50">
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? t("expandAriaLabel") : t("collapseAriaLabel")}
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5 text-xs font-medium text-white/50 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50 rounded">
           <LinkIcon
-            className="h-3 w-3"
+            className="h-3 w-3 shrink-0"
             aria-hidden="true"
           />
-          {t("title")}
-        </span>
+          <span className="min-w-0 truncate">{t("title")}</span>
+          <ChevronDown
+            className={cn(
+              "h-3 w-3 shrink-0 transition-transform duration-200",
+              collapsed && "-rotate-90",
+            )}
+            aria-hidden="true"
+          />
+        </button>
 
         {!disabled && (
           <AddQuickLinkDialog
@@ -86,7 +113,7 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
             <button
               type="button"
               aria-label={t("addLinkAriaLabel")}
-              className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-white/20 text-white/40 transition-all hover:border-white/50 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
+              className="ml-1 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/20 text-white/40 transition-all hover:border-white/50 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
               <Plus
                 className="h-3 w-3"
                 aria-hidden="true"
@@ -96,9 +123,10 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
         )}
       </div>
 
-      {links.length > 0 && (
+      {!collapsed && links.length > 0 && (
         <ul
-          className="flex flex-col gap-1"
+          className="flex flex-col gap-1 overflow-y-auto"
+          style={{ maxHeight: "calc(5 * (1.75rem + 0.25rem))" }}
           role="list"
           aria-label={t("title")}>
           {links.map((link) => {
