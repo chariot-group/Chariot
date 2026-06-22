@@ -318,21 +318,22 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
           {/* Session code section */}
           <aside
             aria-labelledby="session-lobby-code-heading"
-            className="shrink-0 lg:col-span-1 flex flex-row lg:flex-col gap-4 lg:items-start">
-            <Card className="flex flex-col gap-0 p-4 sm:p-6 flex-1 lg:flex-none lg:w-full">
+            className="shrink-0 lg:col-span-1 flex flex-row lg:flex-col gap-3 lg:items-start">
+            <Card className="flex flex-col gap-0 p-3 sm:p-4 flex-1 lg:flex-none lg:w-full">
               <h2
                 id="session-lobby-code-heading"
-                className="text-base sm:text-lg font-bold mb-4">
+                className="text-sm sm:text-base font-bold mb-2">
                 {t("sessionCode.heading")}
               </h2>
               <p
-                className="w-full text-2xl font-mono tracking-widest text-center py-2"
+                className="w-full text-xl sm:text-2xl font-mono tracking-widest text-center py-1"
                 aria-label={t("sessionCode.ariaLabel", { code })}>
                 {code.split("").slice(0, 3).join("")} - {code.split("").slice(3).join("")}
               </p>
               <div className="flex gap-2 items-center mt-2">
                 <Button
                   variant="outline"
+                  size="sm"
                   className={`flex-1 transition-colors ${
                     codeCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
                   }`}
@@ -347,6 +348,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
+                      size="sm"
                       aria-label={t("sessionCode.copyLinkAriaLabel")}
                       className={`shrink-0 transition-colors ${
                         linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
@@ -367,16 +369,18 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               </div>
             </Card>
             <Card
-              className="flex flex-col items-center gap-4 p-4 sm:p-6 flex-1 lg:flex-none"
+              className="flex flex-col items-center gap-2 p-3 sm:p-4 flex-1 lg:flex-none lg:w-full"
               aria-label={t("sessionCode.qrCodeAriaLabel")}>
-              <h2 className="text-base sm:text-lg font-bold self-start">{t("sessionCode.qrCodeHeading")}</h2>
-              <QRCodeSVG
-                value={typeof window !== "undefined" ? (() => { const url = new URL(window.location.href); url.searchParams.set("join", code); return url.toString(); })() : `?join=${code}`}
-                size={160}
-                bgColor="#ffffff"
-                fgColor="#19191c"
-                className="rounded-none"
-              />
+              <h2 className="text-sm sm:text-base font-bold self-start hidden lg:block">{t("sessionCode.qrCodeHeading")}</h2>
+              <div className="bg-white rounded p-2 border border-border">
+                <QRCodeSVG
+                  value={typeof window !== "undefined" ? (() => { const url = new URL(window.location.href); url.searchParams.set("join", code); return url.toString(); })() : `?join=${code}`}
+                  size={120}
+                  bgColor="#ffffff"
+                  fgColor="#19191c"
+                  className="block w-[80px] h-[80px] lg:w-[120px] lg:h-[120px]"
+                />
+              </div>
             </Card>
           </aside>
         </div>
