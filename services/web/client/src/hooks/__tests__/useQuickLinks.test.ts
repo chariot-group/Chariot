@@ -3,11 +3,11 @@ import { QUICK_LINK_ICONS, getIconByName } from "@/lib/quickLinkIcons";
 import { Link } from "lucide-react";
 
 /**
- * Tests unitaires pour les utilitaires des liens rapides (FR-044).
+ * Tests unitaires pour les utilitaires des liens rapides (FR-045).
  * Les tests d'intégration du hook useQuickLinks nécessitent @testing-library/react
  * et sont couverts par la validation manuelle.
  */
-describe("FR-044 — quickLinkIcons utilities", () => {
+describe("FR-045 — quickLinkIcons utilities", () => {
   // ── nominal ─────────────────────────────────────────────────────────────────
 
   it("nominal: QUICK_LINK_ICONS contient des entrées avec name et label", () => {
@@ -61,7 +61,7 @@ describe("FR-044 — quickLinkIcons utilities", () => {
 
 // ── UpdateQuickLinkDto shape ─────────────────────────────────────────────────
 
-describe("FR-044 — UpdateQuickLinkDto", () => {
+describe("FR-045 — UpdateQuickLinkDto", () => {
   it("nominal: tous les champs sont optionnels (patch partiel)", () => {
     type UpdateQuickLinkDto = { icon?: string; url?: string; label?: string };
     const dto: UpdateQuickLinkDto = { label: "Nouveau titre" };

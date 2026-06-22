@@ -25,14 +25,13 @@ import userService from "@/services/UserService";
 import { Download, ExternalLink, FileText, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useLocale } from "next-intl";
 import { useState } from "react";
 
 export default function ProfileGdprActions() {
   const t = useTranslations("ProfilePage.gdpr");
   const toast = useToast();
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "fr";
+  const locale = useLocale();
   const { user } = useUser({ autoFetch: false });
   const [isExporting, setIsExporting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -59,14 +58,20 @@ export default function ProfileGdprActions() {
     }
   };
 
+  const openMailto = (href: string) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.click();
+  };
+
   const handleDataRequest = () => {
     if (!user) return;
-    window.location.href = buildDataRequestMailto(user, locale);
+    openMailto(buildDataRequestMailto(user, locale));
   };
 
   const handleDeleteRequest = () => {
     if (!user) return;
-    window.location.href = buildDeleteAccountMailto(user, locale);
+    openMailto(buildDeleteAccountMailto(user, locale));
     setDeleteDialogOpen(false);
   };
 

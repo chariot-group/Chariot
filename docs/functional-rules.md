@@ -2307,7 +2307,7 @@ Each initiative tracker row carries:
 - `docs/design.md` — sections 8, 9
 ---
 
-## FR-030: Web Client Form Field Validation Visibility
+## FR-031: Web Client Form Field Validation Visibility
 
 **Rule**: Every web client form must expose validation errors at the field level, with precise user-facing messages and accessible links between invalid fields, their messages, and any parent tab or section that contains the error.
 
@@ -2353,7 +2353,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-031: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+## FR-032: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
 
 **Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
 
@@ -2394,7 +2394,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-032: Notification visuelle de révélation de combattant (vue joueur)
+## FR-033: Notification visuelle de révélation de combattant (vue joueur)
 
 **Rule**: Lorsqu'un combattant devient visible pour les joueurs (`visible: false → true`) pendant un combat actif, une animation de halo vert temporaire doit apparaître autour de ce combattant dans la vue joueur du tracker d'initiative ET dans la preview combat (CombatBanner).
 
@@ -2440,7 +2440,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-033: Découplage affichage HP / statut vital dans le tracker d'initiative
+## FR-034: Découplage affichage HP / statut vital dans le tracker d'initiative
 
 **Rule**: L'affichage de la valeur numérique des points de vie (HP) et l'affichage visuel du statut vital (couleur de fond, icônes Skull/HeartCrack) dans le tracker d'initiative doivent être contrôlables indépendamment via deux flags distincts dans `playerFieldVisibility`.
 
@@ -2500,7 +2500,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-034: Codex Spell Search — Level Filter
+## FR-035: Codex Spell Search — Level Filter
 
 **Rule**: The Codex spell search dialog (`CodexSpellSearchDialog`) MUST allow filtering search results by a single D&D 5e spell level (0–9). The filter MUST be applied server-side via the Codex `/spells` API `level` query parameter.
 
@@ -2543,7 +2543,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-035: Release Notes and New Version Detection
+## FR-036: Release Notes and New Version Detection
 
 **Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
 
@@ -2619,7 +2619,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-036: Unité de mesure préférée
+## FR-037: Unité de mesure préférée
 
 **Rule**: Each user can choose a preferred measurement unit (`metric` or `imperial`) stored in their profile. The default value is `metric`.
 
@@ -2652,7 +2652,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-037: Conversion et affichage des unités de distance
+## FR-038: Conversion et affichage des unités de distance
 
 **Rule**: All distance values displayed in the application (speed, senses, action range, spell range) must respect the user's `preferredMeasurementUnit`. Values are always stored in **feet** in the database. Display and input use the unit chosen in the user's profile.
 
@@ -2697,7 +2697,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-033: Sidebar Context Actions and Touch Alternatives
+## FR-039: Sidebar Context Actions and Touch Alternatives
 
 **Rule**: Sidebar list items that support secondary actions (edit, delete, move, archive) MUST expose those actions via right-click context menu on desktop and via an equivalent touch-accessible interaction on tablet and mobile. Confirmation dialogs triggered from these actions MUST support keyboard validation and cancellation.
 
@@ -2810,7 +2810,7 @@ Each initiative tracker row carries:
 - Le champ de nom dans la modale est associé à un `<label>` visible.
 - Les deux boutons ont un accessible name distinct.
 - Focus visible sur tous les éléments interactifs de la modale.
-- Escape et Enter respectent les conventions de confirmation des modales (FR-033 Sidebar).
+- Escape et Enter respectent les conventions de FR-039 (Confirmation dialogs).
 
 **Interdictions** :
 
@@ -2875,7 +2875,7 @@ Each initiative tracker row carries:
 - Champ label associé à un `<label>` visible, autofocusé à l'ouverture.
 - Boutons avec accessible names distincts.
 - Focus visible sur tous les éléments interactifs.
-- Escape et Enter respectent les conventions de confirmation des modales (FR-033 Sidebar).
+- Escape et Enter respectent les conventions de FR-039.
 
 **Interdictions** :
 - Afficher l'action « Dupliquer » sur les groupes archivés.
@@ -2976,7 +2976,39 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-044 : Liens rapides configurables dans la sidebar
+---
+
+## FR-044 : Navigation interne locale-aware
+
+**Règle** : Toute navigation interne vers une page de l'application DOIT utiliser les utilitaires exportés par `@/i18n/navigation` (basés sur `createNavigation` de next-intl). L'usage de `window.location.href` pour la navigation interne est interdit.
+
+**Exigences** :
+
+- `useRouter`, `Link`, `usePathname` et `redirect` sont importés depuis `@/i18n/navigation`, jamais depuis `next/navigation` pour les navigations internes localisées.
+- Les services (classes non-React) qui déclenchent une navigation DOIVENT retourner les données nécessaires (ex. : `{ campaignId, code }`) et laisser le composant appelant effectuer le `router.push` ou le dispatch Redux approprié (ex. : `openSessionLobby` pour le lobby session FR-042).
+- Pour les liens externes (URL tiers) et les liens de protocole (`mailto:`, `tel:`), utiliser un élément `<a href>` natif rendu directement dans le JSX — jamais `window.location.href`.
+
+**Interdictions** :
+
+- `window.location.href = '/...'` pour toute navigation interne.
+- Importer `useRouter` ou `Link` depuis `next/navigation` pour des routes localisées.
+- Laisser la logique de navigation dans un service ou une classe utilitaire.
+
+**Tests** :
+
+- Nominal : la navigation vers une page localisée préfixe correctement la locale dans l'URL.
+- Edge : un changement de locale préserve le chemin de la page courante.
+- Failure : l'absence de locale dans le path ne provoque pas de redirection 404.
+
+**Références** :
+- `services/web/client/src/i18n/navigation.ts`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/services/SessionService.ts`
+- `services/web/client/src/components/profile/ProfileGdprActions.tsx`
+
+---
+
+## FR-045 : Liens rapides configurables dans la sidebar
 
 **Règle** : Le MJ et le joueur peuvent ajouter, consulter et supprimer des liens externes (liens rapides) dans leur sidebar respective. Chaque lien est rattaché soit à une campagne (visible dans l'espace MJ sous la campagne concernée), soit à aucune campagne (visible dans l'espace joueur). Les liens sont persistés côté backend et isolés par utilisateur.
 
@@ -3051,7 +3083,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-045 : Collapse/expand de la section Liens rapides
+## FR-046 : Collapse/expand de la section Liens rapides
 
 **Règle** : La section "Liens rapides" dans la sidebar dispose d'un bouton toggle permettant de replier ou déplier la liste des liens.
 
@@ -3086,7 +3118,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-046 : Hauteur maximale de la section Liens rapides
+## FR-047 : Hauteur maximale de la section Liens rapides
 
 **Règle** : La liste des liens rapides est contrainte en hauteur pour ne jamais déformer ou agrandir la sidebar, quel que soit le nombre de liens ajoutés.
 

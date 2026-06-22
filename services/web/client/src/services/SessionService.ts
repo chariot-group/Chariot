@@ -34,7 +34,7 @@ export type SessionEntity = {
 };
 
 class SessionService {
-    async createSession(campaignId: string): Promise<{ code: string }> {
+    async createSession(campaignId: string): Promise<{ campaignId: string; code: string }> {
         const gatewayUrl = process.env.NEXT_PUBLIC_API_URL;
 
         if (!gatewayUrl) {
@@ -46,7 +46,7 @@ class SessionService {
             { campaignId },
         );
 
-        return { code: response.data.data.code };
+        return { campaignId, code: response.data.data.code };
     }
 
     async getSession(code: string): Promise<SessionEntity> {

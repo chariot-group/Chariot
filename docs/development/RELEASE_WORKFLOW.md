@@ -148,7 +148,7 @@ Edit CHANGELOG.md:
 
 Write the in-app release note in all supported locales (`fr`, `en`, `es`):
 - Create the versioned file in `services/web/client/src/data/release-notes/` (e.g., `v1.3.0.ts`)
-- Fill the `translations` record for each locale with a `title` and `highlights` written in plain user-facing language (see FR-035)
+- Fill the `translations` record for each locale with a `title` and `highlights` written in plain user-facing language (see FR-036)
 - Bump `CURRENT_APP_VERSION` in `src/data/release-notes/index.ts` to match the new version
 - All three locales MUST be present — do not ship with a missing translation
 
