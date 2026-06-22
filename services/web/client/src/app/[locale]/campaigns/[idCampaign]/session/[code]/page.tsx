@@ -14,6 +14,7 @@ import { selectCampaigns } from "@/store/slices/campaignSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import Token from "@public/assets/token.svg";
 import { Check, ChevronDown, Copy, Link, Loader2, Minus, Plus, Trash2 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
@@ -325,7 +326,7 @@ export default function SessionPage() {
           {/* Session code section */}
           <aside
             aria-labelledby="session-code-heading"
-            className="order-first xl:order-last xl:col-span-1">
+            className="order-first xl:order-last xl:col-span-1 flex flex-col sm:flex-row xl:flex-col gap-4">
             <Card className="flex flex-col gap-0 p-4 sm:p-6">
               <h2
                 id="session-code-heading"
@@ -369,6 +370,19 @@ export default function SessionPage() {
                     {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
                   </TooltipContent>
                 </Tooltip>
+              </div>
+            </Card>
+            <Card
+              className="flex flex-col items-center gap-4 p-4 sm:p-6"
+              aria-label={t("sessionCode.qrCodeAriaLabel")}>
+              <h2 className="text-base sm:text-lg font-bold self-start">{t("sessionCode.qrCodeHeading")}</h2>
+              <div className="bg-white p-3 rounded-[15px]">
+                <QRCodeSVG
+                  value={typeof window !== "undefined" ? `${window.location.origin}/campaigns/${idCampaign}/session/${code}` : `/campaigns/${idCampaign}/session/${code}`}
+                  size={160}
+                  bgColor="#ffffff"
+                  fgColor="#19191c"
+                />
               </div>
             </Card>
           </aside>
