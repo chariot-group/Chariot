@@ -6,8 +6,11 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/compone
 import SidebarEnvironment from "@/components/layout/Sidebar/SidebarEnvironment";
 import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
 import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
+import { QuickLinksList } from "@/components/layout/Sidebar/QuickLinksList";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import { selectSelectedCampaign } from "@/store/slices/campaignSlice";
 import React, { useState } from "react";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
@@ -19,8 +22,11 @@ export default function AppSidebar() {
 
   const isInSession = useAppSelector(selectIsInSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
-  const contextMode = useAppSelector((state) => state.environment.contextMode);
+  const contextMode = useAppSelector(selectContextMode);
+  const selectedCampaign = useAppSelector(selectSelectedCampaign);
   const isSessionLaunched = isInSession && sessionStatus === "launched";
+  const actionsDisabled = isSessionLaunched;
+  const quickLinksCampaignId = contextMode === "gm" ? (selectedCampaign?._id ?? null) : null;
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [headerTooltipVisible, setHeaderTooltipVisible] = useState(false);
   const t = useTranslations("sidebar");
@@ -74,6 +80,13 @@ export default function AppSidebar() {
           <span>{t("disabledInSession")}</span>
         </div>
       )}
+
+      <div className="px-3 pb-2 shrink-0">
+        <QuickLinksList
+          campaignId={quickLinksCampaignId}
+          disabled={actionsDisabled}
+        />
+      </div>
 
       <SidebarFooter className="bg-card sm:bg-transparent">
         <ActionButton />
