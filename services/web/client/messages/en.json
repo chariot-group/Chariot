@@ -852,7 +852,7 @@
       "abilityCounterCurrent": "Current uses",
       "abilityCounterShort": "{current} / {max}",
       "abilityUse": "Use",
-      "abilityUseAria": "Use {name}, {current} out of {max} uses",
+      "abilityUseAria": "Use {name}, {current} of {max} uses remaining",
       "abilityUseLimitReached": "Maximum uses reached",
       "abilityUseError": "Could not save use",
       "abilityRemove": "Remove this ability",

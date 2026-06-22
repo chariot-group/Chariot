@@ -3059,3 +3059,33 @@ Each initiative tracker row carries:
 **Références**:
 
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
+
+---
+
+## FR-028 : Affichage du compteur de capacités et traits
+
+**Règle** : Les capacités et traits dotés d'un compteur (`hasCounter: true`, `counterMax` défini) doivent afficher les **utilisations restantes** sous la forme `remaining / max`, où `remaining = counterMax - counterCurrent`. Ce nombre décrémente à chaque usage, alignant le comportement visuel sur les emplacements de sort.
+
+**Exigences** :
+
+- Le compteur affiché représente les **utilisations restantes** : `remaining = counterMax - counterCurrent`.
+- Format d'affichage : `{remaining} / {max}` (ex. « 3 / 5 » au lieu de « 2 / 5 » pour 2 utilisations consommées sur 5).
+- La valeur interne `counterCurrent` reste un compteur ascendant (0 → max) ; seul l'affichage est inversé.
+- Les libellés ARIA doivent également refléter le nombre d'utilisations restantes.
+- Le bouton « Utiliser » reste désactivé lorsque `remaining === 0` (comportement inchangé).
+
+**Interdictions** :
+
+- Modifier la structure de données (`counterCurrent`) ou la logique d'incrémentation.
+- Afficher `counterCurrent / counterMax` (utilisations consommées) à la place des utilisations restantes.
+
+**Tests** :
+
+- Capacité avec `counterCurrent: 0`, `counterMax: 3` → affiche « 3 / 3 ».
+- Après une utilisation (`counterCurrent: 1`) → affiche « 2 / 3 ».
+- Capacité épuisée (`counterCurrent: 3`) → affiche « 0 / 3 » et bouton désactivé.
+
+**Références** :
+
+- `services/web/client/src/components/character/tabContents/shared/AbilitiesSection.tsx`
+- `services/web/client/messages/{fr|en|es}.json` (clés `characterDetail.battle.abilityCounterShort`, `abilityUseAria`)

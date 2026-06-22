@@ -147,6 +147,7 @@ const AbilitiesSection = ({
           const current = ability.counterCurrent ?? 0;
           const hasCounter = ability.hasCounter === true;
           const max = ability.counterMax;
+          const remaining = typeof max === "number" ? max - current : 0;
           const atLimit = hasCounter && typeof max === "number" && current >= max;
           const canPressUse = hasCounter && typeof max === "number" && !atLimit;
           const useBusy = loadingIndex === index;
@@ -207,8 +208,8 @@ const AbilitiesSection = ({
                       {hasCounter && typeof max === "number" && (
                         <span
                           className="tabular-nums font-medium whitespace-nowrap"
-                          aria-label={t("abilityCounterShort", { current, max })}>
-                          {t("abilityCounterShort", { current, max })}
+                          aria-label={t("abilityCounterShort", { current: remaining, max })}>
+                          {t("abilityCounterShort", { current: remaining, max })}
                         </span>
                       )}
                     </span>
@@ -232,7 +233,7 @@ const AbilitiesSection = ({
                               size="sm"
                               className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                               disabled
-                              aria-label={`${t("abilityUseAria", { name: ability.name, current, max })}. ${t("abilityUseLimitReached")}`}>
+                              aria-label={`${t("abilityUseAria", { name: ability.name, current: remaining, max })}. ${t("abilityUseLimitReached")}`}>
                               {t("abilityUse")}
                             </Button>
                           </span>
@@ -247,7 +248,7 @@ const AbilitiesSection = ({
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                         disabled={!canPressUse || useBusy}
                         aria-busy={useBusy}
-                        aria-label={t("abilityUseAria", { name: ability.name, current, max })}
+                        aria-label={t("abilityUseAria", { name: ability.name, current: remaining, max })}
                         onClick={() => handleUse(index)}>
                         {useBusy ? (
                           <Loader2

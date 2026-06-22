@@ -853,7 +853,7 @@
       "abilityCounterCurrent": "Utilisations actuelles",
       "abilityCounterShort": "{current} / {max}",
       "abilityUse": "Utiliser",
-      "abilityUseAria": "Utiliser {name}, {current} sur {max}",
+      "abilityUseAria": "Utiliser {name}, {current} utilisation(s) restante(s) sur {max}",
       "abilityUseLimitReached": "Plafond d'utilisations atteint",
       "abilityUseError": "Impossible d'enregistrer l'utilisation",
       "abilityRemove": "Supprimer cette capacité",
