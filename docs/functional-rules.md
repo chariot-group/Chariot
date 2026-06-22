@@ -2931,3 +2931,25 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
 - `services/web/client/src/services/SessionService.ts`
 - `services/web/client/src/components/profile/ProfileGdprActions.tsx`
+
+---
+
+## FR-038 : QR Code de rejoindre une session
+
+**Règle** : La page session DOIT afficher, sous la card du code de session, une card contenant un QR code encodant l'URL de la session. Tous les participants (MJ et joueurs) peuvent voir ce QR code.
+
+**Requirements**:
+
+- La card QR code est affichée sous la card du code de session, dans la colonne latérale (`aside`).
+- Le QR code encode l'URL : `{window.location.origin}/campaigns/{campaignId}/session/{code}`.
+- Le QR code DOIT avoir un fond blanc et un contraste suffisant (couleur sombre) pour être lisible par les scanners mobiles.
+- La card DOIT inclure un label accessible (`aria-label`) décrivant le QR code.
+
+**Tests**:
+
+- Nominal : la card QR code est affichée sur la page session avec un QR code valide.
+- Edge : l'URL encodée contient bien le bon `campaignId` et le bon `code`.
+
+**Références**:
+
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`

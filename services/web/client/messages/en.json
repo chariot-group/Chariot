@@ -1479,7 +1479,9 @@
       "copySuccess": "Copied!",
       "copyAriaLabel": "Copy session code to clipboard",
       "copyLinkAriaLabel": "Copy session link to clipboard",
-      "copyLink": "Copy link"
+      "copyLink": "Copy link",
+      "qrCodeHeading": "Scan to join",
+      "qrCodeAriaLabel": "QR code to join the session"
     },
     "toast": {
       "sessionNotFound": "Session not found",

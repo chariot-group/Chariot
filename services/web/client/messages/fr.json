@@ -1484,7 +1484,9 @@
       "copySuccess": "Copié !",
       "copyAriaLabel": "Copier le code de la session dans le presse-papier",
       "copyLinkAriaLabel": "Copier le lien de la session dans le presse-papier",
-      "copyLink": "Copier le lien"
+      "copyLink": "Copier le lien",
+      "qrCodeHeading": "Scanner pour rejoindre",
+      "qrCodeAriaLabel": "QR code pour rejoindre la session"
     },
     "toast": {
       "sessionNotFound": "Session inexistante",
