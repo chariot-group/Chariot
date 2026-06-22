@@ -243,7 +243,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                         </span>
                       )}
                     </Button>
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                       <DropdownMenuTrigger
                         disabled={!sessionIsActive}
                         asChild>
@@ -256,6 +256,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
+                        side="top"
                         className="w-56 p-3">
                         <p className="text-xs text-muted-foreground mb-2">{t("players.customAmount")}</p>
                         <div className="flex items-center justify-between gap-2 mb-3">
