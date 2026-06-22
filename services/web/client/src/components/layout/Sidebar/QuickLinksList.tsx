@@ -85,7 +85,7 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
   if (links.length === 0 && disabled) return null;
 
   return (
-    <div className="flex flex-col gap-1.5 shrink-0">
+    <div className="flex shrink-0 flex-col gap-1.5 overflow-hidden">
       <div className="flex items-center justify-between px-1">
         <button
           type="button"
@@ -125,7 +125,7 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
 
       {!collapsed && links.length > 0 && (
         <ul
-          className="flex flex-col gap-1 overflow-y-auto"
+          className="flex flex-col gap-1 overflow-y-auto overscroll-contain"
           style={{ maxHeight: "calc(5 * (1.75rem + 0.25rem))" }}
           role="list"
           aria-label={t("title")}>
