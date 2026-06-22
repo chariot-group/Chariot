@@ -269,14 +269,16 @@ const AbilitiesUpdateSection = ({
                               <Input
                                 name={maxField.name}
                                 ref={maxField.ref}
-                                onBlur={maxField.onBlur}
                                 value={
-                                  maxField.value === undefined || maxField.value === null ? "" : String(maxField.value)
+                                  maxField.value === undefined ||
+                                  maxField.value === null ||
+                                  maxField.value === ""
+                                    ? ""
+                                    : String(maxField.value)
                                 }
                                 id={`${fieldArrayName}-counterMax-${index}`}
                                 type="number"
                                 inputMode="numeric"
-                                min={Math.max(0, Number(counterCurrentVal) || 0)}
                                 className="text-sm tabular-nums"
                                 aria-invalid={fieldState.invalid}
                                 aria-describedby={
@@ -285,11 +287,25 @@ const AbilitiesUpdateSection = ({
                                 onChange={(e) => {
                                   const v = e.target.value;
                                   if (v === "") {
-                                    maxField.onChange(undefined);
+                                    maxField.onChange("");
+                                    form.clearErrors(`${fieldArrayName}.${index}.counterMax`);
                                     return;
                                   }
                                   const n = Number(v);
-                                  maxField.onChange(Number.isNaN(n) ? undefined : n);
+                                  if (!Number.isFinite(n)) return;
+                                  maxField.onChange(n);
+                                  form.clearErrors(`${fieldArrayName}.${index}.counterMax`);
+                                }}
+                                onBlur={() => {
+                                  const path = `${fieldArrayName}.${index}.counterMax` as const;
+                                  const raw = form.getValues(path);
+                                  if (raw === "" || raw === undefined || raw === null) {
+                                    form.clearErrors(path);
+                                    maxField.onBlur();
+                                    return;
+                                  }
+                                  maxField.onBlur();
+                                  void form.trigger(path);
                                 }}
                               />
                               {fieldState.error && (
@@ -317,16 +333,14 @@ const AbilitiesUpdateSection = ({
                                 <Input
                                   name={curField.name}
                                   ref={curField.ref}
-                                  onBlur={curField.onBlur}
                                   value={
                                     curField.value === undefined || curField.value === null
-                                      ? "0"
+                                      ? ""
                                       : String(curField.value)
                                   }
                                   id={`${fieldArrayName}-counterCurrent-${index}`}
                                   type="number"
                                   inputMode="numeric"
-                                  min={0}
                                   max={typeof counterMaxVal === "number" ? counterMaxVal : undefined}
                                   className="text-sm tabular-nums"
                                   aria-invalid={fieldState.invalid}
@@ -336,11 +350,19 @@ const AbilitiesUpdateSection = ({
                                   onChange={(e) => {
                                     const v = e.target.value;
                                     if (v === "") {
-                                      curField.onChange(0);
-                                      return;
+                                      curField.onChange(undefined);
+                                    } else {
+                                      const n = parseInt(v, 10);
+                                      curField.onChange(Number.isNaN(n) ? undefined : n);
                                     }
-                                    const n = parseInt(v, 10);
-                                    curField.onChange(Number.isNaN(n) ? 0 : n);
+                                    form.clearErrors(`${fieldArrayName}.${index}.counterCurrent`);
+                                  }}
+                                  onBlur={(e) => {
+                                    if (e.target.value === "") {
+                                      curField.onChange(0);
+                                    }
+                                    curField.onBlur();
+                                    form.trigger(`${fieldArrayName}.${index}.counterCurrent`);
                                   }}
                                 />
                                 {fieldState.error && (

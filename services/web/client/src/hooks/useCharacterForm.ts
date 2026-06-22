@@ -233,6 +233,24 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
             sanitizedData.stats = stats;
         }
 
+        // Apply counterMax default (1) for abilities left empty during editing
+        for (const key of ['abilities', 'traits'] as const) {
+            const arr = (sanitizedData as Record<string, unknown>)[key];
+            if (Array.isArray(arr)) {
+                (sanitizedData as Record<string, unknown>)[key] = arr.map((a: unknown) => {
+                    if (typeof a !== 'object' || a === null) return a;
+                    const ab = a as Record<string, unknown>;
+                    if (
+                        ab.hasCounter &&
+                        (ab.counterMax === undefined || ab.counterMax === null || ab.counterMax === '')
+                    ) {
+                        return { ...ab, counterMax: 1 };
+                    }
+                    return ab;
+                });
+            }
+        }
+
         return sanitizedData as TFormValues & { groups?: unknown[] };
     };
 
