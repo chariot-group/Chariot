@@ -113,7 +113,7 @@ export function JoinSessionDialog({
         <DialogHeader>
           <DialogTitle>{t("joinSessionDialogTitle")}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4 w-full overflow-hidden">
+        <div className="flex flex-col items-center gap-4 py-4 w-full">
           <InputOTP
             maxLength={6}
             value={code}
@@ -122,17 +122,36 @@ export function JoinSessionDialog({
               setError(null);
             }}
             disabled={isJoining}
-            autoFocus>
+            autoFocus
+            containerClassName="w-full max-w-full justify-center gap-1 sm:gap-2">
             <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
+              <InputOTPSlot
+                index={0}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
+              <InputOTPSlot
+                index={1}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
+              <InputOTPSlot
+                index={2}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
             </InputOTPGroup>
-            <InputOTPSeparator />
+            <InputOTPSeparator className="mx-0.5 sm:mx-1" />
             <InputOTPGroup>
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
+              <InputOTPSlot
+                index={3}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
+              <InputOTPSlot
+                index={4}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
+              <InputOTPSlot
+                index={5}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
             </InputOTPGroup>
           </InputOTP>
           <CharacterSelect

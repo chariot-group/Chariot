@@ -301,14 +301,14 @@ export default function CharacterDetailView({
                 {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
                 <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
                   {/* Ligne 1: Nom du personnage */}
-                  <div className="min-w-0 justify-start lg:justify-end flex items-center gap-2">
+                  <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center gap-2">
                     <Tooltip>
-                      <TooltipTrigger className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
-                          {character.firstname?.trim()} {character.lastname?.trim()}{" "}
+                      <TooltipTrigger className="cursor-help min-w-0 w-full flex flex-col items-start text-left gap-0.5 lg:flex-row lg:items-end lg:justify-end lg:text-right lg:gap-2">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-white truncate min-w-0 max-w-full">
+                          {character.firstname?.trim()} {character.lastname?.trim()}
                         </h1>
                         {character.surname && (
-                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
+                          <span className="text-gray-light italic text-sm lg:text-base truncate min-w-0 max-w-full">
                             ({character.surname?.trim()})
                           </span>
                         )}
@@ -333,7 +333,7 @@ export default function CharacterDetailView({
                         <div>
                           {character.class.map((cls: { name: string; level: number }, index: number) => (
                             <span key={index}>
-                              {tClass(cls.name)} Niv {cls.level}
+                              {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
                               {index < character.class.length - 1 && " / "}
                             </span>
                           ))}

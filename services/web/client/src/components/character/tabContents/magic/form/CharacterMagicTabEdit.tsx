@@ -1281,7 +1281,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                                 ? ""
                                                 : String(field.value)
                                             }
-                                            className="w-12 sm:w-14 text-center h-7 sm:h-8 text-xs sm:text-sm"
+                                            className="w-14 min-w-14 text-center h-9 text-sm"
                                             type="number"
                                             inputMode="numeric"
                                             aria-invalid={fieldState.invalid}
