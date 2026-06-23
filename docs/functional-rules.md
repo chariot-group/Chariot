@@ -2960,7 +2960,8 @@ Each initiative tracker row carries:
 
 **Exigences** :
 
-- La card QR code est affichée sous la card du code de session, dans la colonne latérale (`aside`) de `SessionLobbyContent`.
+- La card QR code est affichée sous la card du code de session, dans la colonne latérale (`aside`) de `SessionLobbyContent`, à partir du breakpoint `lg`.
+- En dessous de `lg`, le code session et le QR code sont regroupés dans une seule card. Le QR remplace le code visible (le code reste accessible aux lecteurs d'écran via `sr-only`) ; les boutons de copie restent affichés en dessous.
 - Le QR code encode l'URL courante avec le paramètre `join` : `{window.location.href}?join={code}` (même format que le bouton « Copier le lien »).
 - Le QR code DOIT avoir un fond blanc et un contraste suffisant (couleur sombre) pour être lisible par les scanners mobiles.
 - La card DOIT inclure un label accessible (`aria-label`) décrivant le QR code.

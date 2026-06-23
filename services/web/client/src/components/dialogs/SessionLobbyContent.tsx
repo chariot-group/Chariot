@@ -31,6 +31,9 @@ import {
 import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/sessionSlice";
 import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import { cn } from "@/lib/utils";
+
+type SessionLobbyCopyState = "idle" | "loading" | "success";
 
 interface SessionLobbyContentProps {
   code: string;
@@ -48,8 +51,8 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
 
   const sessionStatus = useAppSelector(selectSessionStatus);
   const sessionIsActive = sessionStatus == "activated";
-  const [codeCopyState, setCodeCopyState] = useState<"idle" | "loading" | "success">("idle");
-  const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
+  const [codeCopyState, setCodeCopyState] = useState<SessionLobbyCopyState>("idle");
+  const [linkCopyState, setLinkCopyState] = useState<SessionLobbyCopyState>("idle");
   const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
   const [tokensByUser, setTokensByUser] = useState<Record<string, number>>(reduxTokensByUser);
   const [customAmount, setCustomAmount] = useState(1);
@@ -113,7 +116,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     handleCloseSession,
   } = sessionSocket;
 
-  const copy = (text: string, setState: Dispatch<SetStateAction<"idle" | "loading" | "success">>): void => {
+  const copy = (text: string, setState: Dispatch<SetStateAction<SessionLobbyCopyState>>): void => {
     setState("loading");
     if (navigator.clipboard) {
       navigator.clipboard
@@ -131,6 +134,15 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
       toast.error(t("toast.copyNotSupported"));
     }
   };
+
+  const joinUrl =
+    typeof window !== "undefined"
+      ? (() => {
+          const url = new URL(window.location.href);
+          url.searchParams.set("join", code);
+          return url.toString();
+        })()
+      : `?join=${code}`;
 
   return (
     <React.Fragment>
@@ -319,73 +331,167 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
           {/* Session code section */}
           <aside
             aria-labelledby="session-lobby-code-heading"
-            className="shrink-0 lg:col-span-1 flex flex-row lg:flex-col gap-3 lg:items-start">
-            <Card className="flex flex-col gap-0 p-3 sm:p-4 flex-1 lg:flex-none lg:w-full">
-              <h2
-                id="session-lobby-code-heading"
-                className="text-sm sm:text-base font-bold mb-2">
-                {t("sessionCode.heading")}
-              </h2>
-              <p
-                className="w-full text-xl sm:text-2xl font-mono tracking-widest text-center py-1"
-                aria-label={t("sessionCode.ariaLabel", { code })}>
-                {code.split("").slice(0, 3).join("")} - {code.split("").slice(3).join("")}
-              </p>
-              <div className="flex gap-2 items-center mt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`flex-1 transition-colors ${
-                    codeCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
-                  }`}
-                  aria-label={t("sessionCode.copyAriaLabel")}
-                  disabled={codeCopyState !== "idle"}
-                  onClick={() => copy(code, setCodeCopyState)}>
-                  {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
-                  {codeCopyState === "success" && <Check />}
-                  {codeCopyState === "idle" && <Copy />}
-                  {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
-                </Button>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="sm"
-                      aria-label={t("sessionCode.copyLinkAriaLabel")}
-                      className={`shrink-0 transition-colors ${
-                        linkCopyState === "success" ? "bg-green-500 hover:bg-green-500 border-green-500 text-white" : ""
-                      }`}
-                      disabled={linkCopyState !== "idle"}
-                      onClick={() => {
-                        const url = new URL(window.location.href);
-                        url.searchParams.set("join", code);
-                        copy(url.toString(), setLinkCopyState);
-                      }}>
-                      {linkCopyState === "success" ? <Check /> : <Link />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
+            className="shrink-0 lg:col-span-1 flex flex-col gap-3 lg:items-start min-w-0 max-w-full">
+            <Card className="p-3 sm:p-4 min-w-0 max-w-full lg:hidden">
+              <SessionLobbyCodeSection
+                code={code}
+                joinUrl={joinUrl}
+                inviteDisplay="responsive"
+                codeCopyState={codeCopyState}
+                linkCopyState={linkCopyState}
+                onCopyCode={() => copy(code, setCodeCopyState)}
+                onCopyLink={() => copy(joinUrl, setLinkCopyState)}
+                headingId="session-lobby-code-heading"
+              />
             </Card>
-            <Card
-              className="flex flex-col items-center gap-2 p-3 sm:p-4 flex-1 lg:flex-none lg:w-full"
-              aria-label={t("sessionCode.qrCodeAriaLabel")}>
-              <h2 className="text-sm sm:text-base font-bold self-start hidden lg:block">{t("sessionCode.qrCodeHeading")}</h2>
-              <div className="bg-white rounded p-2 border border-border">
-                <QRCodeSVG
-                  value={typeof window !== "undefined" ? (() => { const url = new URL(window.location.href); url.searchParams.set("join", code); return url.toString(); })() : `?join=${code}`}
-                  size={120}
-                  bgColor="#ffffff"
-                  fgColor="#19191c"
-                  className="block w-[80px] h-[80px] lg:w-[120px] lg:h-[120px]"
-                />
-              </div>
+            <Card className="hidden lg:flex flex-col gap-0 p-3 sm:p-4 w-full">
+              <SessionLobbyCodeSection
+                code={code}
+                inviteDisplay="text"
+                codeCopyState={codeCopyState}
+                linkCopyState={linkCopyState}
+                onCopyCode={() => copy(code, setCodeCopyState)}
+                onCopyLink={() => copy(joinUrl, setLinkCopyState)}
+                headingId="session-lobby-code-heading"
+              />
+            </Card>
+            <Card className="hidden lg:flex flex-col items-center gap-2 p-3 sm:p-4 w-full">
+              <SessionLobbyQrSection
+                joinUrl={joinUrl}
+                showHeading
+              />
             </Card>
           </aside>
         </div>
       </div>
     </React.Fragment>
+  );
+}
+
+interface SessionLobbyCodeSectionProps {
+  code: string;
+  codeCopyState: SessionLobbyCopyState;
+  linkCopyState: SessionLobbyCopyState;
+  onCopyCode: () => void;
+  onCopyLink: () => void;
+  headingId?: string;
+  className?: string;
+  joinUrl?: string;
+  inviteDisplay?: "text" | "responsive";
+}
+
+function SessionLobbyCodeSection({
+  code,
+  codeCopyState,
+  linkCopyState,
+  onCopyCode,
+  onCopyLink,
+  headingId,
+  className,
+  joinUrl,
+  inviteDisplay = "text",
+}: SessionLobbyCodeSectionProps) {
+  const t = useTranslations("sessionPage");
+  const formattedCode = `${code.slice(0, 3)} - ${code.slice(3)}`;
+  const isResponsiveInvite = inviteDisplay === "responsive" && Boolean(joinUrl);
+
+  return (
+    <div className={cn("flex flex-col gap-0", className)}>
+      <h2
+        id={headingId}
+        className="text-sm sm:text-base font-bold mb-2">
+        {t("sessionCode.heading")}
+      </h2>
+      <div className={cn("flex min-w-0", isResponsiveInvite ? "justify-center" : "flex-col")}>
+        <p
+          className={cn(
+            "font-mono tracking-widest text-center py-1 min-w-0",
+            isResponsiveInvite ? "sr-only" : "w-full text-xl sm:text-2xl",
+          )}
+          aria-label={t("sessionCode.ariaLabel", { code })}>
+          {formattedCode}
+        </p>
+        {isResponsiveInvite && joinUrl && (
+          <SessionLobbyQrSection
+            joinUrl={joinUrl}
+            prominent
+          />
+        )}
+      </div>
+      <div className="flex gap-2 items-center mt-2 min-w-0">
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            "flex-1 min-w-0 transition-colors",
+            codeCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
+          )}
+          aria-label={t("sessionCode.copyAriaLabel")}
+          disabled={codeCopyState !== "idle"}
+          onClick={onCopyCode}>
+          {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
+          {codeCopyState === "success" && <Check />}
+          {codeCopyState === "idle" && <Copy />}
+          {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
+        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              aria-label={t("sessionCode.copyLinkAriaLabel")}
+              className={cn(
+                "shrink-0 transition-colors",
+                linkCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
+              )}
+              disabled={linkCopyState !== "idle"}
+              onClick={onCopyLink}>
+              {linkCopyState === "success" ? <Check /> : <Link />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </div>
+  );
+}
+
+interface SessionLobbyQrSectionProps {
+  joinUrl: string;
+  showHeading?: boolean;
+  prominent?: boolean;
+  className?: string;
+}
+
+function SessionLobbyQrSection({
+  joinUrl,
+  showHeading = false,
+  prominent = false,
+  className,
+}: SessionLobbyQrSectionProps) {
+  const t = useTranslations("sessionPage");
+
+  return (
+    <div
+      className={cn("flex flex-col items-center gap-2", className)}
+      aria-label={t("sessionCode.qrCodeAriaLabel")}>
+      {showHeading && (
+        <h2 className="text-sm sm:text-base font-bold self-start">{t("sessionCode.qrCodeHeading")}</h2>
+      )}
+      <div className="bg-white rounded border border-border shrink-0 p-2">
+        <QRCodeSVG
+          value={joinUrl}
+          size={120}
+          bgColor="#ffffff"
+          fgColor="#19191c"
+          className={cn(
+            "block",
+            prominent && "w-24 h-24",
+            !prominent && "w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] lg:w-[120px] lg:h-[120px]",
+          )}
+        />
+      </div>
+    </div>
   );
 }
