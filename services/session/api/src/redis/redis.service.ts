@@ -33,11 +33,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
                 this.logger.verbose(`Session ${sessionId} expired via Redis TTL`, this.SERVICE_NAME);
 
                 this.expirationHandlers.forEach((handler) => {
-                    try {
-                        handler(sessionId);
-                    } catch (error: any) {
+                    Promise.resolve(handler(sessionId)).catch((error: any) => {
                         this.logger.error(`Error in expiration handler: ${error.message}`, error.stack, this.SERVICE_NAME);
-                    }
+                    });
                 });
             }
 

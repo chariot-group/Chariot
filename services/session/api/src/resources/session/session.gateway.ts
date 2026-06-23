@@ -362,7 +362,8 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 client.emit('session:error', { message: 'Missing characterId' });
                 return;
             }
-            const onRoster = session.participants.some((p) => p.characterId === cid);
+            const isGm = me.status === 'gameMaster';
+            const onRoster = isGm || session.participants.some((p) => p.characterId === cid);
             if (!onRoster) {
                 client.emit('session:error', { message: 'Character is not on this session roster' });
                 return;
