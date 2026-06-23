@@ -169,7 +169,7 @@ export default function UpdateProfile({
 
   return (
     <Card
-      className="flex flex-col xl:flex-row overflow-hidden"
+      className="flex flex-row overflow-hidden"
       role="region"
       aria-labelledby="profile-info-heading">
       <h2
@@ -178,7 +178,7 @@ export default function UpdateProfile({
         {t("pageTitle")}
       </h2>
       <div
-        className="relative w-full xl:w-1/2 aspect-video overflow-hidden rounded-[15px]"
+        className="relative shrink-0 w-24 h-24 sm:w-36 sm:h-36 xl:w-2/5 xl:h-auto xl:aspect-video overflow-hidden rounded-[15px]"
         role="img"
         aria-label={user?.username ? `${user.username} profile picture` : "Default profile picture"}>
         {user?.keycloakId ? (
@@ -197,7 +197,7 @@ export default function UpdateProfile({
           />
         ) : null}
       </div>
-      <div className="w-full xl:w-1/2 h-full">
+      <div className="flex-1 min-w-0 h-full">
         <form
           id="form-update-profile"
           className="h-full"
