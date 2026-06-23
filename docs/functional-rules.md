@@ -3247,3 +3247,68 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useStoredFeetRangeInput.ts`
 - `services/web/client/src/components/ui/stored-unit-feet-range-input.tsx`
 - `services/web/client/src/components/character/tabContents/battle/shared/ActionUpdateSection.tsx`
+
+---
+
+## FR-checkout-promo-validation-feedback: Promo Code Validation Visual Feedback at Checkout
+
+**Rule**: When a user enters a promo code at checkout, the frontend must immediately display a specific and actionable visual error for each rejection reason, rather than a generic "code not found" message.
+
+**Covered rejection cases**:
+
+1. **Global uses exhausted** (`maxTotalUses` reached): the code exists but has been used globally the maximum number of times allowed. HTTP 410 Gone is returned by `resolveCode`.
+2. **Per-user uses exhausted** (`maxUsesPerUser` reached): the authenticated user has already used this code the maximum number of times allowed. HTTP 410 Gone is returned by `resolveCode`.
+3. **Minimum order amount not met** (`minOrderAmount`): the code requires a minimum cart amount that the current order does not meet. The minimum amount (in euros) is included in the error response. HTTP 422 Unprocessable Entity is returned by `resolveCode`.
+
+**Backend requirements** (`resolveCode` in `stripe.service.ts`):
+
+- After finding an active, non-expired promo code, check in order:
+  1. `maxTotalUses !== null && currentTotalUses >= maxTotalUses` → throw `GoneException` with error code `PROMO_EXHAUSTED`
+  2. `maxUsesPerUser`: fetch `promoCodeUsage` count for `(promoCodeId, userId)` → if `>= maxUsesPerUser`, throw `GoneException` with error code `PROMO_USER_LIMIT_REACHED`
+  3. `minOrderAmount !== null && orderAmount < minOrderAmount` → throw `UnprocessableEntityException` with error code `PROMO_MIN_ORDER` and `minOrderAmount` in the response
+- `resolveCode` must accept `userId` (from JWT) and `orderAmount` (from query param, in centimes) to perform these checks
+- Error responses must include a machine-readable `errorCode` field alongside the human-readable message
+- The `isFirstOrderOnly` check is NOT performed in `resolveCode` (requires payment history context — deferred to `validatePromoCode` at payment time)
+
+**Frontend requirements** (`useCheckout.ts`, `CheckoutForm.tsx`):
+
+- `handleApplyCode` must pass the current `orderAmount` (unit price × quantity, in centimes) when calling `resolveCode`
+- Distinguish HTTP status codes in the catch block:
+  - 410 with `errorCode: PROMO_EXHAUSTED` → translated message `shop.codeExhausted`
+  - 410 with `errorCode: PROMO_USER_LIMIT_REACHED` → translated message `shop.codeUserLimitReached`
+  - 422 with `errorCode: PROMO_MIN_ORDER` → translated message `shop.codeMinOrder` with interpolated minimum amount
+  - Other errors → existing `shop.codeNotFound` fallback
+- Error is displayed inline below the promo code input (existing `promoCode.error` slot, `role="alert"`)
+
+**i18n keys** (required in `fr.json`, `en.json`, `es.json` under `shop`):
+
+- `codeExhausted`: message when global uses are exhausted
+- `codeUserLimitReached`: message when per-user uses are exhausted
+- `codeMinOrder`: message when minimum order is not met (interpolate `{minAmount}`)
+
+**Prohibitions**:
+
+- Showing a generic error when a specific rejection reason is available
+- Performing the `isFirstOrderOnly` check in `resolveCode` (that check requires payment history and belongs to `validatePromoCode`)
+- Passing `userId` in the request body (must come from JWT only)
+- Blocking checkout entirely when `resolveCode` enrichment fails (must degrade gracefully to generic error)
+
+**Tests**:
+
+- `resolveCode` returns 410 with `PROMO_EXHAUSTED` when `currentTotalUses >= maxTotalUses`
+- `resolveCode` returns 410 with `PROMO_USER_LIMIT_REACHED` when user has reached `maxUsesPerUser`
+- `resolveCode` returns 422 with `PROMO_MIN_ORDER` when `orderAmount < minOrderAmount`
+- `resolveCode` returns resolved code when all checks pass
+- Frontend displays `codeExhausted` message on 410 `PROMO_EXHAUSTED`
+- Frontend displays `codeUserLimitReached` message on 410 `PROMO_USER_LIMIT_REACHED`
+- Frontend displays `codeMinOrder` message with formatted amount on 422 `PROMO_MIN_ORDER`
+- Frontend falls back to `codeNotFound` on unknown errors
+
+**References**:
+
+- `services/payment/api/src/resources/stripe/stripe.service.ts` — `resolveCode`
+- `services/payment/api/src/resources/stripe/stripe.controller.ts` — `resolveCode` route
+- `services/web/client/src/hooks/useCheckout.ts` — `handleApplyCode`
+- `services/web/client/src/services/PaymentService.ts` — `resolveCode`
+- `services/web/client/src/components/checkout/CheckoutForm.tsx` — error display
+- `services/web/client/messages/{fr|en|es}.json` — i18n keys

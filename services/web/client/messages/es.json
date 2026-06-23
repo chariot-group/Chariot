@@ -464,6 +464,9 @@
     "applyCode": "Aplicar",
     "removeCode": "Quitar código",
     "codeNotFound": "Este código no existe o ya no está activo.",
+    "codeExhausted": "Este código ha alcanzado su número máximo de usos.",
+    "codeUserLimitReached": "Ya has utilizado este código el número máximo de veces permitido.",
+    "codeMinOrder": "Este código requiere un pedido mínimo de {minAmount}.",
     "recommended": "Recomendado",
     "payPerUnit": "Pagar por unidad ({price}€)",
     "custom": {

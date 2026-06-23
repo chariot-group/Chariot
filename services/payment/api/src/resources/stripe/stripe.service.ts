@@ -4,6 +4,8 @@ import {
     Logger,
     InternalServerErrorException,
     NotFoundException,
+    GoneException,
+    UnprocessableEntityException,
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import axios from 'axios';
@@ -377,7 +379,11 @@ export class StripeService {
         }
     }
 
-    async resolveCode(code: string): Promise<IResponse<ResolvedCode>> {
+    async resolveCode(
+        code: string,
+        userId: string,
+        orderAmount: number,
+    ): Promise<IResponse<ResolvedCode>> {
         try {
             const start = Date.now();
 
@@ -390,6 +396,38 @@ export class StripeService {
                     promo.isActive &&
                     (!promo.expiresAt || new Date() < new Date(promo.expiresAt))
                 ) {
+                    if (
+                        promo.maxTotalUses !== null &&
+                        promo.currentTotalUses >= promo.maxTotalUses
+                    ) {
+                        throw new GoneException({
+                            errorCode: 'PROMO_EXHAUSTED',
+                            message: `Le code promo '${code}' a atteint son nombre maximum d'utilisations`,
+                        });
+                    }
+
+                    const userUsageCount = await this.promoCodeService.countUsageForUser(
+                        promo.id,
+                        userId,
+                    );
+                    if (userUsageCount >= promo.maxUsesPerUser) {
+                        throw new GoneException({
+                            errorCode: 'PROMO_USER_LIMIT_REACHED',
+                            message: `Vous avez déjà utilisé le code '${code}' le nombre maximum de fois autorisé`,
+                        });
+                    }
+
+                    if (
+                        promo.minOrderAmount !== null &&
+                        orderAmount < promo.minOrderAmount
+                    ) {
+                        throw new UnprocessableEntityException({
+                            errorCode: 'PROMO_MIN_ORDER',
+                            minOrderAmount: promo.minOrderAmount,
+                            message: `Le code promo '${code}' nécessite un panier minimum de ${(promo.minOrderAmount / 100).toFixed(2)}€`,
+                        });
+                    }
+
                     const message = `Code '${code}' resolved as promo in ${Date.now() - start}ms`;
                     this.logger.verbose(message, this.SERVICE_NAME);
                     return {
@@ -401,7 +439,8 @@ export class StripeService {
                         },
                     };
                 }
-            } catch {
+            } catch (err) {
+                if (err instanceof GoneException || err instanceof UnprocessableEntityException) throw err;
                 // Pas un code promo, on essaie l'affiliation
             }
 
@@ -428,7 +467,11 @@ export class StripeService {
 
             throw new NotFoundException(`Code '${code}' introuvable ou inactif`);
         } catch (error) {
-            if (error instanceof NotFoundException) throw error;
+            if (
+                error instanceof NotFoundException ||
+                error instanceof GoneException ||
+                error instanceof UnprocessableEntityException
+            ) throw error;
             const errorMessage = `Error resolving code '${code}': ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(errorMessage);

@@ -81,6 +81,9 @@ export function useCheckout(): UseCheckoutReturn {
     // Referral discount
     const [referralDiscount, setReferralDiscount] = useState<ReferralDiscount | null>(null);
 
+    // Derived unit price (needed in promo code handler before pricing section)
+    const originalAmount = product?.prices[0]?.unit_amount ?? 0;
+
     // PaymentIntent
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
@@ -228,9 +231,23 @@ export function useCheckout(): UseCheckoutReturn {
 
         let resolved: ResolvedCode;
         try {
-            resolved = await paymentService.resolveCode(trimmed);
-        } catch {
-            setCodeError(tShop("codeNotFound"));
+            resolved = await paymentService.resolveCode(trimmed, originalAmount * quantity);
+        } catch (err: unknown) {
+            const axiosErr = err as { response?: { status?: number; data?: { errorCode?: string; minOrderAmount?: number } } };
+            const status = axiosErr?.response?.status;
+            const errorCode = axiosErr?.response?.data?.errorCode;
+            const minOrderAmount = axiosErr?.response?.data?.minOrderAmount;
+
+            if (status === 410 && errorCode === "PROMO_EXHAUSTED") {
+                setCodeError(tShop("codeExhausted"));
+            } else if (status === 410 && errorCode === "PROMO_USER_LIMIT_REACHED") {
+                setCodeError(tShop("codeUserLimitReached"));
+            } else if (status === 422 && errorCode === "PROMO_MIN_ORDER" && minOrderAmount != null) {
+                const minEuros = (minOrderAmount / 100).toFixed(2);
+                setCodeError(tShop("codeMinOrder", { minAmount: `${minEuros}€` }));
+            } else {
+                setCodeError(tShop("codeNotFound"));
+            }
             setCodeLoading(false);
             return;
         }
@@ -243,7 +260,7 @@ export function useCheckout(): UseCheckoutReturn {
         setCodeLoading(false);
 
         void updatePaymentIntentAmount(promoCode, affiliationCode, quantity);
-    }, [codeInput, quantity, updatePaymentIntentAmount, tShop]);
+    }, [codeInput, quantity, originalAmount, updatePaymentIntentAmount, tShop]);
 
     const handleRemoveCode = useCallback(() => {
         setAppliedCode(null);
@@ -253,9 +270,7 @@ export function useCheckout(): UseCheckoutReturn {
     }, [updatePaymentIntentAmount, quantity]);
 
     // ── Pricing ─────────────────────────────────────────────────────────────────
-    const price = product?.prices[0];
-    const currency = price?.currency ?? "eur";
-    const originalAmount = price?.unit_amount ?? 0;
+    const currency = product?.prices[0]?.currency ?? "eur";
     let discountedAmount = originalAmount;
     if (originalAmount > 0) {
         if (appliedCode) {

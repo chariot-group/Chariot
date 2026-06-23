@@ -296,6 +296,12 @@ export class PromoCodeService {
         }
     }
 
+    async countUsageForUser(promoCodeId: string, userId: string): Promise<number> {
+        return this.prisma.promoCodeUsage.count({
+            where: { promoCodeId, userId },
+        });
+    }
+
     /**
      * Valide un code promo pour un utilisateur donné.
      * Retourne le code promo si valide, lève une exception sinon.
