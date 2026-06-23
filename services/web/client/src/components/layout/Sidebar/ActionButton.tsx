@@ -18,6 +18,8 @@ import {
   selectSessionInitBattleDraft,
   selectSessionStatus,
   selectLastConsultedSheetPath,
+  openSessionLobby,
+  setCurrentSession,
 } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { InitBattleDialog } from "@/components/dialogs/InitBattleDialog";
@@ -85,7 +87,7 @@ export function ActionButton() {
     if (nextContextMode) {
       dispatch(setContextMode(nextContextMode));
     }
-    router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
+    dispatch(openSessionLobby());
   };
 
   const navigateToInitiativeTracker = () => {
@@ -115,7 +117,8 @@ export function ActionButton() {
           action: async () => {
             if (!selectedCampaignId) return;
             const { campaignId, code } = await sessionService.createSession(selectedCampaignId);
-            router.push(`/campaigns/${campaignId}/session/${code}`);
+            dispatch(setCurrentSession({ code, campaignId }));
+            dispatch(openSessionLobby());
           },
           disabled: !selectedCampaignId,
           icon: <PlayCircle className="size-6" />,
@@ -130,7 +133,7 @@ export function ActionButton() {
         state: "joinSession",
         action: () => {
           if (isInSession) {
-            router.push(`/campaigns/${session?.campaignId}/session/${session?.code}`);
+            dispatch(openSessionLobby());
           }
         },
         icon: <Users className="size-6" />,
@@ -313,7 +316,8 @@ export function ActionButton() {
       action: async () => {
         if (!selectedCampaignId) return;
         const { campaignId, code } = await sessionService.createSession(selectedCampaignId);
-        router.push(`/campaigns/${campaignId}/session/${code}`);
+        dispatch(setCurrentSession({ code, campaignId }));
+        dispatch(openSessionLobby());
       },
       disabled: !selectedCampaignId,
       icon: <PlayCircle className="size-6" />,

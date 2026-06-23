@@ -101,14 +101,30 @@ export default function SidebarEnvironment() {
 
     const deletedId = campaignPendingDelete._id;
     const wasSelected = selectedCampaignId === deletedId;
+    const viewingDeletedCampaign = pathname?.includes(`/campaigns/${deletedId}`);
 
     try {
       setIsDeletingCampaign(true);
       await deleteCampaign(deletedId);
-      await refreshCampaigns();
+      const remainingCampaigns = await refreshCampaigns();
       setCampaignPendingDelete(null);
 
-      if (wasSelected) {
+      const noCampaignsLeft = (remainingCampaigns?.length ?? 0) === 0;
+
+      if (noCampaignsLeft) {
+        dispatch(setContextMode("player"));
+        dispatch(clearSelectedCampaign());
+        const destination = await NavigationService.determinePlayerSpaceDestination(
+          locale,
+          dispatch,
+          store.getState.bind(store),
+        );
+        router.replace(destination.path);
+        toast.info(t("environmentChanged", { space: t("playerSpace").toLocaleLowerCase() }));
+        return;
+      }
+
+      if (wasSelected || viewingDeletedCampaign) {
         dispatch(clearSelectedCampaign());
         const destination = await NavigationService.determinePostLoginDestination(
           locale,
@@ -128,10 +144,12 @@ export default function SidebarEnvironment() {
     dispatch,
     isDeletingCampaign,
     locale,
+    pathname,
     refreshCampaigns,
     router,
     selectedCampaignId,
     store,
+    t,
   ]);
 
   const joueurActive = !isGmMode;

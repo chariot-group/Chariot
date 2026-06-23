@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
     fetchGroupsStart,
@@ -61,6 +62,7 @@ export function useGroups() {
     const groupsCampaignId = useAppSelector(selectGroupsCampaignId);
     const groupsLastFetch = useAppSelector(selectGroupsLastFetch);
     const { success, error: toastError } = useToast();
+    const t = useTranslations('sidebar');
 
     /**
      * Récupère la première page des groupes actifs et archivés (en parallèle).
@@ -240,14 +242,14 @@ export function useGroups() {
                 });
 
                 await fetchGroups();
-                success('Group archived');
+                success(t('groupArchivedSuccess'));
             } catch (e) {
-                const message = e instanceof Error ? e.message : 'Failed to archive group';
+                const message = e instanceof Error ? e.message : t('groupArchiveFailed');
                 toastError(message);
                 throw e;
             }
         },
-        [selectedCampaignId, fetchGroups, success, toastError],
+        [selectedCampaignId, fetchGroups, success, t, toastError],
     );
 
     /**
@@ -284,14 +286,14 @@ export function useGroups() {
                 });
 
                 await fetchGroups();
-                success('Group unarchived');
+                success(t('groupUnarchivedSuccess'));
             } catch (e) {
-                const message = e instanceof Error ? e.message : 'Failed to unarchive group';
+                const message = e instanceof Error ? e.message : t('groupUnarchiveFailed');
                 toastError(message);
                 throw e;
             }
         },
-        [selectedCampaignId, fetchGroups, success, toastError],
+        [selectedCampaignId, fetchGroups, success, t, toastError],
     );
 
     const redirectAfterDeletedGroups = useCallback(
@@ -332,14 +334,14 @@ export function useGroups() {
                 await fetchGroups();
                 await redirectAfterDeletedGroups([groupId]);
 
-                success('Group deleted');
+                success(t('groupDeletedSuccess'));
             } catch (e) {
-                const message = e instanceof Error ? e.message : 'Failed to delete group';
+                const message = e instanceof Error ? e.message : t('groupDeleteFailed');
                 toastError(message);
                 throw e;
             }
         },
-        [fetchGroups, redirectAfterDeletedGroups, success, toastError],
+        [fetchGroups, redirectAfterDeletedGroups, success, t, toastError],
     );
 
     /**
@@ -364,13 +366,13 @@ export function useGroups() {
 
             await fetchGroups();
             await redirectAfterDeletedGroups(archivedIds);
-            success('All archived groups deleted');
+            success(t('allArchivedGroupsDeletedSuccess'));
         } catch (e) {
-            const message = e instanceof Error ? e.message : 'Failed to delete archived groups';
+            const message = e instanceof Error ? e.message : t('allArchivedGroupsDeleteFailed');
             toastError(message);
             throw e;
         }
-    }, [fetchGroups, redirectAfterDeletedGroups, selectedCampaignId, success, toastError]);
+    }, [fetchGroups, redirectAfterDeletedGroups, selectedCampaignId, success, t, toastError]);
 
     useEffect(() => {
         if (!selectedCampaignId) {

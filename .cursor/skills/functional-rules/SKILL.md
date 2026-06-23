@@ -90,8 +90,8 @@ describe("FR-session-combat-sync — local sheet sync", () => { ... });
 | Domain | Slug IDs |
 | --- | --- |
 | Auth / user | FR-user-password-change, FR-user-profile-keycloak, FR-user-cache-isolation, FR-post-auth-navigation |
-| Characters | FR-character-universal-fields, FR-dnd-conditions, FR-character-detail-view, FR-character-duplicate |
+| Characters | FR-character-universal-fields, FR-dnd-conditions, FR-character-detail-view, FR-character-duplicate, FR-character-ability-counter-display, FR-character-action-dual-range |
 | Combat / tracker | FR-combat-initiative-tracker, FR-tracker-vital-status, FR-session-combat-navigation, FR-session-combat-sync |
-| Session | FR-session-websocket-lifecycle, FR-session-participant-labels, FR-session-lobby-navigation, FR-session-join-qr-code |
-| UI / design | FR-frontend-design, FR-sidebar-navigation, FR-sidebar-context-actions, FR-form-field-validation |
+| Session | FR-session-websocket-lifecycle, FR-session-participant-labels, FR-session-lobby-navigation, FR-session-lobby-modal, FR-session-join-qr-code |
+| UI / design | FR-frontend-design, FR-sidebar-navigation, FR-sidebar-context-actions, FR-form-field-validation, FR-app-version-display |
 | Admin / payment | FR-stripe-checkout, FR-admin-promo-lifecycle, FR-admin-affiliation-lifecycle |

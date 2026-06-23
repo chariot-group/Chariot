@@ -186,7 +186,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
 
       <div className="grid lg:grid-cols-3 max-[376px]:grid-cols-1 gap-2 w-full">
         {/* Capacités et traits */}
-        <div className="order-2 lg:order-1">
+        <div className="order-2 lg:order-1 min-w-0">
           <AbilitiesUpdateSection
             title={t("abilitiesAndTraits")}
             form={form}
@@ -198,7 +198,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
             abilityCounterMode="player"
           />
         </div>
-        <div className="flex flex-row gap-2 order-1 lg:order-2">
+        <div className="order-1 lg:order-2 min-w-0 w-full">
           {/* Actions */}
           <ActionUpdateSection
             title={t("actions")}
@@ -211,7 +211,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
           />
         </div>
 
-        <div className="order-3 lg:order-3">
+        <div className="order-3 lg:order-3 min-w-0">
           <Card
             className="gap-3 p-4 md:px-6 h-fit"
             role="region"
