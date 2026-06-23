@@ -24,7 +24,7 @@ type PresignedReadResponse = {
 
 class MediaService {
   private readonly BASE_PATH = "/media";
-  private readonly USER_AVATAR_PATH = "/user/me/avatar";
+  private readonly USER_AVATAR_PATH = "/media/users/me/avatar";
 
   private multipartConfig() {
     return {

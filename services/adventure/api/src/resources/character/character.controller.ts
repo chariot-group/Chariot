@@ -1,7 +1,9 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
+  Patch,
   Delete,
   Query,
   Req,
@@ -10,6 +12,8 @@ import {
   NotFoundException,
   GoneException,
   ForbiddenException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { CharacterService } from '@/resources/character/character.service';
 import { IsCreator } from '@/common/decorators/is-creator.decorator';
@@ -32,6 +36,8 @@ import {
 } from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 import { SessionAccessService } from '@/common/session/session-access.service';
+import { Public } from '@/common/decorators/public.decorator';
+import { InternalGuard } from '@/common/guards/internal.guard';
 
 @UseGuards(IsCreatorGuard)
 @Controller('characters')
@@ -219,5 +225,57 @@ export class CharacterController {
     await this.validateResource(id);
 
     return this.characterService.remove(id);
+  }
+
+  @Get('internal/:characterId/owner')
+  @Public()
+  @UseGuards(InternalGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Internal: get character owner and avatar for media service',
+  })
+  async getCharacterOwnerInternal(
+    @Param('characterId') characterId: string,
+  ): Promise<{ createdBy: string; avatar: string | null }> {
+    if (!Types.ObjectId.isValid(characterId)) {
+      throw new NotFoundException(`Character ${characterId} not found`);
+    }
+
+    const character = await this.characterModel.findById(characterId).exec();
+
+    if (!character || character.deletedAt) {
+      throw new NotFoundException(`Character ${characterId} not found`);
+    }
+
+    return {
+      createdBy: character.createdBy,
+      avatar: character.avatar ?? null,
+    };
+  }
+
+  @Patch('internal/:characterId/avatar')
+  @Public()
+  @UseGuards(InternalGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Internal: update character avatar field for media service',
+  })
+  async updateCharacterAvatarInternal(
+    @Param('characterId') characterId: string,
+    @Body() body: { avatar: string },
+  ): Promise<{ avatar: string }> {
+    if (!Types.ObjectId.isValid(characterId)) {
+      throw new NotFoundException(`Character ${characterId} not found`);
+    }
+
+    const character = await this.characterModel
+      .findByIdAndUpdate(characterId, { avatar: body.avatar }, { new: true })
+      .exec();
+
+    if (!character || character.deletedAt) {
+      throw new NotFoundException(`Character ${characterId} not found`);
+    }
+
+    return { avatar: character.avatar ?? '' };
   }
 }

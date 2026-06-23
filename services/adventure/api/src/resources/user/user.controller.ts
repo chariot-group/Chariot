@@ -1,20 +1,16 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Req,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 import { InternalGuard } from '@/common/guards/internal.guard';
 import { Public } from '@/common/decorators/public.decorator';
 import {
@@ -30,8 +26,6 @@ import { UpdateUserProfileDto } from '@/resources/user/dto/update-user-profile.d
 import { IResponse } from '@/common/dtos/reponse.dto';
 import { ChangePasswordDto } from '@/resources/user/dto/change-password.dto';
 import { AddHistoryDto } from '@/resources/user/dto/add-history.dto';
-import { MediaService } from '@/resources/media/media.service';
-import { MEDIA_MAX_UPLOAD_BYTES } from '@/resources/media/media.constants';
 
 @ApiExtraModels(
   IResponse,
@@ -43,10 +37,7 @@ import { MEDIA_MAX_UPLOAD_BYTES } from '@/resources/media/media.constants';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly mediaService: MediaService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Get current authenticated user information' })
@@ -215,48 +206,6 @@ export class UserController {
     );
   }
 
-  @Post('me/avatar')
-  @ApiOperation({
-    summary: 'Upload or replace the current user profile avatar',
-  })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: memoryStorage(),
-      limits: { fileSize: MEDIA_MAX_UPLOAD_BYTES },
-    }),
-  )
-  async uploadMyAvatar(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() request: { user: { keycloakId: string } },
-  ): Promise<IResponse<{ avatar: string }>> {
-    const data = await this.mediaService.uploadUserAvatar(
-      request.user.keycloakId,
-      file,
-      request.user.keycloakId,
-    );
-
-    return {
-      message: 'User avatar uploaded',
-      data,
-    };
-  }
-
-  @Delete('me/avatar')
-  @ApiOperation({ summary: 'Remove the current user profile avatar' })
-  async deleteMyAvatar(
-    @Req() request: { user: { keycloakId: string } },
-  ): Promise<IResponse<{ avatar: string }>> {
-    const data = await this.mediaService.deleteUserAvatar(
-      request.user.keycloakId,
-      request.user.keycloakId,
-    );
-
-    return {
-      message: 'User avatar removed',
-      data,
-    };
-  }
-
   @Get('internal/:userId/balance')
   @Public()
   @UseGuards(InternalGuard)
@@ -290,5 +239,34 @@ export class UserController {
   async addTokensInternal(@Body() body: { userId: string; amount: number }) {
     await this.userService.addTokens(body.userId, body.amount);
     return { message: `Added ${body.amount} tokens to user ${body.userId}` };
+  }
+
+  @Get('internal/:keycloakId/avatar')
+  @Public()
+  @UseGuards(InternalGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Internal: get user avatar attribute for media service',
+  })
+  async getUserAvatarInternal(
+    @Param('keycloakId') keycloakId: string,
+  ): Promise<{ avatar: string | null }> {
+    const avatar = await this.userService.getUserAvatar(keycloakId);
+    return { avatar };
+  }
+
+  @Patch('internal/:keycloakId/avatar')
+  @Public()
+  @UseGuards(InternalGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Internal: update user avatar attribute for media service',
+  })
+  async updateUserAvatarInternal(
+    @Param('keycloakId') keycloakId: string,
+    @Body() body: { avatar: string },
+  ): Promise<{ avatar: string }> {
+    await this.userService.updateUserAvatar(keycloakId, body.avatar);
+    return { avatar: body.avatar };
   }
 }

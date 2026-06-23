@@ -3259,3 +3259,71 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useStoredFeetDualRangeInput.ts`
 - `services/web/client/src/components/ui/stored-unit-feet-dual-range-input.tsx`
 - `services/web/client/src/components/character/tabContents/battle/shared/ActionUpdateSection.tsx`
+
+---
+
+## FR-media-service : Service Media Dédié (CDN & API Media)
+
+**Règle** : Toutes les opérations media (upload d'avatars, suppression, résolution de presigned URLs, traitement d'images, client MinIO/S3) DOIVENT être hébergées dans un microservice dédié `services/media/`. Aucun autre service ne doit instancier un client MinIO/S3 ni dépendre de `sharp` pour le traitement d'images.
+
+**Périmètre du service media** :
+
+- Upload d'avatar personnage (`POST /media/characters/:id/avatar`)
+- Suppression d'avatar personnage (`DELETE /media/characters/:id/avatar`)
+- Upload d'avatar utilisateur (`POST /media/users/me/avatar`)
+- Suppression d'avatar utilisateur (`DELETE /media/users/me/avatar`)
+- Résolution batch de presigned read URLs (`POST /media/presigned-read`)
+
+**Architecture & dépendances** :
+
+- Le service media s'authentifie via Keycloak JWT (même guard que adventure)
+- Vérification d'accès **personnage** : appel HTTP interne vers adventure (`ADVENTURE_INTERNAL_URL`) sur l'endpoint `POST /character/internal/validate-access`, protégé par `InternalGuard` (`x-internal-service-secret`)
+- Vérification d'accès **session/roster** : appel HTTP interne vers session (pattern existant `SessionAccessService`)
+- Vérification d'accès **utilisateur** (self) : comparaison des claims JWT uniquement, sans appel externe
+- Le client MinIO/S3 (`MinioService`) et `ImageProcessorService` résident exclusivement dans `services/media/`
+
+**Retrait de l'adventure service** :
+
+- `MediaModule`, `MinioService`, `ImageProcessorService`, `MediaAccessService` DOIVENT être supprimés de `services/adventure/`
+- Les endpoints avatar utilisateur (`POST /user/me/avatar`, `DELETE /user/me/avatar`) DOIVENT être retirés du `UserController` de adventure
+- Adventure DOIT exposer `POST /character/internal/validate-access` (protégé `InternalGuard`) permettant au service media de vérifier l'appartenance et les droits d'accès à un personnage
+
+**Gateway** :
+
+- Le gateway DOIT ajouter une route `MEDIA_SERVICE_URL` et un contrôleur proxy `MediaProxyController` routant `/media/*` vers le service media
+- Le pattern de routage DOIT être cohérent avec les services existants (`adventure`, `session`, `payment`)
+
+**Frontend** :
+
+- `MediaService.USER_AVATAR_PATH` DOIT être mis à jour de `/user/me/avatar` vers `/media/users/me/avatar`
+- La `BASE_PATH = "/media"` reste inchangée
+
+**Infrastructure** :
+
+- Le service media dispose de son propre `compose.dev.yml` incluant : le conteneur NestJS (`chariot-media`, port 9005) et le conteneur MinIO (`chariot-minio`, port 9004)
+- MinIO est retiré du `compose.dev.yml` de adventure
+- Les variables d'environnement MinIO (`MINIO_ENDPOINT`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, `MINIO_BUCKET`, `MINIO_PUBLIC_URL`, `MEDIA_PRESIGNED_TTL_SECONDS`) sont configurées sur le service media uniquement
+
+**Prohibitions** :
+
+- Aucun autre service ne DOIT importer `MinioService`, `ImageProcessorService`, ou tout SDK S3
+- Le service media NE DOIT PAS accéder directement à la base de données MongoDB de adventure
+- Le service media NE DOIT PAS dupliquer la logique métier caractère/session — les vérifications d'accès passent par les services source via HTTP interne
+
+**Tests** :
+
+- Nominal : upload avatar personnage par son propriétaire → objet stocké dans MinIO, `character.avatar` mis à jour
+- Nominal : upload avatar utilisateur authentifié → stocké, attribut Keycloak mis à jour
+- Nominal : résolution presigned read batch → URLs signées retournées
+- Edge : requête par GM en session → validation via session service, accès accordé
+- Edge : MinIO non configuré → `ServiceUnavailableException` (503)
+- Erreur : upload par un utilisateur non propriétaire sans session → `ForbiddenException` (403)
+- Erreur : personnage inexistant → `NotFoundException` (404)
+
+**References** :
+
+- `services/media/api/src/` (nouveau service)
+- `services/adventure/api/src/resources/media/` (code source à migrer)
+- `services/adventure/api/src/resources/character/` (endpoint interne `validate-access`)
+- `services/gateway/api/src/proxy/proxy.controller.ts`
+- `services/web/client/src/services/MediaService.ts`

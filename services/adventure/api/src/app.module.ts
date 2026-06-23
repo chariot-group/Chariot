@@ -14,7 +14,6 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { SeederModule } from '@/seeder/seeder.module';
 import { UserModule } from '@/resources/user/user.module';
 import { QuickLinkModule } from '@/resources/quick-link/quick-link.module';
-import { MediaModule } from '@/resources/media/media.module';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
 
 @Module({
@@ -33,7 +32,6 @@ import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
     PrometheusModule.register(),
     UserModule,
     QuickLinkModule,
-    MediaModule,
   ],
   controllers: [AppController],
   providers: [

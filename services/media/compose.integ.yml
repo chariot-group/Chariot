@@ -1,0 +1,63 @@
+name: chariot-media-integ
+
+services:
+  chariot-minio:
+    image: minio/minio:latest
+    container_name: chariot-minio-integ
+    restart: unless-stopped
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - chariot_minio_data_integ:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - media-network
+
+  chariot-media:
+    image: ghcr.io/chariot-group/chariot-media-integration:latest
+    container_name: chariot-media-integ
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      NODE_ENV: integration
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      ADVENTURE_INTERNAL_URL: ${ADVENTURE_INTERNAL_URL}
+      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://chariot-minio-integ:9000}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-chariot-media}
+      MEDIA_PRESIGNED_TTL_SECONDS: ${MEDIA_PRESIGNED_TTL_SECONDS:-1800}
+    depends_on:
+      chariot-minio:
+        condition: service_healthy
+    networks:
+      - media-network
+      - chariot-group-network-integ
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+volumes:
+  chariot_minio_data_integ:
+
+networks:
+  media-network:
+    driver: bridge
+  chariot-group-network-integ:
+    external: true
