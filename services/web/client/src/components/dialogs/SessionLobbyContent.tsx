@@ -1,0 +1,497 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { CharacterSelect } from "@/components/character/CharacterSelect";
+import { useToast } from "@/hooks/useToast";
+import { useSessionData } from "@/hooks/useSessionData";
+import type { SessionParticipant } from "@/services/SessionService";
+import { useSessionSocket } from "@/hooks/useSessionSocket";
+import { useUser } from "@/hooks/useUser";
+import { useKeycloak } from "@/providers/KeycloakProvider";
+import { useAppSelector } from "@/store/hooks";
+import { selectCampaigns } from "@/store/slices/campaignSlice";
+import { selectUser } from "@/store/slices/userSlice";
+import Token from "@public/assets/token.svg";
+import { QRCodeSVG } from "qrcode.react";
+import { Check, ChevronDown, Copy, Link, Loader2, Minus, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/sessionSlice";
+import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
+import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import { cn } from "@/lib/utils";
+
+type SessionLobbyCopyState = "idle" | "loading" | "success";
+
+interface SessionLobbyContentProps {
+  code: string;
+  idCampaign: string;
+}
+
+export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentProps) {
+  const t = useTranslations("sessionPage");
+  const campaigns = useAppSelector(selectCampaigns);
+  const campaign = campaigns.find((c) => c._id === idCampaign);
+  const { token } = useKeycloak();
+  useUser({ autoFetch: true });
+  const currentUser = useAppSelector(selectUser);
+  const toast = useToast();
+
+  const sessionStatus = useAppSelector(selectSessionStatus);
+  const sessionIsActive = sessionStatus == "activated";
+  const [codeCopyState, setCodeCopyState] = useState<SessionLobbyCopyState>("idle");
+  const [linkCopyState, setLinkCopyState] = useState<SessionLobbyCopyState>("idle");
+  const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
+  const [tokensByUser, setTokensByUser] = useState<Record<string, number>>(reduxTokensByUser);
+  const [customAmount, setCustomAmount] = useState(1);
+
+  useEffect(() => {
+    setTokensByUser(reduxTokensByUser);
+  }, [reduxTokensByUser]);
+
+  const {
+    campaignLabel,
+    participants,
+    setParticipants,
+    participantNames,
+    myCharacters,
+    fetchCharacterDetails,
+    getCharacterLabel,
+    isLoading,
+  } = useSessionData({ code, idCampaign, campaign }) as ReturnType<typeof useSessionData>;
+
+  const totalTokens = Object.values(tokensByUser).reduce((a, b) => a + b, 0);
+  const myTokens = currentUser ? (tokensByUser[currentUser.keycloakId] ?? 0) : 0;
+  const maxTokens = participants.length;
+  const isMJ = participants.find((p) => p.userId === currentUser?.keycloakId)?.status === "gameMaster";
+  const maxAddable = Math.min((currentUser?.balance ?? 0) - myTokens, maxTokens - totalTokens);
+  const maxCustomAmount = Math.max(1, Math.max(maxAddable, myTokens));
+
+  const sessionSocket = useSessionSocket({
+    token,
+    code,
+    campaignId: idCampaign,
+    campaignName: campaign?.label ?? campaignLabel ?? "",
+    currentUser,
+    participants,
+    setParticipants,
+    fetchCharacterDetails,
+    tokensByUser,
+    setTokensByUser,
+  });
+
+  if (isLoading || !sessionSocket) {
+    return (
+      <div className="flex flex-1 items-center justify-center h-full py-8">
+        <Loader2 className="animate-spin w-8 h-8 mr-2" />
+        <span>Chargement de la session…</span>
+      </div>
+    );
+  }
+
+  const {
+    handleCharacterChange,
+    handleLeave,
+    handleAddToken,
+    handleAddTokenAmount,
+    handleRemoveTokenAmount,
+    handleLaunchSession,
+    handleDismissSessionEnd,
+    isChangingCharacter,
+    isLeaving,
+    isLaunching,
+    sessionEndReason,
+    handleCloseSession,
+  } = sessionSocket;
+
+  const copy = (text: string, setState: Dispatch<SetStateAction<SessionLobbyCopyState>>): void => {
+    setState("loading");
+    if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          setState("success");
+          setTimeout(() => setState("idle"), 1000);
+        })
+        .catch(() => {
+          setState("idle");
+          toast.error(t("toast.copyError"));
+        });
+    } else {
+      setState("idle");
+      toast.error(t("toast.copyNotSupported"));
+    }
+  };
+
+  const joinUrl =
+    typeof window !== "undefined"
+      ? (() => {
+          const url = new URL(window.location.href);
+          url.searchParams.set("join", code);
+          return url.toString();
+        })()
+      : `?join=${code}`;
+
+  return (
+    <React.Fragment>
+      <SessionEndedDialog
+        reason={sessionEndReason}
+        onConfirm={handleDismissSessionEnd}
+      />
+      <div
+        className="flex flex-col h-full min-h-0"
+        aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
+        <div className="p-4 sm:p-6 flex flex-col-reverse lg:grid lg:grid-cols-4 gap-4 lg:items-stretch flex-1 min-h-0">
+          {/* Players section */}
+          <section
+            aria-labelledby="session-lobby-players-heading"
+            className="lg:col-span-3 flex flex-col gap-4 min-h-0 flex-1">
+            <Card className="flex flex-col gap-4 p-4 sm:p-6 min-h-0 flex-1">
+              <h2
+                id="session-lobby-players-heading"
+                className="text-xl sm:text-2xl font-bold shrink-0">
+                {t("title")}
+                <span className="font-normal"> - {campaign?.label ?? campaignLabel}</span>
+              </h2>
+
+              <div
+                role="list"
+                aria-label={t("players.ariaLabel")}
+                className="grid grid-cols-1 sm:grid-cols-2 items-start gap-3 overflow-y-auto flex-1 min-h-0 scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+                tabIndex={0}>
+                {participants.length > 0 &&
+                  participants.map((participant: SessionParticipant) => {
+                    const isMe = participant.userId === currentUser?.keycloakId;
+                    const isPlayer = participant.status === "connected";
+                    const characterLabel = getCharacterLabel(participant.characterId);
+
+                    return (
+                      <Card
+                        key={participant.id}
+                        role="listitem"
+                        className="bg-gray flex flex-col gap-2 p-3">
+                        <div className="flex flex-row items-center gap-2">
+                          <span className="font-medium truncate min-w-0 flex-1">
+                            {participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING}
+                          </span>
+                          {participant.status === "gameMaster" && <Badge className="shrink-0">{t("players.gameMaster")}</Badge>}
+                          {participant.status === "connected" && (
+                            <Badge variant={"secondary"} className="shrink-0">{t("players.player")}</Badge>
+                          )}
+                        </div>
+
+                        {isMe && isPlayer && sessionIsActive ? (
+                          <CharacterSelect
+                            characters={myCharacters}
+                            value={participant.characterId ?? ""}
+                            onValueChange={handleCharacterChange}
+                            placeholder={t("players.selectCharacterPlaceholder")}
+                            disabled={isChangingCharacter}
+                            selectedLabel={characterLabel || undefined}
+                            triggerClassName="w-full text-xs"
+                          />
+                        ) : (
+                          <span className="text-xs text-muted-foreground truncate">{characterLabel ?? " "}</span>
+                        )}
+                      </Card>
+                    );
+                  })}
+              </div>
+
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleLeave}
+                  disabled={isLeaving}>
+                  {t("players.leaveButton")}
+                </Button>
+                {isMJ && !sessionIsActive && (
+                  <ConfirmCancelSessionDialog onConfirm={handleCloseSession}>
+                    <Button
+                      type="button"
+                      variant="destructive">
+                      Clôturer la session
+                    </Button>
+                  </ConfirmCancelSessionDialog>
+                )}
+                {/* Split token button */}
+                {sessionIsActive && (
+                  <div className="flex items-center">
+                    <Button
+                      className="rounded-r-none border-r-0 pr-1"
+                      aria-label={
+                        totalTokens >= maxTokens
+                          ? t("players.launchSessionAriaLabel")
+                          : t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })
+                      }
+                      disabled={!sessionIsActive || (totalTokens >= maxTokens ? !isMJ || isLaunching : maxAddable <= 0)}
+                      onClick={totalTokens >= maxTokens ? handleLaunchSession : handleAddToken}>
+                      {totalTokens >= maxTokens ? (
+                        <React.Fragment>
+                          {isLaunching ? <Loader2 className="animate-spin" /> : null}
+                          {t("players.launchSessionButton")}
+                        </React.Fragment>
+                      ) : (
+                        <span className="flex items-center gap-1.5">
+                          {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
+                          <Image
+                            src={Token}
+                            alt=""
+                            aria-hidden="true"
+                            className="w-3 h-3 sm:w-4 sm:h-4"
+                          />
+                        </span>
+                      )}
+                    </Button>
+                    <DropdownMenu modal={false}>
+                      <DropdownMenuTrigger
+                        disabled={!sessionIsActive}
+                        asChild>
+                        <Button
+                          disabled={!sessionIsActive}
+                          className="rounded-l-none px-2 pl-1"
+                          aria-label={t("players.tokenMenuAriaLabel")}>
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        side="top"
+                        className="w-56 p-3">
+                        <p className="text-xs text-muted-foreground mb-2">{t("players.customAmount")}</p>
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            disabled={customAmount <= 1}
+                            onClick={() => setCustomAmount((a) => Math.max(1, a - 1))}>
+                            <Minus className="w-3 h-3" />
+                          </Button>
+                          <span className="text-sm font-medium w-6 text-center">{customAmount}</span>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            disabled={customAmount >= maxCustomAmount}
+                            onClick={() => setCustomAmount((a) => Math.min(maxCustomAmount, a + 1))}>
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <div className="flex gap-2 mb-1">
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            disabled={maxAddable <= 0}
+                            onClick={() => handleAddTokenAmount(customAmount)}>
+                            <Plus className="w-3 h-3" />
+                            {t("players.addCustomButton")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            disabled={myTokens <= 0}
+                            onClick={() => handleRemoveTokenAmount(customAmount)}>
+                            <Minus className="w-3 h-3" />
+                            {t("players.removeCustomButton")}
+                          </Button>
+                        </div>
+                        {myTokens > 0 && (
+                          <React.Fragment>
+                            <DropdownMenuSeparator className="my-2" />
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => handleRemoveTokenAmount(myTokens)}>
+                              <Trash2 className="w-3 h-3" />
+                              {t("players.removeAllButton", { myTokens })}
+                            </DropdownMenuItem>
+                          </React.Fragment>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </section>
+
+          {/* Session code section */}
+          <aside
+            aria-labelledby="session-lobby-code-heading"
+            className="shrink-0 lg:col-span-1 flex flex-col gap-3 lg:items-start min-w-0 max-w-full">
+            <Card className="p-3 sm:p-4 min-w-0 max-w-full lg:hidden">
+              <SessionLobbyCodeSection
+                code={code}
+                joinUrl={joinUrl}
+                inviteDisplay="responsive"
+                codeCopyState={codeCopyState}
+                linkCopyState={linkCopyState}
+                onCopyCode={() => copy(code, setCodeCopyState)}
+                onCopyLink={() => copy(joinUrl, setLinkCopyState)}
+                headingId="session-lobby-code-heading"
+              />
+            </Card>
+            <Card className="hidden lg:flex flex-col gap-0 p-3 sm:p-4 w-full">
+              <SessionLobbyCodeSection
+                code={code}
+                inviteDisplay="text"
+                codeCopyState={codeCopyState}
+                linkCopyState={linkCopyState}
+                onCopyCode={() => copy(code, setCodeCopyState)}
+                onCopyLink={() => copy(joinUrl, setLinkCopyState)}
+                headingId="session-lobby-code-heading"
+              />
+            </Card>
+            <Card className="hidden lg:flex flex-col items-center gap-2 p-3 sm:p-4 w-full">
+              <SessionLobbyQrSection
+                joinUrl={joinUrl}
+                showHeading
+              />
+            </Card>
+          </aside>
+        </div>
+      </div>
+    </React.Fragment>
+  );
+}
+
+interface SessionLobbyCodeSectionProps {
+  code: string;
+  codeCopyState: SessionLobbyCopyState;
+  linkCopyState: SessionLobbyCopyState;
+  onCopyCode: () => void;
+  onCopyLink: () => void;
+  headingId?: string;
+  className?: string;
+  joinUrl?: string;
+  inviteDisplay?: "text" | "responsive";
+}
+
+function SessionLobbyCodeSection({
+  code,
+  codeCopyState,
+  linkCopyState,
+  onCopyCode,
+  onCopyLink,
+  headingId,
+  className,
+  joinUrl,
+  inviteDisplay = "text",
+}: SessionLobbyCodeSectionProps) {
+  const t = useTranslations("sessionPage");
+  const formattedCode = `${code.slice(0, 3)} - ${code.slice(3)}`;
+  const isResponsiveInvite = inviteDisplay === "responsive" && Boolean(joinUrl);
+
+  return (
+    <div className={cn("flex flex-col gap-0", className)}>
+      <h2
+        id={headingId}
+        className="text-sm sm:text-base font-bold mb-2">
+        {t("sessionCode.heading")}
+      </h2>
+      <div className={cn("flex min-w-0", isResponsiveInvite ? "justify-center" : "flex-col")}>
+        <p
+          className={cn(
+            "font-mono tracking-widest text-center py-1 min-w-0",
+            isResponsiveInvite ? "sr-only" : "w-full text-xl sm:text-2xl",
+          )}
+          aria-label={t("sessionCode.ariaLabel", { code })}>
+          {formattedCode}
+        </p>
+        {isResponsiveInvite && joinUrl && (
+          <SessionLobbyQrSection
+            joinUrl={joinUrl}
+            prominent
+          />
+        )}
+      </div>
+      <div className="flex gap-2 items-center mt-2 min-w-0">
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            "flex-1 min-w-0 transition-colors",
+            codeCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
+          )}
+          aria-label={t("sessionCode.copyAriaLabel")}
+          disabled={codeCopyState !== "idle"}
+          onClick={onCopyCode}>
+          {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
+          {codeCopyState === "success" && <Check />}
+          {codeCopyState === "idle" && <Copy />}
+          {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
+        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              aria-label={t("sessionCode.copyLinkAriaLabel")}
+              className={cn(
+                "shrink-0 transition-colors",
+                linkCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
+              )}
+              disabled={linkCopyState !== "idle"}
+              onClick={onCopyLink}>
+              {linkCopyState === "success" ? <Check /> : <Link />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </div>
+  );
+}
+
+interface SessionLobbyQrSectionProps {
+  joinUrl: string;
+  showHeading?: boolean;
+  prominent?: boolean;
+  className?: string;
+}
+
+function SessionLobbyQrSection({
+  joinUrl,
+  showHeading = false,
+  prominent = false,
+  className,
+}: SessionLobbyQrSectionProps) {
+  const t = useTranslations("sessionPage");
+
+  return (
+    <div
+      className={cn("flex flex-col items-center gap-2", className)}
+      aria-label={t("sessionCode.qrCodeAriaLabel")}>
+      {showHeading && (
+        <h2 className="text-sm sm:text-base font-bold self-start">{t("sessionCode.qrCodeHeading")}</h2>
+      )}
+      <div className="bg-white rounded border border-border shrink-0 p-2">
+        <QRCodeSVG
+          value={joinUrl}
+          size={120}
+          bgColor="#ffffff"
+          fgColor="#19191c"
+          className={cn(
+            "block",
+            prominent && "w-24 h-24",
+            !prominent && "w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] lg:w-[120px] lg:h-[120px]",
+          )}
+        />
+      </div>
+    </div>
+  );
+}

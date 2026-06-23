@@ -299,6 +299,8 @@ export interface CurrentSessionState {
     participantDisplayNames: Record<string, string>;
     /** FR-session-gm-guest-character — IDs des personnages MJ temporairement promus dans le groupe participants session. */
     gmGuestCharacterIds: string[];
+    /** FR-042 — contrôle l'ouverture de la modale lobby session (non persisté). */
+    sessionLobbyOpen: boolean;
 }
 
 const initialState: CurrentSessionState = {
@@ -320,6 +322,7 @@ const initialState: CurrentSessionState = {
     lastConsultedSheetPath: null,
     participantDisplayNames: {},
     gmGuestCharacterIds: [],
+    sessionLobbyOpen: false,
 };
 
 const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow => {
@@ -756,6 +759,14 @@ const sessionSlice = createSlice({
             if (!id) return;
             state.gmGuestCharacterIds = (state.gmGuestCharacterIds ?? []).filter((cid) => cid !== id);
         },
+        /** FR-042 — ouvre la modale lobby session. */
+        openSessionLobby: (state) => {
+            state.sessionLobbyOpen = true;
+        },
+        /** FR-042 — ferme la modale lobby session. */
+        closeSessionLobby: (state) => {
+            state.sessionLobbyOpen = false;
+        },
     },
 });
 
@@ -787,6 +798,8 @@ export const {
     pruneSessionParticipantDisplayNames,
     addGmGuestCharacterToSession,
     removeGmGuestCharacterFromSession,
+    openSessionLobby,
+    closeSessionLobby,
 } = sessionSlice.actions;
 
 export const selectCurrentSession = (state: RootState) => state.session;
@@ -822,6 +835,8 @@ export const selectGmGuestCharacterIds = (state: RootState) =>
 
 export const selectLastConsultedSheetPath = (state: RootState) =>
     state.session.lastConsultedSheetPath ?? null;
+
+export const selectSessionLobbyOpen = (state: RootState) => state.session.sessionLobbyOpen ?? false;
 
 export const selectBattleStateSnapshot = (state: RootState): BattleStateSnapshot => ({
     initiativeTrackerRows: state.session.initiativeTrackerRows,
