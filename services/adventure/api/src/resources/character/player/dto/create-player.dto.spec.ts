@@ -2,7 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { CreatePlayerDto } from '@/resources/character/player/dto/create-player.dto';
 
-describe('CreatePlayerDto - FR-003: Player Exhaustion Management', () => {
+describe('CreatePlayerDto - FR-dnd-conditions: Player Exhaustion Management', () => {
   describe('Exhaustion level validation - Player specific', () => {
     it('should accept valid exhaustion level 0 (no exhaustion)', () => {
       const dto = plainToInstance(CreatePlayerDto, {

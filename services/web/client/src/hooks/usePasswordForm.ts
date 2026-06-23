@@ -18,7 +18,7 @@ type PasswordFormData = {
 /**
  * Custom hook for password change form management
  * Handles validation, API calls, and user feedback
- * @see FR-011: User Password Change
+ * @see FR-user-password-change: User Password Change
  * @returns Form state, functions, and form instance
  */
 export function usePasswordForm() {

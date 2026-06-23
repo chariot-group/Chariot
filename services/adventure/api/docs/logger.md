@@ -135,7 +135,7 @@ All logging must go through the Winston logger to ensure:
 - File persistence in production
 - Centralized log management
 
-See the functional rule **FR-001** in `docs/functional-rules.md` for complete requirements.
+See the functional rule **FR-logging-system** in `docs/functional-rules.md` for complete requirements.
 
 
 ## Best Practices

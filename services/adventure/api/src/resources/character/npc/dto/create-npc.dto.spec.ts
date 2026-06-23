@@ -2,7 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { CreateNpcDto } from '@/resources/character/npc/dto/create-npc.dto';
 
-describe('CreateNpcDto - FR-003: NPC Conditions (No Exhaustion)', () => {
+describe('CreateNpcDto - FR-dnd-conditions: NPC Conditions (No Exhaustion)', () => {
   describe('NPC should accept standard conditions but NOT exhaustion', () => {
     it('should accept NPC with standard conditions', () => {
       const dto = plainToInstance(CreateNpcDto, {

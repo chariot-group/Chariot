@@ -28,7 +28,7 @@ export const TRACKER_GRID_TEMPLATE_COLUMNS =
 export const TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION =
   "32px minmax(44px, 112px) minmax(52px, 132px) minmax(92px, 1.15fr) minmax(64px, 88px) minmax(40px, 52px) minmax(88px, 0.95fr) minmax(0, 0.9fr)";
 
-/** FR-021 — grille sans colonne visibilité MJ (vue joueur). */
+/** FR-session-combat-navigation — grille sans colonne visibilité MJ (vue joueur). */
 export const PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS =
   "minmax(52px, 132px) minmax(92px, 1.15fr) minmax(64px, 88px) minmax(40px, 52px) minmax(88px, 0.95fr) minmax(0, 0.9fr)";
 

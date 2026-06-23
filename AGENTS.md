@@ -44,7 +44,7 @@ If the request is **Covered**:
 If the request is **Missing rule**:
 
 1. The agent MUST draft and write a new functional rule in `docs/functional-rules.md`.
-2. The rule MUST use a stable slug identifier: `FR-{domain}-{feature}` (kebab-case, English). Legacy numeric IDs (`FR-001` … `FR-037`) are frozen — do NOT assign the next sequential number.
+2. The rule MUST use a stable slug identifier: `FR-{domain}-{feature}` (kebab-case, English). Numeric IDs (`FR-001` … `FR-038`) are deprecated.
 3. The agent MUST append the new rule at the **end** of `docs/functional-rules.md` to reduce merge conflicts across parallel branches.
 4. The rule SHOULD be concise, testable, and implementation-agnostic (except essential technical constraints).
 5. After writing the rule, the agent MUST stop and request explicit functional confirmation.
@@ -112,7 +112,7 @@ Session and WebSocket code is a **cross-cutting, stateful subsystem** spanning f
 
 Before proposing or implementing any session or WebSocket change, the agent MUST:
 
-1. Read applicable functional rules: **FR-010**, **FR-021**, **FR-022**, **FR-024**, **FR-025**, **FR-026** (and FR-018/FR-020 when combat tracker behavior is involved).
+1. Read applicable functional rules: **FR-user-cache-isolation**, **FR-session-combat-navigation**, **FR-session-combat-sync**, **FR-session-participant-labels**, **FR-session-lobby-navigation**, **FR-session-websocket-lifecycle** (and FR-combat-initiative-tracker/FR-tracker-vital-status when combat tracker behavior is involved).
 2. Trace the full path: **emitter client → gateway handler → broadcast → consumer client(s) → Redux/local state**.
 3. Classify the change into one primary category:
    - **Connection lifecycle** (pool, JWT refresh, reconnect, session end)
@@ -136,21 +136,21 @@ Before proposing or implementing any session or WebSocket change, the agent MUST
 
 **Naming trap**: WebSocket field `sessionId` = **OTP session code**, not the internal DB UUID.
 
-**Broadcast trap**: Gateway uses `client.to(room)` — the emitter does not receive its own event. GM/local updates need explicit client-side listeners (FR-022).
+**Broadcast trap**: Gateway uses `client.to(room)` — the emitter does not receive its own event. GM/local updates need explicit client-side listeners (FR-session-combat-sync).
 
 ### 10.3 Lessons from `hotfix/sessions` (Non-Exhaustive Pitfall List)
 
 | Symptom | Root cause | Required safeguard |
 | --- | --- | --- |
-| False "participant disconnected" toast on page refresh | Immediate gateway disconnect notification | 3s grace period + cancel on rejoin/leave (FR-026) |
-| Double WebSocket connections | Layout + lobby each calling `io()` | Shared `sessionSocketPool` with refCount (FR-026) |
-| Reconnect drops assigned character | Join broadcast used client payload `characterId: null` | Gateway broadcasts persisted roster `characterId` (FR-026) |
-| Socket reconnects on every JWT refresh | Token included in pool connection key | Key = OTP code only; `syncSessionSocketAuth` for token (FR-026) |
-| Roster flashes or loses WS updates | HTTP sync overwrites Redux participants | `mergeParticipantsPreserveCharacterIds` (FR-026) |
-| Duplicate session-end toasts | Multiple components listen to `session:closed` / `session:expired` | `shouldShowSessionEndNotice` dedup (FR-026) |
-| UUID shown as player name | Raw `userId` / email used before profile fetch | FR-024 label resolution chain |
-| GM sheet edit not reflected on tracker | No local echo (`client.to` excludes emitter) | `registerLocalCharacterSheetUpdatedListener` (FR-022) |
-| `participant-left` not received by others | `client.to()` after `client.leave()` | `server.to(roomId)` on gateway (FR-026) |
+| False "participant disconnected" toast on page refresh | Immediate gateway disconnect notification | 3s grace period + cancel on rejoin/leave (FR-session-websocket-lifecycle) |
+| Double WebSocket connections | Layout + lobby each calling `io()` | Shared `sessionSocketPool` with refCount (FR-session-websocket-lifecycle) |
+| Reconnect drops assigned character | Join broadcast used client payload `characterId: null` | Gateway broadcasts persisted roster `characterId` (FR-session-websocket-lifecycle) |
+| Socket reconnects on every JWT refresh | Token included in pool connection key | Key = OTP code only; `syncSessionSocketAuth` for token (FR-session-websocket-lifecycle) |
+| Roster flashes or loses WS updates | HTTP sync overwrites Redux participants | `mergeParticipantsPreserveCharacterIds` (FR-session-websocket-lifecycle) |
+| Duplicate session-end toasts | Multiple components listen to `session:closed` / `session:expired` | `shouldShowSessionEndNotice` dedup (FR-session-websocket-lifecycle) |
+| UUID shown as player name | Raw `userId` / email used before profile fetch | FR-session-participant-labels label resolution chain |
+| GM sheet edit not reflected on tracker | No local echo (`client.to` excludes emitter) | `registerLocalCharacterSheetUpdatedListener` (FR-session-combat-sync) |
+| `participant-left` not received by others | `client.to()` after `client.leave()` | `server.to(roomId)` on gateway (FR-session-websocket-lifecycle) |
 
 ### 10.4 Mandatory Test Coverage for Session/WS Changes
 
@@ -176,7 +176,7 @@ Existing test anchors:
 - [ ] Confirmed JWT/token changes do not recreate the socket effect.
 - [ ] Confirmed gateway broadcasts use persisted authoritative data, not optimistic client payload alone.
 - [ ] Planned tests for nominal + reconnect/race + failure case.
-- [ ] For UI-facing changes: accessibility remains in scope (FR-019).
+- [ ] For UI-facing changes: accessibility remains in scope (FR-frontend-design).
 
 ## 11) Technical Constraints
 

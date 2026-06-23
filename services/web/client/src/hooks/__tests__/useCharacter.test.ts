@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isCharacterSheetBackgroundRefresh } from "@/hooks/useCharacter";
 
-describe("isCharacterSheetBackgroundRefresh — FR-022 sheet sync", () => {
+describe("isCharacterSheetBackgroundRefresh — FR-session-combat-sync sheet sync", () => {
   it("nominal: refresh silencieux pour une fiche déjà chargée", () => {
     expect(isCharacterSheetBackgroundRefresh("char-1", "char-1")).toBe(true);
   });

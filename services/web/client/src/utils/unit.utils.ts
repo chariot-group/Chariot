@@ -1,4 +1,4 @@
-// Conversion rates defined by FR-038: 5 ft = 1.5 m
+// Conversion rates defined by FR-distance-unit-conversion: 5 ft = 1.5 m
 const FT_TO_M = 0.3;
 const M_TO_FT = 1 / FT_TO_M;
 const FT_TO_CM = 30.48;

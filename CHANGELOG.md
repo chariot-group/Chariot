@@ -46,11 +46,11 @@
 - Added free checkout flow for orders at 0 € or below the Stripe minimum charge amount (button "Obtenir gratuitement", no card payment required)
 - Added "Cadeau" line in checkout recap when a positive remainder below the Stripe minimum is waived
 - Added `stripe-charge.utils` and `POST /stripe/free-order` endpoint (payment service) for zero-amount orders without Stripe card payment
-- Added FR-013-C functional rule for below-minimum and free checkout orders
+- Added FR-stripe-checkout (Below-Minimum and Free Checkout Orders) functional rule for below-minimum and free checkout orders
 - Added player initiative input during active combat (GM-controlled visibility)
 - Added bulk NPC visibility dialog in the initiative tracker
 - Added `stripOidcCallbackParams` to clean Keycloak OIDC callback query params after login (web + admin)
-- Added session WebSocket hardening: shared socket pool, reconnect grace period, roster merge, session-end dedup (FR-026)
+- Added session WebSocket hardening: shared socket pool, reconnect grace period, roster merge, session-end dedup (FR-session-websocket-lifecycle)
 
 ### Changed
 - `createPaymentIntent` and `updatePaymentIntent` now return `isFreeOrder` and use chargeable amount instead of raw discounted amount

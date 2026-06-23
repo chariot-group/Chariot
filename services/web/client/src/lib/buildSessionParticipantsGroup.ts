@@ -41,7 +41,7 @@ export type SessionParticipantsBattleGroup = {
     characters: SessionParticipantsGroupCharacter[];
 };
 
-/** FR-024 — libellé de repli pour une ligne tracker sans fiche personnage chargée. */
+/** FR-session-participant-labels — libellé de repli pour une ligne tracker sans fiche personnage chargée. */
 export function resolveSessionParticipantBattleFallbackName(
     userId: string,
     displayNames: Record<string, string>,

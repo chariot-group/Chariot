@@ -27,7 +27,7 @@ const baseStatus = (
   ...overrides,
 });
 
-describe("FR-020 — getInitiativeTrackerRowStatus", () => {
+describe("FR-tracker-vital-status — getInitiativeTrackerRowStatus", () => {
   it("nominal: an alive character keeps the alive status regardless of death save failures", () => {
     expect(
       getInitiativeTrackerRowStatus(
@@ -128,7 +128,7 @@ const buildNpcCharacter = (overrides: Partial<NPC> = {}): Character => {
   return character as unknown as Character;
 };
 
-describe("FR-020 — character → tracker mirror helpers", () => {
+describe("FR-tracker-vital-status — character → tracker mirror helpers", () => {
   it("nominal: a player character resolves to kind 'player' and exposes its death save failures", () => {
     const player = buildPlayerCharacter();
     expect(trackerKindFromCharacter(player)).toBe("player");
@@ -197,7 +197,7 @@ describe("FR-020 — character → tracker mirror helpers", () => {
   });
 });
 
-describe("FR-021 — filterRowsForPlayerView", () => {
+describe("FR-session-combat-navigation — filterRowsForPlayerView", () => {
   it("nominal: keeps visible NPC rows", () => {
     const rows = [
       { id: "a", visible: true, kind: "npc" },
@@ -224,7 +224,7 @@ describe("FR-021 — filterRowsForPlayerView", () => {
   });
 });
 
-describe("FR-021 — player display name helpers", () => {
+describe("FR-session-combat-navigation — player display name helpers", () => {
   it("nominal: default alias equals character name", () => {
     expect(
       defaultPlayerDisplayNameForRow({ firstname: "Gobelin", lastname: "1", surname: "" }),
@@ -241,7 +241,7 @@ describe("FR-021 — player display name helpers", () => {
   });
 });
 
-describe("FR-021 — resolvePlayerTrackerDisplayName", () => {
+describe("FR-session-combat-navigation — resolvePlayerTrackerDisplayName", () => {
   const baseRow = {
     firstname: "Secret",
     lastname: "Goblin",
@@ -291,7 +291,7 @@ describe("FR-021 — resolvePlayerTrackerDisplayName", () => {
   });
 });
 
-describe("FR-021 / FR-022 — player-safe battle snapshots", () => {
+describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe battle snapshots", () => {
   const visibleRow = {
     id: "visible",
     characterId: "c-visible",

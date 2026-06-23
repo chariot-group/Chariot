@@ -5,21 +5,21 @@ Each rule has a unique identifier and must be tested.
 
 ## Rule identifier convention
 
-**Legacy rules (`FR-001` … `FR-037`)** use sequential numeric IDs. These IDs are **frozen** — never renumber, reuse, or extend them.
-
-**New rules** MUST use a stable slug ID: `FR-{domain}-{feature}` (kebab-case, English).  
+Each rule uses a stable slug ID: `FR-{domain}-{feature}` (kebab-case, English).  
 Examples: `FR-sidebar-quick-links`, `FR-character-duplicate`, `FR-session-join-qr-code`.
+
+**Deprecated numeric IDs** (`FR-001` … `FR-038`) were migrated to slug IDs. Do not use numeric IDs in new code, comments, or rules.
 
 When adding a rule:
 
-1. Choose a slug from the feature domain — do **not** pick the next sequential number.
+1. Choose a slug from the feature domain — do **not** use numeric IDs.
 2. Search this file to confirm the slug is unique.
 3. Append the new rule at the **end** of this file (reduces merge conflicts across parallel branches).
-4. Sub-rules or variants SHOULD be `###` sections inside the parent rule, not numeric suffixes (avoid `FR-027-B`).
+4. Sub-rules or variants SHOULD be `###` sections inside the parent rule, not separate top-level IDs.
 
 ---
 
-## FR-001: Logging System Standardization
+## FR-logging-system: Logging System Standardization
 
 **Rule**: Use Winston logger exclusively with NestJS injection and explicit context.
 
@@ -38,7 +38,7 @@ When adding a rule:
 
 ---
 
-## FR-002: Character Universal Fields
+## FR-character-universal-fields: Character Universal Fields
 
 **Rule**: All character types (Player, NPC, etc.) must include shared narrative and economic fields at the base `Character` level.
 
@@ -65,7 +65,7 @@ When adding a rule:
 
 ---
 
-## FR-003: D&D Conditions Management
+## FR-dnd-conditions: D&D Conditions Management
 
 **Rule**: All characters must support D&D 5e standard conditions tracking. Player characters additionally support exhaustion levels.
 
@@ -133,7 +133,7 @@ When adding a rule:
 
 ---
 
-## FR-004: Sidebar Navigation and Redux State Management
+## FR-sidebar-navigation: Sidebar Navigation and Redux State Management
 
 **Rule**: The web/client application must provide a contextual sidebar navigation with centralized Redux state management. The sidebar adapts its content based on user context (Player vs Game Master), which is controlled by a global state toggle, not URL patterns.
 
@@ -197,7 +197,7 @@ When adding a rule:
 - Detecting context from URL patterns or prefixes
 - Missing accessibility attributes on interactive elements
 - Client-side only routing without proper SSR handling
-- Using `console.log` in production code (respect FR-001)
+- Using `console.log` in production code (respect FR-logging-system)
 
 **Tests**:
 
@@ -216,7 +216,7 @@ When adding a rule:
 
 ---
 
-## FR-005: Player Characters Without Group
+## FR-characters-without-group: Player Characters Without Group
 
 **Rule**: Player characters can be created and exist without being assigned to any group. A paginated route must be available to retrieve all player characters that are not currently assigned to any group and that were created by the authenticated user.
 
@@ -267,7 +267,7 @@ When adding a rule:
 
 ---
 
-## FR-006: User Logout Cache Purge
+## FR-logout-cache-purge: User Logout Cache Purge
 
 **Rule**: On user logout, all persisted application state (Redux Persist) must be completely purged to prevent data leakage between different user sessions.
 
@@ -311,7 +311,7 @@ When adding a rule:
 
 ---
 
-## FR-007: Post-Authentication Navigation Priority
+## FR-post-auth-navigation: Post-Authentication Navigation Priority
 
 **Rule**: Upon successful authentication, the application must automatically redirect the user to the most relevant page based on their existing data. The redirection follows a strict priority hierarchy to ensure optimal user experience.
 
@@ -369,7 +369,7 @@ When adding a rule:
 
 ---
 
-## FR-008: User Balance and Transaction History
+## FR-user-balance-history: User Balance and Transaction History
 
 **Rule**: Each user must have a balance tracking system linked to their Keycloak identity, with complete transaction history for audit purposes.
 
@@ -427,7 +427,7 @@ When adding a rule:
 
 ---
 
-## FR-009: Character Detail View Display
+## FR-character-detail-view: Character Detail View Display
 
 **Rule**: The web application must provide a detailed, tabbed view for displaying both Player and NPC characters with appropriate information differentiation and accessibility compliance.
 
@@ -570,7 +570,7 @@ When adding a rule:
 
 ---
 
-## FR-010: User Cache Isolation and Session Transition
+## FR-user-cache-isolation: User Cache Isolation and Session Transition
 
 **Rule**: Each user must have an isolated cache to prevent data leakage and 404 redirect loops when switching accounts or after session expiration.
 
@@ -647,7 +647,7 @@ When adding a rule:
 
 ---
 
-## FR-011: User Password Change
+## FR-user-password-change: User Password Change
 
 **Rule**: Authenticated users must be able to change their password through Keycloak SSO integration with validation, error handling, and internationalization.
 
@@ -669,7 +669,7 @@ When adding a rule:
   - 401: Current password incorrect
   - 403: New password does not meet complexity requirements
   - 500: Keycloak API error
-- Winston logging (FR-001):
+- Winston logging (FR-logging-system):
   - `info`: Successful password change with user ID (no password logged)
   - `error`: Failed password change with error type and user ID
   - Never log passwords or tokens
@@ -776,7 +776,7 @@ When adding a rule:
 
 ---
 
-## FR-012: User Profile Update via Keycloak
+## FR-user-profile-keycloak: User Profile Update via Keycloak
 
 **Rule**: Users must be able to update their personal information (firstName, lastName, email) through a dedicated API endpoint that synchronizes changes with Keycloak. Profile updates apply to the authenticated user only and must be traceable.
 
@@ -791,7 +791,7 @@ When adding a rule:
   - `lastName`: Optional string, minimum 2 characters when provided
   - `email`: Optional valid email format when provided
 - Updates are applied to Keycloak via `KeycloakService.updateUser(keycloakId, userData)`
-- Winston logging for all update operations (success and errors) - respects FR-001
+- Winston logging for all update operations (success and errors) - respects FR-logging-system
 - Returns updated `UserInfoDto` with all current user information
 - Authentication required via Keycloak JWT Guard
 
@@ -906,13 +906,13 @@ When adding a rule:
 
 ---
 
-## FR-013: Stripe Checkout, Webhook Access Control, and Referral System
+## FR-stripe-checkout: Stripe Checkout, Webhook Access Control, and Referral System
 
 **Rule**: Stripe checkout creation must be restricted to authenticated users, while webhook processing must be publicly accessible only through Stripe signature validation. The payment service handles all Stripe interactions and applies a referral discount system (parrainage) automatically at checkout.
 
 ---
 
-### FR-013-A: Checkout and Webhook Access Control
+### Checkout and Webhook Access Control
 
 **Requirements**:
 
@@ -942,7 +942,7 @@ When adding a rule:
 
 ---
 
-### FR-013-B: Referral System (Parrainage)
+### Referral System (Parrainage)
 
 **Rule**: A tier-based referral discount system automatically applies discounts at checkout for both the referrer (parrain) and the referee (filleul). Referral discounts apply only when no promo code or affiliation code is provided.
 
@@ -1019,7 +1019,7 @@ When adding a rule:
 
 ---
 
-### FR-013-C: Below-Minimum and Free Checkout Orders
+### Below-Minimum and Free Checkout Orders
 
 **Rule**: When the final discounted order amount is zero or below the Stripe minimum charge for the currency, the order must be fulfilled without a card payment. Any positive remainder below the Stripe minimum must appear as a complimentary "Cadeau" line in the checkout recap.
 
@@ -1054,7 +1054,7 @@ When adding a rule:
 
 ---
 
-## FR-014: Admin Sidebar External Navigation Links
+## FR-admin-sidebar-links: Admin Sidebar External Navigation Links
 
 **Rule**: The admin client sidebar must expose configurable external links to third-party administration consoles (Keycloak, Stripe). URLs must be defined per environment via environment variables and must not be hardcoded.
 
@@ -1104,7 +1104,7 @@ When adding a rule:
 
 ---
 
-## FR-015: Admin Table Deep Links to Keycloak and Stripe
+## FR-admin-table-deep-links: Admin Table Deep Links to Keycloak and Stripe
 
 **Rule**: In the admin payment module tables, displayed Keycloak user IDs and Stripe order IDs must be clickable deep links to the corresponding resource in the Keycloak admin console and Stripe dashboard.
 
@@ -1113,7 +1113,7 @@ When adding a rule:
 **URL Construction**:
 - Keycloak user URL built from `NEXT_PUBLIC_KEYCLOAK_ADMIN_URL`, `NEXT_PUBLIC_KEYCLOAK_REALM`, and the user UUID
 - Stripe order URL built from `NEXT_PUBLIC_STRIPE_DASHBOARD_URL` and the order identifier (`cs_*` → checkout session, `pi_*` → payment intent)
-- URLs must not be hardcoded; reuse the same environment variables as FR-014
+- URLs must not be hardcoded; reuse the same environment variables as FR-admin-sidebar-links
 - When a required env variable is missing, the identifier is rendered as plain non-clickable text
 
 **Navigation Behavior**:
@@ -1152,7 +1152,7 @@ When adding a rule:
 
 ---
 
-## FR-016: Admin Affiliation Activation Lifecycle
+## FR-admin-affiliation-lifecycle: Admin Affiliation Activation Lifecycle
 
 **Rule**: Admin users can deactivate and reactivate affiliation programs without soft-deleting them. Deactivation stops the code from being usable at checkout while preserving history and stats.
 
@@ -1186,7 +1186,7 @@ When adding a rule:
 
 ---
 
-## FR-017: Admin Promo Code Activation Lifecycle
+## FR-admin-promo-lifecycle: Admin Promo Code Activation Lifecycle
 
 **Rule**: Admin users can deactivate and reactivate promo codes without soft-deleting them. Deactivation stops the code from being usable at checkout while preserving usage history.
 
@@ -1219,7 +1219,7 @@ When adding a rule:
 
 ---
 
-## FR-018: Combat Module - Configuration and Initiative Tracker
+## FR-combat-initiative-tracker: Combat Module - Configuration and Initiative Tracker
 
 **Rule**: The combat module must provide a stable Game Master workflow from battle setup to turn-by-turn tracking, with recoverable local state and explicit guardrails on turn rollback.
 
@@ -1317,7 +1317,7 @@ When adding a rule:
   - any campaign group not yet represented in the roster, and/or
   - individual members from groups already in the roster whose `characterId` is not yet present.
 - New rows follow the same generation rules as battle configuration (stats, visibility defaults, dedupe by `characterId`).
-- Adding combatants MUST NOT reset turn engine state (`battleStarted`, active turn, round, action locks) except when the add mutates the roster during started combat (registers a tracker action on the active turn per FR-018).
+- Adding combatants MUST NOT reset turn engine state (`battleStarted`, active turn, round, action locks) except when the add mutates the roster during started combat (registers a tracker action on the active turn per FR-combat-initiative-tracker).
 - The GM MUST be able to **remove a row** (“leave initiative”) without ending the whole battle:
   - if the removed row was the active turn, advance to the next alive row in sorted order (or clear active turn if none remain);
   - purge turn-action keys tied to the removed row;
@@ -1380,7 +1380,7 @@ When adding a rule:
 
 ---
 
-## FR-019: Frontend Design Governance and Responsive Baseline
+## FR-frontend-design: Frontend Design Governance and Responsive Baseline
 
 **Rule**: The frontend must maintain a documented design baseline built from the implemented UI, and any new frontend feature must be aligned with that baseline before implementation.
 
@@ -1415,15 +1415,15 @@ When adding a rule:
 
 ---
 
-## FR-020: Initiative Tracker - Automatic Dead and Unconscious States
+## FR-tracker-vital-status: Initiative Tracker - Automatic Dead and Unconscious States
 
 **Rule**: Each initiative tracker row must reflect the character's vital status (alive, unconscious, dead) automatically derived from current HP and (for player characters) death save failures. Visual treatment, accessible name, and turn-order behavior depend on this status.
 
 **Scope**:
 
-- Applies to the GM Initiative Tracker (FR-018) only.
+- Applies to the GM Initiative Tracker (FR-combat-initiative-tracker) only.
 - Source of truth on frontend: `session.initiativeTrackerRows`.
-- Complements FR-018 without overriding any of its existing behaviors (turn lifecycle, conditions, persistence).
+- Complements FR-combat-initiative-tracker without overriding any of its existing behaviors (turn lifecycle, conditions, persistence).
 
 **Status Derivation**:
 
@@ -1441,10 +1441,10 @@ When adding a rule:
 - Mirror values must be initialized when the battle is configured (from the latest character snapshot).
 - Mirror values must be refreshed:
   - When the underlying character is updated through the session HP dialog (HP edit also pulls fresh death saves).
-  - On real-time character sheet sync (FR-022 `characterSheetRemoteVersions`) when the affected row is a player AND its current `hitPoints <= 0` (death saves are only meaningful at 0 HP, so we avoid refetching for cosmetic sheet edits).
+  - On real-time character sheet sync (FR-session-combat-sync `characterSheetRemoteVersions`) when the affected row is a player AND its current `hitPoints <= 0` (death saves are only meaningful at 0 HP, so we avoid refetching for cosmetic sheet edits).
 - Persisted shape must be backwards compatible (rehydration adds `kind: 'npc'` and `deathSavesFailures: 0` to legacy rows lacking these fields).
 
-**Visual Treatment (FR-019 compliance)**:
+**Visual Treatment (FR-frontend-design compliance)**:
 
 - Dead row:
   - Background: explicit red surface using the project palette (`--red`, e.g. `bg-red/35` with `ring-2 ring-red/60` on the row container) preserving WCAG AA contrast against white text.
@@ -1453,19 +1453,19 @@ When adding a rule:
   - Background: explicit yellow/amber surface using the project palette (`--yellow`, e.g. `bg-yellow/30` with `ring-2 ring-yellow/60`) preserving WCAG AA contrast against white text.
   - A `HeartCrack` icon (lucide-react) is rendered immediately after the HP value inside the HP cell of the tracker row, with `aria-hidden="true"`. Status text is exposed at the row level.
 - Alive row keeps the current visual baseline (no extra icon).
-- Active turn highlight (current FR-018 styling) MUST remain visible on top of dead/unconscious states (combined ring/background, never replaced).
+- Active turn highlight (current FR-combat-initiative-tracker styling) MUST remain visible on top of dead/unconscious states (combined ring/background, never replaced).
 - Status MUST never be conveyed by color alone: an icon (skull/heart-crack) and an accessible label are mandatory companion channels.
 
 **Turn Order Behavior**:
 
 - `nextBattleTurn` and `previousBattleTurn` MUST skip rows in the `dead` state.
-  - Skipping over a dead row MUST NOT register a tracker action on the skipped row (FR-018 turn-lock semantics unchanged for non-skipped rows).
-  - When advancing past the last alive row, the round counter increments by 1 exactly once and condition durations tick by one round (FR-018 condition lifecycle preserved).
+  - Skipping over a dead row MUST NOT register a tracker action on the skipped row (FR-combat-initiative-tracker turn-lock semantics unchanged for non-skipped rows).
+  - When advancing past the last alive row, the round counter increments by 1 exactly once and condition durations tick by one round (FR-combat-initiative-tracker condition lifecycle preserved).
   - When all rows are dead, the active turn becomes `null` and no advancement happens.
 - `unconscious` rows are NOT skipped; they keep their normal place in the initiative order.
-- Eligibility for `previousBattleTurn` (turn-lock guard from FR-018) is unchanged; among eligible rollbacks, dead rows are skipped.
+- Eligibility for `previousBattleTurn` (turn-lock guard from FR-combat-initiative-tracker) is unchanged; among eligible rollbacks, dead rows are skipped.
 
-**Accessibility (FR-019)**:
+**Accessibility (FR-frontend-design)**:
 
 - Dead/unconscious status MUST be exposed via accessible text on the row (e.g. visually hidden status label inside the row container) so screen readers announce the state.
 - Color contrast for the new red and yellow backgrounds against the existing white text MUST meet WCAG AA for normal text (4.5:1).
@@ -1477,7 +1477,7 @@ When adding a rule:
 - Marking a player as dead solely on `hitPoints <= 0` without checking death save failures.
 - Skipping unconscious players in the turn rotation.
 - Using color alone as the only signal for dead or unconscious states (icon + accessible text mandatory).
-- Hardcoding new colors outside the documented palette (FR-019).
+- Hardcoding new colors outside the documented palette (FR-frontend-design).
 - Polling the character API to refresh death saves (must rely on session HP dialog updates and `characterSheetRemoteVersions` events; refetch only for player rows currently at `hitPoints <= 0`).
 
 **Tests**:
@@ -1492,7 +1492,7 @@ When adding a rule:
   - `nextBattleTurn` skips a dead row at the end and increments round once
   - `nextBattleTurn` returns active row to `null` when all rows are dead
   - Unconscious rows are visited normally
-  - `previousBattleTurn` skips dead rows symmetrically while respecting FR-018 turn-lock rules
+  - `previousBattleTurn` skips dead rows symmetrically while respecting FR-combat-initiative-tracker turn-lock rules
 - Visual:
   - Dead row renders red background and `Skull` icon after HP
   - Unconscious row renders yellow background and `HeartCrack` icon after HP
@@ -1510,14 +1510,14 @@ When adding a rule:
 
 ---
 
-## FR-021: Session Combat Navigation and Player Initiative Visibility
+## FR-session-combat-navigation: Session Combat Navigation and Player Initiative Visibility
 
 **Rule**: During an active session combat, Game Masters and players must have contextual sidebar navigation between character sheets and the initiative tracker. The GM controls per-row and per-field visibility broadcast to players in real time via the session WebSocket.
 
 **Scope**:
 
 - Applies when a session is launched and a battle is initialized (`battleInitialized === true`).
-- Complements FR-018 (GM tracker control) and FR-020 (vital status) without overriding turn lifecycle or GM-only controls.
+- Complements FR-combat-initiative-tracker (GM tracker control) and FR-tracker-vital-status (vital status) without overriding turn lifecycle or GM-only controls.
 - Player initiative view is read-only; turn controls remain GM-only.
 
 **Sidebar Navigation — Game Master**:
@@ -1525,7 +1525,7 @@ When adding a rule:
 - When the GM is on the initiative tracker page and a battle is initialized or started, the sidebar footer MUST show **Return to Character Sheet** (not **Reset**).
 - **Return to Character Sheet** navigates to the last character sheet path consulted by the GM during the current session (`lastConsultedSheetPath`). If none is recorded, the button is disabled with an explanatory tooltip.
 - When the GM is on a character sheet and a battle is initialized or started, the sidebar footer MUST show **Return to Battle**, navigating to `/{locale}/initiativeTracker`. Styling: red background, white text, swords icon.
-- **Reset** (clear tracker rows) MUST NOT appear in the sidebar while a battle is initialized or started. Reset remains available only through in-page GM controls when applicable (FR-018).
+- **Reset** (clear tracker rows) MUST NOT appear in the sidebar while a battle is initialized or started. Reset remains available only through in-page GM controls when applicable (FR-combat-initiative-tracker).
 
 **Sidebar Navigation — Player**:
 
@@ -1543,7 +1543,7 @@ When adding a rule:
 - When a character sheet displays both character edit actions and active combat controls, the bottom area MUST avoid stacking two full-height footers.
 - The character edit actions and the combat controls MUST be composed into one compact bottom bar or into a single shared footer region.
 - The merged footer MUST keep all existing accessible names and keyboard interactions for edit/save/cancel, previous turn, next turn, combatant stat expansion, and visible stat links.
-- The merged footer MUST preserve GM-only turn controls and player read-only constraints from FR-018 and FR-021.
+- The merged footer MUST preserve GM-only turn controls and player read-only constraints from FR-combat-initiative-tracker and FR-session-combat-navigation.
 - The merged footer MUST preserve mobile content visibility by keeping the vertical footprint compact and preventing horizontal overflow with long translated labels or combatant names.
 
 **Last Consulted Sheet Tracking**:
@@ -1574,7 +1574,7 @@ Each initiative tracker row carries:
 
 **Player Display Name (alias)**:
 
-- Each row carries `playerDisplayName` used when the real name is hidden from players (FR-021).
+- Each row carries `playerDisplayName` used when the real name is hidden from players (FR-session-combat-navigation).
 - On row creation (battle setup or mid-combat add), the default MUST be the character’s real tracker name (`firstname` / `lastname` / `surname` rule).
 - Legacy rows with an empty alias MUST be normalized to that default on load.
 - Saving the visibility dialog with an empty alias MUST persist the real name as the alias.
@@ -1599,7 +1599,7 @@ Each initiative tracker row carries:
 - Field values masked when the corresponding `playerFieldVisibility` flag is `false` (display placeholder `—`; hidden name displays a generic hidden label).
 - Active turn highlight and round indicator reflect GM broadcast state.
 - Player-visible row ordering MUST match the GM initiative order even when initiative values are hidden from players.
-- Vital status visuals (FR-020) apply on visible HP when HP is shown.
+- Vital status visuals (FR-tracker-vital-status) apply on visible HP when HP is shown.
 - The player’s own row MUST have a dedicated visual indicator and accessible label so the player can immediately identify their character within the initiative order.
 
 **Real-Time Sync (WebSocket)**:
@@ -1651,7 +1651,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-022: Session Combat Real-Time Synchronization Between Initiative Tracker and Character Sheets
+## FR-session-combat-sync: Session Combat Real-Time Synchronization Between Initiative Tracker and Character Sheets
 
 **Rule**: During an active session combat, initiative tracker rows and session character sheets must stay synchronized in real time for all connected participants who are allowed to view the affected data. A change made from either surface must be reflected on the other without requiring a manual page reload.
 
@@ -1662,7 +1662,7 @@ Each initiative tracker row carries:
   - GM initiative tracker
   - player read-only initiative tracker view
   - session character sheets opened by the GM or by players
-- Complements FR-018, FR-020, and FR-021 without changing their visibility or turn-control rules.
+- Complements FR-combat-initiative-tracker, FR-tracker-vital-status, and FR-session-combat-navigation without changing their visibility or turn-control rules.
 
 **Synchronization Model**:
 
@@ -1704,7 +1704,7 @@ Each initiative tracker row carries:
 
 - Only session participants may receive synchronization events for characters on the current session roster.
 - Real-time synchronization must respect existing access rules:
-  - player tracker view remains filtered and masked per FR-021
+  - player tracker view remains filtered and masked per FR-session-combat-navigation
   - GM-only tracker controls remain GM-only
   - players must not gain access to hidden tracker-only fields through sheet synchronization
 - NPC sheet updates made by the GM during session combat must also refresh the initiative tracker in real time when that NPC is on the roster.
@@ -1750,7 +1750,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-023: Initiative Tracker - Bulk Display Configuration
+## FR-tracker-bulk-display: Initiative Tracker - Bulk Display Configuration
 
 **Rule**: The Game Master initiative tracker must support bulk selection of tracker rows from the display-configuration area so shared display parameters can be applied to multiple combatants at once, including during an active combat.
 
@@ -1758,13 +1758,13 @@ Each initiative tracker row carries:
 
 - The bulk display-configuration control must be available to the GM whenever a battle is initialized or started.
 - The GM can select multiple tracker rows and apply shared player-facing display parameters in one action.
-- Bulk display configuration must support the same player-facing visibility fields as the per-row display configuration defined in FR-021.
+- Bulk display configuration must support the same player-facing visibility fields as the per-row display configuration defined in FR-session-combat-navigation.
 - Bulk display configuration must support assigning a shared player-facing name/alias to all selected rows.
 - The shared name/alias input is empty by default and must be clearly identified as applying the same name to all selected characters.
 - If the shared name/alias input is left empty, existing row aliases must not be overwritten.
-- Bulk actions that remove rows from initiative must follow the "leave initiative" behavior from FR-018 and must not end the battle.
-- When bulk changes are applied during started combat, the current turn must be marked as having a tracker action according to FR-018 rollback-lock semantics.
-- Player-facing broadcasts and masking must continue to follow FR-021.
+- Bulk actions that remove rows from initiative must follow the "leave initiative" behavior from FR-combat-initiative-tracker and must not end the battle.
+- When bulk changes are applied during started combat, the current turn must be marked as having a tracker action according to FR-combat-initiative-tracker rollback-lock semantics.
+- Player-facing broadcasts and masking must continue to follow FR-session-combat-navigation.
 
 **Accessibility Requirements**:
 
@@ -1798,7 +1798,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-024: Session Participant Human-Readable Display Names
+## FR-session-participant-labels: Session Participant Human-Readable Display Names
 
 **Rule**: Whenever the application displays the identity of a connected session participant to another user (Game Master or player), it MUST show a human-readable label derived from the participant profile. Technical identifiers and private contact data MUST NOT be used as display labels.
 
@@ -1861,14 +1861,14 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-025: In-Session Logo and Session Lobby Sidebar Navigation
+## FR-session-lobby-navigation: In-Session Logo and Session Lobby Sidebar Navigation
 
 **Rule**: While a user is connected to an active session, clicking the application logo in the header and the sidebar action button on the session lobby page must provide contextual navigation back to character sheets instead of the generic welcome redirect or an irrelevant session action.
 
 **Scope**:
 
 - Applies when `isInSession === true` and the session record is available in Redux.
-- Complements FR-021 (combat navigation) without overriding combat-specific sidebar rules on other pages.
+- Complements FR-session-combat-navigation (combat navigation) without overriding combat-specific sidebar rules on other pages.
 - The session lobby page is `/{locale}/campaigns/{campaignId}/session/{sessionCode}`.
 
 **Header Logo — Player**:
@@ -1889,7 +1889,7 @@ Each initiative tracker row carries:
 
 - When the session is launched (`sessionStatus === "launched"`) and the player is on the session lobby page:
   - If combat has not started, the sidebar footer MUST show **Return to Character Sheet**, navigating to the player's session character sheet.
-  - If combat has started, the sidebar footer MUST show **Return to Battle** (same behavior as FR-021 when the player is outside the initiative tracker).
+  - If combat has started, the sidebar footer MUST show **Return to Battle** (same behavior as FR-session-combat-navigation when the player is outside the initiative tracker).
 - If the player has no assigned character, **Return to Character Sheet** is disabled with an explanatory tooltip.
 
 **Accessibility**:
@@ -1915,14 +1915,14 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-026: Session WebSocket Connection Lifecycle and Reconnection Resilience
+## FR-session-websocket-lifecycle: Session WebSocket Connection Lifecycle and Reconnection Resilience
 
 **Rule**: The application MUST maintain exactly one active Socket.IO connection per browser tab per active session OTP code. Transient disconnections (JWT refresh, client navigation, React lifecycle) MUST NOT cause spurious participant-disconnected notifications, duplicate connections, or loss of roster state.
 
 **Scope**:
 
 - Applies whenever `isInSession === true` or a session-aware client component holds an active session OTP code.
-- Complements FR-021 (combat sync), FR-022 (character sheet sync), and FR-024 (display names) without overriding their domain-specific rules.
+- Complements FR-session-combat-navigation (combat sync), FR-session-combat-sync (character sheet sync), and FR-session-participant-labels (display names) without overriding their domain-specific rules.
 - Covers client connection pooling, JWT refresh handling, gateway disconnect grace period, and HTTP/WebSocket roster convergence.
 
 **Client Connection Pool**:
@@ -1952,7 +1952,7 @@ Each initiative tracker row carries:
 
 - In all WebSocket payloads, `sessionId` means the session OTP code (same value used for `session:join`), not the internal database UUID.
 - Socket.IO namespace: `/session`, path: `/ws`.
-- Gateway broadcasts to other participants use `client.to()` — emitters do not receive their own events; local listeners are required (see `sessionCharacterSyncBridge`, FR-022).
+- Gateway broadcasts to other participants use `client.to()` — emitters do not receive their own events; local listeners are required (see `sessionCharacterSyncBridge`, FR-session-combat-sync).
 - After `session:leave`, the leaving socket is no longer in the room; server-side notifications to remaining participants MUST use `server.to(roomId)`, not `client.to()`.
 
 **Prohibitions**:
@@ -1990,15 +1990,15 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-027: Profile Token History with Purchase and Expense Filters
+## FR-profile-token-history: Profile Token History with Purchase and Expense Filters
 
-**Rule**: The profile page must expose the authenticated user's token transaction history (not session history), with client-side filters to show purchases and/or expenses. Both transaction types must be recorded in the immutable `history` array defined in FR-008.
+**Rule**: The profile page must expose the authenticated user's token transaction history (not session history), with client-side filters to show purchases and/or expenses. Both transaction types must be recorded in the immutable `history` array defined in FR-user-balance-history.
 
 **Scope**:
 
 - Web client profile page (`/[locale]/profile`)
 - Adventure API user history recording (`addHistory`, `addTokens`)
-- Complements FR-008 without changing its immutable-history constraint
+- Complements FR-user-balance-history without changing its immutable-history constraint
 
 **Transaction Semantics** (aligned with `balance -= value` in `UserService.addHistory`):
 
@@ -2040,9 +2040,9 @@ Each initiative tracker row carries:
 
 - Purchase rows SHOULD visually distinguish credits (e.g. green/`--green` amount prefix `+`)
 - Expense rows SHOULD visually distinguish debits (e.g. gray/`--gray-light` amount, no erroneous `+` prefix)
-- Reuse existing profile card/list patterns (FR-019): `bg-gray-middle-light`, `rounded-[15px]`, responsive gaps
+- Reuse existing profile card/list patterns (FR-frontend-design): `bg-gray-middle-light`, `rounded-[15px]`, responsive gaps
 
-**Accessibility Requirements** (FR-019):
+**Accessibility Requirements** (FR-frontend-design):
 
 - Filter group uses a semantic `fieldset` with visible `legend` or equivalent labelled region
 - Each filter toggle has an associated visible label and `aria-checked` state
@@ -2088,7 +2088,7 @@ Each initiative tracker row carries:
 
 **References**:
 
-- `docs/functional-rules.md` — FR-008
+- `docs/functional-rules.md` — FR-user-balance-history
 - `services/web/client/src/app/[locale]/profile/page.tsx`
 - `services/web/client/src/lib/tokenHistory.ts`
 - `services/web/client/src/lib/tokenHistoryFilters.ts`
@@ -2098,7 +2098,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-028: Profile GDPR and Data Rights (Security Section)
+## FR-profile-gdpr: Profile GDPR and Data Rights (Security Section)
 
 **Rule**: The profile page Security section must expose self-service GDPR data-rights actions for the authenticated user: export available account data, request a full data access report, and initiate account deletion. Until dedicated backend endpoints exist, export uses `GET /user/me` and formal requests are routed to the privacy contact email.
 
@@ -2118,7 +2118,7 @@ Each initiative tracker row carries:
 - Privacy contact email: `NEXT_PUBLIC_PRIVACY_EMAIL` with fallback `contact@chariot.tools`
 - Optional privacy policy link when `NEXT_PUBLIC_PRIVACY_POLICY_URL` is set
 - Loading/busy state on export (`aria-busy`); success/error toasts via existing toast hook
-- Follow FR-019 design baseline: Card, `rounded-[15px]`, responsive row layout, destructive variant for delete trigger
+- Follow FR-frontend-design design baseline: Card, `rounded-[15px]`, responsive row layout, destructive variant for delete trigger
 
 **Accessibility**:
 
@@ -2150,7 +2150,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-029: GM Guest Character in Session Participants Group
+## FR-session-gm-guest-character: GM Guest Character in Session Participants Group
 
 **Rule**: During an active launched session, the Game Master MUST be able to temporarily promote one of their campaign characters to the session participants group. This association is session-scoped only: it is automatically revoked when the session ends, and can be revoked manually at any time.
 
@@ -2158,7 +2158,7 @@ Each initiative tracker row carries:
 
 - Applies only when `sessionStatus === "launched"` and the user is the GM.
 - Works with any character belonging to any of the GM's campaign groups (active or archived groups visible in the sidebar).
-- Complements FR-018 (mid-combat add), FR-021 (player tracker visibility), and FR-026 (WebSocket lifecycle) without overriding their rules.
+- Complements FR-combat-initiative-tracker (mid-combat add), FR-session-combat-navigation (player tracker visibility), and FR-session-websocket-lifecycle (WebSocket lifecycle) without overriding their rules.
 
 **Entry Point**:
 
@@ -2205,7 +2205,7 @@ Each initiative tracker row carries:
 - Broadcasting GM guest character assignments via WebSocket (purely client-side, session-scoped).
 - Persisting the `gmGuestCharacterIds` across sessions (reset in `clearCurrentSession`).
 
-**Accessibility (FR-019)**:
+**Accessibility (FR-frontend-design)**:
 
 - The "Rejoindre la session" / "Quitter la session" menu items MUST be keyboard-reachable via the existing `SidebarItemWithActions` context menu.
 - Guest character entries in the sidebar section MUST have appropriate `aria-label` distinguishing them from real players.
@@ -2230,7 +2230,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-030: Profile Language Preference
+## FR-profile-language-preference: Profile Language Preference
 
 **Rule**: The profile page MUST expose a dedicated preferences section (separate from the profile-info card) containing a language preference control allowing the authenticated user to change the site locale. The selected locale MUST be persisted on the user account (`preferredLocale` on the Adventure API user record) and mirrored to the existing `user-preferred-locale` client storage (localStorage and cookie). After authentication, the client MUST apply the account locale when it differs from the current URL prefix. The user must be redirected to the same page under the new locale prefix when the preference changes. Locale changes MUST apply immediately on select change and MUST NOT be bound to the profile edit form.
 
@@ -2279,7 +2279,7 @@ Each initiative tracker row carries:
   - `keycloak.register`
 - Register flow MUST NOT override an existing stored preference with browser detection alone
 
-**Accessibility** (FR-019):
+**Accessibility** (FR-frontend-design):
 
 - Select control has an associated visible label and accessible name
 - Keyboard-operable via existing Select primitive (`Tab`, arrow keys, `Enter`)
@@ -2367,7 +2367,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-032: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
+## FR-tracker-bulk-selection: Initiative Tracker - Bulk Selection UX Consistency and State Reflection
 
 **Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
 
@@ -2380,7 +2380,7 @@ Each initiative tracker row carries:
   - any field whose selected rows all share the same current value must be shown with that active value;
   - any field whose selected rows do not share the same current value must be shown with an explicit mixed state;
   - unchanged mixed fields must not overwrite existing row-specific values when the grouped configuration is saved.
-- Grouped display configuration must remain compatible with FR-021 and FR-023 visibility and alias rules.
+- Grouped display configuration must remain compatible with FR-session-combat-navigation and FR-tracker-bulk-display visibility and alias rules.
 
 **Accessibility Requirements**:
 
@@ -2408,7 +2408,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-033: Notification visuelle de révélation de combattant (vue joueur)
+## FR-tracker-combatant-reveal: Notification visuelle de révélation de combattant (vue joueur)
 
 **Rule**: Lorsqu'un combattant devient visible pour les joueurs (`visible: false → true`) pendant un combat actif, une animation de halo vert temporaire doit apparaître autour de ce combattant dans la vue joueur du tracker d'initiative ET dans la preview combat (CombatBanner).
 
@@ -2416,12 +2416,12 @@ Each initiative tracker row carries:
 
 - S'applique uniquement en mode joueur (`mode === "player"`), jamais en mode MJ.
 - Concerne deux surfaces : la page tracker (`/initiativeTracker`) et la preview combat (`CombatBanner`) affichée sur les fiches personnage.
-- Complète FR-021 (modèle de visibilité joueur) sans en modifier les règles de filtrage ou de masquage.
+- Complète FR-session-combat-navigation (modèle de visibilité joueur) sans en modifier les règles de filtrage ou de masquage.
 
 **Requirements**:
 
 - Lorsqu'un combattant apparaît pour la première fois dans la liste visible du joueur (transition `visible: false → true` ou ajout d'un nouveau combattant visible), un halo vert animé (`ring-2 ring-green/60 animate-pulse`) doit être appliqué à l'élément visuel correspondant pendant exactement **3 secondes**, puis disparaître.
-- Le halo utilise exclusivement le token `--green` du projet (FR-019). Aucune couleur hardcodée n'est autorisée.
+- Le halo utilise exclusivement le token `--green` du projet (FR-frontend-design). Aucune couleur hardcodée n'est autorisée.
 - La révélation ne doit pas être signalée par la couleur seule : une région `aria-live="polite"` doit annoncer le nom du combattant nouvellement révélé aux lecteurs d'écran.
 - La détection de transition est réalisée côté client par comparaison des IDs de lignes visibles entre les rendus successifs (hook dédié `useNewlyRevealedRows`).
 - Le halo s'applique au conteneur de la ligne dans le tracker, et au chip du carrousel dans la CombatBanner.
@@ -2454,13 +2454,13 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-034: Découplage affichage HP / statut vital dans le tracker d'initiative
+## FR-tracker-hp-life-status-decoupling: Découplage affichage HP / statut vital dans le tracker d'initiative
 
 **Rule**: L'affichage de la valeur numérique des points de vie (HP) et l'affichage visuel du statut vital (couleur de fond, icônes Skull/HeartCrack) dans le tracker d'initiative doivent être contrôlables indépendamment via deux flags distincts dans `playerFieldVisibility`.
 
 **Scope**:
 
-- Complète FR-021 (player field visibility) et FR-020 (visual treatment des statuts) sans les remplacer.
+- Complète FR-session-combat-navigation (player field visibility) et FR-tracker-vital-status (visual treatment des statuts) sans les remplacer.
 - Le découplage ne s'applique qu'à la vue joueur ; la vue MJ affiche toujours le statut vital et les HP.
 
 **Champs**:
@@ -2514,7 +2514,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-035: Codex Spell Search — Level Filter
+## FR-codex-spell-level-filter: Codex Spell Search — Level Filter
 
 **Rule**: The Codex spell search dialog (`CodexSpellSearchDialog`) MUST allow filtering search results by a single D&D 5e spell level (0–9). The filter MUST be applied server-side via the Codex `/spells` API `level` query parameter.
 
@@ -2532,7 +2532,7 @@ Each initiative tracker row carries:
 - Opening the dialog MUST reset the level filter to “all levels”.
 - Level labels in the filter UI MUST reuse existing magic-tab i18n keys (`cantrips` for level 0, `spellLevel` for levels 1–9).
 
-**Accessibility (FR-019)**:
+**Accessibility (FR-frontend-design)**:
 
 - The level filter control MUST expose an accessible name (`aria-label`) equivalent to the class filter pattern.
 - The level filter control MUST use the same single-select `Select` pattern as the language filter, with an accessible label.
@@ -2557,7 +2557,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-036: Release Notes and New Version Detection
+## FR-release-notes: Release Notes and New Version Detection
 
 **Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
 
@@ -2592,7 +2592,7 @@ Each initiative tracker row carries:
 - The profile page exposes a "Voir les nouveautés" button (localized) that opens the same `ReleaseNotesModal`.
 - When opened from the profile page, closing does NOT dispatch `markVersionSeen` (`readOnly={true}`).
 
-**Accessibility Requirements (FR-019)**:
+**Accessibility Requirements (FR-frontend-design)**:
 
 - `DialogContent` includes `aria-describedby` pointing to the notes description region.
 - The version `Select` has an `aria-label`.
@@ -2633,7 +2633,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-037: Unité de mesure préférée
+## FR-preferred-measurement-unit: Unité de mesure préférée
 
 **Rule**: Each user can choose a preferred measurement unit (`metric` or `imperial`) stored in their profile. The default value is `metric`.
 
@@ -2666,7 +2666,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-038: Conversion et affichage des unités de distance
+## FR-distance-unit-conversion: Conversion et affichage des unités de distance
 
 **Rule**: All distance values displayed in the application (speed, senses, action range, spell range) must respect the user's `preferredMeasurementUnit`. Values are always stored in **feet** in the database. Display and input use the unit chosen in the user's profile.
 
@@ -2755,7 +2755,7 @@ Each initiative tracker row carries:
 
 **Accessibility**:
 
-- Context menus and overflow menus MUST have accessible names (`aria-label`) aligned with FR-004.
+- Context menus and overflow menus MUST have accessible names (`aria-label`) aligned with FR-sidebar-navigation.
 - Overflow trigger buttons MUST be keyboard-focusable and operable with Enter/Space.
 - Focus indicators MUST remain visible (WCAG AA).
 
@@ -2818,7 +2818,7 @@ Each initiative tracker row carries:
 - Toast de succès affichée après création (`characterActions.duplicate.success`).
 - Toast d'erreur affichée en cas d'échec API (`characterActions.duplicate.error`).
 
-**Accessibilité (FR-019)** :
+**Accessibilité (FR-frontend-design)** :
 
 - L'option « Dupliquer » est accessible au clavier dans le menu contextuel et le menu overflow.
 - Le champ de nom dans la modale est associé à un `<label>` visible.
@@ -2884,7 +2884,7 @@ Each initiative tracker row carries:
 - Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
 - Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
 
-**Accessibilité (FR-019)** :
+**Accessibilité (FR-frontend-design)** :
 - L'option « Dupliquer » est accessible au clavier dans le menu contextuel et le menu overflow des groupes.
 - Champ label associé à un `<label>` visible, autofocusé à l'ouverture.
 - Boutons avec accessible names distincts.
