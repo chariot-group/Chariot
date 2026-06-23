@@ -16,7 +16,7 @@ const buildGroup = (overrides: Partial<Group> & { _id: string }): Group => ({
   updatedAt: "",
 });
 
-describe("FR-040 — groupSlice — duplication optimistic update", () => {
+describe("FR-041 — groupSlice — duplication optimistic update", () => {
   it("nominal: addCharacterToGroup inserts the duplicate into the target group", () => {
     const initial = groupReducer(
       undefined,

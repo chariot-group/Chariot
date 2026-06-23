@@ -2904,14 +2904,87 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-042 : Navigation interne locale-aware
+## FR-042: Session Lobby as Modal Overlay
+
+**Règle** : Le lobby de session (participants, dépôt de tokens, lancement) DOIT être affiché dans une modale Dialog superposée à la page courante, et non dans une page dédiée.
+
+**Exigences** :
+
+- Le contenu du lobby est extrait dans un composant `SessionLobbyContent` acceptant `code` et `campaignId` en props.
+- Un composant `SessionLobbyDialog` encapsule `SessionLobbyContent` dans le composant `Dialog` existant (`components/ui/dialog.tsx`), contrôlé par l'état Redux `session.sessionLobbyOpen` (boolean).
+- `SessionLobbyDialog` est rendu une seule fois dans le layout racine (`app/[locale]/layout.tsx`).
+- `session.sessionLobbyOpen` est initialisé à `false` et remis à `false` lors de la réhydratation (non persisté).
+- Deux actions Redux sont exposées : `openSessionLobby` et `closeSessionLobby`.
+- Tous les points de navigation internes qui faisaient `router.push(…/session/[code])` dispatche désormais `openSessionLobby` :
+  - `ActionButton` (état `returnToSession`)
+  - `JoinSessionDialog` (après join réussi)
+  - `SessionCharacterSyncClient` (redirect vers lobby)
+  - `SessionTimer` (le lien devient un bouton)
+- La route `/campaigns/[idCampaign]/session/[code]` est conservée comme fallback pour les accès directs par URL : la page redirige vers `/{locale}/welcome?join={code}` (ouverture du flux de join via `SessionJoinParamListener`).
+- La modale est large (`max-w-5xl`) et scrollable en interne pour accommoder la liste de participants et le panneau de code session.
+- La fermeture via Échap ou clic hors de la modale dispatche `closeSessionLobby`.
+
+**Accessibilité** :
+- La modale respecte les attributs ARIA du composant `Dialog` existant (`aria-modal`, `role="dialog"`, `aria-labelledby`).
+- Le focus est capturé dans la modale à l'ouverture et restitué à l'élément déclencheur à la fermeture.
+
+**Interdictions** :
+- Dupliquer la logique de socket dans `SessionLobbyContent` (réutiliser `useSessionSocket` inchangé).
+- Persister `sessionLobbyOpen` dans le stockage Redux Persist.
+- Rendre `SessionLobbyDialog` en dehors du layout racine.
+
+**Tests** :
+- Nominal : clic sur "Retour à la session" dans ActionButton → modale s'ouvre avec les participants.
+- Nominal : rejoindre une session via `JoinSessionDialog` → modale lobby s'ouvre après le join.
+- Edge : fermeture via Échap → dispatch `closeSessionLobby`, modale fermée.
+- Edge : réhydratation Redux → `sessionLobbyOpen` est `false` quelle que soit la valeur persistée.
+- Failure : `code` ou `campaignId` absents du state → modale ne s'ouvre pas.
+
+**Références** :
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/components/dialogs/SessionLobbyDialog.tsx`
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/app/[locale]/layout.tsx`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/dialogs/JoinSessionDialog.tsx`
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/components/layout/SessionTimer.tsx`
+- `services/web/client/src/components/SessionJoinParamListener.tsx`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
+
+---
+
+## FR-043: QR Code de rejoindre une session
+
+**Règle** : Le lobby de session (modale FR-042) DOIT afficher, sous la card du code de session, une card contenant un QR code encodant l'URL de rejoindre la session. Tous les participants (MJ et joueurs) peuvent voir ce QR code.
+
+**Exigences** :
+
+- La card QR code est affichée sous la card du code de session, dans la colonne latérale (`aside`) de `SessionLobbyContent`, à partir du breakpoint `lg`.
+- En dessous de `lg`, le code session et le QR code sont regroupés dans une seule card. Le QR remplace le code visible (le code reste accessible aux lecteurs d'écran via `sr-only`) ; les boutons de copie restent affichés en dessous.
+- Le QR code encode l'URL courante avec le paramètre `join` : `{window.location.href}?join={code}` (même format que le bouton « Copier le lien »).
+- Le QR code DOIT avoir un fond blanc et un contraste suffisant (couleur sombre) pour être lisible par les scanners mobiles.
+- La card DOIT inclure un label accessible (`aria-label`) décrivant le QR code.
+
+**Tests** :
+
+- Nominal : la card QR code est affichée dans le lobby session avec un QR code valide.
+- Edge : l'URL encodée contient bien le paramètre `join` avec le bon `code`.
+
+**Références** :
+
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+
+---
+
+## FR-044 : Navigation interne locale-aware
 
 **Règle** : Toute navigation interne vers une page de l'application DOIT utiliser les utilitaires exportés par `@/i18n/navigation` (basés sur `createNavigation` de next-intl). L'usage de `window.location.href` pour la navigation interne est interdit.
 
 **Exigences** :
 
 - `useRouter`, `Link`, `usePathname` et `redirect` sont importés depuis `@/i18n/navigation`, jamais depuis `next/navigation` pour les navigations internes localisées.
-- Les services (classes non-React) qui déclenchent une navigation DOIVENT retourner les données nécessaires (ex. : `{ campaignId, code }`) et laisser le composant appelant effectuer le `router.push`.
+- Les services (classes non-React) qui déclenchent une navigation DOIVENT retourner les données nécessaires (ex. : `{ campaignId, code }`) et laisser le composant appelant effectuer le `router.push` ou le dispatch Redux approprié (ex. : `openSessionLobby` pour le lobby session FR-042).
 - Pour les liens externes (URL tiers) et les liens de protocole (`mailto:`, `tel:`), utiliser un élément `<a href>` natif rendu directement dans le JSX — jamais `window.location.href`.
 
 **Interdictions** :
@@ -2934,7 +3007,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-043 : Liens rapides configurables dans la sidebar
+## FR-045 : Liens rapides configurables dans la sidebar
 
 **Règle** : Le MJ et le joueur peuvent ajouter, consulter et supprimer des liens externes (liens rapides) dans leur sidebar respective. Chaque lien est rattaché soit à une campagne (visible dans l'espace MJ sous la campagne concernée), soit à aucune campagne (visible dans l'espace joueur). Les liens sont persistés côté backend et isolés par utilisateur.
 
@@ -3009,7 +3082,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-044 : Collapse/expand de la section Liens rapides
+## FR-046 : Collapse/expand de la section Liens rapides
 
 **Règle** : La section "Liens rapides" dans la sidebar dispose d'un bouton toggle permettant de replier ou déplier la liste des liens.
 
@@ -3044,7 +3117,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-045 : Hauteur maximale de la section Liens rapides
+## FR-047 : Hauteur maximale de la section Liens rapides
 
 **Règle** : La liste des liens rapides est contrainte en hauteur pour ne jamais déformer ou agrandir la sidebar, quel que soit le nombre de liens ajoutés.
 
@@ -3070,29 +3143,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-046 : QR Code de rejoindre une session
-
-**Règle** : La page session DOIT afficher, sous la card du code de session, une card contenant un QR code encodant l'URL de la session. Tous les participants (MJ et joueurs) peuvent voir ce QR code.
-
-**Requirements**:
-
-- La card QR code est affichée sous la card du code de session, dans la colonne latérale (`aside`).
-- Le QR code encode l'URL : `{window.location.origin}/campaigns/{campaignId}/session/{code}`.
-- Le QR code DOIT avoir un fond blanc et un contraste suffisant (couleur sombre) pour être lisible par les scanners mobiles.
-- La card DOIT inclure un label accessible (`aria-label`) décrivant le QR code.
-
-**Tests**:
-
-- Nominal : la card QR code est affichée sur la page session avec un QR code valide.
-- Edge : l'URL encodée contient bien le bon `campaignId` et le bon `code`.
-
-**Références**:
-
-- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
-
----
-
-## FR-028 : Affichage du compteur de capacités et traits
+## FR-048 : Affichage du compteur de capacités et traits
 
 **Règle** : Les capacités et traits dotés d'un compteur (`hasCounter: true`, `counterMax` défini) doivent afficher les **utilisations restantes** sous la forme `remaining / max`, où `remaining = counterMax - counterCurrent`. Ce nombre décrémente à chaque usage, alignant le comportement visuel sur les emplacements de sort.
 
@@ -3122,7 +3173,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-028: Affichage de la version de l'application
+## FR-049: Affichage de la version de l'application
 
 **Rule**: La version de l'application Chariot doit être affichée dans la section Préférences de la page Profil, à proximité du bouton d'ouverture des notes de version. Elle ne doit PAS apparaître dans la sidebar.
 
@@ -3154,7 +3205,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-039 : Saisie de portée double dans les actions de personnage
+## FR-050 : Saisie de portée double dans les actions de personnage
 
 **Règle** : Lorsqu'une action a une portée double (portée normale / portée longue), l'interface d'édition doit proposer deux champs numériques distincts. La valeur stockée reste un string canonique `"X/Y ft."`. La détection du mode double se fait automatiquement à partir de la valeur stockée.
 

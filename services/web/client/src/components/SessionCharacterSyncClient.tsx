@@ -22,6 +22,7 @@ import {
     setSessionTokensByUser,
     touchRemoteCharacterSheet,
     updateInitiativeTrackerRow,
+    openSessionLobby,
 } from "@/store/slices/sessionSlice";
 import sessionService, {
     type ParticipantStatus,
@@ -507,7 +508,7 @@ export default function SessionCharacterSyncClient() {
                 const camp = campaignIdRef.current;
                 const sessionCode = codeRef.current;
                 if (camp && sessionCode) {
-                    routerRef.current.push(`/${locale}/campaigns/${camp}/session/${sessionCode}`);
+                    dispatch(openSessionLobby());
                 } else {
                     routerRef.current.push(`/${locale}/welcome`);
                 }

@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Timer } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
-import { selectSessionStatus, selectSessionExpiresAt, selectCurrentSession } from "@/store/slices/sessionSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  selectSessionStatus,
+  selectSessionExpiresAt,
+  openSessionLobby,
+} from "@/store/slices/sessionSlice";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 function formatDuration(seconds: number): string {
@@ -20,7 +23,7 @@ export default function SessionTimer() {
   const status = useAppSelector(selectSessionStatus);
   const expiresAt = useAppSelector(selectSessionExpiresAt);
   const [remaining, setRemaining] = useState<number | null>(null);
-  const session = useAppSelector(selectCurrentSession);
+  const dispatch = useAppDispatch();
   const t = useTranslations("sessionTime");
 
   useEffect(() => {
@@ -42,14 +45,17 @@ export default function SessionTimer() {
 
   return (
     <Tooltip>
-      <TooltipTrigger className="absolute right-full mr-1.5 flex items-center gap-1.5">
-        <Link
-          href={`/campaigns/${session.campaignId}/session/${session.code}`}
-          className={`flex items-center gap-1.5 text-sm font-mono font-semibold ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
+      <TooltipTrigger
+        asChild
+        className="absolute right-full mr-1.5">
+        <button
+          type="button"
+          onClick={() => dispatch(openSessionLobby())}
+          className={`flex items-center gap-1.5 text-sm font-mono font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring rounded ${isLow ? "text-red-500" : "text-muted-foreground"}`}>
           <Timer className="w-4 h-4 shrink-0" />
           <span className="sm:hidden">{formatDuration(remaining).slice(0, 5)}</span>
           <span className="hidden sm:inline">{formatDuration(remaining)}</span>
-        </Link>
+        </button>
       </TooltipTrigger>
       <TooltipContent className="w-100">{t("tooltip")}</TooltipContent>
     </Tooltip>

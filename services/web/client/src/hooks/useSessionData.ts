@@ -15,6 +15,7 @@ import {
     setCurrentSession,
     setSessionStatus,
     setSessionExpiresAt,
+    selectIsInSession,
     selectSessionParticipantDisplayNames,
     mergeSessionParticipantDisplayNames,
     pruneSessionParticipantDisplayNames,
@@ -51,6 +52,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const locale = pathname.split("/")[1] || "fr";
 
     const participantNames = useAppSelector(selectSessionParticipantDisplayNames);
+    const isAlreadyInSession = useAppSelector(selectIsInSession);
 
     const [campaignLabel, setCampaignLabel] = useState<string | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
@@ -113,7 +115,9 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             try {
                 await sessionService.joinSession(code);
                 if (cancelled) return;
-                toast.success(t("toast.connectionSuccess"));
+                if (!isAlreadyInSession) {
+                    toast.success(t("toast.connectionSuccess"));
+                }
             } catch (error: unknown) {
                 if (cancelled) return;
                 const message =
