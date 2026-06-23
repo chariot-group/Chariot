@@ -90,19 +90,6 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             this.logger.verbose(`Evicted ${evictedUserIds.length} participants from session ${sessionId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         });
 
-        // Écouter le timer d'inactivité (tous les joueurs déconnectés pendant 5 min)
-        this.redisService.onEmptySessionExpired('gateway', async (sessionId: string) => {
-            this.logger.verbose(`Session ${sessionId} empty timer expired, closing session`, this.SERVICE_NAME);
-            let start: number = Date.now();
-            const evictedUserIds: string[] = await this.sessionService.expireSession(sessionId);
-
-            await this.redisService.clearTokens(sessionId);
-            this.server.to(sessionId).emit('session:closed', { sessionId });
-            this.server.in(sessionId).socketsLeave(sessionId);
-            let duration: number = (Date.now() - start) / 1000;
-
-            this.logger.verbose(`Closed empty session ${sessionId}, evicted ${evictedUserIds.length} participant(s) in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
-        });
     }
 
     async handleConnection(client: AuthenticatedSocket) {

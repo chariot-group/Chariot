@@ -77,7 +77,7 @@ const mockRedisService = {
     setSessionExpiration: jest.fn(),
     clearSessionExpiration: jest.fn(),
     onSessionExpired: jest.fn(),
-    onEmptySessionExpired: jest.fn(),
+
     clearTokens: jest.fn(),
     getTokens: jest.fn(),
     addToken: jest.fn(),
