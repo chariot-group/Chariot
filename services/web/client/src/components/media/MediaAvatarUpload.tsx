@@ -9,11 +9,7 @@ import MediaService from "@/services/MediaService";
 import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
-import {
-  MEDIA_AVATAR_ROUNDED_CLASS,
-  MEDIA_AVATAR_SIZE_CLASS,
-  type MediaAvatarScope,
-} from "@/utils/media.utils";
+import { MEDIA_AVATAR_ROUNDED_CLASS, type MediaAvatarScope } from "@/utils/media.utils";
 
 const ACCEPTED_TYPES =
   "image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif";
@@ -65,9 +61,7 @@ export function MediaAvatarUpload({
     if (
       !ACCEPTED_TYPES.split(",").some(
         (accepted) =>
-          accepted === file.type ||
-          (accepted.startsWith(".") &&
-            file.name.toLowerCase().endsWith(accepted)),
+          accepted === file.type || (accepted.startsWith(".") && file.name.toLowerCase().endsWith(accepted)),
       )
     ) {
       toast.error(t("invalidType"));
@@ -140,9 +134,7 @@ export function MediaAvatarUpload({
   return (
     <div
       className={cn(
-        useOverlayControls
-          ? cn("relative size-full", className)
-          : cn("flex flex-col items-center gap-2", className),
+        useOverlayControls ? cn("relative size-full", className) : cn("flex flex-col items-center gap-2", className),
       )}>
       <MediaAvatar
         scope={scope}

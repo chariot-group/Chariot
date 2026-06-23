@@ -66,11 +66,7 @@ export class MediaService {
     const mainKey = characterAvatarMainKey(characterId);
     const thumbKey = characterAvatarThumbKey(characterId);
 
-    await this.deleteLegacyAvatarObjects(
-      character.avatar,
-      mainKey,
-      thumbKey,
-    );
+    await this.deleteLegacyAvatarObjects(character.avatar, mainKey, thumbKey);
 
     await this.minioService.putObject(
       mainKey,
@@ -287,19 +283,15 @@ export class MediaService {
       throw new ServiceUnavailableException('Media storage is not configured');
     }
 
-    const objectKey = resolveMediaObjectKey(
-      trimmed,
-      variant,
-      scope,
-      entityId,
-    );
+    const objectKey = resolveMediaObjectKey(trimmed, variant, scope, entityId);
 
     if (!objectKey) {
       return { url: null, expiresAt: null, source: 'missing' };
     }
 
     try {
-      const presigned = await this.minioService.createPresignedGetUrl(objectKey);
+      const presigned =
+        await this.minioService.createPresignedGetUrl(objectKey);
       return {
         url: presigned.url,
         expiresAt: presigned.expiresAt,

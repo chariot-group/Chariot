@@ -68,7 +68,9 @@ export class ImageProcessorService {
       };
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Unknown image processing error';
+        error instanceof Error
+          ? error.message
+          : 'Unknown image processing error';
       this.logger.warn(
         `Avatar upload rejected: ${message} (mimetype=${file.mimetype}, size=${file.size}, buffer=${file.buffer.length})`,
       );

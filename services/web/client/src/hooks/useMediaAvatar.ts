@@ -139,7 +139,7 @@ export function useMediaAvatarBatch(
     return () => {
       cancelled = true;
     };
-  }, [stableKey, sessionCode, enabled, items.length]);
+  }, [stableKey, sessionCode, enabled, items.length, items]);
 
   const getUrl = React.useCallback(
     (scope: MediaAvatarScope, entityId: string, size: MediaAvatarSize = "thumb") => {

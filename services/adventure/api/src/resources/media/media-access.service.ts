@@ -38,11 +38,7 @@ export class MediaAccessService {
       );
     }
 
-    await this.sessionAccessService.assertGmEdit(
-      authHeader,
-      code,
-      characterId,
-    );
+    await this.sessionAccessService.assertGmEdit(authHeader, code, characterId);
 
     return character;
   }
@@ -75,10 +71,7 @@ export class MediaAccessService {
     return character;
   }
 
-  assertUserSelfAccess(
-    targetUserId: string,
-    requesterId: string,
-  ): void {
+  assertUserSelfAccess(targetUserId: string, requesterId: string): void {
     if (targetUserId !== requesterId) {
       throw new ForbiddenException(
         'You can only modify your own profile avatar',

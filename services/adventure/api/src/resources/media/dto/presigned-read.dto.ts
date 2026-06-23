@@ -29,7 +29,9 @@ export class PresignedReadDto {
   @Type(() => PresignedReadItemDto)
   requests: PresignedReadItemDto[];
 
-  @ApiPropertyOptional({ description: 'Session OTP code for roster-based character access' })
+  @ApiPropertyOptional({
+    description: 'Session OTP code for roster-based character access',
+  })
   @IsOptional()
   @IsString()
   sessionCode?: string;

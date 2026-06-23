@@ -78,14 +78,16 @@ export class MinioService implements OnModuleInit {
       await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
       this.logger.log(`MinIO bucket "${this.bucket}" is ready`);
     } catch {
-      await this.client.send(
-        new CreateBucketCommand({ Bucket: this.bucket }),
-      );
+      await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
       this.logger.log(`MinIO bucket "${this.bucket}" created`);
     }
   }
 
-  async putObject(key: string, body: Buffer, contentType: string): Promise<void> {
+  async putObject(
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void> {
     this.assertEnabled();
     await this.client.send(
       new PutObjectCommand({

@@ -216,7 +216,9 @@ export class UserController {
   }
 
   @Post('me/avatar')
-  @ApiOperation({ summary: 'Upload or replace the current user profile avatar' })
+  @ApiOperation({
+    summary: 'Upload or replace the current user profile avatar',
+  })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),

@@ -1,14 +1,10 @@
 const EXTERNAL_URL_PATTERN = /^https?:\/\//i;
 
-export function isExternalMediaUrl(
-  value: string | null | undefined,
-): boolean {
+export function isExternalMediaUrl(value: string | null | undefined): boolean {
   return typeof value === 'string' && EXTERNAL_URL_PATTERN.test(value.trim());
 }
 
-export function isMediaObjectKey(
-  value: string | null | undefined,
-): boolean {
+export function isMediaObjectKey(value: string | null | undefined): boolean {
   return (
     typeof value === 'string' &&
     value.trim().startsWith('avatars/') &&

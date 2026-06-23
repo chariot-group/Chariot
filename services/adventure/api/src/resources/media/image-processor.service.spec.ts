@@ -51,7 +51,9 @@ describe('ImageProcessorService', () => {
   });
 
   it('processes a valid PNG upload into main and thumb WebP buffers', async () => {
-    const result = await service.processAvatarUpload(createFile(VALID_PNG_BUFFER));
+    const result = await service.processAvatarUpload(
+      createFile(VALID_PNG_BUFFER),
+    );
 
     expect(result.contentType).toBe('image/webp');
     expect(result.main).toEqual(Buffer.from('webp-image'));
@@ -68,7 +70,9 @@ describe('ImageProcessorService', () => {
   });
 
   it('rejects corrupted image bytes when sharp fails', async () => {
-    mockToBuffer.mockRejectedValueOnce(new Error('Input buffer contains unsupported image format'));
+    mockToBuffer.mockRejectedValueOnce(
+      new Error('Input buffer contains unsupported image format'),
+    );
 
     await expect(
       service.processAvatarUpload(createFile(Buffer.from('not-an-image'))),

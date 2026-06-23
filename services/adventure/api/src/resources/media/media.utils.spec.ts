@@ -12,12 +12,18 @@ import {
 describe('media.utils', () => {
   describe('isExternalMediaUrl', () => {
     it('nominal: detects http and https URLs', () => {
-      expect(isExternalMediaUrl('https://api.dicebear.com/7.x/avataaars/svg?seed=abc')).toBe(true);
+      expect(
+        isExternalMediaUrl(
+          'https://api.dicebear.com/7.x/avataaars/svg?seed=abc',
+        ),
+      ).toBe(true);
       expect(isExternalMediaUrl('http://example.test/a.png')).toBe(true);
     });
 
     it('edge: object keys are not external URLs', () => {
-      expect(isExternalMediaUrl('avatars/characters/abc/main.webp')).toBe(false);
+      expect(isExternalMediaUrl('avatars/characters/abc/main.webp')).toBe(
+        false,
+      );
     });
   });
 
@@ -61,15 +67,23 @@ describe('media.utils', () => {
 
   describe('object key builders', () => {
     it('nominal: builds stable character and user keys', () => {
-      expect(characterAvatarMainKey('abc')).toBe('avatars/characters/abc/main.webp');
-      expect(characterAvatarThumbKey('abc')).toBe('avatars/characters/abc/thumb.webp');
-      expect(userAvatarMainKey('user-1')).toBe('avatars/users/user-1/main.webp');
+      expect(characterAvatarMainKey('abc')).toBe(
+        'avatars/characters/abc/main.webp',
+      );
+      expect(characterAvatarThumbKey('abc')).toBe(
+        'avatars/characters/abc/thumb.webp',
+      );
+      expect(userAvatarMainKey('user-1')).toBe(
+        'avatars/users/user-1/main.webp',
+      );
     });
   });
 
   describe('presignedCacheKey', () => {
     it('nominal: unique key per scope entity variant', () => {
-      expect(presignedCacheKey('character', 'x', 'thumb')).toBe('character:x:thumb');
+      expect(presignedCacheKey('character', 'x', 'thumb')).toBe(
+        'character:x:thumb',
+      );
     });
   });
 
