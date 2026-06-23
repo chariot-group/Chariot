@@ -5,6 +5,7 @@ import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { SessionResponseDto, SessionListResponseDto } from '@/resources/session/dto/session-response.dto';
 import { SessionParticipantsResponseDto } from '@/resources/session/dto/session-participants-response.dto';
 import { ValidateCharacterAccessDto } from '@/resources/session/dto/validate-character-access.dto';
+import { ValidateGmOwnershipDto } from '@/resources/session/dto/validate-gm-ownership.dto';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
 import { IResponse } from '@/common/dtos/response.dto';
@@ -53,6 +54,20 @@ export class SessionController {
         @Req() req: { user: { keycloakId: string } },
     ): Promise<IResponse<{ ok: true }>> {
         return this.sessionService.validateCharacterAccessForAdventure(code, req.user.keycloakId, body.characterId, body.mode);
+    }
+
+    @Post(':code/validate-gm-ownership')
+    @ApiOperation({ summary: "Valider que targetUserId est le MJ de la session et que le requester est participant (PP MJ et avatars PNJ)" })
+    @ApiParam({ name: 'code', description: 'Session code (OTP)' })
+    @ApiResponse({ status: 200, description: 'Accès autorisé' })
+    @ApiResponse({ status: 403, description: 'Accès refusé' })
+    @ApiResponse({ status: 404, description: 'Session introuvable' })
+    validateGmOwnership(
+        @Param('code') code: string,
+        @Body() body: ValidateGmOwnershipDto,
+        @Req() req: { user: { keycloakId: string } },
+    ): Promise<IResponse<{ ok: true }>> {
+        return this.sessionService.validateGmOwnership(code, req.user.keycloakId, body.targetUserId);
     }
 
     @Get(':code')

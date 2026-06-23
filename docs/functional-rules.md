@@ -3327,3 +3327,77 @@ Each initiative tracker row carries:
 - `services/adventure/api/src/resources/character/` (endpoint interne `validate-access`)
 - `services/gateway/api/src/proxy/proxy.controller.ts`
 - `services/web/client/src/services/MediaService.ts`
+
+---
+
+## FR-media-avatar-read-access : Contrôle d'accès en lecture sur les avatars CDN (utilisateur, PJ, PNJ)
+
+**Règle** : Tout accès en lecture (presigned URL) à un avatar stocké sur le CDN est restreint au propriétaire par défaut ; les contextes de session accordent des droits supplémentaires selon le type d'avatar et le rôle du demandeur.
+
+### Avatars utilisateur (scope `user` — photo de profil)
+
+| Contexte | Accès |
+|---|---|
+| `requesterId === targetUserId` | ✅ Toujours autorisé |
+| `sessionCode` fourni, `requesterId` est participant, `targetUserId` est le MJ (`creatorUserId`) | ✅ Autorisé |
+| `sessionCode` fourni, `targetUserId` est un joueur non-MJ | ❌ `403 ForbiddenException` |
+| Pas de `sessionCode`, `requesterId !== targetUserId` | ❌ `403 ForbiddenException` |
+
+- Contrôle appliqué dans `MediaAccessService.assertUserAvatarReadAccess(targetUserId, requesterId, authHeader, sessionCode?)`.
+- `resolveUserPresignedRead` dans `MediaService` DOIT déléguer à `assertUserAvatarReadAccess`.
+
+### Avatars PJ (scope `character`, kind `player`)
+
+| Contexte | Accès |
+|---|---|
+| `character.createdBy === requesterId` | ✅ Toujours autorisé |
+| `sessionCode` fourni, `requesterId` est participant, PJ présent dans `participants.characterId` | ✅ Autorisé (`roster-read` — déjà implémenté) |
+| Pas de `sessionCode`, `requesterId !== createdBy` | ❌ `403 ForbiddenException` (déjà implémenté) |
+
+### Avatars PNJ (scope `character`, kind `npc`)
+
+| Contexte | Accès |
+|---|---|
+| `character.createdBy === requesterId` (MJ propriétaire) | ✅ Toujours autorisé |
+| `sessionCode` fourni, `requesterId` est participant, `character.createdBy` est le MJ de la session | ✅ Autorisé (`npc-session-read` — nouveau mode) |
+| Pas de `sessionCode`, `requesterId !== createdBy` | ❌ `403 ForbiddenException` (déjà implémenté) |
+
+> **Note** : L'état "révélé/masqué" d'un PNJ dans le tracker de combat est une décision UX côté client (Redux/WS, non persisté serveur). Le serveur accorde l'accès à tout PNJ du MJ de la session sans distinguer révélé vs masqué. C'est le client qui ne demande la presigned URL que pour les PNJ révélés.
+
+**Nouveau endpoint session** :
+
+- `POST /sessions/:code/validate-gm-ownership` — protégé par le guard JWT utilisateur.
+- Body : `{ targetUserId: string }`.
+- Valide que le `requesterId` (JWT claim) est participant de la session ET que `targetUserId` est le `creatorUserId` de la session.
+- Retourne `200 { ok: true }` si autorisé, `403` sinon.
+- Utilisé pour : la PP du MJ (scope `user`) ET les avatars PNJ (scope `character`, via `character.createdBy`).
+
+**Extension du mode `validateCharacterAccessForAdventure`** :
+
+- Nouveau mode `npc-session-read` : requester est participant, ET `character.createdBy === session.creatorUserId`.
+- Alternativement : `MediaAccessService` appelle `validate-gm-ownership` avec `targetUserId = character.createdBy`.
+
+**Prohibitions** :
+
+- Ne pas accorder l'accès à la PP d'un joueur (non-MJ) à d'autres participants.
+- Ne pas accorder l'accès aux PNJ d'un autre MJ via une session que ce MJ ne dirige pas.
+- Ne pas contourner ce contrôle côté frontend (le contrôle est serveur-side via presigned URL conditionnelle).
+
+**Tests** :
+
+- Nominal : utilisateur lit son propre avatar → presigned URL retournée.
+- Nominal : participant de session lit la PP du MJ → presigned URL retournée.
+- Nominal : participant de session lit l'avatar d'un PJ du roster → presigned URL retournée (comportement existant).
+- Nominal : participant de session lit l'avatar d'un PNJ créé par le MJ de cette session → presigned URL retournée.
+- Edge : participant tente de lire la PP d'un autre joueur (non-MJ) en session → `403 ForbiddenException`.
+- Edge : participant tente de lire l'avatar d'un PNJ dont le créateur n'est pas le MJ de cette session → `403 ForbiddenException`.
+- Edge : sessionCode fourni mais requester n'est pas participant → `403 ForbiddenException`.
+- Failure : lecture de la PP d'un autre utilisateur sans sessionCode → `403 ForbiddenException`.
+- Failure : session service injoignable lors de la validation → `503 ServiceUnavailableException`.
+
+**References** :
+
+- `services/media/api/src/resources/media/media-access.service.ts`
+- `services/media/api/src/resources/media/media.service.ts`
+- `services/session/api/src/resources/session/session.controller.ts`
+- `services/session/api/src/resources/session/session.service.ts`

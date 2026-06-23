@@ -236,7 +236,7 @@ export class CharacterController {
   })
   async getCharacterOwnerInternal(
     @Param('characterId') characterId: string,
-  ): Promise<{ createdBy: string; avatar: string | null }> {
+  ): Promise<{ createdBy: string; avatar: string | null; kind: string }> {
     if (!Types.ObjectId.isValid(characterId)) {
       throw new NotFoundException(`Character ${characterId} not found`);
     }
@@ -250,6 +250,7 @@ export class CharacterController {
     return {
       createdBy: character.createdBy,
       avatar: character.avatar ?? null,
+      kind: (character as unknown as Record<string, unknown>)['kind'] as string ?? 'player',
     };
   }
 

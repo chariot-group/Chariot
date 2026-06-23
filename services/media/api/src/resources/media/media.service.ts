@@ -209,7 +209,7 @@ export class MediaService {
       );
     }
 
-    return this.resolveUserPresignedRead(item, requesterId);
+    return this.resolveUserPresignedRead(item, requesterId, authHeader, sessionCode);
   }
 
   private async resolveCharacterPresignedRead(
@@ -236,10 +236,19 @@ export class MediaService {
   private async resolveUserPresignedRead(
     item: PresignedReadItemDto,
     requesterId: string,
+    authHeader: string | undefined,
+    sessionCode?: string,
   ): Promise<PresignedUrlResultDto> {
     if (!requesterId) {
       throw new ForbiddenException('Authentication required');
     }
+
+    await this.mediaAccessService.assertUserAvatarReadAccess(
+      item.id,
+      requesterId,
+      authHeader,
+      sessionCode,
+    );
 
     const stored = await this.fetchUserAvatar(item.id);
 
