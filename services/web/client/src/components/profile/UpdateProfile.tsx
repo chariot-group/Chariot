@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn, useFormState } from "react-hook-form";
 import { ProfileFormData } from "@/hooks/useProfileForm";
 import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -35,13 +35,15 @@ export default function UpdateProfile({
   const tAuth = useTranslations("auth");
   const toast = useToast();
 
+  const { isDirty } = useFormState({ control: form.control });
+
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [pendingAvatarRemove, setPendingAvatarRemove] = useState(false);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [isAvatarCommitting, setIsAvatarCommitting] = useState(false);
 
   const isAvatarDirty = pendingAvatarFile !== null || pendingAvatarRemove;
-  const hasPendingChanges = form.formState.isDirty || isAvatarDirty;
+  const hasPendingChanges = isDirty || isAvatarDirty;
   const isBusy = isLoading || isAvatarCommitting;
 
   const resetAvatarDraft = useCallback(() => {
@@ -330,7 +332,7 @@ export default function UpdateProfile({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isBusy || !hasPendingChanges || !form.formState.isValid}
+                  disabled={isBusy || !hasPendingChanges}
                   aria-label={tEdit("updateProfile")}
                   aria-busy={isBusy}>
                   {isBusy ? tAuth("loading") : tEdit("updateProfile")}
