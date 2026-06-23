@@ -3208,3 +3208,74 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useStoredFeetDualRangeInput.ts`
 - `services/web/client/src/components/ui/stored-unit-feet-dual-range-input.tsx`
 - `services/web/client/src/components/character/tabContents/battle/shared/ActionUpdateSection.tsx`
+
+## FR-media-private-storage: Private Media Storage (MinIO)
+
+**Rule**: Character and user profile images MUST be stored in a private MinIO bucket, accessible only to authenticated users with appropriate authorization. Images MUST be optimized on upload (WebP, main + thumbnail variants) and served via short-lived presigned URLs after an ACL check.
+
+**Requirements**:
+
+**Storage**:
+
+- MinIO runs as a single Docker container alongside Adventure (no dedicated media microservice)
+- Bucket `chariot-media` is private; only Adventure API holds S3 credentials
+- Object keys: `avatars/characters/{characterId}/main.webp`, `avatars/characters/{characterId}/thumb.webp`, `avatars/users/{keycloakId}/main.webp`, `avatars/users/{keycloakId}/thumb.webp`
+- `character.avatar` and Keycloak user `avatar` attribute store the main object key (not a public URL)
+- Legacy external URLs (`http://`, `https://`) remain supported for backward compatibility (e.g. DiceBear seeder)
+
+**Upload optimization**:
+
+- Accepted formats: JPEG, PNG, WebP
+- Max upload size: 5 MiB
+- On upload: strip EXIF, encode WebP — main max 512×512 px (cover), thumb 96×96 px (cover)
+- Replace upload deletes previous MinIO objects for that entity
+
+**Authorization**:
+
+- Character avatar upload/delete: character owner, or GM with active session `gm-edit` validation (same as sheet edit)
+- Character avatar read: character owner, or session participant with `roster-read` when `sessionCode` is provided
+- User profile avatar upload/delete: authenticated user for own account only
+- User profile avatar read: any authenticated user (profile picture visibility)
+- User avatar routes: `POST/DELETE /user/me/avatar`
+
+**Presigned read**:
+
+- Client requests presigned URLs via `POST /media/presigned-read` (batch supported) after JWT validation
+- TTL: 30 minutes (configurable)
+- Browser loads images directly from MinIO public endpoint (presigned); no anonymous bucket access
+
+**Display surfaces** (lazy loading, `object-fit: cover`, accessible fallback):
+
+- Character detail header (FR-character-detail-view dimensions and placeholder)
+- Profile page and sidebar profile menu
+- Session lobby participant cards (character avatar when assigned)
+- Combat quick view banner (`CombatBanner` chips)
+- Initiative tracker rows (thumbnail variant)
+
+**Accessibility**:
+
+- Meaningful `alt` text on avatar images; placeholder icon with `aria-hidden` when no image
+- Upload control: labeled file input, keyboard accessible, error feedback via toast
+
+**Prohibitions**:
+
+- Public MinIO bucket policy
+- Storing raw upload bytes without optimization
+- Embedding long-lived public URLs in MongoDB or Keycloak for new uploads
+- Bypassing session ACL for character media outside authorized session context
+
+**Tests**:
+
+- Nominal: upload character avatar → object keys stored, presigned read returns URL
+- Nominal: batch presigned-read for tracker thumbnails
+- Edge: legacy `https://` avatar value returned as external URL without MinIO call
+- Failure: upload over size limit or unsupported MIME → 400
+- Failure: presigned-read for character without access → omitted/null in batch response
+
+**References**:
+
+- `services/adventure/api/src/resources/media/`
+- `services/adventure/compose.dev.yml`
+- `services/web/client/src/components/media/MediaAvatar.tsx`
+- `services/web/client/src/hooks/useMediaAvatarUrl.ts`
+- `services/web/client/src/services/MediaService.ts`

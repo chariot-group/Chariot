@@ -1,4 +1,29 @@
 services:
+  chariot-minio:
+    image: minio/minio:latest
+    container_name: chariot-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-chariot_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-chariot_minio_secret}
+    volumes:
+      - chariot_minio_data:/data
+    ports:
+      - "9004:9000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - adventure-network
+
   chariot-mongo:
     image: mongo:latest
     platform: linux/amd64
@@ -58,8 +83,15 @@ services:
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
       CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://host.docker.internal:9002}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://chariot-minio:9000}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9004}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-chariot_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-chariot_minio_secret}
+      MINIO_BUCKET: ${MINIO_BUCKET:-chariot-media}
     depends_on:
       chariot-mongo:
+        condition: service_healthy
+      chariot-minio:
         condition: service_healthy
     networks:
       - adventure-network
@@ -68,6 +100,7 @@ services:
       - "localhost:host-gateway"
 
 volumes:
+  chariot_minio_data:
   chariot_mongodb_data:
   chariot_mongodb_logs:
   chariot_adventure_logs:

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ChevronLeft, ChevronRight, Dices, Heart, ScrollText, Shield, Swords, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Dices, Heart, ScrollText, Shield, Swords } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useStore } from "react-redux";
@@ -18,6 +18,7 @@ import {
 import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
 import { formatRemainingConditionDuration } from "@/components/initiativeTracker/conditionDuration";
 import { cn } from "@/lib/utils";
+import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
@@ -311,21 +312,26 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   !isNewlyRevealed && statusAnimation === "dead" && "opacity-100 rounded-[8px] shadow-[0_0_0_1.5px_rgba(255,45,45,0.65),0_0_10px_rgba(255,45,45,0.35)] animate-pulse",
                   !isNewlyRevealed && statusAnimation === "unconscious" && "opacity-100 rounded-[8px] shadow-[0_0_0_1.5px_rgba(255,196,0,0.65),0_0_10px_rgba(255,196,0,0.35)] animate-pulse",
                 )}>
-                <div
+                <MediaAvatar
+                  scope="character"
+                  entityId={row.characterId}
+                  storedValue={row.avatar}
+                  size="xs"
+                  sessionCode={sessionCode}
+                  alt={displayName}
                   className={cn(
-                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors",
+                    "ring-2 ring-offset-1 ring-offset-transparent",
                     isActive
-                      ? "bg-purple text-white ring-2 ring-purple/40 ring-offset-1 ring-offset-transparent"
+                      ? "ring-purple/40"
                       : isDead
-                        ? "bg-red/25 text-red ring-2 ring-red/40 ring-offset-1 ring-offset-transparent"
+                        ? "ring-red/40"
                         : isUnconscious
-                          ? "bg-yellow/20 text-yellow ring-2 ring-yellow/40 ring-offset-1 ring-offset-transparent"
+                          ? "ring-yellow/40"
                           : isOwnCharacter
-                            ? "bg-blue/15 text-blue ring-2 ring-blue/40 ring-offset-1 ring-offset-transparent"
-                            : "bg-white/10 text-white/60",
-                  )}>
-                  <User className="size-3" />
-                </div>
+                            ? "ring-blue/40"
+                            : "ring-white/10",
+                  )}
+                />
                 <span
                   className={cn(
                     "max-w-[60px] truncate text-[10px] leading-tight",

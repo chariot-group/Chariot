@@ -2,7 +2,8 @@ import { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { SquarePen, User as UserIcon } from "lucide-react";
+import { SquarePen } from "lucide-react";
+import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { isEnterWithoutModifiers } from "@/utils/keyboard.utils";
 
 interface Props {
@@ -25,15 +26,21 @@ export default function ReadProfile({ user, onEdit, isLoading = false }: Props) 
         {t("pageTitle")}
       </h2>
       <div
-        className="relative w-full xl:w-1/2 aspect-video"
+        className="relative w-full xl:w-1/2 aspect-video overflow-hidden rounded-[15px]"
         role="img"
         aria-label={user?.username ? `${user.username} profile picture` : "Default profile picture"}>
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-middle-light rounded-[15px]">
-          <UserIcon
-            className="h-16 w-16"
-            aria-hidden="true"
+        {user?.keycloakId ? (
+          <MediaAvatar
+            scope="user"
+            entityId={user.keycloakId}
+            storedValue={user.avatar}
+            size="profile"
+            alt={user.username ? `${user.username} profile picture` : "Profile picture"}
+            priority
+            fillContainer
+            className="size-full min-h-[120px]"
           />
-        </div>
+        ) : null}
       </div>
       <div className="flex flex-col justify-between gap-2 sm:gap-3 w-full xl:w-1/2">
         <div>

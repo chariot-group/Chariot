@@ -2,15 +2,19 @@ FROM node:26-alpine
 
 WORKDIR /app
 
+# libc6-compat helps native optional deps (e.g. @parcel/watcher) on Alpine/musl
+RUN apk add --no-cache libc6-compat
+
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Install dependencies (this layer will be cached unless package.json changes)
-RUN npm install
+# Include optional platform binaries (@parcel/watcher-linux-*-musl, etc.)
+RUN npm ci --include=optional
 
 # Copy source code
 COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# Re-sync optional native deps when node_modules is a bind/volume from another platform
+CMD ["sh", "-c", "npm install --include=optional && npm run dev"]

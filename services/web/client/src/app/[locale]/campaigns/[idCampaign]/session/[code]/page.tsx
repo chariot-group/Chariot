@@ -32,6 +32,7 @@ import {
 import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/sessionSlice";
 import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import { MediaAvatar } from "@/components/media/MediaAvatar";
 
 export default function SessionPage() {
   const t = useTranslations("sessionPage");
@@ -60,9 +61,11 @@ export default function SessionPage() {
     participants,
     setParticipants,
     participantNames,
+    participantAvatars,
     myCharacters,
     fetchCharacterDetails,
     getCharacterLabel,
+    characterDetails,
     isLoading,
   } = useSessionData({ code, idCampaign, campaign }) as ReturnType<typeof useSessionData>;
 
@@ -170,15 +173,45 @@ export default function SessionPage() {
                   participants.map((participant: SessionParticipant) => {
                     const isMe = participant.userId === currentUser?.keycloakId;
                     const isPlayer = participant.status === "connected";
+                    const isGameMaster = participant.status === "gameMaster";
+                    const participantDisplayName =
+                      participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING;
                     const characterLabel = getCharacterLabel(participant.characterId);
+                    const characterAvatar =
+                      participant.characterId != null
+                        ? characterDetails[participant.characterId]?.avatar
+                        : undefined;
+                    const profileAvatar =
+                      participantAvatars[participant.userId] ??
+                      (isMe ? currentUser?.avatar : undefined);
 
                     return (
                       <Card
                         key={participant.id}
                         role="listitem"
                         className="bg-gray flex flex-col gap-2 p-3">
+                        <div className="flex flex-row items-center gap-3">
+                          {isGameMaster ? (
+                            <MediaAvatar
+                              scope="user"
+                              entityId={participant.userId}
+                              storedValue={profileAvatar}
+                              size="thumb"
+                              alt={participantDisplayName}
+                            />
+                          ) : participant.characterId && characterAvatar?.trim() ? (
+                            <MediaAvatar
+                              scope="character"
+                              entityId={participant.characterId}
+                              storedValue={characterAvatar}
+                              sessionCode={code}
+                              size="thumb"
+                              alt={characterLabel || t("players.selectCharacterPlaceholder")}
+                            />
+                          ) : null}
+                          <div className="flex min-w-0 flex-1 flex-col gap-2">
                         <div className="flex flex-row justify-between items-center gap-3">
-                          <span className="font-medium">
+                          <span className="font-medium truncate">
                             {participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING}
                           </span>
                           {participant.status === "gameMaster" && <Badge>{t("players.gameMaster")}</Badge>}
@@ -200,6 +233,8 @@ export default function SessionPage() {
                         ) : (
                           <span className="text-xs text-muted-foreground truncate">{characterLabel ?? "\u00A0"}</span>
                         )}
+                          </div>
+                        </div>
                       </Card>
                     );
                   })}

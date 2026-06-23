@@ -79,7 +79,7 @@ class UserService {
         }
     }
 
-    async getUserById(id: string): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username'>> {
+    async getUserById(id: string): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username' | 'avatar'>> {
         try {
             const response = await apiClient().get<IResponse<User>>(`${this.BASE_PATH}/${id}`);
             return response.data.data;

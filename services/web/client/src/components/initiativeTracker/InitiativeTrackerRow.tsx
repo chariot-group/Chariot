@@ -36,12 +36,16 @@ import {
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
 import { InitiativeNumberInput } from "@/components/initiativeTracker/InitiativeNumberInput";
+import { MediaAvatar } from "@/components/media/MediaAvatar";
 
 type InitiativeTrackerRowProps = {
   row: InitiativeTrackerRowType;
   mode?: "gm" | "player";
   ownCharacterId?: string | null;
   ownCharacterSheetHref?: string | null;
+  /** Pre-resolved presigned URL (batch) for tracker thumbnail. */
+  avatarImageUrl?: string | null;
+  sessionCode?: string | null;
   isActiveTurn?: boolean;
   isNewlyRevealed?: boolean;
   statusChangeAnimation?: RowStatusAnimation | null;
@@ -127,6 +131,8 @@ export function InitiativeTrackerRow({
   mode = "gm",
   ownCharacterId = null,
   ownCharacterSheetHref = null,
+  avatarImageUrl = null,
+  sessionCode = null,
   isActiveTurn = false,
   isNewlyRevealed = false,
   statusChangeAnimation = null,
@@ -314,6 +320,46 @@ export function InitiativeTrackerRow({
 
     return renderCharacterNameText(gmName);
   };
+
+  const renderAvatarThumb = () => {
+    if (showHiddenName || !row.avatar?.trim()) {
+      return null;
+    }
+
+    if (avatarImageUrl) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element -- presigned tracker thumbnail
+        <img
+          src={avatarImageUrl}
+          alt=""
+          aria-hidden="true"
+          width={36}
+          height={36}
+          loading="lazy"
+          decoding="async"
+          className="size-9 shrink-0 rounded-full object-cover object-center"
+        />
+      );
+    }
+
+    return (
+      <MediaAvatar
+        scope="character"
+        entityId={row.characterId}
+        storedValue={row.avatar}
+        size="thumb"
+        sessionCode={sessionCode}
+        alt={displayName}
+      />
+    );
+  };
+
+  const renderCharacterColumn = () => (
+    <div className="flex min-w-0 w-full max-w-full items-center gap-2 overflow-hidden">
+      {renderAvatarThumb()}
+      <div className="min-w-0 flex-1 overflow-hidden">{renderCharacterNameNode()}</div>
+    </div>
+  );
 
   const renderGroupContent = (detail = false) =>
     showGroupLabel ? (
@@ -532,7 +578,7 @@ export function InitiativeTrackerRow({
         {renderInitiativeCell()}
 
         <div className={`flex w-full max-w-full min-w-0 overflow-hidden ${TRACKER_CELL_ALIGN.character}`}>
-          {renderCharacterNameNode()}
+          {renderCharacterColumn()}
         </div>
 
         {renderHpCell()}
@@ -599,7 +645,7 @@ export function InitiativeTrackerRow({
           </div>
 
           <div className="min-w-0 max-w-full overflow-hidden pt-1 text-left">
-            {renderCharacterNameNode()}
+            {renderCharacterColumn()}
           </div>
 
           <div className="flex min-w-0 flex-col items-end gap-1">

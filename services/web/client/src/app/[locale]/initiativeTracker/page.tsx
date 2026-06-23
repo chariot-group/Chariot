@@ -514,6 +514,7 @@ export default function InitiativeTrackerPage() {
           mode={trackerMode}
           ownCharacterId={ownCharacterId}
           ownCharacterSheetHref={ownCharacterSheetHref}
+          sessionCode={sessionCode}
           activeTurnRowId={battleStarted ? activeTurnRowId : null}
           initiativeLocked={battleStarted || (!isGameMaster && !playerCanEditOwnInitiative)}
           columnLabels={{

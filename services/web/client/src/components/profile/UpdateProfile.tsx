@@ -2,41 +2,158 @@ import { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { User as UserIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { ProfileFormData } from "@/hooks/useProfileForm";
 import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
+import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
+import MediaService from "@/services/MediaService";
+import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
+import { useToast } from "@/hooks/useToast";
 
 interface Props {
   user: User | null;
   form: UseFormReturn<ProfileFormData, null, ProfileFormData>;
   isLoading: boolean;
-  onSubmit: (data: ProfileFormData) => void;
+  onSubmit: (data: ProfileFormData) => Promise<void>;
   onCancel: () => void;
+  onAvatarChange?: () => void;
 }
 
-export default function UpdateProfile({ user, form, isLoading, onSubmit, onCancel }: Props) {
+export default function UpdateProfile({
+  user,
+  form,
+  isLoading,
+  onSubmit,
+  onCancel,
+  onAvatarChange,
+}: Props) {
   const t = useTranslations("ProfilePage");
   const tEdit = useTranslations("ProfilePage.editProfile");
   const tAuth = useTranslations("auth");
+  const toast = useToast();
+
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [pendingAvatarRemove, setPendingAvatarRemove] = useState(false);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [isAvatarCommitting, setIsAvatarCommitting] = useState(false);
+
+  const isAvatarDirty = pendingAvatarFile !== null || pendingAvatarRemove;
+  const hasPendingChanges = form.formState.isDirty || isAvatarDirty;
+  const isBusy = isLoading || isAvatarCommitting;
+
+  const resetAvatarDraft = useCallback(() => {
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+    }
+    setAvatarPreviewUrl(null);
+    setPendingAvatarFile(null);
+    setPendingAvatarRemove(false);
+  }, [avatarPreviewUrl]);
+
+  const handlePendingAvatarFile = useCallback(
+    (file: File) => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+      setPendingAvatarFile(file);
+      setPendingAvatarRemove(false);
+      setAvatarPreviewUrl(URL.createObjectURL(file));
+    },
+    [avatarPreviewUrl],
+  );
+
+  const handlePendingAvatarRemove = useCallback(() => {
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+    }
+    setPendingAvatarFile(null);
+    setPendingAvatarRemove(true);
+    setAvatarPreviewUrl(null);
+  }, [avatarPreviewUrl]);
+
+  const handleSave = useCallback(
+    async (data: ProfileFormData) => {
+      const isValid = await form.trigger();
+      if (!isValid) {
+        return;
+      }
+
+      let avatarChanged = false;
+
+      try {
+        if (pendingAvatarFile) {
+          setIsAvatarCommitting(true);
+          await MediaService.uploadUserAvatar(pendingAvatarFile);
+          avatarChanged = true;
+          if (user?.keycloakId) {
+            invalidateMediaAvatarCache("user", user.keycloakId);
+          }
+        } else if (pendingAvatarRemove && user?.avatar?.trim()) {
+          setIsAvatarCommitting(true);
+          await MediaService.deleteUserAvatar();
+          avatarChanged = true;
+          if (user?.keycloakId) {
+            invalidateMediaAvatarCache("user", user.keycloakId);
+          }
+        }
+
+        await onSubmit(data);
+        resetAvatarDraft();
+
+        if (avatarChanged) {
+          onAvatarChange?.();
+        }
+      } catch {
+        toast.error(tEdit("errorMessage"));
+      } finally {
+        setIsAvatarCommitting(false);
+      }
+    },
+    [
+      form,
+      onAvatarChange,
+      onSubmit,
+      pendingAvatarFile,
+      pendingAvatarRemove,
+      resetAvatarDraft,
+      tEdit,
+      toast,
+      user?.avatar,
+      user?.keycloakId,
+    ],
+  );
+
+  const handleCancel = useCallback(() => {
+    resetAvatarDraft();
+    onCancel();
+  }, [onCancel, resetAvatarDraft]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
 
   useEffect(() => {
     const handleGlobalShortcuts = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onCancel();
+        handleCancel();
         return;
       }
 
       if (!isEnterWithoutModifiers(event) || isTypingInInputElement(event.target)) return;
+      if (!hasPendingChanges) return;
 
       event.preventDefault();
       event.stopPropagation();
-      form.handleSubmit(onSubmit)();
+      form.handleSubmit(handleSave)();
     };
 
     window.addEventListener("keydown", handleGlobalShortcuts, true);
@@ -44,7 +161,9 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcuts, true);
     };
-  }, [form, onCancel, onSubmit]);
+  }, [form, handleCancel, handleSave, hasPendingChanges]);
+
+  const editingAvatarStoredValue = pendingAvatarRemove ? "" : user?.avatar;
 
   return (
     <Card
@@ -57,25 +176,34 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
         {t("pageTitle")}
       </h2>
       <div
-        className="relative w-full xl:w-1/2 aspect-video"
+        className="relative w-full xl:w-1/2 aspect-video overflow-hidden rounded-[15px]"
         role="img"
         aria-label={user?.username ? `${user.username} profile picture` : "Default profile picture"}>
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-middle-light rounded-[15px]">
-          <UserIcon
-            className="h-16 w-16"
-            aria-hidden="true"
+        {user?.keycloakId ? (
+          <MediaAvatarUpload
+            scope="user"
+            entityId={user.keycloakId}
+            storedValue={editingAvatarStoredValue}
+            size="profile"
+            alt={user.username ? `${user.username} profile picture` : "Profile picture"}
+            deferUpload
+            previewUrl={avatarPreviewUrl}
+            onPendingFile={handlePendingAvatarFile}
+            onPendingRemove={handlePendingAvatarRemove}
+            disabled={isBusy}
+            className="size-full"
           />
-        </div>
+        ) : null}
       </div>
       <div className="w-full xl:w-1/2 h-full">
         <form
           id="form-update-profile"
           className="h-full"
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(handleSave)}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               event.preventDefault();
-              onCancel();
+              handleCancel();
               return;
             }
 
@@ -113,7 +241,7 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
                         placeholder={tEdit("firstName")}
                         autoComplete="given-name"
                         type="text"
-                        disabled={isLoading}
+                        disabled={isBusy}
                       />
                       {fieldState.error && (
                         <FieldError
@@ -145,7 +273,7 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
                         placeholder={tEdit("lastName")}
                         autoComplete="family-name"
                         type="text"
-                        disabled={isLoading}
+                        disabled={isBusy}
                       />
                       {fieldState.error && (
                         <FieldError
@@ -180,7 +308,7 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
                       placeholder={tEdit("email")}
                       autoComplete="email"
                       type="email"
-                      disabled={isLoading}
+                      disabled={isBusy}
                     />
                     {fieldState.error && (
                       <FieldError
@@ -195,17 +323,17 @@ export default function UpdateProfile({ user, form, isLoading, onSubmit, onCance
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={onCancel}
-                  disabled={isLoading}
+                  onClick={handleCancel}
+                  disabled={isBusy}
                   aria-label={tEdit("cancelUpdate")}>
                   {tEdit("cancelUpdate")}
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isLoading || !form.formState.isValid}
+                  disabled={isBusy || !hasPendingChanges || !form.formState.isValid}
                   aria-label={tEdit("updateProfile")}
-                  aria-busy={isLoading}>
-                  {isLoading ? tAuth("loading") : tEdit("updateProfile")}
+                  aria-busy={isBusy}>
+                  {isBusy ? tAuth("loading") : tEdit("updateProfile")}
                 </Button>
               </div>
             </div>

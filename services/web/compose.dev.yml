@@ -30,7 +30,7 @@ services:
     shm_size: 512mb
     networks:
       - chariot-group-network
-    command: ["npm", "run", "dev"]
+    command: ["sh", "-c", "npm install --include=optional && npm run dev"]
   
 volumes:
   next_cache:

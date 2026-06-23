@@ -1,20 +1,23 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserService } from '@/resources/user/user.service';
 import { UserController } from '@/resources/user/user.controller';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { User, UserSchema } from '@/resources/user/schemas/user.schema';
 import { InternalGuard } from '@/common/guards/internal.guard';
+import { MediaModule } from '@/resources/media/media.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    forwardRef(() => MediaModule),
   ],
   controllers: [UserController],
   providers: [UserService, KeycloakService, InternalGuard],
   exports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     UserService,
+    KeycloakService,
   ],
 })
 export class UserModule {}

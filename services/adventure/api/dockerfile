@@ -3,7 +3,7 @@ FROM node:26-alpine AS base
 WORKDIR /app
 
 # Update Alpine packages to patch OS-level vulnerabilities
-RUN apk upgrade --no-cache
+RUN apk upgrade --no-cache && apk add --no-cache libc6-compat vips
 
 # Copy package files first for better caching
 COPY package*.json ./

@@ -25,6 +25,7 @@ import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTr
 import { characterName, type InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
+import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 
 export type InitiativeTrackerTableProps = {
   rows: InitiativeTrackerRow[];
@@ -166,6 +167,7 @@ export type InitiativeTrackerTableProps = {
   turnControls?: React.ReactNode;
   ownCharacterId?: string | null;
   ownCharacterSheetHref?: string | null;
+  sessionCode?: string | null;
   newlyCombatantRevealedLabel?: string;
 };
 
@@ -200,6 +202,7 @@ export function InitiativeTrackerTable({
   turnControls,
   ownCharacterId = null,
   ownCharacterSheetHref = null,
+  sessionCode = null,
   newlyCombatantRevealedLabel,
 }: InitiativeTrackerTableProps) {
   const isPlayerView = mode === "player";
@@ -210,6 +213,17 @@ export function InitiativeTrackerTable({
 
   const newlyRevealedIds = useNewlyRevealedRows(isPlayerView ? rows.map((r) => r.id) : []);
   const statusChangedRows = useStatusChangedRows(rows, !isPlayerView);
+
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
+    rows.map((row) => ({
+      scope: "character" as const,
+      entityId: row.characterId,
+      storedValue: row.avatar,
+      size: "thumb" as const,
+    })),
+    sessionCode,
+    rows.length > 0,
+  );
 
   const [liveAnnouncement, setLiveAnnouncement] = React.useState("");
   const announcedRef = React.useRef(new Set<string>());
@@ -627,6 +641,8 @@ export function InitiativeTrackerTable({
             mode={mode}
             ownCharacterId={ownCharacterId}
             ownCharacterSheetHref={ownCharacterSheetHref}
+            avatarImageUrl={getAvatarUrl("character", row.characterId, "thumb")}
+            sessionCode={sessionCode}
             isActiveTurn={activeTurnRowId != null && row.id === activeTurnRowId}
             isNewlyRevealed={isPlayerView && newlyRevealedIds.has(row.id)}
             statusChangeAnimation={statusChangedRows.get(row.id) ?? null}
