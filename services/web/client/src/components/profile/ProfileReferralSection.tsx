@@ -91,7 +91,6 @@ export default function ProfileReferralSection({
             {t("yourCode")}
           </h4>
           <div className="flex flex-row items-center gap-2 flex-wrap">
-            <p className="text-lg font-bold tracking-wide">{referralInfo.code}</p>
             <Button
               variant="outline"
               size="sm"

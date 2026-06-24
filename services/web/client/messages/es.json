@@ -564,7 +564,7 @@
       "formLabel": "Formulario de actualización de perfil"
     },
     "referral": {
-      "yourCode": "Tu código de referido",
+      "yourCode": "Enlace de referido",
       "tiersProgressAriaLabel": "Progreso de niveles de referidos",
       "maxDiscountLabel": "Máx.",
       "maxDiscountAriaLabel": "Descuento máximo posible: {discount} %",

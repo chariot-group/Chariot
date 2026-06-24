@@ -564,7 +564,7 @@
       "formLabel": "Profile update form"
     },
     "referral": {
-      "yourCode": "Your referral code",
+      "yourCode": "Referral link",
       "tiersProgressAriaLabel": "Referral tier progress",
       "maxDiscountLabel": "Max",
       "maxDiscountAriaLabel": "Maximum possible discount: {discount}%",

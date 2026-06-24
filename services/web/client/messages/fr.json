@@ -565,7 +565,7 @@
       "formLabel": "Formulaire de modification du profil"
     },
     "referral": {
-      "yourCode": "Votre code parrain",
+      "yourCode": "Lien de parrainage",
       "tiersProgressAriaLabel": "Progression des paliers de parrainage",
       "maxDiscountLabel": "Max",
       "maxDiscountAriaLabel": "Réduction maximale possible : {discount} %",

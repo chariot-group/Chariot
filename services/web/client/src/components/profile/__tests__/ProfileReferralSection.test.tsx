@@ -37,7 +37,7 @@ describe("ProfileReferralSection", () => {
 
     expect(html).toContain('id="referral-tiers-heading"');
     expect(html).toContain('role="progressbar"');
-    expect(html).toContain("PARRAIN42");
+    expect(html).not.toContain("PARRAIN42");
     expect(html).toContain("copyLink");
     expect(html).toContain("50%");
   });
