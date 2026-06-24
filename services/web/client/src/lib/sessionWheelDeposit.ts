@@ -1,4 +1,4 @@
-/** Pure helpers for session lobby wheel deposit limits (FR-008, FR-044). */
+/** Pure helpers for session lobby wheel deposit limits (FR-user-balance-history, FR-session-lobby-wheel-deposit). */
 
 export function computeMaxAddableWheels(params: {
     balance: number;

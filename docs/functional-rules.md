@@ -3250,9 +3250,9 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-051 : Dépôt et retrait de wheels dans le lobby de session
+## FR-session-lobby-wheel-deposit: Dépôt et retrait de wheels dans le lobby de session
 
-**Règle** : Le lobby de session (FR-042) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
+**Règle** : Le lobby de session (FR-session-lobby-modal) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
 
 **Exigences** :
 
@@ -3269,12 +3269,12 @@ Each initiative tracker row carries:
 - **Clamp silencieux interdit** : si une demande bulk dépasse le quota ou le solde, un toast informatif DOIT indiquer le nombre réellement déposé.
 - La liste des participants DOIT occuper l'espace scrollable sous le panneau code/QR (mobile : code, lien et QR en haut ; desktop : colonne latérale droite).
 
-**Contraintes backend (FR-008)** :
+**Contraintes backend (FR-user-balance-history)** :
 
 - Les dépôts restent des réservations ; le débit n'a lieu qu'au lancement.
 - Les validations serveur (`session:add-token`, `session:add-tokens`, etc.) restent l'autorité.
 
-**Accessibilité (FR-019)** :
+**Accessibilité (FR-frontend-design)** :
 
 - Barre de progression avec `role="progressbar"`, `aria-valuenow`, `aria-valuemax`.
 - Boutons +/− avec `aria-label` explicites.
