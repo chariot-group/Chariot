@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   closeSessionLobby,
@@ -31,11 +26,11 @@ export function SessionLobbyDialog() {
       onOpenChange={(next) => {
         if (!next) dispatch(closeSessionLobby());
       }}>
-      <DialogContent className="max-w-5xl w-[calc(100vw-2rem)] h-[80dvh] flex flex-col overflow-hidden p-0">
-        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 shrink-0">
-          <DialogTitle>{t("title")}</DialogTitle>
-        </DialogHeader>
-        <div className="flex-1 min-h-0">
+      <DialogContent
+        className="flex h-[80dvh] max-w-5xl w-[calc(100vw-2rem)] flex-col overflow-hidden p-0"
+        aria-describedby={undefined}>
+        <DialogTitle className="sr-only">{t("title")}</DialogTitle>
+        <div className="min-h-0 flex-1">
           <SessionLobbyContent
             code={code}
             idCampaign={campaignId}
