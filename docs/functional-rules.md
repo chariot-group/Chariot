@@ -8,7 +8,7 @@ Each rule has a unique identifier and must be tested.
 Each rule uses a stable slug ID: `FR-{domain}-{feature}` (kebab-case, English).  
 Examples: `FR-sidebar-quick-links`, `FR-character-duplicate`, `FR-session-join-qr-code`.
 
-**Deprecated numeric IDs** (`FR-001` … `FR-038`) were migrated to slug IDs. Do not use numeric IDs in new code, comments, or rules.
+**Deprecated numeric IDs** (`FR-001` … `FR-038`, and any later numeric suffix such as `FR-042` / `FR-049` / `FR-050`) were migrated to slug IDs. Do not use numeric IDs in new code, comments, or rules.
 
 When adding a rule:
 
@@ -2918,87 +2918,14 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-042: Session Lobby as Modal Overlay
-
-**Règle** : Le lobby de session (participants, dépôt de tokens, lancement) DOIT être affiché dans une modale Dialog superposée à la page courante, et non dans une page dédiée.
-
-**Exigences** :
-
-- Le contenu du lobby est extrait dans un composant `SessionLobbyContent` acceptant `code` et `campaignId` en props.
-- Un composant `SessionLobbyDialog` encapsule `SessionLobbyContent` dans le composant `Dialog` existant (`components/ui/dialog.tsx`), contrôlé par l'état Redux `session.sessionLobbyOpen` (boolean).
-- `SessionLobbyDialog` est rendu une seule fois dans le layout racine (`app/[locale]/layout.tsx`).
-- `session.sessionLobbyOpen` est initialisé à `false` et remis à `false` lors de la réhydratation (non persisté).
-- Deux actions Redux sont exposées : `openSessionLobby` et `closeSessionLobby`.
-- Tous les points de navigation internes qui faisaient `router.push(…/session/[code])` dispatche désormais `openSessionLobby` :
-  - `ActionButton` (état `returnToSession`)
-  - `JoinSessionDialog` (après join réussi)
-  - `SessionCharacterSyncClient` (redirect vers lobby)
-  - `SessionTimer` (le lien devient un bouton)
-- La route `/campaigns/[idCampaign]/session/[code]` est conservée comme fallback pour les accès directs par URL : la page redirige vers `/{locale}/welcome?join={code}` (ouverture du flux de join via `SessionJoinParamListener`).
-- La modale est large (`max-w-5xl`) et scrollable en interne pour accommoder la liste de participants et le panneau de code session.
-- La fermeture via Échap ou clic hors de la modale dispatche `closeSessionLobby`.
-
-**Accessibilité** :
-- La modale respecte les attributs ARIA du composant `Dialog` existant (`aria-modal`, `role="dialog"`, `aria-labelledby`).
-- Le focus est capturé dans la modale à l'ouverture et restitué à l'élément déclencheur à la fermeture.
-
-**Interdictions** :
-- Dupliquer la logique de socket dans `SessionLobbyContent` (réutiliser `useSessionSocket` inchangé).
-- Persister `sessionLobbyOpen` dans le stockage Redux Persist.
-- Rendre `SessionLobbyDialog` en dehors du layout racine.
-
-**Tests** :
-- Nominal : clic sur "Retour à la session" dans ActionButton → modale s'ouvre avec les participants.
-- Nominal : rejoindre une session via `JoinSessionDialog` → modale lobby s'ouvre après le join.
-- Edge : fermeture via Échap → dispatch `closeSessionLobby`, modale fermée.
-- Edge : réhydratation Redux → `sessionLobbyOpen` est `false` quelle que soit la valeur persistée.
-- Failure : `code` ou `campaignId` absents du state → modale ne s'ouvre pas.
-
-**Références** :
-- `services/web/client/src/store/slices/sessionSlice.ts`
-- `services/web/client/src/components/dialogs/SessionLobbyDialog.tsx`
-- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
-- `services/web/client/src/app/[locale]/layout.tsx`
-- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
-- `services/web/client/src/components/dialogs/JoinSessionDialog.tsx`
-- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
-- `services/web/client/src/components/layout/SessionTimer.tsx`
-- `services/web/client/src/components/SessionJoinParamListener.tsx`
-- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
-
----
-
-## FR-043: QR Code de rejoindre une session
-
-**Règle** : Le lobby de session (modale FR-042) DOIT afficher, sous la card du code de session, une card contenant un QR code encodant l'URL de rejoindre la session. Tous les participants (MJ et joueurs) peuvent voir ce QR code.
-
-**Exigences** :
-
-- La card QR code est affichée sous la card du code de session, dans la colonne latérale (`aside`) de `SessionLobbyContent`, à partir du breakpoint `lg`.
-- En dessous de `lg`, le code session et le QR code sont regroupés dans une seule card. Le QR remplace le code visible (le code reste accessible aux lecteurs d'écran via `sr-only`) ; les boutons de copie restent affichés en dessous.
-- Le QR code encode l'URL courante avec le paramètre `join` : `{window.location.href}?join={code}` (même format que le bouton « Copier le lien »).
-- Le QR code DOIT avoir un fond blanc et un contraste suffisant (couleur sombre) pour être lisible par les scanners mobiles.
-- La card DOIT inclure un label accessible (`aria-label`) décrivant le QR code.
-
-**Tests** :
-
-- Nominal : la card QR code est affichée dans le lobby session avec un QR code valide.
-- Edge : l'URL encodée contient bien le paramètre `join` avec le bon `code`.
-
-**Références** :
-
-- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
-
----
-
-## FR-044 : Navigation interne locale-aware
+## FR-i18n-navigation: Navigation interne locale-aware
 
 **Règle** : Toute navigation interne vers une page de l'application DOIT utiliser les utilitaires exportés par `@/i18n/navigation` (basés sur `createNavigation` de next-intl). L'usage de `window.location.href` pour la navigation interne est interdit.
 
 **Exigences** :
 
 - `useRouter`, `Link`, `usePathname` et `redirect` sont importés depuis `@/i18n/navigation`, jamais depuis `next/navigation` pour les navigations internes localisées.
-- Les services (classes non-React) qui déclenchent une navigation DOIVENT retourner les données nécessaires (ex. : `{ campaignId, code }`) et laisser le composant appelant effectuer le `router.push` ou le dispatch Redux approprié (ex. : `openSessionLobby` pour le lobby session FR-042).
+- Les services (classes non-React) qui déclenchent une navigation DOIVENT retourner les données nécessaires (ex. : `{ campaignId, code }`) et laisser le composant appelant effectuer le `router.push` ou le dispatch Redux approprié (ex. : `openSessionLobby` pour le lobby session — voir FR-session-lobby-modal).
 - Pour les liens externes (URL tiers) et les liens de protocole (`mailto:`, `tel:`), utiliser un élément `<a href>` natif rendu directement dans le JSX — jamais `window.location.href`.
 
 **Interdictions** :
@@ -3021,7 +2948,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-045 : Liens rapides configurables dans la sidebar
+## FR-sidebar-quick-links: Liens rapides configurables dans la sidebar
 
 **Règle** : Le MJ et le joueur peuvent ajouter, consulter et supprimer des liens externes (liens rapides) dans leur sidebar respective. Chaque lien est rattaché soit à une campagne (visible dans l'espace MJ sous la campagne concernée), soit à aucune campagne (visible dans l'espace joueur). Les liens sont persistés côté backend et isolés par utilisateur.
 
@@ -3096,7 +3023,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-046 : Collapse/expand de la section Liens rapides
+### Collapse/expand de la section Liens rapides
 
 **Règle** : La section "Liens rapides" dans la sidebar dispose d'un bouton toggle permettant de replier ou déplier la liste des liens.
 
@@ -3131,7 +3058,7 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-047 : Hauteur maximale de la section Liens rapides
+### Hauteur maximale de la section Liens rapides
 
 **Règle** : La liste des liens rapides est contrainte en hauteur pour ne jamais déformer ou agrandir la sidebar, quel que soit le nombre de liens ajoutés.
 
@@ -3157,58 +3084,122 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-048 : Affichage du compteur de capacités et traits
+## FR-session-join-qr-code: Session Join QR Code
 
-**Règle** : Les capacités et traits dotés d'un compteur (`hasCounter: true`, `counterMax` défini) doivent afficher les **utilisations restantes** sous la forme `remaining / max`, où `remaining = counterMax - counterCurrent`. Ce nombre décrémente à chaque usage, alignant le comportement visuel sur les emplacements de sort.
-
-**Exigences** :
-
-- Le compteur affiché représente les **utilisations restantes** : `remaining = counterMax - counterCurrent`.
-- Format d'affichage : `{remaining} / {max}` (ex. « 3 / 5 » au lieu de « 2 / 5 » pour 2 utilisations consommées sur 5).
-- La valeur interne `counterCurrent` reste un compteur ascendant (0 → max) ; seul l'affichage est inversé.
-- Les libellés ARIA doivent également refléter le nombre d'utilisations restantes.
-- Le bouton « Utiliser » reste désactivé lorsque `remaining === 0` (comportement inchangé).
-
-**Interdictions** :
-
-- Modifier la structure de données (`counterCurrent`) ou la logique d'incrémentation.
-- Afficher `counterCurrent / counterMax` (utilisations consommées) à la place des utilisations restantes.
-
-**Tests** :
-
-- Capacité avec `counterCurrent: 0`, `counterMax: 3` → affiche « 3 / 3 ».
-- Après une utilisation (`counterCurrent: 1`) → affiche « 2 / 3 ».
-- Capacité épuisée (`counterCurrent: 3`) → affiche « 0 / 3 » et bouton désactivé.
-
-**Références** :
-
-- `services/web/client/src/components/character/tabContents/shared/AbilitiesSection.tsx`
-- `services/web/client/messages/{fr|en|es}.json` (clés `characterDetail.battle.abilityCounterShort`, `abilityUseAria`)
-
----
-
-## FR-049: Affichage de la version de l'application
-
-**Rule**: La version de l'application Chariot doit être affichée dans la section Préférences de la page Profil, à proximité du bouton d'ouverture des notes de version. Elle ne doit PAS apparaître dans la sidebar.
+**Rule**: The session lobby MUST display a QR code encoding the join URL so any participant (GM or player) can share session access quickly.
 
 **Requirements**:
 
-- Source : `process.env.NEXT_PUBLIC_APP_VERSION`
-- Affichage conditionnel : uniquement si la variable d'environnement est définie et non vide
-- Format : `Chariot v{version}`
-- Style : discret (texte petit, opacité réduite), cohérent avec les métadonnées secondaires existantes
-- Position : dans `ProfilePreferencesSection`, au sein du bloc notes de version
+- The QR code is rendered inside `SessionLobbyContent` (session lobby modal), not on a dedicated full-page session route
+- Join URL encodes the current page origin with query parameter `?join={sessionCode}`
+- QR code MUST use a white background and sufficient contrast (dark foreground) for mobile scanners
+- QR section MUST expose an accessible label (`aria-label`)
 
 **Prohibitions**:
 
-- Afficher la version dans la sidebar ou dans le layout global
-- Afficher la version si `NEXT_PUBLIC_APP_VERSION` n'est pas définie
+- Require navigation to a dedicated session page solely to display the QR code
 
 **Tests**:
 
-- `ProfilePreferencesSection` affiche "Chariot v{x}" quand `NEXT_PUBLIC_APP_VERSION` est défini
-- `ProfilePreferencesSection` n'affiche pas la version quand la variable est absente
-- `Sidebar/index.tsx` ne contient plus de référence à la version de l'application
+- Nominal: session lobby modal shows a scannable QR code for the active session
+- Edge: encoded URL contains the correct `join` query parameter
+
+**References**:
+
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx` (legacy redirect to `?join=`)
+
+---
+
+## FR-session-lobby-modal: Session Lobby Modal
+
+**Rule**: Session lobby interactions MUST open in a global modal dialog backed by ephemeral Redux state, instead of relying on a dedicated routed session page.
+
+**Requirements**:
+
+- `SessionLobbyDialog` is mounted at layout level and renders `SessionLobbyContent` when open
+- Redux field `sessionLobbyOpen` controls visibility and MUST NOT be persisted
+- Actions `openSessionLobby` and `closeSessionLobby` are the sole open/close contract
+- Opening triggers include: session creation, join success, session timer click, sidebar return-to-session, and reconnect flows that need lobby access
+- Legacy route `/{locale}/campaigns/{campaignId}/session/{code}` redirects to `/{locale}/welcome?join={code}`; join handling opens the lobby/join flow without requiring a dedicated page
+- Non-React services that initiate lobby access MUST return session data (e.g. `{ campaignId, code }`) and let the calling component dispatch `openSessionLobby` (see FR-i18n-navigation)
+
+**Prohibitions**:
+
+- Persist `sessionLobbyOpen` across reloads
+- Navigate internally with `window.location.href` to open the lobby
+- Open the lobby from a service class without component-level Redux dispatch
+
+**Tests**:
+
+- Nominal: `openSessionLobby` sets `sessionLobbyOpen` to `true`; `closeSessionLobby` resets it to `false`
+- Edge: calling `openSessionLobby` twice remains idempotent (`true`)
+- Edge: `selectSessionLobbyOpen` defaults to `false` when field is absent (rehydration safety)
+- Failure: dialog does not render when `code` or `campaignId` is missing in Redux
+
+**References**:
+
+- `services/web/client/src/components/dialogs/SessionLobbyDialog.tsx`
+- `services/web/client/src/components/dialogs/SessionLobbyDialogDynamic.tsx`
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/store/slices/__tests__/sessionSlice.lobbyModal.test.ts`
+- `services/web/client/src/app/[locale]/layout.tsx`
+
+---
+
+## FR-character-ability-counter-display: Ability Counter Remaining Uses Display
+
+**Rule**: Abilities and traits with a counter (`hasCounter: true`, `counterMax` defined) MUST display **remaining uses** as `remaining / max`, where `remaining = counterMax - counterCurrent`, matching spell-slot visual semantics.
+
+**Requirements**:
+
+- Displayed counter represents remaining uses: `remaining = counterMax - counterCurrent`
+- Display format: `{remaining} / {max}` (e.g. `3 / 5` when zero uses consumed out of five)
+- Internal `counterCurrent` remains an ascending counter (0 → max); only display is inverted
+- ARIA labels MUST also reflect remaining uses
+- **Use** button stays disabled when `remaining === 0` (unchanged behavior)
+
+**Prohibitions**:
+
+- Change data structure (`counterCurrent`) or increment logic
+- Display `counterCurrent / counterMax` (consumed uses) instead of remaining uses
+
+**Tests**:
+
+- Nominal: `counterCurrent: 0`, `counterMax: 3` → displays `3 / 3`
+- Edge: after one use (`counterCurrent: 1`) → displays `2 / 3`
+- Edge: exhausted (`counterCurrent: 3`) → displays `0 / 3` and disabled use button
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/shared/AbilitiesSection.tsx`
+- `services/web/client/messages/{fr|en|es}.json` (`characterDetail.battle.abilityCounterShort`, `abilityUseAria`)
+
+---
+
+## FR-app-version-display: Application Version Display
+
+**Rule**: Chariot application version MUST appear in the Profile Preferences section near the release-notes entry point, and MUST NOT appear in the sidebar.
+
+**Requirements**:
+
+- Source: `process.env.NEXT_PUBLIC_APP_VERSION`
+- Conditional display: only when the environment variable is defined and non-empty
+- Format: `Chariot v{version}`
+- Style: discreet (small text, reduced opacity), consistent with existing secondary metadata
+- Position: within `ProfilePreferencesSection`, in the release-notes block
+
+**Prohibitions**:
+
+- Display version in the sidebar or global layout
+- Display version when `NEXT_PUBLIC_APP_VERSION` is undefined
+
+**Tests**:
+
+- Nominal: `ProfilePreferencesSection` shows `Chariot v{x}` when `NEXT_PUBLIC_APP_VERSION` is set
+- Edge: `ProfilePreferencesSection` hides version when the variable is absent
+- Regression: `Sidebar/index.tsx` has no application version reference
 
 **References**:
 
@@ -3219,45 +3210,42 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-050 : Saisie de portée double dans les actions de personnage
+## FR-character-action-dual-range: Character Action Dual Range Input
 
-**Règle** : Lorsqu'une action a une portée double (portée normale / portée longue), l'interface d'édition doit proposer deux champs numériques distincts. La valeur stockée reste un string canonique `"X/Y ft."`. La détection du mode double se fait automatiquement à partir de la valeur stockée.
+**Rule**: When an action has a dual range (normal / long range), the edit UI MUST expose two distinct numeric fields while the stored value remains the canonical string `"X/Y ft."`; dual mode is detected automatically from the stored value.
 
-**Exigences** :
+**Requirements**:
 
-- Format stocké canonique pour portée double : `"X/Y ft."` (ex. `"80/320 ft."`)
-- En édition, si la valeur stockée correspond à `"X/Y ft."`, deux inputs numériques sont affichés (portée normale | portée longue)
-- Un bouton toggle permet de basculer entre mode portée simple et mode portée double
-- Passage simple → double : la valeur simple devient la portée normale, portée longue initialisée vide
-- Passage double → simple : la portée normale seule est conservée, la portée longue est supprimée sans avertissement
-- La saisie respecte l'unité préférée de l'utilisateur (FR-037) : conversion m ↔ ft à la volée
-- Le label "/" entre les deux inputs indique visuellement la séparation normale/longue
-- Les inputs sont accessibles : `aria-label` distinct pour portée normale et portée longue
-- Valeur incomplète (portée longue vide) → stockée comme portée simple `"X ft."`
-- Les valeurs texte libres ("Touch", "Self") ne sont pas affectées (rétrocompatibilité)
+- Canonical stored format for dual range: `"X/Y ft."` (e.g. `"80/320 ft."`)
+- In edit mode, stored `"X/Y ft."` values render two numeric inputs (normal | long)
+- A toggle switches between simple and dual range modes
+- Simple → dual: existing simple value becomes normal range; long range starts empty
+- Dual → simple: only normal range is kept; long range is dropped without warning
+- Input respects user preferred unit (FR-preferred-measurement-unit): live m ↔ ft conversion
+- Visual `/` separator between the two inputs
+- Accessible inputs: distinct `aria-label` for normal and long range
+- Incomplete dual input (empty long range) → stored as simple range `"X ft."`
+- Free-text values (`Touch`, `Self`, etc.) remain unaffected (backward compatible)
 
-**Prohibitions** :
+**Prohibitions**:
 
-- Modifier le format de stockage en base — le champ `range` reste un string
-- Supprimer la compatibilité avec les valeurs texte libres existantes
+- Change database storage format — `range` stays a string
+- Remove compatibility with existing free-text range values
 
-**Tests** :
+**Tests**:
 
-- Nominal : saisie `24` / `96` (m) → stocké `"80/320 ft."`
-- Nominal : saisie `9` / vide (m) → stocké `"30 ft."` (portée simple)
-- Edge : valeur stockée `"60/120 ft."` → deux inputs pré-remplis `18` et `36` (m)
-- Edge : valeur stockée `"Touch"` → non affectée (mode actuel conservé)
-- Toggle double → simple : portée longue supprimée, portée normale conservée
-- `parseStoredFeetDualRange("80/320 ft.")` → `[80, 320]`
-- `parseStoredFeetDualRange("30 ft.")` → `null`
-- `formatStoredFeetDualRange(80, 320)` → `"80/320 ft."`
-- `isStoredFeetDualRange("80/320 ft.")` → `true`
+- Nominal: entering `24` / `96` (m) → stored `"80/320 ft."`
+- Nominal: entering `9` / empty (m) → stored `"30 ft."` (simple range)
+- Edge: stored `"60/120 ft."` → two inputs prefilled `18` and `36` (m)
+- Edge: stored `"Touch"` → unchanged
+- Edge: toggle dual → simple keeps normal range only
+- Unit helpers: `parseStoredFeetDualRange("80/320 ft.")` → `[80, 320]`; `parseStoredFeetDualRange("30 ft.")` → `null`; `formatStoredFeetDualRange(80, 320)` → `"80/320 ft."`; `isStoredFeetDualRange("80/320 ft.")` → `true`
 
-**References** :
+**References**:
 
 - `services/web/client/src/utils/unit.utils.ts`
-- `services/web/client/src/hooks/useStoredFeetDualRangeInput.ts`
-- `services/web/client/src/components/ui/stored-unit-feet-dual-range-input.tsx`
+- `services/web/client/src/hooks/useStoredFeetRangeInput.ts`
+- `services/web/client/src/components/ui/stored-unit-feet-range-input.tsx`
 - `services/web/client/src/components/character/tabContents/battle/shared/ActionUpdateSection.tsx`
 
 ---
