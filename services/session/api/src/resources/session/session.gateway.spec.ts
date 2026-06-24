@@ -77,7 +77,7 @@ const mockRedisService = {
     setSessionExpiration: jest.fn(),
     clearSessionExpiration: jest.fn(),
     onSessionExpired: jest.fn(),
-    onEmptySessionExpired: jest.fn(),
+
     clearTokens: jest.fn(),
     getTokens: jest.fn(),
     addToken: jest.fn(),
@@ -709,6 +709,57 @@ describe('SessionGateway', () => {
                 code: 'INSUFFICIENT_TOKEN_BALANCE',
                 message: 'Insufficient token balance',
             });
+        });
+    });
+
+    // ── handleCharacterSheetUpdated ───────────────────────────────────────────
+
+    describe('handleCharacterSheetUpdated', () => {
+        const gmParticipant = { userId: 'user-uuid-1', characterId: null, status: 'gameMaster' };
+        const playerParticipant = { userId: 'player-uuid-2', characterId: 'char-player-1', status: 'connected' };
+
+        it('should broadcast for a player-assigned character (nominal)', async () => {
+            const session = makeSession({ participants: [gmParticipant, playerParticipant] });
+            mockSessionService.findOne.mockResolvedValue({ data: session });
+            const client = makeSocket();
+
+            await gateway.handleCharacterSheetUpdated(client, { sessionId: 'sess-otp-1', characterId: 'char-player-1' });
+
+            expect(client.to).toHaveBeenCalledWith(session.id);
+            expect(client.emit).not.toHaveBeenCalledWith('session:error', expect.anything());
+        });
+
+        it('should allow GM to broadcast for an NPC not assigned to any participant', async () => {
+            const session = makeSession({ participants: [gmParticipant, playerParticipant] });
+            mockSessionService.findOne.mockResolvedValue({ data: session });
+            const client = makeSocket();
+
+            await gateway.handleCharacterSheetUpdated(client, { sessionId: 'sess-otp-1', characterId: 'char-npc-99' });
+
+            expect(client.to).toHaveBeenCalledWith(session.id);
+            expect(client.emit).not.toHaveBeenCalledWith('session:error', expect.anything());
+        });
+
+        it('should reject a player broadcasting for a character not on roster', async () => {
+            const session = makeSession({ participants: [
+                { userId: 'user-uuid-1', characterId: 'char-player-1', status: 'connected' },
+            ] });
+            mockSessionService.findOne.mockResolvedValue({ data: session });
+            const client = makeSocket();
+
+            await gateway.handleCharacterSheetUpdated(client, { sessionId: 'sess-otp-1', characterId: 'char-unknown-99' });
+
+            expect(client.emit).toHaveBeenCalledWith('session:error', { message: 'Character is not on this session roster' });
+        });
+
+        it('should reject a non-participant', async () => {
+            const session = makeSession({ participants: [playerParticipant] });
+            mockSessionService.findOne.mockResolvedValue({ data: session });
+            const client = makeSocket();
+
+            await gateway.handleCharacterSheetUpdated(client, { sessionId: 'sess-otp-1', characterId: 'char-player-1' });
+
+            expect(client.emit).toHaveBeenCalledWith('session:error', { message: 'Not a session participant' });
         });
     });
 
