@@ -34,7 +34,7 @@ export function useStoredFeetRangeInput(
   }, [storedValue, toDisplay]);
 
   const handleFocus = useCallback(
-    (_event: FocusEvent<HTMLInputElement>) => {
+    () => {
       isFocusedRef.current = true;
       setDisplayText(storedFeetRangeToDisplayText(storedValue, toDisplay));
     },
@@ -42,7 +42,7 @@ export function useStoredFeetRangeInput(
   );
 
   const handleBlur = useCallback(
-    (_event: FocusEvent<HTMLInputElement>) => {
+    () => {
       isFocusedRef.current = false;
 
       const committed = displayTextToStoredFeetRange(displayText, toStored);

@@ -59,7 +59,7 @@ export function useStoredUnitInput(
   }, [storedValue, toDisplay]);
 
   const handleFocus = useCallback(
-    (_event: FocusEvent<HTMLInputElement>) => {
+    () => {
       isFocusedRef.current = true;
       setDisplayText(storedValueToDisplayText(storedValue, toDisplay));
     },
@@ -67,7 +67,7 @@ export function useStoredUnitInput(
   );
 
   const handleBlur = useCallback(
-    (_event: FocusEvent<HTMLInputElement>) => {
+    () => {
       isFocusedRef.current = false;
 
       const committed = displayTextToStoredValue(displayText, toStored);
