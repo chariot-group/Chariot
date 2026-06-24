@@ -1,14 +1,20 @@
 /**
  * @see FR-media-avatar-read-access
  */
-import { ForbiddenException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MediaAccessService } from '@/resources/media/media-access.service';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function makeConfigService(overrides: Record<string, string> = {}): ConfigService {
+function makeConfigService(
+  overrides: Record<string, string> = {},
+): ConfigService {
   return {
     get: (key: string) =>
       ({
@@ -20,7 +26,13 @@ function makeConfigService(overrides: Record<string, string> = {}): ConfigServic
   } as unknown as ConfigService;
 }
 
-function makeCharacterOwner(overrides: Partial<{ createdBy: string; avatar: string | null; kind: string }> = {}) {
+function makeCharacterOwner(
+  overrides: Partial<{
+    createdBy: string;
+    avatar: string | null;
+    kind: string;
+  }> = {},
+) {
   return {
     createdBy: 'owner-uuid',
     avatar: 'avatars/characters/player/char-id/main.webp',
@@ -52,11 +64,15 @@ describe('MediaAccessService', () => {
 
   describe('assertUserSelfAccess', () => {
     it('should not throw when targetUserId matches requesterId', () => {
-      expect(() => service.assertUserSelfAccess('user-1', 'user-1')).not.toThrow();
+      expect(() =>
+        service.assertUserSelfAccess('user-1', 'user-1'),
+      ).not.toThrow();
     });
 
     it('should throw ForbiddenException when targetUserId differs from requesterId', () => {
-      expect(() => service.assertUserSelfAccess('user-1', 'user-2')).toThrow(ForbiddenException);
+      expect(() => service.assertUserSelfAccess('user-1', 'user-2')).toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -73,7 +89,12 @@ describe('MediaAccessService', () => {
       global.fetch = jest.fn().mockResolvedValue({ ok: true });
 
       await expect(
-        service.assertUserAvatarReadAccess('gm-uuid', 'player-uuid', AUTH_HEADER, 'CODE01'),
+        service.assertUserAvatarReadAccess(
+          'gm-uuid',
+          'player-uuid',
+          AUTH_HEADER,
+          'CODE01',
+        ),
       ).resolves.toBeUndefined();
 
       expect(global.fetch).toHaveBeenCalledWith(
@@ -87,7 +108,11 @@ describe('MediaAccessService', () => {
 
     it('should throw ForbiddenException when reading another user avatar without sessionCode', async () => {
       await expect(
-        service.assertUserAvatarReadAccess('other-user', 'requester', AUTH_HEADER),
+        service.assertUserAvatarReadAccess(
+          'other-user',
+          'requester',
+          AUTH_HEADER,
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -95,13 +120,23 @@ describe('MediaAccessService', () => {
       global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 403 });
 
       await expect(
-        service.assertUserAvatarReadAccess('player-uuid', 'other-player', AUTH_HEADER, 'CODE01'),
+        service.assertUserAvatarReadAccess(
+          'player-uuid',
+          'other-player',
+          AUTH_HEADER,
+          'CODE01',
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw ForbiddenException when auth header is missing', async () => {
       await expect(
-        service.assertUserAvatarReadAccess('gm-uuid', 'player-uuid', undefined, 'CODE01'),
+        service.assertUserAvatarReadAccess(
+          'gm-uuid',
+          'player-uuid',
+          undefined,
+          'CODE01',
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -109,7 +144,12 @@ describe('MediaAccessService', () => {
       global.fetch = jest.fn().mockRejectedValue(new Error('ECONNREFUSED'));
 
       await expect(
-        service.assertUserAvatarReadAccess('gm-uuid', 'player-uuid', AUTH_HEADER, 'CODE01'),
+        service.assertUserAvatarReadAccess(
+          'gm-uuid',
+          'player-uuid',
+          AUTH_HEADER,
+          'CODE01',
+        ),
       ).rejects.toThrow(ServiceUnavailableException);
     });
   });
@@ -120,7 +160,8 @@ describe('MediaAccessService', () => {
     it('should allow owner read without sessionCode', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: async () => makeCharacterOwner({ createdBy: 'owner-uuid', kind: 'player' }),
+        json: async () =>
+          makeCharacterOwner({ createdBy: 'owner-uuid', kind: 'player' }),
       });
 
       await expect(
@@ -133,12 +174,18 @@ describe('MediaAccessService', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => makeCharacterOwner({ createdBy: 'other-uuid', kind: 'player' }),
+          json: async () =>
+            makeCharacterOwner({ createdBy: 'other-uuid', kind: 'player' }),
         })
         .mockResolvedValueOnce({ ok: true });
 
       await expect(
-        service.assertCharacterReadAccess('char-id', 'requester-uuid', AUTH_HEADER, 'CODE01'),
+        service.assertCharacterReadAccess(
+          'char-id',
+          'requester-uuid',
+          AUTH_HEADER,
+          'CODE01',
+        ),
       ).resolves.toMatchObject({ createdBy: 'other-uuid' });
 
       expect(global.fetch).toHaveBeenNthCalledWith(
@@ -151,11 +198,16 @@ describe('MediaAccessService', () => {
     it('should throw ForbiddenException for non-owner PJ without sessionCode', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: async () => makeCharacterOwner({ createdBy: 'other-uuid', kind: 'player' }),
+        json: async () =>
+          makeCharacterOwner({ createdBy: 'other-uuid', kind: 'player' }),
       });
 
       await expect(
-        service.assertCharacterReadAccess('char-id', 'requester-uuid', AUTH_HEADER),
+        service.assertCharacterReadAccess(
+          'char-id',
+          'requester-uuid',
+          AUTH_HEADER,
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -166,7 +218,8 @@ describe('MediaAccessService', () => {
     it('should allow GM owner read of their own NPC', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: async () => makeCharacterOwner({ createdBy: 'gm-uuid', kind: 'npc' }),
+        json: async () =>
+          makeCharacterOwner({ createdBy: 'gm-uuid', kind: 'npc' }),
       });
 
       await expect(
@@ -179,12 +232,18 @@ describe('MediaAccessService', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => makeCharacterOwner({ createdBy: 'gm-uuid', kind: 'npc' }),
+          json: async () =>
+            makeCharacterOwner({ createdBy: 'gm-uuid', kind: 'npc' }),
         })
         .mockResolvedValueOnce({ ok: true });
 
       await expect(
-        service.assertCharacterReadAccess('npc-id', 'player-uuid', AUTH_HEADER, 'CODE01'),
+        service.assertCharacterReadAccess(
+          'npc-id',
+          'player-uuid',
+          AUTH_HEADER,
+          'CODE01',
+        ),
       ).resolves.toMatchObject({ createdBy: 'gm-uuid', kind: 'npc' });
 
       expect(global.fetch).toHaveBeenNthCalledWith(
@@ -202,19 +261,26 @@ describe('MediaAccessService', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => makeCharacterOwner({ createdBy: 'other-gm', kind: 'npc' }),
+          json: async () =>
+            makeCharacterOwner({ createdBy: 'other-gm', kind: 'npc' }),
         })
         .mockResolvedValueOnce({ ok: false, status: 403 });
 
       await expect(
-        service.assertCharacterReadAccess('npc-id', 'player-uuid', AUTH_HEADER, 'CODE01'),
+        service.assertCharacterReadAccess(
+          'npc-id',
+          'player-uuid',
+          AUTH_HEADER,
+          'CODE01',
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw ForbiddenException for NPC without sessionCode and non-owner', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: async () => makeCharacterOwner({ createdBy: 'gm-uuid', kind: 'npc' }),
+        json: async () =>
+          makeCharacterOwner({ createdBy: 'gm-uuid', kind: 'npc' }),
       });
 
       await expect(
@@ -230,7 +296,12 @@ describe('MediaAccessService', () => {
       global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 404 });
 
       await expect(
-        service.assertCharacterReadAccess('missing-char', 'user-1', AUTH_HEADER, 'CODE01'),
+        service.assertCharacterReadAccess(
+          'missing-char',
+          'user-1',
+          AUTH_HEADER,
+          'CODE01',
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -238,7 +309,12 @@ describe('MediaAccessService', () => {
       global.fetch = jest.fn().mockRejectedValue(new Error('ECONNREFUSED'));
 
       await expect(
-        service.assertCharacterReadAccess('char-id', 'user-1', AUTH_HEADER, 'CODE01'),
+        service.assertCharacterReadAccess(
+          'char-id',
+          'user-1',
+          AUTH_HEADER,
+          'CODE01',
+        ),
       ).rejects.toThrow(ServiceUnavailableException);
     });
   });

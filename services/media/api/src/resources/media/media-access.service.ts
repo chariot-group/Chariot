@@ -88,7 +88,11 @@ export class MediaAccessService {
     }
 
     if (character.kind === 'npc') {
-      await this.assertSessionGmOwnership(authHeader, code, character.createdBy);
+      await this.assertSessionGmOwnership(
+        authHeader,
+        code,
+        character.createdBy,
+      );
     } else {
       await this.assertSessionRosterRead(authHeader, code, characterId);
     }

@@ -250,7 +250,9 @@ export class CharacterController {
     return {
       createdBy: character.createdBy,
       avatar: character.avatar ?? null,
-      kind: (character as unknown as Record<string, unknown>)['kind'] as string ?? 'player',
+      kind:
+        ((character as unknown as Record<string, unknown>)['kind'] as string) ??
+        'player',
     };
   }
 

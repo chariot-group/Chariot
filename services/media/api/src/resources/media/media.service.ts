@@ -209,7 +209,12 @@ export class MediaService {
       );
     }
 
-    return this.resolveUserPresignedRead(item, requesterId, authHeader, sessionCode);
+    return this.resolveUserPresignedRead(
+      item,
+      requesterId,
+      authHeader,
+      sessionCode,
+    );
   }
 
   private async resolveCharacterPresignedRead(
