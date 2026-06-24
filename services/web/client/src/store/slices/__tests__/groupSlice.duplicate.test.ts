@@ -16,7 +16,7 @@ const buildGroup = (overrides: Partial<Group> & { _id: string }): Group => ({
   updatedAt: "",
 });
 
-describe("FR-040 — groupSlice — duplication optimistic update", () => {
+describe("FR-group-duplicate — groupSlice — duplication optimistic update", () => {
   it("nominal: addCharacterToGroup inserts the duplicate into the target group", () => {
     const initial = groupReducer(
       undefined,
@@ -62,7 +62,7 @@ describe("FR-040 — groupSlice — duplication optimistic update", () => {
   });
 });
 
-describe("FR-041 — groupSlice — addGroupToStore", () => {
+describe("FR-group-duplicate — groupSlice — addGroupToStore", () => {
   const newGroup = buildGroup({ _id: "g-new", label: "Orcs 2", characters: [{ _id: "c1", firstname: "Orc", lastname: "", surname: "", userId: "" }] });
 
   it("nominal: inserts a new group into activeGroups and increments activeTotal", () => {

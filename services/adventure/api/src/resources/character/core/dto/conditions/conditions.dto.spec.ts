@@ -2,7 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { ConditionsDto } from '@/resources/character/core/dto/conditions/conditions.dto';
 
-describe('ConditionsDto - FR-003: D&D Conditions Management', () => {
+describe('ConditionsDto - FR-dnd-conditions: D&D Conditions Management', () => {
   describe('Standard conditions validation', () => {
     it('should accept valid boolean conditions', () => {
       const dto = plainToInstance(ConditionsDto, {

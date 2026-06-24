@@ -26,7 +26,7 @@ const buildRow = (overrides: Partial<InitiativeTrackerRow> & { id: string }): In
     ...overrides,
   });
 
-describe("FR-018 — mid-combat roster", () => {
+describe("FR-combat-initiative-tracker — mid-combat roster", () => {
   it("nominal: append adds only new characterIds", () => {
     let state = sessionReducer(
       undefined,
@@ -73,7 +73,7 @@ describe("FR-018 — mid-combat roster", () => {
   });
 });
 
-describe("FR-021 — playerDisplayName default on create", () => {
+describe("FR-session-combat-navigation — playerDisplayName default on create", () => {
   it("nominal: new row gets real name as default alias", () => {
     const row = createInitiativeTrackerRow({
       groupId: "g1",
@@ -91,7 +91,7 @@ describe("FR-021 — playerDisplayName default on create", () => {
   });
 });
 
-describe("FR-018 — end combat reset", () => {
+describe("FR-combat-initiative-tracker — end combat reset", () => {
   it("nominal: ending combat clears tracker rows and draft state", () => {
     let state = sessionReducer(
       undefined,

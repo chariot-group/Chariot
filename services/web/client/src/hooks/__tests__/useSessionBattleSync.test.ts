@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { shouldBroadcastBattleStateSnapshot } from "@/hooks/useSessionBattleSync";
 
-describe("FR-021 / FR-023 — battle state realtime broadcast gate", () => {
+describe("FR-session-combat-navigation / FR-tracker-bulk-display — battle state realtime broadcast gate", () => {
   it("edge: keeps initialized-but-not-started combat GM-only", () => {
     expect(
       shouldBroadcastBattleStateSnapshot(

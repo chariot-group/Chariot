@@ -15,7 +15,7 @@ const buildCharacter = (id: string): Character =>
     groups: [],
   }) as Character;
 
-describe("FR-005 — characters without group pagination", () => {
+describe("FR-characters-without-group — characters without group pagination", () => {
   it("nominal: removeCharacterWithoutGroup drops item and keeps pagination depth", () => {
     let state = characterReducer(
       undefined,

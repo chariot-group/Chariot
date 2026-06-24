@@ -22,6 +22,7 @@ import {
     setSessionTokensByUser,
     touchRemoteCharacterSheet,
     updateInitiativeTrackerRow,
+    openSessionLobby,
 } from "@/store/slices/sessionSlice";
 import sessionService, {
     type ParticipantStatus,
@@ -205,7 +206,7 @@ export default function SessionCharacterSyncClient() {
         setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
     }, [isInSession, code]);
 
-    /** FR-022 — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
+    /** FR-session-combat-sync — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
     useEffect(() => {
         if (!isInSession) {
             registerLocalCharacterSheetUpdatedListener(null);
@@ -507,7 +508,7 @@ export default function SessionCharacterSyncClient() {
                 const camp = campaignIdRef.current;
                 const sessionCode = codeRef.current;
                 if (camp && sessionCode) {
-                    routerRef.current.push(`/${locale}/campaigns/${camp}/session/${sessionCode}`);
+                    dispatch(openSessionLobby());
                 } else {
                     routerRef.current.push(`/${locale}/welcome`);
                 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildDuplicateGroupLabel } from "@/components/dialogs/DuplicateGroupDialog";
 
-describe("FR-041 — DuplicateGroupDialog — buildDuplicateGroupLabel", () => {
+describe("FR-group-duplicate — DuplicateGroupDialog — buildDuplicateGroupLabel", () => {
   it("nominal: appends '2' after the group label", () => {
     expect(buildDuplicateGroupLabel({ label: "Gobelins" })).toBe("Gobelins 2");
   });
@@ -23,7 +23,7 @@ describe("FR-041 — DuplicateGroupDialog — buildDuplicateGroupLabel", () => {
   });
 });
 
-describe("FR-041 — multi-copy group naming", () => {
+describe("FR-group-duplicate — multi-copy group naming", () => {
   const copyLabel = (base: string, i: number) => (i === 0 ? base : `${base} ${i + 1}`);
 
   it("nominal: first copy keeps label as-is", () => {

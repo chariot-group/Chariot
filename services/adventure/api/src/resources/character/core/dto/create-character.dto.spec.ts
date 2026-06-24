@@ -52,7 +52,7 @@ describe('CreateCharacterDto - shared fields validation', () => {
     expect(errors.length).toBeGreaterThan(0);
   });
 
-  it('should validate a character with conditions - FR-003', () => {
+  it('should validate a character with conditions - FR-dnd-conditions', () => {
     const dto = plainToInstance(CreateCharacterDto, {
       firstname: 'Frodo',
       conditions: {
@@ -65,7 +65,7 @@ describe('CreateCharacterDto - shared fields validation', () => {
     expect(errors).toHaveLength(0);
   });
 
-  it('should reject non-boolean condition values - FR-003', () => {
+  it('should reject non-boolean condition values - FR-dnd-conditions', () => {
     const dto = plainToInstance(CreateCharacterDto, {
       firstname: 'Merry',
       conditions: {

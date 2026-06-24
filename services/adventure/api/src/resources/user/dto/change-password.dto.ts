@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 /**
  * DTO for user password change
- * @see FR-011: User Password Change
+ * @see FR-user-password-change: User Password Change
  */
 export class ChangePasswordDto {
   @ApiProperty({
