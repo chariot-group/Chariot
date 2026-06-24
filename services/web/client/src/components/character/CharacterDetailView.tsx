@@ -17,7 +17,7 @@ import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipan
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
@@ -302,18 +302,8 @@ export default function CharacterDetailView({
                 <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
                   {/* Ligne 1: Nom du personnage */}
                   <div className="min-w-0 justify-start lg:justify-end flex items-center gap-2">
-                    <Tooltip>
-                      <TooltipTrigger className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
-                          {character.firstname?.trim()} {character.lastname?.trim()}{" "}
-                        </h1>
-                        {character.surname && (
-                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
-                            ({character.surname?.trim()})
-                          </span>
-                        )}
-                      </TooltipTrigger>
-                      <TooltipContent>
+                    <InfoTooltip
+                      content={
                         <div className="flex flex-col gap-1">
                           <span>
                             {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
@@ -322,8 +312,20 @@ export default function CharacterDetailView({
                             <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
                           ) : null}
                         </div>
-                      </TooltipContent>
-                    </Tooltip>
+                      }
+                      side="bottom"
+                      align="start">
+                      <div className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
+                          {character.firstname?.trim()} {character.lastname?.trim()}{" "}
+                        </h1>
+                        {character.surname && (
+                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
+                            ({character.surname?.trim()})
+                          </span>
+                        )}
+                      </div>
+                    </InfoTooltip>
                   </div>
 
                   {/* Ligne 2: Surnom + Classe/CR + Groupe */}
@@ -353,14 +355,12 @@ export default function CharacterDetailView({
 
                           return (
                             <React.Fragment>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{tCommon("challengeRatingTooltip")}</p>
-                                </TooltipContent>
-                              </Tooltip>{" "}
+                              <InfoTooltip
+                                content={tCommon("challengeRatingTooltip")}
+                                side="bottom"
+                                moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                                <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
+                              </InfoTooltip>{" "}
                               {displayChallengeRating} ({experiencePoints} XP)
                             </React.Fragment>
                           );

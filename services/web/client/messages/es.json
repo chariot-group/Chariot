@@ -1398,6 +1398,7 @@
         "error": "Error al buscar",
         "validatedByChariot": "Validado por Chariot",
         "srdContent": "Contenido SRD (System Reference Document)",
+        "legendLabel": "Leyenda de iconos",
         "languageFilter": {
           "all": "🌍 Todos los idiomas",
           "fr": "🇫🇷 Francés",
@@ -1434,6 +1435,7 @@
         "error": "Error al buscar",
         "validatedByChariot": "Validado por Chariot",
         "srdContent": "Contenido SRD (System Reference Document)",
+        "legendLabel": "Leyenda de iconos",
         "languageFilter": {
           "all": "🌍 Todos los idiomas",
           "fr": "🇫🇷 Francés",

@@ -1,4 +1,4 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { PlayerStats } from "@/types/character";
 import { calculateSkillBonus, getIconForValue } from "@/utils/global.utils";
 import {
@@ -96,30 +96,31 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
         const isActive = masteryLevel > 0;
 
         return (
-          <Tooltip key={key}>
-            <TooltipTrigger>
-              <div className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
-                <div className="text-sm flex items-center justify-between gap-2">
-                  <div className="flex items-center min-w-0 flex-1 gap-2">
-                    <span className="shrink-0">{icon}</span>
-                    <span className={`truncate ${isActive && "italic"}`}>{t(`skillNames.${translationKey}`)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 justify-end">
-                    <span className="font-bold shrink-0">{skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}</span>
-                    <Image
-                      src={getIconForValue(masteryLevel, accentColor)}
-                      alt={t("masteryLevelIcon", { level: masteryLevel })}
-                      width={20}
-                      height={20}
-                      className="shrink-0"
-                      aria-hidden="true"
-                    />
-                  </div>
+          <InfoTooltip
+            key={key}
+            content={t(`abilities.${abilityKey}`)}
+            side="top"
+            className="w-full">
+            <div className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-help flex-1 min-w-0">
+              <div className="text-sm flex items-center justify-between gap-2">
+                <div className="flex items-center min-w-0 flex-1 gap-2">
+                  <span className="shrink-0">{icon}</span>
+                  <span className={`truncate ${isActive && "italic"}`}>{t(`skillNames.${translationKey}`)}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 justify-end">
+                  <span className="font-bold shrink-0">{skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}</span>
+                  <Image
+                    src={getIconForValue(masteryLevel, accentColor)}
+                    alt={t("masteryLevelIcon", { level: masteryLevel })}
+                    width={20}
+                    height={20}
+                    className="shrink-0"
+                    aria-hidden="true"
+                  />
                 </div>
               </div>
-            </TooltipTrigger>
-            <TooltipContent>{t(`abilities.${abilityKey}`)}</TooltipContent>
-          </Tooltip>
+            </div>
+          </InfoTooltip>
         );
       })}
     </div>

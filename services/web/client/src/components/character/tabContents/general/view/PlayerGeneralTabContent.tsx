@@ -3,7 +3,7 @@ import { Player } from "@/types/character";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import Column2 from "@/components/character/tabContents/general/view/Column2";
 import Statistics from "@/components/character/tabContents/shared/Statistics";
@@ -188,19 +188,16 @@ export default function PlayerGeneralTabContent({
               className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
               {t("exhaustion")}
             </h2>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className="font-semibold text-lg focus:outline-none focus:ring-1 focus:ring-offset-2 rounded px-2"
-                  aria-label={`${t("exhaustionLevel")} ${player.exhaustionLevel}`}
-                  aria-describedby="exhaustion-description">
-                  {player.exhaustionLevel}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p id="exhaustion-description">{infoExhaustionLevel(player.exhaustionLevel)}</p>
-              </TooltipContent>
-            </Tooltip>
+            <InfoTooltip
+              content={infoExhaustionLevel(player.exhaustionLevel)}
+              side="top"
+              moreInfoLabel={infoExhaustionLevel(player.exhaustionLevel)}>
+              <span
+                className="font-semibold text-lg cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 rounded px-2"
+                aria-label={`${t("exhaustionLevel")} ${player.exhaustionLevel}`}>
+                {player.exhaustionLevel}
+              </span>
+            </InfoTooltip>
           </Card>
 
           {/* Alignement */}

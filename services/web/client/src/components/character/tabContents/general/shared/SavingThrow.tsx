@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useTranslations } from "next-intl";
 import { getIconForValue } from "@/utils/global.utils";
 import { Stats } from "@/types/character";
@@ -28,29 +28,26 @@ export default function SavingThrow({ skillName, accentColor, tooltip, stats }: 
 
   if (tooltip !== undefined) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Card className="p-2">
-            <div className="text-sm flex items-center gap-2">
-              <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
-              <div className="flex flex-row gap-2">
-                <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
-                <Image
-                  src={getIconForValue(masteryLevel, accentColor)}
-                  alt={t("masteryLevelIcon", { level: masteryLevel })}
-                  width={20}
-                  height={20}
-                  className="shrink-0"
-                  aria-hidden="true"
-                />
-              </div>
+      <InfoTooltip
+        content={<p>{tooltip}</p>}
+        side="top">
+        <Card className="p-2 cursor-help">
+          <div className="text-sm flex items-center gap-2">
+            <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
+            <div className="flex flex-row gap-2">
+              <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
+              <Image
+                src={getIconForValue(masteryLevel, accentColor)}
+                alt={t("masteryLevelIcon", { level: masteryLevel })}
+                width={20}
+                height={20}
+                className="shrink-0"
+                aria-hidden="true"
+              />
             </div>
-          </Card>
-        </TooltipTrigger>
-        <TooltipContent role="tooltip">
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
+          </div>
+        </Card>
+      </InfoTooltip>
     );
   }
 

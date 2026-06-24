@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Info } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useToast } from "@/hooks/useToast";
 import UserService from "@/services/UserService";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -47,15 +47,15 @@ export default function ProfileShowBothUnitsCheckbox() {
         className="text-sm font-medium cursor-pointer">
         {t("showBothUnits")}
       </Label>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Info
-            className="size-3.5 text-muted-foreground cursor-help shrink-0"
-            aria-label={t("showBothUnitsDescription")}
-          />
-        </TooltipTrigger>
-        <TooltipContent>{t("showBothUnitsDescription")}</TooltipContent>
-      </Tooltip>
+      <InfoTooltip
+        content={t("showBothUnitsDescription")}
+        side="bottom"
+        moreInfoLabel={t("showBothUnitsDescription")}>
+        <Info
+          className="size-3.5 text-muted-foreground cursor-help shrink-0"
+          aria-hidden="true"
+        />
+      </InfoTooltip>
     </div>
   );
 }

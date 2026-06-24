@@ -20,7 +20,7 @@ import {
   VenetianMask,
 } from "lucide-react";
 import { Stats } from "@/types/character";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 interface NpcSkillsEditProps {
   stats: Stats;
@@ -58,27 +58,26 @@ export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
         const skillValue = stats?.skills?.[key] ? stats?.skills?.[key] : Math.floor((abilityScore - 10) / 2);
 
         return (
-          <Tooltip key={key}>
-            <TooltipTrigger>
-              <Card className="p-2">
-                <div className="text-sm flex items-center justify-between gap-2">
-                  <div className="flex items-center min-w-0 flex-1 gap-2">
-                    <Icon
-                      className="w-5 h-5 shrink-0"
-                      aria-hidden="true"
-                    />
-                    <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 justify-end">
-                    <span className="font-bold shrink-0">{skillValue >= 0 ? `+${skillValue}` : `${skillValue}`}</span>
-                  </div>
+          <InfoTooltip
+            key={key}
+            content={t(`abilities.${ability}`)}
+            side="top"
+            className="w-full">
+            <Card className="p-2 cursor-help flex-1 min-w-0">
+              <div className="text-sm flex items-center justify-between gap-2">
+                <div className="flex items-center min-w-0 flex-1 gap-2">
+                  <Icon
+                    className="w-5 h-5 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
                 </div>
-              </Card>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t(`abilities.${ability}`)}</p>
-            </TooltipContent>
-          </Tooltip>
+                <div className="flex items-center gap-2 shrink-0 justify-end">
+                  <span className="font-bold shrink-0">{skillValue >= 0 ? `+${skillValue}` : `${skillValue}`}</span>
+                </div>
+              </div>
+            </Card>
+          </InfoTooltip>
         );
       })}
     </div>

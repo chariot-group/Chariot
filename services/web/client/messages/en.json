@@ -1397,6 +1397,7 @@
         "error": "Error while searching",
         "validatedByChariot": "Validated by Chariot",
         "srdContent": "SRD Content (System Reference Document)",
+        "legendLabel": "Icon legend",
         "languageFilter": {
           "all": "🌍 All languages",
           "fr": "🇫🇷 French",
@@ -1433,6 +1434,7 @@
         "error": "Error while searching",
         "validatedByChariot": "Validated by Chariot",
         "srdContent": "SRD Content (System Reference Document)",
+        "legendLabel": "Icon legend",
         "languageFilter": {
           "all": "🌍 All languages",
           "fr": "🇫🇷 French",
