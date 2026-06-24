@@ -1964,6 +1964,7 @@ Each initiative tracker row carries:
 - Broadcasting join events with `characterId: null` when the persisted roster already has a character.
 - Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
 - Registering duplicate session-end handlers that each show an independent toast for the same event.
+- Closing a session automatically due to WebSocket inactivity or all participants being disconnected. The only valid session termination triggers are: 8-hour Redis TTL expiration and explicit GM manual close.
 
 **Tests**:
 

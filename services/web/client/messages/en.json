@@ -705,6 +705,7 @@
   "characterDetail": {
     "editCharacter": "Edit character",
     "playedBy": "Played by {name}",
+    "classLevelShort": "{className} Lvl {level}",
     "saveChanges": "Save changes",
     "saving": "Saving...",
     "cancel": "Cancel",

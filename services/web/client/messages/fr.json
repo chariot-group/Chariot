@@ -706,6 +706,7 @@
   "characterDetail": {
     "editCharacter": "Modifier le personnage",
     "playedBy": "Joué par {name}",
+    "classLevelShort": "{className} Niv. {level}",
     "saveChanges": "Sauvegarder",
     "saving": "Sauvegarde...",
     "cancel": "Annuler",
@@ -1266,7 +1267,7 @@
       "noMagicAbilities": "Ce personnage n'a pas de capacités magiques.",
       "spellcastingClass": "Classe de sorts",
       "spellcastingStats": "Statistiques de sorts",
-      "level": "Niv",
+      "level": "Niv.",
       "preparedSpells": "Sorts préparés",
       "preparedShort": "Prép.",
       "attackBonus": "Bonus d'attaque",

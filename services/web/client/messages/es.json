@@ -705,6 +705,7 @@
   "characterDetail": {
     "editCharacter": "Modificar personaje",
     "playedBy": "Jugado por {name}",
+    "classLevelShort": "{className} Niv. {level}",
     "saveChanges": "Guardar cambios",
     "saving": "Guardando...",
     "cancel": "Cancelar",
@@ -1262,7 +1263,7 @@
       "noMagicAbilities": "Este personaje no tiene habilidades mágicas.",
       "spellcastingClass": "Clase de lanzamiento de conjuros",
       "spellcastingStats": "Estadísticas de conjuros",
-      "level": "Niv",
+      "level": "Niv.",
       "preparedSpells": "Conjuros preparados",
       "preparedShort": "Prep.",
       "attackBonus": "Bonificación de ataque",
