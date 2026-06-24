@@ -34,7 +34,9 @@ export default function ProfileReferralSection({
   const validatedCount = referralInfo.pendingReferralsCount ?? 0;
   const pendingCount =
     (referralInfo.refereeCount ?? 0) - (referralInfo.validatedRefereeCount ?? 0);
+  const totalCount = validatedCount + pendingCount;
   const currentDiscount = computeReferrerDiscount(validatedCount);
+  const pendingDiscount = computeReferrerDiscount(totalCount);
   const nextTier = TIERS_ASCENDING.find((tier) => tier.minReferees > validatedCount);
 
   return (
@@ -127,25 +129,46 @@ export default function ProfileReferralSection({
             aria-label={t("tiersTitle")}>
             {TIERS_ASCENDING.map((tier) => {
               const isReached = validatedCount >= tier.minReferees;
+              const isPendingReachable = !isReached && totalCount >= tier.minReferees;
               const isCurrentTier = isReached && tier.discount === currentDiscount;
-              const tierState = isCurrentTier ? "current" : isReached ? "reached" : "upcoming";
+              const isPendingCurrentTier = isPendingReachable && tier.discount === pendingDiscount;
+              const tierState = isCurrentTier
+                ? "current"
+                : isReached
+                  ? "reached"
+                  : isPendingCurrentTier
+                    ? "pending-current"
+                    : isPendingReachable
+                      ? "pending"
+                      : "upcoming";
 
               return (
                 <div
                   key={tier.minReferees}
                   role="listitem"
                   data-tier-state={tierState}
-                  aria-label={t("tierSegmentAriaLabel", {
-                    count: tier.minReferees,
-                    discount: tier.discount,
-                  })}
+                  aria-label={
+                    isPendingReachable
+                      ? t("tierSegmentPendingAriaLabel", {
+                          count: tier.minReferees,
+                          discount: tier.discount,
+                        })
+                      : t("tierSegmentAriaLabel", {
+                          count: tier.minReferees,
+                          discount: tier.discount,
+                        })
+                  }
                   className={cn(
                     "flex min-w-0 flex-1 items-center justify-center transition-colors duration-300 first:rounded-l-full last:rounded-r-full",
                     isCurrentTier
                       ? "bg-primary text-primary-foreground shadow-inner"
                       : isReached
                         ? "bg-primary/60 text-primary-foreground"
-                        : "bg-gray-middle-light text-muted-foreground",
+                        : isPendingCurrentTier
+                          ? "bg-yellow text-black shadow-inner"
+                          : isPendingReachable
+                            ? "bg-yellow/60 text-black"
+                            : "bg-gray-middle-light text-muted-foreground",
                   )}>
                   <span className="text-[8px] font-bold tabular-nums leading-none sm:text-[10px] md:text-xs">
                     {tier.discount}%

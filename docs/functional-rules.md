@@ -3312,3 +3312,36 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/PaymentService.ts` — `resolveCode`
 - `services/web/client/src/components/checkout/CheckoutForm.tsx` — error display
 - `services/web/client/messages/{fr|en|es}.json` — i18n keys
+
+---
+
+## FR-referral-bar-pending-display: Referral Bar Pending Tier Display
+
+**Rule**: The referral tier progress bar MUST visually distinguish validated referrals (first purchase completed) from pending referrals (registered but not yet purchased), using distinct colors per state.
+
+**Requirements**:
+
+- **Validated segments** (primary/purple): segments reached by `pendingReferralsCount` (paid referrals) — these represent the referrer's **effective** discount tier.
+- **Pending segments** (yellow `--yellow: #ffc400`): segments reachable only by adding `pendingCount` (= `refereeCount - validatedRefereeCount`) — potential tier if pending referrals complete their first purchase.
+- **Unreached segments** (gray): tiers not achievable even with all pending referrals.
+- The yellow segments MUST NOT be presented as an effective or guaranteed discount.
+- `aria-label` on yellow segments MUST indicate the "potential" / "pending" nature.
+- The existing amber text label ("X filleuls en attente du 1er achat") below the bar acts as the legend for the yellow color.
+
+**Prohibitions**:
+
+- Yellow segments MUST NOT override or replace validated segment colors.
+- Yellow segments MUST NOT be shown when `pendingCount` is 0.
+
+**Tests**:
+
+- When `pendingCount > 0`, yellow segments appear for tiers reachable only by total count
+- When `pendingCount = 0`, no yellow segments appear
+- Validated tiers remain primary color regardless of pending count
+- Segments beyond `validatedCount + pendingCount` remain gray
+
+**References**:
+
+- `services/web/client/src/components/profile/ProfileReferralSection.tsx`
+- `services/web/client/src/lib/referral.ts`
+- `services/web/client/messages/{fr|en|es}.json`

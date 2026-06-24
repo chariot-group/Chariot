@@ -34,6 +34,7 @@ import {
   isTokenPurchase,
   type TokenHistoryFilters,
 } from "@/lib/tokenHistory";
+import { computeEffectiveReferralDiscount } from "@/lib/referral";
 import { loadTokenHistoryFilters, saveTokenHistoryFilters } from "@/lib/tokenHistoryFilters";
 
 export default function ProfilePage() {
@@ -73,6 +74,11 @@ export default function ProfilePage() {
   const hasHistory = (user?.history?.length ?? 0) > 0;
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "loading" | "success">("idle");
+
+  const effectiveReferralDiscount = useMemo(
+    () => (referralInfo ? computeEffectiveReferralDiscount(referralInfo) : 0),
+    [referralInfo],
+  );
 
   useEffect(() => {
     referralService
@@ -320,7 +326,7 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-            <div className="flex justify-end">
+            <div className="flex flex-col items-end gap-1">
               <Button
                 className="rounded-[15px] w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
                 onClick={() => setShowShopDialog(true)}
@@ -331,6 +337,13 @@ export default function ProfilePage() {
                 />
                 <span>{t("reloadTokens")}</span>
               </Button>
+              {effectiveReferralDiscount > 0 && (
+                <p
+                  className="text-xs font-medium text-green"
+                  aria-live="polite">
+                  {t("reloadDiscountHint", { discount: effectiveReferralDiscount })}
+                </p>
+              )}
 
               <ShopDialog
                 open={showShopDialog}

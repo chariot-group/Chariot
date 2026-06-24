@@ -515,6 +515,7 @@
     "noHistory": "No history available",
     "noFilteredHistory": "No transactions match the selected filters",
     "reloadTokens": "Reload your tokens",
+    "reloadDiscountHint": "{discount}% on your next purchase",
     "back": "Back",
     "showNewPassword": "Show new password",
     "hideNewPassword": "Hide new password",
@@ -594,7 +595,8 @@
       "rulesTooltipReferrer": "You earn one tier per validated referral: 10% from 1 referral, then +5% per referral (max. 50%).",
       "rulesTooltipValidation": "A referral is validated after their first paid purchase.",
       "rulesTooltipReset": "Your tier resets to zero after you use your referrer discount.",
-      "rulesTooltipNotCumulative": "Cannot be combined with a promo or affiliation code. Only the best discount applies."
+      "rulesTooltipNotCumulative": "Cannot be combined with a promo or affiliation code. Only the best discount applies.",
+      "tierSegmentPendingAriaLabel": "{count, plural, one {# pending referral} other {# pending referrals}}: {discount}% potential (not guaranteed)"
     },
     "gdpr": {
       "title": "Personal data",

@@ -65,3 +65,22 @@ export function computeReferrerDiscount(pendingCount: number): number {
         REFERRER_MAX_DISCOUNT_PERCENT,
     );
 }
+
+/**
+ * Retourne la réduction effective disponible pour l'utilisateur sur son prochain
+ * achat, en appliquant la règle FR-stripe-checkout : si l'user est à la fois
+ * parrain et filleul, seule la réduction la plus haute s'applique.
+ *
+ * Retourne 0 si aucune réduction n'est disponible.
+ */
+export function computeEffectiveReferralDiscount(referralInfo: {
+    currentDiscountPercent: number;
+    myRefereeDiscount: { available: boolean; discountPercent: number } | null;
+}): number {
+    const parrainDiscount = referralInfo.currentDiscountPercent ?? 0;
+    const filleulDiscount =
+        referralInfo.myRefereeDiscount?.available
+            ? (referralInfo.myRefereeDiscount.discountPercent ?? 0)
+            : 0;
+    return Math.max(parrainDiscount, filleulDiscount);
+}

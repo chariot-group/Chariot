@@ -516,6 +516,7 @@
     "noHistory": "Aucun historique disponible",
     "noFilteredHistory": "Aucune transaction ne correspond aux filtres sélectionnés",
     "reloadTokens": "Recharger vos tokens",
+    "reloadDiscountHint": "{discount} % sur votre prochain achat",
     "back": "Retour",
     "showNewPassword": "Afficher le nouveau mot de passe",
     "hideNewPassword": "Masquer le nouveau mot de passe",
@@ -595,7 +596,8 @@
       "rulesTooltipReferrer": "Vous gagnez un palier par filleul validé : 10 % dès 1 filleul, puis +5 % par filleul (max. 50 %).",
       "rulesTooltipValidation": "Un filleul est validé après son premier achat payé.",
       "rulesTooltipReset": "Votre palier repart à zéro après utilisation de votre réduction parrain.",
-      "rulesTooltipNotCumulative": "Non cumulable avec un code promo ou d'affiliation. Seule la réduction la plus avantageuse s'applique."
+      "rulesTooltipNotCumulative": "Non cumulable avec un code promo ou d'affiliation. Seule la réduction la plus avantageuse s'applique.",
+      "tierSegmentPendingAriaLabel": "{count, plural, one {# filleul en attente} other {# filleuls en attente}} : {discount} % potentiel (non garanti)"
     },
     "gdpr": {
       "title": "Données personnelles",

@@ -515,6 +515,7 @@
     "noHistory": "No hay historial disponible",
     "noFilteredHistory": "Ninguna transacción coincide con los filtros seleccionados",
     "reloadTokens": "Recargar tus tokens",
+    "reloadDiscountHint": "{discount} % en tu próximo pedido",
     "back": "Volver",
     "showNewPassword": "Mostrar nueva contraseña",
     "hideNewPassword": "Ocultar nueva contraseña",
@@ -594,7 +595,8 @@
       "rulesTooltipReferrer": "Ganas un nivel por referido validado: 10 % desde 1 referido, luego +5 % por referido (máx. 50 %).",
       "rulesTooltipValidation": "Un referido se valida tras su primera compra pagada.",
       "rulesTooltipReset": "Tu nivel vuelve a cero después de usar tu descuento de referidor.",
-      "rulesTooltipNotCumulative": "No acumulable con un código promocional o de afiliación. Solo se aplica el mejor descuento."
+      "rulesTooltipNotCumulative": "No acumulable con un código promocional o de afiliación. Solo se aplica el mejor descuento.",
+      "tierSegmentPendingAriaLabel": "{count, plural, one {# referido pendiente} other {# referidos pendientes}}: {discount} % potencial (no garantizado)"
     },
     "gdpr": {
       "title": "Datos personales",
