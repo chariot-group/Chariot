@@ -18,7 +18,7 @@ vi.mock("@/lib/sessionSnapshot", () => ({
   getSessionSnapshotForBroadcast: getSessionSnapshotForBroadcastMock,
 }));
 
-describe("CharacterService.updateCharacter — FR-022", () => {
+describe("CharacterService.updateCharacter — FR-session-combat-sync", () => {
   beforeEach(() => {
     patchMock.mockReset();
     emitCharacterSheetUpdatedMock.mockReset();

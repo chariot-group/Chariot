@@ -7,7 +7,7 @@ import {
   registerSessionSyncSocket,
 } from "@/lib/sessionCharacterSyncBridge";
 
-describe("sessionCharacterSyncBridge — local sheet sync (FR-022)", () => {
+describe("sessionCharacterSyncBridge — local sheet sync (FR-session-combat-sync)", () => {
   it("nominal: notifies the local listener when the GM saves a player sheet", () => {
     const localListener = vi.fn();
     registerLocalCharacterSheetUpdatedListener(localListener);

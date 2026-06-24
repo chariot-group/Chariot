@@ -181,7 +181,7 @@ export function ActionButton() {
         };
       }
 
-      // FR-021 — combat initialisé ou démarré : retour fiche sur le tracker, retour combat ailleurs
+      // FR-session-combat-navigation — combat initialisé ou démarré : retour fiche sur le tracker, retour combat ailleurs
       if (
         shouldGmShowReturnToSheet({
           sessionStarted: Boolean(sessionStarted),
@@ -231,7 +231,7 @@ export function ActionButton() {
         };
       }
 
-      // FR-021 — joueur : bascule combat ↔ fiche
+      // FR-session-combat-navigation — joueur : bascule combat ↔ fiche
       if (battleStarted && isInitiativeTrackerPage) {
         return {
           label: t("returnToSheet"),

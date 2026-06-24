@@ -352,7 +352,7 @@ describe('PlayerService', () => {
     });
   });
 
-  describe('create with conditions - FR-003', () => {
+  describe('create with conditions - FR-dnd-conditions', () => {
     it('should create a player with D&D conditions', async () => {
       const dto: CreatePlayerDto = {
         firstname: 'Exhausted Adventurer',
@@ -498,7 +498,7 @@ describe('PlayerService', () => {
     });
   });
 
-  describe('update with conditions - FR-003', () => {
+  describe('update with conditions - FR-dnd-conditions', () => {
     it('should update a player with new conditions', async () => {
       const playerId = new Types.ObjectId();
       const dto: UpdatePlayerDto = {
@@ -569,7 +569,7 @@ describe('PlayerService', () => {
     });
   });
 
-  describe('findPlayersWithoutGroup - FR-005', () => {
+  describe('findPlayersWithoutGroup - FR-characters-without-group', () => {
     const userId = new Types.ObjectId().toHexString();
 
     it('should return paginated players with empty groups array for authenticated user', async () => {

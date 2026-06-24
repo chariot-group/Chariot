@@ -10,7 +10,7 @@ export function findNewIds(prev: Set<string>, current: string[]): string[] {
 }
 
 /**
- * FR-033 — Detects row IDs that newly appeared in `visibleIds` compared to the previous render.
+ * FR-tracker-combatant-reveal — Detects row IDs that newly appeared in `visibleIds` compared to the previous render.
  * Returns a Set of IDs currently in "newly revealed" state (auto-clears after 3 s).
  * Does NOT fire on initial mount — only on subsequent transitions.
  */
