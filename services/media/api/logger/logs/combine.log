@@ -1,0 +1,126 @@
+2026-06-23 16:15:34.444 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-23 16:15:34.454 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-23 16:15:34.459 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-23 16:15:34.459 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-23 16:15:34.459 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-23 16:15:34.470 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-23 16:15:34.472 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-23 16:15:34.472 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-23 16:15:34.472 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-23 16:15:34.473 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-23 16:15:34.473 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-23 16:15:34.507 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" created[39m
+2026-06-23 16:15:34.508 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-23 16:15:34.508 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
+2026-06-23 16:19:14.548 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-23 16:19:14.557 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-23 16:19:14.561 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-23 16:19:14.561 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-23 16:19:14.562 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-23 16:19:14.571 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-23 16:19:14.572 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-23 16:19:14.573 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-23 16:19:14.573 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-23 16:19:14.573 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-23 16:19:14.573 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-23 16:19:14.608 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" is ready[39m
+2026-06-23 16:19:14.609 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-23 16:19:14.610 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
+2026-06-23 16:19:31.857 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-23 16:19:31.865 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-23 16:19:31.870 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-23 16:19:31.870 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-23 16:19:31.871 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-23 16:19:31.881 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-23 16:19:31.883 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-23 16:19:31.883 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-23 16:19:31.883 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-23 16:19:31.883 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-23 16:19:31.884 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-23 16:19:31.904 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" is ready[39m
+2026-06-23 16:19:31.906 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-23 16:19:31.906 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
+2026-06-23 16:29:47.451 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-23 16:29:47.461 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-23 16:29:47.466 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-23 16:29:47.466 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-23 16:29:47.466 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-23 16:29:47.476 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-23 16:29:47.478 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-23 16:29:47.479 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-23 16:29:47.479 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-23 16:29:47.479 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-23 16:29:47.479 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-23 16:29:47.503 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" is ready[39m
+2026-06-23 16:29:47.504 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-23 16:29:47.505 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
+2026-06-23 17:07:05.914 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-23 17:07:05.924 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-23 17:07:05.929 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-23 17:07:05.929 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-23 17:07:05.929 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-23 17:07:05.940 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-23 17:07:05.942 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-23 17:07:05.942 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-23 17:07:05.943 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-23 17:07:05.943 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-23 17:07:05.943 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-23 17:07:05.966 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" is ready[39m
+2026-06-23 17:07:05.967 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-23 17:07:05.968 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
+2026-06-23 17:07:20.767 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-23 17:07:20.776 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-23 17:07:20.780 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-23 17:07:20.781 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-23 17:07:20.781 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-23 17:07:20.790 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-23 17:07:20.792 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-23 17:07:20.792 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-23 17:07:20.793 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-23 17:07:20.793 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-23 17:07:20.793 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-23 17:07:20.814 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" is ready[39m
+2026-06-23 17:07:20.815 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-23 17:07:20.815 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
+2026-06-24 06:41:55.628 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-24 06:41:55.647 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-24 06:41:55.653 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-24 06:41:55.653 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-24 06:41:55.653 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-24 06:41:55.671 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-24 06:41:55.673 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-24 06:41:55.674 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-24 06:41:55.674 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-24 06:41:55.674 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-24 06:41:55.675 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-24 06:41:55.706 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" is ready[39m
+2026-06-24 06:41:55.708 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-24 06:41:55.709 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
+2026-06-24 06:54:18.808 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-24 06:54:18.815 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-24 06:54:18.819 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-24 06:54:18.819 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-24 06:54:18.820 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-24 06:54:18.828 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-24 06:54:18.829 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-24 06:54:18.830 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-24 06:54:18.830 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-24 06:54:18.830 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-24 06:54:18.830 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-24 06:54:18.856 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" is ready[39m
+2026-06-24 06:54:18.857 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-24 06:54:18.857 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
+2026-06-24 06:56:36.289 - [32minfo[39m: [NestFactory] 	[32mStarting Nest application...[39m
+2026-06-24 06:56:36.297 - [32minfo[39m: [InstanceLoader] 	[32mConfigHostModule dependencies initialized[39m
+2026-06-24 06:56:36.301 - [32minfo[39m: [InstanceLoader] 	[32mConfigModule dependencies initialized[39m
+2026-06-24 06:56:36.301 - [32minfo[39m: [InstanceLoader] 	[32mAppModule dependencies initialized[39m
+2026-06-24 06:56:36.301 - [32minfo[39m: [InstanceLoader] 	[32mMediaModule dependencies initialized[39m
+2026-06-24 06:56:36.309 - [32minfo[39m: [RoutesResolver] 	[32mMediaController {/media}:[39m
+2026-06-24 06:56:36.311 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/presigned-read, POST} route[39m
+2026-06-24 06:56:36.311 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, POST} route[39m
+2026-06-24 06:56:36.311 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/characters/:id/avatar, DELETE} route[39m
+2026-06-24 06:56:36.311 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, POST} route[39m
+2026-06-24 06:56:36.312 - [32minfo[39m: [RouterExplorer] 	[32mMapped {/media/users/me/avatar, DELETE} route[39m
+2026-06-24 06:56:36.330 - [32minfo[39m: [MinioService] 	[32mMinIO bucket "chariot-media" is ready[39m
+2026-06-24 06:56:36.331 - [32minfo[39m: [NestApplication] 	[32mNest application successfully started[39m
+2026-06-24 06:56:36.331 - [32minfo[39m: [undefined] 	[32mChariot Media API running on port 9005[39m
