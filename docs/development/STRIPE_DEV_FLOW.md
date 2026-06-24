@@ -47,7 +47,7 @@ Before creating any checkout session or PaymentIntent, the payment service resol
 1. **Affiliation code** (`affiliationCode` in body) — applied first
 2. **Promo code** (`promoCode` in body) — applied on top of affiliation discount
 3. **Referral discount** — applied automatically **only when no promo or affiliation code is provided**  
-   (see FR-013 for referral system rules)
+   (see FR-stripe-checkout for referral system rules)
 
 The frontend previews referral discounts via `GET /payment/referral/me` and resolves manual codes via `GET /payment/stripe/resolve-code/:code`.
 
@@ -88,10 +88,10 @@ The frontend previews referral discounts via `GET /payment/referral/me` and reso
 
 ## Related Functional Rules
 
-- Reference: `FR-013` in `docs/functional-rules.md`
+- Reference: `FR-stripe-checkout` in `docs/functional-rules.md`
 - Checkout requires authentication (user from Keycloak context)
 - Webhook is public + Stripe signature validation is mandatory
-- Referral discount rules defined in `FR-013`
+- Referral discount rules defined in `FR-stripe-checkout`
 
 ## Dev Prerequisites
 

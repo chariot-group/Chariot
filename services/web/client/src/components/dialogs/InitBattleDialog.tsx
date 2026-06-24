@@ -386,7 +386,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
             const firstname = character.firstname ?? "";
             const lastname = character.lastname ?? "";
             const surname = character.surname ?? "";
-            // FR-020 — `kind` et death saves proviennent de la fiche hydratée quand disponible (source fiable).
+            // FR-tracker-vital-status — `kind` et death saves proviennent de la fiche hydratée quand disponible (source fiable).
             // Sinon repli sur l'heuristique groupe (CR / createdBy / profile).
             const hydrated = detailsById.get(member._id);
             const isHydratedCharacter = hydrated != null && "stats" in hydrated && hydrated.stats != null;

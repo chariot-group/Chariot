@@ -28,7 +28,7 @@ const buildGuestRow = (characterId = "char-1"): InitiativeTrackerRow => ({
   isGmGuest: true,
 });
 
-describe("FR-029 — GM guest character", () => {
+describe("FR-session-gm-guest-character — GM guest character", () => {
   describe("addGmGuestCharacterToSession", () => {
     it("nominal: ajoute un characterId à gmGuestCharacterIds", () => {
       const next = sessionReducer(initialState, addGmGuestCharacterToSession("char-1"));

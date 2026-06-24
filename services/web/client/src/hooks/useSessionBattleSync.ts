@@ -43,7 +43,7 @@ function isGameMaster(
 }
 
 /**
- * FR-021 — synchronise l'état combat MJ ↔ joueurs via WebSocket.
+ * FR-session-combat-navigation — synchronise l'état combat MJ ↔ joueurs via WebSocket.
  */
 export function useSessionBattleSync() {
   const dispatch = useAppDispatch();

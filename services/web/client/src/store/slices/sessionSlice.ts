@@ -101,7 +101,7 @@ export function normalizeInitiativeTrackerConditionEntry(
 
 export type InitiativeTrackerRowKind = 'player' | 'npc';
 
-/** FR-021 / FR-034 — champs visibles pour les joueurs sur une ligne du tracker. */
+/** FR-session-combat-navigation / FR-tracker-hp-life-status-decoupling — champs visibles pour les joueurs sur une ligne du tracker. */
 export interface InitiativeTrackerPlayerFieldVisibility {
     initiative: boolean;
     name: boolean;
@@ -166,7 +166,7 @@ export function normalizePlayerFieldVisibility(
     };
 }
 
-/** FR-021 / FR-029 — seuls les PJ non-MJ du groupe « participants session » sont non masquables. */
+/** FR-session-combat-navigation / FR-session-gm-guest-character — seuls les PJ non-MJ du groupe « participants session » sont non masquables. */
 export function applyPlayerRowVisibilityRules(row: InitiativeTrackerRow): InitiativeTrackerRow {
     if (!isSessionParticipantTrackerRow(row) || row.isGmGuest) {
         return row;
@@ -178,7 +178,7 @@ export function applyPlayerRowVisibilityRules(row: InitiativeTrackerRow): Initia
     };
 }
 
-/** FR-021 — snapshot diffusé par le MJ aux joueurs via WebSocket. */
+/** FR-session-combat-navigation — snapshot diffusé par le MJ aux joueurs via WebSocket. */
 export interface BattleStateSnapshot {
     initiativeTrackerRows: InitiativeTrackerRow[];
     battleInitialized: boolean;
@@ -204,19 +204,19 @@ export interface InitiativeTrackerRow {
     groupId: string;
     groupLabel: string;
     visible: boolean;
-    /** FR-021 — alias affiché aux joueurs quand le vrai nom est masqué (non persisté sur la fiche). */
+    /** FR-session-combat-navigation — alias affiché aux joueurs quand le vrai nom est masqué (non persisté sur la fiche). */
     playerDisplayName: string;
-    /** FR-021 — visibilité granulaire des champs pour la vue joueur. */
+    /** FR-session-combat-navigation — visibilité granulaire des champs pour la vue joueur. */
     playerFieldVisibility: InitiativeTrackerPlayerFieldVisibility;
-    /** FR-020 — discriminant pour appliquer la règle de mort/inconscience adaptée. */
+    /** FR-tracker-vital-status — discriminant pour appliquer la règle de mort/inconscience adaptée. */
     kind: InitiativeTrackerRowKind;
-    /** FR-020 — miroir de `deathSaves.failures` (uniquement pertinent pour `kind === 'player'`). */
+    /** FR-tracker-vital-status — miroir de `deathSaves.failures` (uniquement pertinent pour `kind === 'player'`). */
     deathSavesFailures: number;
-    /** FR-029 — personnage MJ promu temporairement dans le groupe participants session. */
+    /** FR-session-gm-guest-character — personnage MJ promu temporairement dans le groupe participants session. */
     isGmGuest?: boolean;
 }
 
-/** FR-018 / FR-021 — fabrique une ligne tracker (setup ou ajout en cours de combat). */
+/** FR-combat-initiative-tracker / FR-session-combat-navigation — fabrique une ligne tracker (setup ou ajout en cours de combat). */
 export function createInitiativeTrackerRow(input: {
     groupId: string;
     groupLabel: string;
@@ -293,13 +293,13 @@ export interface CurrentSessionState {
     turnsWithActions: string[];
     /** Incrémenté à chaque synchro WS distante pour une fiche (temps réel hors rechargement). */
     characterSheetRemoteVersions: Record<string, number>;
-    /** FR-021 — dernière fiche consultée par le MJ pendant la session (chemin absolu avec locale). */
+    /** FR-session-combat-navigation — dernière fiche consultée par le MJ pendant la session (chemin absolu avec locale). */
     lastConsultedSheetPath: string | null;
     /** Libellés affichables des participants (username ou prénom + nom). */
     participantDisplayNames: Record<string, string>;
-    /** FR-029 — IDs des personnages MJ temporairement promus dans le groupe participants session. */
+    /** FR-session-gm-guest-character — IDs des personnages MJ temporairement promus dans le groupe participants session. */
     gmGuestCharacterIds: string[];
-    /** FR-042 — contrôle l'ouverture de la modale lobby session (non persisté). */
+    /** FR-session-lobby-modal — contrôle l'ouverture de la modale lobby session (non persisté). */
     sessionLobbyOpen: boolean;
 }
 
@@ -394,7 +394,7 @@ const findFirstAliveRowId = (sortedRows: InitiativeTrackerRow[]): string | null 
 };
 
 /**
- * FR-020 — retourne le prochain tour vivant en respectant l'ordre tri\u00e9 et le wrap.
+ * FR-tracker-vital-status — retourne le prochain tour vivant en respectant l'ordre tri\u00e9 et le wrap.
  * `wrapped: true` indique qu'au moins un wrap a eu lieu et qu'un seul tick de round doit \u00eatre appliqu\u00e9.
  */
 const findNextAliveTurn = (
@@ -665,7 +665,7 @@ const sessionSlice = createSlice({
                 markActiveTurnWithActions(state);
             }
         },
-        /** FR-021 — état combat reçu du MJ (joueurs) : remplace sans toucher au turn-lock GM. */
+        /** FR-session-combat-navigation — état combat reçu du MJ (joueurs) : remplace sans toucher au turn-lock GM. */
         applyRemoteBattleState: (state, action: PayloadAction<BattleStateSnapshot>) => {
             const payload = action.payload;
             state.initiativeTrackerRows = (payload.initiativeTrackerRows ?? []).map(normalizeTrackerRow);
@@ -706,7 +706,7 @@ const sessionSlice = createSlice({
             if (!state.battleStarted || state.initiativeTrackerRows.length === 0) return;
 
             const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
-            // FR-020 — un personnage `dead` est ignoré ; tout passage qui traverse la fin du
+            // FR-tracker-vital-status — un personnage `dead` est ignoré ; tout passage qui traverse la fin du
             // tableau incrémente d'un cran l'horloge des conditions, peu importe combien de
             // morts ont été sautés sur le chemin.
             const next = findNextAliveTurn(sorted, state.activeTurnRowId);
@@ -746,24 +746,24 @@ const sessionSlice = createSlice({
             if (!id) return;
             state.characterSheetRemoteVersions[id] = (state.characterSheetRemoteVersions[id] ?? 0) + 1;
         },
-        /** FR-029 — ajoute un personnage MJ dans le groupe participants session. */
+        /** FR-session-gm-guest-character — ajoute un personnage MJ dans le groupe participants session. */
         addGmGuestCharacterToSession: (state, action: PayloadAction<string>) => {
             const id = action.payload.trim();
             if (!id || (state.gmGuestCharacterIds ?? []).includes(id)) return;
             if (!state.gmGuestCharacterIds) state.gmGuestCharacterIds = [];
             state.gmGuestCharacterIds.push(id);
         },
-        /** FR-029 — retire un personnage MJ du groupe participants session. */
+        /** FR-session-gm-guest-character — retire un personnage MJ du groupe participants session. */
         removeGmGuestCharacterFromSession: (state, action: PayloadAction<string>) => {
             const id = action.payload.trim();
             if (!id) return;
             state.gmGuestCharacterIds = (state.gmGuestCharacterIds ?? []).filter((cid) => cid !== id);
         },
-        /** FR-042 — ouvre la modale lobby session. */
+        /** FR-session-lobby-modal — ouvre la modale lobby session. */
         openSessionLobby: (state) => {
             state.sessionLobbyOpen = true;
         },
-        /** FR-042 — ferme la modale lobby session. */
+        /** FR-session-lobby-modal — ferme la modale lobby session. */
         closeSessionLobby: (state) => {
             state.sessionLobbyOpen = false;
         },
