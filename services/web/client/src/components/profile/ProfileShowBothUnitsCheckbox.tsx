@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Info } from "lucide-react";
+import { CircleHelp } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -51,8 +51,8 @@ export default function ProfileShowBothUnitsCheckbox() {
         content={t("showBothUnitsDescription")}
         side="bottom"
         moreInfoLabel={t("showBothUnitsDescription")}>
-        <Info
-          className="size-3.5 text-muted-foreground cursor-help shrink-0"
+        <CircleHelp
+          className="size-3.5 text-muted-foreground cursor-help shrink-0 [@media(hover:none)]:hidden"
           aria-hidden="true"
         />
       </InfoTooltip>
