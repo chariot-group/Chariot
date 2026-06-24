@@ -192,7 +192,7 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
 
     return (
         <>
-            {!isInSession ? (
+            {!isInSession && !showLabel ? (
                 <InfoTooltip
                     content={t("disabledTooltip")}
                     side="bottom"

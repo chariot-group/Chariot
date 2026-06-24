@@ -1,4 +1,3 @@
-import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { PlayerStats } from "@/types/character";
 import { calculateSkillBonus, getIconForValue } from "@/utils/global.utils";
 import {
@@ -87,7 +86,7 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
   const t = useTranslations("characterDetail.player.general");
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 min-[1440px]:grid-cols-2 gap-1">
       {skillsConfig.map(({ key, translationKey, abilityKey, icon }) => {
         const masteryLevel = stats?.masteries[key as keyof typeof stats.masteries] || 0;
         const proficiencyBonus = stats?.proficiencyBonus || 2;
@@ -95,32 +94,47 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
         const skillBonus = calculateSkillBonus(masteryLevel, abilityScore, proficiencyBonus);
         const isActive = masteryLevel > 0;
 
+        const skillFullName = t(`skillNames.${translationKey}`);
         return (
-          <InfoTooltip
+          <div
             key={key}
-            content={t(`abilities.${abilityKey}`)}
-            side="top"
-            className="w-full">
-            <div className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-help flex-1 min-w-0">
-              <div className="text-sm flex items-center justify-between gap-2">
-                <div className="flex items-center min-w-0 flex-1 gap-2">
-                  <span className="shrink-0">{icon}</span>
-                  <span className={`truncate ${isActive && "italic"}`}>{t(`skillNames.${translationKey}`)}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 justify-end">
-                  <span className="font-bold shrink-0">{skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}</span>
-                  <Image
-                    src={getIconForValue(masteryLevel, accentColor)}
-                    alt={t("masteryLevelIcon", { level: masteryLevel })}
-                    width={20}
-                    height={20}
-                    className="shrink-0"
-                    aria-hidden="true"
-                  />
-                </div>
+            className="flex items-center gap-2 px-2 py-1.5 rounded-[10px] hover:bg-gray-middle-light/50 transition-colors">
+            {/* Icône compétence */}
+            <span className="shrink-0 text-muted-foreground">{icon}</span>
+
+            {/* Nom + caractéristique */}
+            <div className="min-w-0 flex-1">
+              <div className="min-w-0">
+                <span className={`text-sm leading-tight truncate block${isActive ? " italic" : ""}`}>
+                  {skillFullName}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground leading-tight">
+                {/* Abréviation en layout 2 colonnes (≥1440px), nom complet en layout 1 colonne */}
+                <abbr
+                  className="hidden min-[1440px]:inline no-underline"
+                  title={t(`abilities.${abilityKey}`)}>
+                  {t(`abilitiesAbbr.${abilityKey}`)}
+                </abbr>
+                <span className="min-[1440px]:hidden">{t(`abilities.${abilityKey}`)}</span>
               </div>
             </div>
-          </InfoTooltip>
+
+            {/* Bonus + maîtrise */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-sm font-bold tabular-nums">
+                {skillBonus >= 0 ? `+${skillBonus}` : `${skillBonus}`}
+              </span>
+              <Image
+                src={getIconForValue(masteryLevel, accentColor)}
+                alt={t("masteryLevelIcon", { level: masteryLevel })}
+                width={18}
+                height={18}
+                className="shrink-0"
+                aria-hidden="true"
+              />
+            </div>
+          </div>
         );
       })}
     </div>

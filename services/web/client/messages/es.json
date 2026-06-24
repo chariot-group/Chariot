@@ -846,6 +846,7 @@
       "successes": "Éxitos:",
       "failures": "Fallos:",
       "deathSavesSessionOnlyNote": "Las tiradas de salvación contra la muerte solo se pueden cambiar durante una sesión.",
+      "restSessionOnlyNote": "Los descansos solo están disponibles durante una sesión.",
       "performedThrow": "Tirada realizada",
       "unperformedThrow": "Tirada no realizada",
       "abilityHasCounter": "Contador de usos",
@@ -1027,6 +1028,14 @@
           "intelligence": "Inteligencia",
           "wisdom": "Sabiduría",
           "charisma": "Carisma"
+        },
+        "abilitiesAbbr": {
+          "strength": "FUE",
+          "dexterity": "DES",
+          "constitution": "CON",
+          "intelligence": "INT",
+          "wisdom": "SAB",
+          "charisma": "CAR"
         },
         "skills": "Habilidades",
         "proficiencyBonus": "Bonificador de competencia",

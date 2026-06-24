@@ -847,6 +847,7 @@
       "successes": "Succès :",
       "failures": "Échecs :",
       "deathSavesSessionOnlyNote": "Les jets de sauvegarde contre la mort ne peuvent être modifiés qu'en session.",
+      "restSessionOnlyNote": "Les repos ne sont disponibles qu'en session.",
       "performedThrow": "Jet effectué",
       "unperformedThrow": "Jet non effectué",
       "abilityHasCounter": "Compteur d'utilisations",
@@ -1028,6 +1029,14 @@
           "intelligence": "Intelligence",
           "wisdom": "Sagesse",
           "charisma": "Charisme"
+        },
+        "abilitiesAbbr": {
+          "strength": "FOR",
+          "dexterity": "DEX",
+          "constitution": "CON",
+          "intelligence": "INT",
+          "wisdom": "SAG",
+          "charisma": "CHA"
         },
         "skills": "Compétences",
         "proficiencyBonus": "Bonus de maîtrise",

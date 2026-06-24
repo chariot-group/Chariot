@@ -243,7 +243,7 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
 
     return (
         <>
-            {!isInSession ? (
+            {!isInSession && !showLabel ? (
                 <InfoTooltip
                     content={t("disabledTooltip")}
                     side="bottom"

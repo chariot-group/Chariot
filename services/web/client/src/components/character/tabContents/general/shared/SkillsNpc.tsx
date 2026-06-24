@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import {
   Brain,
@@ -20,7 +19,6 @@ import {
   VenetianMask,
 } from "lucide-react";
 import { Stats } from "@/types/character";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 interface NpcSkillsEditProps {
   stats: Stats;
@@ -52,32 +50,43 @@ export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
   ] as const;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 min-[1440px]:grid-cols-2 gap-1">
       {skills.map(({ key, icon: Icon, ability }) => {
         const abilityScore = stats.abilityScores[ability] || 10;
         const skillValue = stats?.skills?.[key] ? stats?.skills?.[key] : Math.floor((abilityScore - 10) / 2);
 
+        const skillFullName = t(`skillNames.${key}`);
         return (
-          <InfoTooltip
+          <div
             key={key}
-            content={t(`abilities.${ability}`)}
-            side="top"
-            className="w-full">
-            <Card className="p-2 cursor-help flex-1 min-w-0">
-              <div className="text-sm flex items-center justify-between gap-2">
-                <div className="flex items-center min-w-0 flex-1 gap-2">
-                  <Icon
-                    className="w-5 h-5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 justify-end">
-                  <span className="font-bold shrink-0">{skillValue >= 0 ? `+${skillValue}` : `${skillValue}`}</span>
-                </div>
+            className="flex items-center gap-2 px-2 py-1.5 rounded-[10px] hover:bg-gray-middle-light/50 transition-colors">
+            {/* Icône compétence */}
+            <Icon
+              className="w-4 h-4 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
+
+            {/* Nom + caractéristique */}
+            <div className="min-w-0 flex-1">
+              <div className="min-w-0">
+                <p className="text-sm leading-tight truncate">{skillFullName}</p>
               </div>
-            </Card>
-          </InfoTooltip>
+              <p className="text-xs text-muted-foreground leading-tight">
+                {/* Abréviation en layout 2 colonnes (≥1440px), nom complet en layout 1 colonne */}
+                <abbr
+                  className="hidden min-[1440px]:inline no-underline"
+                  title={t(`abilities.${ability}`)}>
+                  {t(`abilitiesAbbr.${ability}`)}
+                </abbr>
+                <span className="min-[1440px]:hidden">{t(`abilities.${ability}`)}</span>
+              </p>
+            </div>
+
+            {/* Bonus */}
+            <span className="text-sm font-bold tabular-nums shrink-0">
+              {skillValue >= 0 ? `+${skillValue}` : `${skillValue}`}
+            </span>
+          </div>
         );
       })}
     </div>

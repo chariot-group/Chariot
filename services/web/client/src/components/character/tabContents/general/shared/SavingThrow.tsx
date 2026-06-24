@@ -1,11 +1,8 @@
-import { Card } from "@/components/ui/card";
 import Image from "next/image";
 
-import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { useTranslations } from "next-intl";
 import { getIconForValue } from "@/utils/global.utils";
 import { Stats } from "@/types/character";
-
 import { AbilityScores } from "@/types/character";
 
 interface SavingThrowProps {
@@ -15,10 +12,9 @@ interface SavingThrowProps {
   stats: Stats;
 }
 
-export default function SavingThrow({ skillName, accentColor, tooltip, stats }: SavingThrowProps) {
+export default function SavingThrow({ skillName, accentColor, stats }: SavingThrowProps) {
   const t = useTranslations("characterDetail.player.general");
 
-  const abilityName = t(`abilities.${skillName}`);
   const abilityScore = stats?.abilityScores?.[skillName] ?? 10;
   const savingThrowValue = stats?.savingThrows?.[skillName] ?? 0;
   const abilityModifier = Math.floor((abilityScore - 10) / 2);
@@ -26,47 +22,31 @@ export default function SavingThrow({ skillName, accentColor, tooltip, stats }: 
   const displayBonus = isProficient ? abilityModifier + savingThrowValue : abilityModifier;
   const masteryLevel = isProficient ? 2 : 0;
 
-  if (tooltip !== undefined) {
-    return (
-      <InfoTooltip
-        content={<p>{tooltip}</p>}
-        side="top">
-        <Card className="p-2 cursor-help">
-          <div className="text-sm flex items-center gap-2">
-            <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
-            <div className="flex flex-row gap-2">
-              <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
-              <Image
-                src={getIconForValue(masteryLevel, accentColor)}
-                alt={t("masteryLevelIcon", { level: masteryLevel })}
-                width={20}
-                height={20}
-                className="shrink-0"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
-        </Card>
-      </InfoTooltip>
-    );
-  }
+  const abbr = t(`abilitiesAbbr.${skillName}`);
+  const fullName = t(`abilities.${skillName}`);
+  const bonusStr = displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`;
 
   return (
-    <div className="p-2">
-      <div className="text-sm flex items-center gap-2 justify-between">
-        <span className={`truncate ${isProficient && "italic"}`}>{abilityName}</span>{" "}
-        <div className="flex flex-row gap-2">
-          <span className="font-bold shrink-0">{displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}</span>
-          <Image
-            src={getIconForValue(masteryLevel, accentColor)}
-            alt={t("masteryLevelIcon", { level: masteryLevel })}
-            width={20}
-            height={20}
-            className="shrink-0"
-            aria-hidden="true"
-          />
-        </div>
-      </div>
+    <div
+      className="flex flex-col items-center gap-0 py-1.5 px-1 rounded-[10px] hover:bg-gray-middle-light/50 transition-colors"
+      role="listitem"
+      aria-label={`${fullName} : ${bonusStr}`}>
+      <span className="flex items-center gap-0.5 mb-1">
+        <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground leading-none">
+          {abbr}
+        </span>
+        <Image
+          src={getIconForValue(masteryLevel, accentColor)}
+          alt={t("masteryLevelIcon", { level: masteryLevel })}
+          width={12}
+          height={12}
+          className="shrink-0"
+          aria-hidden="true"
+        />
+      </span>
+      <span className={`text-base font-bold leading-none${isProficient ? " italic" : ""}`}>
+        {bonusStr}
+      </span>
     </div>
   );
 }

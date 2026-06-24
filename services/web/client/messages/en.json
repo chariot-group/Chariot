@@ -846,6 +846,7 @@
       "successes": "Successes:",
       "failures": "Failures:",
       "deathSavesSessionOnlyNote": "Death saving throws can only be changed while you are in a session.",
+      "restSessionOnlyNote": "Rests are only available during a session.",
       "performedThrow": "Performed Throw",
       "unperformedThrow": "Unperformed Throw",
       "abilityHasCounter": "Use counter",
@@ -1027,6 +1028,14 @@
           "intelligence": "Intelligence",
           "wisdom": "Wisdom",
           "charisma": "Charisma"
+        },
+        "abilitiesAbbr": {
+          "strength": "STR",
+          "dexterity": "DEX",
+          "constitution": "CON",
+          "intelligence": "INT",
+          "wisdom": "WIS",
+          "charisma": "CHA"
         },
         "skills": "Skills",
         "proficiencyBonus": "Proficiency bonus",
