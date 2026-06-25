@@ -22,10 +22,10 @@ export const metadata: Metadata = {
   description: "Dashboard d'administration des paiements Chariot",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg?v=upside-down", type: "image/svg+xml" },
+      { url: "/favicon.ico?v=upside-down", sizes: "any" },
     ],
-    apple: "/favicon.svg",
+    apple: "/favicon.svg?v=upside-down",
   },
 };
 
