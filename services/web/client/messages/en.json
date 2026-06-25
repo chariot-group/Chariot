@@ -467,6 +467,7 @@
     "codeExhausted": "This code has reached its maximum number of uses.",
     "codeUserLimitReached": "You have already used this code the maximum number of times allowed.",
     "codeMinOrder": "This code requires a minimum order of {minAmount}.",
+    "codeFirstOrderOnly": "This code is only valid on your first order.",
     "recommended": "Recommended",
     "payPerUnit": "Pay per unit ({price}€)",
     "custom": {

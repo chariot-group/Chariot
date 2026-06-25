@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { parsePromoCodeResolveError } from "@/lib/promoCodeResolveError";
+import {
+    formatPromoCodeResolveError,
+    parsePromoCodeResolveError,
+} from "@/lib/promoCodeResolveError";
+
+const tShop = (key: string, values?: Record<string, string>) => {
+    if (key === "codeMinOrder" && values?.minAmount) {
+        return `Min ${values.minAmount}`;
+    }
+    return key;
+};
 
 describe("parsePromoCodeResolveError", () => {
     it("detects min-order error from ProblemDetails response (nominal)", () => {
@@ -39,9 +49,48 @@ describe("parsePromoCodeResolveError", () => {
         });
     });
 
+    it("detects first-order-only error (edge)", () => {
+        const err = {
+            response: {
+                status: 422,
+                data: {
+                    errorCode: "PROMO_FIRST_ORDER_ONLY",
+                    detail: "Ce code est réservé à votre première commande",
+                },
+            },
+        };
+
+        expect(parsePromoCodeResolveError(err)).toEqual({
+            kind: "first_order_only",
+        });
+    });
+
+    it("detects first-order-only error from ProblemDetails detail (edge)", () => {
+        const err = {
+            response: {
+                status: 400,
+                data: {
+                    detail: "Le code promo 'FIRST' est réservé à la première commande",
+                },
+            },
+        };
+
+        expect(parsePromoCodeResolveError(err)).toEqual({
+            kind: "first_order_only",
+        });
+    });
+
     it("falls back to not_found for unknown errors (failure)", () => {
         expect(parsePromoCodeResolveError({ response: { status: 404 } })).toEqual({
             kind: "not_found",
         });
+    });
+});
+
+describe("formatPromoCodeResolveError", () => {
+    it("maps first-order-only to shop message (nominal)", () => {
+        expect(formatPromoCodeResolveError({ kind: "first_order_only" }, tShop)).toBe(
+            "codeFirstOrderOnly",
+        );
     });
 });

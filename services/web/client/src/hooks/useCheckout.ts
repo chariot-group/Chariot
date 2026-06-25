@@ -9,7 +9,7 @@ import {
 } from "@/lib/checkout-utils";
 import type { PromoCodeState } from "@/components/checkout/CheckoutForm";
 import referralService from "@/services/ReferralService";
-import { parsePromoCodeResolveError } from "@/lib/promoCodeResolveError";
+import { parsePromoCodeResolveError, formatPromoCodeResolveError } from "@/lib/promoCodeResolveError";
 
 export type ReferralDiscount = {
     discountPercent: number;
@@ -152,8 +152,8 @@ export function useCheckout(): UseCheckoutReturn {
 
     // ── Update existing PaymentIntent amount (quantity / promo changes) ────────
     const updatePaymentIntentAmount = useCallback(
-        async (promoCode?: string, affiliationCode?: string, qty?: number) => {
-            if (!paymentIntentId) return;
+        async (promoCode?: string, affiliationCode?: string, qty?: number): Promise<boolean> => {
+            if (!paymentIntentId) return true;
             setPiRefreshing(true);
             setPiError(null);
             try {
@@ -164,13 +164,21 @@ export function useCheckout(): UseCheckoutReturn {
                     affiliationCode,
                 );
                 applyPaymentIntentResult(result);
-            } catch {
-                setPiError(t("payError"));
+                return true;
+            } catch (err: unknown) {
+                const parsed = parsePromoCodeResolveError(err);
+                if (parsed.kind !== "not_found") {
+                    setAppliedCode(null);
+                    setCodeError(formatPromoCodeResolveError(parsed, tShop));
+                } else {
+                    setPiError(t("payError"));
+                }
+                return false;
             } finally {
                 setPiRefreshing(false);
             }
         },
-        [paymentIntentId, t, applyPaymentIntentResult],
+        [paymentIntentId, t, tShop, applyPaymentIntentResult],
     );
 
     const handleConfirmFreeOrder = useCallback(async () => {
@@ -234,18 +242,7 @@ export function useCheckout(): UseCheckoutReturn {
         try {
             resolved = await paymentService.resolveCode(trimmed, originalAmount * quantity);
         } catch (err: unknown) {
-            const parsed = parsePromoCodeResolveError(err);
-
-            if (parsed.kind === "exhausted") {
-                setCodeError(tShop("codeExhausted"));
-            } else if (parsed.kind === "user_limit_reached") {
-                setCodeError(tShop("codeUserLimitReached"));
-            } else if (parsed.kind === "min_order" && parsed.minOrderAmount != null) {
-                const minEuros = (parsed.minOrderAmount / 100).toFixed(2);
-                setCodeError(tShop("codeMinOrder", { minAmount: `${minEuros}€` }));
-            } else {
-                setCodeError(tShop("codeNotFound"));
-            }
+            setCodeError(formatPromoCodeResolveError(parsePromoCodeResolveError(err), tShop));
             setCodeLoading(false);
             return;
         }
@@ -253,12 +250,18 @@ export function useCheckout(): UseCheckoutReturn {
         const promoCode = resolved.type === "promo" ? trimmed : undefined;
         const affiliationCode = resolved.type === "affiliation" ? trimmed : undefined;
 
+        if (paymentIntentId) {
+            const synced = await updatePaymentIntentAmount(promoCode, affiliationCode, quantity);
+            if (!synced) {
+                setCodeLoading(false);
+                return;
+            }
+        }
+
         setAppliedCode({ raw: trimmed, resolved });
         setCodeInput("");
         setCodeLoading(false);
-
-        void updatePaymentIntentAmount(promoCode, affiliationCode, quantity);
-    }, [codeInput, quantity, originalAmount, updatePaymentIntentAmount, tShop]);
+    }, [codeInput, quantity, originalAmount, paymentIntentId, updatePaymentIntentAmount, tShop]);
 
     const handleRemoveCode = useCallback(() => {
         setAppliedCode(null);

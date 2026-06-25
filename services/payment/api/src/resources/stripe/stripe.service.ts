@@ -428,6 +428,16 @@ export class StripeService {
                         });
                     }
 
+                    if (promo.isFirstOrderOnly) {
+                        const isFirstOrder = !(await this.paymentService.hasCompletedPayment(userId));
+                        if (!isFirstOrder) {
+                            throw new UnprocessableEntityException({
+                                errorCode: 'PROMO_FIRST_ORDER_ONLY',
+                                message: `Le code promo '${code}' est réservé à la première commande`,
+                            });
+                        }
+                    }
+
                     const message = `Code '${code}' resolved as promo in ${Date.now() - start}ms`;
                     this.logger.verbose(message, this.SERVICE_NAME);
                     return {

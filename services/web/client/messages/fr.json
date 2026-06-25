@@ -468,6 +468,7 @@
     "codeExhausted": "Ce code a atteint son nombre maximum d'utilisations.",
     "codeUserLimitReached": "Vous avez déjà utilisé ce code le nombre maximum de fois autorisé.",
     "codeMinOrder": "Ce code nécessite un panier minimum de {minAmount}.",
+    "codeFirstOrderOnly": "Ce code est réservé à votre première commande.",
     "recommended": "Recommandé",
     "payPerUnit": "Payer à l'unité ({price}€)",
     "custom": {

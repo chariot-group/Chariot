@@ -60,6 +60,25 @@ describe('ErrorDetailsFilter', () => {
         );
     });
 
+    it('preserves structured promo first-order-only fields (edge)', () => {
+        const { host, status, json } = createMockHost();
+        const exception = new UnprocessableEntityException({
+            errorCode: 'PROMO_FIRST_ORDER_ONLY',
+            message: "Le code promo 'WELCOME10' est réservé à la première commande",
+        });
+
+        filter.catch(exception, host as never);
+
+        expect(status).toHaveBeenCalledWith(422);
+        expect(json).toHaveBeenCalledWith(
+            expect.objectContaining({
+                status: 422,
+                errorCode: 'PROMO_FIRST_ORDER_ONLY',
+                detail: "Le code promo 'WELCOME10' est réservé à la première commande",
+            }),
+        );
+    });
+
     it('keeps plain string exception messages (failure)', () => {
         const { host, status, json } = createMockHost();
         const exception = new GoneException("Code promo expiré");
