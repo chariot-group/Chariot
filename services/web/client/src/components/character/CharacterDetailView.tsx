@@ -17,7 +17,7 @@ import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipan
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
@@ -81,13 +81,16 @@ export default function CharacterDetailView({
   const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
 
   // Fonction pour changer d'onglet et mettre à jour l'URL
-  const handleTabChange = React.useCallback((newTab: string) => {
-    const tab = newTab as CharacterTab;
-    // Mettre à jour l'URL sans recharger la page
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", tab);
-    router.replace(`?${params.toString()}`, { scroll: false });
-  }, [router, searchParams]);
+  const handleTabChange = React.useCallback(
+    (newTab: string) => {
+      const tab = newTab as CharacterTab;
+      // Mettre à jour l'URL sans recharger la page
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", tab);
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   // Déterminer le type de personnage
   const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";
@@ -111,13 +114,16 @@ export default function CharacterDetailView({
   const { errors, isDirty } = useFormState({ control: form.control });
   const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
 
-  const handleInvalid = React.useCallback((errors: Record<string, unknown>) => {
-    const firstErrorTab = getFirstCharacterTabWithError(errors);
-    if (firstErrorTab && firstErrorTab !== activeTab) {
-      handleTabChange(firstErrorTab);
-    }
-    toast.error(t("updateError"));
-  }, [activeTab, handleTabChange, t, toast]);
+  const handleInvalid = React.useCallback(
+    (errors: Record<string, unknown>) => {
+      const firstErrorTab = getFirstCharacterTabWithError(errors);
+      if (firstErrorTab && firstErrorTab !== activeTab) {
+        handleTabChange(firstErrorTab);
+      }
+      toast.error(t("updateError"));
+    },
+    [activeTab, handleTabChange, t, toast],
+  );
 
   useEffect(() => {
     if (!playedBySubjectId) {
@@ -301,19 +307,9 @@ export default function CharacterDetailView({
                 {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
                 <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
                   {/* Ligne 1: Nom du personnage */}
-                  <div className="min-w-0 justify-start lg:justify-end flex items-center gap-2">
-                    <Tooltip>
-                      <TooltipTrigger className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
-                          {character.firstname?.trim()} {character.lastname?.trim()}{" "}
-                        </h1>
-                        {character.surname && (
-                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
-                            ({character.surname?.trim()})
-                          </span>
-                        )}
-                      </TooltipTrigger>
-                      <TooltipContent>
+                  <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center gap-2">
+                    <InfoTooltip
+                      content={
                         <div className="flex flex-col gap-1">
                           <span>
                             {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
@@ -322,8 +318,20 @@ export default function CharacterDetailView({
                             <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
                           ) : null}
                         </div>
-                      </TooltipContent>
-                    </Tooltip>
+                      }
+                      side="bottom"
+                      align="start">
+                      <div className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
+                          {character.firstname?.trim()} {character.lastname?.trim()}{" "}
+                        </h1>
+                        {character.surname && (
+                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
+                            ({character.surname?.trim()})
+                          </span>
+                        )}
+                      </div>
+                    </InfoTooltip>
                   </div>
 
                   {/* Ligne 2: Surnom + Classe/CR + Groupe */}
@@ -333,7 +341,7 @@ export default function CharacterDetailView({
                         <div>
                           {character.class.map((cls: { name: string; level: number }, index: number) => (
                             <span key={index}>
-                              {tClass(cls.name)} Niv {cls.level}
+                              {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
                               {index < character.class.length - 1 && " / "}
                             </span>
                           ))}
@@ -353,14 +361,12 @@ export default function CharacterDetailView({
 
                           return (
                             <React.Fragment>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{tCommon("challengeRatingTooltip")}</p>
-                                </TooltipContent>
-                              </Tooltip>{" "}
+                              <InfoTooltip
+                                content={tCommon("challengeRatingTooltip")}
+                                side="bottom"
+                                moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                                <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
+                              </InfoTooltip>{" "}
                               {displayChallengeRating} ({experiencePoints} XP)
                             </React.Fragment>
                           );
@@ -397,7 +403,10 @@ export default function CharacterDetailView({
         </Tabs>
 
         {isInSession ? (
-          <CombatBanner characterId={character._id} footerActions={characterFooterActions} />
+          <CombatBanner
+            characterId={character._id}
+            footerActions={characterFooterActions}
+          />
         ) : characterFooterActions ? (
           <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
             <div className="flex w-full justify-end">{characterFooterActions}</div>

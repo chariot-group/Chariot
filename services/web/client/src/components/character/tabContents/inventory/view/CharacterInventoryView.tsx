@@ -7,7 +7,7 @@ import CP from "@public/assets/pieces/copper-piece.svg";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { formatCompactNumber, formatNumberWithSpaces } from "@/utils/inventory.utils";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
@@ -181,31 +181,30 @@ export default function CharacterInventoryView({
               );
 
               return (
-                <Tooltip key={coin.key}>
-                  <TooltipTrigger asChild>
-                    {canEditInSession ? (
-                      <button
-                        type="button"
-                        className="flex w-full flex-row items-center justify-center gap-1 rounded-[15px] border border-border/60 bg-background/60 px-3 py-2 text-center text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary sm:text-base 2xl:gap-2"
-                        aria-label={`${tooltipLabel}. ${t("editCoinAmountAria", { coin: t(coin.labelKey as Parameters<typeof t>[0]) })}`}
-                        aria-haspopup="dialog"
-                        onClick={() => setSelectedCoin(coin.key)}>
-                        {content}
-                      </button>
-                    ) : (
-                      <span
-                        className="flex flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary rounded"
-                        role="text"
-                        tabIndex={0}
-                        aria-label={tooltipLabel}>
-                        {content}
-                      </span>
-                    )}
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tooltipLabel}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <InfoTooltip
+                  key={coin.key}
+                  content={<p>{tooltipLabel}</p>}
+                  moreInfoLabel={tooltipLabel}
+                  className="w-full">
+                  {canEditInSession ? (
+                    <button
+                      type="button"
+                      className="flex flex-1 min-w-0 flex-row items-center justify-center gap-1 rounded-[15px] border border-border/60 bg-background/60 px-3 py-2 text-center text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary sm:text-base 2xl:gap-2"
+                      aria-label={`${tooltipLabel}. ${t("editCoinAmountAria", { coin: t(coin.labelKey as Parameters<typeof t>[0]) })}`}
+                      aria-haspopup="dialog"
+                      onClick={() => setSelectedCoin(coin.key)}>
+                      {content}
+                    </button>
+                  ) : (
+                    <span
+                      className="flex flex-1 min-w-0 flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary rounded"
+                      role="text"
+                      tabIndex={0}
+                      aria-label={tooltipLabel}>
+                      {content}
+                    </span>
+                  )}
+                </InfoTooltip>
               );
             })}
           </div>

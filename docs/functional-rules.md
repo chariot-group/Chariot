@@ -1964,6 +1964,7 @@ Each initiative tracker row carries:
 - Broadcasting join events with `characterId: null` when the persisted roster already has a character.
 - Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
 - Registering duplicate session-end handlers that each show an independent toast for the same event.
+- Closing a session automatically due to WebSocket inactivity or all participants being disconnected. The only valid session termination triggers are: 8-hour Redis TTL expiration and explicit GM manual close.
 
 **Tests**:
 
@@ -3250,98 +3251,85 @@ Each initiative tracker row carries:
 
 ---
 
-## FR-checkout-promo-validation-feedback: Promo Code Validation Visual Feedback at Checkout
+## FR-tooltip-accessibility: Tooltip Accessibility and Mobile Popover
 
-**Rule**: When a user enters a promo code at checkout, the frontend must immediately display a specific and actionable visual error for each rejection reason, rather than a generic "code not found" message.
-
-**Covered rejection cases**:
-
-1. **Global uses exhausted** (`maxTotalUses` reached): the code exists but has been used globally the maximum number of times allowed. HTTP 410 Gone is returned by `resolveCode`.
-2. **Per-user uses exhausted** (`maxUsesPerUser` reached): the authenticated user has already used this code the maximum number of times allowed. HTTP 410 Gone is returned by `resolveCode`.
-3. **Minimum order amount not met** (`minOrderAmount`): the code requires a minimum cart amount that the current order does not meet. The minimum amount (in euros) is included in the error response. HTTP 422 Unprocessable Entity is returned by `resolveCode`.
-
-**Backend requirements** (`resolveCode` in `stripe.service.ts`):
-
-- After finding an active, non-expired promo code, check in order:
-  1. `maxTotalUses !== null && currentTotalUses >= maxTotalUses` → throw `GoneException` with error code `PROMO_EXHAUSTED`
-  2. `maxUsesPerUser`: fetch `promoCodeUsage` count for `(promoCodeId, userId)` → if `>= maxUsesPerUser`, throw `GoneException` with error code `PROMO_USER_LIMIT_REACHED`
-  3. `minOrderAmount !== null && orderAmount < minOrderAmount` → throw `UnprocessableEntityException` with error code `PROMO_MIN_ORDER` and `minOrderAmount` in the response
-- `resolveCode` must accept `userId` (from JWT) and `orderAmount` (from query param, in centimes) to perform these checks
-- Error responses must include a machine-readable `errorCode` field alongside the human-readable message
-- The `isFirstOrderOnly` check is NOT performed in `resolveCode` (requires payment history context — deferred to `validatePromoCode` at payment time)
-
-**Frontend requirements** (`useCheckout.ts`, `CheckoutForm.tsx`):
-
-- `handleApplyCode` must pass the current `orderAmount` (unit price × quantity, in centimes) when calling `resolveCode`
-- Distinguish HTTP status codes in the catch block:
-  - 410 with `errorCode: PROMO_EXHAUSTED` → translated message `shop.codeExhausted`
-  - 410 with `errorCode: PROMO_USER_LIMIT_REACHED` → translated message `shop.codeUserLimitReached`
-  - 422 with `errorCode: PROMO_MIN_ORDER` → translated message `shop.codeMinOrder` with interpolated minimum amount
-  - Other errors → existing `shop.codeNotFound` fallback
-- Error is displayed inline below the promo code input (existing `promoCode.error` slot, `role="alert"`)
-
-**i18n keys** (required in `fr.json`, `en.json`, `es.json` under `shop`):
-
-- `codeExhausted`: message when global uses are exhausted
-- `codeUserLimitReached`: message when per-user uses are exhausted
-- `codeMinOrder`: message when minimum order is not met (interpolate `{minAmount}`)
-
-**Prohibitions**:
-
-- Showing a generic error when a specific rejection reason is available
-- Performing the `isFirstOrderOnly` check in `resolveCode` (that check requires payment history and belongs to `validatePromoCode`)
-- Passing `userId` in the request body (must come from JWT only)
-- Blocking checkout entirely when `resolveCode` enrichment fails (must degrade gracefully to generic error)
-
-**Tests**:
-
-- `resolveCode` returns 410 with `PROMO_EXHAUSTED` when `currentTotalUses >= maxTotalUses`
-- `resolveCode` returns 410 with `PROMO_USER_LIMIT_REACHED` when user has reached `maxUsesPerUser`
-- `resolveCode` returns 422 with `PROMO_MIN_ORDER` when `orderAmount < minOrderAmount`
-- `resolveCode` returns resolved code when all checks pass
-- Frontend displays `codeExhausted` message on 410 `PROMO_EXHAUSTED`
-- Frontend displays `codeUserLimitReached` message on 410 `PROMO_USER_LIMIT_REACHED`
-- Frontend displays `codeMinOrder` message with formatted amount on 422 `PROMO_MIN_ORDER`
-- Frontend falls back to `codeNotFound` on unknown errors
-
-**References**:
-
-- `services/payment/api/src/resources/stripe/stripe.service.ts` — `resolveCode`
-- `services/payment/api/src/resources/stripe/stripe.controller.ts` — `resolveCode` route
-- `services/web/client/src/hooks/useCheckout.ts` — `handleApplyCode`
-- `services/web/client/src/services/PaymentService.ts` — `resolveCode`
-- `services/web/client/src/components/checkout/CheckoutForm.tsx` — error display
-- `services/web/client/messages/{fr|en|es}.json` — i18n keys
-
----
-
-## FR-referral-bar-pending-display: Referral Bar Pending Tier Display
-
-**Rule**: The referral tier progress bar MUST visually distinguish validated referrals (first purchase completed) from pending referrals (registered but not yet purchased), using distinct colors per state.
+**Rule**: Any tooltip conveying information (not purely decorative) MUST be accessible on devices that do not support hover (touch screens: mobile, tablet).
 
 **Requirements**:
 
-- **Validated segments** (primary/purple): segments reached by `pendingReferralsCount` (paid referrals) — these represent the referrer's **effective** discount tier.
-- **Pending segments** (yellow `--yellow: #ffc400`): segments reachable only by adding `pendingCount` (= `refereeCount - validatedRefereeCount`) — potential tier if pending referrals complete their first purchase.
-- **Unreached segments** (gray): tiers not achievable even with all pending referrals.
-- The yellow segments MUST NOT be presented as an effective or guaranteed discount.
-- `aria-label` on yellow segments MUST indicate the "potential" / "pending" nature.
-- The existing amber text label ("X filleuls en attente du 1er achat") below the bar acts as the legend for the yellow color.
+- All tooltip trigger elements MUST have `cursor-help` applied.
+- On touch devices (`@media (hover: none)`), a visible `?` button MUST appear alongside the trigger element; tapping it opens a Popover with the same content as the tooltip.
+- The `InfoTooltip` component (`components/ui/info-tooltip.tsx`) MUST be used for all tooltips that convey contextual information, replacing bare `Tooltip`/`TooltipTrigger`/`TooltipContent` usage on informational elements.
+- Repeated identical icons (e.g., SRD badge, "Validated by Chariot" badge) that appear on every item in a list MUST be explained once via a visible **legend** (static labeled row) rather than per-item tooltips.
+- Tooltips that are **redundant** with an immediately visible label or with an `aria-label` identical to the tooltip content MUST be removed; the `aria-label` alone is sufficient for screen readers.
+- Tooltips on **disabled** interactive elements (explaining why the element is disabled) are exempt from the InfoTooltip migration when the element cannot receive focus; they SHOULD still be converted to InfoTooltip to support touch devices.
+- The `?` button MUST be hidden on devices with fine pointer / hover capability via `[@media(hover:hover)]:hidden`; it MUST be visible on touch/coarse pointer devices.
+- The Popover content MUST be responsive: `max-w-[min(20rem,calc(100vw-2rem))]`, positioned to avoid viewport overflow.
 
 **Prohibitions**:
 
-- Yellow segments MUST NOT override or replace validated segment colors.
-- Yellow segments MUST NOT be shown when `pendingCount` is 0.
+- Do NOT use raw `Tooltip`/`TooltipTrigger`/`TooltipContent` for informational content without also providing mobile access via `InfoTooltip` or a visible legend.
+- Do NOT add per-item tooltips for icons that repeat identically across list items — use a legend instead.
+- Do NOT hardcode tooltip/aria-label strings in English for a French-primary UI; use `useTranslations` or pass i18n-resolved strings.
 
 **Tests**:
 
-- When `pendingCount > 0`, yellow segments appear for tiers reachable only by total count
-- When `pendingCount = 0`, no yellow segments appear
-- Validated tiers remain primary color regardless of pending count
-- Segments beyond `validatedCount + pendingCount` remain gray
+- Nominal: `InfoTooltip` renders children + hidden `?` button on DOM; tooltip visible on hover (desktop simulation).
+- Edge: `?` button is visible when `@media (hover: none)` is active (touch simulation); Popover opens on click.
+- Regression: no raw `Tooltip` wrapping icon-only informational elements without a corresponding `InfoTooltip` or legend.
 
 **References**:
 
-- `services/web/client/src/components/profile/ProfileReferralSection.tsx`
-- `services/web/client/src/lib/referral.ts`
-- `services/web/client/messages/{fr|en|es}.json`
+- `services/web/client/src/components/ui/info-tooltip.tsx`
+- `services/web/client/src/components/ui/popover.tsx`
+- `services/web/client/src/components/ui/tooltip.tsx`
+## FR-session-lobby-wheel-deposit: Dépôt et retrait de wheels dans le lobby de session
+
+**Règle** : Le lobby de session (FR-session-lobby-modal) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
+
+**Requirements**:
+
+- **+1 / −1** : déposer ou retirer une wheel en un clic chacun, sans menu intermédiaire.
+- **Progression visible** : barre de progression et slots visuels indiquant `{total déposées} / {participants}`.
+- **Solde** : afficher le solde wheels de l'utilisateur et le nombre qu'il a déposé dans la session.
+- **Coordination** : chaque participant affiche un badge avec le nombre de wheels qu'il a déposées (si > 0).
+- **Dépôt groupé** : lien « Déposer le reste » lorsque plus d'une wheel peut encore être ajoutée par l'utilisateur courant ; lien « Tout retirer » (avec confirmation) uniquement si l'utilisateur a déposé plus d'une wheel.
+- **Bulk** : pas de menu secondaire ni de champ numérique — le stepper ±1 et « Déposer le reste » couvrent les cas d'usage.
+- **Quota atteint** :
+  - MJ : bouton « Lancer la session » actif.
+  - Joueurs : message d'attente (« en attente du MJ »), sans bouton « Lancer » grisé.
+- **Retrait** : les erreurs WebSocket de retrait DOIVENT produire un toast explicite.
+- **Clamp silencieux interdit** : si une demande bulk dépasse le quota ou le solde, un toast informatif DOIT indiquer le nombre réellement déposé.
+- La liste des participants DOIT occuper l'espace scrollable sous le panneau code/QR (mobile : code, lien et QR en haut ; desktop : colonne latérale droite).
+
+**Contraintes backend (FR-user-balance-history)** :
+
+- Les dépôts restent des réservations ; le débit n'a lieu qu'au lancement.
+- Les validations serveur (`session:add-token`, `session:add-tokens`, etc.) restent l'autorité.
+
+**Accessibilité (FR-frontend-design)** :
+
+- Barre de progression avec `role="progressbar"`, `aria-valuenow`, `aria-valuemax`.
+- Boutons +/− avec `aria-label` explicites.
+- Compteur personnel annoncé via `aria-live="polite"`.
+
+**Interdictions** :
+
+- Cacher le retrait −1 derrière un menu à plusieurs gestes.
+- Afficher « Lancer la session » désactivé aux joueurs non-MJ.
+- Utiliser « token » dans les libellés du lobby session.
+
+**Tests**:
+
+- Nominal : calcul du max déposable (solde + quota).
+- Edge : quota plein → max addable = 0.
+- Edge : solde épuisé pour l'utilisateur → max addable = 0.
+- Failure : clamp d'un montant bulk > max → toast partiel.
+
+**Références** :
+
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/components/dialogs/SessionWheelDepositBar.tsx`
+- `services/web/client/src/lib/sessionWheelDeposit.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`
