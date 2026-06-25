@@ -82,6 +82,23 @@ updates:
     patterns:
       - "*"
 
+  # npm — media
+  - package-ecosystem: "npm"
+    directory: "/services/media/api"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+    versioning-strategy: increase
+
+  # Docker — media
+  - package-ecosystem: "docker"
+    directory: "/services/media/api"
+    multi-ecosystem-group: "weekend-nightly"
+    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+
   # Docker — sso
   - package-ecosystem: "docker"
     directory: "/services/sso"

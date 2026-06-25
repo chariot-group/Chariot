@@ -73,10 +73,15 @@ describe('ImageProcessorService', () => {
       MEDIA_MAIN_HEIGHT_PX,
       { fit: 'cover', position: 'centre' },
     );
-    expect(mockResize).toHaveBeenNthCalledWith(2, MEDIA_THUMB_PX, MEDIA_THUMB_PX, {
-      fit: 'cover',
-      position: 'centre',
-    });
+    expect(mockResize).toHaveBeenNthCalledWith(
+      2,
+      MEDIA_THUMB_PX,
+      MEDIA_THUMB_PX,
+      {
+        fit: 'cover',
+        position: 'centre',
+      },
+    );
   });
 
   it('failure: rejects uploads above the maximum size', async () => {

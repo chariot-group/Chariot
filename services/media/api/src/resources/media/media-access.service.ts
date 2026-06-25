@@ -20,7 +20,10 @@ export class MediaAccessService {
   private readonly sessionBaseUrl: string;
   private readonly internalSecret: string;
   private readonly inflight = new Map<string, Promise<void>>();
-  private readonly ownerInflight = new Map<string, Promise<CharacterOwnerResponse>>();
+  private readonly ownerInflight = new Map<
+    string,
+    Promise<CharacterOwnerResponse>
+  >();
 
   private readonly ownerCache = new Map<
     string,

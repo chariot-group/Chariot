@@ -28,7 +28,6 @@ import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
 import MediaService from "@/services/MediaService";
 import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
-import { cn } from "@/lib/utils";
 import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
 import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 
@@ -144,14 +143,17 @@ export default function CharacterDetailView({
     setPendingAvatarRemove(false);
   }, [avatarPreviewUrl]);
 
-  const handlePendingAvatarFile = React.useCallback((file: File) => {
-    if (avatarPreviewUrl) {
-      URL.revokeObjectURL(avatarPreviewUrl);
-    }
-    setPendingAvatarFile(file);
-    setPendingAvatarRemove(false);
-    setAvatarPreviewUrl(URL.createObjectURL(file));
-  }, [avatarPreviewUrl]);
+  const handlePendingAvatarFile = React.useCallback(
+    (file: File) => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+      setPendingAvatarFile(file);
+      setPendingAvatarRemove(false);
+      setAvatarPreviewUrl(URL.createObjectURL(file));
+    },
+    [avatarPreviewUrl],
+  );
 
   const handlePendingAvatarRemove = React.useCallback(() => {
     if (avatarPreviewUrl) {
@@ -187,10 +189,7 @@ export default function CharacterDetailView({
           invalidateMediaAvatarCache("character", character._id);
         } else if (pendingAvatarRemove && character.avatar?.trim()) {
           setIsAvatarCommitting(true);
-          const result = await MediaService.deleteCharacterAvatar(
-            character._id,
-            sessionCodeForMedia,
-          );
+          const result = await MediaService.deleteCharacterAvatar(character._id, sessionCodeForMedia);
           newAvatar = result.avatar;
           avatarChanged = true;
           invalidateMediaAvatarCache("character", character._id);
@@ -250,19 +249,20 @@ export default function CharacterDetailView({
     };
   }, [avatarPreviewUrl]);
 
-  const editingAvatarStoredValue = pendingAvatarRemove
-    ? ""
-    : form.watch("avatar") || character.avatar;
+  const editingAvatarStoredValue = pendingAvatarRemove ? "" : form.watch("avatar") || character.avatar;
 
   const displayedAvatarStoredValue = form.watch("avatar") || character.avatar;
 
-  const handleInvalid = React.useCallback((errors: Record<string, unknown>) => {
-    const firstErrorTab = getFirstCharacterTabWithError(errors);
-    if (firstErrorTab && firstErrorTab !== activeTab) {
-      handleTabChange(firstErrorTab);
-    }
-    toast.error(tForm("updateError"));
-  }, [activeTab, handleTabChange, tForm, toast]);
+  const handleInvalid = React.useCallback(
+    (errors: Record<string, unknown>) => {
+      const firstErrorTab = getFirstCharacterTabWithError(errors);
+      if (firstErrorTab && firstErrorTab !== activeTab) {
+        handleTabChange(firstErrorTab);
+      }
+      toast.error(tForm("updateError"));
+    },
+    [activeTab, handleTabChange, tForm, toast],
+  );
 
   useEffect(() => {
     if (!playedBySubjectId) {
@@ -439,104 +439,104 @@ export default function CharacterDetailView({
               <div className="w-full flex flex-col lg:flex-row-reverse lg:justify-between gap-2">
                 {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
                 <div className="flex flex-row items-start gap-3 min-w-0 lg:max-w-[50%] lg:ml-auto">
-                <div className="flex flex-col gap-1 min-w-0 flex-1">
-                  {/* Ligne 1: Nom du personnage */}
-                  <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center gap-2">
-                    <InfoTooltip
-                      content={
-                        <div className="flex flex-col gap-1">
-                          <span>
-                            {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
-                          </span>
+                  <div className="flex flex-col gap-1 min-w-0 flex-1">
+                    {/* Ligne 1: Nom du personnage */}
+                    <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center gap-2">
+                      <InfoTooltip
+                        content={
+                          <div className="flex flex-col gap-1">
+                            <span>
+                              {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
+                            </span>
+                            {isGmViewingPlayerSheet && playedByLabel ? (
+                              <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
+                            ) : null}
+                          </div>
+                        }
+                        side="bottom"
+                        align="start">
+                        <div className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
+                          <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
+                            {character.firstname?.trim()} {character.lastname?.trim()}{" "}
+                          </h1>
+                          {character.surname && (
+                            <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
+                              ({character.surname?.trim()})
+                            </span>
+                          )}
+                        </div>
+                      </InfoTooltip>
+                    </div>
+
+                    {/* Ligne 2: Surnom + Classe/CR + Groupe */}
+                    <div className="flex flex-col gap-2 text-sm items-start lg:items-end justify-end">
+                      {isPlayer(character) ? (
+                        <div className="flex flex-col gap-1 text-white font-semibold items-start lg:items-end">
+                          <div>
+                            {character.class.map((cls: { name: string; level: number }, index: number) => (
+                              <span key={index}>
+                                {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
+                                {index < character.class.length - 1 && " / "}
+                              </span>
+                            ))}
+                          </div>
                           {isGmViewingPlayerSheet && playedByLabel ? (
-                            <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
+                            <span className="text-xs font-normal text-gray-light">
+                              {t("playedBy", { name: playedByLabel })}
+                            </span>
                           ) : null}
                         </div>
-                      }
-                      side="bottom"
-                      align="start">
-                      <div className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
-                          {character.firstname?.trim()} {character.lastname?.trim()}{" "}
-                        </h1>
-                        {character.surname && (
-                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
-                            ({character.surname?.trim()})
-                          </span>
-                        )}
-                      </div>
-                    </InfoTooltip>
+                      ) : (
+                        <div className="text-white font-semibold">
+                          {(() => {
+                            const challengeRating = character.challenge?.challengeRating ?? 0;
+                            const experiencePoints = character.challenge?.experiencePoints ?? 0;
+                            const displayChallengeRating = formatChallengeRating(challengeRating);
+
+                            return (
+                              <React.Fragment>
+                                <InfoTooltip
+                                  content={tCommon("challengeRatingTooltip")}
+                                  side="bottom"
+                                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                                  <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
+                                </InfoTooltip>{" "}
+                                {displayChallengeRating} ({experiencePoints} XP)
+                              </React.Fragment>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Ligne 2: Surnom + Classe/CR + Groupe */}
-                  <div className="flex flex-col gap-2 text-sm items-start lg:items-end justify-end">
-                    {isPlayer(character) ? (
-                      <div className="flex flex-col gap-1 text-white font-semibold items-start lg:items-end">
-                        <div>
-                          {character.class.map((cls: { name: string; level: number }, index: number) => (
-                            <span key={index}>
-                              {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
-                              {index < character.class.length - 1 && " / "}
-                            </span>
-                          ))}
-                        </div>
-                        {isGmViewingPlayerSheet && playedByLabel ? (
-                          <span className="text-xs font-normal text-gray-light">
-                            {t("playedBy", { name: playedByLabel })}
-                          </span>
-                        ) : null}
-                      </div>
+                  <div className="shrink-0 self-start">
+                    {isEditing && showEditControls ? (
+                      <MediaAvatarUpload
+                        scope="character"
+                        entityId={character._id}
+                        storedValue={editingAvatarStoredValue}
+                        sessionCode={sessionCodeForMedia}
+                        size="sheet"
+                        alt={characterDisplayName}
+                        deferUpload
+                        previewUrl={avatarPreviewUrl}
+                        onPendingFile={handlePendingAvatarFile}
+                        onPendingRemove={handlePendingAvatarRemove}
+                        disabled={isSaving || isAvatarCommitting}
+                      />
                     ) : (
-                      <div className="text-white font-semibold">
-                        {(() => {
-                          const challengeRating = character.challenge?.challengeRating ?? 0;
-                          const experiencePoints = character.challenge?.experiencePoints ?? 0;
-                          const displayChallengeRating = formatChallengeRating(challengeRating);
-
-                          return (
-                            <React.Fragment>
-                              <InfoTooltip
-                                content={tCommon("challengeRatingTooltip")}
-                                side="bottom"
-                                moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                                <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
-                              </InfoTooltip>{" "}
-                              {displayChallengeRating} ({experiencePoints} XP)
-                            </React.Fragment>
-                          );
-                        })()}
-                      </div>
+                      <MediaAvatar
+                        scope="character"
+                        entityId={character._id}
+                        storedValue={displayedAvatarStoredValue}
+                        sessionCode={sessionCodeForMedia}
+                        size="sheet"
+                        alt={characterDisplayName}
+                        priority
+                      />
                     )}
                   </div>
-                </div>
-
-                <div className="shrink-0 self-start">
-                  {isEditing && showEditControls ? (
-                    <MediaAvatarUpload
-                      scope="character"
-                      entityId={character._id}
-                      storedValue={editingAvatarStoredValue}
-                      sessionCode={sessionCodeForMedia}
-                      size="sheet"
-                      alt={characterDisplayName}
-                      deferUpload
-                      previewUrl={avatarPreviewUrl}
-                      onPendingFile={handlePendingAvatarFile}
-                      onPendingRemove={handlePendingAvatarRemove}
-                      disabled={isSaving || isAvatarCommitting}
-                    />
-                  ) : (
-                    <MediaAvatar
-                      scope="character"
-                      entityId={character._id}
-                      storedValue={displayedAvatarStoredValue}
-                      sessionCode={sessionCodeForMedia}
-                      size="sheet"
-                      alt={characterDisplayName}
-                      priority
-                    />
-                  )}
-                </div>
                 </div>
 
                 {/* Onglets - À gauche sur lg, en dessous sur mobile */}

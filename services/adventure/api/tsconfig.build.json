@@ -9,7 +9,6 @@
     "test",
     "**/*spec.ts",
     "**/*test.ts",
-    "jest.config.ts",
-    "src/resources/media/**"
+    "jest.config.ts"
   ]
 }

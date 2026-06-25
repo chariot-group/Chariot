@@ -218,8 +218,16 @@ describe('MediaAccessService', () => {
           makeCharacterOwner({ createdBy: 'owner-uuid', kind: 'player' }),
       });
 
-      await service.assertCharacterReadAccess('char-id', 'owner-uuid', AUTH_HEADER);
-      await service.assertCharacterReadAccess('char-id', 'owner-uuid', AUTH_HEADER);
+      await service.assertCharacterReadAccess(
+        'char-id',
+        'owner-uuid',
+        AUTH_HEADER,
+      );
+      await service.assertCharacterReadAccess(
+        'char-id',
+        'owner-uuid',
+        AUTH_HEADER,
+      );
 
       expect(global.fetch).toHaveBeenCalledTimes(1);
     });
