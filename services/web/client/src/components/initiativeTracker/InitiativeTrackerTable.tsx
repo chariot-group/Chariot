@@ -214,13 +214,19 @@ export function InitiativeTrackerTable({
   const newlyRevealedIds = useNewlyRevealedRows(isPlayerView ? rows.map((r) => r.id) : []);
   const statusChangedRows = useStatusChangedRows(rows, !isPlayerView);
 
+  const avatarBatchItems = React.useMemo(
+    () =>
+      rows.map((row) => ({
+        scope: "character" as const,
+        entityId: row.characterId,
+        storedValue: row.avatar,
+        size: "thumb" as const,
+      })),
+    [rows],
+  );
+
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
-    rows.map((row) => ({
-      scope: "character" as const,
-      entityId: row.characterId,
-      storedValue: row.avatar,
-      size: "thumb" as const,
-    })),
+    avatarBatchItems,
     sessionCode,
     rows.length > 0,
   );

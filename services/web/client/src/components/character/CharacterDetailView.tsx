@@ -46,6 +46,7 @@ export default function CharacterDetailView({
   onCharacterUpdate,
 }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
+  const tForm = useTranslations("characterForm");
   const tClass = useTranslations("classes");
   const tCommon = useTranslations("common");
   const toast = useToast();
@@ -166,7 +167,7 @@ export default function CharacterDetailView({
       form.clearErrors();
       const isValid = await form.trigger(undefined, { shouldFocus: true });
       if (!isValid) {
-        toast.error(t("updateError"));
+        toast.error(tForm("updateError"));
         return;
       }
 
@@ -195,22 +196,28 @@ export default function CharacterDetailView({
           invalidateMediaAvatarCache("character", character._id);
         }
 
-        await onUpdate(data);
-
-        resetAvatarDraft();
-
         if (avatarChanged) {
           form.setValue("avatar", newAvatar ?? "");
           if (onCharacterUpdate) {
             onCharacterUpdate({ ...character, avatar: newAvatar });
           }
+        }
+
+        const updatePayload = { ...data } as Record<string, unknown>;
+        delete updatePayload.avatar;
+
+        await onUpdate(updatePayload as Parameters<typeof onUpdate>[0]);
+
+        resetAvatarDraft();
+
+        if (avatarChanged) {
           const snap = getSessionSnapshotForBroadcast();
           if (snap) {
             emitCharacterSheetUpdated(snap.code, character._id);
           }
         }
       } catch {
-        toast.error(t("updateError"));
+        toast.error(tForm("updateError"));
       } finally {
         setIsAvatarCommitting(false);
       }
@@ -224,7 +231,7 @@ export default function CharacterDetailView({
       pendingAvatarRemove,
       resetAvatarDraft,
       sessionCodeForMedia,
-      t,
+      tForm,
       toast,
     ],
   );
@@ -247,13 +254,15 @@ export default function CharacterDetailView({
     ? ""
     : form.watch("avatar") || character.avatar;
 
+  const displayedAvatarStoredValue = form.watch("avatar") || character.avatar;
+
   const handleInvalid = React.useCallback((errors: Record<string, unknown>) => {
     const firstErrorTab = getFirstCharacterTabWithError(errors);
     if (firstErrorTab && firstErrorTab !== activeTab) {
       handleTabChange(firstErrorTab);
     }
-    toast.error(t("updateError"));
-  }, [activeTab, handleTabChange, t, toast]);
+    toast.error(tForm("updateError"));
+  }, [activeTab, handleTabChange, tForm, toast]);
 
   useEffect(() => {
     if (!playedBySubjectId) {
@@ -520,7 +529,7 @@ export default function CharacterDetailView({
                     <MediaAvatar
                       scope="character"
                       entityId={character._id}
-                      storedValue={character.avatar}
+                      storedValue={displayedAvatarStoredValue}
                       sessionCode={sessionCodeForMedia}
                       size="sheet"
                       alt={characterDisplayName}

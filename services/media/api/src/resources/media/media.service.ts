@@ -83,6 +83,12 @@ export class MediaService {
 
     await this.updateCharacterAvatar(characterId, mainKey);
 
+    this.mediaAccessService.refreshCharacterOwnerCache(characterId, {
+      createdBy: character.createdBy,
+      avatar: mainKey,
+      kind: character.kind,
+    });
+
     return { avatar: mainKey };
   }
 
@@ -103,6 +109,12 @@ export class MediaService {
 
     await this.deleteStoredCharacterObjects(character.avatar, characterId);
     await this.updateCharacterAvatar(characterId, '');
+
+    this.mediaAccessService.refreshCharacterOwnerCache(characterId, {
+      createdBy: character.createdBy,
+      avatar: '',
+      kind: character.kind,
+    });
 
     return { avatar: '' };
   }

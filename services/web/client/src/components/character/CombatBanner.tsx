@@ -19,6 +19,7 @@ import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
 import { formatRemainingConditionDuration } from "@/components/initiativeTracker/conditionDuration";
 import { cn } from "@/lib/utils";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
+import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
@@ -105,6 +106,23 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
 
   const newlyRevealedIds = useNewlyRevealedRows(isGm ? [] : sortedRows.map((r) => r.id));
   const statusChangedRows = useStatusChangedRows(sortedRows, isGm);
+
+  const avatarBatchItems = React.useMemo(
+    () =>
+      sortedRows.map((row) => ({
+        scope: "character" as const,
+        entityId: row.characterId,
+        storedValue: row.avatar,
+        size: "xs" as const,
+      })),
+    [sortedRows],
+  );
+
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
+    avatarBatchItems,
+    sessionCode,
+    sortedRows.length > 0,
+  );
 
   const [liveAnnouncement, setLiveAnnouncement] = React.useState("");
   const announcedRef = React.useRef(new Set<string>());
@@ -319,6 +337,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   size="xs"
                   sessionCode={sessionCode}
                   alt={displayName}
+                  avatarImageUrl={getAvatarUrl("character", row.characterId, "xs")}
                   className={cn(
                     "ring-2 ring-offset-1 ring-offset-transparent",
                     isActive

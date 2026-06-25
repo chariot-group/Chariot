@@ -29,6 +29,7 @@ import {
     setSessionParticipants,
     setSessionStatus,
     setSessionExpiresAt,
+    selectSessionTokensByUser,
     setSessionTokensByUser,
     touchRemoteCharacterSheet,
 } from "@/store/slices/sessionSlice";
@@ -43,7 +44,7 @@ import {
 import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayerFromCampaignGroupsOnSessionLeave";
 import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
 import { invalidateCache as invalidateGroupCache } from "@/store/slices/groupSlice";
-import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
+import { mergeParticipantsPreserveCharacterIds, participantsStableKey } from "@/lib/sessionParticipantMerge";
 import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { updateUser } from "@/store/slices/userSlice";
@@ -93,8 +94,6 @@ interface UseSessionSocketOptions {
     participants: SessionParticipant[];
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
-    tokensByUser: Record<string, number>;
-    setTokensByUser: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 export function useSessionSocket({
@@ -106,11 +105,10 @@ export function useSessionSocket({
     participants,
     setParticipants,
     fetchCharacterDetails,
-    tokensByUser,
-    setTokensByUser,
 }: UseSessionSocketOptions) {
     const dispatch = useAppDispatch();
     const appStore = useAppStore();
+    const tokensByUser = useAppSelector(selectSessionTokensByUser);
     const router = useRouter();
     const toast = useToast();
     const t = useTranslations("sessionPage");
@@ -128,7 +126,6 @@ export function useSessionSocket({
     const toastRef = useRef(toast);
     const tRef = useRef(t);
     const setParticipantsRef = useRef(setParticipants);
-    const setTokensByUserRef = useRef(setTokensByUser);
     const hasProcessedSessionEndRef = useRef(false);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
@@ -158,8 +155,7 @@ export function useSessionSocket({
         toastRef.current = toast;
         tRef.current = t;
         setParticipantsRef.current = setParticipants;
-        setTokensByUserRef.current = setTokensByUser;
-    }, [locale, router, toast, t, setParticipants, setTokensByUser]);
+    }, [locale, router, toast, t, setParticipants]);
 
     useEffect(() => {
         hasProcessedSessionEndRef.current = false;
@@ -202,12 +198,11 @@ export function useSessionSocket({
     useEffect(() => {
         const fromRedux = selectSessionParticipants(appStore.getState());
         const merged = mergeParticipantsPreserveCharacterIds(fromRedux, participants);
+        if (participantsStableKey(fromRedux) === participantsStableKey(merged)) {
+            return;
+        }
         dispatch(setSessionParticipants(merged));
     }, [participants, dispatch, appStore]);
-
-    useEffect(() => {
-        dispatch(setSessionTokensByUser(tokensByUser));
-    }, [tokensByUser, dispatch]);
 
     useEffect(() => {
         if (token) {
@@ -215,14 +210,19 @@ export function useSessionSocket({
         }
     }, [token]);
 
+    const tokenRef = useRef(token);
+    useEffect(() => {
+        tokenRef.current = token;
+    }, [token]);
+
     const shouldConnectSocket = Boolean(token && code && isInSession);
 
     useEffect(() => {
-        if (!shouldConnectSocket || !token) return;
+        if (!shouldConnectSocket || !tokenRef.current) return;
 
         console.info("Attaching to shared session WebSocket pool");
 
-        const socket = acquireSessionSocket(code, token);
+        const socket = acquireSessionSocket(code, tokenRef.current);
 
         socketRef.current = socket;
 
@@ -357,7 +357,6 @@ export function useSessionSocket({
         };
 
         const onTokenUpdated = ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
-            setTokensByUserRef.current(updatedTokens);
             dispatch(setSessionTokensByUser(updatedTokens));
         };
 
@@ -468,7 +467,7 @@ export function useSessionSocket({
             releaseSessionSocket();
             socketRef.current = null;
         };
-    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId, isInSession, token]);
+    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId, isInSession]);
 
     const handleCharacterChange = (characterId: string) => {
         const socket = socketRef.current;

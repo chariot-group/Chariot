@@ -210,6 +210,19 @@ describe('MediaAccessService', () => {
         ),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('should reuse cached character owner within TTL for repeated reads', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () =>
+          makeCharacterOwner({ createdBy: 'owner-uuid', kind: 'player' }),
+      });
+
+      await service.assertCharacterReadAccess('char-id', 'owner-uuid', AUTH_HEADER);
+      await service.assertCharacterReadAccess('char-id', 'owner-uuid', AUTH_HEADER);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
   });
 
   // ── assertCharacterReadAccess (PNJ) ───────────────────────────────────────
@@ -316,6 +329,37 @@ describe('MediaAccessService', () => {
           'CODE01',
         ),
       ).rejects.toThrow(ServiceUnavailableException);
+    });
+  });
+
+  describe('refreshCharacterOwnerCache', () => {
+    it('should serve updated avatar on subsequent read without refetching adventure', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => makeCharacterOwner({ avatar: null }),
+      });
+
+      const before = await service.assertCharacterReadAccess(
+        'char-id',
+        'owner-uuid',
+        AUTH_HEADER,
+      );
+      expect(before.avatar).toBeNull();
+
+      service.refreshCharacterOwnerCache('char-id', {
+        createdBy: 'owner-uuid',
+        avatar: 'avatars/characters/char-id/main.webp',
+        kind: 'player',
+      });
+
+      const after = await service.assertCharacterReadAccess(
+        'char-id',
+        'owner-uuid',
+        AUTH_HEADER,
+      );
+
+      expect(after.avatar).toBe('avatars/characters/char-id/main.webp');
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
   });
 });

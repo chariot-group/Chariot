@@ -1,4 +1,4 @@
-FROM node:26-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -16,5 +16,5 @@ COPY . .
 
 EXPOSE 3000
 
-# Re-sync optional native deps when node_modules is a bind/volume from another platform
-CMD ["sh", "-c", "npm install --include=optional && npm run dev"]
+# Dev server (webpack in Docker — Turbopack is unstable with bind mounts and high memory use)
+CMD ["npm", "run", "dev:docker"]

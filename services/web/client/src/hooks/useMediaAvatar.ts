@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import {
+  hasResolvedMediaAvatarCache,
+  peekCachedMediaAvatarUrl,
   resolveMediaAvatarUrl,
   resolveMediaAvatarUrlsBatch,
 } from "@/lib/mediaAvatarCache";
@@ -31,15 +33,31 @@ export function useMediaAvatar({
   enabled = true,
 }: UseMediaAvatarOptions) {
   const variant = pickAvatarVariant(size);
-  const cacheKey = mediaAvatarCacheKey(scope, entityId, variant);
-  const [resolvedUrl, setResolvedUrl] = React.useState<string | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
+
+  const readSyncCache = React.useCallback((): string | null => {
+    if (!enabled || !entityId || !storedValue?.trim()) {
+      return null;
+    }
+    return peekCachedMediaAvatarUrl(scope, entityId, storedValue, variant);
+  }, [enabled, entityId, storedValue, variant, scope]);
+
+  const [resolvedUrl, setResolvedUrl] = React.useState<string | null>(() => readSyncCache());
+  const [isLoading, setIsLoading] = React.useState(
+    () => enabled && Boolean(entityId && storedValue?.trim()) && readSyncCache() === null,
+  );
 
   React.useEffect(() => {
     let cancelled = false;
 
     if (!enabled || !entityId || !storedValue?.trim()) {
       setResolvedUrl(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const cachedUrl = peekCachedMediaAvatarUrl(scope, entityId, storedValue, variant);
+    if (cachedUrl) {
+      setResolvedUrl((prev) => (prev === cachedUrl ? prev : cachedUrl));
       setIsLoading(false);
       return;
     }
@@ -66,7 +84,7 @@ export function useMediaAvatar({
     return () => {
       cancelled = true;
     };
-  }, [scope, entityId, storedValue, variant, sessionCode, enabled, cacheKey]);
+  }, [scope, entityId, storedValue, variant, sessionCode, enabled]);
 
   return { url: resolvedUrl, isLoading, variant };
 }
@@ -78,33 +96,63 @@ type BatchItem = {
   size?: MediaAvatarSize;
 };
 
+function serializeBatchItems(items: BatchItem[]): string {
+  return items
+    .map((item) => {
+      const itemVariant = pickAvatarVariant(item.size ?? "thumb");
+      return `${item.scope}:${item.entityId}:${itemVariant}:${item.storedValue ?? ""}`;
+    })
+    .join("\u001f");
+}
+
+function shallowUrlsEqual(
+  left: Record<string, string | null>,
+  right: Record<string, string | null>,
+): boolean {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+  return leftKeys.every((key) => left[key] === right[key]);
+}
+
 export function useMediaAvatarBatch(
   items: BatchItem[],
   sessionCode?: string | null,
   enabled = true,
 ) {
-  const [urlsByKey, setUrlsByKey] = React.useState<Record<string, string | null>>({});
+  const stableKey = serializeBatchItems(items);
+  const itemsRef = React.useRef(items);
+  itemsRef.current = items;
 
-  const stableKey = React.useMemo(
-    () =>
-      items
-        .map((item) => {
-          const variant = pickAvatarVariant(item.size ?? "thumb");
-          return `${item.scope}:${item.entityId}:${variant}:${item.storedValue ?? ""}`;
-        })
-        .join("\u001f"),
-    [items],
-  );
+  const [urlsByKey, setUrlsByKey] = React.useState<Record<string, string | null>>(() => {
+    if (!enabled || items.length === 0) {
+      return {};
+    }
+    const initial: Record<string, string | null> = {};
+    for (const item of items) {
+      if (!item.entityId || !item.storedValue?.trim()) {
+        continue;
+      }
+      const itemVariant = pickAvatarVariant(item.size ?? "thumb");
+      const key = mediaAvatarCacheKey(item.scope, item.entityId, itemVariant);
+      initial[key] = peekCachedMediaAvatarUrl(item.scope, item.entityId, item.storedValue, itemVariant);
+    }
+    return initial;
+  });
 
   React.useEffect(() => {
-    if (!enabled || items.length === 0) {
+    const currentItems = itemsRef.current;
+
+    if (!enabled || currentItems.length === 0) {
       setUrlsByKey({});
       return;
     }
 
     let cancelled = false;
 
-    const batchItems = items
+    const batchItems = currentItems
       .filter((item) => item.entityId && item.storedValue?.trim())
       .map((item) => ({
         scope: item.scope,
@@ -118,6 +166,25 @@ export function useMediaAvatarBatch(
       return;
     }
 
+    const syncFromCache = (): Record<string, string | null> => {
+      const next: Record<string, string | null> = {};
+      for (const item of batchItems) {
+        const key = mediaAvatarCacheKey(item.scope, item.entityId, item.variant);
+        next[key] = peekCachedMediaAvatarUrl(item.scope, item.entityId, item.storedValue, item.variant);
+      }
+      return next;
+    };
+
+    const cachedOnly = syncFromCache();
+    const allResolved = batchItems.every((item) =>
+      hasResolvedMediaAvatarCache(item.scope, item.entityId, item.storedValue, item.variant),
+    );
+
+    if (allResolved) {
+      setUrlsByKey((prev) => (shallowUrlsEqual(prev, cachedOnly) ? prev : cachedOnly));
+      return;
+    }
+
     void resolveMediaAvatarUrlsBatch(batchItems, sessionCode)
       .then((map) => {
         if (cancelled) {
@@ -128,7 +195,7 @@ export function useMediaAvatarBatch(
           const key = mediaAvatarCacheKey(item.scope, item.entityId, item.variant);
           next[key] = map.get(key)?.url ?? null;
         }
-        setUrlsByKey(next);
+        setUrlsByKey((prev) => (shallowUrlsEqual(prev, next) ? prev : next));
       })
       .catch(() => {
         if (!cancelled) {
@@ -139,7 +206,7 @@ export function useMediaAvatarBatch(
     return () => {
       cancelled = true;
     };
-  }, [stableKey, sessionCode, enabled, items.length, items]);
+  }, [stableKey, sessionCode, enabled]);
 
   const getUrl = React.useCallback(
     (scope: MediaAvatarScope, entityId: string, size: MediaAvatarSize = "thumb") => {

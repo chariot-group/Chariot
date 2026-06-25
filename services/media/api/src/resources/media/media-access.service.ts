@@ -20,6 +20,13 @@ export class MediaAccessService {
   private readonly sessionBaseUrl: string;
   private readonly internalSecret: string;
   private readonly inflight = new Map<string, Promise<void>>();
+  private readonly ownerInflight = new Map<string, Promise<CharacterOwnerResponse>>();
+
+  private readonly ownerCache = new Map<
+    string,
+    { value: CharacterOwnerResponse; expiresAt: number }
+  >();
+  private readonly OWNER_CACHE_TTL_MS = 60_000;
 
   constructor(private readonly configService: ConfigService) {
     this.adventureBaseUrl = (
@@ -137,7 +144,53 @@ export class MediaAccessService {
     }
   }
 
+  /**
+   * Refreshes the in-memory owner cache after avatar write (upload/delete).
+   * Without this, presigned-read can serve stale empty avatar for up to OWNER_CACHE_TTL_MS.
+   */
+  refreshCharacterOwnerCache(
+    characterId: string,
+    next: CharacterOwnerResponse,
+  ): void {
+    this.ownerInflight.delete(`owner:${characterId}`);
+    this.ownerCache.set(characterId, {
+      value: next,
+      expiresAt: Date.now() + this.OWNER_CACHE_TTL_MS,
+    });
+  }
+
   private async fetchCharacterOwner(
+    characterId: string,
+  ): Promise<CharacterOwnerResponse> {
+    const now = Date.now();
+    const cached = this.ownerCache.get(characterId);
+    if (cached && cached.expiresAt > now) {
+      return cached.value;
+    }
+
+    const inflightKey = `owner:${characterId}`;
+    const pending = this.ownerInflight.get(inflightKey);
+    if (pending) {
+      return pending;
+    }
+
+    const run = this.executeFetchCharacterOwner(characterId)
+      .then((value) => {
+        this.ownerCache.set(characterId, {
+          value,
+          expiresAt: Date.now() + this.OWNER_CACHE_TTL_MS,
+        });
+        return value;
+      })
+      .finally(() => {
+        this.ownerInflight.delete(inflightKey);
+      });
+
+    this.ownerInflight.set(inflightKey, run);
+    return run;
+  }
+
+  private async executeFetchCharacterOwner(
     characterId: string,
   ): Promise<CharacterOwnerResponse> {
     const url = `${this.adventureBaseUrl}/characters/internal/${encodeURIComponent(characterId)}/owner`;

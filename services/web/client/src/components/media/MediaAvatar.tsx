@@ -24,6 +24,11 @@ export type MediaAvatarProps = {
   enabled?: boolean;
   /** Local preview URL (deferred upload); bypasses presigned resolution. */
   overrideSrc?: string | null;
+  /**
+   * Pre-resolved presigned URL from a parent batch hook.
+   * When defined (including null while loading), skips per-instance presigned fetch.
+   */
+  avatarImageUrl?: string | null;
   /** Fill parent container instead of fixed thumb/sheet dimensions. */
   fillContainer?: boolean;
 };
@@ -44,9 +49,11 @@ export function MediaAvatar({
   priority = false,
   enabled = true,
   overrideSrc,
+  avatarImageUrl,
   fillContainer = false,
 }: MediaAvatarProps) {
-  const resolvePresigned = enabled && !overrideSrc;
+  const hasPreResolvedUrl = avatarImageUrl !== undefined;
+  const resolvePresigned = enabled && !overrideSrc && !hasPreResolvedUrl;
   const { url, isLoading } = useMediaAvatar({
     scope,
     entityId,
@@ -56,7 +63,7 @@ export function MediaAvatar({
     enabled: resolvePresigned,
   });
 
-  const displayUrl = overrideSrc ?? url;
+  const displayUrl = overrideSrc ?? (hasPreResolvedUrl ? avatarImageUrl : url);
   const sizeClass = fillContainer ? "size-full min-h-0" : MEDIA_AVATAR_SIZE_CLASS[size];
   const roundedClass = MEDIA_AVATAR_ROUNDED_CLASS[size];
   const hasImage = Boolean(displayUrl);
