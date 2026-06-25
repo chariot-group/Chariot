@@ -96,7 +96,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
 
   return (
     <Card
-      className="gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit"
+      className="gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit min-w-0 w-full"
       role="region"
       aria-labelledby="stats-heading">
       <h2
@@ -241,26 +241,28 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
         })}
       </div>
       {onCharacterUpdate && (
-        <div className="mt-1 border-t border-border/60 px-2 pt-3 flex flex-col items-end gap-1.5">
+        <div className="mt-1 border-t border-border/60 px-2 pt-3 flex flex-col items-end gap-1.5 w-full min-w-0">
           {!isInSession && (
-            <p className="text-xs text-muted-foreground italic text-right">
+            <p className="text-xs text-muted-foreground italic text-right w-full">
               {t("restSessionOnlyNote")}
             </p>
           )}
-          <div className="flex flex-row gap-2">
-            <ShortRestButton
-              player={player}
-              isInSession={isInSession}
-              onApplied={(updated) => onCharacterUpdate(updated)}
-              showLabel
-            />
-            <LongRestButton
-              player={player}
-              isInSession={isInSession}
-              onApplied={(updated) => onCharacterUpdate(updated)}
-              showLabel
-            />
-          </div>
+          {isInSession && (
+            <div className="flex flex-row flex-wrap justify-end gap-2 w-full min-w-0">
+              <ShortRestButton
+                player={player}
+                isInSession={isInSession}
+                onApplied={(updated) => onCharacterUpdate(updated)}
+                showLabel
+              />
+              <LongRestButton
+                player={player}
+                isInSession={isInSession}
+                onApplied={(updated) => onCharacterUpdate(updated)}
+                showLabel
+              />
+            </div>
+          )}
         </div>
       )}
       {canEditHealthInSession && onCharacterUpdate ? (
