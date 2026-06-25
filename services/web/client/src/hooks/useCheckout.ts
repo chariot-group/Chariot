@@ -9,6 +9,7 @@ import {
 } from "@/lib/checkout-utils";
 import type { PromoCodeState } from "@/components/checkout/CheckoutForm";
 import referralService from "@/services/ReferralService";
+import { parsePromoCodeResolveError } from "@/lib/promoCodeResolveError";
 
 export type ReferralDiscount = {
     discountPercent: number;
@@ -233,17 +234,14 @@ export function useCheckout(): UseCheckoutReturn {
         try {
             resolved = await paymentService.resolveCode(trimmed, originalAmount * quantity);
         } catch (err: unknown) {
-            const axiosErr = err as { response?: { status?: number; data?: { errorCode?: string; minOrderAmount?: number } } };
-            const status = axiosErr?.response?.status;
-            const errorCode = axiosErr?.response?.data?.errorCode;
-            const minOrderAmount = axiosErr?.response?.data?.minOrderAmount;
+            const parsed = parsePromoCodeResolveError(err);
 
-            if (status === 410 && errorCode === "PROMO_EXHAUSTED") {
+            if (parsed.kind === "exhausted") {
                 setCodeError(tShop("codeExhausted"));
-            } else if (status === 410 && errorCode === "PROMO_USER_LIMIT_REACHED") {
+            } else if (parsed.kind === "user_limit_reached") {
                 setCodeError(tShop("codeUserLimitReached"));
-            } else if (status === 422 && errorCode === "PROMO_MIN_ORDER" && minOrderAmount != null) {
-                const minEuros = (minOrderAmount / 100).toFixed(2);
+            } else if (parsed.kind === "min_order" && parsed.minOrderAmount != null) {
+                const minEuros = (parsed.minOrderAmount / 100).toFixed(2);
                 setCodeError(tShop("codeMinOrder", { minAmount: `${minEuros}€` }));
             } else {
                 setCodeError(tShop("codeNotFound"));
