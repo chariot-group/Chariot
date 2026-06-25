@@ -92,7 +92,7 @@ function CheckoutFormContent({
   return (
     <div className="flex flex-col gap-6 w-full md:flex-row md:items-start md:justify-center md:h-full">
       {showPaymentPanel && (
-        <div className="w-full order-1 md:w-[50%] md:overflow-y-auto md:self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+        <div className="w-full order-1 md:w-1/2 md:min-w-0 md:overflow-y-auto md:self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
           <Card className="gap-3 p-5">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               {t("paymentDetails")}
@@ -107,7 +107,7 @@ function CheckoutFormContent({
         </div>
       )}
 
-      <div className="flex flex-col gap-6 w-full order-2 md:w-auto md:min-w-[340px]">
+      <div className="flex flex-col gap-6 w-full order-2 md:w-1/2 md:min-w-0 md:overflow-y-auto md:self-stretch">
         <Card className="gap-4 p-5">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t("orderSummary")}</h2>
           <div className="flex items-center gap-3">
