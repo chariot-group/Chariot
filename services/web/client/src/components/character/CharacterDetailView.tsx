@@ -29,7 +29,6 @@ import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
 import MediaService from "@/services/MediaService";
 import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
 import { cn } from "@/lib/utils";
-import { MEDIA_AVATAR_SIZE_CLASS } from "@/utils/media.utils";
 import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
 import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 
@@ -499,11 +498,7 @@ export default function CharacterDetailView({
                   </div>
                 </div>
 
-                <div
-                  className={cn(
-                    "shrink-0 self-start relative",
-                    MEDIA_AVATAR_SIZE_CLASS.sheet,
-                  )}>
+                <div className="shrink-0 self-start">
                   {isEditing && showEditControls ? (
                     <MediaAvatarUpload
                       scope="character"
@@ -517,7 +512,6 @@ export default function CharacterDetailView({
                       onPendingFile={handlePendingAvatarFile}
                       onPendingRemove={handlePendingAvatarRemove}
                       disabled={isSaving || isAvatarCommitting}
-                      className="size-full"
                     />
                   ) : (
                     <MediaAvatar
@@ -528,8 +522,6 @@ export default function CharacterDetailView({
                       size="sheet"
                       alt={characterDisplayName}
                       priority
-                      fillContainer
-                      className="size-full"
                     />
                   )}
                 </div>

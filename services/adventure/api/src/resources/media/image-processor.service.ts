@@ -7,7 +7,8 @@ import {
 import sharp from 'sharp';
 import {
   MEDIA_ALLOWED_MIME_TYPES,
-  MEDIA_MAIN_MAX_PX,
+  MEDIA_MAIN_HEIGHT_PX,
+  MEDIA_MAIN_WIDTH_PX,
   MEDIA_MAX_UPLOAD_BYTES,
   MEDIA_THUMB_PX,
   MEDIA_WEBP_QUALITY,
@@ -45,7 +46,7 @@ export class ImageProcessorService {
     try {
       const main = await sharp(file.buffer, { failOn: 'none' })
         .rotate()
-        .resize(MEDIA_MAIN_MAX_PX, MEDIA_MAIN_MAX_PX, {
+        .resize(MEDIA_MAIN_WIDTH_PX, MEDIA_MAIN_HEIGHT_PX, {
           fit: 'cover',
           position: 'centre',
         })

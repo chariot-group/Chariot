@@ -477,10 +477,11 @@ When adding a rule:
 **Character Avatar**:
 
 - Placeholder icon (User icon from Lucide) when no image is available
-- Fixed dimensions: 16x20 (mobile), 20x24 (sm), 24x28 (md+)
+- Fixed width with consistent 4:5 aspect ratio: `w-20` (mobile), `w-24` (sm), `w-28` (md+)
 - Rounded corners (`rounded-[18px]`)
 - Gray background (`bg-gray`)
 - Positioned to the right of character information
+- Image crop: `object-cover object-center` (see FR-media-avatar-format)
 
 **Accessibility Requirements**:
 
@@ -3389,3 +3390,37 @@ Each initiative tracker row carries:
 - `services/media/api/src/resources/media/media.service.ts`
 - `services/session/api/src/resources/session/session.controller.ts`
 - `services/session/api/src/resources/session/session.service.ts`
+
+## FR-media-avatar-format : Format et dimensions des avatars
+
+**Règle** : Les avatars uploadés DOIVENT être normalisés à un ratio d'aspect fixe 4:5 avec recadrage centré ; l'interface d'upload DOIT indiquer les extensions acceptées, la taille maximale et les dimensions recommandées.
+
+**Requirements** :
+
+- Traitement serveur : variante `main` en 512×640 px (ratio 4:5), variante `thumb` en 96×96 px (carré, recadrage centré depuis la source)
+- Stockage CDN : WebP uniquement (extension `.webp`)
+- Formats d'upload acceptés : JPEG (`.jpg`, `.jpeg`), PNG (`.png`), WebP (`.webp`), HEIC/HEIF (convertis côté serveur)
+- Taille maximale d'upload : 5 Mo
+- Affichage `main` : tous les conteneurs DOIVENT respecter le ratio 4:5 (`aspect-[4/5]`) ; les vignettes circulaires (`thumb`, `xs`) restent carrées
+- Recadrage CSS uniforme : `object-cover object-center` sur toutes les instances `MediaAvatar`
+- L'UI d'upload DOIT exposer une aide lisible (ou `aria-describedby` équivalent) listant extensions, taille max et dimensions recommandées (400×500 px, ratio 4:5)
+
+**Prohibitions** :
+
+- Ne pas stocker la variante `main` en carré 1:1
+- Ne pas utiliser des ratios d'affichage divergents pour le même avatar (ex. `aspect-video` sur le profil utilisateur)
+- Ne pas combiner largeur et hauteur fixes Tailwind qui modifient le ratio selon le breakpoint
+
+**Tests** :
+
+- Nominal : upload PNG portrait → `main` 4:5 WebP, `thumb` carré WebP
+- Edge : image paysage large → recadrage centré sans déformation
+- Failure : format non supporté → message d'erreur mentionnant les extensions acceptées
+
+**References** :
+
+- `services/media/api/src/resources/media/image-processor.service.ts`
+- `services/media/api/src/resources/media/media.constants.ts`
+- `services/web/client/src/components/media/MediaAvatar.tsx`
+- `services/web/client/src/components/media/MediaAvatarUpload.tsx`
+- `services/web/client/src/utils/media.utils.ts`

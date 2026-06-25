@@ -21,11 +21,19 @@ export function mediaAvatarCacheKey(
 
 export type MediaAvatarSize = "sheet" | "profile" | "thumb" | "xs";
 
+/** @see FR-media-avatar-format */
+export const MEDIA_AVATAR_ACCEPTED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"] as const;
+export const MEDIA_AVATAR_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const MEDIA_AVATAR_RECOMMENDED_WIDTH_PX = 400;
+export const MEDIA_AVATAR_RECOMMENDED_HEIGHT_PX = 500;
+export const MEDIA_AVATAR_ACCEPT_MIME =
+  "image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif";
+
 export const MEDIA_AVATAR_SIZE_CLASS: Record<MediaAvatarSize, string> = {
-  sheet: "h-16 w-20 sm:h-20 sm:w-24 md:h-24 md:w-28",
-  profile: "h-full w-full min-h-[120px]",
-  thumb: "h-9 w-9 sm:h-10 sm:w-10",
-  xs: "h-6 w-6",
+  sheet: "w-20 aspect-[4/5] sm:w-24 md:w-28",
+  profile: "w-20 aspect-[4/5] sm:w-28 md:w-36",
+  thumb: "aspect-square h-9 w-9 sm:h-10 sm:w-10",
+  xs: "aspect-square h-6 w-6",
 };
 
 export const MEDIA_AVATAR_ROUNDED_CLASS: Record<MediaAvatarSize, string> = {

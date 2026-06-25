@@ -178,7 +178,7 @@ export default function UpdateProfile({
         {t("pageTitle")}
       </h2>
       <div
-        className="relative shrink-0 w-24 h-24 sm:w-36 sm:h-36 xl:w-2/5 xl:h-auto xl:aspect-video overflow-hidden rounded-[15px]"
+        className="shrink-0"
         role="img"
         aria-label={user?.username ? `${user.username} profile picture` : "Default profile picture"}>
         {user?.keycloakId ? (
@@ -193,7 +193,6 @@ export default function UpdateProfile({
             onPendingFile={handlePendingAvatarFile}
             onPendingRemove={handlePendingAvatarRemove}
             disabled={isBusy}
-            className="size-full"
           />
         ) : null}
       </div>
