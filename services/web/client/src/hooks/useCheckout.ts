@@ -270,19 +270,21 @@ export function useCheckout(): UseCheckoutReturn {
         setTimeout(() => codeInputRef.current?.focus(), 50);
     }, [updatePaymentIntentAmount, quantity]);
 
-    // ── Pricing ─────────────────────────────────────────────────────────────────
+    // ── Pricing (order-level amounts) ───────────────────────────────────────────
     const currency = product?.prices[0]?.currency ?? "eur";
-    let discountedAmount = originalAmount;
-    if (originalAmount > 0) {
+    const unitAmount = originalAmount;
+    const orderOriginalAmount = unitAmount * quantity;
+    let orderDiscountedAmount = orderOriginalAmount;
+    if (unitAmount > 0) {
         if (appliedCode) {
-            discountedAmount = computeDiscountedAmount(originalAmount, appliedCode.resolved);
+            orderDiscountedAmount = computeDiscountedAmount(unitAmount, quantity, appliedCode.resolved);
         } else if (referralDiscount) {
-            discountedAmount = computeReferralDiscountedAmount(originalAmount, referralDiscount.discountPercent);
+            orderDiscountedAmount = computeReferralDiscountedAmount(orderOriginalAmount, referralDiscount.discountPercent);
         }
     }
-    const giftAmount = computeGiftAmount(discountedAmount, currency);
-    const discountAmount = originalAmount - discountedAmount;
-    const chargeableAmount = Math.max(0, discountedAmount - giftAmount);
+    const giftAmount = computeGiftAmount(orderDiscountedAmount, currency);
+    const discountAmount = orderOriginalAmount - orderDiscountedAmount;
+    const chargeableAmount = Math.max(0, orderDiscountedAmount - giftAmount);
     const tokenCount = product?.metadata?.token_number ? parseInt(product.metadata.token_number, 10) : null;
 
     const handleQuantityChange = useCallback((newQuantity: number) => {
@@ -321,8 +323,8 @@ export function useCheckout(): UseCheckoutReturn {
         isFreeOrder,
         onConfirmFreeOrder: handleConfirmFreeOrder,
         pricing: {
-            originalAmount,
-            discountedAmount,
+            originalAmount: orderOriginalAmount,
+            discountedAmount: orderDiscountedAmount,
             discountAmount,
             giftAmount,
             chargeableAmount,

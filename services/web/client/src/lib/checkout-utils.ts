@@ -16,11 +16,16 @@ export function formatDiscount(resolved: ResolvedCode): string {
     return `-${(resolved.discountValue / 100).toFixed(2).replace(".", ",")} €`;
 }
 
-export function computeDiscountedAmount(originalAmount: number, resolved: ResolvedCode): number {
+export function computeDiscountedAmount(
+    unitAmount: number,
+    quantity: number,
+    resolved: ResolvedCode,
+): number {
+    const orderAmount = unitAmount * quantity;
     if (resolved.discountType === "PERCENTAGE") {
-        return Math.max(0, originalAmount - Math.floor((originalAmount * resolved.discountValue) / 100));
+        return Math.max(0, orderAmount - Math.floor((orderAmount * resolved.discountValue) / 100));
     }
-    return Math.max(0, originalAmount - resolved.discountValue);
+    return Math.max(0, orderAmount - resolved.discountValue);
 }
 
 export function computeReferralDiscountedAmount(originalAmount: number, discountPercent: number): number {

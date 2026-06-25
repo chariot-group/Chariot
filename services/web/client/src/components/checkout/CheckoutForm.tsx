@@ -77,6 +77,7 @@ function CheckoutFormContent({
   const [payError, setPayError] = useState<string | null>(null);
 
   const { originalAmount, discountAmount, giftAmount, chargeableAmount, currency } = pricing;
+  const unitChargeableAmount = quantity > 0 ? Math.round(chargeableAmount / quantity) : chargeableAmount;
 
   async function handleConfirm() {
     setPayLoading(true);
@@ -185,7 +186,7 @@ function CheckoutFormContent({
               className={`flex justify-between text-sm text-muted-foreground ${quantity <= 1 ? "invisible" : ""}`}
               aria-hidden={quantity <= 1}>
               <span>{t("unitPrice")}</span>
-              <span>{formatPrice(chargeableAmount, currency)}</span>
+              <span>{formatPrice(unitChargeableAmount, currency)}</span>
             </div>
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>
@@ -196,24 +197,24 @@ function CheckoutFormContent({
                   {` ×${quantity}`}
                 </span>
               </span>
-              <span>{formatPrice(originalAmount * quantity, currency)}</span>
+              <span>{formatPrice(originalAmount, currency)}</span>
             </div>
             {discountAmount > 0 && (promoCode.applied || referralDiscount) && (
               <div className="flex justify-between text-sm text-green-500">
                 <span>{promoCode.applied ? `${t("discount")} (${promoCode.applied.raw})` : t("referralDiscount")}</span>
-                <span>-{formatPrice(discountAmount * quantity, currency)}</span>
+                <span>-{formatPrice(discountAmount, currency)}</span>
               </div>
             )}
             {giftAmount > 0 && (
               <div className="flex justify-between text-sm text-green-500">
                 <span>{t("giftDiscount")}</span>
-                <span>-{formatPrice(giftAmount * quantity, currency)}</span>
+                <span>-{formatPrice(giftAmount, currency)}</span>
               </div>
             )}
             <div className="flex justify-between text-base font-bold text-card-foreground pt-1 border-t border-border/40">
               <span>{t("total")}</span>
               <span className={discountAmount > 0 || giftAmount > 0 ? "text-green-400" : ""}>
-                {formatPrice(chargeableAmount * quantity, currency)}
+                {formatPrice(chargeableAmount, currency)}
               </span>
             </div>
           </div>
@@ -364,7 +365,7 @@ export function CheckoutPaidForm(props: CheckoutFormProps) {
     <CheckoutFormContent
       {...props}
       showPaymentPanel
-      confirmLabel={t("payButton", { amount: formatPrice(chargeableAmount * quantity, currency) })}
+      confirmLabel={t("payButton", { amount: formatPrice(chargeableAmount, currency) })}
       confirmDisabled={piRefreshing || quantitySyncPending || !!piError || !stripe || !elements}
       onConfirm={async () => {
         if (!stripe || !elements) {
