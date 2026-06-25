@@ -6,6 +6,7 @@ import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
 import { useSessionData } from "@/hooks/useSessionData";
 import type { SessionParticipant } from "@/services/SessionService";
+import type { Character } from "@/types/character";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import { useUser } from "@/hooks/useUser";
 import { useKeycloak } from "@/providers/KeycloakProvider";
@@ -14,26 +15,39 @@ import { selectCampaigns } from "@/store/slices/campaignSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import Token from "@public/assets/token.svg";
 import { QRCodeSVG } from "qrcode.react";
-import { Check, ChevronDown, Copy, Link, Loader2, Minus, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Copy, Link, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { SessionWheelDepositBar } from "@/components/dialogs/SessionWheelDepositBar";
 import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/sessionSlice";
 import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import { computeMaxAddableWheels, sumDepositedWheels } from "@/lib/sessionWheelDeposit";
 import { cn } from "@/lib/utils";
 
 type SessionLobbyCopyState = "idle" | "loading" | "success";
+
+const SESSION_LOBBY_CARD_CLASS = "gap-3 rounded-[15px] p-3 shadow-sm sm:p-4";
+
+function getSessionLobbyParticipantListClassName(participantCount: number): string {
+  const base =
+    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scroll-smooth focus-visible:outline-none sm:gap-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar]:w-2";
+
+  if (participantCount < 5) {
+    return base;
+  }
+
+  return cn(
+    base,
+    "lg:grid lg:grid-cols-2 lg:content-start lg:gap-3",
+    participantCount % 2 === 1 && "lg:[&>*:last-child]:col-span-2",
+  );
+}
 
 interface SessionLobbyContentProps {
   code: string;
@@ -55,7 +69,6 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
   const [linkCopyState, setLinkCopyState] = useState<SessionLobbyCopyState>("idle");
   const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
   const [tokensByUser, setTokensByUser] = useState<Record<string, number>>(reduxTokensByUser);
-  const [customAmount, setCustomAmount] = useState(1);
 
   useEffect(() => {
     setTokensByUser(reduxTokensByUser);
@@ -72,12 +85,17 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     isLoading,
   } = useSessionData({ code, idCampaign, campaign }) as ReturnType<typeof useSessionData>;
 
-  const totalTokens = Object.values(tokensByUser).reduce((a, b) => a + b, 0);
-  const myTokens = currentUser ? (tokensByUser[currentUser.keycloakId] ?? 0) : 0;
-  const maxTokens = participants.length;
+  const totalDeposited = sumDepositedWheels(tokensByUser);
+  const myDeposited = currentUser ? (tokensByUser[currentUser.keycloakId] ?? 0) : 0;
+  const maxSlots = participants.length;
   const isMJ = participants.find((p) => p.userId === currentUser?.keycloakId)?.status === "gameMaster";
-  const maxAddable = Math.min((currentUser?.balance ?? 0) - myTokens, maxTokens - totalTokens);
-  const maxCustomAmount = Math.max(1, Math.max(maxAddable, myTokens));
+  const maxAddable = computeMaxAddableWheels({
+    balance: currentUser?.balance ?? 0,
+    myDeposited,
+    totalDeposited,
+    maxSlots,
+  });
+  const quotaFull = maxSlots > 0 && totalDeposited >= maxSlots;
 
   const sessionSocket = useSessionSocket({
     token,
@@ -105,8 +123,10 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     handleCharacterChange,
     handleLeave,
     handleAddToken,
+    handleRemoveToken,
     handleAddTokenAmount,
     handleRemoveTokenAmount,
+    handleDepositRemaining,
     handleLaunchSession,
     handleDismissSessionEnd,
     isChangingCharacter,
@@ -151,188 +171,14 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
         onConfirm={handleDismissSessionEnd}
       />
       <div
-        className="flex flex-col h-full min-h-0"
+        className="flex h-full min-h-0 flex-col"
         aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
-        <div className="p-4 sm:p-6 flex flex-col-reverse lg:grid lg:grid-cols-4 gap-4 lg:items-stretch flex-1 min-h-0">
-          {/* Players section */}
-          <section
-            aria-labelledby="session-lobby-players-heading"
-            className="lg:col-span-3 flex flex-col gap-4 min-h-0 flex-1">
-            <Card className="flex flex-col gap-4 p-4 sm:p-6 min-h-0 flex-1">
-              <h2
-                id="session-lobby-players-heading"
-                className="text-xl sm:text-2xl font-bold shrink-0">
-                {t("title")}
-                <span className="font-normal"> - {campaign?.label ?? campaignLabel}</span>
-              </h2>
-
-              <div
-                role="list"
-                aria-label={t("players.ariaLabel")}
-                className="grid grid-cols-1 sm:grid-cols-2 items-start gap-3 overflow-y-auto flex-1 min-h-0 scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
-                tabIndex={0}>
-                {participants.length > 0 &&
-                  participants.map((participant: SessionParticipant) => {
-                    const isMe = participant.userId === currentUser?.keycloakId;
-                    const isPlayer = participant.status === "connected";
-                    const characterLabel = getCharacterLabel(participant.characterId);
-
-                    return (
-                      <Card
-                        key={participant.id}
-                        role="listitem"
-                        className="bg-gray flex flex-col gap-2 p-3">
-                        <div className="flex flex-row items-center gap-2">
-                          <span className="font-medium truncate min-w-0 flex-1">
-                            {participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING}
-                          </span>
-                          {participant.status === "gameMaster" && <Badge className="shrink-0">{t("players.gameMaster")}</Badge>}
-                          {participant.status === "connected" && (
-                            <Badge variant={"secondary"} className="shrink-0">{t("players.player")}</Badge>
-                          )}
-                        </div>
-
-                        {isMe && isPlayer && sessionIsActive ? (
-                          <CharacterSelect
-                            characters={myCharacters}
-                            value={participant.characterId ?? ""}
-                            onValueChange={handleCharacterChange}
-                            placeholder={t("players.selectCharacterPlaceholder")}
-                            disabled={isChangingCharacter}
-                            selectedLabel={characterLabel || undefined}
-                            triggerClassName="w-full text-xs"
-                          />
-                        ) : (
-                          <span className="text-xs text-muted-foreground truncate">{characterLabel ?? " "}</span>
-                        )}
-                      </Card>
-                    );
-                  })}
-              </div>
-
-              <div className="flex flex-wrap justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleLeave}
-                  disabled={isLeaving}>
-                  {t("players.leaveButton")}
-                </Button>
-                {isMJ && !sessionIsActive && (
-                  <ConfirmCancelSessionDialog onConfirm={handleCloseSession}>
-                    <Button
-                      type="button"
-                      variant="destructive">
-                      Clôturer la session
-                    </Button>
-                  </ConfirmCancelSessionDialog>
-                )}
-                {/* Split token button */}
-                {sessionIsActive && (
-                  <div className="flex items-center">
-                    <Button
-                      className="rounded-r-none border-r-0 pr-1"
-                      aria-label={
-                        totalTokens >= maxTokens
-                          ? t("players.launchSessionAriaLabel")
-                          : t("players.addTokenAriaLabel", { count: maxTokens, total: totalTokens })
-                      }
-                      disabled={!sessionIsActive || (totalTokens >= maxTokens ? !isMJ || isLaunching : maxAddable <= 0)}
-                      onClick={totalTokens >= maxTokens ? handleLaunchSession : handleAddToken}>
-                      {totalTokens >= maxTokens ? (
-                        <React.Fragment>
-                          {isLaunching ? <Loader2 className="animate-spin" /> : null}
-                          {t("players.launchSessionButton")}
-                        </React.Fragment>
-                      ) : (
-                        <span className="flex items-center gap-1.5">
-                          {t("players.addTokenButton", { count: maxTokens, total: totalTokens })}
-                          <Image
-                            src={Token}
-                            alt=""
-                            aria-hidden="true"
-                            className="w-3 h-3 sm:w-4 sm:h-4"
-                          />
-                        </span>
-                      )}
-                    </Button>
-                    <DropdownMenu modal={false}>
-                      <DropdownMenuTrigger
-                        disabled={!sessionIsActive}
-                        asChild>
-                        <Button
-                          disabled={!sessionIsActive}
-                          className="rounded-l-none px-2 pl-1"
-                          aria-label={t("players.tokenMenuAriaLabel")}>
-                          <ChevronDown className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        side="top"
-                        className="w-56 p-3">
-                        <p className="text-xs text-muted-foreground mb-2">{t("players.customAmount")}</p>
-                        <div className="flex items-center justify-between gap-2 mb-3">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-7 w-7"
-                            disabled={customAmount <= 1}
-                            onClick={() => setCustomAmount((a) => Math.max(1, a - 1))}>
-                            <Minus className="w-3 h-3" />
-                          </Button>
-                          <span className="text-sm font-medium w-6 text-center">{customAmount}</span>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-7 w-7"
-                            disabled={customAmount >= maxCustomAmount}
-                            onClick={() => setCustomAmount((a) => Math.min(maxCustomAmount, a + 1))}>
-                            <Plus className="w-3 h-3" />
-                          </Button>
-                        </div>
-                        <div className="flex gap-2 mb-1">
-                          <Button
-                            size="sm"
-                            className="flex-1"
-                            disabled={maxAddable <= 0}
-                            onClick={() => handleAddTokenAmount(customAmount)}>
-                            <Plus className="w-3 h-3" />
-                            {t("players.addCustomButton")}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                            disabled={myTokens <= 0}
-                            onClick={() => handleRemoveTokenAmount(customAmount)}>
-                            <Minus className="w-3 h-3" />
-                            {t("players.removeCustomButton")}
-                          </Button>
-                        </div>
-                        {myTokens > 0 && (
-                          <React.Fragment>
-                            <DropdownMenuSeparator className="my-2" />
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onClick={() => handleRemoveTokenAmount(myTokens)}>
-                              <Trash2 className="w-3 h-3" />
-                              {t("players.removeAllButton", { myTokens })}
-                            </DropdownMenuItem>
-                          </React.Fragment>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </section>
-
-          {/* Session code section */}
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 pt-4 sm:gap-4 sm:px-6 sm:pt-6 lg:grid lg:grid-cols-4 lg:items-stretch">
+          {/* Session code + QR — top on mobile, right column on desktop */}
           <aside
             aria-labelledby="session-lobby-code-heading"
-            className="shrink-0 lg:col-span-1 flex flex-col gap-3 lg:items-start min-w-0 max-w-full">
-            <Card className="p-3 sm:p-4 min-w-0 max-w-full lg:hidden">
+            className="flex shrink-0 flex-col gap-2 lg:col-span-1 lg:col-start-4 lg:row-start-1 lg:gap-3">
+            <Card className={cn("max-w-full min-w-0 lg:hidden", SESSION_LOBBY_CARD_CLASS)}>
               <SessionLobbyCodeSection
                 code={code}
                 joinUrl={joinUrl}
@@ -344,7 +190,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                 headingId="session-lobby-code-heading"
               />
             </Card>
-            <Card className="hidden lg:flex flex-col gap-0 p-3 sm:p-4 w-full">
+            <Card className={cn("hidden w-full lg:flex", SESSION_LOBBY_CARD_CLASS)}>
               <SessionLobbyCodeSection
                 code={code}
                 inviteDisplay="text"
@@ -355,16 +201,202 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                 headingId="session-lobby-code-heading"
               />
             </Card>
-            <Card className="hidden lg:flex flex-col items-center gap-2 p-3 sm:p-4 w-full">
+            <Card className={cn("hidden w-full items-center lg:flex", SESSION_LOBBY_CARD_CLASS)}>
               <SessionLobbyQrSection
                 joinUrl={joinUrl}
                 showHeading
               />
             </Card>
           </aside>
+
+          {/* Participants + wheels */}
+          <section
+            aria-labelledby="session-lobby-players-heading"
+            className="flex min-h-0 flex-1 flex-col gap-2.5 lg:col-span-3 lg:col-start-1 lg:row-start-1 lg:gap-3">
+            <h2
+              id="session-lobby-players-heading"
+              className="shrink-0 text-xl font-bold sm:text-xl lg:text-lg">
+              {t("title")}
+              <span className="font-normal text-muted-foreground"> — {campaign?.label ?? campaignLabel}</span>
+              <span className="sr-only"> ({participants.length})</span>
+            </h2>
+
+            <div
+              role="list"
+              aria-label={t("players.ariaLabel")}
+              className={getSessionLobbyParticipantListClassName(participants.length)}
+              tabIndex={0}>
+              {participants.length > 0 &&
+                participants.map((participant: SessionParticipant) => (
+                  <SessionLobbyParticipantCard
+                    key={participant.id}
+                    participant={participant}
+                    participantName={
+                      participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING
+                    }
+                    characterLabel={getCharacterLabel(participant.characterId)}
+                    participantDeposits={tokensByUser[participant.userId] ?? 0}
+                    isMe={participant.userId === currentUser?.keycloakId}
+                    isPlayer={participant.status === "connected"}
+                    sessionIsActive={sessionIsActive}
+                    myCharacters={myCharacters}
+                    isChangingCharacter={isChangingCharacter}
+                    onCharacterChange={handleCharacterChange}
+                  />
+                ))}
+            </div>
+          </section>
         </div>
+
+        {sessionIsActive ? (
+          <div className="shrink-0 px-4 pb-4 sm:px-6 sm:pb-6">
+            <SessionWheelDepositBar
+              totalDeposited={totalDeposited}
+              maxSlots={maxSlots}
+              myDeposited={myDeposited}
+              balance={currentUser?.balance ?? 0}
+              maxAddable={maxAddable}
+              isMJ={Boolean(isMJ)}
+              isLaunching={isLaunching}
+              isLeaving={isLeaving}
+              quotaFull={quotaFull}
+              leaveLabel={t("players.leaveButton")}
+              onAddOne={handleAddToken}
+              onRemoveOne={handleRemoveToken}
+              onRemoveAll={() => handleRemoveTokenAmount(myDeposited)}
+              onDepositRemaining={handleDepositRemaining}
+              onLaunch={handleLaunchSession}
+              onLeave={handleLeave}
+            />
+          </div>
+        ) : (
+          <div className="flex shrink-0 flex-wrap justify-end gap-2 px-4 pb-4 sm:px-6 sm:pb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLeave}
+              disabled={isLeaving}>
+              {t("players.leaveButton")}
+            </Button>
+            {isMJ && (
+              <ConfirmCancelSessionDialog onConfirm={handleCloseSession}>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm">
+                  Clôturer la session
+                </Button>
+              </ConfirmCancelSessionDialog>
+            )}
+          </div>
+        )}
       </div>
     </React.Fragment>
+  );
+}
+
+interface SessionLobbyCopyActionsProps {
+  codeCopyState: SessionLobbyCopyState;
+  linkCopyState: SessionLobbyCopyState;
+  onCopyCode: () => void;
+  onCopyLink: () => void;
+  align?: "center" | "start";
+  fullWidth?: boolean;
+}
+
+function SessionLobbyCopyActions({
+  codeCopyState,
+  linkCopyState,
+  onCopyCode,
+  onCopyLink,
+  align = "start",
+  fullWidth = false,
+}: SessionLobbyCopyActionsProps) {
+  const t = useTranslations("sessionPage");
+  const copyLabel = codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton");
+
+  if (fullWidth) {
+    return (
+      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            "h-8 w-full min-w-0 px-3 transition-colors sm:h-9",
+            codeCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+          )}
+          aria-label={t("sessionCode.copyAriaLabel")}
+          disabled={codeCopyState !== "idle"}
+          onClick={onCopyCode}>
+          {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />}
+          {codeCopyState === "success" && <Check className="h-3.5 w-3.5 shrink-0" />}
+          {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5 shrink-0" />}
+          <span className="truncate">{copyLabel}</span>
+        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label={t("sessionCode.copyLinkAriaLabel")}
+              className={cn(
+                "h-8 w-8 shrink-0 transition-colors sm:h-9 sm:w-9",
+                linkCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+              )}
+              disabled={linkCopyState !== "idle"}
+              onClick={onCopyLink}>
+              {linkCopyState === "success" ? <Check className="h-4 w-4" /> : <Link className="h-4 w-4" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex w-full items-center gap-2",
+        align === "center" ? "justify-center" : "justify-start",
+      )}>
+      <Button
+        variant="outline"
+        size="sm"
+        className={cn(
+          "h-8 w-auto shrink-0 px-3 transition-colors",
+          codeCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+        )}
+        aria-label={t("sessionCode.copyAriaLabel")}
+        disabled={codeCopyState !== "idle"}
+        onClick={onCopyCode}>
+        {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+        {codeCopyState === "success" && <Check className="h-3.5 w-3.5" />}
+        {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5" />}
+        <span className="hidden sm:inline">{copyLabel}</span>
+      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label={t("sessionCode.copyLinkAriaLabel")}
+            className={cn(
+              "shrink-0 transition-colors",
+              linkCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+            )}
+            disabled={linkCopyState !== "idle"}
+            onClick={onCopyLink}>
+            {linkCopyState === "success" ? <Check className="h-3.5 w-3.5" /> : <Link className="h-3.5 w-3.5" />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
+        </TooltipContent>
+      </Tooltip>
+    </div>
   );
 }
 
@@ -394,65 +426,85 @@ function SessionLobbyCodeSection({
   const t = useTranslations("sessionPage");
   const formattedCode = `${code.slice(0, 3)} - ${code.slice(3)}`;
   const isResponsiveInvite = inviteDisplay === "responsive" && Boolean(joinUrl);
+  const [inviteDetailsOpen, setInviteDetailsOpen] = useState(false);
 
   return (
-    <div className={cn("flex flex-col gap-0", className)}>
+    <div className={cn("flex flex-col gap-3", className)}>
       <h2
         id={headingId}
-        className="text-sm sm:text-base font-bold mb-2">
+        className="text-sm font-bold sm:text-base">
         {t("sessionCode.heading")}
       </h2>
-      <div className={cn("flex min-w-0", isResponsiveInvite ? "justify-center" : "flex-col")}>
-        <p
-          className={cn(
-            "font-mono tracking-widest text-center py-1 min-w-0",
-            isResponsiveInvite ? "sr-only" : "w-full text-xl sm:text-2xl",
-          )}
-          aria-label={t("sessionCode.ariaLabel", { code })}>
-          {formattedCode}
-        </p>
-        {isResponsiveInvite && joinUrl && (
-          <SessionLobbyQrSection
-            joinUrl={joinUrl}
-            prominent
+
+      {isResponsiveInvite && joinUrl ? (
+        <Collapsible
+          open={inviteDetailsOpen}
+          onOpenChange={setInviteDetailsOpen}>
+          <div className="flex w-full flex-col gap-2 rounded-[13px] bg-gray p-3">
+            <div className="flex items-center justify-between gap-2">
+              <p
+                className="min-w-0 font-mono text-xl tracking-widest sm:text-2xl"
+                aria-label={t("sessionCode.ariaLabel", { code })}>
+                {formattedCode}
+              </p>
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1.5"
+                  aria-expanded={inviteDetailsOpen}
+                  aria-controls="session-lobby-invite-details"
+                  aria-label={
+                    inviteDetailsOpen
+                      ? t("sessionCode.inviteToggleCollapse")
+                      : t("sessionCode.inviteToggleExpand")
+                  }>
+                  <span className="hidden text-xs sm:inline">
+                    {inviteDetailsOpen
+                      ? t("sessionCode.inviteToggleCollapse")
+                      : t("sessionCode.inviteToggleExpand")}
+                  </span>
+                  <ChevronDown
+                    aria-hidden="true"
+                    className={cn("h-4 w-4 shrink-0 transition-transform", inviteDetailsOpen && "rotate-180")}
+                  />
+                </Button>
+              </CollapsibleTrigger>
+            </div>
+            <CollapsibleContent
+              id="session-lobby-invite-details"
+              className="flex flex-col gap-3 pt-1">
+              <SessionLobbyQrSection
+                joinUrl={joinUrl}
+                size="compact"
+                className="items-center"
+              />
+              <SessionLobbyCopyActions
+                codeCopyState={codeCopyState}
+                linkCopyState={linkCopyState}
+                onCopyCode={onCopyCode}
+                onCopyLink={onCopyLink}
+                fullWidth
+              />
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
+      ) : (
+        <>
+          <p
+            className="w-full text-center font-mono text-xl tracking-widest sm:text-2xl"
+            aria-label={t("sessionCode.ariaLabel", { code })}>
+            {formattedCode}
+          </p>
+          <SessionLobbyCopyActions
+            codeCopyState={codeCopyState}
+            linkCopyState={linkCopyState}
+            onCopyCode={onCopyCode}
+            onCopyLink={onCopyLink}
           />
-        )}
-      </div>
-      <div className="flex gap-2 items-center mt-2 min-w-0">
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            "flex-1 min-w-0 transition-colors",
-            codeCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
-          )}
-          aria-label={t("sessionCode.copyAriaLabel")}
-          disabled={codeCopyState !== "idle"}
-          onClick={onCopyCode}>
-          {codeCopyState === "loading" && <Loader2 className="animate-spin" />}
-          {codeCopyState === "success" && <Check />}
-          {codeCopyState === "idle" && <Copy />}
-          {codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton")}
-        </Button>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="sm"
-              aria-label={t("sessionCode.copyLinkAriaLabel")}
-              className={cn(
-                "shrink-0 transition-colors",
-                linkCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
-              )}
-              disabled={linkCopyState !== "idle"}
-              onClick={onCopyLink}>
-              {linkCopyState === "success" ? <Check /> : <Link />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {linkCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyLink")}
-          </TooltipContent>
-        </Tooltip>
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -460,38 +512,127 @@ function SessionLobbyCodeSection({
 interface SessionLobbyQrSectionProps {
   joinUrl: string;
   showHeading?: boolean;
-  prominent?: boolean;
+  size?: "compact" | "invite" | "desktop";
   className?: string;
 }
 
 function SessionLobbyQrSection({
   joinUrl,
   showHeading = false,
-  prominent = false,
+  size = "desktop",
   className,
 }: SessionLobbyQrSectionProps) {
   const t = useTranslations("sessionPage");
 
+  const pixelSize = size === "invite" ? 144 : size === "compact" ? 80 : 120;
+
   return (
     <div
-      className={cn("flex flex-col items-center gap-2", className)}
+      className={cn(
+        "flex shrink-0 flex-col gap-2",
+        size === "invite" ? "items-center sm:items-end" : "items-center",
+        className,
+      )}
       aria-label={t("sessionCode.qrCodeAriaLabel")}>
       {showHeading && (
-        <h2 className="text-sm sm:text-base font-bold self-start">{t("sessionCode.qrCodeHeading")}</h2>
+        <h2 className="self-start text-sm font-bold sm:text-base">{t("sessionCode.qrCodeHeading")}</h2>
       )}
-      <div className="bg-white rounded border border-border shrink-0 p-2">
+      <div className="shrink-0 rounded border border-border bg-white p-1.5 sm:p-2">
         <QRCodeSVG
           value={joinUrl}
-          size={120}
+          size={pixelSize}
           bgColor="#ffffff"
           fgColor="#19191c"
           className={cn(
             "block",
-            prominent && "w-24 h-24",
-            !prominent && "w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] lg:w-[120px] lg:h-[120px]",
+            size === "invite" && "h-32 w-32 sm:h-36 sm:w-36",
+            size === "compact" && "h-20 w-20",
+            size === "desktop" && "h-[72px] w-[72px] sm:h-20 sm:w-20 lg:h-[120px] lg:w-[120px]",
           )}
         />
       </div>
     </div>
+  );
+}
+
+interface SessionLobbyParticipantCardProps {
+  participant: SessionParticipant;
+  participantName: string;
+  characterLabel: string | null;
+  participantDeposits: number;
+  isMe: boolean;
+  isPlayer: boolean;
+  sessionIsActive: boolean;
+  myCharacters: Character[];
+  isChangingCharacter: boolean;
+  onCharacterChange: (characterId: string) => void;
+}
+
+function SessionLobbyParticipantCard({
+  participant,
+  participantName,
+  characterLabel,
+  participantDeposits,
+  isMe,
+  isPlayer,
+  sessionIsActive,
+  myCharacters,
+  isChangingCharacter,
+  onCharacterChange,
+}: SessionLobbyParticipantCardProps) {
+  const t = useTranslations("sessionPage");
+
+  return (
+    <Card
+      role="listitem"
+      className="w-full gap-0 rounded-[15px] border border-border/30 bg-gray-middle-light p-0 shadow-none">
+      <div className="flex w-full flex-col gap-3 p-4 sm:p-3">
+        <div className="flex w-full items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-semibold text-white">{participantName}</p>
+            {!(isMe && isPlayer && sessionIsActive) ? (
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">{characterLabel ?? " "}</p>
+            ) : null}
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+            {participantDeposits > 0 ? (
+              <span
+                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card/60 px-2 py-0.5 text-xs font-medium tabular-nums"
+                aria-label={t("players.wheels.participantDepositsAria", { count: participantDeposits })}>
+                {participantDeposits}
+                <Image
+                  src={Token}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-3 w-3"
+                />
+              </span>
+            ) : null}
+            {participant.status === "gameMaster" ? (
+              <Badge className="shrink-0">{t("players.gameMaster")}</Badge>
+            ) : null}
+            {participant.status === "connected" ? (
+              <Badge
+                variant="secondary"
+                className="shrink-0">
+                {t("players.player")}
+              </Badge>
+            ) : null}
+          </div>
+        </div>
+
+        {isMe && isPlayer && sessionIsActive ? (
+          <CharacterSelect
+            characters={myCharacters}
+            value={participant.characterId ?? ""}
+            onValueChange={onCharacterChange}
+            placeholder={t("players.selectCharacterPlaceholder")}
+            disabled={isChangingCharacter}
+            selectedLabel={characterLabel || undefined}
+            triggerClassName="h-10 w-full text-sm"
+          />
+        ) : null}
+      </div>
+    </Card>
   );
 }

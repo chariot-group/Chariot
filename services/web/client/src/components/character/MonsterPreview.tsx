@@ -11,7 +11,7 @@ import CharacterInventoryTabContent from "@/components/character/tabContents/inv
 import CharacterHistoryTabContent from "@/components/character/tabContents/history/CharacterHistoryTabContent";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { FieldValues, UseFormReturn } from "react-hook-form";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 interface MonsterPreviewProps {
   monster: Partial<NPC>;
@@ -299,25 +299,15 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
           <div className="flex flex-col gap-2 text-sm sm:text-base xl:border-l xl:pl-6 border-border/60">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-semibold">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <abbr className="no-underline cursor-help">{tPreview("challengeRatingShort")}</abbr>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tCommon("challengeRatingTooltip")}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <InfoTooltip
+                  content={tCommon("challengeRatingTooltip")}
+                  side="top"
+                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                  <abbr className="no-underline cursor-help">{tPreview("challengeRatingShort")}</abbr>
+                </InfoTooltip>
                 {" :"}
               </span>
               <span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <abbr className="no-underline cursor-help">CR</abbr>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tCommon("challengeRatingTooltip")}</p>
-                  </TooltipContent>
-                </Tooltip>{" "}
                 {formatChallengeRating(normalizedMonster.challenge.challengeRating)}
               </span>
               <span className="text-gray-middle-light">

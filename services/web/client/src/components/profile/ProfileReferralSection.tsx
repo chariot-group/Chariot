@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { cn } from "@/lib/utils";
 import {
   computeReferrerDiscount,
@@ -50,22 +50,8 @@ export default function ProfileReferralSection({
               className="text-base sm:text-lg font-bold">
               {t("tiersTitle")}
             </h3>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  aria-label={t("rulesTooltipAriaLabel")}>
-                  <CircleHelp
-                    className="size-4"
-                    aria-hidden="true"
-                  />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                align="start"
-                className="max-w-xs sm:max-w-sm">
+            <InfoTooltip
+              content={
                 <div className="flex flex-col gap-1.5 text-xs">
                   <p className="font-semibold">{t("rulesTooltipTitle")}</p>
                   <ul className="list-disc pl-4 space-y-1">
@@ -76,8 +62,15 @@ export default function ProfileReferralSection({
                     <li>{t("rulesTooltipNotCumulative")}</li>
                   </ul>
                 </div>
-              </TooltipContent>
-            </Tooltip>
+              }
+              side="bottom"
+              align="start"
+              moreInfoLabel={t("rulesTooltipAriaLabel")}>
+              <CircleHelp
+                className="size-4 text-muted-foreground cursor-help shrink-0 [@media(hover:none)]:hidden"
+                aria-hidden="true"
+              />
+            </InfoTooltip>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">{t("tiersSubtitle")}</p>
         </div>

@@ -41,7 +41,7 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
             </h2>
 
             <div
-              className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
+              className="grid grid-cols-3 gap-x-2 gap-y-1"
               role="list">
               {npc?.stats &&
                 Object.entries(npc?.stats?.savingThrows).map(([key]) => {

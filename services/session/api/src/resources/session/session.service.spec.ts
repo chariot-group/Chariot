@@ -59,8 +59,7 @@ const mockRedis = {
     setSessionExpiration: jest.fn(),
     clearSessionExpiration: jest.fn(),
     onSessionExpired: jest.fn(),
-    clearEmptySessionTimer: jest.fn(),
-    setEmptySessionTimer: jest.fn(),
+
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -316,8 +315,6 @@ describe('SessionService', () => {
                 .mockResolvedValueOnce(session)
                 .mockResolvedValueOnce(updated);
             mockPrismaParticipant.upsert.mockResolvedValue({});
-            mockRedis.clearEmptySessionTimer.mockResolvedValue(undefined);
-
             const result = await service.join('CODE123', { characterId: 'char-1' }, 'user-uuid-2');
 
             expect(result.data).toBe(updated);
@@ -331,13 +328,11 @@ describe('SessionService', () => {
                 .mockResolvedValueOnce(session)
                 .mockResolvedValueOnce(updated);
             mockPrismaParticipant.update.mockResolvedValue({});
-            mockRedis.clearEmptySessionTimer.mockResolvedValue(undefined);
 
             const result = await service.join('CODE123', { characterId: 'char-1' }, 'user-uuid-2');
 
             expect(result.data).toBe(updated);
             expect(mockPrismaParticipant.update).toHaveBeenCalled();
-            expect(mockRedis.clearEmptySessionTimer).toHaveBeenCalledWith('sess-uuid-1');
         });
 
         it('should throw InternalServerErrorException when participant create fails', async () => {
@@ -373,29 +368,6 @@ describe('SessionService', () => {
             });
         });
 
-        it('should start empty session timer when last participant leaves', async () => {
-            const participant = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
-            const session = makeSession({
-                creatorUserId: 'user-uuid-1',
-                participants: [participant],
-            });
-            const updated = makeSession({
-                creatorUserId: 'user-uuid-1',
-                participants: [],
-            });
-
-            mockPrismaSession.findFirst
-                .mockResolvedValueOnce(session)
-                .mockResolvedValueOnce(updated);
-            mockPrismaParticipant.delete.mockResolvedValue({});
-            mockRedis.setEmptySessionTimer.mockResolvedValue(undefined);
-
-            const result = await service.leave('CODE123', 'user-uuid-1');
-
-            expect(result.data).toBe(updated);
-            expect(result.message).toContain('user-uuid-1 left');
-            expect(mockRedis.setEmptySessionTimer).toHaveBeenCalledWith('sess-uuid-1', expect.any(Number));
-        });
 
         it('should throw NotFoundException when session does not exist', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(null);

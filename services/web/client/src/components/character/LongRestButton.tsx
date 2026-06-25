@@ -8,7 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import CharacterService from "@/services/CharacterService";
 import { useAppDispatch } from "@/store/hooks";
 import { upsertCharacterInGroups } from "@/store/slices/groupSlice";
@@ -192,26 +192,15 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
 
     return (
         <>
-            {!isInSession ? (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <span className="inline-flex cursor-not-allowed">{triggerButton}</span>
-                    </TooltipTrigger>
-                    <TooltipContent
-                        side="bottom"
-                        className="max-w-xs text-left">
-                        {t("disabledTooltip")}
-                    </TooltipContent>
-                </Tooltip>
+            {!isInSession && !showLabel ? (
+                <InfoTooltip
+                    content={t("disabledTooltip")}
+                    side="bottom"
+                    moreInfoLabel={t("disabledTooltip")}>
+                    <span className="inline-flex cursor-not-allowed">{triggerButton}</span>
+                </InfoTooltip>
             ) : (
-                <Tooltip>
-                    <TooltipTrigger asChild>{triggerButton}</TooltipTrigger>
-                    <TooltipContent
-                        side="bottom"
-                        className="max-w-xs text-left">
-                        {t("ariaLabel")}
-                    </TooltipContent>
-                </Tooltip>
+                triggerButton
             )}
 
             <Dialog

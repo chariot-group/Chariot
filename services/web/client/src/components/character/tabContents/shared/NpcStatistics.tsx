@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import Image from "next/image";
 import { Bird, Dices, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
 import ShieldIcon from "@public/assets/icons/shield-icon.svg";
@@ -93,85 +93,84 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
         {t("stats")}
       </h2>
       <div className="flex flex-row justify-start gap-2 text-xl font-extrabold flex-wrap">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-              tabIndex={0}
-              role="img"
-              aria-label={`${t("armorClass")} ${npc.stats.armorClass}`}>
-              <Image
-                src={ShieldIcon}
-                alt=""
-                aria-hidden="true"
-                width={20}
-                height={20}
-                className="size-5"
-              />
-              <span aria-hidden="true">{npc.stats.armorClass}</span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{t("armorClassTooltip")}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-              tabIndex={0}
-              role="img"
-              aria-label={`${t("initiativeTooltip")} ${npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}`}>
-              <Dices
-                size={30}
-                className="text-black shrink-0"
-                aria-hidden="true"
-              />
-              <span aria-hidden="true">
-                {npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}
-              </span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{t("initiativeTooltip")}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-              tabIndex={0}
-              role="img"
-              aria-label={`${t("sizeTooltip")} ${t(`sizes.${npc.stats.size}` as Parameters<typeof t>[0])}`}>
-              <RulerIcon
-                size={24}
-                className="text-black"
-                aria-hidden="true"
-              />
-              <span aria-hidden="true">
-                {t(`sizesAbbr.${npc.stats.size}` as Parameters<typeof t>[0])}
-              </span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{t(`sizes.${npc.stats.size}` as Parameters<typeof t>[0])}</TooltipContent>
-        </Tooltip>
+        <InfoTooltip
+          content={t("armorClassTooltip")}
+          side="bottom">
+          <div
+            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+            tabIndex={0}
+            role="img"
+            aria-label={`${t("armorClass")} ${npc.stats.armorClass}`}>
+            <Image
+              src={ShieldIcon}
+              alt=""
+              aria-hidden="true"
+              width={20}
+              height={20}
+              className="size-5"
+            />
+            <span aria-hidden="true">{npc.stats.armorClass}</span>
+          </div>
+        </InfoTooltip>
+        <InfoTooltip
+          content={t("initiativeTooltip")}
+          side="bottom">
+          <div
+            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+            tabIndex={0}
+            role="img"
+            aria-label={`${t("initiativeTooltip")} ${npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}`}>
+            <Dices
+              size={30}
+              className="text-black shrink-0"
+              aria-hidden="true"
+            />
+            <span aria-hidden="true">
+              {npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}
+            </span>
+          </div>
+        </InfoTooltip>
+        <InfoTooltip
+          content={t(`sizes.${npc.stats.size}` as Parameters<typeof t>[0])}
+          side="bottom">
+          <div
+            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+            tabIndex={0}
+            role="img"
+            aria-label={`${t("sizeTooltip")} ${t(`sizes.${npc.stats.size}` as Parameters<typeof t>[0])}`}>
+            <RulerIcon
+              size={24}
+              className="text-black"
+              aria-hidden="true"
+            />
+            <span aria-hidden="true">
+              {t(`sizesAbbr.${npc.stats.size}` as Parameters<typeof t>[0])}
+            </span>
+          </div>
+        </InfoTooltip>
         {speedBadges.map(
           (badge) =>
             badge.value > 0 && (
-              <Tooltip key={badge.key}>
-                <TooltipTrigger asChild>
-                  <div
-                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    tabIndex={0}
-                    role="img"
-                    aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${displayFt(badge.value)} ${unitLabel}${secondaryFt ? ` (${secondaryFt(badge.value)} ${secondaryUnitLabel})` : ""}`}>
-                    {badge.icon}
-                    <span aria-hidden="true" className="flex items-baseline gap-0.5">
-                      <span>{displayFt(badge.value)}{unitLabel}</span>
-                      {secondaryFt && (
-                        <span className="text-[0.75em] text-muted-foreground/60 font-normal">({secondaryFt(badge.value)}{secondaryUnitLabel})</span>
-                      )}
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>{t(badge.tooltipKey as Parameters<typeof t>[0])}</TooltipContent>
-              </Tooltip>
+              <InfoTooltip
+                key={badge.key}
+                content={t(badge.tooltipKey as Parameters<typeof t>[0])}
+                side="bottom">
+                <div
+                  className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  tabIndex={0}
+                  role="img"
+                  aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${displayFt(badge.value)} ${unitLabel}${secondaryFt ? ` (${secondaryFt(badge.value)} ${secondaryUnitLabel})` : ""}`}>
+                  {badge.icon}
+                  <span
+                    aria-hidden="true"
+                    className="flex items-baseline gap-0.5">
+                    <span>{displayFt(badge.value)}{unitLabel}</span>
+                    {secondaryFt && (
+                      <span className="text-[0.75em] text-muted-foreground/60 font-normal">({secondaryFt(badge.value)}{secondaryUnitLabel})</span>
+                    )}
+                  </span>
+                </div>
+              </InfoTooltip>
             ),
         )}
       </div>

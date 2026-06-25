@@ -1965,6 +1965,7 @@ Each initiative tracker row carries:
 - Broadcasting join events with `characterId: null` when the persisted roster already has a character.
 - Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
 - Registering duplicate session-end handlers that each show an independent toast for the same event.
+- Closing a session automatically due to WebSocket inactivity or all participants being disconnected. The only valid session termination triggers are: 8-hour Redis TTL expiration and explicit GM manual close.
 
 **Tests**:
 
@@ -3424,3 +3425,91 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/media/MediaAvatar.tsx`
 - `services/web/client/src/components/media/MediaAvatarUpload.tsx`
 - `services/web/client/src/utils/media.utils.ts`
+
+---
+
+## FR-tooltip-accessibility: Tooltip Accessibility and Mobile Popover
+
+**Rule**: Any tooltip conveying information (not purely decorative) MUST be accessible on devices that do not support hover (touch screens: mobile, tablet).
+
+**Requirements**:
+
+- All tooltip trigger elements MUST have `cursor-help` applied.
+- On touch devices (`@media (hover: none)`), a visible `?` button MUST appear alongside the trigger element; tapping it opens a Popover with the same content as the tooltip.
+- The `InfoTooltip` component (`components/ui/info-tooltip.tsx`) MUST be used for all tooltips that convey contextual information, replacing bare `Tooltip`/`TooltipTrigger`/`TooltipContent` usage on informational elements.
+- Repeated identical icons (e.g., SRD badge, "Validated by Chariot" badge) that appear on every item in a list MUST be explained once via a visible **legend** (static labeled row) rather than per-item tooltips.
+- Tooltips that are **redundant** with an immediately visible label or with an `aria-label` identical to the tooltip content MUST be removed; the `aria-label` alone is sufficient for screen readers.
+- Tooltips on **disabled** interactive elements (explaining why the element is disabled) are exempt from the InfoTooltip migration when the element cannot receive focus; they SHOULD still be converted to InfoTooltip to support touch devices.
+- The `?` button MUST be hidden on devices with fine pointer / hover capability via `[@media(hover:hover)]:hidden`; it MUST be visible on touch/coarse pointer devices.
+- The Popover content MUST be responsive: `max-w-[min(20rem,calc(100vw-2rem))]`, positioned to avoid viewport overflow.
+
+**Prohibitions**:
+
+- Do NOT use raw `Tooltip`/`TooltipTrigger`/`TooltipContent` for informational content without also providing mobile access via `InfoTooltip` or a visible legend.
+- Do NOT add per-item tooltips for icons that repeat identically across list items — use a legend instead.
+- Do NOT hardcode tooltip/aria-label strings in English for a French-primary UI; use `useTranslations` or pass i18n-resolved strings.
+
+**Tests**:
+
+- Nominal: `InfoTooltip` renders children + hidden `?` button on DOM; tooltip visible on hover (desktop simulation).
+- Edge: `?` button is visible when `@media (hover: none)` is active (touch simulation); Popover opens on click.
+- Regression: no raw `Tooltip` wrapping icon-only informational elements without a corresponding `InfoTooltip` or legend.
+
+**References**:
+
+- `services/web/client/src/components/ui/info-tooltip.tsx`
+- `services/web/client/src/components/ui/popover.tsx`
+- `services/web/client/src/components/ui/tooltip.tsx`
+
+---
+
+## FR-session-lobby-wheel-deposit: Dépôt et retrait de wheels dans le lobby de session
+
+**Règle** : Le lobby de session (FR-session-lobby-modal) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
+
+**Exigences** :
+
+- **+1 / −1** : déposer ou retirer une wheel en un clic chacun, sans menu intermédiaire.
+- **Progression visible** : barre de progression et slots visuels indiquant `{total déposées} / {participants}`.
+- **Solde** : afficher le solde wheels de l'utilisateur et le nombre qu'il a déposé dans la session.
+- **Coordination** : chaque participant affiche un badge avec le nombre de wheels qu'il a déposées (si > 0).
+- **Dépôt groupé** : lien « Déposer le reste » lorsque plus d'une wheel peut encore être ajoutée par l'utilisateur courant ; lien « Tout retirer » (avec confirmation) uniquement si l'utilisateur a déposé plus d'une wheel.
+- **Bulk** : pas de menu secondaire ni de champ numérique — le stepper ±1 et « Déposer le reste » couvrent les cas d'usage.
+- **Quota atteint** :
+  - MJ : bouton « Lancer la session » actif.
+  - Joueurs : message d'attente (« en attente du MJ »), sans bouton « Lancer » grisé.
+- **Retrait** : les erreurs WebSocket de retrait DOIVENT produire un toast explicite.
+- **Clamp silencieux interdit** : si une demande bulk dépasse le quota ou le solde, un toast informatif DOIT indiquer le nombre réellement déposé.
+- La liste des participants DOIT occuper l'espace scrollable sous le panneau code/QR (mobile : code, lien et QR en haut ; desktop : colonne latérale droite).
+
+**Contraintes backend (FR-user-balance-history)** :
+
+- Les dépôts restent des réservations ; le débit n'a lieu qu'au lancement.
+- Les validations serveur (`session:add-token`, `session:add-tokens`, etc.) restent l'autorité.
+
+**Accessibilité (FR-frontend-design)** :
+
+- Barre de progression avec `role="progressbar"`, `aria-valuenow`, `aria-valuemax`.
+- Boutons +/− avec `aria-label` explicites.
+- Compteur personnel annoncé via `aria-live="polite"`.
+
+**Interdictions** :
+
+- Cacher le retrait −1 derrière un menu à plusieurs gestes.
+- Afficher « Lancer la session » désactivé aux joueurs non-MJ.
+- Utiliser « token » dans les libellés du lobby session.
+
+**Tests** :
+
+- Nominal : calcul du max déposable (solde + quota).
+- Edge : quota plein → max addable = 0.
+- Edge : solde épuisé pour l'utilisateur → max addable = 0.
+- Failure : clamp d'un montant bulk > max → toast partiel.
+
+**Références** :
+
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/components/dialogs/SessionWheelDepositBar.tsx`
+- `services/web/client/src/lib/sessionWheelDeposit.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`

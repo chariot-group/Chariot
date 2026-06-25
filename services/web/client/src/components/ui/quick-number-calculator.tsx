@@ -4,7 +4,6 @@ import { type ComponentProps, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type QuickCalculatorOperation = "add" | "subtract" | "set";
 
@@ -255,93 +254,78 @@ export function QuickNumberCalculator({
             className="h-8 rounded-md px-2 text-xs"
           />
           <div className="mt-2 grid grid-cols-3 gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  ref={addButtonRef}
-                  type="button"
-                  size="sm"
-                  variant="default"
-                  disabled={!canApply}
-                  onClick={() => applyOperation("add")}
-                  onKeyDown={(event) => {
-                    if (event.key === "ArrowRight") {
-                      event.preventDefault();
-                      moveButtonFocus("add", "right");
-                    }
-                    if (event.key === "ArrowLeft") {
-                      event.preventDefault();
-                      moveButtonFocus("add", "left");
-                    }
-                    if (event.key === "ArrowUp") {
-                      event.preventDefault();
-                      operationInputRef.current?.focus();
-                    }
-                  }}
-                  aria-label="Add value">
-                  +
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Ajouter</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  ref={subtractButtonRef}
-                  type="button"
-                  size="sm"
-                  variant="default"
-                  disabled={!canApply}
-                  onClick={() => applyOperation("subtract")}
-                  onKeyDown={(event) => {
-                    if (event.key === "ArrowRight") {
-                      event.preventDefault();
-                      moveButtonFocus("subtract", "right");
-                    }
-                    if (event.key === "ArrowLeft") {
-                      event.preventDefault();
-                      moveButtonFocus("subtract", "left");
-                    }
-                    if (event.key === "ArrowUp") {
-                      event.preventDefault();
-                      operationInputRef.current?.focus();
-                    }
-                  }}
-                  aria-label="Subtract value">
-                  -
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Soustraire</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  ref={setButtonRef}
-                  type="button"
-                  size="sm"
-                  variant="default"
-                  disabled={!canApply}
-                  onClick={() => applyOperation("set")}
-                  onKeyDown={(event) => {
-                    if (event.key === "ArrowRight") {
-                      event.preventDefault();
-                      moveButtonFocus("set", "right");
-                    }
-                    if (event.key === "ArrowLeft") {
-                      event.preventDefault();
-                      moveButtonFocus("set", "left");
-                    }
-                    if (event.key === "ArrowUp") {
-                      event.preventDefault();
-                      operationInputRef.current?.focus();
-                    }
-                  }}
-                  aria-label="Set value">
-                  =
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Affecter</TooltipContent>
-            </Tooltip>
+            <Button
+              ref={addButtonRef}
+              type="button"
+              size="sm"
+              variant="default"
+              disabled={!canApply}
+              onClick={() => applyOperation("add")}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowRight") {
+                  event.preventDefault();
+                  moveButtonFocus("add", "right");
+                }
+                if (event.key === "ArrowLeft") {
+                  event.preventDefault();
+                  moveButtonFocus("add", "left");
+                }
+                if (event.key === "ArrowUp") {
+                  event.preventDefault();
+                  operationInputRef.current?.focus();
+                }
+              }}
+              aria-label="Ajouter">
+              +
+            </Button>
+            <Button
+              ref={subtractButtonRef}
+              type="button"
+              size="sm"
+              variant="default"
+              disabled={!canApply}
+              onClick={() => applyOperation("subtract")}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowRight") {
+                  event.preventDefault();
+                  moveButtonFocus("subtract", "right");
+                }
+                if (event.key === "ArrowLeft") {
+                  event.preventDefault();
+                  moveButtonFocus("subtract", "left");
+                }
+                if (event.key === "ArrowUp") {
+                  event.preventDefault();
+                  operationInputRef.current?.focus();
+                }
+              }}
+              aria-label="Soustraire">
+              -
+            </Button>
+            <Button
+              ref={setButtonRef}
+              type="button"
+              size="sm"
+              variant="default"
+              disabled={!canApply}
+              onClick={() => applyOperation("set")}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowRight") {
+                  event.preventDefault();
+                  moveButtonFocus("set", "right");
+                }
+                if (event.key === "ArrowLeft") {
+                  event.preventDefault();
+                  moveButtonFocus("set", "left");
+                }
+                if (event.key === "ArrowUp") {
+                  event.preventDefault();
+                  operationInputRef.current?.focus();
+                }
+              }}
+              aria-label="Affecter">
+              =
+            </Button>
           </div>
         </div>
       )}
