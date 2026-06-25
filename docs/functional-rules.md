@@ -3251,6 +3251,38 @@ Each initiative tracker row carries:
 
 ---
 
+## FR-tooltip-accessibility: Tooltip Accessibility and Mobile Popover
+
+**Rule**: Any tooltip conveying information (not purely decorative) MUST be accessible on devices that do not support hover (touch screens: mobile, tablet).
+
+**Requirements**:
+
+- All tooltip trigger elements MUST have `cursor-help` applied.
+- On touch devices (`@media (hover: none)`), a visible `?` button MUST appear alongside the trigger element; tapping it opens a Popover with the same content as the tooltip.
+- The `InfoTooltip` component (`components/ui/info-tooltip.tsx`) MUST be used for all tooltips that convey contextual information, replacing bare `Tooltip`/`TooltipTrigger`/`TooltipContent` usage on informational elements.
+- Repeated identical icons (e.g., SRD badge, "Validated by Chariot" badge) that appear on every item in a list MUST be explained once via a visible **legend** (static labeled row) rather than per-item tooltips.
+- Tooltips that are **redundant** with an immediately visible label or with an `aria-label` identical to the tooltip content MUST be removed; the `aria-label` alone is sufficient for screen readers.
+- Tooltips on **disabled** interactive elements (explaining why the element is disabled) are exempt from the InfoTooltip migration when the element cannot receive focus; they SHOULD still be converted to InfoTooltip to support touch devices.
+- The `?` button MUST be hidden on devices with fine pointer / hover capability via `[@media(hover:hover)]:hidden`; it MUST be visible on touch/coarse pointer devices.
+- The Popover content MUST be responsive: `max-w-[min(20rem,calc(100vw-2rem))]`, positioned to avoid viewport overflow.
+
+**Prohibitions**:
+
+- Do NOT use raw `Tooltip`/`TooltipTrigger`/`TooltipContent` for informational content without also providing mobile access via `InfoTooltip` or a visible legend.
+- Do NOT add per-item tooltips for icons that repeat identically across list items — use a legend instead.
+- Do NOT hardcode tooltip/aria-label strings in English for a French-primary UI; use `useTranslations` or pass i18n-resolved strings.
+
+**Tests**:
+
+- Nominal: `InfoTooltip` renders children + hidden `?` button on DOM; tooltip visible on hover (desktop simulation).
+- Edge: `?` button is visible when `@media (hover: none)` is active (touch simulation); Popover opens on click.
+- Regression: no raw `Tooltip` wrapping icon-only informational elements without a corresponding `InfoTooltip` or legend.
+
+**References**:
+
+- `services/web/client/src/components/ui/info-tooltip.tsx`
+- `services/web/client/src/components/ui/popover.tsx`
+- `services/web/client/src/components/ui/tooltip.tsx`
 ## FR-session-lobby-wheel-deposit: Dépôt et retrait de wheels dans le lobby de session
 
 **Règle** : Le lobby de session (FR-session-lobby-modal) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
