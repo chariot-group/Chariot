@@ -110,13 +110,7 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
                 </span>
               </div>
               <div className="text-xs text-muted-foreground leading-tight">
-                {/* Abréviation en layout 2 colonnes (≥1440px), nom complet en layout 1 colonne */}
-                <abbr
-                  className="hidden min-[1440px]:inline no-underline"
-                  title={t(`abilities.${abilityKey}`)}>
-                  {t(`abilitiesAbbr.${abilityKey}`)}
-                </abbr>
-                <span className="min-[1440px]:hidden">{t(`abilities.${abilityKey}`)}</span>
+                {t(`abilities.${abilityKey}`)}
               </div>
             </div>
 

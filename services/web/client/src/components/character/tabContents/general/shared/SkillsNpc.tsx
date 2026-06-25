@@ -72,13 +72,7 @@ export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
                 <p className="text-sm leading-tight truncate">{skillFullName}</p>
               </div>
               <p className="text-xs text-muted-foreground leading-tight">
-                {/* Abréviation en layout 2 colonnes (≥1440px), nom complet en layout 1 colonne */}
-                <abbr
-                  className="hidden min-[1440px]:inline no-underline"
-                  title={t(`abilities.${ability}`)}>
-                  {t(`abilitiesAbbr.${ability}`)}
-                </abbr>
-                <span className="min-[1440px]:hidden">{t(`abilities.${ability}`)}</span>
+                {t(`abilities.${ability}`)}
               </p>
             </div>
 
