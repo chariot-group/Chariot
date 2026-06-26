@@ -1,5 +1,51 @@
 # Changelog
 
+## [2.8.0] - 26-06-2026
+
+### Added
+- Added QR code and invite links in the session lobby so players can scan or copy a link to join
+- Added external quick links on campaigns: GM can add, edit, and remove custom sidebar links with icons
+- Added character sheet avatar images: upload from the sheet header, displayed on sheets, initiative tracker, and session lobby
+- Added profile photos: upload and display a user avatar on the profile page and in sessions
+- Added new media service for secure image upload, processing, and presigned delivery (character avatars and user profile photos)
+- Added ability/trait usage counters aligned with spell slots: abilities with a counter show max uses and decrement on use from the sheet view
+- Added dual-range support for action reach (e.g. `24/96` ft/m)
+- Added contextual help visible on all devices: info tooltips open on tap on mobile and tablet, not hover-only
+- Added visual feedback at checkout when a promo code cannot be applied (expired, minimum purchase not met, not yet active, etc.)
+- Added session wheel deposit bar in the redesigned session lobby
+
+### Changed
+- Session lobby moved from a full page to a modal with a complete visual redesign
+- In-app navigation now uses the Next.js router instead of `window.location.href` for smoother transitions and correct locale handling
+- Version number moved from the sidebar footer to the profile "What's new" section alongside release notes
+- Short and long rest actions are no longer available outside an active session
+- Referral section redesigned: clearer tier progress, rules, and copy-link actions for sponsor and referee
+- Functional rule identifiers migrated from numeric IDs (`FR-001` …) to semantic slugs (`FR-domain-feature`) for easier maintenance
+- Docker dev compose configuration adjusted to reduce local performance degradation
+
+### Fixed
+- Fixed archive group confirmation toast always appearing in English regardless of user language
+- Fixed empty GM space after deleting all campaigns: user is now redirected to the player area
+- Fixed ability/trait description textarea border being clipped in forms
+- Fixed ability/trait counter input requiring a value: empty now means no counter (unlimited)
+- Fixed history tab size fields: unit conversion and display corrected across all impacted inputs
+- Fixed history tab weight fields: spinner arrows now work correctly
+- Fixed action range input fields: entry issues resolved and dual-range values accepted
+- Fixed Codex French spell names: "Moquerie vicieuse" → "Moquerie cruelle", "Charmer une personne" → "Charme personne", "Rire horrible de Tasha" → "Four rire de Tasha"; removed non-existent "Murmure dissonant" and "Couronne du dément" entries
+- Fixed spell slot counter input requiring a value: empty now means no slot tracking for that level
+- Fixed character form not pre-selecting a first class, making "add a second class" confusing
+- Fixed coin input display glitch on certain viewports in character forms
+- Fixed spell slot fields too narrow on mobile
+- Fixed session join code input cropped on small screens
+- Fixed "Close session" button hover turning text black
+- Fixed "Niv." level abbreviation shown in all languages instead of the localized short label
+- Fixed long participant and character names cropped on mobile in the session lobby
+- Fixed character creation dialog not responsive on small screens (beta hotfix)
+- Fixed session auto-closing when all players were inactive for too long (beta hotfix)
+- Fixed GM unable to open player character sheets during a session ("page not found" redirect) (beta hotfix)
+- Fixed promo code exploit allowing stacked discounts beyond intended limits
+- Fixed promo code resolution returning unclear errors; explicit messages now shown for each failure reason
+
 ## [2.7.1] - 20-06-2026
 
 ### Fixed
