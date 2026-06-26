@@ -1,6 +1,7 @@
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { StoredUnitNumberInput } from "@/components/ui/stored-unit-number-input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { Cake, Eye, PersonStanding, Ruler, Scale, Scissors } from "lucide-react";
@@ -164,13 +165,15 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                     />
                     {t("height")} <span className="text-muted-foreground font-normal">({heightLabel})</span>
                   </label>
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    min={0}
-                    value={field.value != null && field.value !== "" ? displayHeight(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toHeightFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayHeight}
+                    toStored={toHeightFeet}
                     id="appearance-height"
                     tabIndex={4}
+                    min={0}
                     step={0.1}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-height-error" : undefined}
@@ -204,14 +207,16 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                     />
                     {t("weight")} <span className="text-muted-foreground font-normal">({weightLabel})</span>
                   </label>
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    min={0}
-                    step={0.1}
-                    value={field.value != null && field.value !== "" ? displayWeight(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toWeightLbs(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayWeight}
+                    toStored={toWeightLbs}
                     id="appearance-weight"
                     tabIndex={5}
+                    min={0}
+                    step={0.1}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-weight-error" : undefined}
                     placeholder={`${t("weight")} (${weightLabel})`}

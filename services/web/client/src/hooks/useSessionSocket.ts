@@ -22,12 +22,14 @@ import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipant
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
     clearCurrentSession,
+    closeSessionLobby,
     mergeSessionParticipantDisplayNames,
     selectIsInSession,
     selectSessionParticipants,
     setSessionParticipants,
     setSessionStatus,
     setSessionExpiresAt,
+    selectSessionTokensByUser,
     setSessionTokensByUser,
     touchRemoteCharacterSheet,
 } from "@/store/slices/sessionSlice";
@@ -42,32 +44,44 @@ import {
 import { removePlayerFromCampaignGroupsOnSessionLeave } from "@/lib/removePlayerFromCampaignGroupsOnSessionLeave";
 import { requestSessionRosterHttpSync } from "@/lib/sessionCharacterSyncBridge";
 import { invalidateCache as invalidateGroupCache } from "@/store/slices/groupSlice";
-import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
+import { mergeParticipantsPreserveCharacterIds, participantsStableKey } from "@/lib/sessionParticipantMerge";
 import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { updateUser } from "@/store/slices/userSlice";
 import NavigationService from "@/services/NavigationService";
+import { computeDepositRemainingAmount, computeMaxAddableWheels } from "@/lib/sessionWheelDeposit";
 
 type SessionErrorPayload = { code?: string; message?: string };
 
-function toastTokenDepositError(
+function toastWheelDepositError(
     toast: ReturnType<typeof useToast>,
-    translate: (key: string) => string,
+    translate: (key: string, values?: Record<string, string | number>) => string,
     error?: SessionErrorPayload,
 ) {
     switch (error?.code) {
         case "INSUFFICIENT_TOKEN_BALANCE":
-            toast.error(translate("toast.insufficientTokenBalance"));
+            toast.error(translate("toast.insufficientWheelBalance"));
             return;
         case "TOKEN_LIMIT_REACHED":
-            toast.error(translate("toast.tokenLimitReached"));
+            toast.error(translate("toast.wheelLimitReached"));
             return;
         case "BALANCE_CHECK_FAILED":
-            toast.error(translate("toast.tokenBalanceCheckError"));
+            toast.error(translate("toast.wheelBalanceCheckError"));
             return;
         default:
-            toast.error(translate("toast.addTokenError"));
+            toast.error(translate("toast.addWheelError"));
     }
+}
+
+function toastWheelRemoveError(
+    toast: ReturnType<typeof useToast>,
+    translate: (key: string) => string,
+) {
+    toast.error(translate("toast.removeWheelError"));
+}
+
+function registerWheelSocketErrorOnce(socket: Socket, onError: (error: SessionErrorPayload) => void) {
+    socket.once("session:error", onError);
 }
 
 interface UseSessionSocketOptions {
@@ -80,8 +94,6 @@ interface UseSessionSocketOptions {
     participants: SessionParticipant[];
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
-    tokensByUser: Record<string, number>;
-    setTokensByUser: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 export function useSessionSocket({
@@ -93,11 +105,10 @@ export function useSessionSocket({
     participants,
     setParticipants,
     fetchCharacterDetails,
-    tokensByUser,
-    setTokensByUser,
 }: UseSessionSocketOptions) {
     const dispatch = useAppDispatch();
     const appStore = useAppStore();
+    const tokensByUser = useAppSelector(selectSessionTokensByUser);
     const router = useRouter();
     const toast = useToast();
     const t = useTranslations("sessionPage");
@@ -115,7 +126,6 @@ export function useSessionSocket({
     const toastRef = useRef(toast);
     const tRef = useRef(t);
     const setParticipantsRef = useRef(setParticipants);
-    const setTokensByUserRef = useRef(setTokensByUser);
     const hasProcessedSessionEndRef = useRef(false);
     const [isChangingCharacter, setIsChangingCharacter] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
@@ -145,8 +155,7 @@ export function useSessionSocket({
         toastRef.current = toast;
         tRef.current = t;
         setParticipantsRef.current = setParticipants;
-        setTokensByUserRef.current = setTokensByUser;
-    }, [locale, router, toast, t, setParticipants, setTokensByUser]);
+    }, [locale, router, toast, t, setParticipants]);
 
     useEffect(() => {
         hasProcessedSessionEndRef.current = false;
@@ -178,7 +187,7 @@ export function useSessionSocket({
         destroySessionSocket();
         socketRef.current = null;
         dispatch(clearCurrentSession());
-        routerRef.current.push(`/${localeRef.current}/welcome`);
+        dispatch(closeSessionLobby());
     });
 
     useEffect(() => {
@@ -189,12 +198,11 @@ export function useSessionSocket({
     useEffect(() => {
         const fromRedux = selectSessionParticipants(appStore.getState());
         const merged = mergeParticipantsPreserveCharacterIds(fromRedux, participants);
+        if (participantsStableKey(fromRedux) === participantsStableKey(merged)) {
+            return;
+        }
         dispatch(setSessionParticipants(merged));
     }, [participants, dispatch, appStore]);
-
-    useEffect(() => {
-        dispatch(setSessionTokensByUser(tokensByUser));
-    }, [tokensByUser, dispatch]);
 
     useEffect(() => {
         if (token) {
@@ -202,14 +210,19 @@ export function useSessionSocket({
         }
     }, [token]);
 
+    const tokenRef = useRef(token);
+    useEffect(() => {
+        tokenRef.current = token;
+    }, [token]);
+
     const shouldConnectSocket = Boolean(token && code && isInSession);
 
     useEffect(() => {
-        if (!shouldConnectSocket || !token) return;
+        if (!shouldConnectSocket || !tokenRef.current) return;
 
         console.info("Attaching to shared session WebSocket pool");
 
-        const socket = acquireSessionSocket(code, token);
+        const socket = acquireSessionSocket(code, tokenRef.current);
 
         socketRef.current = socket;
 
@@ -344,7 +357,6 @@ export function useSessionSocket({
         };
 
         const onTokenUpdated = ({ tokensByUser: updatedTokens }: { tokensByUser: Record<string, number> }) => {
-            setTokensByUserRef.current(updatedTokens);
             dispatch(setSessionTokensByUser(updatedTokens));
         };
 
@@ -398,13 +410,15 @@ export function useSessionSocket({
                     const updatedUser = await UserService.addHistory(campaignNameRef.current, myTokens);
                     dispatch(updateUser({ balance: updatedUser.balance, history: updatedUser.history }));
                 } catch {
-                    toastRef.current.error(tRef.current("toast.tokenDebitError"));
+                    toastRef.current.error(tRef.current("toast.wheelDebitError"));
                 }
             }
 
             const charIdForNav =
                 myParticipantBefore?.characterId ??
                 (userId != null ? mappedParticipants?.find((p) => p.userId === userId)?.characterId : undefined);
+
+            dispatch(closeSessionLobby());
 
             if (myParticipantBefore?.status === "gameMaster") {
                 dispatch(setContextMode("gm"));
@@ -453,7 +467,7 @@ export function useSessionSocket({
             releaseSessionSocket();
             socketRef.current = null;
         };
-    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId, isInSession, token]);
+    }, [shouldConnectSocket, code, fetchCharacterDetails, dispatch, appStore, campaignId, isInSession]);
 
     const handleCharacterChange = (characterId: string) => {
         const socket = socketRef.current;
@@ -491,8 +505,8 @@ export function useSessionSocket({
                 }
             }
             dispatch(clearCurrentSession());
+            dispatch(closeSessionLobby());
             toast.info(t("toast.leaveSuccess"));
-            router.push(`/${locale}/welcome`);
         };
 
         if (socket?.connected) {
@@ -520,7 +534,7 @@ export function useSessionSocket({
         const userId = currentUser?.keycloakId;
         if (!userId) return;
         if (!socket?.connected) {
-            toast.error(t("toast.addTokenSocketError"));
+            toast.error(t("toast.addWheelSocketError"));
             return;
         }
         const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
@@ -528,8 +542,8 @@ export function useSessionSocket({
         const myDeposited = tokensByUserRef.current[userId] ?? 0;
         const balance = currentUser?.balance ?? 0;
         if (myDeposited + 1 > balance) return;
-        socket.once("session:error", (error: SessionErrorPayload) => {
-            toastTokenDepositError(toast, t, error);
+        registerWheelSocketErrorOnce(socket, (error) => {
+            toastWheelDepositError(toast, t, error);
         });
         socket.emit("session:add-token", { sessionId: code });
     };
@@ -537,25 +551,39 @@ export function useSessionSocket({
     const handleRemoveToken = () => {
         const socket = socketRef.current;
         const userId = currentUser?.keycloakId;
-        if (!userId || !socket?.connected) return;
+        if (!userId || !socket?.connected) {
+            toast.error(t("toast.addWheelSocketError"));
+            return;
+        }
         if ((tokensByUserRef.current[userId] ?? 0) <= 0) return;
+        registerWheelSocketErrorOnce(socket, () => {
+            toastWheelRemoveError(toast, t);
+        });
         socket.emit("session:remove-token", { sessionId: code });
     };
 
     const handleAddTokenAmount = (amount: number) => {
         const socket = socketRef.current;
         const userId = currentUser?.keycloakId;
-        if (!userId || !socket?.connected) return;
+        if (!userId || !socket?.connected) {
+            toast.error(t("toast.addWheelSocketError"));
+            return;
+        }
         const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
         const myDeposited = tokensByUserRef.current[userId] ?? 0;
-        const maxAdd = Math.min(
-            participantsRef.current.length - totalTokens,
-            (currentUser?.balance ?? 0) - myDeposited,
-        );
-        const actualAmount = Math.min(amount, maxAdd);
+        const maxAdd = computeMaxAddableWheels({
+            balance: currentUser?.balance ?? 0,
+            myDeposited,
+            totalDeposited: totalTokens,
+            maxSlots: participantsRef.current.length,
+        });
+        const actualAmount = Math.min(Math.max(0, Math.floor(amount)), maxAdd);
         if (actualAmount <= 0) return;
-        socket.once("session:error", (error: SessionErrorPayload) => {
-            toastTokenDepositError(toast, t, error);
+        if (actualAmount < amount) {
+            toast.info(t("toast.wheelsPartialDeposit", { added: actualAmount, requested: amount }));
+        }
+        registerWheelSocketErrorOnce(socket, (error) => {
+            toastWheelDepositError(toast, t, error);
         });
         socket.emit("session:add-tokens", { sessionId: code, amount: actualAmount });
     };
@@ -563,11 +591,32 @@ export function useSessionSocket({
     const handleRemoveTokenAmount = (amount: number) => {
         const socket = socketRef.current;
         const userId = currentUser?.keycloakId;
-        if (!userId || !socket?.connected) return;
+        if (!userId || !socket?.connected) {
+            toast.error(t("toast.addWheelSocketError"));
+            return;
+        }
         const myDeposited = tokensByUserRef.current[userId] ?? 0;
-        const actualAmount = Math.min(amount, myDeposited);
+        const actualAmount = Math.min(Math.max(0, Math.floor(amount)), myDeposited);
         if (actualAmount <= 0) return;
+        registerWheelSocketErrorOnce(socket, () => {
+            toastWheelRemoveError(toast, t);
+        });
         socket.emit("session:remove-tokens", { sessionId: code, amount: actualAmount });
+    };
+
+    const handleDepositRemaining = () => {
+        const userId = currentUser?.keycloakId;
+        if (!userId) return;
+        const totalTokens = Object.values(tokensByUserRef.current).reduce((a, b) => a + b, 0);
+        const myDeposited = tokensByUserRef.current[userId] ?? 0;
+        const remaining = computeDepositRemainingAmount({
+            balance: currentUser?.balance ?? 0,
+            myDeposited,
+            totalDeposited: totalTokens,
+            maxSlots: participantsRef.current.length,
+        });
+        if (remaining <= 0) return;
+        handleAddTokenAmount(remaining);
     };
 
     const handleLaunchSession = () => {
@@ -590,7 +639,7 @@ export function useSessionSocket({
 
     const handleDismissSessionEnd = () => {
         dispatch(clearCurrentSession());
-        router.push(`/${locale}/welcome`);
+        dispatch(closeSessionLobby());
     };
 
     const handleCloseSession = () => {
@@ -599,5 +648,20 @@ export function useSessionSocket({
         socket.emit("session:close", { sessionId: code });
     };
 
-    return { handleCharacterChange, handleLeave, handleAddToken, handleRemoveToken, handleAddTokenAmount, handleRemoveTokenAmount, handleLaunchSession, handleDismissSessionEnd, isChangingCharacter, isLeaving, isLaunching, sessionEndReason, handleCloseSession };
+    return {
+        handleCharacterChange,
+        handleLeave,
+        handleAddToken,
+        handleRemoveToken,
+        handleAddTokenAmount,
+        handleRemoveTokenAmount,
+        handleDepositRemaining,
+        handleLaunchSession,
+        handleDismissSessionEnd,
+        isChangingCharacter,
+        isLeaving,
+        isLaunching,
+        sessionEndReason,
+        handleCloseSession,
+    };
 }

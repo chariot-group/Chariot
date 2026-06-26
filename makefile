@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-web lint-fix-admin
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-media lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-media lint-fix-web lint-fix-admin
 
 # Configuration
 SERVICES_DIR := services
@@ -191,12 +191,14 @@ ifdef SERVICE
 		$(MAKE) --no-print-directory lint-session; \
 	elif [ "$(SERVICE)" = "payment" ]; then \
 		$(MAKE) --no-print-directory lint-payment; \
+	elif [ "$(SERVICE)" = "media" ]; then \
+		$(MAKE) --no-print-directory lint-media; \
 	elif [ "$(SERVICE)" = "web" ]; then \
 		$(MAKE) --no-print-directory lint-web; \
 	elif [ "$(SERVICE)" = "admin" ]; then \
 		$(MAKE) --no-print-directory lint-admin; \
 	else \
-		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|web|admin$(NC)"; \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|media|web|admin$(NC)"; \
 		exit 1; \
 	fi
 else
@@ -216,6 +218,9 @@ lint-status: ## Affiche l'état du lint de chaque service (adventure, gateway, s
 	echo ""; \
 	echo "$(BLUE)=== Lint status: payment ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-payment || status=1; \
+	echo ""; \
+	echo "$(BLUE)=== Lint status: media ===$(NC)"; \
+	$(MAKE) --no-print-directory lint-media || status=1; \
 	echo ""; \
 	echo "$(BLUE)=== Lint status: web ===$(NC)"; \
 	$(MAKE) --no-print-directory lint-web || status=1; \
@@ -245,6 +250,10 @@ lint-payment: ## Lance le lint du service payment
 	@echo "$(YELLOW)Lint payment/api...$(NC)"
 	@cd $(SERVICES_DIR)/payment/api && npm run lint
 
+lint-media: ## Lance le lint du service media
+	@echo "$(YELLOW)Lint media/api...$(NC)"
+	@cd $(SERVICES_DIR)/media/api && npm run lint
+
 lint-web: ## Lance le lint du service web
 	@echo "$(YELLOW)Lint web/client...$(NC)"
 	@cd $(SERVICES_DIR)/web/client && npm run lint
@@ -266,12 +275,14 @@ else
 		$(MAKE) --no-print-directory lint-fix-session; \
 	elif [ "$(SERVICE)" = "payment" ]; then \
 		$(MAKE) --no-print-directory lint-fix-payment; \
+	elif [ "$(SERVICE)" = "media" ]; then \
+		$(MAKE) --no-print-directory lint-fix-media; \
 	elif [ "$(SERVICE)" = "web" ]; then \
 		$(MAKE) --no-print-directory lint-fix-web; \
 	elif [ "$(SERVICE)" = "admin" ]; then \
 		$(MAKE) --no-print-directory lint-fix-admin; \
 	else \
-		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|web|admin$(NC)"; \
+		echo "$(RED)SERVICE invalide: $(SERVICE). Utilisez adventure|gateway|session|payment|media|web|admin$(NC)"; \
 		exit 1; \
 	fi
 endif
@@ -291,6 +302,10 @@ lint-fix-session: ## Lance le lint --fix du service session
 lint-fix-payment: ## Lance le lint --fix du service payment
 	@echo "$(YELLOW)Lint fix payment/api...$(NC)"
 	@cd $(SERVICES_DIR)/payment/api && npm run lint:fix
+
+lint-fix-media: ## Lance le lint --fix du service media
+	@echo "$(YELLOW)Lint fix media/api...$(NC)"
+	@cd $(SERVICES_DIR)/media/api && npm run lint:fix
 
 lint-fix-web: ## Lance le lint --fix du service web
 	@echo "$(YELLOW)Lint fix web/client...$(NC)"

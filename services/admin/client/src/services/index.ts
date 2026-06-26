@@ -11,6 +11,8 @@ export {
     filterPromoCodes,
     getPromoCodeDeactivatePath,
     getPromoCodeReactivatePath,
+    isPromoCodeEffectivelyActive,
+    isPromoCodeExpired,
     PROMO_CODE_REACTIVATE_PAYLOAD,
     PROMO_FORM_DEFAULT_VALUES,
     promoSchema,

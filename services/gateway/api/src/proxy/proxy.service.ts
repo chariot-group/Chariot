@@ -53,6 +53,8 @@ export class ProxyService {
         data: body,
         headers: cleanHeaders,
         validateStatus: () => true, // Accept all status codes
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
       });
 
       const response = await firstValueFrom(observable);

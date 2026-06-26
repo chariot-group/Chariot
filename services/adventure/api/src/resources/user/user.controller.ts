@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Req,
@@ -238,5 +239,34 @@ export class UserController {
   async addTokensInternal(@Body() body: { userId: string; amount: number }) {
     await this.userService.addTokens(body.userId, body.amount);
     return { message: `Added ${body.amount} tokens to user ${body.userId}` };
+  }
+
+  @Get('internal/:keycloakId/avatar')
+  @Public()
+  @UseGuards(InternalGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Internal: get user avatar attribute for media service',
+  })
+  async getUserAvatarInternal(
+    @Param('keycloakId') keycloakId: string,
+  ): Promise<{ avatar: string | null }> {
+    const avatar = await this.userService.getUserAvatar(keycloakId);
+    return { avatar };
+  }
+
+  @Patch('internal/:keycloakId/avatar')
+  @Public()
+  @UseGuards(InternalGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Internal: update user avatar attribute for media service',
+  })
+  async updateUserAvatarInternal(
+    @Param('keycloakId') keycloakId: string,
+    @Body() body: { avatar: string },
+  ): Promise<{ avatar: string }> {
+    await this.userService.updateUserAvatar(keycloakId, body.avatar);
+    return { avatar: body.avatar };
   }
 }

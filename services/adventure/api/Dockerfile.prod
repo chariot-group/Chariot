@@ -37,7 +37,7 @@ RUN npm ci --only=production --no-audit --no-fund
 
 # Étape 4 : Image finale de production (ultra légère)
 FROM node:26-alpine AS runner
-RUN apk upgrade --no-cache
+RUN apk upgrade --no-cache && apk add --no-cache vips
 WORKDIR /app
 
 ENV NODE_ENV=production

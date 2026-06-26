@@ -56,76 +56,17 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
     <section
       className="flex flex-col gap-2 w-full"
       aria-labelledby={headingId}>
-      <Card className="gap-3 p-4 md:px-6 h-fit flex-col items-stretch xl:flex-row xl:items-start xl:justify-between">
-        <div className="flex flex-col gap-2 min-w-0 flex-1">
+      <Card className="gap-2 p-4 md:px-6 h-fit flex flex-col min-w-0 w-full">
+        <div className="flex flex-row items-center justify-between gap-2 min-w-0">
           <h2
             id={headingId}
-            className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+            className={`min-w-0 flex-1 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {title}
           </h2>
-          <div
-            className="flex flex-wrap items-center gap-1"
-            role="group"
-            aria-label={t("usageTypePriorityGroup", { section: title })}>
-            {ACTION_USAGE_OPTIONS.map((option) => {
-              const count = usageTypeCounts[option];
-              const isAvailable = count > 0;
-              const isSelected = prioritizeUsageType === option;
-              const usageLabel = t(`usageTypeOptions.${option}`);
-
-              const button = (
-                <Button
-                  type="button"
-                  size="sm"
-                  className={`h-6 px-2 text-xs ${!isAvailable ? "opacity-45 grayscale cursor-default!" : ""}`}
-                  variant={isSelected ? "default" : "outline"}
-                  aria-disabled={!isAvailable}
-                  aria-pressed={isSelected}
-                  aria-label={t("usageTypePriorityButton", {
-                    type: usageLabel,
-                    count,
-                    selected: isSelected ? t("selected") : t("notSelected"),
-                  })}
-                  onClick={() => {
-                    if (!isAvailable) return;
-                    setPrioritizeUsageType(option);
-                  }}>
-                  <ArrowUpDown
-                    className="size-3.5"
-                    aria-hidden="true"
-                  />
-                  {`${usageLabel} (${count})`}
-                </Button>
-              );
-
-              if (!isAvailable) {
-                return (
-                  <Tooltip key={option}>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex">{button}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {t("usageTypeUnavailableTooltip", { type: usageLabel })}
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              }
-
-              return (
-                <span
-                  key={option}
-                  className="inline-flex">
-                  {button}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-        <div className="flex justify-end shrink-0 self-end xl:self-start">
           <Button
             type="button"
             variant="ghost"
-            size="icon-sm"
+            size="icon"
             onClick={() => {
               if (!hasActions) return;
               if (openAccordionValues.length > 0) {
@@ -143,11 +84,13 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
             {openAccordionValues.length > 0
               ? (
                 <ListChevronsDownUp
+                  className="size-5"
                   aria-hidden="true"
                 />
               )
               : (
                 <ListChevronsUpDown
+                  className="size-5"
                   aria-hidden="true"
                 />
               )}
@@ -155,6 +98,63 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
               {openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
             </span>
           </Button>
+        </div>
+        <div
+          className="flex flex-row flex-nowrap items-center gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="group"
+          aria-label={t("usageTypePriorityGroup", { section: title })}>
+          {ACTION_USAGE_OPTIONS.map((option) => {
+            const count = usageTypeCounts[option];
+            const isAvailable = count > 0;
+            const isSelected = prioritizeUsageType === option;
+            const usageLabel = t(`usageTypeOptions.${option}`);
+
+            const button = (
+              <Button
+                type="button"
+                size="sm"
+                className={`h-7 shrink-0 px-2 text-xs ${!isAvailable ? "opacity-45 grayscale cursor-default!" : ""}`}
+                variant={isSelected ? "default" : "outline"}
+                aria-disabled={!isAvailable}
+                aria-pressed={isSelected}
+                aria-label={t("usageTypePriorityButton", {
+                  type: usageLabel,
+                  count,
+                  selected: isSelected ? t("selected") : t("notSelected"),
+                })}
+                onClick={() => {
+                  if (!isAvailable) return;
+                  setPrioritizeUsageType(option);
+                }}>
+                <ArrowUpDown
+                  className="size-3.5 shrink-0"
+                  aria-hidden="true"
+                />
+                <span className="truncate">{`${usageLabel} (${count})`}</span>
+              </Button>
+            );
+
+            if (!isAvailable) {
+              return (
+                <Tooltip key={option}>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex max-w-full">{button}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("usageTypeUnavailableTooltip", { type: usageLabel })}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+
+            return (
+              <span
+                key={option}
+                className="inline-flex max-w-full">
+                {button}
+              </span>
+            );
+          })}
         </div>
       </Card>
       <Accordion
@@ -175,14 +175,12 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
               <Card className="gap-2 p-0 flex-col">
                 <AccordionTrigger
                   id={triggerId}
-                  className="py-3 px-3 md:py-4 md:px-6 rounded-md truncate"
+                  className="min-w-0 py-3 px-3 md:py-4 md:px-6 rounded-md"
                   aria-label={`${t("actionDetails")} ${action.name}`}>
-                  <div className="truncate flex items-center gap-1">
-                    <span className="text-base md:text-lg font-medium text-left truncate">{action.name}</span>
-                    <span className="text-base md:text-lg font-medium text-left">
-                      {` (${t(`usageTypeOptions.${usageType}`)})`}
-                    </span>
-                  </div>
+                  <span className="min-w-0 flex-1 truncate text-base md:text-lg font-medium text-left">
+                    {action.name}
+                    {` (${t(`usageTypeOptions.${usageType}`)})`}
+                  </span>
                 </AccordionTrigger>
               </Card>
               <AccordionContent>

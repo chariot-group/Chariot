@@ -43,7 +43,7 @@ export function isInitiativeTrackerPage(pathname: string): boolean {
     return pathname.endsWith("/initiativeTracker");
 }
 
-/** FR-021 — MJ : combat initialisé ou démarré, bascule fiche ↔ tracker */
+/** FR-session-combat-navigation — MJ : combat initialisé ou démarré, bascule fiche ↔ tracker */
 export function shouldGmShowReturnToSheet(input: {
     sessionStarted: boolean;
     battleInitialized: boolean;

@@ -42,17 +42,31 @@ export const PROMO_FORM_DEFAULT_VALUES: Partial<PromoFormData> = {
     isFirstOrderOnly: false,
 };
 
-/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-017. */
+/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-admin-promo-lifecycle. */
 export function getPromoCodeDeactivatePath(id: string): string {
     return `/promo-codes/${id}/deactivate`;
 }
 
-/** Path and body for PATCH reactivation. See FR-017. */
+/** Path and body for PATCH reactivation. See FR-admin-promo-lifecycle. */
 export function getPromoCodeReactivatePath(id: string): string {
     return `/promo-codes/${id}`;
 }
 
 export const PROMO_CODE_REACTIVATE_PAYLOAD = { isActive: true } as const;
+
+/** @see FR-admin-promo-expiration-display — aligned with payment validation (`now > expiresAt`). */
+export function isPromoCodeExpired(expiresAt: string | null, now: Date = new Date()): boolean {
+    if (!expiresAt) return false;
+    return now > new Date(expiresAt);
+}
+
+/** @see FR-admin-promo-expiration-display */
+export function isPromoCodeEffectivelyActive(
+    promo: Pick<PromoCode, "isActive" | "expiresAt">,
+    now: Date = new Date(),
+): boolean {
+    return promo.isActive && !isPromoCodeExpired(promo.expiresAt, now);
+}
 
 export function toPromoPayload(data: PromoFormData): Omit<PromoFormData, "expiresAt" | "minOrderAmount" | "maxTotalUses"> & {
     expiresAt?: string;
@@ -96,7 +110,7 @@ export function sortPromoCodes(promoCodes: PromoCode[], sortField: PromoSortFiel
                 cmp = (a.expiresAt ?? "9999").localeCompare(b.expiresAt ?? "9999");
                 break;
             case "isActive":
-                cmp = Number(b.isActive) - Number(a.isActive);
+                cmp = Number(isPromoCodeEffectivelyActive(b)) - Number(isPromoCodeEffectivelyActive(a));
                 break;
         }
 

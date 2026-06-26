@@ -319,7 +319,7 @@ jobs:
       - name: Send email notification (Critical)
         if: steps.severity.outputs.level == 'critical' && steps.check-mail.outputs.present == 'true'
         continue-on-error: true
-        uses: dawidd6/action-send-mail@v17
+        uses: dawidd6/action-send-mail@v18
         with:
           server_address: ${{ secrets.MAIL_SERVER }}
           server_port: ${{ secrets.MAIL_PORT }}

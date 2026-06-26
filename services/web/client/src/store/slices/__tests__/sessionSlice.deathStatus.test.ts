@@ -38,7 +38,7 @@ const seedState = (rows: InitiativeTrackerRow[]): CurrentSessionState => {
   return sessionReducer(baseState, setInitiativeTrackerRows(rows));
 };
 
-describe("FR-020 — turn engine skips dead rows", () => {
+describe("FR-tracker-vital-status — turn engine skips dead rows", () => {
   it("nominal: nextBattleTurn skips a dead row in the middle of the order", () => {
     const rows: InitiativeTrackerRow[] = [
       buildRow({ id: "a", initiative: 20 }),

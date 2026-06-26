@@ -53,4 +53,19 @@ describe("ProfilePreferencesSection", () => {
     expect(html).toContain('id="profile-locale-select"');
     expect(html).toContain('role="combobox"');
   });
+
+  it("nominal: displays app version when NEXT_PUBLIC_APP_VERSION is defined", () => {
+    process.env.NEXT_PUBLIC_APP_VERSION = "1.2.3";
+    const html = renderToStaticMarkup(<ProfilePreferencesSection onViewReleaseNotes={() => {}} />);
+
+    expect(html).toContain("Chariot v1.2.3");
+    delete process.env.NEXT_PUBLIC_APP_VERSION;
+  });
+
+  it("edge: does not display version when NEXT_PUBLIC_APP_VERSION is absent", () => {
+    delete process.env.NEXT_PUBLIC_APP_VERSION;
+    const html = renderToStaticMarkup(<ProfilePreferencesSection onViewReleaseNotes={() => {}} />);
+
+    expect(html).not.toContain("Chariot v");
+  });
 });

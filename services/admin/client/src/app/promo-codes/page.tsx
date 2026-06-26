@@ -20,6 +20,7 @@ import {
   getApiClient,
   getPromoCodeDeactivatePath,
   getPromoCodeReactivatePath,
+  isPromoCodeEffectivelyActive,
   PROMO_CODE_REACTIVATE_PAYLOAD,
   PROMO_FORM_DEFAULT_VALUES,
   promoSchema,
@@ -407,62 +408,68 @@ export default function PromoCodesPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                sorted.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>
-                      <code className="rounded bg-muted/30 px-1.5 py-0.5 text-xs font-mono text-card-foreground">
-                        {p.code}
-                      </code>
-                    </TableCell>
-                    <TableCell className="text-sm text-card-foreground">{p.name}</TableCell>
-                    <TableCell className="text-sm">
-                      {p.discountType === "PERCENTAGE" ? `${p.discountValue}%` : formatCents(p.discountValue)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {p.currentTotalUses}
-                      {p.maxTotalUses ? ` / ${p.maxTotalUses}` : ""}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {p.expiresAt ? formatDate(p.expiresAt) : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={p.isActive ? "success" : "secondary"}>{p.isActive ? "Actif" : "Inactif"}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => {
-                            setEditTarget(p);
-                            setDialogMode("edit");
-                          }}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        {p.isActive ? (
+                sorted.map((p) => {
+                  const effectivelyActive = isPromoCodeEffectivelyActive(p);
+
+                  return (
+                    <TableRow key={p.id}>
+                      <TableCell>
+                        <code className="rounded bg-muted/30 px-1.5 py-0.5 text-xs font-mono text-card-foreground">
+                          {p.code}
+                        </code>
+                      </TableCell>
+                      <TableCell className="text-sm text-card-foreground">{p.name}</TableCell>
+                      <TableCell className="text-sm">
+                        {p.discountType === "PERCENTAGE" ? `${p.discountValue}%` : formatCents(p.discountValue)}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {p.currentTotalUses}
+                        {p.maxTotalUses ? ` / ${p.maxTotalUses}` : ""}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {p.expiresAt ? formatDate(p.expiresAt) : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={effectivelyActive ? "success" : "secondary"}>
+                          {effectivelyActive ? "Actif" : "Inactif"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            aria-label={`Désactiver le code promo ${p.code}`}
-                            onClick={() => handleDeactivate(p.id, p.code)}>
-                            <PowerOff className="h-3.5 w-3.5" />
+                            className="h-7 w-7"
+                            onClick={() => {
+                              setEditTarget(p);
+                              setDialogMode("edit");
+                            }}>
+                            <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-(--green) hover:text-(--green)"
-                            aria-label={`Réactiver le code promo ${p.code}`}
-                            onClick={() => handleReactivate(p.id, p.code)}>
-                            <Power className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                          {effectivelyActive ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:text-destructive"
+                              aria-label={`Désactiver le code promo ${p.code}`}
+                              onClick={() => handleDeactivate(p.id, p.code)}>
+                              <PowerOff className="h-3.5 w-3.5" />
+                            </Button>
+                          ) : !p.isActive ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-(--green) hover:text-(--green)"
+                              aria-label={`Réactiver le code promo ${p.code}`}
+                              onClick={() => handleReactivate(p.id, p.code)}>
+                              <Power className="h-3.5 w-3.5" />
+                            </Button>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

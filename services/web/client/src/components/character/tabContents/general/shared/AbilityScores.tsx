@@ -27,24 +27,27 @@ export default function AbilityScores({ character, accentColor }: AbilityScoresP
           {t("characteristics")}
         </h2>
         <div
-          className="grid grid-cols-2 gap-2"
+          className="grid grid-cols-3 gap-x-2 gap-y-3"
           role="list"
           aria-label={t("characteristics")}>
           {character?.stats &&
             Object.entries(character?.stats?.abilityScores).map(([key, value]) => {
-              const abilityName = t(`abilities.${key}`);
               const modifier = calculateModifier(value);
+              const abbr = t(`abilitiesAbbr.${key}`);
+              const fullName = t(`abilities.${key}`);
               return (
                 <div
                   key={key}
-                  className="p-2"
-                  role="listitem">
-                  <p
-                    className="text-sm flex items-center gap-2"
-                    aria-label={`${abilityName} : ${value} (${modifier})`}>
-                    <span className="truncate">{abilityName}</span> <span className="italic">{value}</span>{" "}
-                    <span className="font-bold">({modifier})</span>
-                  </p>
+                  className="flex flex-col items-center gap-0 py-1.5 rounded-[10px] hover:bg-gray-middle-light/50 transition-colors"
+                  role="listitem"
+                  aria-label={`${fullName} : ${value} (${modifier})`}>
+                  <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground leading-none mb-1">
+                    {abbr}
+                  </span>
+                  <span className="text-2xl font-bold leading-none">{modifier}</span>
+                  <span className="text-xs font-semibold text-muted-foreground leading-none mt-1">
+                    {value}
+                  </span>
                 </div>
               );
             })}

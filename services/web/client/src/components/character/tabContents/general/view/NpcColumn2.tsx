@@ -32,7 +32,7 @@ export default function NpcColumn2({ npc, accentColor, className }: NpcColumn2Pr
           </h2>
         </Card>
         <div
-          className="grid grid-cols-2 gap-2"
+          className="grid grid-cols-3 gap-x-2 gap-y-1"
           role="list">
           {npc?.stats &&
             Object.entries(npc?.stats?.savingThrows).map(([key]) => {

@@ -6,11 +6,13 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/compone
 import SidebarEnvironment from "@/components/layout/Sidebar/SidebarEnvironment";
 import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
 import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
+import { QuickLinksList } from "@/components/layout/Sidebar/QuickLinksList";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import { selectSelectedCampaign } from "@/store/slices/campaignSlice";
 import React, { useState } from "react";
 import { useTranslations } from "use-intl";
-import { cn } from "@/lib/utils";
 
 const TOOLTIP_CURSOR_OFFSET = 4;
 
@@ -19,12 +21,14 @@ export default function AppSidebar() {
 
   const isInSession = useAppSelector(selectIsInSession);
   const sessionStatus = useAppSelector(selectSessionStatus);
-  const contextMode = useAppSelector((state) => state.environment.contextMode);
+  const contextMode = useAppSelector(selectContextMode);
+  const selectedCampaign = useAppSelector(selectSelectedCampaign);
   const isSessionLaunched = isInSession && sessionStatus === "launched";
+  const actionsDisabled = isSessionLaunched;
+  const quickLinksCampaignId = contextMode === "gm" ? (selectedCampaign?._id ?? null) : null;
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [headerTooltipVisible, setHeaderTooltipVisible] = useState(false);
   const t = useTranslations("sidebar");
-  const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
 
   const handleMouseMoveHeader = (e: React.MouseEvent) => {
     setMousePos({
@@ -45,19 +49,9 @@ export default function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent
-        className={cn(
-          "sm:bg-transparent",
-          contextMode !== "gm" && "overflow-hidden",
-        )}>
-        <div
-          className={cn(
-            contextMode !== "gm" && "flex h-full min-h-0 flex-1 flex-col",
-          )}>
-          <div
-            className={cn(
-              contextMode !== "gm" && "flex min-h-0 flex-1 flex-col",
-            )}>
+      <SidebarContent className="sm:bg-transparent overflow-hidden">
+        <div className="flex h-full min-h-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 flex-col">
             <SidebarContext />
           </div>
         </div>
@@ -75,13 +69,15 @@ export default function AppSidebar() {
         </div>
       )}
 
+      <div className="relative z-10 shrink-0 overflow-hidden bg-background px-3 pt-2 pb-2">
+        <QuickLinksList
+          campaignId={quickLinksCampaignId}
+          disabled={actionsDisabled}
+        />
+      </div>
+
       <SidebarFooter className="bg-card sm:bg-transparent">
         <ActionButton />
-        {appVersion && (
-          <p className="select-none text-center text-[10px] leading-none text-white/45">
-            Chariot v{appVersion}
-          </p>
-        )}
       </SidebarFooter>
     </Sidebar>
   );

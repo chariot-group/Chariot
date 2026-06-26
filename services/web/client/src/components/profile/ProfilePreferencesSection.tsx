@@ -51,7 +51,7 @@ export default function ProfilePreferencesSection({ onViewReleaseNotes }: Profil
 
         {onViewReleaseNotes && (
           <div className="flex flex-col gap-2.5 border-t border-white/10 pt-4 mt-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <span className="text-sm font-medium">
                 {t("releaseNotes.label")}
               </span>
@@ -63,6 +63,11 @@ export default function ProfilePreferencesSection({ onViewReleaseNotes }: Profil
                 aria-haspopup="dialog">
                 {t("releaseNotes.openButton")}
               </Button>
+              {process.env.NEXT_PUBLIC_APP_VERSION && (
+                <span className="text-[11px] text-white/40 select-none">
+                  Chariot v{process.env.NEXT_PUBLIC_APP_VERSION}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Checkbox

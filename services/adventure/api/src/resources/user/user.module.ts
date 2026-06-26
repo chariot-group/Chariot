@@ -15,6 +15,7 @@ import { InternalGuard } from '@/common/guards/internal.guard';
   exports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     UserService,
+    KeycloakService,
   ],
 })
 export class UserModule {}

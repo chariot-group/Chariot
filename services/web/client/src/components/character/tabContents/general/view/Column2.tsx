@@ -47,7 +47,7 @@ export default function Column2({ player, accentColor, className }: Column2Props
             {t("savingThrows")}
           </h2>
           <div
-            className="grid grid-cols-2 gap-2"
+            className="grid grid-cols-3 gap-x-2 gap-y-1"
             role="list">
             {player?.stats &&
               Object.entries(player?.stats?.savingThrows).map(([key]) => {

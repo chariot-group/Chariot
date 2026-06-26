@@ -23,6 +23,7 @@ services:
       ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL:-http://chariot-adventure:9000}
       SESSION_SERVICE_URL: ${SESSION_SERVICE_URL:-http://chariot-session:9002}
       PAYMENT_SERVICE_URL: ${PAYMENT_SERVICE_URL:-http://chariot-payment:9003}
+      MEDIA_SERVICE_URL: ${MEDIA_SERVICE_URL:-http://chariot-media:9005}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000,http://localhost:3001}
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}

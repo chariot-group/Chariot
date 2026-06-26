@@ -508,8 +508,57 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     };
   }, [form, handleCancel, handleInvalid, onCreate]);
 
+  const characterFooterActions = (
+    <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
+      <Button
+        type="submit"
+        form="character-create-form"
+        disabled={isSaving}
+        tabIndex={0}
+        className={`
+          max-w-full min-w-0 lg:text-sm text-xs font-semibold
+          ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
+          ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
+          ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
+          ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
+          ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+        `}
+        aria-label={tCreate("create")}
+        aria-busy={isSaving}>
+        <Save
+          className="lg:size-5 size-4 shrink-0"
+          aria-hidden="true"
+        />
+        <span className="truncate">{isSaving ? tCreate("saving") : tCreate("create")}</span>
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleCancel}
+        disabled={isSaving}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleCancel();
+          }
+        }}
+        className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+        aria-label={tCreate("cancel")}>
+        <X
+          className="lg:size-5 size-4 shrink-0"
+          aria-hidden="true"
+        />
+        <span className="truncate">{tCreate("cancel")}</span>
+      </Button>
+    </div>
+  );
+
   return (
-    <main className="flex flex-col flex-1 min-h-0 overflow-hidden overflow-x-hidden">
+    <main
+      className="flex flex-col flex-1 min-h-0 overflow-hidden"
+      id="characterCreateView">
       <form
         id="character-create-form"
         className="flex flex-col flex-1 min-h-0"
@@ -531,8 +580,8 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
                 {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
                 <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
                   {/* Ligne 1: Nom du personnage */}
-                  <div className="min-w-0 justify-start lg:justify-end flex">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
+                  <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white truncate min-w-0 max-w-full">
                       {characterType === "players" ? tCreate("titlePlayer") : tCreate("titleNpc")}
                     </h1>
                   </div>
@@ -558,8 +607,10 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
             </div>
           </div>
 
-          {/* Contenu des onglets - scrollable */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden w-full mx-auto px-2 sm:px-6 md:px-8 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+          {/* Contenu des onglets - scrollable (min-h-0 pour que les enfants h-full / flex-1 se calent sur la hauteur utile) */}
+          <div
+            id="characterScrollView"
+            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
             <CharacterTabPanels
               character={placeholderCharacter}
               form={form}
@@ -568,54 +619,8 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           </div>
         </Tabs>
 
-        {/* Footer avec boutons - fixe en bas */}
-        <div className="shrink-0 w-full px-2 sm:px-6 md:px-10 lg:py-3 py-2 border-t border-transparent">
-          <div className="w-full mx-auto flex flex-row-reverse gap-4">
-            {/* Bouton Créer */}
-            <Button
-              type="submit"
-              form="character-create-form"
-              disabled={isSaving}
-              tabIndex={0}
-              className={`
-          lg:text-sm text-xs font-semibold
-          ${activeTab === "general" ? "bg-blue hover:bg-blue/90 text-black" : ""}
-          ${activeTab === "battle" ? "bg-red hover:bg-red/90 text-white" : ""}
-          ${activeTab === "magic" ? "bg-pink hover:bg-pink/90 text-black" : ""}
-          ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/90 text-black" : ""}
-          ${activeTab === "history" ? "bg-green hover:bg-green/90 text-black" : ""}
-        `}
-              aria-label={tCreate("create")}
-              aria-busy={isSaving}>
-              <Save
-                className="lg:size-5 size-4"
-                aria-hidden="true"
-              />
-              {isSaving ? tCreate("saving") : tCreate("create")}
-            </Button>
-
-            {/* Bouton Annuler */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSaving}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleCancel();
-                }
-              }}
-              className="lg:text-sm text-xs font-semibold"
-              aria-label={tCreate("cancel")}>
-              <X
-                className="lg:size-5 size-4"
-                aria-hidden="true"
-              />
-              {tCreate("cancel")}
-            </Button>
-          </div>
+        <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+          <div className="flex w-full justify-end">{characterFooterActions}</div>
         </div>
       </form>
     </main>

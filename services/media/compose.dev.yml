@@ -1,0 +1,72 @@
+services:
+  chariot-minio:
+    image: minio/minio:latest
+    container_name: chariot-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-chariot_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-chariot_minio_secret}
+    volumes:
+      - chariot_minio_data:/data
+    ports:
+      - "9004:9000"
+      - "9006:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - media-network
+
+  chariot-media:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: chariot-media
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+      - ./api/logger/logs:/app/logger/logs
+    ports:
+      - "9005:9005"
+    environment:
+      NODE_ENV: development
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-chariot-app}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      ADVENTURE_INTERNAL_URL: ${ADVENTURE_INTERNAL_URL:-http://chariot-adventure:9000}
+      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://chariot-session:9002}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://chariot-minio:9000}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9004}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-chariot_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-chariot_minio_secret}
+      MINIO_BUCKET: ${MINIO_BUCKET:-chariot-media}
+      MEDIA_PRESIGNED_TTL_SECONDS: ${MEDIA_PRESIGNED_TTL_SECONDS:-1800}
+    depends_on:
+      chariot-minio:
+        condition: service_healthy
+    networks:
+      - media-network
+      - chariot-group-network
+    extra_hosts:
+      - "localhost:host-gateway"
+
+volumes:
+  chariot_minio_data:
+
+networks:
+  media-network:
+    driver: bridge
+  chariot-group-network:
+    external: true
