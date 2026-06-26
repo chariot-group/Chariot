@@ -174,6 +174,34 @@ export class KeycloakService {
     }
   }
 
+  async updateUserAttributes(
+    keycloakId: string,
+    attributes: Record<string, string[]>,
+  ): Promise<void> {
+    await this.authenticate();
+
+    const realm = this.configService.get<string>('KEYCLOAK_REALM', this.realm);
+
+    const existing = await this.adminClient.users.findOne({
+      realm,
+      id: keycloakId,
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`User not found: ${keycloakId}`);
+    }
+
+    await this.adminClient.users.update(
+      { realm, id: keycloakId },
+      {
+        attributes: {
+          ...(existing.attributes ?? {}),
+          ...attributes,
+        },
+      },
+    );
+  }
+
   async updateUser(
     keycloakId: string,
     userData: { firstName?: string; lastName?: string; email?: string },

@@ -45,12 +45,16 @@ export function CharacterSelect({
       onValueChange={onValueChange}
       disabled={disabled}>
       <SelectTrigger className={cn("w-full", CHARACTER_SELECT_TRIGGER_CLASS, triggerClassName)}>
-        <SelectValue placeholder={placeholder}>
-          {selectedLabel && value ? selectedLabel : null}
-        </SelectValue>
+        {selectedLabel ? (
+          <SelectValue placeholder={placeholder}>{value ? selectedLabel : undefined}</SelectValue>
+        ) : (
+          <SelectValue placeholder={placeholder} />
+        )}
       </SelectTrigger>
       <SelectContent
+        position="popper"
         align="start"
+        sideOffset={4}
         className={cn("max-h-60 min-w-[var(--radix-select-trigger-width)]", contentClassName)}>
         {characters.map((character) => {
           const label = getCharacterItemLabel(character);

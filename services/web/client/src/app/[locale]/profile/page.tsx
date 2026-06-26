@@ -154,6 +154,7 @@ export default function ProfilePage() {
             isLoading={isLoadingProfile}
             onSubmit={onUpdate}
             onCancel={onCancel}
+            onAvatarChange={() => void refreshUser()}
           />
         )}
 

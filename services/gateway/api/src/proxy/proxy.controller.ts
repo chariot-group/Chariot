@@ -111,3 +111,15 @@ export class PaymentProxyController {
     await handleProxy(req, res, "payment", /^\/payment/, this.proxyService, this.logger);
   }
 }
+
+@Controller("api/media")
+export class MediaProxyController {
+  private readonly logger = new Logger(MediaProxyController.name);
+
+  constructor(private readonly proxyService: ProxyService) {}
+
+  @All("*")
+  async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
+    await handleProxy(req, res, "media", /^\/api/, this.proxyService, this.logger);
+  }
+}

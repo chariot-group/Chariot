@@ -24,6 +24,12 @@ import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
 import { CombatBanner } from "@/components/character/CombatBanner";
+import { MediaAvatar } from "@/components/media/MediaAvatar";
+import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
+import MediaService from "@/services/MediaService";
+import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
+import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
+import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -39,6 +45,7 @@ export default function CharacterDetailView({
   onCharacterUpdate,
 }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
+  const tForm = useTranslations("characterForm");
   const tClass = useTranslations("classes");
   const tCommon = useTranslations("common");
   const toast = useToast();
@@ -69,6 +76,11 @@ export default function CharacterDetailView({
     playedBySubjectId != null && resolvedPlayedBy != null && resolvedPlayedBy.createdByKey === playedBySubjectId
       ? resolvedPlayedBy.label
       : null;
+
+  const sessionCodeForMedia = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
+
+  const characterDisplayName =
+    `${character.firstname ?? ""} ${character.lastname ?? ""}`.trim() || t("placeholder.noImage");
 
   const canEditAsGm = useMemo(
     () => isGmViewingPlayerSheet && isInSession && !!sessionCodeFromUrl && sessionCodeFromUrl === sessionCodeRedux,
@@ -114,15 +126,142 @@ export default function CharacterDetailView({
   const { errors, isDirty } = useFormState({ control: form.control });
   const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
 
+  const [pendingAvatarFile, setPendingAvatarFile] = React.useState<File | null>(null);
+  const [pendingAvatarRemove, setPendingAvatarRemove] = React.useState(false);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = React.useState<string | null>(null);
+  const [isAvatarCommitting, setIsAvatarCommitting] = React.useState(false);
+
+  const isAvatarDirty = pendingAvatarFile !== null || pendingAvatarRemove;
+  const hasPendingChanges = isDirty || isAvatarDirty;
+
+  const resetAvatarDraft = React.useCallback(() => {
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+    }
+    setAvatarPreviewUrl(null);
+    setPendingAvatarFile(null);
+    setPendingAvatarRemove(false);
+  }, [avatarPreviewUrl]);
+
+  const handlePendingAvatarFile = React.useCallback(
+    (file: File) => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+      setPendingAvatarFile(file);
+      setPendingAvatarRemove(false);
+      setAvatarPreviewUrl(URL.createObjectURL(file));
+    },
+    [avatarPreviewUrl],
+  );
+
+  const handlePendingAvatarRemove = React.useCallback(() => {
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+    }
+    setPendingAvatarFile(null);
+    setPendingAvatarRemove(true);
+    setAvatarPreviewUrl(null);
+  }, [avatarPreviewUrl]);
+
+  const handleCharacterSave = React.useCallback(
+    async (data: Parameters<typeof onUpdate>[0]) => {
+      form.clearErrors();
+      const isValid = await form.trigger(undefined, { shouldFocus: true });
+      if (!isValid) {
+        toast.error(tForm("updateError"));
+        return;
+      }
+
+      let avatarChanged = false;
+      let newAvatar = character.avatar;
+
+      try {
+        if (pendingAvatarFile) {
+          setIsAvatarCommitting(true);
+          const result = await MediaService.uploadCharacterAvatar(
+            character._id,
+            pendingAvatarFile,
+            sessionCodeForMedia,
+          );
+          newAvatar = result.avatar;
+          avatarChanged = true;
+          invalidateMediaAvatarCache("character", character._id);
+        } else if (pendingAvatarRemove && character.avatar?.trim()) {
+          setIsAvatarCommitting(true);
+          const result = await MediaService.deleteCharacterAvatar(character._id, sessionCodeForMedia);
+          newAvatar = result.avatar;
+          avatarChanged = true;
+          invalidateMediaAvatarCache("character", character._id);
+        }
+
+        if (avatarChanged) {
+          form.setValue("avatar", newAvatar ?? "");
+          if (onCharacterUpdate) {
+            onCharacterUpdate({ ...character, avatar: newAvatar });
+          }
+        }
+
+        const updatePayload = { ...data } as Record<string, unknown>;
+        delete updatePayload.avatar;
+
+        await onUpdate(updatePayload as Parameters<typeof onUpdate>[0]);
+
+        resetAvatarDraft();
+
+        if (avatarChanged) {
+          const snap = getSessionSnapshotForBroadcast();
+          if (snap) {
+            emitCharacterSheetUpdated(snap.code, character._id);
+          }
+        }
+      } catch {
+        toast.error(tForm("updateError"));
+      } finally {
+        setIsAvatarCommitting(false);
+      }
+    },
+    [
+      character,
+      form,
+      onCharacterUpdate,
+      onUpdate,
+      pendingAvatarFile,
+      pendingAvatarRemove,
+      resetAvatarDraft,
+      sessionCodeForMedia,
+      tForm,
+      toast,
+    ],
+  );
+
+  const handleCancelEditor = React.useCallback(() => {
+    resetAvatarDraft();
+    onCancel();
+    setIsEditing(false);
+  }, [onCancel, resetAvatarDraft, setIsEditing]);
+
+  React.useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
+
+  const editingAvatarStoredValue = pendingAvatarRemove ? "" : form.watch("avatar") || character.avatar;
+
+  const displayedAvatarStoredValue = form.watch("avatar") || character.avatar;
+
   const handleInvalid = React.useCallback(
     (errors: Record<string, unknown>) => {
       const firstErrorTab = getFirstCharacterTabWithError(errors);
       if (firstErrorTab && firstErrorTab !== activeTab) {
         handleTabChange(firstErrorTab);
       }
-      toast.error(t("updateError"));
+      toast.error(tForm("updateError"));
     },
-    [activeTab, handleTabChange, t, toast],
+    [activeTab, handleTabChange, tForm, toast],
   );
 
   useEffect(() => {
@@ -151,10 +290,9 @@ export default function CharacterDetailView({
 
   useEffect(() => {
     if (!showEditControls && isEditing) {
-      onCancel();
-      setIsEditing(false);
+      handleCancelEditor();
     }
-  }, [showEditControls, isEditing, onCancel, setIsEditing]);
+  }, [showEditControls, isEditing, handleCancelEditor]);
 
   // Si on arrive avec mode=edit (création depuis la sidebar, ou autre lien), ouvrir directement en édition
   useEffect(() => {
@@ -175,17 +313,16 @@ export default function CharacterDetailView({
       if (event.key === "Escape" && isEditing) {
         event.preventDefault();
         event.stopPropagation();
-        onCancel();
-        setIsEditing(false);
+        handleCancelEditor();
         return;
       }
 
       if (!isEditing || !isEnterWithoutModifiers(event) || isTypingInInputElement(event.target)) return;
-      if (!isDirty) return;
+      if (!hasPendingChanges) return;
 
       event.preventDefault();
       event.stopPropagation();
-      form.handleSubmit(onUpdate, handleInvalid)();
+      form.handleSubmit(handleCharacterSave, handleInvalid)();
     };
 
     window.addEventListener("keydown", handleGlobalShortcuts, true);
@@ -193,7 +330,7 @@ export default function CharacterDetailView({
     return () => {
       window.removeEventListener("keydown", handleGlobalShortcuts, true);
     };
-  }, [form, handleInvalid, isDirty, isEditing, onCancel, onUpdate, setIsEditing]);
+  }, [form, handleCharacterSave, handleCancelEditor, handleInvalid, hasPendingChanges, isEditing]);
 
   const characterFooterActions = showEditControls ? (
     <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
@@ -202,7 +339,7 @@ export default function CharacterDetailView({
           <Button
             type="submit"
             form="character-update-form"
-            disabled={isSaving || !isDirty}
+            disabled={isSaving || isAvatarCommitting || !hasPendingChanges}
             tabIndex={0}
             className={`
               max-w-full min-w-0 lg:text-sm text-xs font-semibold
@@ -213,27 +350,23 @@ export default function CharacterDetailView({
               ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
             `}
             aria-label={t("saveChanges")}
-            aria-busy={isSaving}>
+            aria-busy={isSaving || isAvatarCommitting}>
             <Save
               className="lg:size-5 size-4 shrink-0"
               aria-hidden="true"
             />
-            <span className="truncate">{isSaving ? t("saving") : t("saveChanges")}</span>
+            <span className="truncate">{isSaving || isAvatarCommitting ? t("saving") : t("saveChanges")}</span>
           </Button>
           <Button
             type="button"
             variant="outline"
-            onClick={() => {
-              onCancel();
-              setIsEditing(false);
-            }}
-            disabled={isSaving}
+            onClick={handleCancelEditor}
+            disabled={isSaving || isAvatarCommitting}
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                onCancel();
-                setIsEditing(false);
+                handleCancelEditor();
               }
             }}
             className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
@@ -288,7 +421,7 @@ export default function CharacterDetailView({
             return;
           }
 
-          form.handleSubmit(onUpdate, handleInvalid)(event);
+          form.handleSubmit(handleCharacterSave, handleInvalid)(event);
         }}
         onKeyDown={(event) => {
           if (isEnterWithModifiers(event)) {
@@ -305,73 +438,103 @@ export default function CharacterDetailView({
             <div className="mx-auto sm:px-6 md:px-8 px-2">
               <div className="w-full flex flex-col lg:flex-row-reverse lg:justify-between gap-2">
                 {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
-                <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
-                  {/* Ligne 1: Nom du personnage */}
-                  <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center gap-2">
-                    <InfoTooltip
-                      content={
-                        <div className="flex flex-col gap-1">
-                          <span>
-                            {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
-                          </span>
+                <div className="flex flex-row items-start gap-3 min-w-0 lg:max-w-[50%] lg:ml-auto">
+                  <div className="flex flex-col gap-1 min-w-0 flex-1">
+                    {/* Ligne 1: Nom du personnage */}
+                    <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center gap-2">
+                      <InfoTooltip
+                        content={
+                          <div className="flex flex-col gap-1">
+                            <span>
+                              {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
+                            </span>
+                            {isGmViewingPlayerSheet && playedByLabel ? (
+                              <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
+                            ) : null}
+                          </div>
+                        }
+                        side="bottom"
+                        align="start">
+                        <div className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
+                          <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
+                            {character.firstname?.trim()} {character.lastname?.trim()}{" "}
+                          </h1>
+                          {character.surname && (
+                            <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
+                              ({character.surname?.trim()})
+                            </span>
+                          )}
+                        </div>
+                      </InfoTooltip>
+                    </div>
+
+                    {/* Ligne 2: Surnom + Classe/CR + Groupe */}
+                    <div className="flex flex-col gap-2 text-sm items-start lg:items-end justify-end">
+                      {isPlayer(character) ? (
+                        <div className="flex flex-col gap-1 text-white font-semibold items-start lg:items-end">
+                          <div>
+                            {character.class.map((cls: { name: string; level: number }, index: number) => (
+                              <span key={index}>
+                                {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
+                                {index < character.class.length - 1 && " / "}
+                              </span>
+                            ))}
+                          </div>
                           {isGmViewingPlayerSheet && playedByLabel ? (
-                            <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
+                            <span className="text-xs font-normal text-gray-light">
+                              {t("playedBy", { name: playedByLabel })}
+                            </span>
                           ) : null}
                         </div>
-                      }
-                      side="bottom"
-                      align="start">
-                      <div className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
-                          {character.firstname?.trim()} {character.lastname?.trim()}{" "}
-                        </h1>
-                        {character.surname && (
-                          <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
-                            ({character.surname?.trim()})
-                          </span>
-                        )}
-                      </div>
-                    </InfoTooltip>
+                      ) : (
+                        <div className="text-white font-semibold">
+                          {(() => {
+                            const challengeRating = character.challenge?.challengeRating ?? 0;
+                            const experiencePoints = character.challenge?.experiencePoints ?? 0;
+                            const displayChallengeRating = formatChallengeRating(challengeRating);
+
+                            return (
+                              <React.Fragment>
+                                <InfoTooltip
+                                  content={tCommon("challengeRatingTooltip")}
+                                  side="bottom"
+                                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                                  <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
+                                </InfoTooltip>{" "}
+                                {displayChallengeRating} ({experiencePoints} XP)
+                              </React.Fragment>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Ligne 2: Surnom + Classe/CR + Groupe */}
-                  <div className="flex flex-col gap-2 text-sm items-start lg:items-end justify-end">
-                    {isPlayer(character) ? (
-                      <div className="flex flex-col gap-1 text-white font-semibold items-start lg:items-end">
-                        <div>
-                          {character.class.map((cls: { name: string; level: number }, index: number) => (
-                            <span key={index}>
-                              {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
-                              {index < character.class.length - 1 && " / "}
-                            </span>
-                          ))}
-                        </div>
-                        {isGmViewingPlayerSheet && playedByLabel ? (
-                          <span className="text-xs font-normal text-gray-light">
-                            {t("playedBy", { name: playedByLabel })}
-                          </span>
-                        ) : null}
-                      </div>
+                  <div className="shrink-0 self-start">
+                    {isEditing && showEditControls ? (
+                      <MediaAvatarUpload
+                        scope="character"
+                        entityId={character._id}
+                        storedValue={editingAvatarStoredValue}
+                        sessionCode={sessionCodeForMedia}
+                        size="sheet"
+                        alt={characterDisplayName}
+                        deferUpload
+                        previewUrl={avatarPreviewUrl}
+                        onPendingFile={handlePendingAvatarFile}
+                        onPendingRemove={handlePendingAvatarRemove}
+                        disabled={isSaving || isAvatarCommitting}
+                      />
                     ) : (
-                      <div className="text-white font-semibold">
-                        {(() => {
-                          const challengeRating = character.challenge?.challengeRating ?? 0;
-                          const experiencePoints = character.challenge?.experiencePoints ?? 0;
-                          const displayChallengeRating = formatChallengeRating(challengeRating);
-
-                          return (
-                            <React.Fragment>
-                              <InfoTooltip
-                                content={tCommon("challengeRatingTooltip")}
-                                side="bottom"
-                                moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                                <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
-                              </InfoTooltip>{" "}
-                              {displayChallengeRating} ({experiencePoints} XP)
-                            </React.Fragment>
-                          );
-                        })()}
-                      </div>
+                      <MediaAvatar
+                        scope="character"
+                        entityId={character._id}
+                        storedValue={displayedAvatarStoredValue}
+                        sessionCode={sessionCodeForMedia}
+                        size="sheet"
+                        alt={characterDisplayName}
+                        priority
+                      />
                     )}
                   </div>
                 </div>

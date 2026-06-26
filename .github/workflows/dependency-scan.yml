@@ -109,7 +109,7 @@ jobs:
       - name: Create reports directory
         run: mkdir -p security/reports
 
-      - name: Run Trivy dependency scan
+      - name: Run Trivy dependency scan (adventure)
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
@@ -119,12 +119,24 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
 
+      - name: Run Trivy dependency scan (media)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'fs'
+          scan-ref: './services/media/api'
+          format: 'json'
+          output: ${{ github.workspace }}/security/reports/trivy-deps-media.json
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
       - name: Check for critical vulnerabilities
         id: check-vuln-backend
         working-directory: ./security/reports
         continue-on-error: true
         run: |
-          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-deps-backend.json 2>/dev/null || echo "0")
+          CRITICAL_ADV=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-deps-backend.json 2>/dev/null || echo "0")
+          CRITICAL_MEDIA=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-deps-media.json 2>/dev/null || echo "0")
+          CRITICAL=$((CRITICAL_ADV + CRITICAL_MEDIA))
           if [ "$CRITICAL" -gt 0 ]; then
             echo "has-critical=true" >> $GITHUB_OUTPUT
           else

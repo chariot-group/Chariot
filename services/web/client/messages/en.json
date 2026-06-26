@@ -410,6 +410,18 @@
     "wheelsUnit": "wheels",
     "wheelsBalanceAria": "Current wheel balance: {balance} wheels"
   },
+  "mediaAvatar": {
+    "upload": "Change photo",
+    "remove": "Remove",
+    "uploadLabel": "Choose a profile image",
+    "invalidType": "Unsupported format. Use JPEG (.jpg), PNG (.png), or WebP (.webp).",
+    "tooLarge": "Image exceeds the {maxMb} MB size limit.",
+    "requirementsHint": "JPEG, PNG, or WebP · max. {maxMb} MB · {width}×{height} px recommended (4:5 ratio)",
+    "uploadSuccess": "Image updated.",
+    "uploadError": "Could not update the image.",
+    "removeSuccess": "Image removed.",
+    "removeError": "Could not remove the image."
+  },
   "payment": {
     "reloadSuccess": "Your account was reloaded with {chars} wheels.",
     "reloadSuccessUnknown": "Your payment is confirmed, your account reload is in progress.",

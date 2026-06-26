@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
 import {
@@ -838,13 +838,39 @@ export const selectLastConsultedSheetPath = (state: RootState) =>
 
 export const selectSessionLobbyOpen = (state: RootState) => state.session.sessionLobbyOpen ?? false;
 
-export const selectBattleStateSnapshot = (state: RootState): BattleStateSnapshot => ({
-    initiativeTrackerRows: state.session.initiativeTrackerRows,
-    battleInitialized: state.session.battleInitialized,
-    battleStarted: state.session.battleStarted,
-    activeTurnRowId: state.session.activeTurnRowId,
-    currentRound: state.session.currentRound,
-    allowPlayerInitiativeInput: state.session.initBattleDraft.allowPlayerInitiativeInput ?? false,
-});
+const selectInitiativeTrackerRowsState = (state: RootState) => state.session.initiativeTrackerRows;
+const selectBattleInitializedState = (state: RootState) => state.session.battleInitialized;
+const selectBattleStartedState = (state: RootState) => state.session.battleStarted;
+const selectActiveTurnRowIdState = (state: RootState) => state.session.activeTurnRowId;
+const selectCurrentRoundState = (state: RootState) => state.session.currentRound;
+const selectAllowPlayerInitiativeInputState = (state: RootState) =>
+    state.session.initBattleDraft.allowPlayerInitiativeInput ?? false;
+
+/** Mémoïsé : évite un nouvel objet à chaque dispatch Redux non lié au combat. */
+export const selectBattleStateSnapshot = createSelector(
+    [
+        selectInitiativeTrackerRowsState,
+        selectBattleInitializedState,
+        selectBattleStartedState,
+        selectActiveTurnRowIdState,
+        selectCurrentRoundState,
+        selectAllowPlayerInitiativeInputState,
+    ],
+    (
+        initiativeTrackerRows,
+        battleInitialized,
+        battleStarted,
+        activeTurnRowId,
+        currentRound,
+        allowPlayerInitiativeInput,
+    ): BattleStateSnapshot => ({
+        initiativeTrackerRows,
+        battleInitialized,
+        battleStarted,
+        activeTurnRowId,
+        currentRound,
+        allowPlayerInitiativeInput,
+    }),
+);
 
 export default sessionSlice.reducer;

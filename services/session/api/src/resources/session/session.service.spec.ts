@@ -499,6 +499,78 @@ describe('SessionService', () => {
         });
     });
 
+    // ── validateGmOwnership ───────────────────────────────────────────────────
+
+    describe('validateGmOwnership', () => {
+        it('should return ok when requester is participant and targetUserId is the GM', async () => {
+            const participant = makeParticipant({ userId: 'user-uuid-2' });
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [participant],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            const result = await service.validateGmOwnership('CODE123', 'user-uuid-2', 'gm-uuid-1');
+
+            expect(result.data).toEqual({ ok: true });
+            expect(result.message).toBe('Access granted');
+        });
+
+        it('should return ok when the GM validates their own ownership', async () => {
+            const gmParticipant = makeParticipant({ userId: 'gm-uuid-1', status: 'gameMaster' });
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [gmParticipant],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            const result = await service.validateGmOwnership('CODE123', 'gm-uuid-1', 'gm-uuid-1');
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('should throw ForbiddenException when requester is not a participant', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'other-user' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateGmOwnership('CODE123', 'not-a-participant', 'gm-uuid-1'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('should throw ForbiddenException when targetUserId is not the GM', async () => {
+            const participant = makeParticipant({ userId: 'user-uuid-2' });
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [participant],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateGmOwnership('CODE123', 'user-uuid-2', 'some-player-uuid'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('should throw NotFoundException when session does not exist', async () => {
+            mockPrismaSession.findFirst.mockResolvedValue(null);
+
+            await expect(
+                service.validateGmOwnership('BADCODE', 'user-uuid-2', 'gm-uuid-1'),
+            ).rejects.toThrow(NotFoundException);
+        });
+
+        it('should throw InternalServerErrorException on unexpected prisma error', async () => {
+            mockPrismaSession.findFirst.mockRejectedValue(new Error('DB failure'));
+
+            await expect(
+                service.validateGmOwnership('CODE123', 'user-uuid-2', 'gm-uuid-1'),
+            ).rejects.toThrow(InternalServerErrorException);
+        });
+    });
+
     // ── expireSession ─────────────────────────────────────────────────────────
 
     describe('expireSession', () => {

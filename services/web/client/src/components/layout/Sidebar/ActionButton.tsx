@@ -15,7 +15,6 @@ import {
   selectBattleInitialized,
   selectBattleStarted,
   selectIsInSession,
-  selectSessionInitBattleDraft,
   selectSessionStatus,
   selectLastConsultedSheetPath,
   openSessionLobby,

@@ -1,5 +1,13 @@
 import type { SessionParticipant } from '@/services/SessionService';
 
+/** Signature stable pour comparer deux rosters sans dépendre des références tableau. */
+export function participantsStableKey(participants: SessionParticipant[]): string {
+    return participants
+        .map((participant) => `${participant.userId}:${participant.characterId ?? ''}:${participant.status}`)
+        .sort()
+        .join('\u001f');
+}
+
 /**
  * Fusionne un roster participant précédent (ex. Redux ou dernier snapshot WS) avec un snapshot récent
  * (état page session ou réponse HTTP) sans perdre de lignes ni les `characterId` connus uniquement côté client.

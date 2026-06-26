@@ -445,6 +445,40 @@ export class SessionService {
         }
     }
 
+    /**
+     * Vérifie qu'un utilisateur authentifié est participant de la session ET que
+     * targetUserId est le MJ (creatorUserId) de cette session.
+     * Utilisé par le service media pour : PP du MJ et avatars PNJ du MJ.
+     * @see FR-media-avatar-read-access
+     */
+    async validateGmOwnership(
+        code: string,
+        requesterId: string,
+        targetUserId: string,
+    ): Promise<IResponse<{ ok: true }>> {
+        try {
+            const session = await this._findSession(code);
+
+            const isParticipant = session.participants.some((p) => p.userId === requesterId);
+            if (!isParticipant) {
+                throw new ForbiddenException('User is not a session participant');
+            }
+
+            if (session.creatorUserId !== targetUserId) {
+                throw new ForbiddenException('Target user is not the game master of this session');
+            }
+
+            return { message: 'Access granted', data: { ok: true } };
+        } catch (error: unknown) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            const message = `Error validating GM ownership for session ${code}: ${(error as Error).message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
     async findParticipants(code: string): Promise<IResponse<SessionParticipantsDetails>> {
         try {
             const start: number = Date.now();

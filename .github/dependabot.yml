@@ -6,13 +6,13 @@ multi-ecosystem-groups:
       interval: "cron"
       cronjob: "0 2 * * 0,6"
       timezone: "Europe/Paris"
+    open-pull-requests-limit: 1
 
 updates:
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"
 
@@ -20,7 +20,6 @@ updates:
   - package-ecosystem: "npm"
     directory: "/services/adventure/api"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"
     versioning-strategy: increase
@@ -29,7 +28,6 @@ updates:
   - package-ecosystem: "npm"
     directory: "/services/gateway/api"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"
     versioning-strategy: increase
@@ -41,7 +39,6 @@ updates:
   - package-ecosystem: "npm"
     directory: "/services/session/api"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"
     versioning-strategy: increase
@@ -53,7 +50,6 @@ updates:
   - package-ecosystem: "npm"
     directory: "/services/web/client"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"
     versioning-strategy: increase
@@ -62,7 +58,6 @@ updates:
   - package-ecosystem: "docker"
     directory: "/services/adventure/api"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"
 
@@ -70,7 +65,6 @@ updates:
   - package-ecosystem: "docker"
     directory: "/services/gateway/api"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"
 
@@ -78,7 +72,21 @@ updates:
   - package-ecosystem: "docker"
     directory: "/services/session/api"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
+    patterns:
+      - "*"
+
+  # npm — media
+  - package-ecosystem: "npm"
+    directory: "/services/media/api"
+    multi-ecosystem-group: "weekend-nightly"
+    patterns:
+      - "*"
+    versioning-strategy: increase
+
+  # Docker — media
+  - package-ecosystem: "docker"
+    directory: "/services/media/api"
+    multi-ecosystem-group: "weekend-nightly"
     patterns:
       - "*"
 
@@ -86,7 +94,6 @@ updates:
   - package-ecosystem: "docker"
     directory: "/services/sso"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"
 
@@ -94,6 +101,5 @@ updates:
   - package-ecosystem: "docker"
     directory: "/services/web/client"
     multi-ecosystem-group: "weekend-nightly"
-    open-pull-requests-limit: 1
     patterns:
       - "*"

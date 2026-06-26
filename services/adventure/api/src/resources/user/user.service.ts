@@ -9,7 +9,7 @@ import {
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { IResponse } from '@/common/dtos/reponse.dto';
-import { User, UserDocument } from './schemas/user.schema';
+import { User, UserDocument } from '@/resources/user/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
@@ -334,5 +334,24 @@ export class UserService {
       this.logger.error(message, error.stack, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
+  }
+
+  async getUserAvatar(keycloakId: string): Promise<string | null> {
+    try {
+      const user = await this.keycloakService.getUserById(keycloakId);
+      return user.attributes?.avatar?.[0] ?? null;
+    } catch (error) {
+      this.logger.warn(
+        `Could not fetch avatar for user ${keycloakId}: ${error.message}`,
+        this.SERVICE_NAME,
+      );
+      return null;
+    }
+  }
+
+  async updateUserAvatar(keycloakId: string, avatar: string): Promise<void> {
+    await this.keycloakService.updateUserAttributes(keycloakId, {
+      avatar: avatar ? [avatar] : [],
+    });
   }
 }

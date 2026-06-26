@@ -18,7 +18,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Check, ChevronDown, Copy, Link, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import React, { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
@@ -27,8 +27,16 @@ import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/s
 import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import {
+  buildSessionLobbyAvatarBatchItems,
+  getSessionLobbyParticipantAvatarUrl,
+  resolveSessionLobbyParticipantAvatar,
+  type SessionLobbyParticipantAvatarDescriptor,
+} from "@/lib/sessionLobbyAvatarBatch";
 import { computeMaxAddableWheels, sumDepositedWheels } from "@/lib/sessionWheelDeposit";
 import { cn } from "@/lib/utils";
+import { MediaAvatar } from "@/components/media/MediaAvatar";
+import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 
 type SessionLobbyCopyState = "idle" | "loading" | "success";
 
@@ -68,25 +76,38 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
   const [codeCopyState, setCodeCopyState] = useState<SessionLobbyCopyState>("idle");
   const [linkCopyState, setLinkCopyState] = useState<SessionLobbyCopyState>("idle");
   const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
-  const [tokensByUser, setTokensByUser] = useState<Record<string, number>>(reduxTokensByUser);
-
-  useEffect(() => {
-    setTokensByUser(reduxTokensByUser);
-  }, [reduxTokensByUser]);
 
   const {
     campaignLabel,
     participants,
     setParticipants,
     participantNames,
+    participantAvatars,
+    characterDetails,
     myCharacters,
     fetchCharacterDetails,
     getCharacterLabel,
     isLoading,
   } = useSessionData({ code, idCampaign, campaign }) as ReturnType<typeof useSessionData>;
 
-  const totalDeposited = sumDepositedWheels(tokensByUser);
-  const myDeposited = currentUser ? (tokensByUser[currentUser.keycloakId] ?? 0) : 0;
+  const avatarBatchItems = useMemo(
+    () =>
+      buildSessionLobbyAvatarBatchItems({
+        participants,
+        participantAvatars,
+        characterDetails,
+      }),
+    [participants, participantAvatars, characterDetails],
+  );
+
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
+    avatarBatchItems,
+    code,
+    !isLoading && participants.length > 0,
+  );
+
+  const totalDeposited = sumDepositedWheels(reduxTokensByUser);
+  const myDeposited = currentUser ? (reduxTokensByUser[currentUser.keycloakId] ?? 0) : 0;
   const maxSlots = participants.length;
   const isMJ = participants.find((p) => p.userId === currentUser?.keycloakId)?.status === "gameMaster";
   const maxAddable = computeMaxAddableWheels({
@@ -106,8 +127,6 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     participants,
     setParticipants,
     fetchCharacterDetails,
-    tokensByUser,
-    setTokensByUser,
   });
 
   if (isLoading || !sessionSocket) {
@@ -124,7 +143,6 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     handleLeave,
     handleAddToken,
     handleRemoveToken,
-    handleAddTokenAmount,
     handleRemoveTokenAmount,
     handleDepositRemaining,
     handleLaunchSession,
@@ -227,7 +245,14 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               className={getSessionLobbyParticipantListClassName(participants.length)}
               tabIndex={0}>
               {participants.length > 0 &&
-                participants.map((participant: SessionParticipant) => (
+                participants.map((participant: SessionParticipant) => {
+                  const avatarDescriptor = resolveSessionLobbyParticipantAvatar(
+                    participant,
+                    participantAvatars,
+                    characterDetails,
+                  );
+
+                  return (
                   <SessionLobbyParticipantCard
                     key={participant.id}
                     participant={participant}
@@ -235,15 +260,19 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                       participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING
                     }
                     characterLabel={getCharacterLabel(participant.characterId)}
-                    participantDeposits={tokensByUser[participant.userId] ?? 0}
+                    participantDeposits={reduxTokensByUser[participant.userId] ?? 0}
                     isMe={participant.userId === currentUser?.keycloakId}
                     isPlayer={participant.status === "connected"}
                     sessionIsActive={sessionIsActive}
                     myCharacters={myCharacters}
                     isChangingCharacter={isChangingCharacter}
                     onCharacterChange={handleCharacterChange}
+                    sessionCode={code}
+                    avatarDescriptor={avatarDescriptor}
+                    avatarImageUrl={getSessionLobbyParticipantAvatarUrl(avatarDescriptor, getAvatarUrl)}
                   />
-                ))}
+                  );
+                })}
             </div>
           </section>
         </div>
@@ -566,6 +595,9 @@ interface SessionLobbyParticipantCardProps {
   myCharacters: Character[];
   isChangingCharacter: boolean;
   onCharacterChange: (characterId: string) => void;
+  sessionCode: string;
+  avatarDescriptor: SessionLobbyParticipantAvatarDescriptor | null;
+  avatarImageUrl?: string | null;
 }
 
 function SessionLobbyParticipantCard({
@@ -579,44 +611,64 @@ function SessionLobbyParticipantCard({
   myCharacters,
   isChangingCharacter,
   onCharacterChange,
+  sessionCode,
+  avatarDescriptor,
+  avatarImageUrl,
 }: SessionLobbyParticipantCardProps) {
   const t = useTranslations("sessionPage");
+  const isGameMaster = participant.status === "gameMaster";
+  const avatarAlt = isGameMaster
+    ? participantName
+    : characterLabel?.trim() || participantName;
 
   return (
     <Card
       role="listitem"
       className="w-full gap-0 rounded-[15px] border border-border/30 bg-gray-middle-light p-0 shadow-none">
       <div className="flex w-full flex-col gap-3 p-4 sm:p-3">
-        <div className="flex w-full items-start gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-base font-semibold text-white">{participantName}</p>
+        <div className="flex w-full gap-3">
+          <MediaAvatar
+            scope={avatarDescriptor?.scope ?? "character"}
+            entityId={avatarDescriptor?.entityId ?? ""}
+            storedValue={avatarDescriptor?.storedValue}
+            size="thumb"
+            sessionCode={sessionCode}
+            alt={avatarAlt}
+            enabled={Boolean(avatarDescriptor?.storedValue?.trim())}
+            avatarImageUrl={avatarImageUrl}
+            className="self-center"
+          />
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="min-w-0 flex-1 truncate text-base font-semibold text-white">{participantName}</p>
+              <div className="flex shrink-0 items-center gap-1.5">
+                {participantDeposits > 0 ? (
+                  <span
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card/60 px-2 py-0.5 text-xs font-medium tabular-nums"
+                    aria-label={t("players.wheels.participantDepositsAria", { count: participantDeposits })}>
+                    {participantDeposits}
+                    <Image
+                      src={Token}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-3 w-3"
+                    />
+                  </span>
+                ) : null}
+                {participant.status === "gameMaster" ? (
+                  <Badge className="shrink-0">{t("players.gameMaster")}</Badge>
+                ) : null}
+                {participant.status === "connected" ? (
+                  <Badge
+                    variant="secondary"
+                    className="shrink-0">
+                    {t("players.player")}
+                  </Badge>
+                ) : null}
+              </div>
+            </div>
             {!(isMe && isPlayer && sessionIsActive) ? (
-              <p className="mt-0.5 truncate text-sm text-muted-foreground">{characterLabel ?? " "}</p>
-            ) : null}
-          </div>
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-            {participantDeposits > 0 ? (
-              <span
-                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card/60 px-2 py-0.5 text-xs font-medium tabular-nums"
-                aria-label={t("players.wheels.participantDepositsAria", { count: participantDeposits })}>
-                {participantDeposits}
-                <Image
-                  src={Token}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-3 w-3"
-                />
-              </span>
-            ) : null}
-            {participant.status === "gameMaster" ? (
-              <Badge className="shrink-0">{t("players.gameMaster")}</Badge>
-            ) : null}
-            {participant.status === "connected" ? (
-              <Badge
-                variant="secondary"
-                className="shrink-0">
-                {t("players.player")}
-              </Badge>
+              <p className="truncate text-sm text-muted-foreground">{characterLabel ?? " "}</p>
             ) : null}
           </div>
         </div>

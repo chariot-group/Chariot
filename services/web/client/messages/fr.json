@@ -411,6 +411,18 @@
     "wheelsUnit": "wheels",
     "wheelsBalanceAria": "Solde de wheels actuel : {balance} wheels"
   },
+  "mediaAvatar": {
+    "upload": "Changer la photo",
+    "remove": "Supprimer",
+    "uploadLabel": "Choisir une image de profil",
+    "invalidType": "Format non pris en charge. Utilisez JPEG (.jpg), PNG (.png) ou WebP (.webp).",
+    "tooLarge": "L'image dépasse la taille maximale de {maxMb} Mo.",
+    "requirementsHint": "JPEG, PNG ou WebP · max. {maxMb} Mo · {width}×{height} px recommandé (ratio 4:5)",
+    "uploadSuccess": "Image mise à jour.",
+    "uploadError": "Impossible de mettre à jour l'image.",
+    "removeSuccess": "Image supprimée.",
+    "removeError": "Impossible de supprimer l'image."
+  },
   "payment": {
     "reloadSuccess": "Votre compte a été rechargé de {chars} wheels.",
     "reloadSuccessUnknown": "Votre paiement est validé, le rechargement de votre compte est en cours.",

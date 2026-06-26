@@ -477,10 +477,11 @@ When adding a rule:
 **Character Avatar**:
 
 - Placeholder icon (User icon from Lucide) when no image is available
-- Fixed dimensions: 16x20 (mobile), 20x24 (sm), 24x28 (md+)
+- Fixed width with consistent 4:5 aspect ratio: `w-20` (mobile), `w-24` (sm), `w-28` (md+)
 - Rounded corners (`rounded-[18px]`)
 - Gray background (`bg-gray`)
 - Positioned to the right of character information
+- Image crop: `object-cover object-center` (see FR-media-avatar-format)
 
 **Accessibility Requirements**:
 
@@ -3251,6 +3252,182 @@ Each initiative tracker row carries:
 
 ---
 
+## FR-media-service : Service Media Dédié (CDN & API Media)
+
+**Règle** : Toutes les opérations media (upload d'avatars, suppression, résolution de presigned URLs, traitement d'images, client MinIO/S3) DOIVENT être hébergées dans un microservice dédié `services/media/`. Aucun autre service ne doit instancier un client MinIO/S3 ni dépendre de `sharp` pour le traitement d'images.
+
+**Périmètre du service media** :
+
+- Upload d'avatar personnage (`POST /media/characters/:id/avatar`)
+- Suppression d'avatar personnage (`DELETE /media/characters/:id/avatar`)
+- Upload d'avatar utilisateur (`POST /media/users/me/avatar`)
+- Suppression d'avatar utilisateur (`DELETE /media/users/me/avatar`)
+- Résolution batch de presigned read URLs (`POST /media/presigned-read`)
+
+**Architecture & dépendances** :
+
+- Le service media s'authentifie via Keycloak JWT (même guard que adventure)
+- Vérification d'accès **personnage** : appel HTTP interne vers adventure (`ADVENTURE_INTERNAL_URL`) sur l'endpoint `POST /character/internal/validate-access`, protégé par `InternalGuard` (`x-internal-service-secret`)
+- Vérification d'accès **session/roster** : appel HTTP interne vers session (pattern existant `SessionAccessService`)
+- Vérification d'accès **utilisateur** (self) : comparaison des claims JWT uniquement, sans appel externe
+- Le client MinIO/S3 (`MinioService`) et `ImageProcessorService` résident exclusivement dans `services/media/`
+
+**Retrait de l'adventure service** :
+
+- `MediaModule`, `MinioService`, `ImageProcessorService`, `MediaAccessService` DOIVENT être supprimés de `services/adventure/`
+- Les endpoints avatar utilisateur (`POST /user/me/avatar`, `DELETE /user/me/avatar`) DOIVENT être retirés du `UserController` de adventure
+- Adventure DOIT exposer `POST /character/internal/validate-access` (protégé `InternalGuard`) permettant au service media de vérifier l'appartenance et les droits d'accès à un personnage
+
+**Gateway** :
+
+- Le gateway DOIT ajouter une route `MEDIA_SERVICE_URL` et un contrôleur proxy `MediaProxyController` routant `/media/*` vers le service media
+- Le pattern de routage DOIT être cohérent avec les services existants (`adventure`, `session`, `payment`)
+
+**Frontend** :
+
+- `MediaService.USER_AVATAR_PATH` DOIT être mis à jour de `/user/me/avatar` vers `/media/users/me/avatar`
+- La `BASE_PATH = "/media"` reste inchangée
+
+**Infrastructure** :
+
+- Le service media dispose de son propre `compose.dev.yml` incluant : le conteneur NestJS (`chariot-media`, port 9005) et le conteneur MinIO (`chariot-minio`, port 9004)
+- MinIO est retiré du `compose.dev.yml` de adventure
+- Les variables d'environnement MinIO (`MINIO_ENDPOINT`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, `MINIO_BUCKET`, `MINIO_PUBLIC_URL`, `MEDIA_PRESIGNED_TTL_SECONDS`) sont configurées sur le service media uniquement
+
+**Prohibitions** :
+
+- Aucun autre service ne DOIT importer `MinioService`, `ImageProcessorService`, ou tout SDK S3
+- Le service media NE DOIT PAS accéder directement à la base de données MongoDB de adventure
+- Le service media NE DOIT PAS dupliquer la logique métier caractère/session — les vérifications d'accès passent par les services source via HTTP interne
+
+**Tests** :
+
+- Nominal : upload avatar personnage par son propriétaire → objet stocké dans MinIO, `character.avatar` mis à jour
+- Nominal : upload avatar utilisateur authentifié → stocké, attribut Keycloak mis à jour
+- Nominal : résolution presigned read batch → URLs signées retournées
+- Edge : requête par GM en session → validation via session service, accès accordé
+- Edge : MinIO non configuré → `ServiceUnavailableException` (503)
+- Erreur : upload par un utilisateur non propriétaire sans session → `ForbiddenException` (403)
+- Erreur : personnage inexistant → `NotFoundException` (404)
+
+**References** :
+
+- `services/media/api/src/` (nouveau service)
+- `services/adventure/api/src/resources/media/` (code source à migrer)
+- `services/adventure/api/src/resources/character/` (endpoint interne `validate-access`)
+- `services/gateway/api/src/proxy/proxy.controller.ts`
+- `services/web/client/src/services/MediaService.ts`
+
+---
+
+## FR-media-avatar-read-access : Contrôle d'accès en lecture sur les avatars CDN (utilisateur, PJ, PNJ)
+
+**Règle** : Tout accès en lecture (presigned URL) à un avatar stocké sur le CDN est restreint au propriétaire par défaut ; les contextes de session accordent des droits supplémentaires selon le type d'avatar et le rôle du demandeur.
+
+### Avatars utilisateur (scope `user` — photo de profil)
+
+| Contexte | Accès |
+|---|---|
+| `requesterId === targetUserId` | ✅ Toujours autorisé |
+| `sessionCode` fourni, `requesterId` est participant, `targetUserId` est le MJ (`creatorUserId`) | ✅ Autorisé |
+| `sessionCode` fourni, `targetUserId` est un joueur non-MJ | ❌ `403 ForbiddenException` |
+| Pas de `sessionCode`, `requesterId !== targetUserId` | ❌ `403 ForbiddenException` |
+
+- Contrôle appliqué dans `MediaAccessService.assertUserAvatarReadAccess(targetUserId, requesterId, authHeader, sessionCode?)`.
+- `resolveUserPresignedRead` dans `MediaService` DOIT déléguer à `assertUserAvatarReadAccess`.
+
+### Avatars PJ (scope `character`, kind `player`)
+
+| Contexte | Accès |
+|---|---|
+| `character.createdBy === requesterId` | ✅ Toujours autorisé |
+| `sessionCode` fourni, `requesterId` est participant, PJ présent dans `participants.characterId` | ✅ Autorisé (`roster-read` — déjà implémenté) |
+| Pas de `sessionCode`, `requesterId !== createdBy` | ❌ `403 ForbiddenException` (déjà implémenté) |
+
+### Avatars PNJ (scope `character`, kind `npc`)
+
+| Contexte | Accès |
+|---|---|
+| `character.createdBy === requesterId` (MJ propriétaire) | ✅ Toujours autorisé |
+| `sessionCode` fourni, `requesterId` est participant, `character.createdBy` est le MJ de la session | ✅ Autorisé (`npc-session-read` — nouveau mode) |
+| Pas de `sessionCode`, `requesterId !== createdBy` | ❌ `403 ForbiddenException` (déjà implémenté) |
+
+> **Note** : L'état "révélé/masqué" d'un PNJ dans le tracker de combat est une décision UX côté client (Redux/WS, non persisté serveur). Le serveur accorde l'accès à tout PNJ du MJ de la session sans distinguer révélé vs masqué. C'est le client qui ne demande la presigned URL que pour les PNJ révélés.
+
+**Nouveau endpoint session** :
+
+- `POST /sessions/:code/validate-gm-ownership` — protégé par le guard JWT utilisateur.
+- Body : `{ targetUserId: string }`.
+- Valide que le `requesterId` (JWT claim) est participant de la session ET que `targetUserId` est le `creatorUserId` de la session.
+- Retourne `200 { ok: true }` si autorisé, `403` sinon.
+- Utilisé pour : la PP du MJ (scope `user`) ET les avatars PNJ (scope `character`, via `character.createdBy`).
+
+**Extension du mode `validateCharacterAccessForAdventure`** :
+
+- Nouveau mode `npc-session-read` : requester est participant, ET `character.createdBy === session.creatorUserId`.
+- Alternativement : `MediaAccessService` appelle `validate-gm-ownership` avec `targetUserId = character.createdBy`.
+
+**Prohibitions** :
+
+- Ne pas accorder l'accès à la PP d'un joueur (non-MJ) à d'autres participants.
+- Ne pas accorder l'accès aux PNJ d'un autre MJ via une session que ce MJ ne dirige pas.
+- Ne pas contourner ce contrôle côté frontend (le contrôle est serveur-side via presigned URL conditionnelle).
+
+**Tests** :
+
+- Nominal : utilisateur lit son propre avatar → presigned URL retournée.
+- Nominal : participant de session lit la PP du MJ → presigned URL retournée.
+- Nominal : participant de session lit l'avatar d'un PJ du roster → presigned URL retournée (comportement existant).
+- Nominal : participant de session lit l'avatar d'un PNJ créé par le MJ de cette session → presigned URL retournée.
+- Edge : participant tente de lire la PP d'un autre joueur (non-MJ) en session → `403 ForbiddenException`.
+- Edge : participant tente de lire l'avatar d'un PNJ dont le créateur n'est pas le MJ de cette session → `403 ForbiddenException`.
+- Edge : sessionCode fourni mais requester n'est pas participant → `403 ForbiddenException`.
+- Failure : lecture de la PP d'un autre utilisateur sans sessionCode → `403 ForbiddenException`.
+- Failure : session service injoignable lors de la validation → `503 ServiceUnavailableException`.
+
+**References** :
+
+- `services/media/api/src/resources/media/media-access.service.ts`
+- `services/media/api/src/resources/media/media.service.ts`
+- `services/session/api/src/resources/session/session.controller.ts`
+- `services/session/api/src/resources/session/session.service.ts`
+
+## FR-media-avatar-format : Format et dimensions des avatars
+
+**Règle** : Les avatars uploadés DOIVENT être normalisés à un ratio d'aspect fixe 4:5 avec recadrage centré ; l'interface d'upload DOIT indiquer les extensions acceptées, la taille maximale et les dimensions recommandées.
+
+**Requirements** :
+
+- Traitement serveur : variante `main` en 512×640 px (ratio 4:5), variante `thumb` en 96×96 px (carré, recadrage centré depuis la source)
+- Stockage CDN : WebP uniquement (extension `.webp`)
+- Formats d'upload acceptés : JPEG (`.jpg`, `.jpeg`), PNG (`.png`), WebP (`.webp`), HEIC/HEIF (convertis côté serveur)
+- Taille maximale d'upload : 5 Mo
+- Affichage `main` : tous les conteneurs DOIVENT respecter le ratio 4:5 (`aspect-[4/5]`) ; les vignettes circulaires (`thumb`, `xs`) restent carrées
+- Recadrage CSS uniforme : `object-cover object-center` sur toutes les instances `MediaAvatar`
+- L'UI d'upload DOIT exposer une aide lisible (ou `aria-describedby` équivalent) listant extensions, taille max et dimensions recommandées (400×500 px, ratio 4:5)
+
+**Prohibitions** :
+
+- Ne pas stocker la variante `main` en carré 1:1
+- Ne pas utiliser des ratios d'affichage divergents pour le même avatar (ex. `aspect-video` sur le profil utilisateur)
+- Ne pas combiner largeur et hauteur fixes Tailwind qui modifient le ratio selon le breakpoint
+
+**Tests** :
+
+- Nominal : upload PNG portrait → `main` 4:5 WebP, `thumb` carré WebP
+- Edge : image paysage large → recadrage centré sans déformation
+- Failure : format non supporté → message d'erreur mentionnant les extensions acceptées
+
+**References** :
+
+- `services/media/api/src/resources/media/image-processor.service.ts`
+- `services/media/api/src/resources/media/media.constants.ts`
+- `services/web/client/src/components/media/MediaAvatar.tsx`
+- `services/web/client/src/components/media/MediaAvatarUpload.tsx`
+- `services/web/client/src/utils/media.utils.ts`
+
+---
+
 ## FR-tooltip-accessibility: Tooltip Accessibility and Mobile Popover
 
 **Rule**: Any tooltip conveying information (not purely decorative) MUST be accessible on devices that do not support hover (touch screens: mobile, tablet).
@@ -3283,6 +3460,9 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/ui/info-tooltip.tsx`
 - `services/web/client/src/components/ui/popover.tsx`
 - `services/web/client/src/components/ui/tooltip.tsx`
+
+---
+
 ## FR-session-lobby-wheel-deposit: Dépôt et retrait de wheels dans le lobby de session
 
 **Règle** : Le lobby de session (FR-session-lobby-modal) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
