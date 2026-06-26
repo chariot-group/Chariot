@@ -9,6 +9,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     Req,
 } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
@@ -166,7 +167,14 @@ export class StripeController {
     @ApiParam({ name: 'code', description: 'The promo or affiliation code to resolve' })
     @ApiResponse({ status: 200, description: 'Code resolved successfully' })
     @ApiResponse({ status: 404, description: 'Code not found or inactive' })
-    async resolveCode(@Param('code') code: string): Promise<IResponse<ResolvedCode>> {
-        return this.stripeService.resolveCode(code);
+    @ApiResponse({ status: 410, description: 'Code exhausted (global or per-user limit reached)' })
+    @ApiResponse({ status: 422, description: 'Minimum order amount not met' })
+    async resolveCode(
+        @Param('code') code: string,
+        @Query('orderAmount') orderAmountStr: string,
+        @Req() req: Request & { user: { keycloakId: string } },
+    ): Promise<IResponse<ResolvedCode>> {
+        const orderAmount = parseInt(orderAmountStr ?? '0', 10);
+        return this.stripeService.resolveCode(code, req.user.keycloakId, isNaN(orderAmount) ? 0 : orderAmount);
     }
 }

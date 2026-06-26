@@ -20,7 +20,7 @@ export default function ReleaseNotesProvider() {
     if (loading || !authenticated) return;
     if (hasOpenedRef.current) return;
 
-    // chariot_user_id is set by KeycloakProvider at auth time (FR-010)
+    // chariot_user_id is set by KeycloakProvider at auth time (FR-user-cache-isolation)
     const userId = getStoredUserId();
 
     if (isReleaseNotesMuted(userId)) return;

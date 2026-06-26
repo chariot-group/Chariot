@@ -43,7 +43,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
           src={RunningIcon}
           alt=""
           aria-hidden="true"
-          className="size-6"
+          className="size-4 sm:size-5"
         />
       ),
       tooltipKey: "walkSpeedTooltip",
@@ -53,8 +53,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
       value: speed.climb,
       icon: (
         <Mountain
-          size={24}
-          className="text-black"
+          className="size-4 sm:size-5 text-black"
           aria-hidden="true"
         />
       ),
@@ -65,8 +64,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
       value: speed.swim,
       icon: (
         <Waves
-          size={24}
-          className="text-black"
+          className="size-4 sm:size-5 text-black"
           aria-hidden="true"
         />
       ),
@@ -77,8 +75,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
       value: speed.fly,
       icon: (
         <Bird
-          size={24}
-          className="text-black"
+          className="size-4 sm:size-5 text-black"
           aria-hidden="true"
         />
       ),
@@ -89,8 +86,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
       value: speed.burrow,
       icon: (
         <Shovel
-          size={24}
-          className="text-black"
+          className="size-4 sm:size-5 text-black"
           aria-hidden="true"
         />
       ),
@@ -100,7 +96,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
 
   return (
     <Card
-      className="gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit"
+      className="gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit min-w-0 w-full"
       role="region"
       aria-labelledby="stats-heading">
       <h2
@@ -108,86 +104,116 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
         className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
         {t("stats")}
       </h2>
-      <div className="flex flex-row justify-start gap-2 text-xl font-extrabold flex-wrap">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-              tabIndex={0}
-              role="img"
-              aria-label={`${t("armorClass")} ${player.stats.armorClass}`}>
-              <Image
-                src={ShieldIcon}
-                alt=""
-                aria-hidden="true"
-                className="size-5"
-                width={20}
-                height={20}
-              />
-              <span aria-hidden="true">{player.stats.armorClass}</span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{t("armorClassTooltip")}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-              tabIndex={0}
-              role="img"
-              aria-label={`${t("initiativeTooltip")} ${player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}`}>
-              <Dices
-                size={30}
-                className="text-black shrink-0"
-                aria-hidden="true"
-              />
-              <span aria-hidden="true">
-                {player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}
-              </span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{t("initiativeTooltip")}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-              tabIndex={0}
-              role="img"
-              aria-label={`${t("sizeTooltip")} ${t(`sizes.${player.stats.size}` as Parameters<typeof t>[0])}`}>
-              <RulerIcon
-                size={24}
-                className="text-black"
-                aria-hidden="true"
-              />
-              <span aria-hidden="true">
-                {t(`sizesAbbr.${player.stats.size}` as Parameters<typeof t>[0])}
-              </span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{t(`sizes.${player.stats.size}` as Parameters<typeof t>[0])}</TooltipContent>
-        </Tooltip>
+      <div className="flex flex-row justify-start gap-1.5 sm:gap-2 flex-wrap">
+        {/* CA */}
+        <div
+          className="bg-white text-black flex flex-row justify-center gap-1 rounded-[15px] px-2 py-1.5 sm:p-2 items-center"
+          role="group"
+          aria-label={`${t("armorClass")} ${player.stats.armorClass}`}>
+          <Image
+            src={ShieldIcon}
+            alt=""
+            aria-hidden="true"
+            className="size-4 sm:size-5"
+            width={20}
+            height={20}
+          />
+          <span className="text-sm sm:text-base font-extrabold tabular-nums" aria-hidden="true">
+            {player.stats.armorClass}
+          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="flex shrink-0 size-3 sm:size-3.5 rounded-full items-center justify-center text-[0.5rem] sm:text-[0.55rem] font-bold text-black/40 hover:text-black/70 bg-black/10 hover:bg-black/20 transition-colors ml-0.5"
+                aria-label={t("armorClassTooltip")}>
+                ?
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t("armorClassTooltip")}</TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Initiative */}
+        <div
+          className="bg-white text-black flex flex-row justify-center gap-1 rounded-[15px] px-2 py-1.5 sm:p-2 items-center"
+          role="group"
+          aria-label={`${t("initiativeTooltip")} ${player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}`}>
+          <Dices
+            className="size-4 sm:size-5 text-black shrink-0"
+            aria-hidden="true"
+          />
+          <span className="text-sm sm:text-base font-extrabold tabular-nums" aria-hidden="true">
+            {player.stats.initiative > 0 ? `+${player.stats.initiative}` : player.stats.initiative}
+          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="flex shrink-0 size-3 sm:size-3.5 rounded-full items-center justify-center text-[0.5rem] sm:text-[0.55rem] font-bold text-black/40 hover:text-black/70 bg-black/10 hover:bg-black/20 transition-colors ml-0.5"
+                aria-label={t("initiativeTooltip")}>
+                ?
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t("initiativeTooltip")}</TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Taille */}
+        <div
+          className="bg-white text-black flex flex-row justify-center gap-1 rounded-[15px] px-2 py-1.5 sm:p-2 items-center"
+          role="group"
+          aria-label={`${t("sizeTooltip")} ${t(`sizes.${player.stats.size}` as Parameters<typeof t>[0])}`}>
+          <RulerIcon
+            className="size-4 sm:size-5 text-black"
+            aria-hidden="true"
+          />
+          <span className="text-sm sm:text-base font-extrabold" aria-hidden="true">
+            {t(`sizesAbbr.${player.stats.size}` as Parameters<typeof t>[0])}
+          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="flex shrink-0 size-3 sm:size-3.5 rounded-full items-center justify-center text-[0.5rem] sm:text-[0.55rem] font-bold text-black/40 hover:text-black/70 bg-black/10 hover:bg-black/20 transition-colors ml-0.5"
+                aria-label={`${t("sizeTooltip")} : ${t(`sizes.${player.stats.size}` as Parameters<typeof t>[0])}`}>
+                ?
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t(`sizes.${player.stats.size}` as Parameters<typeof t>[0])}</TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Vitesses */}
         {speedBadges.map(
           (badge) =>
             badge.value > 0 && (
-              <Tooltip key={badge.key}>
-                <TooltipTrigger asChild>
-                  <div
-                    className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    tabIndex={0}
-                    role="img"
-                    aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${displayFt(badge.value)} ${unitLabel}${secondaryFt ? ` (${secondaryFt(badge.value)} ${secondaryUnitLabel})` : ""}`}>
-                    {badge.icon}
-                    <span aria-hidden="true" className="flex items-baseline gap-0.5">
-                      <span>{displayFt(badge.value)}{unitLabel}</span>
-                      {secondaryFt && (
-                        <span className="text-[0.75em] text-muted-foreground/60 font-normal">({secondaryFt(badge.value)}{secondaryUnitLabel})</span>
-                      )}
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>{t(badge.tooltipKey as Parameters<typeof t>[0])}</TooltipContent>
-              </Tooltip>
+              <div
+                key={badge.key}
+                className="bg-white text-black flex flex-row justify-center gap-1 rounded-[15px] px-2 py-1.5 sm:p-2 items-center"
+                role="group"
+                aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${displayFt(badge.value)} ${unitLabel}${secondaryFt ? ` (${secondaryFt(badge.value)} ${secondaryUnitLabel})` : ""}`}>
+                {badge.icon}
+                <span
+                  aria-hidden="true"
+                  className="text-sm sm:text-base font-extrabold flex items-baseline gap-0.5">
+                  <span className="tabular-nums">{displayFt(badge.value)}{unitLabel}</span>
+                  {secondaryFt && (
+                    <span className="text-[0.7em] text-black/50 font-normal">({secondaryFt(badge.value)}{secondaryUnitLabel})</span>
+                  )}
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex shrink-0 size-3 sm:size-3.5 rounded-full items-center justify-center text-[0.5rem] sm:text-[0.55rem] font-bold text-black/40 hover:text-black/70 bg-black/10 hover:bg-black/20 transition-colors ml-0.5"
+                      aria-label={t(badge.tooltipKey as Parameters<typeof t>[0])}>
+                      ?
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t(badge.tooltipKey as Parameters<typeof t>[0])}</TooltipContent>
+                </Tooltip>
+              </div>
             ),
         )}
       </div>
@@ -215,9 +241,14 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
         })}
       </div>
       {onCharacterUpdate && (
-        <div className="mt-1 border-t border-border/60 px-2 pt-3">
-          <div className="flex justify-end">
-            <div className="flex flex-wrap gap-2 sm:flex-col xl:flex-row">
+        <div className="mt-1 border-t border-border/60 px-2 pt-3 flex flex-col items-end gap-1.5 w-full min-w-0">
+          {!isInSession && (
+            <p className="text-xs text-muted-foreground italic text-right w-full">
+              {t("restSessionOnlyNote")}
+            </p>
+          )}
+          {isInSession && (
+            <div className="flex flex-row flex-wrap justify-end gap-2 w-full min-w-0">
               <ShortRestButton
                 player={player}
                 isInSession={isInSession}
@@ -231,7 +262,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
                 showLabel
               />
             </div>
-          </div>
+          )}
         </div>
       )}
       {canEditHealthInSession && onCharacterUpdate ? (

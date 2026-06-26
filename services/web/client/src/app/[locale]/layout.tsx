@@ -12,9 +12,12 @@ import { locales } from "@/i18n/request";
 import PostLoginNavigator from "@/components/PostLoginNavigator";
 import ReleaseNotesProvider from "@/components/ReleaseNotesProvider";
 import SessionCharacterSyncClientDynamic from "@/components/SessionCharacterSyncClientDynamic";
+import SessionLobbyDialogDynamic from "@/components/dialogs/SessionLobbyDialogDynamic";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
+import { Suspense } from "react";
+import SessionJoinParamListener from "@/components/SessionJoinParamListener";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -56,6 +59,10 @@ export default async function RootLayout({
           <KeycloakProvider>
             <ReduxProvider>
               <SessionCharacterSyncClientDynamic />
+              <SessionLobbyDialogDynamic />
+              <Suspense>
+                <SessionJoinParamListener />
+              </Suspense>
               <SidebarProvider className="h-dvh min-h-0 overflow-hidden">
                 <AppSidebar />
 

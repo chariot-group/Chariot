@@ -24,7 +24,6 @@ export class SessionService {
 
     private static readonly EXPIRATION_HOURS: number = 8;
     private static readonly EXPIRATION_SECONDS: number = (SessionService.EXPIRATION_HOURS) * 60 * 60;
-    private static readonly EMPTY_SESSION_SECONDS: number = 5 * 60;
 
     private static readonly CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     private static readonly CODE_LENGTH = 6;
@@ -125,7 +124,6 @@ export class SessionService {
                         },
                     });
                 }
-                await this.redisService.clearEmptySessionTimer(existingSession.id);
                 const updated: SessionWithParticipants = await this._findSessionById(existingSession.id);
                 const message: string = `User ${userId} rejoined existing session #${existingSession.id} for campaign ${createSessionDto.campaignId} in ${Date.now() - start}ms`;
                 this.logger.verbose(message, this.SERVICE_NAME);
@@ -279,9 +277,6 @@ export class SessionService {
                 });
             }
 
-            // Annuler le timer d'inactivité si quelqu'un vient de rejoindre
-            await this.redisService.clearEmptySessionTimer(session.id);
-
             const updated: SessionWithParticipants = await this._findSession(code);
             const message: string = `User ${userId} joined session with code ${code} in ${Date.now() - start}ms`;
             this.logger.verbose(message, this.SERVICE_NAME);
@@ -310,15 +305,6 @@ export class SessionService {
             await this.prisma.sessionParticipant.delete({
                 where: { id: participant.id },
             });
-
-            // Vérifier s'il reste un MJ connecté
-            const remaining = session.participants.filter(p => p.userId !== userId);
-            const hasConnectedMJ = remaining.some(p => p.status === ParticipantStatus.gameMaster);
-            const allDisconnected = remaining.length > 0 && remaining.every(p => p.status === ParticipantStatus.disconnected);
-            if ((!hasConnectedMJ && allDisconnected) || remaining.length === 0) {
-                await this.redisService.setEmptySessionTimer(session.id, SessionService.EMPTY_SESSION_SECONDS);
-                this.logger.verbose(`All participants disconnected and no MJ left after leave in session ${session.id}, empty timer started`, this.SERVICE_NAME);
-            }
 
             const updated: SessionWithParticipants = await this._findSession(code);
             const message: string = `User ${userId} left session with code ${code} in ${Date.now() - start}ms`;
@@ -375,14 +361,6 @@ export class SessionService {
                 data: { status: ParticipantStatus.disconnected },
             });
 
-            // Vérifier s'il reste un MJ connecté
-            const remaining = session.participants.filter(p => p.userId !== userId);
-            const hasConnectedMJ = remaining.some(p => p.status === ParticipantStatus.gameMaster);
-            const allDisconnected = remaining.length > 0 && remaining.every(p => p.status === ParticipantStatus.disconnected);
-            if ((!hasConnectedMJ && allDisconnected) || remaining.length === 0) {
-                await this.redisService.setEmptySessionTimer(sessionId, SessionService.EMPTY_SESSION_SECONDS);
-                this.logger.verbose(`All participants disconnected and no MJ left from session ${sessionId}, empty timer started`, this.SERVICE_NAME);
-            }
         } catch (error: any) {
             this.logger.error(`Error disconnecting participant ${userId} from session ${sessionId}: ${error.message}`, null, this.SERVICE_NAME);
         }
@@ -462,6 +440,40 @@ export class SessionService {
                 throw error;
             }
             const message = `Error validating character access for session ${code}: ${(error as Error).message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    /**
+     * Vérifie qu'un utilisateur authentifié est participant de la session ET que
+     * targetUserId est le MJ (creatorUserId) de cette session.
+     * Utilisé par le service media pour : PP du MJ et avatars PNJ du MJ.
+     * @see FR-media-avatar-read-access
+     */
+    async validateGmOwnership(
+        code: string,
+        requesterId: string,
+        targetUserId: string,
+    ): Promise<IResponse<{ ok: true }>> {
+        try {
+            const session = await this._findSession(code);
+
+            const isParticipant = session.participants.some((p) => p.userId === requesterId);
+            if (!isParticipant) {
+                throw new ForbiddenException('User is not a session participant');
+            }
+
+            if (session.creatorUserId !== targetUserId) {
+                throw new ForbiddenException('Target user is not the game master of this session');
+            }
+
+            return { message: 'Access granted', data: { ok: true } };
+        } catch (error: unknown) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            const message = `Error validating GM ownership for session ${code}: ${(error as Error).message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { cn } from "@/lib/utils";
 import {
   computeReferrerDiscount,
@@ -34,7 +34,9 @@ export default function ProfileReferralSection({
   const validatedCount = referralInfo.pendingReferralsCount ?? 0;
   const pendingCount =
     (referralInfo.refereeCount ?? 0) - (referralInfo.validatedRefereeCount ?? 0);
+  const totalCount = validatedCount + pendingCount;
   const currentDiscount = computeReferrerDiscount(validatedCount);
+  const pendingDiscount = computeReferrerDiscount(totalCount);
   const nextTier = TIERS_ASCENDING.find((tier) => tier.minReferees > validatedCount);
 
   return (
@@ -50,22 +52,8 @@ export default function ProfileReferralSection({
               className="text-base sm:text-lg font-bold">
               {t("tiersTitle")}
             </h3>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  aria-label={t("rulesTooltipAriaLabel")}>
-                  <CircleHelp
-                    className="size-4"
-                    aria-hidden="true"
-                  />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                align="start"
-                className="max-w-xs sm:max-w-sm">
+            <InfoTooltip
+              content={
                 <div className="flex flex-col gap-1.5 text-xs">
                   <p className="font-semibold">{t("rulesTooltipTitle")}</p>
                   <ul className="list-disc pl-4 space-y-1">
@@ -76,8 +64,15 @@ export default function ProfileReferralSection({
                     <li>{t("rulesTooltipNotCumulative")}</li>
                   </ul>
                 </div>
-              </TooltipContent>
-            </Tooltip>
+              }
+              side="bottom"
+              align="start"
+              moreInfoLabel={t("rulesTooltipAriaLabel")}>
+              <CircleHelp
+                className="size-4 text-muted-foreground cursor-help shrink-0 [@media(hover:none)]:hidden"
+                aria-hidden="true"
+              />
+            </InfoTooltip>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">{t("tiersSubtitle")}</p>
         </div>
@@ -91,7 +86,6 @@ export default function ProfileReferralSection({
             {t("yourCode")}
           </h4>
           <div className="flex flex-row items-center gap-2 flex-wrap">
-            <p className="text-lg font-bold tracking-wide">{referralInfo.code}</p>
             <Button
               variant="outline"
               size="sm"
@@ -128,25 +122,46 @@ export default function ProfileReferralSection({
             aria-label={t("tiersTitle")}>
             {TIERS_ASCENDING.map((tier) => {
               const isReached = validatedCount >= tier.minReferees;
+              const isPendingReachable = !isReached && totalCount >= tier.minReferees;
               const isCurrentTier = isReached && tier.discount === currentDiscount;
-              const tierState = isCurrentTier ? "current" : isReached ? "reached" : "upcoming";
+              const isPendingCurrentTier = isPendingReachable && tier.discount === pendingDiscount;
+              const tierState = isCurrentTier
+                ? "current"
+                : isReached
+                  ? "reached"
+                  : isPendingCurrentTier
+                    ? "pending-current"
+                    : isPendingReachable
+                      ? "pending"
+                      : "upcoming";
 
               return (
                 <div
                   key={tier.minReferees}
                   role="listitem"
                   data-tier-state={tierState}
-                  aria-label={t("tierSegmentAriaLabel", {
-                    count: tier.minReferees,
-                    discount: tier.discount,
-                  })}
+                  aria-label={
+                    isPendingReachable
+                      ? t("tierSegmentPendingAriaLabel", {
+                          count: tier.minReferees,
+                          discount: tier.discount,
+                        })
+                      : t("tierSegmentAriaLabel", {
+                          count: tier.minReferees,
+                          discount: tier.discount,
+                        })
+                  }
                   className={cn(
                     "flex min-w-0 flex-1 items-center justify-center transition-colors duration-300 first:rounded-l-full last:rounded-r-full",
                     isCurrentTier
                       ? "bg-primary text-primary-foreground shadow-inner"
                       : isReached
                         ? "bg-primary/60 text-primary-foreground"
-                        : "bg-gray-middle-light text-muted-foreground",
+                        : isPendingCurrentTier
+                          ? "bg-yellow text-black shadow-inner"
+                          : isPendingReachable
+                            ? "bg-yellow/60 text-black"
+                            : "bg-gray-middle-light text-muted-foreground",
                   )}>
                   <span className="text-[8px] font-bold tabular-nums leading-none sm:text-[10px] md:text-xs">
                     {tier.discount}%

@@ -2,6 +2,51 @@ import type { ReleaseNote } from '@/data/release-notes/types';
 
 export const ALL_RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '2.8.0',
+    date: '2026-06-26',
+    translations: {
+      fr: {
+        title: 'Sessions repensées, images & personnalisation',
+        highlights: [
+          { text: 'La session s\'ouvre désormais dans une modale entièrement repensée. Partagez un QR code ou un lien d\'invitation pour que vos joueurs rejoignent la table en un clin d\'œil.' },
+          { text: 'Ajoutez des liens rapides externes dans vos campagnes pour accéder en un clic à vos ressources favorites (cartes, musiques, notes…).' },
+          { text: 'Personnalisez vos fiches avec une image de personnage et votre photo de profil — visibles sur les fiches, dans le tracker d\'initiative et pendant les sessions.' },
+          { text: 'Les capacités et traits avec compteur d\'utilisations se comportent comme les emplacements de sorts : valeur max affichée, décrémentation à chaque usage depuis la fiche.' },
+          { text: 'Les aides contextuelles (infobulles) sont enfin accessibles sur mobile et tablette, pas seulement au survol de la souris.' },
+          { text: 'De nombreux correctifs dans les formulaires : saisie des tailles et poids, portées des actions (y compris les formats 24/96), classes, emplacements de sorts, pièces et affichage mobile.' },
+          { text: 'Codes promo plus transparents à la caisse : un message clair s\'affiche si un code est expiré, inactif ou ne remplit pas les conditions. Le parrainage est aussi plus lisible pour le parrain et le filleul.' },
+          { text: 'Correctifs session : création de personnage responsive, accès MJ aux fiches des joueurs, et fin de la clôture automatique quand tous les joueurs sont inactifs.' },
+        ],
+      },
+      en: {
+        title: 'Redesigned sessions, images & personalization',
+        highlights: [
+          { text: 'Sessions now open in a fully redesigned modal. Share a QR code or invite link so your players can join the table in a snap.' },
+          { text: 'Add external quick links to your campaigns for one-click access to your favorite resources (maps, music, notes…).' },
+          { text: 'Personalize your sheets with a character image and profile photo — visible on sheets, in the initiative tracker, and during sessions.' },
+          { text: 'Abilities and traits with use counters now behave like spell slots: max value shown, decrements on each use from the sheet.' },
+          { text: 'Contextual help (info tooltips) is now accessible on mobile and tablet, not just on mouse hover.' },
+          { text: 'Many form fixes: size and weight entry, action ranges (including 24/96 formats), classes, spell slots, coins, and mobile display.' },
+          { text: 'Clearer promo codes at checkout: an explicit message appears when a code is expired, inactive, or does not meet the conditions. Referral is also easier to understand for sponsor and referee.' },
+          { text: 'Session fixes: responsive character creation, GM access to player sheets, and sessions no longer auto-close when all players are inactive.' },
+        ],
+      },
+      es: {
+        title: 'Sesiones rediseñadas, imágenes y personalización',
+        highlights: [
+          { text: 'La sesión se abre ahora en un modal completamente rediseñado. Comparte un código QR o un enlace de invitación para que tus jugadores se unan a la mesa al instante.' },
+          { text: 'Añade enlaces rápidos externos en tus campañas para acceder con un clic a tus recursos favoritos (mapas, música, notas…).' },
+          { text: 'Personaliza tus fichas con una imagen de personaje y tu foto de perfil — visibles en las fichas, en el rastreador de iniciativa y durante las sesiones.' },
+          { text: 'Las habilidades y rasgos con contador de usos se comportan como las ranuras de hechizos: valor máximo mostrado, decremento en cada uso desde la ficha.' },
+          { text: 'La ayuda contextual (información emergente) es ahora accesible en móvil y tableta, no solo al pasar el ratón.' },
+          { text: 'Numerosas correcciones en los formularios: entrada de tamaños y pesos, alcances de acciones (incluidos formatos 24/96), clases, ranuras de hechizos, monedas y visualización móvil.' },
+          { text: 'Códigos promocionales más claros en la caja: aparece un mensaje explícito si un código está caducado, inactivo o no cumple las condiciones. El apadrinamiento también es más legible para padrino y ahijado.' },
+          { text: 'Correcciones de sesión: creación de personaje responsive, acceso del DJ a las fichas de los jugadores, y las sesiones ya no se cierran solas cuando todos los jugadores están inactivos.' },
+        ],
+      },
+    },
+  },
+  {
     version: '2.7.0',
     date: '2026-06-20',
     translations: {

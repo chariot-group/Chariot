@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { StoredUnitNumberInput } from "@/components/ui/stored-unit-number-input";
 import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
 import { useToast } from "@/hooks/useToast";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
@@ -234,10 +235,12 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     aria-hidden="true"
                     className="size-6 brightness-0 invert"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-walk"
                     type="number"
                     inputMode="decimal"
@@ -269,10 +272,12 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     className="text-white"
                     aria-hidden="true"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-climb"
                     type="number"
                     inputMode="decimal"
@@ -304,10 +309,12 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     className="text-white"
                     aria-hidden="true"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-swim"
                     type="number"
                     inputMode="decimal"
@@ -339,10 +346,12 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     className="text-white"
                     aria-hidden="true"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-fly"
                     type="number"
                     inputMode="decimal"
@@ -374,10 +383,12 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                     className="text-white"
                     aria-hidden="true"
                   />
-                  <Input
+                  <StoredUnitNumberInput
                     {...field}
-                    value={field.value != null && field.value !== "" ? displayFt(Number(field.value)) : ""}
-                    onChange={(e) => field.onChange(e.target.value !== "" ? toFeet(Number(e.target.value)) : "")}
+                    storedValue={field.value}
+                    onStoredChange={field.onChange}
+                    toDisplay={displayFt}
+                    toStored={toFeet}
                     id="speed-burrow"
                     type="number"
                     inputMode="decimal"

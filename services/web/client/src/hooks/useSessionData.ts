@@ -7,14 +7,15 @@ import { usePathname, useRouter } from "next/navigation";
 import campaignService from "@/services/CampaignService";
 import characterService from "@/services/CharacterService";
 import sessionService, { type SessionParticipant } from "@/services/SessionService";
-import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisplayNames";
-import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import UserService from "@/services/UserService";
+import { formatSessionParticipantUserLabel, SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
     clearCurrentSession,
     setCurrentSession,
     setSessionStatus,
     setSessionExpiresAt,
+    selectIsInSession,
     selectSessionParticipantDisplayNames,
     mergeSessionParticipantDisplayNames,
     pruneSessionParticipantDisplayNames,
@@ -36,6 +37,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     participants: SessionParticipant[];
     setParticipants: React.Dispatch<React.SetStateAction<SessionParticipant[]>>;
     participantNames: Record<string, string>;
+    participantAvatars: Record<string, string | null | undefined>;
     characterDetails: Record<string, Character>;
     myCharacters: Character[];
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
@@ -51,9 +53,11 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const locale = pathname.split("/")[1] || "fr";
 
     const participantNames = useAppSelector(selectSessionParticipantDisplayNames);
+    const isAlreadyInSession = useAppSelector(selectIsInSession);
 
     const [campaignLabel, setCampaignLabel] = useState<string | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
+    const [participantAvatars, setParticipantAvatars] = useState<Record<string, string | null | undefined>>({});
     const [characterDetails, setCharacterDetails] = useState<Record<string, Character>>({});
     const [myCharacters, setMyCharacters] = useState<Character[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -113,7 +117,9 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             try {
                 await sessionService.joinSession(code);
                 if (cancelled) return;
-                toast.success(t("toast.connectionSuccess"));
+                if (!isAlreadyInSession) {
+                    toast.success(t("toast.connectionSuccess"));
+                }
             } catch (error: unknown) {
                 if (cancelled) return;
                 const message =
@@ -138,14 +144,31 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
                 setParticipants(data.participants);
 
                 dispatch(pruneSessionParticipantDisplayNames());
-                const nameEntries = await Promise.all(
+                const profileEntries = await Promise.all(
                     data.participants.map(async (p) => {
-                        const label = await fetchSessionParticipantDisplayName(p.userId);
-                        return [p.userId, label] as const;
+                        try {
+                            const user = await UserService.getUserById(p.userId);
+                            return {
+                                userId: p.userId,
+                                label: formatSessionParticipantUserLabel(user) ?? SESSION_PARTICIPANT_NAME_LOADING,
+                                avatar: user.avatar ?? null,
+                            };
+                        } catch {
+                            return {
+                                userId: p.userId,
+                                label: SESSION_PARTICIPANT_NAME_LOADING,
+                                avatar: null,
+                            };
+                        }
                     }),
                 );
+                setParticipantAvatars(
+                    Object.fromEntries(profileEntries.map(({ userId, avatar }) => [userId, avatar])),
+                );
                 const resolvedNames = Object.fromEntries(
-                    nameEntries.filter(([, label]) => label !== SESSION_PARTICIPANT_NAME_LOADING),
+                    profileEntries
+                        .filter(({ label }) => label !== SESSION_PARTICIPANT_NAME_LOADING)
+                        .map(({ userId, label }) => [userId, label] as const),
                 );
                 if (Object.keys(resolvedNames).length > 0) {
                     dispatch(mergeSessionParticipantDisplayNames(resolvedNames));
@@ -189,6 +212,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         participants,
         setParticipants,
         participantNames,
+        participantAvatars,
         characterDetails,
         myCharacters,
         fetchCharacterDetails,

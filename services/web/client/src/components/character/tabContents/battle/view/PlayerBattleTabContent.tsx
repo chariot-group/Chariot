@@ -28,7 +28,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
 
   return (
     <div className="w-full flex flex-col gap-4 items-start">
-      <div className="grid grid-cols-4 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
+      <div className="grid grid-cols-2 lg:grid-cols-3 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
         {/* Statistiques */}
         <Statistics
           player={player}
@@ -36,7 +36,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
           onCharacterUpdate={onCharacterUpdate}
         />
         {/* Jet de sauvegarde */}
-        <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
+        <div className="flex flex-col gap-2 col-span-2 sm:col-span-1">
           <Card
             className="gap-3 p-4 md:px-6 h-fit"
             role="region"
@@ -48,7 +48,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
             </h2>
 
             <div
-              className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
+              className="grid grid-cols-3 gap-x-2 gap-y-1"
               role="list">
               {player?.stats &&
                 Object.entries(player?.stats?.savingThrows).map(([key]) => {
@@ -67,7 +67,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
 
         {/* Jets de sauvegarde contre la mort */}
         <Card
-          className="gap-3 p-4 md:px-6 h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
+          className="gap-3 p-4 md:px-6 h-fit col-span-2 sm:col-span-1 items-end"
           role="region"
           aria-labelledby={deathSavesHeadingId}>
           <h2
@@ -75,10 +75,10 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
             className={`text-xl sm:text-2xl font-semibold self-start ${accentColor}`}>
             {t("deathSaves")}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2 items-center w-full">
+          <div className="grid grid-cols-2 gap-2 items-center w-full">
             <span>{t("successes")}</span>
             <div
-              className="grid grid-cols-3 gap-1 md:gap-1 w-full md:w-3/4 xl:w-full xl:max-w-45 justify-self-end md:justify-self-start xl:justify-self-end"
+              className="grid grid-cols-3 gap-1 w-full max-w-[60px] justify-self-end"
               role="status"
               aria-label={t("deathSaveSuccessesStatus", { count: player.deathSaves.successes })}>
               {Array.from({ length: 3 }).map((_, index) => (
@@ -95,7 +95,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
             </div>
             <span>{t("failures")}</span>
             <div
-              className="grid grid-cols-3 gap-1 md:gap-2 w-full md:w-3/4 xl:w-full xl:max-w-45 justify-self-end md:justify-self-start xl:justify-self-end"
+              className="grid grid-cols-3 gap-1 w-full max-w-[60px] justify-self-end"
               role="status"
               aria-label={t("deathSaveFailuresStatus", { count: player.deathSaves.failures })}>
               {Array.from({ length: 3 }).map((_, index) => (
@@ -116,7 +116,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
 
       <div className="grid lg:grid-cols-3 max-[376px]:grid-cols-1 gap-2 w-full">
         {/* Capacités et traits */}
-        <div className="order-2 lg:order-1">
+        <div className="order-2 lg:order-1 min-w-0">
           <AbilitiesSection
             abilities={player.abilities}
             accentColor={accentColor}
@@ -127,7 +127,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
             onAfterAbilityUse={onCharacterUpdate}
           />
         </div>
-        <div className="flex flex-row gap-2 order-1 lg:order-2">
+        <div className="order-1 lg:order-2 min-w-0 w-full">
           {/* Actions */}
           <ActionSection
             title={t("actions")}
@@ -136,7 +136,7 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
           />
         </div>
 
-        <div className="order-3 lg:order-3">
+        <div className="order-3 lg:order-3 min-w-0">
           <Card
             className="gap-3 p-4 md:px-6 h-fit"
             role="region"

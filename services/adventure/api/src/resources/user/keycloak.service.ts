@@ -94,7 +94,7 @@ export class KeycloakService {
    * @param newPassword New password to set
    * @throws UnauthorizedException if current password is incorrect
    * @throws ForbiddenException if new password doesn't meet policy
-   * @see FR-011: User Password Change
+   * @see FR-user-password-change: User Password Change
    */
   async changeUserPassword(
     keycloakId: string,
@@ -172,6 +172,34 @@ export class KeycloakService {
       );
       throw error;
     }
+  }
+
+  async updateUserAttributes(
+    keycloakId: string,
+    attributes: Record<string, string[]>,
+  ): Promise<void> {
+    await this.authenticate();
+
+    const realm = this.configService.get<string>('KEYCLOAK_REALM', this.realm);
+
+    const existing = await this.adminClient.users.findOne({
+      realm,
+      id: keycloakId,
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`User not found: ${keycloakId}`);
+    }
+
+    await this.adminClient.users.update(
+      { realm, id: keycloakId },
+      {
+        attributes: {
+          ...(existing.attributes ?? {}),
+          ...attributes,
+        },
+      },
+    );
   }
 
   async updateUser(

@@ -9,6 +9,10 @@ import helmet from "helmet";
 
 type RawBodyRequest = express.Request & { rawBody?: Buffer };
 
+function isMultipartContentType(contentType: string | undefined): boolean {
+  return typeof contentType === "string" && contentType.includes("multipart/form-data");
+}
+
 const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/, "");
 
 async function bootstrap() {
@@ -52,6 +56,22 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
     exposedHeaders: ["Authorization"],
+  });
+
+  // Buffer multipart uploads so the proxy can forward exact bytes (stream piping via axios is unreliable).
+  app.use((req: RawBodyRequest, res, next) => {
+    if (!isMultipartContentType(req.headers["content-type"])) {
+      next();
+      return;
+    }
+
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk: Buffer) => chunks.push(chunk));
+    req.on("end", () => {
+      req.rawBody = Buffer.concat(chunks);
+      next();
+    });
+    req.on("error", (error) => next(error));
   });
 
   app.use(

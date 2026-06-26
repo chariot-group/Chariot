@@ -41,7 +41,7 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
             </h2>
 
             <div
-              className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2"
+              className="grid grid-cols-3 gap-x-2 gap-y-1"
               role="list">
               {npc?.stats &&
                 Object.entries(npc?.stats?.savingThrows).map(([key]) => {
@@ -102,23 +102,29 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
       {/* Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 w-full">
         {/* Actions Standards */}
-        <ActionSection
-          title={t("actions")}
-          actions={npc.actions.standard}
-          accentColor={accentColor}
-        />
+        <div className="min-w-0">
+          <ActionSection
+            title={t("actions")}
+            actions={npc.actions.standard}
+            accentColor={accentColor}
+          />
+        </div>
         {/* Actions Légendaires */}
-        <ActionSection
-          title={t("legendaryActions")}
-          actions={npc.actions.legendary}
-          accentColor={accentColor}
-        />
+        <div className="min-w-0">
+          <ActionSection
+            title={t("legendaryActions")}
+            actions={npc.actions.legendary}
+            accentColor={accentColor}
+          />
+        </div>
         {/* Actions de Repèrex */}
-        <ActionSection
-          title={t("lairActions")}
-          actions={npc.actions.lair}
-          accentColor={accentColor}
-        />
+        <div className="min-w-0">
+          <ActionSection
+            title={t("lairActions")}
+            actions={npc.actions.lair}
+            accentColor={accentColor}
+          />
+        </div>
       </div>
     </div>
   );

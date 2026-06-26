@@ -7,6 +7,7 @@ import {
     InternalServerErrorException,
     HttpException,
     GoneException,
+    UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { IResponse, IPaginatedResponse } from '@/common/dtos/response.dto';
@@ -296,6 +297,12 @@ export class PromoCodeService {
         }
     }
 
+    async countUsageForUser(promoCodeId: string, userId: string): Promise<number> {
+        return this.prisma.promoCodeUsage.count({
+            where: { promoCodeId, userId },
+        });
+    }
+
     /**
      * Valide un code promo pour un utilisateur donné.
      * Retourne le code promo si valide, lève une exception sinon.
@@ -335,9 +342,10 @@ export class PromoCodeService {
             }
 
             if (promoCode.isFirstOrderOnly && !isFirstOrder) {
-                throw new BadRequestException(
-                    `Le code promo '${code}' est réservé à la première commande`,
-                );
+                throw new UnprocessableEntityException({
+                    errorCode: 'PROMO_FIRST_ORDER_ONLY',
+                    message: `Le code promo '${code}' est réservé à la première commande`,
+                });
             }
 
             if (

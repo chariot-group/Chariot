@@ -4,6 +4,8 @@ import {
     Logger,
     InternalServerErrorException,
     NotFoundException,
+    GoneException,
+    UnprocessableEntityException,
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import axios from 'axios';
@@ -29,6 +31,10 @@ import {
     isStripeFreeOrder,
     resolveChargeableAmount,
 } from '@/resources/stripe/stripe-charge.utils';
+import {
+    calculateAffiliationDiscount,
+    calculateDiscount,
+} from '@/resources/payment/PaymentCalculationService';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -61,9 +67,9 @@ export class StripeService {
             const {
                 product,
                 originalUnitAmount,
-                chargeableUnitAmount,
-                giftAmountPerUnit,
-                discountAmountPerUnit,
+                chargeableOrderAmount,
+                giftOrderAmount,
+                totalDiscountAmount,
                 promoCodeId,
                 affiliationId,
                 referralId,
@@ -71,7 +77,7 @@ export class StripeService {
                 referralDiscountPercent,
             } = await this.computeDiscount(dto, userId);
 
-            if (isStripeFreeOrder(chargeableUnitAmount)) {
+            if (isStripeFreeOrder(chargeableOrderAmount)) {
                 throw new BadRequestException(
                     'Cette commande ne peut pas être payée via Stripe Checkout. Utilisez le flux de commande gratuite.',
                 );
@@ -87,7 +93,7 @@ export class StripeService {
                             product_data: {
                                 name: `${displayName} (${product.metadata?.token_number || '0'} chars)`,
                             },
-                            unit_amount: chargeableUnitAmount,
+                            unit_amount: chargeableOrderAmount,
                         },
                         quantity: 1,
                     },
@@ -100,7 +106,7 @@ export class StripeService {
                     packId: dto.packId,
                     tokenAmount: product.metadata?.token_number || '0',
                     originalUnitAmount: String(originalUnitAmount),
-                    discountAmountPerUnit: String(discountAmountPerUnit + giftAmountPerUnit),
+                    discountAmountPerUnit: String(totalDiscountAmount + giftOrderAmount),
                     ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
                     ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
                     ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
@@ -125,11 +131,12 @@ export class StripeService {
     private async computeDiscount(dto: CheckoutDto, userId: string): Promise<{
         product: StripeProductWithPrices;
         currency: string;
+        quantity: number;
         originalUnitAmount: number;
-        discountedUnitAmount: number;
-        chargeableUnitAmount: number;
-        giftAmountPerUnit: number;
-        discountAmountPerUnit: number;
+        originalOrderAmount: number;
+        chargeableOrderAmount: number;
+        giftOrderAmount: number;
+        totalDiscountAmount: number;
         promoCodeId?: string;
         affiliationId?: string;
         referralId?: string;
@@ -137,6 +144,7 @@ export class StripeService {
         referralDiscountPercent?: number;
     }> {
         const { packId, promoCode, affiliationCode } = dto;
+        const quantity = Math.max(1, dto.quantity ?? 1);
 
         const product = await this.findProductWithPriceById(packId);
         if (!product) {
@@ -146,8 +154,9 @@ export class StripeService {
         }
 
         const originalUnitAmount = product.prices[0].unit_amount!;
-        let discountAmountPerUnit = 0;
-        let affiliationDiscountPerUnit = 0;
+        const originalOrderAmount = originalUnitAmount * quantity;
+        let totalDiscountAmount = 0;
+        let affiliationDiscountTotal = 0;
         let promoCodeId: string | undefined;
         let affiliationId: string | undefined;
         let referralId: string | undefined;
@@ -164,10 +173,11 @@ export class StripeService {
                 );
             }
 
-            affiliationDiscountPerUnit = Math.floor(
-                (originalUnitAmount * affiliation.userDiscountPercent) / 100,
+            affiliationDiscountTotal = calculateAffiliationDiscount(
+                originalOrderAmount,
+                affiliation.userDiscountPercent,
             );
-            discountAmountPerUnit += affiliationDiscountPerUnit;
+            totalDiscountAmount += affiliationDiscountTotal;
             affiliationId = affiliation.id;
         }
 
@@ -176,19 +186,17 @@ export class StripeService {
             const promoResult = await this.promoCodeService.validate(
                 promoCode,
                 userId,
-                originalUnitAmount,
+                originalOrderAmount,
                 isFirstOrder,
             );
             const promo = promoResult.data;
-            const amountAfterAffiliation = originalUnitAmount - affiliationDiscountPerUnit;
+            const amountAfterAffiliation = originalOrderAmount - affiliationDiscountTotal;
 
-            if (promo.discountType === 'PERCENTAGE') {
-                discountAmountPerUnit += Math.floor(
-                    (amountAfterAffiliation * promo.discountValue) / 100,
-                );
-            } else {
-                discountAmountPerUnit += Math.min(promo.discountValue, amountAfterAffiliation);
-            }
+            totalDiscountAmount += calculateDiscount(
+                amountAfterAffiliation,
+                promo.discountType,
+                promo.discountValue,
+            );
 
             promoCodeId = promo.id;
         }
@@ -197,10 +205,10 @@ export class StripeService {
         if (!promoCodeId && !affiliationId) {
             const referralDiscount = await this.referralService.checkUserReferralDiscount(userId);
             if (referralDiscount) {
-                const referralDiscountAmount = Math.floor(
-                    (originalUnitAmount * referralDiscount.discountPercent) / 100,
+                totalDiscountAmount += calculateAffiliationDiscount(
+                    originalOrderAmount,
+                    referralDiscount.discountPercent,
                 );
-                discountAmountPerUnit += referralDiscountAmount;
                 referralId = referralDiscount.referralId;
                 referralDiscountType = referralDiscount.discountType;
                 referralDiscountPercent = referralDiscount.discountPercent;
@@ -208,20 +216,21 @@ export class StripeService {
         }
 
         const currency = product.prices[0].currency;
-        const discountedUnitAmount = Math.max(0, originalUnitAmount - discountAmountPerUnit);
+        const discountedOrderAmount = Math.max(0, originalOrderAmount - totalDiscountAmount);
         const { chargeableAmount, giftAmount } = resolveChargeableAmount(
-            discountedUnitAmount,
+            discountedOrderAmount,
             currency,
         );
 
         return {
             product,
             currency,
+            quantity,
             originalUnitAmount,
-            discountedUnitAmount,
-            chargeableUnitAmount: chargeableAmount,
-            giftAmountPerUnit: giftAmount,
-            discountAmountPerUnit,
+            originalOrderAmount,
+            chargeableOrderAmount: chargeableAmount,
+            giftOrderAmount: giftAmount,
+            totalDiscountAmount,
             promoCodeId,
             affiliationId,
             referralId,
@@ -245,9 +254,9 @@ export class StripeService {
             const {
                 product,
                 originalUnitAmount,
-                chargeableUnitAmount,
-                giftAmountPerUnit,
-                discountAmountPerUnit,
+                chargeableOrderAmount,
+                giftOrderAmount,
+                totalDiscountAmount,
                 promoCodeId,
                 affiliationId,
                 referralId,
@@ -255,7 +264,7 @@ export class StripeService {
                 referralDiscountPercent,
             } = await this.computeDiscount(dto, userId);
 
-            if (isStripeFreeOrder(chargeableUnitAmount)) {
+            if (isStripeFreeOrder(chargeableOrderAmount)) {
                 throw new BadRequestException(
                     'Cette commande ne peut pas être payée via Stripe Checkout. Utilisez le flux de commande gratuite.',
                 );
@@ -277,7 +286,7 @@ export class StripeService {
                             product_data: {
                                 name: `${displayName} (${product.metadata?.token_number || '0'} chars)`,
                             },
-                            unit_amount: chargeableUnitAmount,
+                            unit_amount: chargeableOrderAmount,
                         },
                         quantity: 1,
                     },
@@ -289,7 +298,7 @@ export class StripeService {
                     packId,
                     tokenAmount: product.metadata?.token_number || '0',
                     originalUnitAmount: String(originalUnitAmount),
-                    discountAmountPerUnit: String(discountAmountPerUnit + giftAmountPerUnit),
+                    discountAmountPerUnit: String(totalDiscountAmount + giftOrderAmount),
                     ...(promoCodeId && { promoCode, promoCodeId }),
                     ...(affiliationId && { affiliationCode, affiliationId }),
                     ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
@@ -377,7 +386,11 @@ export class StripeService {
         }
     }
 
-    async resolveCode(code: string): Promise<IResponse<ResolvedCode>> {
+    async resolveCode(
+        code: string,
+        userId: string,
+        orderAmount: number,
+    ): Promise<IResponse<ResolvedCode>> {
         try {
             const start = Date.now();
 
@@ -390,6 +403,48 @@ export class StripeService {
                     promo.isActive &&
                     (!promo.expiresAt || new Date() < new Date(promo.expiresAt))
                 ) {
+                    if (
+                        promo.maxTotalUses !== null &&
+                        promo.currentTotalUses >= promo.maxTotalUses
+                    ) {
+                        throw new GoneException({
+                            errorCode: 'PROMO_EXHAUSTED',
+                            message: `Le code promo '${code}' a atteint son nombre maximum d'utilisations`,
+                        });
+                    }
+
+                    const userUsageCount = await this.promoCodeService.countUsageForUser(
+                        promo.id,
+                        userId,
+                    );
+                    if (userUsageCount >= promo.maxUsesPerUser) {
+                        throw new GoneException({
+                            errorCode: 'PROMO_USER_LIMIT_REACHED',
+                            message: `Vous avez déjà utilisé le code '${code}' le nombre maximum de fois autorisé`,
+                        });
+                    }
+
+                    if (
+                        promo.minOrderAmount !== null &&
+                        orderAmount < promo.minOrderAmount
+                    ) {
+                        throw new UnprocessableEntityException({
+                            errorCode: 'PROMO_MIN_ORDER',
+                            minOrderAmount: promo.minOrderAmount,
+                            message: `Le code promo '${code}' nécessite un panier minimum de ${(promo.minOrderAmount / 100).toFixed(2)}€`,
+                        });
+                    }
+
+                    if (promo.isFirstOrderOnly) {
+                        const isFirstOrder = !(await this.paymentService.hasCompletedPayment(userId));
+                        if (!isFirstOrder) {
+                            throw new UnprocessableEntityException({
+                                errorCode: 'PROMO_FIRST_ORDER_ONLY',
+                                message: `Le code promo '${code}' est réservé à la première commande`,
+                            });
+                        }
+                    }
+
                     const message = `Code '${code}' resolved as promo in ${Date.now() - start}ms`;
                     this.logger.verbose(message, this.SERVICE_NAME);
                     return {
@@ -401,7 +456,8 @@ export class StripeService {
                         },
                     };
                 }
-            } catch {
+            } catch (err) {
+                if (err instanceof GoneException || err instanceof UnprocessableEntityException) throw err;
                 // Pas un code promo, on essaie l'affiliation
             }
 
@@ -428,7 +484,11 @@ export class StripeService {
 
             throw new NotFoundException(`Code '${code}' introuvable ou inactif`);
         } catch (error) {
-            if (error instanceof NotFoundException) throw error;
+            if (
+                error instanceof NotFoundException ||
+                error instanceof GoneException ||
+                error instanceof UnprocessableEntityException
+            ) throw error;
             const errorMessage = `Error resolving code '${code}': ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(errorMessage);
@@ -541,10 +601,10 @@ export class StripeService {
 
             const {
                 product,
-                originalUnitAmount,
-                chargeableUnitAmount,
-                giftAmountPerUnit,
-                discountAmountPerUnit,
+                originalOrderAmount,
+                chargeableOrderAmount,
+                giftOrderAmount,
+                totalDiscountAmount,
                 promoCodeId,
                 affiliationId,
                 referralId,
@@ -554,9 +614,9 @@ export class StripeService {
 
             const quantity = Math.max(1, dto.quantity ?? 1);
             const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
-            const totalDiscountPerUnit = discountAmountPerUnit + giftAmountPerUnit;
+            const orderDiscountTotal = totalDiscountAmount + giftOrderAmount;
 
-            if (isStripeFreeOrder(chargeableUnitAmount)) {
+            if (isStripeFreeOrder(chargeableOrderAmount)) {
                 await this.stripe.paymentIntents.cancel(piId);
 
                 const message = `PaymentIntent ${piId} cancelled for free order in ${Date.now() - start} ms`;
@@ -565,19 +625,19 @@ export class StripeService {
                     message,
                     data: {
                         isFreeOrder: true,
-                        giftAmountPerUnit,
+                        giftAmountPerUnit: giftOrderAmount,
                     },
                 };
             }
 
             await this.stripe.paymentIntents.update(piId, {
-                amount: chargeableUnitAmount * quantity,
+                amount: chargeableOrderAmount,
                 description: `${displayName} (${product.metadata?.token_number || '0'} chars) x${quantity}`,
                 metadata: {
                     ...existingPI.metadata,
                     tokenAmount: String(tokenAmountPerPack * quantity),
-                    originalUnitAmount: String(originalUnitAmount * quantity),
-                    discountAmountPerUnit: String(totalDiscountPerUnit * quantity),
+                    originalUnitAmount: String(originalOrderAmount),
+                    discountAmountPerUnit: String(orderDiscountTotal),
                     promoCode: promoCodeId ? (dto.promoCode ?? '') : '',
                     promoCodeId: promoCodeId ?? '',
                     affiliationCode: affiliationId ? (dto.affiliationCode ?? '') : '',
@@ -623,10 +683,10 @@ export class StripeService {
             const {
                 product,
                 currency,
-                originalUnitAmount,
-                chargeableUnitAmount,
-                giftAmountPerUnit,
-                discountAmountPerUnit,
+                originalOrderAmount,
+                chargeableOrderAmount,
+                giftOrderAmount,
+                totalDiscountAmount,
                 promoCodeId,
                 affiliationId,
                 referralId,
@@ -634,7 +694,7 @@ export class StripeService {
                 referralDiscountPercent,
             } = await this.computeDiscount(dto, userId);
 
-            if (!isStripeFreeOrder(chargeableUnitAmount)) {
+            if (!isStripeFreeOrder(chargeableOrderAmount)) {
                 throw new BadRequestException(
                     'Cette commande nécessite un paiement par carte et ne peut pas être honorée gratuitement',
                 );
@@ -642,17 +702,16 @@ export class StripeService {
 
             const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
             const totalTokens = tokenAmountPerPack * quantity;
-            const originalTotal = originalUnitAmount * quantity;
-            const totalDiscountAmount = (discountAmountPerUnit + giftAmountPerUnit) * quantity;
+            const totalDiscountAmountWithGift = totalDiscountAmount + giftOrderAmount;
             const orderId = `free_${randomUUID()}`;
 
             await this.paymentService.createCompleted({
                 userId,
-                amount: originalTotal,
+                amount: originalOrderAmount,
                 currency,
                 stripeSessionId: orderId,
                 tokenCount: totalTokens,
-                discountAmount: totalDiscountAmount,
+                discountAmount: totalDiscountAmountWithGift,
                 ...(promoCodeId && { promoCodeId }),
                 ...(affiliationId && { affiliationId }),
             });
@@ -663,8 +722,8 @@ export class StripeService {
                     referralId,
                     referralDiscountType,
                     orderId,
-                    originalTotal,
-                    totalDiscountAmount,
+                    originalOrderAmount,
+                    totalDiscountAmountWithGift,
                     parseInt(String(referralDiscountPercent ?? '0'), 10),
                 );
             }
@@ -698,10 +757,10 @@ export class StripeService {
 
         const {
             product,
-            originalUnitAmount,
-            chargeableUnitAmount,
-            giftAmountPerUnit,
-            discountAmountPerUnit,
+            originalOrderAmount,
+            chargeableOrderAmount,
+            giftOrderAmount,
+            totalDiscountAmount,
             promoCodeId,
             affiliationId,
             referralId,
@@ -709,18 +768,18 @@ export class StripeService {
             referralDiscountPercent,
         } = await this.computeDiscount(dto, userId);
 
-        if (isStripeFreeOrder(chargeableUnitAmount)) {
+        if (isStripeFreeOrder(chargeableOrderAmount)) {
             return {
                 isFreeOrder: true,
-                giftAmountPerUnit,
+                giftAmountPerUnit: giftOrderAmount,
             };
         }
 
         const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
-        const totalDiscountPerUnit = discountAmountPerUnit + giftAmountPerUnit;
+        const orderDiscountTotal = totalDiscountAmount + giftOrderAmount;
 
         const paymentIntent = await this.stripe.paymentIntents.create({
-            amount: chargeableUnitAmount * quantity,
+            amount: chargeableOrderAmount,
             currency: product.prices[0].currency,
             automatic_payment_methods: { enabled: true },
             description: `${displayName} (${product.metadata?.token_number || '0'} chars) x${quantity}`,
@@ -730,8 +789,8 @@ export class StripeService {
                 packId,
                 displayName,
                 tokenAmount: String(tokenAmountPerPack * quantity),
-                originalUnitAmount: String(originalUnitAmount * quantity),
-                discountAmountPerUnit: String(totalDiscountPerUnit * quantity),
+                originalUnitAmount: String(originalOrderAmount),
+                discountAmountPerUnit: String(orderDiscountTotal),
                 ...(promoCodeId && { promoCode: dto.promoCode!, promoCodeId }),
                 ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
                 ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),

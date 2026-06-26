@@ -39,8 +39,8 @@ function CheckoutContent() {
   } = useCheckout();
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#0c0c0c] bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat overflow-hidden">
-      <div className="w-full mx-auto px-4 py-6 flex flex-col gap-6 flex-1 min-h-0">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#0c0c0c] bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat overflow-y-auto md:overflow-hidden">
+      <div className="w-full mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col gap-6 flex-1 md:min-h-0">
         {/* Header */}
         <div className="flex items-center justify-between">
           <Button
@@ -68,7 +68,7 @@ function CheckoutContent() {
           />
         </div>
 
-        <h1 className="text-xl font-bold text-center text-card-foreground">{t("title")}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-center text-card-foreground">{t("title")}</h1>
 
         {productLoading && (
           <div className="flex justify-center py-10">

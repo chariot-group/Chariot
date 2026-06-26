@@ -86,7 +86,7 @@ describe("isInitiativeTrackerPage", () => {
     });
 });
 
-describe("GM combat sidebar action button (FR-021)", () => {
+describe("GM combat sidebar action button (FR-session-combat-navigation)", () => {
     it("nominal: shows return to sheet on tracker when battle is initialized but not started", () => {
         expect(
             shouldGmShowReturnToSheet({

@@ -48,7 +48,6 @@ describe("codexHealthStore", () => {
     const {
       acquireCodexHealthSubscription,
       releaseCodexHealthSubscription,
-      runCodexHealthCheck,
       CODEX_HEALTH_CACHE_TTL_MS,
     } = await import("../codexHealthStore");
 

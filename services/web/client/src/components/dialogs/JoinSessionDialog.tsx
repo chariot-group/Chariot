@@ -20,8 +20,7 @@ import sessionService from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
 import { useAppDispatch } from "@/store/hooks";
-import { setCurrentSession } from "@/store/slices/sessionSlice";
-import { usePathname, useRouter } from "next/navigation";
+import { setCurrentSession, openSessionLobby } from "@/store/slices/sessionSlice";
 
 interface JoinSessionDialogProps {
   /** The element that opens the dialog (e.g. a Button). Optional when using controlled mode. */
@@ -30,25 +29,26 @@ interface JoinSessionDialogProps {
   open?: boolean;
   /** Controlled open state handler. Required when `open` is provided. */
   onOpenChange?: (open: boolean) => void;
+  /** Pre-filled session code (e.g. from ?join=CODE URL param). */
+  initialCode?: string;
 }
 
 export function JoinSessionDialog({
   children,
   open: openProp,
   onOpenChange: onOpenChangeProp,
+  initialCode = "",
 }: JoinSessionDialogProps) {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  const pathname = usePathname();
 
   const isControlled = openProp !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isControlled ? openProp : internalOpen;
   const setOpen = isControlled ? (val: boolean) => onOpenChangeProp?.(val) : setInternalOpen;
 
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode);
   const [characterId, setCharacterId] = useState("");
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loadingCharacters, setLoadingCharacters] = useState(false);
@@ -82,9 +82,7 @@ export function JoinSessionDialog({
       await sessionService.joinSession(code, characterId);
 
       dispatch(setCurrentSession({ code, campaignId: session.creatorCampaignId }));
-
-      const locale = pathname?.split("/")[1] || "fr";
-      router.push(`/${locale}/campaigns/${session.creatorCampaignId}/session/${code}`);
+      dispatch(openSessionLobby());
 
       setOpen(false);
       setCode("");
@@ -113,7 +111,7 @@ export function JoinSessionDialog({
         <DialogHeader>
           <DialogTitle>{t("joinSessionDialogTitle")}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4 w-full overflow-hidden">
+        <div className="flex flex-col items-center gap-4 py-4 w-full">
           <InputOTP
             maxLength={6}
             value={code}
@@ -122,17 +120,36 @@ export function JoinSessionDialog({
               setError(null);
             }}
             disabled={isJoining}
-            autoFocus>
+            autoFocus
+            containerClassName="w-full max-w-full justify-center gap-1 sm:gap-2">
             <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
+              <InputOTPSlot
+                index={0}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
+              <InputOTPSlot
+                index={1}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
+              <InputOTPSlot
+                index={2}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
             </InputOTPGroup>
-            <InputOTPSeparator />
+            <InputOTPSeparator className="mx-0.5 sm:mx-1" />
             <InputOTPGroup>
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
+              <InputOTPSlot
+                index={3}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
+              <InputOTPSlot
+                index={4}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
+              <InputOTPSlot
+                index={5}
+                className="size-8 text-xs sm:size-9 sm:text-sm"
+              />
             </InputOTPGroup>
           </InputOTP>
           <CharacterSelect

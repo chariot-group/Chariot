@@ -4,7 +4,7 @@ import { WinstonModule } from 'nest-winston';
 import { instance } from '@/logger/winston.logger';
 import { ValidationPipe } from '@nestjs/common';
 import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import * as express from 'express';
 import { ErrorDetailsFilter } from '@/common/filters/errors.filter';
 import { setupSwagger } from '@/config/swagger.config';

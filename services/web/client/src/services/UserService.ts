@@ -26,7 +26,7 @@ class UserService {
      * Change password for current authenticated user
      * @param passwordData Current and new passwords
      * @throws Error with message if password change fails
-     * @see FR-011: User Password Change
+     * @see FR-user-password-change: User Password Change
      */
     async changePassword(passwordData: PasswordChangeDto): Promise<void> {
         try {
@@ -79,7 +79,7 @@ class UserService {
         }
     }
 
-    async getUserById(id: string): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username'>> {
+    async getUserById(id: string): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username' | 'avatar'>> {
         try {
             const response = await apiClient().get<IResponse<User>>(`${this.BASE_PATH}/${id}`);
             return response.data.data;

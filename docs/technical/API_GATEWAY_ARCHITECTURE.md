@@ -58,7 +58,7 @@ Centralized configuration:
 - JSON structured format with timestamps
 - Daily log rotation (14 days retention)
 - Files: `logger/logs/combined-YYYY-MM-DD.log`, `error-YYYY-MM-DD.log`
-- Compliant with FR-001
+- Compliant with FR-logging-system
 
 ### Metrics (Prometheus)
 Exposed on `/metrics`:
@@ -185,7 +185,7 @@ sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total
 ## References
 
 - Gateway README: [services/gateway](../../services/gateway)
-- Functional rules: [functional-rules.md](../functional-rules.md) (FR-002 to FR-008)
+- Functional rules: [functional-rules.md](../functional-rules.md) (FR-character-universal-fields to FR-user-balance-history)
 - [NestJS Documentation](https://docs.nestjs.com/)
 - [Throttler Module](https://docs.nestjs.com/security/rate-limiting)
 

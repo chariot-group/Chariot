@@ -1,6 +1,7 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { LogOut, User } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -64,14 +65,20 @@ export default function Profile() {
         aria-label={t("profile")}
         aria-expanded={isOpen}
         aria-haspopup="true">
-        <Avatar className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer">
-          <AvatarImage
-            className="bg-gray-middle-light"
-            src={undefined}
+        {user?.keycloakId ? (
+          <MediaAvatar
+            scope="user"
+            entityId={user.keycloakId}
+            storedValue={user.avatar}
+            size="thumb"
             alt={user?.username ? `${user.username} avatar` : "User avatar"}
+            className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer rounded-full"
           />
-          <AvatarFallback className="bg-gray-middle-light">{getInitials()}</AvatarFallback>
-        </Avatar>
+        ) : (
+          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer">
+            <AvatarFallback className="bg-gray-middle-light">{getInitials()}</AvatarFallback>
+          </Avatar>
+        )}
       </CollapsibleTrigger>
       <CollapsibleContent
         ref={collapsibleContentRef}

@@ -11,7 +11,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/request";
 import CodexService, { CodexMonsterItem } from "@/services/CodexService";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
@@ -68,30 +68,26 @@ function MonsterResultItem({
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-1 min-w-0 gap-2 items-start">
             {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span
-                    className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none"
-                    aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
-                    {codexLocaleFlagEmoji(pinnedLang)}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tDialog(`languageFilter.${pinnedLang}`)}</p>
-                </TooltipContent>
-              </Tooltip>
+              <InfoTooltip
+                content={tDialog(`languageFilter.${pinnedLang}`)}
+                side="top"
+                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
+                <span
+                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
+                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
+                  {codexLocaleFlagEmoji(pinnedLang)}
+                </span>
+              </InfoTooltip>
             ) : null}
             <div className="min-w-0 flex-1">
               <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
               <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tCommon("challengeRatingTooltip")}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <InfoTooltip
+                  content={tCommon("challengeRatingTooltip")}
+                  side="top"
+                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                  <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
+                </InfoTooltip>
                 {tDialog("monsterInfo", {
                   cr: formatChallengeRating(translation.challenge?.challengeRating),
                   type: translation.profile?.type,
@@ -102,28 +98,16 @@ function MonsterResultItem({
           <div className="flex flex-col items-end gap-1.5 shrink-0">
             <div className="flex gap-1.5">
               {monsterItem.tag === 1 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="cursor-help">
-                      <BadgeCheck className="size-5 text-green-600" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tDialog("validatedByChariot")}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <BadgeCheck
+                  className="size-5 text-green-600"
+                  aria-label={tDialog("validatedByChariot")}
+                />
               )}
               {translation.srd && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="cursor-help">
-                      <FileBadge className="size-5" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{tDialog("srdContent")}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <FileBadge
+                  className="size-5"
+                  aria-label={tDialog("srdContent")}
+                />
               )}
             </div>
           </div>
@@ -391,6 +375,26 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                   <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Légende des icônes */}
+            <div
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground shrink-0 py-1"
+              aria-label={tDialog("legendLabel")}>
+              <span className="flex items-center gap-1">
+                <BadgeCheck
+                  className="size-3.5 text-green-600 shrink-0"
+                  aria-hidden="true"
+                />
+                {tDialog("validatedByChariot")}
+              </span>
+              <span className="flex items-center gap-1">
+                <FileBadge
+                  className="size-3.5 shrink-0"
+                  aria-hidden="true"
+                />
+                {tDialog("srdContent")}
+              </span>
             </div>
 
             {/* Résultats de recherche */}

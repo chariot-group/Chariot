@@ -16,7 +16,7 @@ const entry = (overrides: Partial<History>): History => ({
   ...overrides,
 });
 
-describe("FR-027 — token history helpers", () => {
+describe("FR-profile-token-history — token history helpers", () => {
   it("nominal: classifies purchases and expenses by sign", () => {
     expect(isTokenPurchase(-10)).toBe(true);
     expect(isTokenExpense(5)).toBe(true);

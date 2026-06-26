@@ -20,6 +20,13 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   title: "Chariot — Admin Paiements",
   description: "Dashboard d'administration des paiements Chariot",
+  icons: {
+    icon: [
+      { url: "/favicon.svg?v=upside-down", type: "image/svg+xml" },
+      { url: "/favicon.ico?v=upside-down", sizes: "any" },
+    ],
+    apple: "/favicon.svg?v=upside-down",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

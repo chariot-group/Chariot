@@ -20,7 +20,7 @@ const buildGroup = (id: string, characterIds: string[]): Group =>
     })),
   }) as Group;
 
-describe("FR-004 — GM sidebar group list", () => {
+describe("FR-sidebar-navigation — GM sidebar group list", () => {
   it("nominal: removeCharacterFromGroup drops character and keeps openGroupId", () => {
     let state = groupReducer(
       undefined,

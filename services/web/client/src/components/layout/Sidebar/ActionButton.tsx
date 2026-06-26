@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { LucideSwords, PlayCircle, Users, UserCircle } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService from "@/services/SessionService";
@@ -15,9 +15,10 @@ import {
   selectBattleInitialized,
   selectBattleStarted,
   selectIsInSession,
-  selectSessionInitBattleDraft,
   selectSessionStatus,
   selectLastConsultedSheetPath,
+  openSessionLobby,
+  setCurrentSession,
 } from "@/store/slices/sessionSlice";
 import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
 import { InitBattleDialog } from "@/components/dialogs/InitBattleDialog";
@@ -58,7 +59,6 @@ export function ActionButton() {
   const router = useRouter();
   const contextMode = useAppSelector((state) => state.environment.contextMode);
   const currentPage = usePathname() || "/";
-  const locale = currentPage.split("/")[1] || "fr";
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
@@ -79,7 +79,6 @@ export function ActionButton() {
 
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const battleStarted = useAppSelector(selectBattleStarted);
-  const initBattleDraft = useAppSelector(selectSessionInitBattleDraft);
   const isInitiativeTrackerPage = currentPage.endsWith("/initiativeTracker");
   const isCharacterPage = currentPage.includes("/characters/") && !currentPage.includes("/characters/new");
 
@@ -87,18 +86,18 @@ export function ActionButton() {
     if (nextContextMode) {
       dispatch(setContextMode(nextContextMode));
     }
-    router.push(`/${locale}/campaigns/${session?.campaignId}/session/${session?.code}`);
+    dispatch(openSessionLobby());
   };
 
   const navigateToInitiativeTracker = () => {
-    router.push(`/${locale}/initiativeTracker`);
+    router.push("/initiativeTracker");
   };
 
   const navigateToPlayerCharacter = () => {
     const characterId = currentParticipant?.characterId;
     if (characterId) {
       const query = session?.code ? `?sessionCode=${encodeURIComponent(session.code)}` : "";
-      router.push(`/${locale}/characters/${encodeURIComponent(characterId)}${query}`);
+      router.push(`/characters/${encodeURIComponent(characterId)}${query}`);
     }
   };
 
@@ -114,9 +113,11 @@ export function ActionButton() {
         return {
           label: t("launchSession"),
           state: "launchSession",
-          action: () => {
+          action: async () => {
             if (!selectedCampaignId) return;
-            sessionService.createSession(selectedCampaignId);
+            const { campaignId, code } = await sessionService.createSession(selectedCampaignId);
+            dispatch(setCurrentSession({ code, campaignId }));
+            dispatch(openSessionLobby());
           },
           disabled: !selectedCampaignId,
           icon: <PlayCircle className="size-6" />,
@@ -131,7 +132,7 @@ export function ActionButton() {
         state: "joinSession",
         action: () => {
           if (isInSession) {
-            window.location.href = `/campaigns/${session?.campaignId}/session/${session?.code}`;
+            dispatch(openSessionLobby());
           }
         },
         icon: <Users className="size-6" />,
@@ -179,7 +180,7 @@ export function ActionButton() {
         };
       }
 
-      // FR-021 — combat initialisé ou démarré : retour fiche sur le tracker, retour combat ailleurs
+      // FR-session-combat-navigation — combat initialisé ou démarré : retour fiche sur le tracker, retour combat ailleurs
       if (
         shouldGmShowReturnToSheet({
           sessionStarted: Boolean(sessionStarted),
@@ -229,7 +230,7 @@ export function ActionButton() {
         };
       }
 
-      // FR-021 — joueur : bascule combat ↔ fiche
+      // FR-session-combat-navigation — joueur : bascule combat ↔ fiche
       if (battleStarted && isInitiativeTrackerPage) {
         return {
           label: t("returnToSheet"),
@@ -311,9 +312,11 @@ export function ActionButton() {
     return {
       label: t("launchSession"),
       state: "launchSession",
-      action: () => {
+      action: async () => {
         if (!selectedCampaignId) return;
-        sessionService.createSession(selectedCampaignId);
+        const { campaignId, code } = await sessionService.createSession(selectedCampaignId);
+        dispatch(setCurrentSession({ code, campaignId }));
+        dispatch(openSessionLobby());
       },
       disabled: !selectedCampaignId,
       icon: <PlayCircle className="size-6" />,

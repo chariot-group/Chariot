@@ -22,6 +22,7 @@ import {
     setSessionTokensByUser,
     touchRemoteCharacterSheet,
     updateInitiativeTrackerRow,
+    openSessionLobby,
 } from "@/store/slices/sessionSlice";
 import sessionService, {
     type ParticipantStatus,
@@ -50,7 +51,7 @@ import {
 } from "@/lib/sessionSocketPool";
 import { formatSessionParticipantLabelFromWsUsername } from "@/lib/formatSessionParticipantUserLabel";
 import { resolveParticipantToastLabel } from "@/lib/sessionParticipantDisplayNames";
-import { mergeParticipantsPreserveCharacterIds } from "@/lib/sessionParticipantMerge";
+import { mergeParticipantsPreserveCharacterIds, participantsStableKey } from "@/lib/sessionParticipantMerge";
 import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
 import { trackerMirrorFieldsFromCharacter } from "@/components/initiativeTracker/utils";
@@ -195,6 +196,11 @@ export default function SessionCharacterSyncClient() {
 
     const shouldConnect = Boolean(isInSession && code && token);
 
+    const tokenRef = useRef(token);
+    useEffect(() => {
+        tokenRef.current = token;
+    }, [token]);
+
     useEffect(() => {
         if (token) {
             syncSessionSocketAuth(token);
@@ -205,7 +211,7 @@ export default function SessionCharacterSyncClient() {
         setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
     }, [isInSession, code]);
 
-    /** FR-022 — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
+    /** FR-session-combat-sync — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
     useEffect(() => {
         if (!isInSession) {
             registerLocalCharacterSheetUpdatedListener(null);
@@ -221,11 +227,11 @@ export default function SessionCharacterSyncClient() {
     }, [dispatch, isInSession]);
 
     useEffect(() => {
-        if (!shouldConnect || !code || !token) {
+        if (!shouldConnect || !code || !tokenRef.current) {
             return;
         }
 
-        const socket = acquireSessionSocket(code, token);
+        const socket = acquireSessionSocket(code, tokenRef.current);
         let rosterSyncTimer: ReturnType<typeof setTimeout> | null = null;
 
         const scheduleRosterHttpSync = () => {
@@ -239,7 +245,9 @@ export default function SessionCharacterSyncClient() {
                     .then((d) => {
                         const prev = participantsRef.current;
                         const merged = mergeParticipantsPreserveCharacterIds(prev, d.participants);
-                        dispatch(setSessionParticipants(merged));
+                        if (participantsStableKey(prev) !== participantsStableKey(merged)) {
+                            dispatch(setSessionParticipants(merged));
+                        }
                     })
                     .catch(() => {});
             }, ROSTER_HTTP_SYNC_DEBOUNCE_MS);
@@ -332,7 +340,7 @@ export default function SessionCharacterSyncClient() {
             registerSessionSyncSocket(null);
             releaseSessionSocket();
         };
-    }, [shouldConnect, code, dispatch, token]);
+    }, [shouldConnect, code, dispatch]);
 
     const isOnSessionLobbyPage = /\/campaigns\/[^/]+\/session\/[^/]+(?:\/|$)/.test(pathname ?? "");
 
@@ -507,7 +515,7 @@ export default function SessionCharacterSyncClient() {
                 const camp = campaignIdRef.current;
                 const sessionCode = codeRef.current;
                 if (camp && sessionCode) {
-                    routerRef.current.push(`/${locale}/campaigns/${camp}/session/${sessionCode}`);
+                    dispatch(openSessionLobby());
                 } else {
                     routerRef.current.push(`/${locale}/welcome`);
                 }
