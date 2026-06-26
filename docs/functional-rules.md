@@ -3467,7 +3467,7 @@ Each initiative tracker row carries:
 
 **Règle** : Le lobby de session (FR-session-lobby-modal) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
 
-**Exigences** :
+**Requirements**:
 
 - **+1 / −1** : déposer ou retirer une wheel en un clic chacun, sans menu intermédiaire.
 - **Progression visible** : barre de progression et slots visuels indiquant `{total déposées} / {participants}`.
@@ -3499,7 +3499,7 @@ Each initiative tracker row carries:
 - Afficher « Lancer la session » désactivé aux joueurs non-MJ.
 - Utiliser « token » dans les libellés du lobby session.
 
-**Tests** :
+**Tests**:
 
 - Nominal : calcul du max déposable (solde + quota).
 - Edge : quota plein → max addable = 0.
@@ -3513,3 +3513,33 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/sessionWheelDeposit.ts`
 - `services/web/client/src/hooks/useSessionSocket.ts`
 - `services/session/api/src/resources/session/session.gateway.ts`
+
+---
+
+## FR-admin-promo-expiration-display: Admin Promo Code Expiration Status Display
+
+**Rule**: In the admin promo codes list, a code whose expiration date has passed must be displayed as inactive, even when `isActive` remains `true` in the database.
+
+**Requirements**:
+- Effective status is `isActive === true` and `expiresAt` is null or in the future (same comparison as payment validation: `now > expiresAt` means expired)
+- The status badge must show "Inactif" when the code is expired, regardless of stored `isActive`
+- Sorting by status column must use effective status, not raw `isActive` alone
+- Deactivate action is shown only when the code is effectively active (`isActive` and not expired)
+- Reactivate action is shown only when `isActive` is `false` (manual deactivation), per FR-admin-promo-lifecycle
+- A code that is `isActive` but expired shows neither deactivate nor reactivate; the admin may extend `expiresAt` via edit to make it usable again
+- Expiration does not change API list filtering (`includeInactive` still filters on stored `isActive` only)
+
+**Prohibitions**:
+- Displaying "Actif" for a promo code whose `expiresAt` is in the past
+- Automatically mutating `isActive` in the database when expiration passes (display-only concern)
+
+**Tests**:
+- Nominal: active code with future `expiresAt` → effectively active
+- Edge: `isActive: true` with past `expiresAt` → effectively inactive
+- Edge: `expiresAt: null` → expiration does not affect effective status
+- Edge: sort by status places expired codes with inactive manually deactivated codes
+
+**References**:
+- `services/admin/client/src/services/PromoCodeService.ts`
+- `services/admin/client/src/app/promo-codes/page.tsx`
+- `services/payment/api/src/resources/promo-code/promo-code.service.ts`

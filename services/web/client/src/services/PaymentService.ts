@@ -62,9 +62,10 @@ class PaymentService {
         return response.data.data;
     }
 
-    async resolveCode(code: string): Promise<ResolvedCode> {
+    async resolveCode(code: string, orderAmount: number): Promise<ResolvedCode> {
         const response = await createPaymentApiClient().get<IResponse<ResolvedCode>>(
             `${this.STRIPE_PATH}/resolve-code/${encodeURIComponent(code)}`,
+            { params: { orderAmount } },
         );
         return response.data.data;
     }

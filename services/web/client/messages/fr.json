@@ -477,6 +477,10 @@
     "applyCode": "Appliquer",
     "removeCode": "Retirer le code",
     "codeNotFound": "Ce code est introuvable ou n'est plus actif.",
+    "codeExhausted": "Ce code a atteint son nombre maximum d'utilisations.",
+    "codeUserLimitReached": "Vous avez déjà utilisé ce code le nombre maximum de fois autorisé.",
+    "codeMinOrder": "Ce code nécessite un panier minimum de {minAmount}.",
+    "codeFirstOrderOnly": "Ce code est réservé à votre première commande.",
     "recommended": "Recommandé",
     "payPerUnit": "Payer à l'unité ({price}€)",
     "custom": {
@@ -525,6 +529,7 @@
     "noHistory": "Aucun historique disponible",
     "noFilteredHistory": "Aucune transaction ne correspond aux filtres sélectionnés",
     "reloadTokens": "Recharger vos tokens",
+    "reloadDiscountHint": "{discount} % sur votre prochain achat",
     "back": "Retour",
     "showNewPassword": "Afficher le nouveau mot de passe",
     "hideNewPassword": "Masquer le nouveau mot de passe",
@@ -574,7 +579,7 @@
       "formLabel": "Formulaire de modification du profil"
     },
     "referral": {
-      "yourCode": "Votre code parrain",
+      "yourCode": "Lien de parrainage",
       "tiersProgressAriaLabel": "Progression des paliers de parrainage",
       "maxDiscountLabel": "Max",
       "maxDiscountAriaLabel": "Réduction maximale possible : {discount} %",
@@ -604,7 +609,8 @@
       "rulesTooltipReferrer": "Vous gagnez un palier par filleul validé : 10 % dès 1 filleul, puis +5 % par filleul (max. 50 %).",
       "rulesTooltipValidation": "Un filleul est validé après son premier achat payé.",
       "rulesTooltipReset": "Votre palier repart à zéro après utilisation de votre réduction parrain.",
-      "rulesTooltipNotCumulative": "Non cumulable avec un code promo ou d'affiliation. Seule la réduction la plus avantageuse s'applique."
+      "rulesTooltipNotCumulative": "Non cumulable avec un code promo ou d'affiliation. Seule la réduction la plus avantageuse s'applique.",
+      "tierSegmentPendingAriaLabel": "{count, plural, one {# filleul en attente} other {# filleuls en attente}} : {discount} % potentiel (non garanti)"
     },
     "gdpr": {
       "title": "Données personnelles",

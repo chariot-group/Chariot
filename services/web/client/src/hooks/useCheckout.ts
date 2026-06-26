@@ -9,6 +9,7 @@ import {
 } from "@/lib/checkout-utils";
 import type { PromoCodeState } from "@/components/checkout/CheckoutForm";
 import referralService from "@/services/ReferralService";
+import { parsePromoCodeResolveError, formatPromoCodeResolveError } from "@/lib/promoCodeResolveError";
 
 export type ReferralDiscount = {
     discountPercent: number;
@@ -81,6 +82,9 @@ export function useCheckout(): UseCheckoutReturn {
     // Referral discount
     const [referralDiscount, setReferralDiscount] = useState<ReferralDiscount | null>(null);
 
+    // Derived unit price (needed in promo code handler before pricing section)
+    const originalAmount = product?.prices[0]?.unit_amount ?? 0;
+
     // PaymentIntent
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
@@ -148,8 +152,8 @@ export function useCheckout(): UseCheckoutReturn {
 
     // ── Update existing PaymentIntent amount (quantity / promo changes) ────────
     const updatePaymentIntentAmount = useCallback(
-        async (promoCode?: string, affiliationCode?: string, qty?: number) => {
-            if (!paymentIntentId) return;
+        async (promoCode?: string, affiliationCode?: string, qty?: number): Promise<boolean> => {
+            if (!paymentIntentId) return true;
             setPiRefreshing(true);
             setPiError(null);
             try {
@@ -160,13 +164,21 @@ export function useCheckout(): UseCheckoutReturn {
                     affiliationCode,
                 );
                 applyPaymentIntentResult(result);
-            } catch {
-                setPiError(t("payError"));
+                return true;
+            } catch (err: unknown) {
+                const parsed = parsePromoCodeResolveError(err);
+                if (parsed.kind !== "not_found") {
+                    setAppliedCode(null);
+                    setCodeError(formatPromoCodeResolveError(parsed, tShop));
+                } else {
+                    setPiError(t("payError"));
+                }
+                return false;
             } finally {
                 setPiRefreshing(false);
             }
         },
-        [paymentIntentId, t, applyPaymentIntentResult],
+        [paymentIntentId, t, tShop, applyPaymentIntentResult],
     );
 
     const handleConfirmFreeOrder = useCallback(async () => {
@@ -228,9 +240,9 @@ export function useCheckout(): UseCheckoutReturn {
 
         let resolved: ResolvedCode;
         try {
-            resolved = await paymentService.resolveCode(trimmed);
-        } catch {
-            setCodeError(tShop("codeNotFound"));
+            resolved = await paymentService.resolveCode(trimmed, originalAmount * quantity);
+        } catch (err: unknown) {
+            setCodeError(formatPromoCodeResolveError(parsePromoCodeResolveError(err), tShop));
             setCodeLoading(false);
             return;
         }
@@ -238,12 +250,18 @@ export function useCheckout(): UseCheckoutReturn {
         const promoCode = resolved.type === "promo" ? trimmed : undefined;
         const affiliationCode = resolved.type === "affiliation" ? trimmed : undefined;
 
+        if (paymentIntentId) {
+            const synced = await updatePaymentIntentAmount(promoCode, affiliationCode, quantity);
+            if (!synced) {
+                setCodeLoading(false);
+                return;
+            }
+        }
+
         setAppliedCode({ raw: trimmed, resolved });
         setCodeInput("");
         setCodeLoading(false);
-
-        void updatePaymentIntentAmount(promoCode, affiliationCode, quantity);
-    }, [codeInput, quantity, updatePaymentIntentAmount, tShop]);
+    }, [codeInput, quantity, originalAmount, paymentIntentId, updatePaymentIntentAmount, tShop]);
 
     const handleRemoveCode = useCallback(() => {
         setAppliedCode(null);
@@ -252,21 +270,21 @@ export function useCheckout(): UseCheckoutReturn {
         setTimeout(() => codeInputRef.current?.focus(), 50);
     }, [updatePaymentIntentAmount, quantity]);
 
-    // ── Pricing ─────────────────────────────────────────────────────────────────
-    const price = product?.prices[0];
-    const currency = price?.currency ?? "eur";
-    const originalAmount = price?.unit_amount ?? 0;
-    let discountedAmount = originalAmount;
-    if (originalAmount > 0) {
+    // ── Pricing (order-level amounts) ───────────────────────────────────────────
+    const currency = product?.prices[0]?.currency ?? "eur";
+    const unitAmount = originalAmount;
+    const orderOriginalAmount = unitAmount * quantity;
+    let orderDiscountedAmount = orderOriginalAmount;
+    if (unitAmount > 0) {
         if (appliedCode) {
-            discountedAmount = computeDiscountedAmount(originalAmount, appliedCode.resolved);
+            orderDiscountedAmount = computeDiscountedAmount(unitAmount, quantity, appliedCode.resolved);
         } else if (referralDiscount) {
-            discountedAmount = computeReferralDiscountedAmount(originalAmount, referralDiscount.discountPercent);
+            orderDiscountedAmount = computeReferralDiscountedAmount(orderOriginalAmount, referralDiscount.discountPercent);
         }
     }
-    const giftAmount = computeGiftAmount(discountedAmount, currency);
-    const discountAmount = originalAmount - discountedAmount;
-    const chargeableAmount = Math.max(0, discountedAmount - giftAmount);
+    const giftAmount = computeGiftAmount(orderDiscountedAmount, currency);
+    const discountAmount = orderOriginalAmount - orderDiscountedAmount;
+    const chargeableAmount = Math.max(0, orderDiscountedAmount - giftAmount);
     const tokenCount = product?.metadata?.token_number ? parseInt(product.metadata.token_number, 10) : null;
 
     const handleQuantityChange = useCallback((newQuantity: number) => {
@@ -305,8 +323,8 @@ export function useCheckout(): UseCheckoutReturn {
         isFreeOrder,
         onConfirmFreeOrder: handleConfirmFreeOrder,
         pricing: {
-            originalAmount,
-            discountedAmount,
+            originalAmount: orderOriginalAmount,
+            discountedAmount: orderDiscountedAmount,
             discountAmount,
             giftAmount,
             chargeableAmount,

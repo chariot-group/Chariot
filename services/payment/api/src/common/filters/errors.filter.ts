@@ -56,7 +56,13 @@ export class ErrorDetailsFilter implements ExceptionFilter {
             if (typeof response === 'string') {
                 body.detail = response;
             } else if (typeof response === 'object') {
-                const { message } = response as any;
+                const payload = response as {
+                    message?: unknown;
+                    errorCode?: string;
+                    minOrderAmount?: number;
+                };
+
+                const { message } = payload;
 
                 if (typeof message === 'string') {
                     body.detail = message;
@@ -69,6 +75,29 @@ export class ErrorDetailsFilter implements ExceptionFilter {
                             reason: rest.join(' '),
                         };
                     });
+                } else if (message && typeof message === 'object') {
+                    const structured = message as {
+                        message?: string;
+                        errorCode?: string;
+                        minOrderAmount?: number;
+                    };
+
+                    if (typeof structured.message === 'string') {
+                        body.detail = structured.message;
+                    }
+                    if (typeof structured.errorCode === 'string') {
+                        body.errorCode = structured.errorCode;
+                    }
+                    if (typeof structured.minOrderAmount === 'number') {
+                        body.minOrderAmount = structured.minOrderAmount;
+                    }
+                }
+
+                if (typeof payload.errorCode === 'string') {
+                    body.errorCode = payload.errorCode;
+                }
+                if (typeof payload.minOrderAmount === 'number') {
+                    body.minOrderAmount = payload.minOrderAmount;
                 }
             }
         }

@@ -24,5 +24,11 @@ export class ProblemDetailsDto {
     @ApiProperty({ example: "The 'code' field is required.", required: false })
     detail?: string;
 
+    @ApiProperty({ example: 'PROMO_MIN_ORDER', required: false })
+    errorCode?: string;
+
+    @ApiProperty({ example: 200, required: false, description: 'Minimum order amount in cents' })
+    minOrderAmount?: number;
+
     'invalid-params'?: InvalidParamDto[];
 }

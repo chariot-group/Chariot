@@ -37,7 +37,7 @@ describe("ProfileReferralSection", () => {
 
     expect(html).toContain('id="referral-tiers-heading"');
     expect(html).toContain('role="progressbar"');
-    expect(html).toContain("PARRAIN42");
+    expect(html).not.toContain("PARRAIN42");
     expect(html).toContain("copyLink");
     expect(html).toContain("50%");
   });
@@ -83,5 +83,69 @@ describe("ProfileReferralSection", () => {
     expect(html).toContain('data-tier-state="current"');
     expect(html).toContain('data-tier-state="reached"');
     expect(html).toContain('data-tier-state="upcoming"');
+  });
+
+  it("shows pending tier segments in yellow when pending referrals exist", () => {
+    const html = renderToStaticMarkup(
+      <ProfileReferralSection
+        referralInfo={{
+          ...baseReferralInfo,
+          pendingReferralsCount: 1,
+          currentDiscountPercent: 10,
+          refereeCount: 3,
+          validatedRefereeCount: 1,
+        }}
+        linkCopyState="idle"
+        onCopyLink={vi.fn()}
+      />,
+    );
+
+    // tier 1 = validated (current), tier 2-3 = pending, tier 4+ = upcoming
+    expect(html).toContain('data-tier-state="current"');
+    expect(html).toContain('data-tier-state="pending"');
+    expect(html).toContain('data-tier-state="pending-current"');
+    expect(html).toContain('data-tier-state="upcoming"');
+    expect(html).toContain("tierSegmentPendingAriaLabel");
+  });
+
+  it("shows no pending segments when pendingCount is 0", () => {
+    const html = renderToStaticMarkup(
+      <ProfileReferralSection
+        referralInfo={{
+          ...baseReferralInfo,
+          pendingReferralsCount: 2,
+          currentDiscountPercent: 15,
+          refereeCount: 2,
+          validatedRefereeCount: 2,
+        }}
+        linkCopyState="idle"
+        onCopyLink={vi.fn()}
+      />,
+    );
+
+    expect(html).not.toContain('data-tier-state="pending"');
+    expect(html).not.toContain('data-tier-state="pending-current"');
+    expect(html).not.toContain("tierSegmentPendingAriaLabel");
+  });
+
+  it("keeps validated tiers as primary regardless of pending count", () => {
+    const html = renderToStaticMarkup(
+      <ProfileReferralSection
+        referralInfo={{
+          ...baseReferralInfo,
+          pendingReferralsCount: 3,
+          currentDiscountPercent: 20,
+          refereeCount: 5,
+          validatedRefereeCount: 3,
+        }}
+        linkCopyState="idle"
+        onCopyLink={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('data-tier-state="current"');
+    expect(html).toContain('data-tier-state="reached"');
+    expect(html).toContain('data-tier-state="pending"');
+    expect(html).toContain('data-tier-state="pending-current"');
   });
 });

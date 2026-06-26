@@ -77,6 +77,7 @@ function CheckoutFormContent({
   const [payError, setPayError] = useState<string | null>(null);
 
   const { originalAmount, discountAmount, giftAmount, chargeableAmount, currency } = pricing;
+  const unitChargeableAmount = quantity > 0 ? Math.round(chargeableAmount / quantity) : chargeableAmount;
 
   async function handleConfirm() {
     setPayLoading(true);
@@ -90,9 +91,9 @@ function CheckoutFormContent({
   }
 
   return (
-    <div className="flex flex-row gap-6 items-start w-full justify-center h-full">
+    <div className="flex flex-col gap-6 w-full md:flex-row md:items-start md:justify-center md:h-full">
       {showPaymentPanel && (
-        <div className="w-[50%] overflow-y-auto self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+        <div className="w-full order-1 md:w-1/2 md:min-w-0 md:overflow-y-auto md:self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
           <Card className="gap-3 p-5">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               {t("paymentDetails")}
@@ -107,7 +108,7 @@ function CheckoutFormContent({
         </div>
       )}
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 w-full order-2 md:w-1/2 md:min-w-0 md:overflow-y-auto md:self-stretch">
         <Card className="gap-4 p-5">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t("orderSummary")}</h2>
           <div className="flex items-center gap-3">
@@ -155,10 +156,10 @@ function CheckoutFormContent({
                 type="button"
                 onClick={() => onQuantityChange(quantity - 1)}
                 disabled={quantity <= 1}
-                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                className="flex h-9 w-9 sm:h-7 sm:w-7 cursor-pointer items-center justify-center rounded-lg border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                 aria-label={t("quantityDecrement")}>
                 <Minus
-                  className="h-3 w-3"
+                  className="h-4 w-4 sm:h-3 sm:w-3"
                   aria-hidden="true"
                 />
               </button>
@@ -170,10 +171,10 @@ function CheckoutFormContent({
               <button
                 type="button"
                 onClick={() => onQuantityChange(quantity + 1)}
-                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                className="flex h-9 w-9 sm:h-7 sm:w-7 cursor-pointer items-center justify-center rounded-lg border border-border/60 bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                 aria-label={t("quantityIncrement")}>
                 <Plus
-                  className="h-3 w-3"
+                  className="h-4 w-4 sm:h-3 sm:w-3"
                   aria-hidden="true"
                 />
               </button>
@@ -185,7 +186,7 @@ function CheckoutFormContent({
               className={`flex justify-between text-sm text-muted-foreground ${quantity <= 1 ? "invisible" : ""}`}
               aria-hidden={quantity <= 1}>
               <span>{t("unitPrice")}</span>
-              <span>{formatPrice(chargeableAmount, currency)}</span>
+              <span>{formatPrice(unitChargeableAmount, currency)}</span>
             </div>
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>
@@ -196,24 +197,24 @@ function CheckoutFormContent({
                   {` ×${quantity}`}
                 </span>
               </span>
-              <span>{formatPrice(originalAmount * quantity, currency)}</span>
+              <span>{formatPrice(originalAmount, currency)}</span>
             </div>
             {discountAmount > 0 && (promoCode.applied || referralDiscount) && (
               <div className="flex justify-between text-sm text-green-500">
                 <span>{promoCode.applied ? `${t("discount")} (${promoCode.applied.raw})` : t("referralDiscount")}</span>
-                <span>-{formatPrice(discountAmount * quantity, currency)}</span>
+                <span>-{formatPrice(discountAmount, currency)}</span>
               </div>
             )}
             {giftAmount > 0 && (
               <div className="flex justify-between text-sm text-green-500">
                 <span>{t("giftDiscount")}</span>
-                <span>-{formatPrice(giftAmount * quantity, currency)}</span>
+                <span>-{formatPrice(giftAmount, currency)}</span>
               </div>
             )}
             <div className="flex justify-between text-base font-bold text-card-foreground pt-1 border-t border-border/40">
               <span>{t("total")}</span>
               <span className={discountAmount > 0 || giftAmount > 0 ? "text-green-400" : ""}>
-                {formatPrice(chargeableAmount * quantity, currency)}
+                {formatPrice(chargeableAmount, currency)}
               </span>
             </div>
           </div>
@@ -364,7 +365,7 @@ export function CheckoutPaidForm(props: CheckoutFormProps) {
     <CheckoutFormContent
       {...props}
       showPaymentPanel
-      confirmLabel={t("payButton", { amount: formatPrice(chargeableAmount * quantity, currency) })}
+      confirmLabel={t("payButton", { amount: formatPrice(chargeableAmount, currency) })}
       confirmDisabled={piRefreshing || quantitySyncPending || !!piError || !stripe || !elements}
       onConfirm={async () => {
         if (!stripe || !elements) {
