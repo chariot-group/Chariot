@@ -1,4 +1,10 @@
-import { IsString, MaxLength, ValidateNested, IsEnum, IsOptional } from 'class-validator';
+import {
+  IsString,
+  MaxLength,
+  ValidateNested,
+  IsEnum,
+  IsOptional,
+} from 'class-validator';
 import { CreateGroupIdsDto } from '@/resources/campaign/dto/sub/create-group-ids.dto';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
