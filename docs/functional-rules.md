@@ -3543,3 +3543,37 @@ Each initiative tracker row carries:
 - `services/admin/client/src/services/PromoCodeService.ts`
 - `services/admin/client/src/app/promo-codes/page.tsx`
 - `services/payment/api/src/resources/promo-code/promo-code.service.ts`
+
+---
+
+## FR-game-system: Game System Attribute
+
+**Rule**: Campaigns and all character types (Player, NPC) MUST declare a mandatory `gameSystem` attribute identifying the tabletop ruleset. Only D&D 5e is supported initially; the enum MUST be extensible for future systems.
+
+**Requirements**:
+
+- `gameSystem` is a string enum; current allowed value: `DND_5E`
+- Default value on create when omitted: `DND_5E`
+- Field is persisted on Campaign and base Character schemas (inherited by Player and NPC)
+- Create DTOs expose `gameSystem` with enum validation
+- Update DTOs MUST NOT accept `gameSystem` (immutable after creation)
+- Swagger documents the enum and default on create/read endpoints
+
+**Prohibitions**:
+
+- Storing free-text or unknown values outside the enum
+- Duplicating `gameSystem` on Player/NPC discriminators when it already exists on Character
+- Modifying `gameSystem` after entity creation (PATCH/PUT)
+
+**Tests**:
+
+- Nominal: create campaign/character without `gameSystem` → persisted as `DND_5E`
+- Edge: explicit `DND_5E` on create is accepted
+- Failure: invalid enum value is rejected by DTO validation
+- Failure: update DTOs reject or strip `gameSystem`
+
+**References**:
+
+- `services/adventure/api/src/common/constants/game-system.constant.ts`
+- `services/adventure/api/src/resources/campaign/schemas/campaign.schema.ts`
+- `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
