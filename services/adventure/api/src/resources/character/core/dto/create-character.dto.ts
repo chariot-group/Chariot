@@ -4,6 +4,7 @@ import {
   IsMongoId,
   ValidateNested,
   IsArray,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { StatsDto } from '@/resources/character/core/dto/stats/stats.dto';
@@ -15,6 +16,11 @@ import { AppearanceDto } from '@/resources/character/player/dto/appearance/appea
 import { BackgroundDto } from '@/resources/character/player/dto/background/background.dto';
 import { TreasureDto } from '@/resources/character/core/dto/treasure/treasure.dto';
 import { ConditionsDto } from '@/resources/character/core/dto/conditions/conditions.dto';
+import {
+  DEFAULT_GAME_SYSTEM,
+  GAME_SYSTEMS,
+  GameSystem,
+} from '@/common/constants/game-system.constant';
 
 export class CreateCharacterDto {
   @ApiProperty({ example: 'Aragorn' })
@@ -35,6 +41,16 @@ export class CreateCharacterDto {
   @IsOptional()
   @IsString()
   avatar?: string;
+
+  @ApiProperty({
+    example: DEFAULT_GAME_SYSTEM,
+    enum: GAME_SYSTEMS,
+    default: DEFAULT_GAME_SYSTEM,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(GAME_SYSTEMS, { message: 'gameSystem must be a valid game system' })
+  gameSystem?: GameSystem;
 
   @ApiProperty({ example: '60f7c2ab4f1a256e1c8b4567' })
   @IsMongoId({ each: true })

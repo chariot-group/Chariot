@@ -1,6 +1,9 @@
+export type GameSystem = 'DND_5E';
+
 export interface Campaign {
     _id: string;
     label: string;
+    gameSystem: GameSystem;
     groups: {
         active: string[];
         archived: string[];

@@ -77,4 +77,35 @@ describe('CreateCharacterDto - shared fields validation', () => {
     const errors = validateSync(dto, { whitelist: true });
     expect(errors.length).toBeGreaterThan(0);
   });
+
+  it('should validate a character without gameSystem - FR-game-system', () => {
+    const dto = plainToInstance(CreateCharacterDto, {
+      firstname: 'Gimli',
+    });
+
+    const errors = validateSync(dto, { whitelist: true });
+    expect(errors).toHaveLength(0);
+    expect(dto.gameSystem).toBeUndefined();
+  });
+
+  it('should accept explicit DND_5E gameSystem - FR-game-system', () => {
+    const dto = plainToInstance(CreateCharacterDto, {
+      firstname: 'Gimli',
+      gameSystem: 'DND_5E',
+    });
+
+    const errors = validateSync(dto, { whitelist: true });
+    expect(errors).toHaveLength(0);
+    expect(dto.gameSystem).toBe('DND_5E');
+  });
+
+  it('should reject invalid gameSystem values - FR-game-system', () => {
+    const dto = plainToInstance(CreateCharacterDto, {
+      firstname: 'Gimli',
+      gameSystem: 'PATHFINDER_2E',
+    });
+
+    const errors = validateSync(dto, { whitelist: true });
+    expect(errors.length).toBeGreaterThan(0);
+  });
 });

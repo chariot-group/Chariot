@@ -4,7 +4,7 @@ import { IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateCampaignDto extends PartialType(
-  OmitType(CreateCampaignDto, ['label'] as const),
+  OmitType(CreateCampaignDto, ['label', 'gameSystem'] as const),
 ) {
   @ApiProperty({ example: 'Epic Adventure' })
   @IsOptional()
