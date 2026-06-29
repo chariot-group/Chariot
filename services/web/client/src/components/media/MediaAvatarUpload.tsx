@@ -258,7 +258,10 @@ export function MediaAvatarUpload({
 
       <p
         id={requirementsId}
-        className="text-xs text-gray-light leading-snug text-center max-w-56">
+        className={cn(
+          "text-xs text-gray-light leading-snug text-center max-w-56",
+          size === "sheet" && "max-sm:sr-only",
+        )}>
         {requirementsHint}
       </p>
     </div>
