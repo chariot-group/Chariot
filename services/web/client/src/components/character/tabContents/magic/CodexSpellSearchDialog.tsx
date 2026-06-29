@@ -544,7 +544,7 @@ export default function CodexSpellSearchDialog({
           <div
             className={`relative z-10 flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
             {/* Barre de recherche et filtres */}
-            <div className="flex shrink-0 flex-col gap-2 w-full overflow-visible">
+            <div className="flex shrink-0 flex-col gap-1.5 w-full overflow-visible">
               <div className="flex w-full min-w-0 items-center gap-2">
                 <div className="relative min-w-0 flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -568,7 +568,7 @@ export default function CodexSpellSearchDialog({
                     }
                   }}>
                   <SelectTrigger
-                    className="h-9 w-auto shrink-0 gap-1 px-2.5 focus-visible:ring-inset"
+                    className="h-9 w-auto shrink-0 gap-1 px-2.5 focus-visible:ring-inset [&_svg]:hidden"
                     aria-label={tDialog("languageFilter.ariaLabel")}>
                     <span
                       className="text-lg leading-none select-none"
@@ -576,7 +576,12 @@ export default function CodexSpellSearchDialog({
                       {compactLanguageLabel}
                     </span>
                   </SelectTrigger>
-                  <SelectContent align="end">
+                  <SelectContent
+                    position="popper"
+                    align="end"
+                    side="bottom"
+                    sideOffset={4}
+                    className="min-w-[var(--radix-select-trigger-width)]">
                     <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
                     <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
                     <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
@@ -593,7 +598,7 @@ export default function CodexSpellSearchDialog({
                     type="button"
                     aria-expanded={filtersOpen}
                     aria-label={tDialog("filtersCollapse.ariaLabel")}
-                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[15px] py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
+                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[15px] py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
                     <ChevronDown
                       className={cn("size-4 shrink-0 transition-transform", filtersOpen && "rotate-180")}
                       aria-hidden="true"
@@ -648,7 +653,12 @@ export default function CodexSpellSearchDialog({
                           aria-label={tDialog("levelFilter.ariaLabel")}>
                           <SelectValue>{levelFilterLabel}</SelectValue>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          side="bottom"
+                          sideOffset={4}
+                          className="min-w-[var(--radix-select-trigger-width)]">
                           <SelectItem value="all">{tDialog("levelFilter.all")}</SelectItem>
                           {SPELL_LEVELS.map((level) => (
                             <SelectItem
@@ -745,39 +755,39 @@ export default function CodexSpellSearchDialog({
                   </div>
                 </CollapsibleContent>
               </Collapsible>
-            </div>
 
-            {/* Légende des icônes */}
-            <p
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-muted-foreground shrink-0"
-              aria-label={tDialog("legendLabel")}>
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <Check
-                  className="size-3.5 shrink-0 text-purple"
-                  aria-hidden="true"
-                />
-                {tDialog("legendShort.selection")}
-              </span>
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <BadgeCheck
-                  className="size-3.5 shrink-0 text-green-600"
-                  aria-hidden="true"
-                />
-                {tDialog("legendShort.chariot")}
-              </span>
-              <InfoTooltip
-                content={tDialog("srdContent")}
-                side="top"
-                moreInfoLabel={tDialog("srdContent")}>
-                <span className="inline-flex cursor-help items-center gap-1.5 whitespace-nowrap">
-                  <FileBadge
-                    className="size-3.5 shrink-0"
+              {/* Légende des icônes */}
+              <p
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-muted-foreground"
+                aria-label={tDialog("legendLabel")}>
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <Check
+                    className="size-3.5 shrink-0 text-purple"
                     aria-hidden="true"
                   />
-                  {tDialog("legendShort.srd")}
+                  {tDialog("legendShort.selection")}
                 </span>
-              </InfoTooltip>
-            </p>
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <BadgeCheck
+                    className="size-3.5 shrink-0 text-green-600"
+                    aria-hidden="true"
+                  />
+                  {tDialog("legendShort.chariot")}
+                </span>
+                <InfoTooltip
+                  content={tDialog("srdContent")}
+                  side="top"
+                  moreInfoLabel={tDialog("srdContent")}>
+                  <span className="inline-flex cursor-help items-center gap-1.5 whitespace-nowrap">
+                    <FileBadge
+                      className="size-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {tDialog("legendShort.srd")}
+                  </span>
+                </InfoTooltip>
+              </p>
+            </div>
 
             {/* Résultats de recherche */}
             <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
