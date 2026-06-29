@@ -1313,6 +1313,16 @@
         "description": "Descripción",
         "usesTracker": "Usos"
       },
+      "spellSchools": {
+        "abjuration": "Abjuración",
+        "conjuration": "Conjuración",
+        "divination": "Adivinación",
+        "enchantment": "Encantamiento",
+        "evocation": "Evocación",
+        "illusion": "Ilusión",
+        "necromancy": "Nigromancia",
+        "transmutation": "Transmutación"
+      },
       "damage": "Daño",
       "healing": "Curación",
       "mainRegion": "Sección de magia",
@@ -1431,15 +1441,38 @@
           "all": "🌍 Todos los idiomas",
           "fr": "🇫🇷 Francés",
           "en": "🇬🇧 Inglés",
-          "es": "🇪🇸 Español"
+          "es": "🇪🇸 Español",
+          "ariaLabel": "Filtrar por idioma"
+        },
+        "filtersCollapse": {
+          "toggle": "Filtros",
+          "ariaLabel": "Mostrar u ocultar filtros de búsqueda",
+          "active": "Filtros activos",
+          "resetAriaLabel": "Restablecer filtros (nivel, clase, escuela)"
+        },
+        "legendShort": {
+          "selection": "Selección",
+          "chariot": "Chariot",
+          "srd": "SRD"
         },
         "classFilter": {
           "all": "Todas las clases",
-          "ariaLabel": "Filtrar por clase"
+          "shortAll": "Clase",
+          "ariaLabel": "Filtrar por clase",
+          "selectedCount": "{count} clases"
         },
         "levelFilter": {
           "all": "Todos los niveles",
-          "ariaLabel": "Filtrar por nivel de conjuro"
+          "shortAll": "Nivel",
+          "shortCantrip": "Trucos",
+          "ariaLabel": "Filtrar por nivel de conjuro",
+          "shortSelected": "Niv. {level}"
+        },
+        "schoolFilter": {
+          "all": "Todas las escuelas",
+          "shortAll": "Escuela",
+          "ariaLabel": "Filtrar por escuela de magia",
+          "selectedCount": "{count} escuelas"
         },
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",

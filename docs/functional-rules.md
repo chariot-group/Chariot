@@ -2559,6 +2559,53 @@ Each initiative tracker row carries:
 
 ---
 
+## FR-codex-spell-school-filter: Codex Spell Search — School Filter
+
+**Rule**: The Codex spell search dialog (`CodexSpellSearchDialog`) MUST allow filtering search results by one or more D&D 5e schools of magic. The filter MUST be applied server-side via the Codex `/spells` API `schools` query parameter (canonical slugs).
+
+**Scope**:
+
+- Complements the existing name, language, class, and level filters in the Codex spell search dialog.
+- Applies only to spell search from the character magic tab; does not change monster Codex search.
+
+**Behavior**:
+
+- Users MUST be able to select zero or more spell schools (canonical slugs: `abjuration`, `conjuration`, `divination`, `enchantment`, `evocation`, `illusion`, `necromancy`, `transmutation`), or leave the filter unset for all schools.
+- When no school is selected, all schools are returned (no `schools` param sent).
+- When one or more schools are selected, they MUST be forwarded to the API as repeated `schools` query params (lowercase slugs).
+- Changing the school filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening the dialog MUST reset the school filter to “all schools”.
+- School labels in the filter UI MUST use i18n keys under `characterDetail.magic.spellSchools`.
+- Preview and list rows MUST display the school label resolved from the Codex translation (`string` or populated `{ name }` object).
+
+**Accessibility (FR-frontend-design)**:
+
+- The school filter control MUST expose an accessible name (`aria-label`) equivalent to the class filter pattern.
+- The school filter control MUST use the same multi-select `DropdownMenu` checkbox pattern as the class filter.
+
+**Prohibitions**:
+
+- Client-side-only school filtering when the API supports the `schools` param (pagination would be incorrect).
+- Hardcoded school labels bypassing i18n in the filter UI.
+- Sending invalid school slugs (outside the canonical list).
+
+**Tests**:
+
+- `CodexService.searchSpells` forwards selected schools to `/spells` as slug query params.
+- `CodexService.searchSpells` omits `schools` when the filter is unset.
+- `resolveCodexSpellSchoolLabel` resolves string and object school values.
+- API error propagation unchanged.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/constants/spellSchools.ts`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/utils/codexSpellSchool.utils.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
 ## FR-release-notes: Release Notes and New Version Detection
 
 **Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
