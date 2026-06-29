@@ -316,8 +316,11 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
       lifeStatus: false,
       armorClass: false,
       conditions: false,
+      concentration: false,
       groupLabel: false,
     },
+    concentration: { spellName: "Bless", sinceRound: 2 },
+    pendingConcentrationCheck: { damageAmount: 5, dc: 10 },
     kind: "npc",
     deathSavesFailures: 0,
   } as InitiativeTrackerRow;
@@ -333,6 +336,8 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     expect(sanitized.deathSavesFailures).toBe(0);
     expect(sanitized.armorClass).toBe(0);
     expect(sanitized.conditions).toEqual([]);
+    expect(sanitized.concentration).toBeNull();
+    expect(sanitized.pendingConcentrationCheck).toBeNull();
     expect(sanitized.groupLabel).toBe("");
   });
 
@@ -346,6 +351,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
         lifeStatus: true,
         armorClass: true,
         conditions: true,
+        concentration: true,
         groupLabel: true,
       },
     });
@@ -354,6 +360,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     expect(sanitized.initiative).toBe(18);
     expect(sanitized.hitPoints).toBe(44);
     expect(sanitized.conditions).toHaveLength(1);
+    expect(sanitized.concentration?.spellName).toBe("Bless");
     expect(sanitized.groupLabel).toBe("Hidden lair");
   });
 

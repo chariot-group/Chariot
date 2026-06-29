@@ -1,5 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string, values?: Record<string, string | number>) => {
+    if (values) {
+      return `${key}:${JSON.stringify(values)}`;
+    }
+    return key;
+  },
+}));
+
 import { InitiativeTrackerRow } from "@/components/initiativeTracker/InitiativeTrackerRow";
 import type { InitiativeTrackerRow as InitiativeTrackerRowType } from "@/store/slices/sessionSlice";
 
@@ -45,6 +55,7 @@ const labels = {
       lifeStatus: "Vital status",
       armorClass: "AC",
       conditions: "Conditions",
+      concentration: "Concentration",
       groupLabel: "Group",
     },
     apply: "Apply",
@@ -82,6 +93,7 @@ const baseRow: InitiativeTrackerRowType = {
     lifeStatus: true,
     armorClass: true,
     conditions: true,
+    concentration: true,
     groupLabel: true,
   },
   conditions: [],

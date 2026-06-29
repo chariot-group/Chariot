@@ -18,6 +18,7 @@ import {
   sortInitiativeTrackerRows,
   trackerMirrorFieldsFromCharacter,
   filterRowsForPlayerView,
+  isSessionParticipantTrackerRow,
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
 import CharacterService from "@/services/CharacterService";
@@ -33,8 +34,17 @@ import type {
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useAppStore } from "@/store/hooks";
 import { useUser } from "@/hooks/useUser";
+import { submitTrackerConcentrationUpdate } from "@/lib/sessionConcentrationBridge";
 import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
 import { getPooledSessionSocket } from "@/lib/sessionSocketPool";
+import { ConcentrationSaveDialog } from "@/components/initiativeTracker/ConcentrationSaveDialog";
+import {
+  buildPendingConcentrationCheckSignature,
+  clearConcentrationSaveAutoShownKeys,
+  markConcentrationSaveAutoShown,
+  shouldAutoOpenConcentrationSaveDialog,
+  shouldShowConcentrationSaveDialog,
+} from "@/components/initiativeTracker/concentration.utils";
 import {
   endBattle,
   nextBattleTurn,
@@ -59,7 +69,7 @@ import {
   updateInitiativeTrackerRow,
   updateInitiativeTrackerRowsBulk,
 } from "@/store/slices/sessionSlice";
-import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
+import type { InitiativeTrackerRow, TrackerConcentration } from "@/store/slices/sessionSlice";
 
 export default function InitiativeTrackerPage() {
   const t = useTranslations("initTracker.tracker");
@@ -116,6 +126,12 @@ export default function InitiativeTrackerPage() {
     && ownCharacterId != null
     && ownParticipant?.status === "connected";
   const playerCanEditOwnInitiative = playerCanAccessPreparationTracker;
+  const playerCanEditOwnConcentration = !isGameMaster
+    && battleStarted
+    && ownCharacterId != null
+    && ownParticipant?.status === "connected";
+
+  const [concentrationSaveDialogRow, setConcentrationSaveDialogRow] = React.useState<InitiativeTrackerRow | null>(null);
 
   const visibleRows = React.useMemo(() => {
     if (isGameMaster) {
@@ -371,6 +387,136 @@ export default function InitiativeTrackerPage() {
     });
   }, [dispatch, ownCharacterId, playerCanEditOwnInitiative, rows, sessionCode, user.user?.keycloakId]);
 
+  const applyConcentrationUpdate = React.useCallback((
+    row: InitiativeTrackerRow,
+    changes: {
+      concentration?: TrackerConcentration | null;
+      pendingConcentrationCheck?: InitiativeTrackerRow["pendingConcentrationCheck"];
+    },
+    options?: { skipBroadcast?: boolean },
+  ) => {
+    if (isGameMaster) {
+      dispatchTrackerAction(updateInitiativeTrackerRow({ id: row.id, changes }));
+      return;
+    }
+
+    if (!playerCanEditOwnConcentration || row.characterId !== ownCharacterId || !sessionCode) return;
+
+    dispatch(updateInitiativeTrackerRow({ id: row.id, changes }));
+
+    if (options?.skipBroadcast) return;
+
+    submitTrackerConcentrationUpdate(sessionCode, {
+      characterId: row.characterId,
+      concentration: changes.concentration !== undefined ? changes.concentration : row.concentration ?? null,
+      pendingConcentrationCheck:
+        changes.pendingConcentrationCheck !== undefined
+          ? changes.pendingConcentrationCheck
+          : row.pendingConcentrationCheck ?? null,
+    });
+  }, [dispatch, dispatchTrackerAction, isGameMaster, ownCharacterId, playerCanEditOwnConcentration, sessionCode]);
+
+  const handleSetConcentration = React.useCallback((
+    row: InitiativeTrackerRow,
+    concentration: TrackerConcentration | null,
+  ) => {
+    if (!battleStarted) return;
+    if (!isGameMaster && (!playerCanEditOwnConcentration || row.characterId !== ownCharacterId)) return;
+    applyConcentrationUpdate(row, { concentration, pendingConcentrationCheck: null });
+  }, [applyConcentrationUpdate, battleStarted, isGameMaster, ownCharacterId, playerCanEditOwnConcentration]);
+
+  const handleResolvePendingConcentrationCheck = React.useCallback((
+    row: InitiativeTrackerRow,
+    result: "kept" | "lost" | "later",
+  ) => {
+    if (result === "later") {
+      setConcentrationSaveDialogRow(null);
+      return;
+    }
+    if (result === "lost") {
+      applyConcentrationUpdate(row, { concentration: null, pendingConcentrationCheck: null });
+      setConcentrationSaveDialogRow(null);
+      return;
+    }
+    applyConcentrationUpdate(row, { pendingConcentrationCheck: null });
+    setConcentrationSaveDialogRow(null);
+  }, [applyConcentrationUpdate]);
+
+  const openConcentrationSaveDialogForRow = React.useCallback((row: InitiativeTrackerRow) => {
+    if (!shouldShowConcentrationSaveDialog({ row, isGameMaster, ownCharacterId })) return;
+    if (!row.concentration || !row.pendingConcentrationCheck) return;
+
+    const signature = buildPendingConcentrationCheckSignature(row.pendingConcentrationCheck);
+    markConcentrationSaveAutoShown(row.id, signature);
+    setConcentrationSaveDialogRow(row);
+  }, [isGameMaster, ownCharacterId]);
+
+  React.useEffect(() => {
+    if (!battleStarted) {
+      clearConcentrationSaveAutoShownKeys();
+      setConcentrationSaveDialogRow(null);
+      return;
+    }
+
+    for (const row of rows) {
+      const pending = row.pendingConcentrationCheck;
+      if (!pending || !row.concentration) continue;
+      if (!shouldShowConcentrationSaveDialog({ row, isGameMaster, ownCharacterId })) continue;
+
+      const signature = buildPendingConcentrationCheckSignature(pending);
+      if (!shouldAutoOpenConcentrationSaveDialog(row.id, signature)) continue;
+
+      openConcentrationSaveDialogForRow(row);
+      break;
+    }
+  }, [battleStarted, isGameMaster, ownCharacterId, openConcentrationSaveDialogForRow, rows]);
+
+  React.useEffect(() => {
+    if (!isGameMaster || !battleStarted) return;
+
+    const socket = getPooledSessionSocket();
+    if (!socket) return;
+
+    const onPlayerConcentrationUpdated = ({
+      characterId,
+      concentration,
+      pendingConcentrationCheck,
+      userId,
+    }: {
+      characterId?: string;
+      concentration?: TrackerConcentration | null;
+      pendingConcentrationCheck?: InitiativeTrackerRow["pendingConcentrationCheck"];
+      userId?: string;
+    }) => {
+      if (typeof characterId !== "string" || !characterId.trim()) return;
+      if (typeof userId !== "string" || !userId.trim()) return;
+
+      const participant = participants.find((p) => p.userId === userId);
+      if (!participant || participant.status === "gameMaster" || participant.characterId !== characterId) {
+        return;
+      }
+
+      const row = rows.find((candidate) => candidate.characterId === characterId);
+      if (!row || row.groupId !== SESSION_PARTICIPANTS_GROUP_ID) return;
+
+      dispatchTrackerAction(
+        updateInitiativeTrackerRow({
+          id: row.id,
+          changes: {
+            concentration: concentration ?? null,
+            pendingConcentrationCheck: pendingConcentrationCheck ?? null,
+          },
+        }),
+      );
+    };
+
+    socket.on("session:player-concentration-updated", onPlayerConcentrationUpdated);
+
+    return () => {
+      socket.off("session:player-concentration-updated", onPlayerConcentrationUpdated);
+    };
+  }, [battleStarted, dispatchTrackerAction, isGameMaster, participants, rows]);
+
   if (!isGameMaster && !battleStarted && !playerCanAccessPreparationTracker) {
     return null;
   }
@@ -422,6 +568,7 @@ export default function InitiativeTrackerPage() {
           lifeStatus: t("visibilityDialog.fields.lifeStatus"),
           armorClass: t("visibilityDialog.fields.armorClass"),
           conditions: t("visibilityDialog.fields.conditions"),
+          concentration: t("visibilityDialog.fields.concentration"),
           groupLabel: t("visibilityDialog.fields.groupLabel"),
         },
       },
@@ -477,7 +624,11 @@ export default function InitiativeTrackerPage() {
           <p
             className="text-center text-sm text-white/60"
             role="status">
-            {playerCanEditOwnInitiative ? t("playerPrepInitiativeNotice") : t("playerReadOnlyNotice")}
+            {playerCanEditOwnInitiative
+              ? t("playerPrepInitiativeNotice")
+              : playerCanEditOwnConcentration
+                ? t("playerConcentrationNotice")
+                : t("playerReadOnlyNotice")}
           </p>
         ) : null}
 
@@ -532,6 +683,20 @@ export default function InitiativeTrackerPage() {
           onRemoveCondition={isGameMaster ? removeCondition : undefined}
           onClearConditions={isGameMaster ? clearConditions : undefined}
           onHitPointsClick={isGameMaster && isInSession ? (row) => setHealthDialogRow(row) : undefined}
+          battleStarted={battleStarted}
+          currentRound={currentRound}
+          onSetConcentration={
+            isGameMaster || playerCanEditOwnConcentration ? handleSetConcentration : undefined
+          }
+          onResolvePendingConcentrationCheck={
+            isGameMaster || playerCanEditOwnConcentration
+              ? (row, result) => {
+                  if (!shouldShowConcentrationSaveDialog({ row, isGameMaster, ownCharacterId })) return;
+                  handleResolvePendingConcentrationCheck(row, result);
+                }
+              : undefined
+          }
+          onOpenConcentrationSaveDialog={openConcentrationSaveDialogForRow}
           onRemoveFromInitiative={
             isGameMaster ? (rowId) => dispatchTrackerAction(removeInitiativeTrackerRow(rowId)) : undefined
           }
@@ -594,6 +759,7 @@ export default function InitiativeTrackerPage() {
                     lifeStatus: t("visibilityDialog.fields.lifeStatus"),
                     armorClass: t("visibilityDialog.fields.armorClass"),
                     conditions: t("visibilityDialog.fields.conditions"),
+                    concentration: t("visibilityDialog.fields.concentration"),
                     groupLabel: t("visibilityDialog.fields.groupLabel"),
                   },
                 }
@@ -639,6 +805,27 @@ export default function InitiativeTrackerPage() {
             }}
             sessionCode={sessionCode}
             onTrackerRowUpdate={(rowId, changes) => updateRow(rowId, changes)}
+          />
+        ) : null}
+
+        {concentrationSaveDialogRow?.concentration && concentrationSaveDialogRow.pendingConcentrationCheck ? (
+          <ConcentrationSaveDialog
+            open
+            onOpenChange={(open) => {
+              if (!open) {
+                setConcentrationSaveDialogRow(null);
+              }
+            }}
+            characterName={characterName(
+              concentrationSaveDialogRow.firstname,
+              concentrationSaveDialogRow.lastname,
+              concentrationSaveDialogRow.surname,
+            )}
+            concentration={concentrationSaveDialogRow.concentration}
+            pendingCheck={concentrationSaveDialogRow.pendingConcentrationCheck}
+            allowLater={!isSessionParticipantTrackerRow(concentrationSaveDialogRow)}
+            requireResolution={isSessionParticipantTrackerRow(concentrationSaveDialogRow)}
+            onResolve={(result) => handleResolvePendingConcentrationCheck(concentrationSaveDialogRow, result)}
           />
         ) : null}
       </div>

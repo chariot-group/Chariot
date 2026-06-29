@@ -3624,3 +3624,77 @@ Each initiative tracker row carries:
 - `services/adventure/api/src/common/constants/game-system.constant.ts`
 - `services/adventure/api/src/resources/campaign/schemas/campaign.schema.ts`
 - `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
+
+---
+
+## FR-tracker-concentration: Initiative Tracker - Concentration Spell Tracking
+
+**Rule**: During an active session combat, the initiative tracker must help participants track D&D 5e concentration on a per-row, tracker-only basis, with player self-service on their own row, GM control on all rows, real-time synchronization, and optional concentration-save reminders when hit points decrease.
+
+**Scope**:
+
+- Applies while a session combat is initialized or started (concentration edits require `battleStarted === true`).
+- Complements FR-combat-initiative-tracker, FR-session-combat-navigation, FR-session-combat-sync, and FR-tracker-vital-status without overriding turn lifecycle, visibility defaults for session-participant rows, or persisted character data rules.
+
+**Data Model (tracker-only)**:
+
+- Each `InitiativeTrackerRow` MAY carry:
+  - `concentration: { spellName, spellLevel?, className?, sinceRound? } | null`
+  - `pendingConcentrationCheck: { damageAmount, dc } | null` (optional reminder until resolved)
+- Concentration state MUST NOT be persisted on the character sheet.
+- Concentration state MUST be cleared when combat ends or the tracker is reset.
+- Concentration MUST auto-clear when the row vital status becomes `unconscious` or `dead` (FR-tracker-vital-status).
+
+**Visibility**:
+
+- A new player field flag `concentration` MUST exist in `playerFieldVisibility`.
+- Default visibility: `true` for session-participant player rows, `false` for NPC rows (same pattern as conditions).
+- When hidden from players, concentration MUST be stripped from player snapshots (FR-session-combat-navigation sanitization).
+
+**Permissions**:
+
+- Once combat has started, players MUST remain read-only on tracker rows except they MAY set, replace, or clear concentration on their own session character row only.
+- The GM MUST manage concentration on any row at any time while combat is started.
+- Only one active concentration entry per row; setting a new concentration spell MUST replace the previous entry automatically.
+
+**Magic Tab Integration**:
+
+- When a session participant casts a spell whose duration indicates concentration (heuristic: `duration` contains "concentration", case-insensitive), the client MUST prompt for confirmation before activating tracker concentration.
+- On confirmation, concentration MUST be applied to the matching tracker row using the same synchronization path as manual tracker edits.
+
+**Concentration Save Reminder**:
+
+- When a row with active concentration loses effective hit points (`hitPoints + tempHitPoints`) during started combat, the client MUST surface a non-blocking reminder with damage taken and CON save DC (`max(10, floor(damage / 2))`).
+- The concentration-save modal MUST be shown only to the owning session participant on their own row; the GM MUST NOT receive that modal for player rows (GM retains the modal for non-player tracker rows they manage).
+- The concentration-save modal MUST auto-open only once per pending-check signature (damage + DC); revisiting the tracker page MUST NOT re-trigger it for the same pending reminder (badge remains the manual entry point).
+- The reminder MUST offer at least: **Kept**, **Lost**, and **Later** (GM-managed non-player rows only; session player rows MUST NOT offer **Later** and MUST require an explicit **Kept** or **Lost** choice).
+- **Lost** MUST clear concentration; **Kept** MUST clear the pending reminder only; **Later** MUST keep the pending reminder visible on the row until resolved.
+- The row badge MUST show the maintained spell name (not a generic label) and, while a pending check exists, a compact CON-save indicator (e.g. `CON DC {dc}`) with warning styling; activating the badge MUST reopen the save reminder when applicable.
+- Chariot MUST NOT roll dice or enforce save outcomes automatically.
+
+**Synchronization**:
+
+- Concentration changes MUST propagate through the existing battle snapshot WebSocket flow (`session:battle-state-updated`).
+- Player-originated concentration updates MUST be relayed through the session gateway to the GM client, which remains authoritative for rebroadcasting the final snapshot (same pattern as preparatory player initiative).
+
+**Prohibitions**:
+
+- Persisting concentration on character records.
+- Allowing a player to modify another participant's concentration.
+- Allowing concentration edits when combat is not started.
+- Keeping concentration after combat end, tracker reset, unconscious/dead vital status, or explicit **Lost** resolution.
+
+**Tests**:
+
+- Nominal: set/replace/clear concentration on GM row; player sets own row during started combat.
+- Edge: auto-clear on unconscious/dead; hidden concentration stripped from player snapshot.
+- Edge: HP decrease with active concentration creates pending check with correct DC.
+- Failure: player cannot update another character's concentration; gateway rejects invalid payload.
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/components/initiativeTracker/`
+- `services/web/client/src/lib/sessionConcentrationBridge.ts`
+- `services/web/client/src/hooks/useSessionBattleSync.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`

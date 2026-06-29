@@ -2,21 +2,25 @@
 
 import {
   selectBattleInitialized,
+  selectBattleStarted,
   selectBattleStateSnapshot,
+  selectInitiativeTrackerRows,
   selectIsInSession,
   selectSessionCode,
   selectSessionParticipants,
   applyRemoteBattleState,
+  updateInitiativeTrackerRow,
   type BattleStateSnapshot,
 } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
   emitBattleStateUpdate,
   registerBattleStateBroadcastScheduler,
   registerBattleStateRequestResponder,
   respondToBattleStateRequest,
 } from "@/lib/sessionBattleSyncBridge";
+import { registerConcentrationUpdateApplier } from "@/lib/sessionConcentrationBridge";
 import { getPooledSessionSocket } from "@/lib/sessionSocketPool";
 import { sanitizeBattleStateSnapshotForPlayers } from "@/components/initiativeTracker/utils";
 import { useKeycloak } from "@/providers/KeycloakProvider";
@@ -47,6 +51,7 @@ function isGameMaster(
  */
 export function useSessionBattleSync() {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const isInSession = useAppSelector(selectIsInSession);
   const code = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
@@ -114,6 +119,39 @@ export function useSessionBattleSync() {
       registerBattleStateRequestResponder(null);
     };
   }, [broadcastSnapshot, isInSession]);
+
+  useEffect(() => {
+    if (!isInSession) {
+      registerConcentrationUpdateApplier(null);
+      return;
+    }
+
+    registerConcentrationUpdateApplier((payload) => {
+      if (!isGmRef.current) return;
+
+      const state = store.getState();
+      if (!selectBattleStarted(state)) return;
+
+      const row = selectInitiativeTrackerRows(state).find(
+        (candidate) => candidate.characterId === payload.characterId,
+      );
+      if (!row) return;
+
+      dispatch(updateInitiativeTrackerRow({
+        id: row.id,
+        changes: {
+          concentration: payload.concentration,
+          pendingConcentrationCheck: payload.pendingConcentrationCheck ?? null,
+        },
+      }));
+
+      emitBattleStateUpdate(selectBattleStateSnapshot(store.getState()));
+    });
+
+    return () => {
+      registerConcentrationUpdateApplier(null);
+    };
+  }, [dispatch, isInSession, store]);
 
   const isGm = isGameMaster(participants, currentUserId);
 

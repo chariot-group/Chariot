@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowLeft, Check, Eraser, Info, Pencil, X } from "lucide-react";
+import { ArrowLeft, Check, Eraser, Info, Pencil, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -29,6 +29,26 @@ import { CONDITIONS } from "@/components/initiativeTracker/constants";
 import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import { clampConditionIndex } from "@/components/initiativeTracker/utils";
+import { ConcentrationStateBadge } from "@/components/initiativeTracker/ConcentrationStateBadge";
+import type { ConcentrationDialogIntent } from "@/components/initiativeTracker/ConcentrationSpellDialog";
+import type { TrackerConcentration } from "@/store/slices/sessionSlice";
+import { formatConcentrationBadgeLabel, shouldShowConcentrationSaveDialog } from "@/components/initiativeTracker/concentration.utils";
+
+export type ConditionSelectConcentrationProps = {
+  enabled: boolean;
+  canEdit: boolean;
+  concentration: TrackerConcentration | null | undefined;
+  pendingConcentrationCheck?: import("@/store/slices/sessionSlice").PendingConcentrationCheck | null;
+  menuLabel: string;
+  formatDetailLabel: (concentration: TrackerConcentration) => string;
+  formatPendingCheckShortLabel: (dc: number) => string;
+  formatPendingCheckActivateLabel: (dc: number) => string;
+  changeLabel: string;
+  dropLabel: string;
+  onOpenDialog: (intent?: ConcentrationDialogIntent) => void;
+  onOpenConcentrationSaveDialog?: () => void;
+  onSetConcentration: (concentration: TrackerConcentration | null) => void;
+};
 
 type ConditionSelectProps = {
   row: InitiativeTrackerRow;
@@ -53,6 +73,7 @@ type ConditionSelectProps = {
   ) => void;
   onRemoveCondition: (row: InitiativeTrackerRow, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions: (row: InitiativeTrackerRow) => void;
+  concentration?: ConditionSelectConcentrationProps;
 };
 
 function ConditionInfoButton({
@@ -111,8 +132,14 @@ export function ConditionSelect({
   onAddCondition,
   onRemoveCondition,
   onClearConditions,
+  concentration,
 }: ConditionSelectProps) {
   const rowConditions = row.conditions ?? [];
+  const activeConcentration =
+    concentration?.enabled && concentration.concentration ? concentration.concentration : null;
+  const activePendingConcentrationCheck = concentration?.pendingConcentrationCheck ?? null;
+  const totalStateCount = rowConditions.length + (activeConcentration ? 1 : 0);
+  const [menuOpen, setMenuOpen] = React.useState(false);
   const [conditionSearch, setConditionSearch] = React.useState("");
   const [highlightedIndex, setHighlightedIndex] = React.useState(0);
   const [pendingCondition, setPendingCondition] = React.useState<ActiveInitiativeTrackerCondition | null>(null);
@@ -191,12 +218,18 @@ export function ConditionSelect({
   };
 
   const handleOpenChange = (open: boolean) => {
+    setMenuOpen(open);
     setConditionSearch("");
     setHighlightedIndex(0);
     resetPending();
     if (open) {
       window.requestAnimationFrame(() => searchInputRef.current?.focus());
     }
+  };
+
+  const openConcentrationDialog = (intent?: ConcentrationDialogIntent) => {
+    setMenuOpen(false);
+    concentration?.onOpenDialog(intent);
   };
 
   const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -238,7 +271,9 @@ export function ConditionSelect({
 
   return (
     <div className="flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden pr-0 sm:pr-2">
-      <DropdownMenu onOpenChange={handleOpenChange}>
+      <DropdownMenu
+        open={menuOpen}
+        onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button
             type="button"
@@ -333,6 +368,36 @@ export function ConditionSelect({
             </div>
           ) : (
             <>
+              {concentration?.enabled && concentration.canEdit ? (
+                <div className="mb-2 flex items-center gap-1 border-b border-white/10 pb-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openConcentrationDialog(activeConcentration ? "replace" : "set")
+                    }
+                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[15px] px-2 py-2 text-sm text-pink transition-colors hover:bg-pink/10">
+                    <Sparkles
+                      aria-hidden="true"
+                      className="size-4 shrink-0"
+                    />
+                    <span className="min-w-0 flex-1 truncate text-left">
+                      {activeConcentration
+                        ? formatConcentrationBadgeLabel(activeConcentration.spellName)
+                        : concentration.menuLabel}
+                    </span>
+                  </button>
+                  {activeConcentration ? (
+                    <button
+                      type="button"
+                      aria-label={concentration.dropLabel}
+                      onClick={() => concentration.onSetConcentration(null)}
+                      className="inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/60 transition-colors hover:bg-red/15 hover:text-red">
+                      <X className="size-3.5" aria-hidden="true" />
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+
               <div className="mb-2 flex items-center gap-2">
                 <div className="relative min-w-0 flex-1">
                   <Input
@@ -448,10 +513,49 @@ export function ConditionSelect({
         </DropdownMenuContent>
       </DropdownMenu>
       <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 overflow-hidden">
-        {rowConditions.length === 0 ? (
+        {totalStateCount === 0 ? (
           <span className="block min-w-0 truncate text-sm text-white/70">{getConditionLabel("none")}</span>
         ) : (
-          rowConditions.map((entry, index) => {
+          <>
+            {activeConcentration ? (
+              <ConcentrationStateBadge
+                concentration={activeConcentration}
+                badgeLabel={formatConcentrationBadgeLabel(activeConcentration.spellName)}
+                detailLabel={concentration?.formatDetailLabel(activeConcentration) ?? ""}
+                pendingCheck={activePendingConcentrationCheck}
+                pendingCheckLabel={
+                  activePendingConcentrationCheck
+                    ? concentration?.formatPendingCheckShortLabel(activePendingConcentrationCheck.dc) ?? null
+                    : null
+                }
+                pendingCheckActivateLabel={
+                  activePendingConcentrationCheck
+                    ? concentration?.formatPendingCheckActivateLabel(activePendingConcentrationCheck.dc) ?? null
+                    : null
+                }
+                onPendingCheckActivate={
+                  activePendingConcentrationCheck
+                  && concentration?.onOpenConcentrationSaveDialog
+                  && shouldShowConcentrationSaveDialog({
+                    row,
+                    isGameMaster: true,
+                    ownCharacterId: null,
+                  })
+                    ? concentration.onOpenConcentrationSaveDialog
+                    : undefined
+                }
+                canEdit={concentration?.canEdit}
+                changeLabel={concentration?.changeLabel ?? ""}
+                dropLabel={concentration?.dropLabel ?? ""}
+                onEdit={() => openConcentrationDialog("replace")}
+                onRemove={() => concentration?.onSetConcentration(null)}
+                badgeIndex={0}
+                totalBadgeCount={totalStateCount}
+                variant="select"
+              />
+            ) : null}
+            {rowConditions.map((entry, index) => {
+            const badgeIndex = index + (activeConcentration ? 1 : 0);
             const { Icon, badgeClassName } = CONDITION_META[entry.condition];
             const conditionLabel = getConditionLabel(entry.condition);
             const conditionDescription = getConditionDescription(entry.condition);
@@ -462,7 +566,7 @@ export function ConditionSelect({
                 key={entry.condition}
                 className={cn(
                   "inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border py-1 pl-2 pr-1 text-xs font-medium md:max-w-[8.5rem] lg:max-w-[11rem] xl:max-w-[13rem]",
-                  index > 0 && "md:hidden lg:inline-flex",
+                  badgeIndex > 0 && "md:hidden lg:inline-flex",
                   badgeClassName,
                 )}
                 title={badgeText}>
@@ -470,19 +574,20 @@ export function ConditionSelect({
                   aria-hidden="true"
                   className="size-3.5 shrink-0"
                 />
-                <span className={cn("min-w-0 flex-1 truncate", rowConditions.length > 1 && "md:sr-only lg:not-sr-only")}>
+                <span className={cn("min-w-0 flex-1 truncate", totalStateCount > 1 && "md:sr-only lg:not-sr-only")}>
                   {badgeText}
                 </span>
                 <ConditionInfoButton
                   label={conditionLabel}
                   description={conditionDescription}
-                  className={cn("size-5", rowConditions.length > 1 && "md:hidden lg:inline-flex")}
+                  className={cn("size-5", totalStateCount > 1 && "md:hidden lg:inline-flex")}
                 />
               </span>
             );
-          })
+          })}
+          </>
         )}
-        {rowConditions.length > 1 ? (
+        {totalStateCount > 1 ? (
           <span
             className="hidden size-6 items-center justify-center rounded-full border border-white/15 bg-white/5 text-xs font-semibold leading-none text-white/60 md:inline-flex lg:hidden"
             aria-label="Plus d'états">
