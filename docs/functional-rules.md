@@ -3577,3 +3577,87 @@ Each initiative tracker row carries:
 - `services/adventure/api/src/common/constants/game-system.constant.ts`
 - `services/adventure/api/src/resources/campaign/schemas/campaign.schema.ts`
 - `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
+
+---
+
+## FR-character-sheet-pdf-export: Character Sheet PDF Export
+
+**Rule**: The web application MUST allow exporting any Player or NPC character sheet as a downloadable PDF. The PDF layout MUST follow the three-page D&D 5e personal character sheet structure (core stats, biography/appearance, spellcasting) while applying Chariot's documented visual baseline (`docs/design.md`). Export is client-side only; no new backend endpoint is required.
+
+**Scope**:
+
+- Player characters (`Player`) in **Mes personnages** and in campaign groups
+- NPC characters (`NPC`) in campaign groups
+- Game system: `DND_5E` only (initial release); other systems MUST NOT expose the action until a dedicated layout exists
+
+**Entry points**:
+
+- **Character detail view** (`CharacterDetailView`): secondary action button « Exporter en PDF » visible when the sheet is in read mode (not editing), alongside existing footer/header actions. Hidden when `showEditControls` is false (GM read-only player sheet outside session).
+- **Sidebar context menu** (FR-sidebar-context-actions): same action on character rows (players and NPCs) in **Mes personnages** and in groups, via overflow menu on mobile/tablet.
+
+**PDF layout (D&D 5e structure + Chariot styling)**:
+
+- **Page 1 — Core sheet** (always):
+  - Identity block: character name, race/type, class & level (PJ) or CR & XP (PNJ), background or creature type, alignment, XP (PJ), player name when resolvable (PJ, optional)
+  - Six ability scores with modifiers, inspiration (PJ), proficiency bonus, saving throws, skills (with computed bonuses), passive perception
+  - Combat block: AC, initiative, speed, current/max/temp HP, hit dice (PJ) or HP roll notation (PNJ)
+  - Death saves (PJ only), attacks & spell attacks, equipment & treasure currencies, proficiencies/languages, features & traits (`abilities`)
+- **Page 2 — Biography** (always):
+  - Appearance (age, height, weight, eyes, skin, hair, description)
+  - Personality traits, ideals, bonds, flaws, allies & organizations, backstory (PJ) or equivalent narrative fields
+  - Additional features, symbol/avatar thumbnail when `avatar` is set
+- **Page 3 — Spellcasting** (conditional):
+  - Included only when `spellcasting` has at least one entry with spells or slots
+  - Per class block: spellcasting ability, save DC, attack bonus, cantrips, prepared/known spells by level, slot usage grid (PJ) or innate/uses-per-day grid (PNJ innate)
+
+**Visual treatment** (FR-frontend-design):
+
+- The user MUST choose between two export themes before download:
+  - **Dark** (Chariot app): background `--card` (`#19191c`) / `--background` (`#0c0c0c`), body text `--foreground` / `--gray-light`, borders `white/10` or `--gray`
+  - **Light** (print-friendly): background white (`#ffffff`), body text dark (`#1a1a1a`), borders `#d6d6d6`
+- Both themes share the same section accent colors: General `blue`, Combat `red`, Magic `pink`, Inventory `yellow`, History `green`
+- Rounded corners on field boxes (`rounded-[15px]` equivalent in PDF units)
+- Chariot wordmark or app name in PDF footer on each page
+- Contrast MUST meet WCAG AA (4.5:1) for normal text in both themes
+
+**Data mapping**:
+
+- Skill and save bonuses MUST use the same calculation helpers as the live sheet (`calculateSkillBonus`, `calculateAbilityBonus`, saving-throw logic from `global.utils`)
+- Translated labels MUST use the active UI locale at export time (`next-intl` namespaces: `characterDetail`, `classes`, `alignments`, etc.)
+- Internal identifiers (`_id`, `createdBy`, `keycloakId`) MUST NOT appear in the PDF
+- Empty optional fields render as blank lines/boxes, not « undefined » or « null »
+
+**Interaction**:
+
+- Click opens a theme picker (dark / light) then triggers client-side PDF generation and browser download
+- Button shows loading state (`aria-busy="true"`, disabled) while generating
+- Success: file downloaded as `chariot-{sanitized-firstname}-{sanitized-lastname}-{YYYY-MM-DD}.pdf`
+- Failure: toast error; button returns to idle
+
+**Prohibitions**:
+
+- Requiring a backend export endpoint
+- Blocking export during an active session (export remains available unless `showEditControls` is false for GM read-only player sheets)
+- Using relative imports in new source files (project `@/` alias rule)
+- Embedding Wizards of the Coast copyrighted artwork or verbatim « TM & © » footer from the official blank sheet
+- Light-theme PDF that ignores Chariot palette without explicit product decision
+
+**Tests**:
+
+- Nominal: Player with full data → 3-page PDF buffer produced, filename sanitized
+- Nominal: NPC with CR and legendary actions → page 1 includes CR/XP, no death saves
+- Edge: Character without spellcasting → 2 pages only
+- Edge: Long text fields truncated or wrapped without layout overflow crash
+- Failure: Avatar fetch failure → PDF still generated without image
+- Unit: export filename builder strips unsafe characters
+- Unit: skill bonus mapping matches `calculateSkillBonus` for sample stats
+- Accessibility: export button has accessible name; loading state exposes `aria-busy`
+
+**References**:
+
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/lib/characterSheetPdf/` (to create)
+- `services/web/client/src/utils/global.utils.ts`
+- `docs/design.md`

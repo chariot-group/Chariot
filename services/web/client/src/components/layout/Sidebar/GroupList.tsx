@@ -27,6 +27,7 @@ import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import { DuplicateGroupDialog } from "@/components/dialogs/DuplicateGroupDialog";
+import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
 import GroupService from "@/services/GroupService";
@@ -46,6 +47,7 @@ import {
 } from "@/store/slices/sessionSlice";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
+import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
 
 interface GroupListProps {
   groups: Group[];
@@ -110,6 +112,7 @@ export default function GroupList({
 
   const [isDeletingGroup, setIsDeletingGroup] = React.useState(false);
   const [isDeletingCharacter, setIsDeletingCharacter] = React.useState(false);
+  const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
   const openGroupIds = Array.isArray(openGroupId) ? openGroupId : [];
 
@@ -373,9 +376,16 @@ export default function GroupList({
     (character: GroupCharacter, groupId: string): SidebarActionItem[] => {
       if (!selectedCampaignId) return [];
 
+      const exportAction: SidebarActionItem = {
+        id: "exportPdf",
+        label: t("exportPdf"),
+        onSelect: () => void requestCharacterPdfExport(character._id),
+      };
+
       if (actionsDisabled) {
         const isGuest = gmGuestCharacterIds.includes(character._id);
         return [
+          exportAction,
           {
             id: isGuest ? "removeFromSession" : "addToSession",
             label: isGuest ? t("removeFromSession") : t("addToSession"),
@@ -387,7 +397,7 @@ export default function GroupList({
         ];
       }
 
-      const items: SidebarActionItem[] = [];
+      const items: SidebarActionItem[] = [exportAction];
 
       items.push({
         id: "duplicate",
@@ -432,7 +442,7 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, gmGuestCharacterIds, handleAddGmGuestToSession, handleRemoveGmGuestFromSession, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, router, selectedCampaignId, setOpenMobile, t],
+    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, gmGuestCharacterIds, handleAddGmGuestToSession, handleRemoveGmGuestFromSession, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, requestCharacterPdfExport, router, selectedCampaignId, setOpenMobile, t],
   );
 
   if (groups.length === 0) {
@@ -636,6 +646,12 @@ export default function GroupList({
           if (!open) setGroupToDuplicate(null);
         }}
         onDuplicate={(label, count) => handleDuplicateGroup(groupToDuplicate!, label, count)}
+      />
+
+      <ExportCharacterSheetPdfDialog
+        character={characterToExport}
+        open={!!characterToExport}
+        onOpenChange={closeExportDialog}
       />
     </div>
   );

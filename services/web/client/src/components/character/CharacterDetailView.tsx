@@ -1,6 +1,6 @@
 "use client";
 
-import { SquarePen, X, Save } from "lucide-react";
+import { SquarePen, X, Save, FileDown } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
@@ -30,6 +30,7 @@ import MediaService from "@/services/MediaService";
 import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
 import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
 import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
+import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -332,6 +333,8 @@ export default function CharacterDetailView({
     };
   }, [form, handleCharacterSave, handleCancelEditor, handleInvalid, hasPendingChanges, isEditing]);
 
+  const [isExportPdfDialogOpen, setIsExportPdfDialogOpen] = React.useState(false);
+
   const characterFooterActions = showEditControls ? (
     <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
       {isEditing ? (
@@ -379,17 +382,18 @@ export default function CharacterDetailView({
           </Button>
         </React.Fragment>
       ) : (
-        <Button
-          type="button"
-          onClick={() => setIsEditing(true)}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setIsEditing(true);
-            }
-          }}
-          className={`
+        <React.Fragment>
+          <Button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsEditing(true);
+              }
+            }}
+            className={`
             max-w-full min-w-0 lg:text-sm text-xs font-semibold
             ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
             ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
@@ -397,13 +401,27 @@ export default function CharacterDetailView({
             ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
             ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
           `}
-          aria-label={t("editCharacter")}>
-          <SquarePen
-            className="lg:size-5 size-4 shrink-0"
-            aria-hidden="true"
-          />
-          <span className="truncate">{t("editCharacter")}</span>
-        </Button>
+            aria-label={t("editCharacter")}>
+            <SquarePen
+              className="lg:size-5 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{t("editCharacter")}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsExportPdfDialogOpen(true)}
+            tabIndex={0}
+            className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+            aria-label={t("pdfExport.exportAria")}>
+            <FileDown
+              className="lg:size-5 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{t("exportPdf")}</span>
+          </Button>
+        </React.Fragment>
       )}
     </div>
   ) : null;
@@ -576,6 +594,13 @@ export default function CharacterDetailView({
           </div>
         ) : null}
       </form>
+      <ExportCharacterSheetPdfDialog
+        character={character}
+        open={isExportPdfDialogOpen}
+        onOpenChange={setIsExportPdfDialogOpen}
+        sessionCode={sessionCodeForMedia}
+        playerName={playedByLabel ?? undefined}
+      />
     </main>
   );
 }
