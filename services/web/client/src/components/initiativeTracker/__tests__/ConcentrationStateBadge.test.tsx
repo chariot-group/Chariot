@@ -5,7 +5,7 @@ import { ConcentrationStateBadge } from "@/components/initiativeTracker/Concentr
 const baseConcentration = { spellName: "Entangle" };
 
 describe("FR-tracker-concentration — ConcentrationStateBadge", () => {
-  it("nominal: renders adaptive slot and spell detail in tooltip title", () => {
+  it("nominal: renders adaptive slot and spell detail in Radix tooltip", () => {
     const html = renderToStaticMarkup(
       <ConcentrationStateBadge
         concentration={baseConcentration}
@@ -18,14 +18,16 @@ describe("FR-tracker-concentration — ConcentrationStateBadge", () => {
     );
 
     expect(html).toContain("Concentré");
-    expect(html).toContain('title="Concentré (Entangle)"');
+    expect(html).toContain("Concentré (Entangle)");
+    expect(html).not.toContain('title="Concentré (Entangle)"');
+    expect(html).toContain('data-slot="tooltip-trigger"');
     expect(html).toContain('data-concentration-badge-label=""');
     expect(html).toContain("shrink-0");
     expect(html).toContain("w-max");
     expect(html).toContain("overflow-hidden");
     expect(html).toContain("border-white/20");
     expect(html).toContain("text-white/60");
-    expect(html).not.toContain("lucide-sparkles");
+    expect(html).toContain("lucide-sparkles");
   });
 
   it("edge: editable badge is a single clickable control with isolated drop action", () => {
@@ -46,6 +48,11 @@ describe("FR-tracker-concentration — ConcentrationStateBadge", () => {
     expect(html).toContain('aria-label="Changer. Concentré (Entangle)"');
     expect(html).toContain('aria-label="Lâcher"');
     expect(html).not.toContain("lucide-pencil");
+    const buttonBlocks = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/gi) ?? [];
+    for (const block of buttonBlocks) {
+      const inner = block.replace(/^<button\b[^>]*>/, "").replace(/<\/button>$/, "");
+      expect(inner).not.toMatch(/<button\b/);
+    }
   });
 
   it("edge: pending check keeps warning styling and activation label", () => {
@@ -65,6 +72,8 @@ describe("FR-tracker-concentration — ConcentrationStateBadge", () => {
     );
 
     expect(html).toContain("CON DC 10");
+    expect(html).toContain("lucide-triangle-alert");
+    expect(html).not.toContain("lucide-sparkles");
     expect(html).toContain('aria-label="Ouvrir le rappel"');
     expect(html).toContain("border-yellow/35");
   });
@@ -82,6 +91,7 @@ describe("FR-tracker-concentration — ConcentrationStateBadge", () => {
     );
 
     expect(html).not.toContain("lucide-info");
-    expect(html).toContain('title="Concentré (Entangle)"');
+    expect(html).not.toContain('title="Concentré (Entangle)"');
+    expect(html).toContain("Concentré (Entangle)");
   });
 });

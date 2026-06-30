@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AlertTriangle, Info, X } from "lucide-react";
+import { AlertTriangle, Info, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -90,14 +90,21 @@ export function ConcentrationStateBadge({
     ? `${changeLabel}. ${accessibleLabel}`
     : accessibleLabel;
 
-  const badgeBody = (
+  const hasNestedActions = compaction.showInfo || compaction.showDrop;
+
+  const badgeMainContent = (
     <>
       {hasPendingCheck ? (
         <AlertTriangle
           aria-hidden="true"
           className="size-3.5 shrink-0"
         />
-      ) : null}
+      ) : (
+        <Sparkles
+          aria-hidden="true"
+          className="size-3.5 shrink-0"
+        />
+      )}
       <span
         data-concentration-badge-label=""
         className="shrink-0 max-w-full">
@@ -112,6 +119,11 @@ export function ConcentrationStateBadge({
           {pendingCheckLabel}
         </span>
       ) : null}
+    </>
+  );
+
+  const badgeActionButtons = (
+    <>
       {compaction.showInfo ? (
         <ConcentrationDetailButton
           label={visibleLabel}
@@ -144,42 +156,91 @@ export function ConcentrationStateBadge({
     hasPendingCheck
       ? "border-yellow/35 bg-yellow/10 text-yellow/90"
       : "border-white/20 bg-white/5 text-white/60",
-    isPendingActionable && "cursor-pointer transition-colors hover:bg-yellow/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow/40",
-    canEdit && !isPendingActionable && "cursor-pointer transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+    isPendingActionable && "cursor-pointer transition-colors hover:bg-yellow/15",
+    canEdit && !isPendingActionable && "cursor-pointer transition-colors hover:bg-white/10",
+    hasNestedActions
+      ? isPendingActionable
+        ? "focus-within:outline-none focus-within:ring-2 focus-within:ring-yellow/40"
+        : "focus-within:outline-none focus-within:ring-2 focus-within:ring-white/30"
+      : isPendingActionable
+        ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow/40"
+        : canEdit
+          ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          : null,
   );
+
+  const primaryActionClassName =
+    "inline-flex min-w-0 flex-1 items-center gap-1 overflow-hidden border-0 bg-transparent p-0 text-inherit font-inherit cursor-pointer focus-visible:outline-none";
 
   const badgeShell = (content: React.ReactNode) => (
     <span
       data-concentration-badge-slot=""
       className="inline-block min-w-0 max-w-full w-max">
-      {content}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex min-w-0 max-w-full w-max">{content}</span>
+        </TooltipTrigger>
+        <TooltipContent side="top">{tooltipTitle}</TooltipContent>
+      </Tooltip>
     </span>
   );
 
   if (isPendingActionable) {
+    if (hasNestedActions) {
+      return badgeShell(
+        <span
+          ref={badgeRef}
+          className={badgeClassName}>
+          <button
+            type="button"
+            className={primaryActionClassName}
+            aria-label={pendingCheckActivateLabel ?? interactiveAriaLabel}
+            onClick={onPendingCheckActivate}>
+            {badgeMainContent}
+          </button>
+          {badgeActionButtons}
+        </span>,
+      );
+    }
+
     return badgeShell(
       <button
         ref={badgeRef}
         type="button"
         className={badgeClassName}
         aria-label={pendingCheckActivateLabel ?? interactiveAriaLabel}
-        title={tooltipTitle}
         onClick={onPendingCheckActivate}>
-        {badgeBody}
+        {badgeMainContent}
       </button>,
     );
   }
 
   if (canEdit) {
+    if (hasNestedActions) {
+      return badgeShell(
+        <span
+          ref={badgeRef}
+          className={badgeClassName}>
+          <button
+            type="button"
+            className={primaryActionClassName}
+            aria-label={interactiveAriaLabel}
+            onClick={onEdit}>
+            {badgeMainContent}
+          </button>
+          {badgeActionButtons}
+        </span>,
+      );
+    }
+
     return badgeShell(
       <button
         ref={badgeRef}
         type="button"
         className={badgeClassName}
         aria-label={interactiveAriaLabel}
-        title={tooltipTitle}
         onClick={onEdit}>
-        {badgeBody}
+        {badgeMainContent}
       </button>,
     );
   }
@@ -188,9 +249,9 @@ export function ConcentrationStateBadge({
     <span
       ref={badgeRef}
       className={badgeClassName}
-      aria-label={accessibleLabel}
-      title={tooltipTitle}>
-      {badgeBody}
+      aria-label={accessibleLabel}>
+      {badgeMainContent}
+      {badgeActionButtons}
     </span>,
   );
 }
