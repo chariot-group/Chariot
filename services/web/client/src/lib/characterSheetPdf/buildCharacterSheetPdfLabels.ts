@@ -2,7 +2,7 @@
 
 import type { CharacterSheetPdfLabels } from "@/lib/characterSheetPdf/types";
 
-type TranslateFn = (key: string) => string;
+type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
 export interface BuildCharacterSheetPdfLabelsInput {
   tPdf: TranslateFn;
@@ -51,7 +51,7 @@ export function buildCharacterSheetPdfLabels(input: BuildCharacterSheetPdfLabels
 
   return {
     appName: tPdf("appName"),
-    pageOf: tPdf("pageOf"),
+    pageOf: tPdf("pageOf", { page: "{page}", total: "{total}" }),
     characterName: tGeneral("character"),
     playerName: tPdf("playerName"),
     race: tEdit("race"),

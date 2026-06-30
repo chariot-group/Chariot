@@ -34,7 +34,7 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
   const labels = useMemo(
     () =>
       buildCharacterSheetPdfLabels({
-        tPdf: (key) => tPdf(key),
+        tPdf: (key, values) => (values !== undefined ? tPdf(key, values) : tPdf(key)),
         tGeneral: (key) => tGeneral(key),
         tBattle: (key) => tBattle(key),
         tEdit: (key) => tEdit(key),
