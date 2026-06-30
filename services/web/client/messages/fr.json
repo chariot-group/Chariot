@@ -256,7 +256,7 @@
         "setFor": "Définir la concentration pour {name}",
         "change": "Changer le sort de concentration",
         "drop": "Lâcher la concentration",
-        "badgeLabel": "Concentration",
+        "badgeLabel": "Concentré",
         "badgeShort": "C",
         "badgeDetail": "Concentré ({spell})",
         "sinceRound": "depuis le round {round}",

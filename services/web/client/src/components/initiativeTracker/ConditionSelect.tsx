@@ -40,6 +40,8 @@ export type ConditionSelectConcentrationProps = {
   concentration: TrackerConcentration | null | undefined;
   pendingConcentrationCheck?: import("@/store/slices/sessionSlice").PendingConcentrationCheck | null;
   menuLabel: string;
+  badgeLabel: string;
+  badgeShort: string;
   formatDetailLabel: (concentration: TrackerConcentration) => string;
   formatPendingCheckShortLabel: (dc: number) => string;
   formatPendingCheckActivateLabel: (dc: number) => string;
@@ -270,7 +272,7 @@ export function ConditionSelect({
   const pendingDescription = pendingCondition ? getConditionDescription(pendingCondition) : "";
 
   return (
-    <div className="flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden pr-0 sm:pr-2">
+    <div className="flex w-full min-w-0 max-w-full items-center gap-2 overflow-x-clip pr-0 sm:pr-2">
       <DropdownMenu
         open={menuOpen}
         onOpenChange={handleOpenChange}>
@@ -512,15 +514,17 @@ export function ConditionSelect({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 overflow-x-clip">
         {totalStateCount === 0 ? (
           <span className="block min-w-0 truncate text-sm text-white/70">{getConditionLabel("none")}</span>
         ) : (
           <>
             {activeConcentration ? (
-              <ConcentrationStateBadge
+              <div className="min-w-0 max-w-full shrink overflow-x-clip">
+                <ConcentrationStateBadge
                 concentration={activeConcentration}
-                badgeLabel={formatConcentrationBadgeLabel(activeConcentration.spellName)}
+                badgeLabel={concentration.badgeLabel}
+                badgeShort={concentration.badgeShort}
                 detailLabel={concentration?.formatDetailLabel(activeConcentration) ?? ""}
                 pendingCheck={activePendingConcentrationCheck}
                 pendingCheckLabel={
@@ -553,6 +557,7 @@ export function ConditionSelect({
                 totalBadgeCount={totalStateCount}
                 variant="select"
               />
+              </div>
             ) : null}
             {rowConditions.map((entry, index) => {
             const badgeIndex = index + (activeConcentration ? 1 : 0);

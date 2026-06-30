@@ -1,14 +1,17 @@
 "use client";
 
-import { AlertTriangle, Info, Pencil, Sparkles, X } from "lucide-react";
+import * as React from "react";
+import { AlertTriangle, Info, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { PendingConcentrationCheck, TrackerConcentration } from "@/store/slices/sessionSlice";
+import { useConcentrationBadgeCompaction } from "@/components/initiativeTracker/useConcentrationBadgeCompaction";
 
 type ConcentrationStateBadgeProps = {
   concentration: TrackerConcentration;
   badgeLabel: string;
+  badgeShort: string;
   detailLabel: string;
   canEdit?: boolean;
   changeLabel: string;
@@ -53,6 +56,7 @@ function ConcentrationDetailButton({ label, description }: { label: string; desc
 export function ConcentrationStateBadge({
   concentration,
   badgeLabel,
+  badgeShort,
   detailLabel,
   canEdit = false,
   changeLabel,
@@ -67,13 +71,24 @@ export function ConcentrationStateBadge({
   totalBadgeCount = 1,
   variant = "default",
 }: ConcentrationStateBadgeProps) {
+  const badgeRef = React.useRef<HTMLButtonElement | HTMLSpanElement>(null);
   const isSelectVariant = variant === "select";
   const hasPendingCheck = pendingCheck != null;
   const isPendingActionable = hasPendingCheck && Boolean(onPendingCheckActivate);
-  const badgeText = badgeLabel.trim() || concentration.spellName;
+  const compaction = useConcentrationBadgeCompaction(badgeRef, {
+    canEdit,
+    hasPendingCheck,
+  });
+  const visibleLabel = compaction.labelMode === "full" ? badgeLabel : badgeShort;
   const accessibleLabel = hasPendingCheck && pendingCheckLabel
     ? `${detailLabel}. ${pendingCheckLabel}`
     : detailLabel;
+  const tooltipTitle = concentration.spellName.trim()
+    ? detailLabel
+    : badgeLabel;
+  const interactiveAriaLabel = canEdit
+    ? `${changeLabel}. ${accessibleLabel}`
+    : accessibleLabel;
 
   const badgeBody = (
     <>
@@ -82,92 +97,100 @@ export function ConcentrationStateBadge({
           aria-hidden="true"
           className="size-3.5 shrink-0"
         />
-      ) : (
-        <Sparkles
-          aria-hidden="true"
-          className="size-3.5 shrink-0"
-        />
-      )}
+      ) : null}
       <span
-        className={cn(
-          "min-w-0 truncate",
-          isSelectVariant && totalBadgeCount > 1 && "md:sr-only lg:not-sr-only",
-        )}>
-        {badgeText}
+        data-concentration-badge-label=""
+        className="shrink-0 max-w-full">
+        {visibleLabel}
       </span>
-      {hasPendingCheck && pendingCheckLabel ? (
+      {hasPendingCheck && pendingCheckLabel && compaction.showPendingLabel ? (
         <span
           className={cn(
-            "shrink-0 rounded-full border border-yellow/40 bg-yellow/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-yellow",
+            "shrink-0 rounded-full border border-yellow/35 bg-yellow/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-yellow/90",
             isSelectVariant && totalBadgeCount > 1 && "md:sr-only lg:inline-flex",
           )}>
           {pendingCheckLabel}
         </span>
       ) : null}
-      <ConcentrationDetailButton
-        label={badgeText}
-        description={accessibleLabel}
-      />
-      {canEdit ? (
-        <>
-          <Button
-            type="button"
-            size="icon-sm"
-            variant="ghost"
-            className="size-5 shrink-0 rounded-full text-inherit/80 hover:bg-white/10"
-            aria-label={changeLabel}
-            onClick={(event) => {
-              event.stopPropagation();
-              onEdit?.();
-            }}>
-            <Pencil className="size-3" aria-hidden="true" />
-          </Button>
-          <Button
-            type="button"
-            size="icon-sm"
-            variant="ghost"
-            className="size-5 shrink-0 rounded-full text-inherit/80 hover:bg-red/15 hover:text-red"
-            aria-label={dropLabel}
-            onClick={(event) => {
-              event.stopPropagation();
-              onRemove?.();
-            }}>
-            <X className="size-3" aria-hidden="true" />
-          </Button>
-        </>
+      {compaction.showInfo ? (
+        <ConcentrationDetailButton
+          label={visibleLabel}
+          description={accessibleLabel}
+        />
+      ) : null}
+      {compaction.showDrop ? (
+        <Button
+          type="button"
+          size="icon-sm"
+          variant="ghost"
+          className="size-5 shrink-0 rounded-full text-inherit/70 hover:bg-red/15 hover:text-red"
+          aria-label={dropLabel}
+          onClick={(event) => {
+            event.stopPropagation();
+            onRemove?.();
+          }}>
+          <X className="size-3" aria-hidden="true" />
+        </Button>
       ) : null}
     </>
   );
 
   const badgeClassName = cn(
-    "inline-flex min-w-0 max-w-full shrink-0 items-center gap-1 rounded-full border py-1 text-xs font-medium",
+    "inline-flex w-max min-w-0 max-w-full shrink-0 items-center gap-1 overflow-hidden rounded-full border py-1 text-xs font-medium",
+    compaction.labelMode === "short" && "min-w-[1.75rem] justify-center",
     isSelectVariant ? "pl-2 pr-1" : "px-2",
     isSelectVariant && totalBadgeCount > 1 && "max-w-full lg:max-w-none",
     isSelectVariant && badgeIndex > 0 && "md:hidden lg:inline-flex",
     hasPendingCheck
-      ? "border-yellow/50 bg-yellow/15 text-yellow"
-      : "border-pink/40 bg-pink/15 text-pink",
-    isPendingActionable && "cursor-pointer transition-colors hover:bg-yellow/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow/50",
+      ? "border-yellow/35 bg-yellow/10 text-yellow/90"
+      : "border-white/20 bg-white/5 text-white/60",
+    isPendingActionable && "cursor-pointer transition-colors hover:bg-yellow/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow/40",
+    canEdit && !isPendingActionable && "cursor-pointer transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+  );
+
+  const badgeShell = (content: React.ReactNode) => (
+    <span
+      data-concentration-badge-slot=""
+      className="inline-block min-w-0 max-w-full w-max">
+      {content}
+    </span>
   );
 
   if (isPendingActionable) {
-    return (
+    return badgeShell(
       <button
+        ref={badgeRef}
         type="button"
         className={badgeClassName}
-        aria-label={pendingCheckActivateLabel ?? accessibleLabel}
-        title={pendingCheckActivateLabel ?? undefined}
+        aria-label={pendingCheckActivateLabel ?? interactiveAriaLabel}
+        title={tooltipTitle}
         onClick={onPendingCheckActivate}>
         {badgeBody}
-      </button>
+      </button>,
     );
   }
 
-  return (
+  if (canEdit) {
+    return badgeShell(
+      <button
+        ref={badgeRef}
+        type="button"
+        className={badgeClassName}
+        aria-label={interactiveAriaLabel}
+        title={tooltipTitle}
+        onClick={onEdit}>
+        {badgeBody}
+      </button>,
+    );
+  }
+
+  return badgeShell(
     <span
+      ref={badgeRef}
       className={badgeClassName}
-      aria-label={accessibleLabel}>
+      aria-label={accessibleLabel}
+      title={tooltipTitle}>
       {badgeBody}
-    </span>
+    </span>,
   );
 }

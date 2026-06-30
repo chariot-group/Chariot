@@ -471,52 +471,6 @@ export default function InitiativeTrackerPage() {
     }
   }, [battleStarted, isGameMaster, ownCharacterId, openConcentrationSaveDialogForRow, rows]);
 
-  React.useEffect(() => {
-    if (!isGameMaster || !battleStarted) return;
-
-    const socket = getPooledSessionSocket();
-    if (!socket) return;
-
-    const onPlayerConcentrationUpdated = ({
-      characterId,
-      concentration,
-      pendingConcentrationCheck,
-      userId,
-    }: {
-      characterId?: string;
-      concentration?: TrackerConcentration | null;
-      pendingConcentrationCheck?: InitiativeTrackerRow["pendingConcentrationCheck"];
-      userId?: string;
-    }) => {
-      if (typeof characterId !== "string" || !characterId.trim()) return;
-      if (typeof userId !== "string" || !userId.trim()) return;
-
-      const participant = participants.find((p) => p.userId === userId);
-      if (!participant || participant.status === "gameMaster" || participant.characterId !== characterId) {
-        return;
-      }
-
-      const row = rows.find((candidate) => candidate.characterId === characterId);
-      if (!row || row.groupId !== SESSION_PARTICIPANTS_GROUP_ID) return;
-
-      dispatchTrackerAction(
-        updateInitiativeTrackerRow({
-          id: row.id,
-          changes: {
-            concentration: concentration ?? null,
-            pendingConcentrationCheck: pendingConcentrationCheck ?? null,
-          },
-        }),
-      );
-    };
-
-    socket.on("session:player-concentration-updated", onPlayerConcentrationUpdated);
-
-    return () => {
-      socket.off("session:player-concentration-updated", onPlayerConcentrationUpdated);
-    };
-  }, [battleStarted, dispatchTrackerAction, isGameMaster, participants, rows]);
-
   if (!isGameMaster && !battleStarted && !playerCanAccessPreparationTracker) {
     return null;
   }

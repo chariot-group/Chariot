@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useAppSelector } from "@/store/hooks";
-import { selectBattleStarted, selectCurrentRound, selectIsInSession } from "@/store/slices/sessionSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectBattleStarted, selectCurrentRound, selectInitiativeTrackerRows, selectIsInSession, updateInitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import type { NPC, Player, Spell, Spellcasting } from "@/types/character";
@@ -59,9 +59,11 @@ export default function SpellCastControls({
 }: SpellCastControlsProps) {
   const tMagic = useTranslations("characterDetail.magic");
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const isInSession = useAppSelector(selectIsInSession);
   const battleStarted = useAppSelector(selectBattleStarted);
   const currentRound = useAppSelector(selectCurrentRound);
+  const trackerRows = useAppSelector(selectInitiativeTrackerRows);
   const sessionCode = useActiveSessionCode();
   const [busy, setBusy] = useState(false);
   const [showLightCastFeedback, setShowLightCastFeedback] = useState(false);
@@ -93,18 +95,28 @@ export default function SpellCastControls({
   const confirmConcentrationActivation = useCallback(() => {
     if (!selectedSpell || !sessionCode) return;
 
+    const concentration = buildTrackerConcentration({
+      spellName: selectedSpell.name,
+      spellLevel: selectedSpell.level,
+      className: spellcasting.className,
+      sinceRound: currentRound,
+    });
+
+    const trackerRow = trackerRows.find((row) => row.characterId === character._id);
+    if (trackerRow) {
+      dispatch(updateInitiativeTrackerRow({
+        id: trackerRow.id,
+        changes: { concentration, pendingConcentrationCheck: null },
+      }));
+    }
+
     submitTrackerConcentrationUpdate(sessionCode, {
       characterId: character._id,
-      concentration: buildTrackerConcentration({
-        spellName: selectedSpell.name,
-        spellLevel: selectedSpell.level,
-        className: spellcasting.className,
-        sinceRound: currentRound,
-      }),
+      concentration,
       pendingConcentrationCheck: null,
     });
     setConcentrationPromptOpen(false);
-  }, [character._id, currentRound, selectedSpell, sessionCode, spellcasting.className]);
+  }, [character._id, currentRound, dispatch, selectedSpell, sessionCode, spellcasting.className, trackerRows]);
 
   const concentrationPromptDialog = concentrationPromptOpen && selectedSpell ? (
     <Dialog

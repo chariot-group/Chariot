@@ -10,7 +10,8 @@ export type TrackerConcentrationUpdatePayload = {
   pendingConcentrationCheck?: PendingConcentrationCheck | null;
 };
 
-type ConcentrationUpdateApplier = (payload: TrackerConcentrationUpdatePayload) => void;
+/** Returns true when the update was applied locally (GM path); false to relay via WebSocket. */
+type ConcentrationUpdateApplier = (payload: TrackerConcentrationUpdatePayload) => boolean;
 
 let concentrationUpdateApplier: ConcentrationUpdateApplier | null = null;
 
@@ -26,10 +27,8 @@ export function submitTrackerConcentrationUpdate(
 ): void {
   if (!payload.characterId?.trim()) return;
 
-  if (concentrationUpdateApplier) {
-    concentrationUpdateApplier(payload);
-    return;
-  }
+  const handledLocally = concentrationUpdateApplier?.(payload) ?? false;
+  if (handledLocally) return;
 
   const socket = getPooledSessionSocket();
   if (!socket?.connected) return;

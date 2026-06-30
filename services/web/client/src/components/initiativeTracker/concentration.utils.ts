@@ -71,7 +71,7 @@ export function normalizePendingConcentrationCheck(value: unknown): PendingConce
   };
 }
 
-/** Libellé principal du badge : le nom du sort maintenu. */
+/** Libellé du menu concentration (dropdown GM) : nom du sort maintenu. */
 export function formatConcentrationBadgeLabel(spellName: string): string {
   const normalized = spellName.trim();
   return normalized.length > 0 ? normalized : "—";

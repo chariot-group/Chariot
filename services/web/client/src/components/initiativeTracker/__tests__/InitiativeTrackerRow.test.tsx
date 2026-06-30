@@ -113,7 +113,7 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
       />,
     );
 
-    expect(html).toContain("flex w-full max-w-full min-w-0 overflow-hidden justify-self-start text-left");
+    expect(html).toContain('data-tracker-grid-cell-align="character"');
     expect(html).toContain("block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden underline");
     expect(html).toContain("flex w-full max-w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden");
     expect(html).toContain("block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white");
@@ -217,5 +217,29 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
 
     expect(html).toContain('type="number"');
     expect(html).toContain('aria-label="Initiative"');
+  });
+
+  it("nominal: grid condition and group cells are isolated to prevent overlap", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{
+          ...baseRow,
+          groupLabel: "Participants",
+          concentration: { spellName: "Entangle" },
+        }}
+        mode="gm"
+        battleStarted
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        onAddCondition={() => {}}
+        onRemoveCondition={() => {}}
+        onClearConditions={() => {}}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('data-tracker-grid-cell-align="condition"');
+    expect(html).toContain('data-tracker-grid-cell-align="group"');
+    expect(html).toContain("overflow-x-clip");
+    expect(html).toContain("md:grid");
   });
 });

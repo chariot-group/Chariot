@@ -3669,7 +3669,7 @@ Each initiative tracker row carries:
 - The concentration-save modal MUST auto-open only once per pending-check signature (damage + DC); revisiting the tracker page MUST NOT re-trigger it for the same pending reminder (badge remains the manual entry point).
 - The reminder MUST offer at least: **Kept**, **Lost**, and **Later** (GM-managed non-player rows only; session player rows MUST NOT offer **Later** and MUST require an explicit **Kept** or **Lost** choice).
 - **Lost** MUST clear concentration; **Kept** MUST clear the pending reminder only; **Later** MUST keep the pending reminder visible on the row until resolved.
-- The row badge MUST show the maintained spell name (not a generic label) and, while a pending check exists, a compact CON-save indicator (e.g. `CON DC {dc}`) with warning styling; activating the badge MUST reopen the save reminder when applicable.
+- The row badge MUST show a compact generic concentration label (`badgeLabel` / `badgeShort` i18n keys) with the maintained spell name available via tooltip/detail (`badgeDetail`); while a pending check exists, a compact CON-save indicator (e.g. `CON DC {dc}`) with warning styling; activating the badge MUST reopen the save reminder when applicable.
 - Chariot MUST NOT roll dice or enforce save outcomes automatically.
 
 **Synchronization**:

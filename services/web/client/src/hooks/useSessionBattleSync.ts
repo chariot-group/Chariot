@@ -1,5 +1,6 @@
 "use client";
 
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import {
   selectBattleInitialized,
   selectBattleStarted,
@@ -11,6 +12,8 @@ import {
   applyRemoteBattleState,
   updateInitiativeTrackerRow,
   type BattleStateSnapshot,
+  type PendingConcentrationCheck,
+  type TrackerConcentration,
 } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
@@ -127,15 +130,15 @@ export function useSessionBattleSync() {
     }
 
     registerConcentrationUpdateApplier((payload) => {
-      if (!isGmRef.current) return;
+      if (!isGmRef.current) return false;
 
       const state = store.getState();
-      if (!selectBattleStarted(state)) return;
+      if (!selectBattleStarted(state)) return false;
 
       const row = selectInitiativeTrackerRows(state).find(
         (candidate) => candidate.characterId === payload.characterId,
       );
-      if (!row) return;
+      if (!row) return false;
 
       dispatch(updateInitiativeTrackerRow({
         id: row.id,
@@ -146,6 +149,7 @@ export function useSessionBattleSync() {
       }));
 
       emitBattleStateUpdate(selectBattleStateSnapshot(store.getState()));
+      return true;
     });
 
     return () => {
@@ -229,12 +233,52 @@ export function useSessionBattleSync() {
       }
     };
 
+    const onPlayerConcentrationUpdated = ({
+      characterId,
+      concentration,
+      pendingConcentrationCheck,
+      userId,
+    }: {
+      characterId?: string;
+      concentration?: TrackerConcentration | null;
+      pendingConcentrationCheck?: PendingConcentrationCheck | null;
+      userId?: string;
+    }) => {
+      if (typeof characterId !== "string" || !characterId.trim()) return;
+      if (typeof userId !== "string" || !userId.trim()) return;
+
+      const participant = participants.find((p) => p.userId === userId);
+      if (!participant || participant.status === "gameMaster" || participant.characterId !== characterId) {
+        return;
+      }
+
+      const state = store.getState();
+      if (!selectBattleStarted(state)) return;
+
+      const row = selectInitiativeTrackerRows(state).find(
+        (candidate) => candidate.characterId === characterId,
+      );
+      if (!row || row.groupId !== SESSION_PARTICIPANTS_GROUP_ID) return;
+
+      dispatch(updateInitiativeTrackerRow({
+        id: row.id,
+        changes: {
+          concentration: concentration ?? null,
+          pendingConcentrationCheck: pendingConcentrationCheck ?? null,
+        },
+      }));
+
+      emitBattleStateUpdate(selectBattleStateSnapshot(store.getState()));
+    };
+
     socket.on("session:battle-state-requested", onBattleStateRequested);
     socket.on("session:participant-joined", onParticipantJoined);
+    socket.on("session:player-concentration-updated", onPlayerConcentrationUpdated);
 
     return () => {
       socket.off("session:battle-state-requested", onBattleStateRequested);
       socket.off("session:participant-joined", onParticipantJoined);
+      socket.off("session:player-concentration-updated", onPlayerConcentrationUpdated);
     };
-  }, [broadcastSnapshot, code, isGm, isInSession]);
+  }, [broadcastSnapshot, code, dispatch, isGm, isInSession, participants, store]);
 }

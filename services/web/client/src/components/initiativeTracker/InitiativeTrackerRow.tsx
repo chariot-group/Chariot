@@ -44,10 +44,10 @@ import {
 } from "@/components/initiativeTracker/ConcentrationSpellDialog";
 import { ConcentrationStateBadge } from "@/components/initiativeTracker/ConcentrationStateBadge";
 import {
-  formatConcentrationBadgeLabel,
   shouldShowConcentrationSaveDialog,
 } from "@/components/initiativeTracker/concentration.utils";
 import type { TrackerConcentration } from "@/store/slices/sessionSlice";
+import { TrackerGridCell } from "@/components/initiativeTracker/TrackerGridCell";
 
 type InitiativeTrackerRowProps = {
   row: InitiativeTrackerRowType;
@@ -466,7 +466,8 @@ export function InitiativeTrackerRow({
 
     return {
       concentration: activeConcentration,
-      badgeLabel: formatConcentrationBadgeLabel(activeConcentration.spellName),
+      badgeLabel: tConc("badgeLabel"),
+      badgeShort: tConc("badgeShort"),
       detailLabel: formatConcentrationDetail(activeConcentration),
       pendingCheck: activePendingConcentrationCheck,
       pendingCheckLabel: activePendingConcentrationCheck
@@ -516,7 +517,7 @@ export function InitiativeTrackerRow({
   const hasTabletExpansion = totalStateCount > 1;
 
   const renderInitiativeCell = (compact = false) => (
-    <div className={cn("flex w-full min-w-0 items-center", !compact && TRACKER_CELL_ALIGN.initiative, hasTabletExpansion && "pl-5")}>
+    <div className={cn("flex w-full min-w-0 items-center", hasTabletExpansion && !compact && "pl-5")}>
       {showInitiative ? (
         initiativeLocked || (isPlayerView && !isOwnCharacter) ? (
           <div
@@ -567,7 +568,7 @@ export function InitiativeTrackerRow({
     ) : null;
 
   const renderHpCell = (compact = false) => (
-    <div className={cn("flex min-w-0 justify-center self-center", !compact && TRACKER_CELL_ALIGN.hitPoints)}>
+    <div className={cn("flex min-w-0 justify-center self-center")}>
       {!isPlayerView && onHitPointsClick ? (
         <button
           type="button"
@@ -599,9 +600,11 @@ export function InitiativeTrackerRow({
     return (
       <div className="flex min-w-0 flex-wrap gap-1.5">
         {concentrationBadgeProps ? (
-          <ConcentrationStateBadge
+          <div className="min-w-0 max-w-full shrink overflow-x-clip">
+            <ConcentrationStateBadge
             concentration={concentrationBadgeProps.concentration}
             badgeLabel={concentrationBadgeProps.badgeLabel}
+            badgeShort={concentrationBadgeProps.badgeShort}
             detailLabel={concentrationBadgeProps.detailLabel}
             pendingCheck={concentrationBadgeProps.pendingCheck}
             pendingCheckLabel={concentrationBadgeProps.pendingCheckLabel}
@@ -613,6 +616,7 @@ export function InitiativeTrackerRow({
             onEdit={() => openConcentrationDialog("replace")}
             onRemove={() => onSetConcentration?.(row, null)}
           />
+          </div>
         ) : null}
         {showConditions
           ? rowConditions.map((entry) => {
@@ -647,6 +651,8 @@ export function InitiativeTrackerRow({
           concentration: row.concentration ?? null,
           pendingConcentrationCheck: activePendingConcentrationCheck,
           menuLabel: tConc("menuLabel"),
+          badgeLabel: tConc("badgeLabel"),
+          badgeShort: tConc("badgeShort"),
           formatDetailLabel: formatConcentrationDetail,
           formatPendingCheckShortLabel: (dc: number) => tConc("pendingCheckShort", { dc }),
           formatPendingCheckActivateLabel: (dc: number) => tConc("pendingCheckActivate", { dc }),
@@ -662,8 +668,7 @@ export function InitiativeTrackerRow({
       : undefined;
 
   const renderConditionsCell = (compact = false) => (
-    <div className={cn("min-w-0 overflow-hidden", !compact && TRACKER_CELL_ALIGN.condition, compact && "w-full")}>
-      <div className="flex min-w-0 flex-col gap-1.5">
+    <div className={cn("flex min-w-0 flex-col gap-1.5", compact && "w-full")}>
         {showConditions && !isPlayerView && onAddCondition && onRemoveCondition && onClearConditions ? (
           <ConditionSelect
             row={row}
@@ -706,7 +711,6 @@ export function InitiativeTrackerRow({
             )}
           </div>
         )}
-      </div>
     </div>
   );
 
@@ -720,7 +724,7 @@ export function InitiativeTrackerRow({
   return (
     <>
       <div
-        className={`relative hidden w-full max-w-full min-w-0 items-center gap-x-2 rounded-[22px] py-3 pr-3 text-sm text-white shadow-lg transition-colors lg:gap-x-3 lg:px-5 lg:text-base md:grid ${hasTabletExpansion ? "pl-5 lg:pl-5" : "pl-3 lg:pl-5"
+        className={`relative hidden w-full max-w-full min-w-0 items-center gap-x-2 overflow-x-clip rounded-[22px] py-3 pr-3 text-sm text-white shadow-lg transition-colors lg:gap-x-3 lg:px-5 lg:text-base md:grid ${hasTabletExpansion ? "pl-5 lg:pl-5" : "pl-3 lg:pl-5"
           } ${rowBackgroundClass} ${rowRingClass}`}
         style={{ gridTemplateColumns }}
         data-status={status}
@@ -737,32 +741,32 @@ export function InitiativeTrackerRow({
         ) : null}
 
         {!isPlayerView ? (
-          <div className={TRACKER_CELL_ALIGN.visible}>
+          <TrackerGridCell align="visible">
             <VisibilityTriggerButton
               row={row}
               ariaLabel={labels.visibleFor}
               onClick={() => setVisibilityOpen(true)}
             />
-          </div>
+          </TrackerGridCell>
         ) : null}
 
-        {renderInitiativeCell()}
+        <TrackerGridCell align="initiative">{renderInitiativeCell()}</TrackerGridCell>
 
-        <div className={`flex w-full max-w-full min-w-0 overflow-hidden ${TRACKER_CELL_ALIGN.character}`}>
+        <TrackerGridCell align="character">
           {renderCharacterColumn()}
-        </div>
+        </TrackerGridCell>
 
-        {renderHpCell()}
+        <TrackerGridCell align="hitPoints">{renderHpCell()}</TrackerGridCell>
 
-        <div className={`min-w-0 text-sm font-semibold tabular-nums text-white/90 ${TRACKER_CELL_ALIGN.armorClass}`}>
+        <TrackerGridCell align="armorClass" className="text-sm font-semibold tabular-nums text-white/90">
           {showAc ? row.armorClass : compactHidden}
-        </div>
+        </TrackerGridCell>
 
-        {renderConditionsCell()}
+        <TrackerGridCell align="condition">{renderConditionsCell()}</TrackerGridCell>
 
-        <span className={`flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden ${TRACKER_CELL_ALIGN.group}`}>
+        <TrackerGridCell as="span" align="group" className="flex items-center gap-2">
           {groupContent}
-        </span>
+        </TrackerGridCell>
       </div>
 
       <div
