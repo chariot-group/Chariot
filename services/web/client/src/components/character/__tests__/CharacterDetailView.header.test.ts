@@ -25,7 +25,7 @@ describe("Character sheet header identity layout", () => {
     expect(source).toContain("truncate text-left text-sm italic");
   });
 
-  it("edge: keeps tabs on a full-width row below identity at every breakpoint", () => {
+  it("edge: stacks tabs below identity on mobile, aligns tabs with avatar column from lg", () => {
     const detailSource = readSource(detailViewPath);
     const formSource = readSource(formViewPath);
     const headerSource = readSource(headerPath);
@@ -35,8 +35,9 @@ describe("Character sheet header identity layout", () => {
     expect(formSource).toContain("<CharacterSheetHeader");
     expect(headerSource).toContain("flex w-full flex-col gap-4 pb-2");
     expect(headerSource).toContain("min-w-0 w-full overflow-x-auto");
-    expect(headerSource).not.toContain("lg:flex-row");
-    expect(headerSource).not.toContain("lg:hidden");
+    expect(headerSource).toContain("lg:grid lg:grid-cols-[minmax(0,1fr)_auto]");
+    expect(headerSource).toContain("lg:col-start-1 lg:row-start-2");
+    expect(headerSource).toContain("lg:col-start-2 lg:row-start-1 lg:row-span-2");
     expect(tabsSource).toContain("flex-nowrap");
   });
 
