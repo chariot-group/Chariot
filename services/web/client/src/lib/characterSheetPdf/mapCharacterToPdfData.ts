@@ -117,13 +117,15 @@ export interface MapCharacterToPdfDataOptions {
   formatClassLevel: (className: string, level: number) => string;
   translateAlignment: (alignment: string) => string;
   avatarDataUrl?: string | null;
+  qrCodeDataUrl?: string | null;
+  characterPageUrl?: string;
 }
 
 export function mapCharacterToPdfData(
   character: Player | NPC,
   options: MapCharacterToPdfDataOptions,
 ): CharacterSheetPdfData {
-  const { labels, playerName = "", translateClass, formatClassLevel, translateAlignment, avatarDataUrl = null } = options;
+  const { labels, playerName = "", translateClass, formatClassLevel, translateAlignment, avatarDataUrl = null, qrCodeDataUrl = null, characterPageUrl = "" } = options;
   const stats = character.stats;
   const abilityScores = stats.abilityScores;
 
@@ -295,5 +297,7 @@ export function mapCharacterToPdfData(
     spellcastingBlocks,
     hasSpellcasting: hasSpellcastingContent(spellcastingBlocks),
     avatarDataUrl,
+    qrCodeDataUrl,
+    characterPageUrl,
   };
 }

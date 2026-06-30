@@ -3598,14 +3598,15 @@ Each initiative tracker row carries:
 **PDF layout (D&D 5e structure + Chariot styling)**:
 
 - **Page 1 — Core sheet** (always):
-  - Identity block: character name, race/type, class & level (PJ) or CR & XP (PNJ), background or creature type, alignment, XP (PJ), player name when resolvable (PJ, optional)
+  - Header identity block: avatar thumbnail (when resolvable via presigned read, variant `main`), QR code encoding the absolute character sheet URL (`{origin}/{locale}/characters/{characterId}`), character name, race/type, class & level (PJ) or CR & XP (PNJ), background or creature type, alignment, XP (PJ), player name when resolvable (PJ, optional). Header cards MUST size to content (no uniform min-height); header padding MUST stay compact so content starts near the top margin.
+  - Features & traits (`abilities`) MUST render as a structured list: each entry on its own block with the ability name emphasized and description on following line(s), not a single bullet-separated run-on paragraph.
   - Six ability scores with modifiers, inspiration (PJ), proficiency bonus, saving throws, skills (with computed bonuses), passive perception
   - Combat block: AC, initiative, speed, current/max/temp HP, hit dice (PJ) or HP roll notation (PNJ)
   - Death saves (PJ only), attacks & spell attacks, equipment & treasure currencies, proficiencies/languages, features & traits (`abilities`)
 - **Page 2 — Biography** (always):
   - Appearance (age, height, weight, eyes, skin, hair, description)
   - Personality traits, ideals, bonds, flaws, allies & organizations, backstory (PJ) or equivalent narrative fields
-  - Additional features, symbol/avatar thumbnail when `avatar` is set
+  - Continuation of features & traits when page 1 overflow occurs (same structured list format)
 - **Page 3 — Spellcasting** (conditional):
   - Included only when `spellcasting` has at least one entry with spells or slots
   - Per class block: spellcasting ability, save DC, attack bonus, cantrips, prepared/known spells by level, slot usage grid (PJ) or innate/uses-per-day grid (PNJ innate)

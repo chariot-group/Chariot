@@ -18,6 +18,9 @@ export interface CharacterSheetPdfLabels {
   // Combat
   armorClass: string;
   initiative: string;
+  initiativeShort: string;
+  languages: string;
+  qrCodeHint: string;
   speed: string;
   maxHp: string;
   currentHp: string;
@@ -180,6 +183,8 @@ export interface CharacterSheetPdfData {
   spellcastingBlocks: PdfSpellcastingBlock[];
   hasSpellcasting: boolean;
   avatarDataUrl: string | null;
+  qrCodeDataUrl: string | null;
+  characterPageUrl: string;
 }
 
 export interface ExportCharacterSheetPdfInput {

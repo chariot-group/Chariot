@@ -3,9 +3,14 @@
 import React from "react";
 import { Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
 import { CHARACTER_SHEET_PDF_THEMES } from "@/lib/characterSheetPdf/themes";
-import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme } from "@/lib/characterSheetPdf/types";
+import { splitFeaturesForPdfPages } from "@/lib/characterSheetPdf/splitFeaturesForPdfPages";
+import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme, PdfAbilityFeature } from "@/lib/characterSheetPdf/types";
 
 Font.registerHyphenationCallback((word) => [word]);
+
+/** Fixed header height (4:5 avatar 48×60 pt) — do not stretch with percentage heights. */
+const PDF_HEADER_ROW_HEIGHT = 60;
+const PDF_HEADER_AVATAR_WIDTH = 48;
 
 function svgDataUrl(svg: string): string {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
@@ -38,7 +43,7 @@ function createStyles(theme: CharacterSheetPdfTheme) {
       paddingVertical: 2,
       paddingHorizontal: 6,
       borderRadius: 999,
-      marginBottom: 7,
+      marginBottom: 3,
     },
     sectionHeaderText: { fontSize: 8.8, fontWeight: "bold", color: t.sectionHeaderText },
     box: {
@@ -77,7 +82,15 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     tableRow: { flexDirection: "row", paddingVertical: 2, borderBottomWidth: 0.5, borderBottomColor: t.border },
     tableCell: { fontSize: 7.6 },
     textBlock: { fontSize: 7.5, lineHeight: 1.45 },
-    avatar: { width: 64, height: 80, borderRadius: 8, objectFit: "cover" },
+    headerAvatar: {
+      width: PDF_HEADER_AVATAR_WIDTH,
+      height: PDF_HEADER_ROW_HEIGHT,
+      objectFit: "cover",
+      borderTopLeftRadius: 14,
+      borderBottomLeftRadius: 14,
+    },
+    qrCode: { width: 48, height: 48, borderRadius: 4 },
+    qrHint: { fontSize: 5.5, color: t.textMuted, marginTop: 2, textAlign: "center" },
     valueWithIcon: { flexDirection: "row", alignItems: "center", gap: 3 },
     chip: {
       borderRadius: 999,
@@ -93,13 +106,54 @@ function createStyles(theme: CharacterSheetPdfTheme) {
       gap: 3,
     },
     chipsWrap: { flexDirection: "row", flexWrap: "wrap" },
-    pageOneHeader: { borderWidth: 1.2, borderColor: t.border, borderRadius: 15, padding: 9, marginBottom: 7, backgroundColor: t.cardBackground },
-    brandRow: { flexDirection: "row", justifyContent: "flex-end", marginBottom: 2 },
-    headerMainRow: { flexDirection: "row", gap: 7, alignItems: "stretch" },
-    headerNameItem: { width: "34%", borderWidth: 1, borderColor: t.border, borderRadius: 10, padding: 6, minHeight: 38, justifyContent: "center" },
+    pageOneHeader: {
+      borderWidth: 1.2,
+      borderColor: t.border,
+      borderRadius: 15,
+      marginBottom: 6,
+      backgroundColor: t.cardBackground,
+      overflow: "hidden",
+    },
+    headerRow: {
+      flexDirection: "row",
+      height: PDF_HEADER_ROW_HEIGHT,
+      alignItems: "center",
+    },
+    headerAvatarColumn: {
+      width: PDF_HEADER_AVATAR_WIDTH,
+      height: PDF_HEADER_ROW_HEIGHT,
+      flexShrink: 0,
+    },
+    headerQrColumn: {
+      width: 50,
+      height: PDF_HEADER_ROW_HEIGHT,
+      flexShrink: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingRight: 4,
+    },
+    headerMainColumn: { flex: 1, height: PDF_HEADER_ROW_HEIGHT, justifyContent: "center", paddingHorizontal: 6 },
+    headerMainRow: { flexDirection: "row", gap: 5, alignItems: "stretch" },
+    headerNameItem: {
+      width: "34%",
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 10,
+      paddingVertical: 4,
+      paddingHorizontal: 6,
+      justifyContent: "center",
+    },
     charName: { fontSize: 14.5, fontWeight: "bold", lineHeight: 1.2 },
-    headerInfoGrid: { flex: 1, flexDirection: "row", gap: 7 },
-    headerInfoItem: { flex: 1, borderWidth: 1, borderColor: t.border, borderRadius: 10, padding: 5, minHeight: 38 },
+    headerInfoGrid: { flex: 1, flexDirection: "row", gap: 5, alignItems: "stretch" },
+    headerInfoItem: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 10,
+      paddingVertical: 4,
+      paddingHorizontal: 5,
+      justifyContent: "center",
+    },
     bodyGrid: { flexDirection: "row", gap: 7 },
     colAbilities: { width: "17%" },
     colSkills: { width: "34%" },
@@ -116,8 +170,8 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     smallPillValue: { fontSize: 8.8, fontWeight: "bold" },
     checkbox: { width: 10, height: 10, borderWidth: 1, borderColor: t.textMuted, borderRadius: 2, alignItems: "center", justifyContent: "center" },
     checkboxInner: { width: 6, height: 6, borderRadius: 1, backgroundColor: t.text },
-    statLineBox: { flex: 1, borderWidth: 1, borderColor: t.border, borderRadius: 10, paddingHorizontal: 5, paddingVertical: 4, backgroundColor: t.cardBackground, alignItems: "center", justifyContent: "center", gap: 2 },
-    statLineLabel: { fontSize: 7, color: t.textMuted, textTransform: "uppercase", textAlign: "center", letterSpacing: 0.2 },
+    statLineBox: { flex: 1, borderWidth: 1, borderColor: t.border, borderRadius: 10, paddingHorizontal: 4, paddingVertical: 3, backgroundColor: t.cardBackground, alignItems: "center", justifyContent: "center", gap: 1, minWidth: 0 },
+    statLineLabel: { fontSize: 6, color: t.textMuted, textTransform: "uppercase", textAlign: "center" },
     statLineValue: { fontSize: 12, fontWeight: "bold", textAlign: "center" },
     dotsRow: { flexDirection: "row", alignItems: "center", gap: 3 },
     dot: { width: 7, height: 7, borderRadius: 999, borderWidth: 1, borderColor: t.textMuted },
@@ -132,7 +186,10 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     coinRow: { flexDirection: "row", alignItems: "center", marginBottom: 2, gap: 4 },
     coinIcon: { width: 10, height: 9 },
     coinText: { fontSize: 7.3, fontWeight: "bold" },
-    largeNarrativeBox: { flex: 1, minHeight: 190 },
+    largeNarrativeBox: { flex: 1 },
+    featureItem: { marginBottom: 6 },
+    featureName: { fontSize: 8, fontWeight: "bold", marginBottom: 1.5 },
+    featureDescription: { fontSize: 7.2, lineHeight: 1.4, color: t.text },
     equipmentBox: { minHeight: 172 },
     proficienciesBox: { minHeight: 120 },
   });
@@ -145,18 +202,6 @@ function clampText(value: string, max: number): string {
   return `${normalized.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
 }
 
-function splitTextForContinuation(value: string, firstPageLimit: number): [string, string] {
-  if (!value) return [" ", ""];
-  const normalized = value.replace(/\s+/g, " ").trim();
-  if (normalized.length <= firstPageLimit) {
-    return [normalized, ""];
-  }
-
-  const cutoff = normalized.lastIndexOf(" ", firstPageLimit);
-  const splitAt = cutoff > 0 ? cutoff : firstPageLimit;
-  return [normalized.slice(0, splitAt).trim(), normalized.slice(splitAt).trim()];
-}
-
 const COIN_SVGS = {
   cp: `<svg width="26" height="24" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="13" cy="15.5" rx="8.5" ry="11" transform="rotate(-90 13 15.5)" fill="#A45918"/><path d="M1 10.5C1 5.02882 6.62767 1 13 1C19.3723 0.999999 25 5.02882 25 10.5C25 15.9712 19.3723 20 13 20C6.62767 20 1 15.9712 1 10.5Z" fill="#A45918" stroke="#19191C" stroke-width="2"/></svg>`,
   sp: `<svg width="26" height="24" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="13" cy="15.5" rx="8.5" ry="11" transform="rotate(-90 13 15.5)" fill="#BDBDBD"/><path d="M1 10.5C1 5.02882 6.62767 1 13 1C19.3723 0.999999 25 5.02882 25 10.5C25 15.9712 19.3723 20 13 20C6.62767 20 1 15.9712 1 10.5Z" fill="#BDBDBD" stroke="#19191C" stroke-width="2"/></svg>`,
@@ -164,8 +209,6 @@ const COIN_SVGS = {
   gp: `<svg width="26" height="24" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="13" cy="15.5" rx="8.5" ry="11" transform="rotate(-90 13 15.5)" fill="#FFC400"/><path d="M1 10.5C1 5.02882 6.62767 1 13 1C19.3723 0.999999 25 5.02882 25 10.5C25 15.9712 19.3723 20 13 20C6.62767 20 1 15.9712 1 10.5Z" fill="#FFC400" stroke="#19191C" stroke-width="2"/></svg>`,
   pp: `<svg width="26" height="24" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="13" cy="15.5" rx="8.5" ry="11" transform="rotate(-90 13 15.5)" fill="#BEBAA3"/><path d="M1 10.5C1 5.02882 6.62767 1 13 1C19.3723 0.999999 25 5.02882 25 10.5C25 15.9712 19.3723 20 13 20C6.62767 20 1 15.9712 1 10.5Z" fill="#BEBAA3" stroke="#19191C" stroke-width="2"/></svg>`,
 };
-
-const BRAND_ICON_SVG = `<svg width="22" height="26" viewBox="0 0 17 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17 3V9.09961C17 11.6296 16.203 13.9398 14.5986 16.0098C12.9943 18.0798 10.965 19.41 8.5 20C6.035 19.42 4.00574 18.0898 2.40137 16.0098C0.797039 13.9398 0 11.6296 0 9.09961V3L8.5 0L17 3Z" fill="#61EBFF"/></svg>`;
 
 interface PageFooterProps {
   labels: CharacterSheetPdfLabels;
@@ -228,6 +271,31 @@ function Dots({
   );
 }
 
+function FeaturesList({
+  features,
+  styles,
+}: {
+  features: PdfAbilityFeature[];
+  styles: ReturnType<typeof createStyles>;
+}) {
+  if (features.length === 0) {
+    return <Text style={styles.textBlock}> </Text>;
+  }
+
+  return (
+    <>
+      {features.map((feature, index) => (
+        <View key={`${feature.name}-${index}`} style={styles.featureItem}>
+          <Text style={styles.featureName}>{feature.name.trim() || " "}</Text>
+          {feature.description.trim() ? (
+            <Text style={styles.featureDescription}>{feature.description.trim()}</Text>
+          ) : null}
+        </View>
+      ))}
+    </>
+  );
+}
+
 interface CharacterSheetPdfDocumentProps {
   data: CharacterSheetPdfData;
   labels: CharacterSheetPdfLabels;
@@ -237,8 +305,7 @@ interface CharacterSheetPdfDocumentProps {
 export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterSheetPdfDocumentProps) {
   const t = CHARACTER_SHEET_PDF_THEMES[theme];
   const styles = createStyles(theme);
-  const featuresText = data.features.map((f) => `${f.name}${f.description ? `: ${f.description}` : ""}`).join(" • ");
-  const [featuresPageOneText, featuresPageTwoText] = splitTextForContinuation(featuresText, 520);
+  const { pageOne: featuresPageOne, pageTwo: featuresPageTwo } = splitFeaturesForPdfPages(data.features);
   const spellPageCount = data.hasSpellcasting ? data.spellcastingBlocks.length : 0;
   const totalPages = 2 + spellPageCount;
 
@@ -247,32 +314,44 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
       {/* Page 1 — D&D-like core layout */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageOneHeader}>
-          <View style={styles.brandRow}>
-            <Image src={svgDataUrl(BRAND_ICON_SVG)} style={{ width: 22, height: 26 }} alt="" />
-          </View>
-          <View style={styles.headerMainRow}>
-            <View style={styles.headerNameItem}>
-              <Text style={styles.label}>{labels.characterName}</Text>
-              <Text style={styles.charName}>{clampText(data.displayName, 38)}</Text>
+          <View style={styles.headerRow}>
+            {data.avatarDataUrl ? (
+              <View style={styles.headerAvatarColumn}>
+                <Image src={data.avatarDataUrl} style={styles.headerAvatar} alt="" />
+              </View>
+            ) : null}
+            <View style={styles.headerMainColumn}>
+              <View style={styles.headerMainRow}>
+                <View style={styles.headerNameItem}>
+                  <Text style={styles.label}>{labels.characterName}</Text>
+                  <Text style={styles.charName}>{clampText(data.displayName, 38)}</Text>
+                </View>
+                <View style={styles.headerInfoGrid}>
+                  <View style={styles.headerInfoItem}>
+                    <Text style={styles.label}>{data.isPlayer ? labels.race : labels.creatureType}</Text>
+                    <Text style={styles.value}>{clampText(data.raceOrType, 24)}</Text>
+                  </View>
+                  <View style={styles.headerInfoItem}>
+                    <Text style={styles.label}>{data.isPlayer ? labels.classAndLevel : labels.challengeRating}</Text>
+                    <Text style={styles.value}>{clampText(data.classOrCr, 24)}</Text>
+                  </View>
+                  <View style={styles.headerInfoItem}>
+                    <Text style={styles.label}>{labels.background}</Text>
+                    <Text style={styles.value}>{clampText(data.backgroundOrSubtype, 24)}</Text>
+                  </View>
+                  <View style={styles.headerInfoItem}>
+                    <Text style={styles.label}>{labels.alignment}</Text>
+                    <Text style={styles.value}>{clampText(data.alignment, 24)}</Text>
+                  </View>
+                </View>
+              </View>
             </View>
-            <View style={styles.headerInfoGrid}>
-              <View style={styles.headerInfoItem}>
-                <Text style={styles.label}>{data.isPlayer ? labels.race : labels.creatureType}</Text>
-                <Text style={styles.value}>{clampText(data.raceOrType, 24)}</Text>
+            {data.qrCodeDataUrl ? (
+              <View style={styles.headerQrColumn}>
+                <Image src={data.qrCodeDataUrl} style={styles.qrCode} alt="" />
+                <Text style={styles.qrHint}>{labels.qrCodeHint}</Text>
               </View>
-              <View style={styles.headerInfoItem}>
-                <Text style={styles.label}>{data.isPlayer ? labels.classAndLevel : labels.challengeRating}</Text>
-                <Text style={styles.value}>{clampText(data.classOrCr, 24)}</Text>
-              </View>
-              <View style={styles.headerInfoItem}>
-                <Text style={styles.label}>{labels.background}</Text>
-                <Text style={styles.value}>{clampText(data.backgroundOrSubtype, 24)}</Text>
-              </View>
-              <View style={styles.headerInfoItem}>
-                <Text style={styles.label}>{labels.alignment}</Text>
-                <Text style={styles.value}>{clampText(data.alignment, 24)}</Text>
-              </View>
-            </View>
+            ) : null}
           </View>
         </View>
 
@@ -339,7 +418,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
             <SectionHeader title={labels.proficienciesAndLanguages} color={t.blue} styles={styles} />
             <View style={[styles.box, styles.proficienciesBox]}>
               <Text style={styles.textBlock}>{clampText(data.proficiencies, 420)}</Text>
-              <Text style={[styles.label, { marginTop: 6, marginBottom: 3 }]}>{labels.proficienciesAndLanguages}</Text>
+              <Text style={[styles.label, { marginTop: 6, marginBottom: 3 }]}>{labels.languages}</Text>
               <Text style={styles.textBlock}>{clampText(data.languages, 420)}</Text>
             </View>
           </View>
@@ -351,7 +430,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 <Text style={styles.statLineValue}>{data.armorClass}</Text>
               </View>
               <View style={styles.statLineBox}>
-                <Text style={styles.statLineLabel}>{labels.initiative}</Text>
+                <Text style={styles.statLineLabel}>{labels.initiativeShort}</Text>
                 <Text style={styles.statLineValue}>{data.initiative}</Text>
               </View>
               <View style={styles.statLineBox}>
@@ -430,9 +509,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
             <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.flaws, 180)}</Text></View>
             <SectionHeader title={labels.featuresAndTraits} color={t.blue} styles={styles} />
             <View style={[styles.box, styles.largeNarrativeBox]}>
-              <Text style={styles.textBlock}>
-                {clampText(featuresPageOneText, 950)}
-              </Text>
+              <FeaturesList features={featuresPageOne} styles={styles} />
             </View>
           </View>
         </View>
@@ -442,16 +519,16 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
 
       {/* Page 2 — Biography */}
       <Page size="LETTER" style={styles.page}>
-        {featuresPageTwoText ? (
-          <View style={{ marginBottom: 7 }}>
+        {featuresPageTwo.length > 0 ? (
+          <View style={{ marginBottom: 6 }}>
             <SectionHeader title={labels.featuresAndTraits} color={t.blue} styles={styles} />
-            <View style={[styles.box, { minHeight: 92 }]}>
-              <Text style={styles.textBlock}>{clampText(featuresPageTwoText, 1500)}</Text>
+            <View style={styles.box}>
+              <FeaturesList features={featuresPageTwo} styles={styles} />
             </View>
           </View>
         ) : null}
         <View style={styles.row}>
-          <View style={[styles.col, { flex: 2 }]}>
+          <View style={[styles.col, { flex: 1 }]}>
             <SectionHeader title={labels.appearance} color={t.green} styles={styles} />
             <View style={styles.box}>
               <View style={styles.row}>
@@ -486,11 +563,6 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               <Text style={styles.textBlock}>{clampText(data.appearance.description, 420)}</Text>
             </View>
           </View>
-          {data.avatarDataUrl && (
-            <View>
-              <Image src={data.avatarDataUrl} style={styles.avatar} alt="" />
-            </View>
-          )}
         </View>
 
         <View style={styles.row}>

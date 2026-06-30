@@ -3,9 +3,11 @@
 /** @see FR-character-sheet-pdf-export */
 
 import { useCallback, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { NPC, Player } from "@/types/character";
 import { buildCharacterSheetPdfLabels } from "@/lib/characterSheetPdf/buildCharacterSheetPdfLabels";
+import { buildCharacterQrCodeDataUrl } from "@/lib/characterSheetPdf/buildCharacterQrCodeDataUrl";
+import { buildCharacterSheetPageUrl } from "@/lib/characterSheetPdf/buildCharacterSheetPageUrl";
 import { fetchCharacterAvatarForPdf } from "@/lib/characterSheetPdf/fetchAvatarForPdf";
 import { mapCharacterToPdfData } from "@/lib/characterSheetPdf/mapCharacterToPdfData";
 import { exportCharacterSheetPdf } from "@/lib/characterSheetPdf/exportCharacterSheetPdf";
@@ -19,6 +21,7 @@ export interface UseCharacterSheetPdfExportOptions {
 
 export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOptions = {}) {
   const { sessionCode, playerName = "" } = options;
+  const locale = useLocale();
   const toast = useToast();
   const [isExporting, setIsExporting] = useState(false);
 
@@ -56,11 +59,16 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
       if (isExporting) return;
       setIsExporting(true);
       try {
-        const avatarDataUrl = await fetchCharacterAvatarForPdf(
+        const characterPageUrl = buildCharacterSheetPageUrl(
+          typeof window !== "undefined" ? window.location.origin : "",
+          locale,
           character._id,
-          character.avatar,
-          sessionCode,
         );
+
+        const [avatarDataUrl, qrCodeDataUrl] = await Promise.all([
+          fetchCharacterAvatarForPdf(character._id, character.avatar, sessionCode),
+          buildCharacterQrCodeDataUrl(characterPageUrl),
+        ]);
 
         const data = mapCharacterToPdfData(character, {
           labels,
@@ -69,6 +77,8 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
           formatClassLevel,
           translateAlignment: (alignment) => tAlignment(alignment),
           avatarDataUrl,
+          qrCodeDataUrl,
+          characterPageUrl,
         });
 
         await exportCharacterSheetPdf({
@@ -86,7 +96,7 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
         setIsExporting(false);
       }
     },
-    [formatClassLevel, isExporting, labels, playerName, sessionCode, tAlignment, tClass, tPdf, toast],
+    [formatClassLevel, isExporting, labels, locale, playerName, sessionCode, tAlignment, tClass, tPdf, toast],
   );
 
   return { exportSheet, isExporting, labels };

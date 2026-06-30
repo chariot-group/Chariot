@@ -19,6 +19,9 @@ const minimalLabels: CharacterSheetPdfLabels = {
   challengeRating: "CR",
   armorClass: "AC",
   initiative: "Init",
+  initiativeShort: "Init.",
+  languages: "Languages",
+  qrCodeHint: "Open sheet",
   speed: "Speed",
   maxHp: "Max HP",
   currentHp: "HP",
@@ -285,5 +288,18 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     const playerNoMagic = { ...basePlayer, spellcasting: [] };
     const data = mapCharacterToPdfData(playerNoMagic, mapOptions);
     expect(data.hasSpellcasting).toBe(false);
+  });
+
+  it("nominal: passes avatar, QR, and character page URL through export data", () => {
+    const data = mapCharacterToPdfData(basePlayer, {
+      ...mapOptions,
+      avatarDataUrl: "data:image/png;base64,abc",
+      qrCodeDataUrl: "data:image/png;base64,qr",
+      characterPageUrl: "https://chariot.tools/fr/characters/p1",
+    });
+
+    expect(data.avatarDataUrl).toBe("data:image/png;base64,abc");
+    expect(data.qrCodeDataUrl).toBe("data:image/png;base64,qr");
+    expect(data.characterPageUrl).toBe("https://chariot.tools/fr/characters/p1");
   });
 });

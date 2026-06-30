@@ -1,26 +1,7 @@
 /** @see FR-character-sheet-pdf-export */
 
-import MediaService from "@/services/MediaService";
-
-async function blobToDataUrl(blob: Blob): Promise<string | null> {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(typeof reader.result === "string" ? reader.result : null);
-    reader.onerror = () => resolve(null);
-    reader.readAsDataURL(blob);
-  });
-}
-
-export async function fetchImageAsDataUrl(url: string): Promise<string | null> {
-  try {
-    const response = await fetch(url, { mode: "cors" });
-    if (!response.ok) return null;
-    const blob = await response.blob();
-    return blobToDataUrl(blob);
-  } catch {
-    return null;
-  }
-}
+import { convertImageToPdfDataUrl } from "@/lib/characterSheetPdf/convertImageToPdfDataUrl";
+import { peekCachedMediaAvatarUrl, resolveMediaAvatarUrl } from "@/lib/mediaAvatarCache";
 
 export async function fetchCharacterAvatarForPdf(
   characterId: string,
@@ -30,23 +11,14 @@ export async function fetchCharacterAvatarForPdf(
   const trimmed = avatarStoredValue?.trim();
   if (!trimmed) return null;
 
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return fetchImageAsDataUrl(trimmed);
-  }
+  const cachedUrl = peekCachedMediaAvatarUrl("character", characterId, trimmed, "main");
+  const resolved = cachedUrl
+    ? { url: cachedUrl }
+    : await resolveMediaAvatarUrl("character", characterId, trimmed, "main", sessionCode);
 
-  try {
-    const cacheKey = MediaService.buildCacheKey("character", characterId, "sheet");
-    const results = await MediaService.resolvePresignedReads(
-      [{ scope: "character", id: characterId, variant: "sheet" }],
-      sessionCode,
-    );
-    const presigned = results[cacheKey];
-    if (presigned?.url) {
-      return fetchImageAsDataUrl(presigned.url);
-    }
-  } catch {
+  if (!resolved.url) {
     return null;
   }
 
-  return null;
+  return convertImageToPdfDataUrl(resolved.url);
 }
