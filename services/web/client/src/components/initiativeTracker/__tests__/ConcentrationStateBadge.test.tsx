@@ -25,8 +25,9 @@ describe("FR-tracker-concentration — ConcentrationStateBadge", () => {
     expect(html).toContain("shrink-0");
     expect(html).toContain("w-max");
     expect(html).toContain("overflow-hidden");
-    expect(html).toContain("border-white/20");
-    expect(html).toContain("text-white/60");
+    expect(html).toContain("border-purple-300/55");
+    expect(html).toContain("bg-purple-500/45");
+    expect(html).toContain("text-purple-50");
     expect(html).toContain("lucide-sparkles");
   });
 
@@ -75,7 +76,8 @@ describe("FR-tracker-concentration — ConcentrationStateBadge", () => {
     expect(html).toContain("lucide-triangle-alert");
     expect(html).not.toContain("lucide-sparkles");
     expect(html).toContain('aria-label="Ouvrir le rappel"');
-    expect(html).toContain("border-yellow/35");
+    expect(html).toContain("border-yellow-300/60");
+    expect(html).toContain("bg-yellow-500/45");
   });
 
   it("failure: info affordance is omitted when touch is unavailable (SSR)", () => {

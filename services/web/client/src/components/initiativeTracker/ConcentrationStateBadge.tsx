@@ -113,7 +113,7 @@ export function ConcentrationStateBadge({
       {hasPendingCheck && pendingCheckLabel && compaction.showPendingLabel ? (
         <span
           className={cn(
-            "shrink-0 rounded-full border border-yellow/35 bg-yellow/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-yellow/90",
+            "shrink-0 rounded-full border border-yellow-300/60 bg-yellow-500/45 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-yellow-50",
             isSelectVariant && totalBadgeCount > 1 && "md:sr-only lg:inline-flex",
           )}>
           {pendingCheckLabel}
@@ -154,18 +154,18 @@ export function ConcentrationStateBadge({
     isSelectVariant && totalBadgeCount > 1 && "max-w-full lg:max-w-none",
     isSelectVariant && badgeIndex > 0 && "md:hidden lg:inline-flex",
     hasPendingCheck
-      ? "border-yellow/35 bg-yellow/10 text-yellow/90"
-      : "border-white/20 bg-white/5 text-white/60",
-    isPendingActionable && "cursor-pointer transition-colors hover:bg-yellow/15",
-    canEdit && !isPendingActionable && "cursor-pointer transition-colors hover:bg-white/10",
+      ? "border-yellow-300/60 bg-yellow-500/45 text-yellow-50"
+      : "border-purple-300/55 bg-purple-500/45 text-purple-50",
+    isPendingActionable && "cursor-pointer transition-colors hover:bg-yellow-500/55",
+    canEdit && !isPendingActionable && "cursor-pointer transition-colors hover:bg-purple-500/55",
     hasNestedActions
       ? isPendingActionable
-        ? "focus-within:outline-none focus-within:ring-2 focus-within:ring-yellow/40"
-        : "focus-within:outline-none focus-within:ring-2 focus-within:ring-white/30"
+        ? "focus-within:outline-none focus-within:ring-2 focus-within:ring-yellow-300/60"
+        : "focus-within:outline-none focus-within:ring-2 focus-within:ring-purple-300/55"
       : isPendingActionable
-        ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow/40"
+        ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300/60"
         : canEdit
-          ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/55"
           : null,
   );
 
