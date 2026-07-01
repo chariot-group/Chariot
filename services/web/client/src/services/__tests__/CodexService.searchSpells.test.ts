@@ -134,3 +134,76 @@ describe("CodexService.searchSpells — level filter", () => {
     });
   });
 });
+
+describe("CodexService.searchSpells — school filter", () => {
+  beforeEach(() => {
+    getMock.mockReset();
+    getMock.mockResolvedValue({
+      data: {
+        message: "ok",
+        data: [],
+        pagination: { page: 1, offset: 20, totalItems: 0 },
+      },
+    });
+    vi.stubEnv("NEXT_PUBLIC_CODEX_URL", "https://codex.test");
+  });
+
+  it("nominal: forwards selected schools with repeat array serialization", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    await CodexService.searchSpells("", "fr", 1, 20, undefined, undefined, ["evocation", "abjuration"]);
+
+    expect(getMock).toHaveBeenCalledWith("/spells", {
+      params: {
+        page: 1,
+        offset: 20,
+        lang: "fr",
+        schools: ["evocation", "abjuration"],
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+    });
+  });
+
+  it("edge: combines schools with classes and level", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    await CodexService.searchSpells("fire", "en", 1, 10, ["wizard"], 3, ["necromancy"]);
+
+    expect(getMock).toHaveBeenCalledWith("/spells", {
+      params: {
+        page: 1,
+        offset: 10,
+        lang: "en",
+        name: "fire",
+        classes: ["Wizard"],
+        level: 3,
+        schools: ["necromancy"],
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+    });
+  });
+
+  it("edge: omits schools param when the filter is empty", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    await CodexService.searchSpells("bolt", "en", 1, 10, ["sorcerer"], 1, []);
+
+    expect(getMock).toHaveBeenCalledWith("/spells", {
+      params: {
+        page: 1,
+        offset: 10,
+        lang: "en",
+        name: "bolt",
+        classes: ["Sorcerer"],
+        level: 1,
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+    });
+  });
+});

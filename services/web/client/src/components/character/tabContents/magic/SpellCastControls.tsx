@@ -7,11 +7,24 @@ import { Button } from "@/components/ui/button";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectBattleStarted, selectCurrentRound, selectInitiativeTrackerRows, selectIsInSession, updateInitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import type { NPC, Player, Spell, Spellcasting } from "@/types/character";
+import {
+  buildTrackerConcentration,
+  isConcentrationSpell,
+} from "@/components/initiativeTracker/concentration.utils";
+import { submitTrackerConcentrationUpdate } from "@/lib/sessionConcentrationBridge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   getUpcastSlotLevels,
   hasAvailableSpellSlot,
@@ -46,10 +59,15 @@ export default function SpellCastControls({
 }: SpellCastControlsProps) {
   const tMagic = useTranslations("characterDetail.magic");
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const isInSession = useAppSelector(selectIsInSession);
+  const battleStarted = useAppSelector(selectBattleStarted);
+  const currentRound = useAppSelector(selectCurrentRound);
+  const trackerRows = useAppSelector(selectInitiativeTrackerRows);
   const sessionCode = useActiveSessionCode();
   const [busy, setBusy] = useState(false);
   const [showLightCastFeedback, setShowLightCastFeedback] = useState(false);
+  const [concentrationPromptOpen, setConcentrationPromptOpen] = useState(false);
   const lightCastFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showCast = isInSession && Boolean(onCharacterUpdate);
@@ -66,6 +84,67 @@ export default function SpellCastControls({
       }
     };
   }, []);
+
+  const offerConcentrationActivation = useCallback(() => {
+    if (!selectedSpell || !isConcentrationSpell(selectedSpell) || !battleStarted || !sessionCode) {
+      return;
+    }
+    setConcentrationPromptOpen(true);
+  }, [battleStarted, selectedSpell, sessionCode]);
+
+  const confirmConcentrationActivation = useCallback(() => {
+    if (!selectedSpell || !sessionCode) return;
+
+    const concentration = buildTrackerConcentration({
+      spellName: selectedSpell.name,
+      spellLevel: selectedSpell.level,
+      className: spellcasting.className,
+      sinceRound: currentRound,
+    });
+
+    const trackerRow = trackerRows.find((row) => row.characterId === character._id);
+    if (trackerRow) {
+      dispatch(updateInitiativeTrackerRow({
+        id: trackerRow.id,
+        changes: { concentration, pendingConcentrationCheck: null },
+      }));
+    }
+
+    submitTrackerConcentrationUpdate(sessionCode, {
+      characterId: character._id,
+      concentration,
+      pendingConcentrationCheck: null,
+    });
+    setConcentrationPromptOpen(false);
+  }, [character._id, currentRound, dispatch, selectedSpell, sessionCode, spellcasting.className, trackerRows]);
+
+  const concentrationPromptDialog = concentrationPromptOpen && selectedSpell ? (
+    <Dialog
+      open={concentrationPromptOpen}
+      onOpenChange={setConcentrationPromptOpen}>
+      <DialogContent className="sm:max-w-md rounded-[15px] bg-card">
+        <DialogHeader>
+          <DialogTitle>{tMagic("concentrationPromptTitle")}</DialogTitle>
+          <DialogDescription>
+            {tMagic("concentrationPromptDescription", { name: selectedSpell.name })}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setConcentrationPromptOpen(false)}>
+            {tMagic("concentrationPromptDecline")}
+          </Button>
+          <Button
+            type="button"
+            onClick={confirmConcentrationActivation}>
+            {tMagic("concentrationPromptConfirm")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ) : null;
 
   const triggerLightCastFeedback = useCallback(() => {
     if (lightCastFeedbackTimeoutRef.current) {
@@ -99,6 +178,7 @@ export default function SpellCastControls({
         }, sessionCode)) as Player | NPC;
         onCharacterUpdate(updated);
         triggerLightCastFeedback();
+        offerConcentrationActivation();
       } catch (e) {
         console.error(e);
         toast.error(tMagic("spellCastError"));
@@ -118,6 +198,7 @@ export default function SpellCastControls({
       toast,
       tMagic,
       triggerLightCastFeedback,
+      offerConcentrationActivation,
     ],
   );
 
@@ -137,6 +218,7 @@ export default function SpellCastControls({
       }, sessionCode)) as Player | NPC;
       onCharacterUpdate(updated);
       triggerLightCastFeedback();
+      offerConcentrationActivation();
     } catch (e) {
       console.error(e);
       toast.error(tMagic("spellCastError"));
@@ -155,6 +237,7 @@ export default function SpellCastControls({
     toast,
     tMagic,
     triggerLightCastFeedback,
+    offerConcentrationActivation,
   ]);
 
   if (!showCast || !selectedSpell || !onCharacterUpdate) {
@@ -219,22 +302,25 @@ export default function SpellCastControls({
     );
 
     return (
-      <div
-        className="flex items-center justify-end gap-2"
-        role="group"
-        aria-label={tMagic("spellCastRegion")}>
-        {lightCastFeedback}
-        {noUsesLeft ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex">{innateButton}</span>
-            </TooltipTrigger>
-            <TooltipContent side="top">{innateTooltip}</TooltipContent>
-          </Tooltip>
-        ) : (
-          innateButton
-        )}
-      </div>
+      <>
+        <div
+          className="flex items-center justify-end gap-2"
+          role="group"
+          aria-label={tMagic("spellCastRegion")}>
+          {lightCastFeedback}
+          {noUsesLeft ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex">{innateButton}</span>
+              </TooltipTrigger>
+              <TooltipContent side="top">{innateTooltip}</TooltipContent>
+            </Tooltip>
+          ) : (
+            innateButton
+          )}
+        </div>
+        {concentrationPromptDialog}
+      </>
     );
   }
 
@@ -334,6 +420,7 @@ export default function SpellCastControls({
   );
 
   return (
+    <>
     <div
       className="flex items-center justify-end gap-2"
       role="group"
@@ -412,5 +499,7 @@ export default function SpellCastControls({
         )}
       </ButtonGroup>
     </div>
+      {concentrationPromptDialog}
+    </>
   );
 }

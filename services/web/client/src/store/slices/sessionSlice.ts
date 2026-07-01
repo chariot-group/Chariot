@@ -17,6 +17,25 @@ import {
     isSessionParticipantTrackerRow,
     sortInitiativeTrackerRows,
 } from '@/components/initiativeTracker/utils';
+import {
+    computeConcentrationCheckFromHpChange,
+    normalizePendingConcentrationCheck,
+    normalizeTrackerConcentration,
+} from '@/components/initiativeTracker/concentration.utils';
+
+/** FR-tracker-concentration — sort actif suivi sur la ligne tracker (non persisté fiche). */
+export interface TrackerConcentration {
+    spellName: string;
+    spellLevel?: number;
+    className?: string;
+    sinceRound?: number;
+}
+
+/** FR-tracker-concentration — rappel de jet CON en attente de résolution. */
+export interface PendingConcentrationCheck {
+    damageAmount: number;
+    dc: number;
+}
 
 export interface SessionInitBattleDraft {
     showAllOpponents: boolean;
@@ -109,6 +128,7 @@ export interface InitiativeTrackerPlayerFieldVisibility {
     lifeStatus: boolean;
     armorClass: boolean;
     conditions: boolean;
+    concentration: boolean;
     groupLabel: boolean;
 }
 
@@ -119,6 +139,7 @@ export const DEFAULT_NPC_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFieldVi
     lifeStatus: false,
     armorClass: false,
     conditions: false,
+    concentration: false,
     groupLabel: false,
 };
 
@@ -129,6 +150,7 @@ export const DEFAULT_PLAYER_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFiel
     lifeStatus: true,
     armorClass: true,
     conditions: true,
+    concentration: true,
     groupLabel: true,
 };
 
@@ -162,6 +184,7 @@ export function normalizePlayerFieldVisibility(
         lifeStatus: typeof value.lifeStatus === 'boolean' ? value.lifeStatus : defaults.lifeStatus,
         armorClass: typeof value.armorClass === 'boolean' ? value.armorClass : defaults.armorClass,
         conditions: typeof value.conditions === 'boolean' ? value.conditions : defaults.conditions,
+        concentration: typeof value.concentration === 'boolean' ? value.concentration : defaults.concentration,
         groupLabel: typeof value.groupLabel === 'boolean' ? value.groupLabel : defaults.groupLabel,
     };
 }
@@ -214,6 +237,10 @@ export interface InitiativeTrackerRow {
     deathSavesFailures: number;
     /** FR-session-gm-guest-character — personnage MJ promu temporairement dans le groupe participants session. */
     isGmGuest?: boolean;
+    /** FR-tracker-concentration — sort de concentration actif (état tracker-only). */
+    concentration?: TrackerConcentration | null;
+    /** FR-tracker-concentration — rappel de jet CON en attente. */
+    pendingConcentrationCheck?: PendingConcentrationCheck | null;
 }
 
 /** FR-combat-initiative-tracker / FR-session-combat-navigation — fabrique une ligne tracker (setup ou ajout en cours de combat). */
@@ -253,6 +280,8 @@ export function createInitiativeTrackerRow(input: {
         tempHitPoints: input.tempHitPoints ?? 0,
         armorClass: input.armorClass,
         conditions: [],
+        concentration: null,
+        pendingConcentrationCheck: null,
         groupId: input.groupId,
         groupLabel: input.groupLabel,
         visible: input.visible ?? true,
@@ -332,6 +361,8 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
     return applyPlayerRowVisibilityRules({
         ...row,
         kind,
+        concentration: normalizeTrackerConcentration(row.concentration),
+        pendingConcentrationCheck: normalizePendingConcentrationCheck(row.pendingConcentrationCheck),
         playerDisplayName: rawAlias.length > 0 ? rawAlias : gmName,
         playerFieldVisibility: normalizePlayerFieldVisibility(
             row.playerFieldVisibility,
@@ -340,6 +371,28 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
         ),
         visible: row.visible,
     });
+};
+
+const clearConcentrationIfIncapacitated = (row: InitiativeTrackerRow): void => {
+    const status = getInitiativeTrackerRowStatus(row);
+    if (status === 'dead' || status === 'unconscious') {
+        row.concentration = null;
+        row.pendingConcentrationCheck = null;
+    }
+};
+
+const applyConcentrationHpSideEffects = (
+    row: InitiativeTrackerRow,
+    previous: Pick<InitiativeTrackerRow, 'hitPoints' | 'tempHitPoints' | 'concentration'>,
+    battleStarted: boolean,
+): void => {
+    clearConcentrationIfIncapacitated(row);
+    if (!battleStarted || !row.concentration) return;
+
+    const pending = computeConcentrationCheckFromHpChange(previous, row);
+    if (pending) {
+        row.pendingConcentrationCheck = pending;
+    }
 };
 
 const mergePlayerFieldVisibilityChange = (
@@ -602,6 +655,11 @@ const sessionSlice = createSlice({
         ) => {
             const row = state.initiativeTrackerRows.find((item) => item.id === action.payload.id);
             if (!row) return;
+            const previousHpSnapshot = {
+                hitPoints: row.hitPoints,
+                tempHitPoints: row.tempHitPoints,
+                concentration: row.concentration ?? null,
+            };
             const nextPlayerFieldVisibility = mergePlayerFieldVisibilityChange(
                 row,
                 action.payload.changes.playerFieldVisibility,
@@ -613,6 +671,16 @@ const sessionSlice = createSlice({
                     row.kind,
                     row.groupId,
                 );
+            }
+            if (
+                action.payload.changes.hitPoints != null
+                || action.payload.changes.tempHitPoints != null
+                || action.payload.changes.deathSavesFailures != null
+                || action.payload.changes.maxHitPoints != null
+            ) {
+                applyConcentrationHpSideEffects(row, previousHpSnapshot, state.battleStarted);
+            } else {
+                clearConcentrationIfIncapacitated(row);
             }
             const normalized = applyPlayerRowVisibilityRules(row);
             row.visible = normalized.visible;

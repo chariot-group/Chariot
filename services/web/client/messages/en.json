@@ -238,6 +238,7 @@
       "emptyDescription": "Confirm the battle configuration to display the tracker.",
       "playerEmptyDescription": "The game master has not shared combat yet, or no opponents are visible to you.",
       "playerReadOnlyNotice": "Read-only combat view — the GM controls what is displayed.",
+      "playerConcentrationNotice": "Read-only view, except concentration on your own character.",
       "playerPrepInitiativeNotice": "Preparation phase — you can enter only your own character's initiative.",
       "hiddenField": "Hidden",
       "otherGroup": "Other group",
@@ -247,6 +248,45 @@
       "collapseDetails": "Hide details for {name}",
       "detailsFor": "Details for {name}",
       "activeTurn": "Active turn",
+      "concentration": {
+        "hidden": "Concentration hidden",
+        "set": "Concentrate",
+        "menuLabel": "Set a concentration spell",
+        "setTooltip": "Set a concentration spell",
+        "setFor": "Set concentration for {name}",
+        "change": "Change concentration spell",
+        "drop": "Drop concentration",
+        "badgeLabel": "Concentration",
+        "badgeShort": "C",
+        "badgeDetail": "Concentrating on ({spell})",
+        "sinceRound": "since round {round}",
+        "dialogTitle": "Choose a concentration spell",
+        "replaceDialogTitle": "Change concentration spell",
+        "renameDialogTitle": "Fix spell name",
+        "tabReplace": "Replace spell",
+        "tabRename": "Fix name",
+        "renameLabel": "Display name",
+        "renameHint": "Fix a typo on the current spell name.",
+        "otherSpellLabel": "Other spell",
+        "otherSpellHint": "If the spell is not listed above.",
+        "noSpellsFound": "No concentration spell is listed on this sheet. Enter below which spell this character is currently maintaining.",
+        "customName": "Spell maintained",
+        "customNamePlaceholder": "e.g. Hold Person",
+        "confirm": "Confirm",
+        "applyNpc": "Apply spell",
+        "saveRename": "Save name",
+        "cancel": "Cancel",
+        "spellMeta": "Lvl {level} — {className}",
+        "pendingCheck": "CON save required — {damage} damage, DC {dc}",
+        "pendingCheckShort": "CON DC {dc}",
+        "pendingCheckActivate": "Open concentration save reminder (DC {dc})",
+        "kept": "Concentration kept",
+        "lost": "Concentration lost",
+        "later": "Decide later",
+        "saveDialogTitle": "Concentration save",
+        "saveDialogDescription": "{name} is maintaining \"{spell}\" and just took {damage} damage.",
+        "saveDialogReminder": "A Constitution saving throw (DC {dc}) is required to keep concentration."
+      },
       "visibilityDialog": {
         "title": "Player visibility",
         "showToPlayers": "Show this row to players",
@@ -265,6 +305,7 @@
           "lifeStatus": "Vital status (alive / unconscious / dead)",
           "armorClass": "Armor class",
           "conditions": "Conditions",
+          "concentration": "Concentration",
           "groupLabel": "Group name"
         }
       },
@@ -1312,6 +1353,16 @@
         "duration": "Duration",
         "description": "Description"
       },
+      "spellSchools": {
+        "abjuration": "Abjuration",
+        "conjuration": "Conjuration",
+        "divination": "Divination",
+        "enchantment": "Enchantment",
+        "evocation": "Evocation",
+        "illusion": "Illusion",
+        "necromancy": "Necromancy",
+        "transmutation": "Transmutation"
+      },
       "damage": "Damage",
       "healing": "Healing",
       "mainRegion": "Magic section",
@@ -1388,6 +1439,10 @@
       "spellCastMoreOptionsAria": "More cast options",
       "spellCastJustNow": "Cast",
       "spellCastLightFeedback": "Spell cast",
+      "concentrationPromptTitle": "Activate concentration?",
+      "concentrationPromptDescription": "The spell \"{name}\" requires concentration. Show it on the initiative tracker?",
+      "concentrationPromptConfirm": "Activate",
+      "concentrationPromptDecline": "No thanks",
       "spellCastError": "Could not record the spell cast.",
       "removeSpellWithName": "Remove spell {name}",
       "expandAllSpellLevels": "Expand all spell levels",
@@ -1430,15 +1485,38 @@
           "all": "🌍 All languages",
           "fr": "🇫🇷 French",
           "en": "🇬🇧 English",
-          "es": "🇪🇸 Spanish"
+          "es": "🇪🇸 Spanish",
+          "ariaLabel": "Filter by language"
+        },
+        "filtersCollapse": {
+          "toggle": "Filters",
+          "ariaLabel": "Show or hide search filters",
+          "active": "Active filters",
+          "resetAriaLabel": "Reset filters (level, class, school)"
+        },
+        "legendShort": {
+          "selection": "Selection",
+          "chariot": "Chariot",
+          "srd": "SRD"
         },
         "classFilter": {
           "all": "All classes",
-          "ariaLabel": "Filter by class"
+          "shortAll": "Class",
+          "ariaLabel": "Filter by class",
+          "selectedCount": "{count} classes"
         },
         "levelFilter": {
           "all": "All levels",
-          "ariaLabel": "Filter by spell level"
+          "shortAll": "Level",
+          "shortCantrip": "Cantrips",
+          "ariaLabel": "Filter by spell level",
+          "shortSelected": "Lvl {level}"
+        },
+        "schoolFilter": {
+          "all": "All schools",
+          "shortAll": "School",
+          "ariaLabel": "Filter by school of magic",
+          "selectedCount": "{count} schools"
         },
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",

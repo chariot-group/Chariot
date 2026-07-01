@@ -238,6 +238,7 @@
       "emptyDescription": "Validez la configuration du combat pour afficher le tracker.",
       "playerEmptyDescription": "Le maître du jeu n'a pas encore partagé de combat, ou aucun adversaire n'est visible pour vous.",
       "playerReadOnlyNotice": "Vue combat en lecture seule — le MJ contrôle l'affichage.",
+      "playerConcentrationNotice": "Vue en lecture seule, sauf la concentration sur votre personnage.",
       "playerPrepInitiativeNotice": "Phase préparatoire — vous pouvez saisir uniquement l'initiative de votre personnage.",
       "hiddenField": "Masqué",
       "otherGroup": "Autre groupe",
@@ -247,6 +248,45 @@
       "collapseDetails": "Masquer les détails de {name}",
       "detailsFor": "Détails de {name}",
       "activeTurn": "Tour actif",
+      "concentration": {
+        "hidden": "Concentration masquée",
+        "set": "Concentrer",
+        "menuLabel": "Définir un sort de concentration",
+        "setTooltip": "Définir un sort de concentration",
+        "setFor": "Définir la concentration pour {name}",
+        "change": "Changer le sort de concentration",
+        "drop": "Lâcher la concentration",
+        "badgeLabel": "Concentré",
+        "badgeShort": "C",
+        "badgeDetail": "Concentré ({spell})",
+        "sinceRound": "depuis le round {round}",
+        "dialogTitle": "Choisir un sort de concentration",
+        "replaceDialogTitle": "Changer le sort de concentration",
+        "renameDialogTitle": "Corriger le nom du sort",
+        "tabReplace": "Remplacer le sort",
+        "tabRename": "Corriger le nom",
+        "renameLabel": "Nom affiché",
+        "renameHint": "Corrige une faute de frappe sur le nom du sort en cours.",
+        "otherSpellLabel": "Autre sort",
+        "otherSpellHint": "Si le sort n'apparaît pas dans la liste ci-dessus.",
+        "noSpellsFound": "Aucun sort de concentration n'est enregistré sur cette fiche. Indiquez ci-dessous le sort que ce personnage maintient actuellement.",
+        "customName": "Sort maintenu",
+        "customNamePlaceholder": "Ex. : Hold Person",
+        "confirm": "Confirmer",
+        "applyNpc": "Appliquer le sort",
+        "saveRename": "Enregistrer le nom",
+        "cancel": "Annuler",
+        "spellMeta": "Niv. {level} — {className}",
+        "pendingCheck": "Jet CON requis — {damage} dégâts, DC {dc}",
+        "pendingCheckShort": "CON DC {dc}",
+        "pendingCheckActivate": "Ouvrir le rappel de jet de concentration (DC {dc})",
+        "kept": "Concentration maintenue",
+        "lost": "Concentration perdue",
+        "later": "Décider plus tard",
+        "saveDialogTitle": "Jet de concentration",
+        "saveDialogDescription": "{name} maintient « {spell} » et vient de subir {damage} dégâts.",
+        "saveDialogReminder": "Un jet de sauvegarde de Constitution (DC {dc}) est requis pour conserver la concentration."
+      },
       "visibilityDialog": {
         "title": "Visibilité joueurs",
         "showToPlayers": "Afficher cette ligne aux joueurs",
@@ -265,6 +305,7 @@
           "lifeStatus": "État vital (vivant / inconscient / mort)",
           "armorClass": "Classe d'armure",
           "conditions": "États",
+          "concentration": "Concentration",
           "groupLabel": "Nom du groupe"
         }
       },
@@ -1317,6 +1358,16 @@
         "description": "Description",
         "usesTracker": "Utilisations"
       },
+      "spellSchools": {
+        "abjuration": "Abjuration",
+        "conjuration": "Conjuration",
+        "divination": "Divination",
+        "enchantment": "Enchantement",
+        "evocation": "Évocation",
+        "illusion": "Illusion",
+        "necromancy": "Nécromancie",
+        "transmutation": "Transmutation"
+      },
       "damage": "Dégâts",
       "healing": "Soins",
       "mainRegion": "Section magie",
@@ -1393,6 +1444,10 @@
       "spellCastMoreOptionsAria": "Autres options de lancement",
       "spellCastJustNow": "Lancé",
       "spellCastLightFeedback": "Sort lancé",
+      "concentrationPromptTitle": "Activer la concentration ?",
+      "concentrationPromptDescription": "Le sort « {name} » requiert une concentration. L'afficher sur le tracker d'initiative ?",
+      "concentrationPromptConfirm": "Activer",
+      "concentrationPromptDecline": "Non merci",
       "spellCastError": "Impossible d'enregistrer le lancement du sort.",
       "removeSpellWithName": "Supprimer le sort {name}",
       "expandAllSpellLevels": "Développer tous les niveaux de sorts",
@@ -1435,15 +1490,38 @@
           "all": "🌍 Toutes les langues",
           "fr": "🇫🇷 Français",
           "en": "🇬🇧 English",
-          "es": "🇪🇸 Español"
+          "es": "🇪🇸 Español",
+          "ariaLabel": "Filtrer par langue"
+        },
+        "filtersCollapse": {
+          "toggle": "Filtres",
+          "ariaLabel": "Afficher ou masquer les filtres de recherche",
+          "active": "Filtres actifs",
+          "resetAriaLabel": "Réinitialiser les filtres (niveau, classe, école)"
+        },
+        "legendShort": {
+          "selection": "Sélection",
+          "chariot": "Chariot",
+          "srd": "SRD"
         },
         "classFilter": {
           "all": "Toutes les classes",
-          "ariaLabel": "Filtrer par classe"
+          "shortAll": "Classe",
+          "ariaLabel": "Filtrer par classe",
+          "selectedCount": "{count} classes"
         },
         "levelFilter": {
           "all": "Tous les niveaux",
-          "ariaLabel": "Filtrer par niveau de sort"
+          "shortAll": "Niveau",
+          "shortCantrip": "Mineurs",
+          "ariaLabel": "Filtrer par niveau de sort",
+          "shortSelected": "Niv. {level}"
+        },
+        "schoolFilter": {
+          "all": "Toutes les écoles",
+          "shortAll": "École",
+          "ariaLabel": "Filtrer par école de magie",
+          "selectedCount": "{count} écoles"
         },
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",

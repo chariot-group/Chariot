@@ -23,6 +23,8 @@ import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
+import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
+import { CharacterSheetHeader } from "@/components/character/CharacterSheetHeader";
 import { CombatBanner } from "@/components/character/CombatBanner";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
@@ -78,9 +80,6 @@ export default function CharacterDetailView({
       : null;
 
   const sessionCodeForMedia = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
-
-  const characterDisplayName =
-    `${character.firstname ?? ""} ${character.lastname ?? ""}`.trim() || t("placeholder.noImage");
 
   const canEditAsGm = useMemo(
     () => isGmViewingPlayerSheet && isInSession && !!sessionCodeFromUrl && sessionCodeFromUrl === sessionCodeRedux,
@@ -252,6 +251,17 @@ export default function CharacterDetailView({
   const editingAvatarStoredValue = pendingAvatarRemove ? "" : form.watch("avatar") || character.avatar;
 
   const displayedAvatarStoredValue = form.watch("avatar") || character.avatar;
+
+  const watchedFirstname = form.watch("firstname");
+  const watchedLastname = form.watch("lastname");
+  const watchedSurname = form.watch("surname");
+
+  const headerFirstname = isEditing ? (watchedFirstname ?? character.firstname) : character.firstname;
+  const headerLastname = isEditing ? (watchedLastname ?? character.lastname) : character.lastname;
+  const headerSurname = isEditing ? (watchedSurname ?? character.surname) : character.surname;
+
+  const headerFullName = [headerFirstname?.trim(), headerLastname?.trim()].filter(Boolean).join(" ");
+  const characterDisplayName = headerFullName || t("placeholder.noImage");
 
   const handleInvalid = React.useCallback(
     (errors: Record<string, unknown>) => {
@@ -436,42 +446,26 @@ export default function CharacterDetailView({
           {/* Header avec onglets et infos du personnage */}
           <div className="shrink-0">
             <div className="mx-auto sm:px-6 md:px-8 px-2">
-              <div className="w-full flex flex-col lg:flex-row-reverse lg:justify-between gap-2">
-                {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
-                <div className="flex flex-row items-start gap-3 min-w-0 lg:max-w-[50%] lg:ml-auto">
-                  <div className="flex flex-col gap-1 min-w-0 flex-1">
-                    {/* Ligne 1: Nom du personnage */}
-                    <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center gap-2">
-                      <InfoTooltip
-                        content={
-                          <div className="flex flex-col gap-1">
-                            <span>
-                              {character.firstname} {character.lastname} {character.surname && `(${character.surname})`}
-                            </span>
-                            {isGmViewingPlayerSheet && playedByLabel ? (
-                              <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
-                            ) : null}
-                          </div>
-                        }
-                        side="bottom"
-                        align="start">
-                        <div className="cursor-help truncate flex flex-row items-end gap-2 min-w-0">
-                          <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">
-                            {character.firstname?.trim()} {character.lastname?.trim()}{" "}
-                          </h1>
-                          {character.surname && (
-                            <span className="ml-auto text-gray-light italic lg:text-md text-sm shrink-0">
-                              ({character.surname?.trim()})
-                            </span>
-                          )}
-                        </div>
-                      </InfoTooltip>
-                    </div>
-
-                    {/* Ligne 2: Surnom + Classe/CR + Groupe */}
-                    <div className="flex flex-col gap-2 text-sm items-start lg:items-end justify-end">
-                      {isPlayer(character) ? (
-                        <div className="flex flex-col gap-1 text-white font-semibold items-start lg:items-end">
+              <CharacterSheetHeader
+                identity={
+                  <CharacterSheetHeaderIdentity
+                    fullName={headerFullName}
+                    surname={headerSurname}
+                    emptyNameFallback={t("placeholder.noImage")}
+                    tooltipContent={
+                      <div className="flex flex-col gap-1">
+                        <span>
+                          {headerFullName}
+                          {headerSurname?.trim() ? ` (${headerSurname.trim()})` : ""}
+                        </span>
+                        {isGmViewingPlayerSheet && playedByLabel ? (
+                          <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
+                        ) : null}
+                      </div>
+                    }
+                    subtitle={
+                      isPlayer(character) ? (
+                        <div className="flex flex-col gap-1 font-semibold text-white">
                           <div>
                             {character.class.map((cls: { name: string; level: number }, index: number) => (
                               <span key={index}>
@@ -487,7 +481,7 @@ export default function CharacterDetailView({
                           ) : null}
                         </div>
                       ) : (
-                        <div className="text-white font-semibold">
+                        <div className="font-semibold text-white">
                           {(() => {
                             const challengeRating = character.challenge?.challengeRating ?? 0;
                             const experiencePoints = character.challenge?.experiencePoints ?? 0;
@@ -499,56 +493,51 @@ export default function CharacterDetailView({
                                   content={tCommon("challengeRatingTooltip")}
                                   side="bottom"
                                   moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                                  <abbr className="no-underline cursor-help">{t("npc.challengeRatingAbbr")}</abbr>
+                                  <abbr className="cursor-help no-underline">{t("npc.challengeRatingAbbr")}</abbr>
                                 </InfoTooltip>{" "}
                                 {displayChallengeRating} ({experiencePoints} XP)
                               </React.Fragment>
                             );
                           })()}
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 self-start">
-                    {isEditing && showEditControls ? (
-                      <MediaAvatarUpload
-                        scope="character"
-                        entityId={character._id}
-                        storedValue={editingAvatarStoredValue}
-                        sessionCode={sessionCodeForMedia}
-                        size="sheet"
-                        alt={characterDisplayName}
-                        deferUpload
-                        previewUrl={avatarPreviewUrl}
-                        onPendingFile={handlePendingAvatarFile}
-                        onPendingRemove={handlePendingAvatarRemove}
-                        disabled={isSaving || isAvatarCommitting}
-                      />
-                    ) : (
-                      <MediaAvatar
-                        scope="character"
-                        entityId={character._id}
-                        storedValue={displayedAvatarStoredValue}
-                        sessionCode={sessionCodeForMedia}
-                        size="sheet"
-                        alt={characterDisplayName}
-                        priority
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* Onglets - À gauche sur lg, en dessous sur mobile */}
-                <div className="flex flex-col gap-2 min-w-0 lg:max-w-[50%] lg:self-end overflow-x-auto lg:overflow-x-visible overflow-y-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+                      )
+                    }
+                  />
+                }
+                tabs={
                   <CharacterTabs
                     activeTab={activeTab}
-                    listClassName="gap-1 lg:flex-wrap"
-                    triggerClassName="grow-0"
                     tabsWithErrors={isEditing ? tabsWithErrors : undefined}
                   />
-                </div>
-              </div>
+                }
+                avatar={
+                  isEditing && showEditControls ? (
+                    <MediaAvatarUpload
+                      scope="character"
+                      entityId={character._id}
+                      storedValue={editingAvatarStoredValue}
+                      sessionCode={sessionCodeForMedia}
+                      size="sheet"
+                      alt={characterDisplayName}
+                      deferUpload
+                      previewUrl={avatarPreviewUrl}
+                      onPendingFile={handlePendingAvatarFile}
+                      onPendingRemove={handlePendingAvatarRemove}
+                      disabled={isSaving || isAvatarCommitting}
+                    />
+                  ) : (
+                    <MediaAvatar
+                      scope="character"
+                      entityId={character._id}
+                      storedValue={displayedAvatarStoredValue}
+                      sessionCode={sessionCodeForMedia}
+                      size="sheet"
+                      alt={characterDisplayName}
+                      priority
+                    />
+                  )
+                }
+              />
             </div>
           </div>
 

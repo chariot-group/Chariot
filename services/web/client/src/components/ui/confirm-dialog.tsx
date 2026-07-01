@@ -63,7 +63,6 @@ export function ConfirmDialog({
                     <Button
                         type="button"
                         variant={confirmVariant}
-                        className="text-black"
                         onClick={handleConfirm}>
                         {confirmLabel}
                     </Button>

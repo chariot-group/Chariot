@@ -487,6 +487,56 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         }
     }
 
+    @SubscribeMessage('session:player-concentration-updated')
+    async handlePlayerConcentrationUpdated(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody()
+        data: {
+            sessionId: string;
+            characterId: string;
+            concentration: { spellName: string; spellLevel?: number; className?: string; sinceRound?: number } | null;
+            pendingConcentrationCheck?: { damageAmount: number; dc: number } | null;
+        },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const me = session.participants.find((p) => p.userId === client.user.keycloakId);
+            if (!me) {
+                client.emit('session:error', { message: 'Not a session participant' });
+                return;
+            }
+            if (me.status === 'gameMaster') {
+                client.emit('session:error', { message: 'Game master cannot submit player concentration updates' });
+                return;
+            }
+            if (!data.characterId || me.characterId !== data.characterId) {
+                client.emit('session:error', { message: 'Player can only submit concentration for their own character' });
+                return;
+            }
+
+            const spellName = data.concentration?.spellName?.trim?.() ?? '';
+            if (data.concentration != null && !spellName) {
+                client.emit('session:error', { message: 'Invalid concentration payload' });
+                return;
+            }
+
+            client.to(session.id).emit('session:player-concentration-updated', {
+                userId: client.user.keycloakId,
+                characterId: data.characterId,
+                concentration: data.concentration,
+                pendingConcentrationCheck: data.pendingConcentrationCheck ?? null,
+            });
+            this.logger.verbose(
+                `${client.user.username} submitted concentration update in session ${session.id}`,
+                this.SERVICE_NAME,
+            );
+        } catch (error: any) {
+            const message: string = `Failed to submit player concentration update: ${error.message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            client.emit('session:error', { message });
+        }
+    }
+
     @SubscribeMessage('session:close')
     async handleCloseSession(
         @ConnectedSocket() client: AuthenticatedSocket,

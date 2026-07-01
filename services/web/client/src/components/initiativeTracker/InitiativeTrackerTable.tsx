@@ -49,6 +49,14 @@ export type InitiativeTrackerTableProps = {
   onRemoveCondition?: (row: InitiativeTrackerRow, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions?: (row: InitiativeTrackerRow) => void;
   onHitPointsClick?: (row: InitiativeTrackerRow) => void;
+  battleStarted?: boolean;
+  currentRound?: number;
+  onSetConcentration?: (row: InitiativeTrackerRow, concentration: import("@/store/slices/sessionSlice").TrackerConcentration | null) => void;
+  onResolvePendingConcentrationCheck?: (
+    row: InitiativeTrackerRow,
+    result: "kept" | "lost" | "later",
+  ) => void;
+  onOpenConcentrationSaveDialog?: (row: InitiativeTrackerRow) => void;
   onRemoveFromInitiative?: (rowId: string) => void;
   onRemoveMultipleFromInitiative?: (rowIds: string[]) => void;
   onUpdateMultipleRows?: (
@@ -100,6 +108,7 @@ export type InitiativeTrackerTableProps = {
         lifeStatus: string;
         armorClass: string;
         conditions: string;
+        concentration: string;
         groupLabel: string;
       };
       apply: string;
@@ -191,6 +200,11 @@ export function InitiativeTrackerTable({
   onRemoveCondition,
   onClearConditions,
   onHitPointsClick,
+  battleStarted = false,
+  currentRound = 1,
+  onSetConcentration,
+  onResolvePendingConcentrationCheck,
+  onOpenConcentrationSaveDialog,
   onRemoveFromInitiative,
   onRemoveMultipleFromInitiative,
   onUpdateMultipleRows,
@@ -672,6 +686,11 @@ export function InitiativeTrackerTable({
             onRemoveCondition={isPlayerView ? undefined : onRemoveCondition}
             onClearConditions={isPlayerView ? undefined : onClearConditions}
             onHitPointsClick={isPlayerView ? undefined : onHitPointsClick}
+            battleStarted={battleStarted}
+            currentRound={currentRound}
+            onSetConcentration={onSetConcentration}
+            onResolvePendingConcentrationCheck={onResolvePendingConcentrationCheck}
+            onOpenConcentrationSaveDialog={onOpenConcentrationSaveDialog}
             onRemoveFromInitiative={isPlayerView ? undefined : onRemoveFromInitiative}
             labels={getRowLabels(row)}
           />
