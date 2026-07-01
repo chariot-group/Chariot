@@ -125,7 +125,7 @@
     "createCharacterDialogDescription": "What type of character do you want to create?",
     "playerCharacter": "Player character",
     "npcCharacter": "NPC",
-    "npcCodexCharacter": "NPC from the community library",
+    "npcCodexCharacter": "Community library",
     "gmSpaceAbbr": "GM",
     "playerSpaceShort": "Player",
     "noCampaigns": "No campaigns",
