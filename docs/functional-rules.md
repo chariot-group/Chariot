@@ -3698,3 +3698,49 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/sessionConcentrationBridge.ts`
 - `services/web/client/src/hooks/useSessionBattleSync.ts`
 - `services/session/api/src/resources/session/session.gateway.ts`
+
+---
+
+## FR-codex-game-system-filter: Codex Search — Game System Filter
+
+**Rule**: Codex search dialogs for spells (`CodexSpellSearchDialog`) and monsters (`MonsterCodexDialog`) MUST allow filtering results by game system. The filter MUST be applied server-side via the Codex API `gameSystem` query parameter.
+
+**Scope**:
+
+- Complements existing name and language filters (and spell-specific class, level, school filters).
+- Aligns with Codex API `FR-api-game-system` (`GET /spells`, `GET /monsters`).
+
+**Behavior**:
+
+- Users MUST be able to select at most one game system, or leave the filter unset for all systems.
+- When no game system is selected, all systems are returned (no `gameSystem` param sent).
+- When a game system is selected, it MUST be forwarded to the API as `gameSystem` (canonical enum value, e.g. `DND_5E`).
+- Changing the game system filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening either dialog MUST reset the game system filter to “all systems”.
+- Filter labels MUST use i18n keys under `gameSystemFilter` in each dialog namespace.
+- Supported values MUST come from `GAME_SYSTEMS` in `constants/gameSystems.ts` (extensible enum).
+
+**Accessibility (FR-frontend-design)**:
+
+- The game system filter control MUST expose an accessible name (`aria-label`) equivalent to other Codex filter controls.
+- The spell dialog MUST use the same single-select `Select` pattern as the level filter.
+
+**Prohibitions**:
+
+- Client-side-only game system filtering when the API supports the `gameSystem` param.
+- Hardcoded game system labels bypassing i18n.
+- Sending values outside the `GAME_SYSTEMS` enum.
+
+**Tests**:
+
+- `CodexService.searchSpells` forwards a selected game system to `/spells`.
+- `CodexService.searchMonsters` forwards a selected game system to `/monsters`.
+- Both methods omit `gameSystem` when the filter is unset.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/constants/gameSystems.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`

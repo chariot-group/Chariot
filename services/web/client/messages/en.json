@@ -1492,7 +1492,7 @@
           "toggle": "Filters",
           "ariaLabel": "Show or hide search filters",
           "active": "Active filters",
-          "resetAriaLabel": "Reset filters (level, class, school)"
+          "resetAriaLabel": "Reset filters (system, level, class, school)"
         },
         "legendShort": {
           "selection": "Selection",
@@ -1517,6 +1517,12 @@
           "shortAll": "School",
           "ariaLabel": "Filter by school of magic",
           "selectedCount": "{count} schools"
+        },
+        "gameSystemFilter": {
+          "all": "All systems",
+          "shortAll": "System",
+          "ariaLabel": "Filter by game system",
+          "DND_5E": "D&D 5e"
         },
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",
@@ -1545,7 +1551,13 @@
           "all": "🌍 All languages",
           "fr": "🇫🇷 French",
           "en": "🇬🇧 English",
-          "es": "🇪🇸 Spanish"
+          "es": "🇪🇸 Spanish",
+          "ariaLabel": "Filter by language"
+        },
+        "gameSystemFilter": {
+          "all": "All systems",
+          "ariaLabel": "Filter by game system",
+          "DND_5E": "D&D 5e"
         },
         "resultsCount": "{count} result{plural}{more}",
         "resultsPlural": "s",

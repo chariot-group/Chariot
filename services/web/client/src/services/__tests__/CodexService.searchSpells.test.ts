@@ -207,3 +207,124 @@ describe("CodexService.searchSpells — school filter", () => {
     });
   });
 });
+
+describe("CodexService.searchSpells — game system filter", () => {
+  beforeEach(() => {
+    getMock.mockReset();
+    getMock.mockResolvedValue({
+      data: {
+        message: "ok",
+        data: [],
+        pagination: { page: 1, offset: 20, totalItems: 0 },
+      },
+    });
+    vi.stubEnv("NEXT_PUBLIC_CODEX_URL", "https://codex.test");
+  });
+
+  it("nominal: forwards selected game system as query param", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    await CodexService.searchSpells("", "fr", 1, 20, undefined, undefined, undefined, "DND_5E");
+
+    expect(getMock).toHaveBeenCalledWith("/spells", {
+      params: {
+        page: 1,
+        offset: 20,
+        lang: "fr",
+        gameSystem: "DND_5E",
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+    });
+  });
+
+  it("edge: omits gameSystem param when unset", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    await CodexService.searchSpells("fire", null, 2, 10);
+
+    expect(getMock).toHaveBeenCalledWith("/spells", {
+      params: {
+        page: 2,
+        offset: 10,
+        name: "fire",
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+    });
+  });
+
+  it("edge: combines gameSystem with other filters", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    await CodexService.searchSpells("fire", "en", 1, 10, ["wizard"], 3, ["evocation"], "DND_5E");
+
+    expect(getMock).toHaveBeenCalledWith("/spells", {
+      params: {
+        page: 1,
+        offset: 10,
+        lang: "en",
+        name: "fire",
+        classes: ["Wizard"],
+        level: 3,
+        schools: ["evocation"],
+        gameSystem: "DND_5E",
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+    });
+  });
+});
+
+describe("CodexService.searchMonsters — game system filter", () => {
+  beforeEach(() => {
+    getMock.mockReset();
+    getMock.mockResolvedValue({
+      data: {
+        message: "ok",
+        data: [],
+        pagination: { page: 1, offset: 20, totalItems: 0 },
+      },
+    });
+    vi.stubEnv("NEXT_PUBLIC_CODEX_URL", "https://codex.test");
+  });
+
+  it("nominal: forwards selected game system as query param", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    await CodexService.searchMonsters("", "fr", 1, 20, "DND_5E");
+
+    expect(getMock).toHaveBeenCalledWith("/monsters", {
+      params: {
+        page: 1,
+        offset: 20,
+        lang: "fr",
+        gameSystem: "DND_5E",
+      },
+    });
+  });
+
+  it("edge: omits gameSystem param when unset", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    await CodexService.searchMonsters("goblin", null, 2, 10);
+
+    expect(getMock).toHaveBeenCalledWith("/monsters", {
+      params: {
+        page: 2,
+        offset: 10,
+        name: "goblin",
+      },
+    });
+  });
+
+  it("error: propagates API failures", async () => {
+    getMock.mockRejectedValue(new Error("network down"));
+    const { default: CodexService } = await import("../CodexService");
+
+    await expect(CodexService.searchMonsters("dragon", "en", 1, 10, "DND_5E")).rejects.toThrow("network down");
+  });
+});

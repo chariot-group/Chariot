@@ -21,6 +21,7 @@ import {
   codexMonsterLangsVisibleInAllLanguagesSearch,
   codexMonsterTranslationLooksUsable,
 } from "@/utils/codexLocale.utils";
+import { GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
 import React from "react";
 
 interface MonsterCodexDialogProps {
@@ -124,6 +125,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
+  const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(null);
   const [searchResults, setSearchResults] = useState<CodexMonsterItem[]>([]);
   const [selectedMonster, setSelectedMonster] = useState<Partial<NPC> | null>(null);
   const [selectedCodexMonster, setSelectedCodexMonster] = useState<CodexMonsterItem | null>(null);
@@ -145,8 +147,15 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
 
   // Recherche avec debounce
   const searchMonsters = useCallback(
-    async (query: string, page: number = 1, append: boolean = false, apiLang?: string | null) => {
+    async (
+      query: string,
+      page: number = 1,
+      append: boolean = false,
+      apiLang?: string | null,
+      apiGameSystem?: CodexGameSystem | null,
+    ) => {
       const lang = apiLang !== undefined ? apiLang : selectedLang;
+      const gameSystem = apiGameSystem !== undefined ? apiGameSystem : selectedGameSystem;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -163,7 +172,13 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setError(null);
 
       try {
-        const response = await CodexService.searchMonsters(query, lang, page, ITEMS_PER_PAGE);
+        const response = await CodexService.searchMonsters(
+          query,
+          lang,
+          page,
+          ITEMS_PER_PAGE,
+          gameSystem ?? undefined,
+        );
         const rawResults = response.data || [];
         const newResults = await CodexService.populateMonstersList(rawResults);
 
@@ -197,7 +212,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
         isLoadingRef.current = false;
       }
     },
-    [selectedLang, tDialog, ITEMS_PER_PAGE],
+    [selectedLang, selectedGameSystem, tDialog, ITEMS_PER_PAGE],
   );
 
   // Effet pour lancer la recherche avec debounce
@@ -208,13 +223,14 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedLang, searchMonsters]);
+  }, [searchQuery, selectedLang, selectedGameSystem, searchMonsters]);
 
   // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
     if (open) {
       setSearchQuery("");
       setSelectedLang(userLocale);
+      setSelectedGameSystem(null);
       setSearchResults([]);
       setSelectedMonster(null);
       setSelectedCodexMonster(null);
@@ -228,7 +244,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setHasMore(false);
       isLoadingRef.current = false;
       // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchMonsters("", 1, false, userLocale);
+      searchMonsters("", 1, false, userLocale, null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -342,9 +358,9 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
           {/* Partie gauche : Recherche et résultats */}
           <div
             className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
-            {/* Barre de recherche et filtre de langue */}
-            <div className="flex shrink-0 flex-col gap-2 w-full overflow-visible md:flex-row lg:flex-col">
-              <div className="relative flex-1">
+            {/* Barre de recherche et filtres */}
+            <div className="flex shrink-0 flex-col gap-2 w-full overflow-visible">
+              <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   type="text"
@@ -355,26 +371,54 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                   autoFocus
                 />
               </div>
-              {/* Filtre de langue */}
-              <Select
-                value={selectedLang ?? "all"}
-                onValueChange={(value) => {
-                  if (value === "all") {
-                    setSelectedLang(null);
-                  } else if (value === "fr" || value === "en" || value === "es") {
-                    setSelectedLang(value);
-                  }
-                }}>
-                <SelectTrigger className="w-full focus-visible:ring-inset md:w-45 lg:w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
-                  <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
-                  <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
-                  <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex w-full min-w-0 gap-2">
+                <Select
+                  value={selectedGameSystem ?? "all"}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setSelectedGameSystem(null);
+                    } else if (GAME_SYSTEMS.includes(value as CodexGameSystem)) {
+                      setSelectedGameSystem(value as CodexGameSystem);
+                    }
+                  }}>
+                  <SelectTrigger
+                    className="min-w-0 flex-1 focus-visible:ring-inset"
+                    aria-label={tDialog("gameSystemFilter.ariaLabel")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{tDialog("gameSystemFilter.all")}</SelectItem>
+                    {GAME_SYSTEMS.map((gameSystem) => (
+                      <SelectItem
+                        key={gameSystem}
+                        value={gameSystem}>
+                        {tDialog(`gameSystemFilter.${gameSystem}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={selectedLang ?? "all"}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setSelectedLang(null);
+                    } else if (value === "fr" || value === "en" || value === "es") {
+                      setSelectedLang(value);
+                    }
+                  }}>
+                  <SelectTrigger
+                    className="min-w-0 flex-1 focus-visible:ring-inset"
+                    aria-label={tDialog("languageFilter.ariaLabel")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
+                    <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
+                    <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
+                    <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Légende des icônes */}

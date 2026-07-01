@@ -38,6 +38,7 @@ import type { SpellClass } from "@/constants/spellClasses";
 import { SPELL_CLASSES, spellClassTranslationKey } from "@/constants/spellClasses";
 import type { SpellSchool } from "@/constants/spellSchools";
 import { SPELL_SCHOOLS, spellSchoolTranslationKey } from "@/constants/spellSchools";
+import { GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
 import { resolveCodexSpellSchoolLabel } from "@/utils/codexSpellSchool.utils";
 import {
   DropdownMenu,
@@ -192,6 +193,7 @@ export default function CodexSpellSearchDialog({
   const [selectedClasses, setSelectedClasses] = useState<SpellClass[]>([]);
   const [selectedSchools, setSelectedSchools] = useState<SpellSchool[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(null);
   const [searchResults, setSearchResults] = useState<CodexSpellItem[]>([]);
   const [selectedSpell, setSelectedSpell] = useState<Partial<Spell> | null>(null);
   const [selectedCodexSpell, setSelectedCodexSpell] = useState<CodexSpellItem | null>(null);
@@ -253,10 +255,18 @@ export default function CodexSpellSearchDialog({
     return tDialog("levelFilter.shortSelected", { level: selectedLevel });
   }, [selectedLevel, tDialog]);
 
+  const gameSystemFilterLabel = useMemo(() => {
+    if (selectedGameSystem === null) {
+      return tDialog("gameSystemFilter.shortAll");
+    }
+    return tDialog(`gameSystemFilter.${selectedGameSystem}`);
+  }, [selectedGameSystem, tDialog]);
+
   const resetFilters = useCallback(() => {
     setSelectedLevel(null);
     setSelectedClasses([]);
     setSelectedSchools([]);
+    setSelectedGameSystem(null);
   }, []);
 
   const toggleClassFilter = useCallback((spellClass: SpellClass) => {
@@ -276,7 +286,10 @@ export default function CodexSpellSearchDialog({
   const isCurrentSpellQueued = selectedSpellKey ? isSpellQueuedInQueue(spellQueue, selectedSpellKey) : false;
 
   const hasActiveFilters =
-    selectedLevel !== null || selectedClasses.length > 0 || selectedSchools.length > 0;
+    selectedLevel !== null ||
+    selectedClasses.length > 0 ||
+    selectedSchools.length > 0 ||
+    selectedGameSystem !== null;
 
   const compactLanguageLabel =
     selectedLang === null ? "🌍" : codexLocaleFlagEmoji(selectedLang) || selectedLang.toUpperCase();
@@ -296,11 +309,13 @@ export default function CodexSpellSearchDialog({
       apiClasses?: SpellClass[],
       apiLevel?: number | null,
       apiSchools?: SpellSchool[],
+      apiGameSystem?: CodexGameSystem | null,
     ) => {
       const lang = apiLang !== undefined ? apiLang : selectedLang;
       const classes = apiClasses !== undefined ? apiClasses : selectedClasses;
       const level = apiLevel !== undefined ? apiLevel : selectedLevel;
       const schools = apiSchools !== undefined ? apiSchools : selectedSchools;
+      const gameSystem = apiGameSystem !== undefined ? apiGameSystem : selectedGameSystem;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -325,6 +340,7 @@ export default function CodexSpellSearchDialog({
           classes.length > 0 ? classes : undefined,
           level ?? undefined,
           schools.length > 0 ? schools : undefined,
+          gameSystem ?? undefined,
         );
         const newResults = response.data || [];
 
@@ -358,7 +374,7 @@ export default function CodexSpellSearchDialog({
         isLoadingRef.current = false;
       }
     },
-    [selectedLang, selectedClasses, selectedSchools, selectedLevel, tDialog, ITEMS_PER_PAGE],
+    [selectedLang, selectedClasses, selectedSchools, selectedLevel, selectedGameSystem, tDialog, ITEMS_PER_PAGE],
   );
 
   // Effet pour lancer la recherche avec debounce
@@ -369,7 +385,7 @@ export default function CodexSpellSearchDialog({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedLang, selectedClasses, selectedSchools, selectedLevel, searchSpells]);
+  }, [searchQuery, selectedLang, selectedClasses, selectedSchools, selectedLevel, selectedGameSystem, searchSpells]);
 
   // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
@@ -381,6 +397,7 @@ export default function CodexSpellSearchDialog({
       setSelectedClasses([]);
       setSelectedSchools([]);
       setSelectedLevel(null);
+      setSelectedGameSystem(null);
       setSearchResults([]);
       setSelectedSpell(null);
       setSelectedCodexSpell(null);
@@ -397,7 +414,7 @@ export default function CodexSpellSearchDialog({
       setHasMore(false);
       isLoadingRef.current = false;
       // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchSpells("", 1, false, userLocale, [], null, []);
+      searchSpells("", 1, false, userLocale, [], null, [], null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -630,8 +647,46 @@ export default function CodexSpellSearchDialog({
                   </Button>
                 </div>
                 <CollapsibleContent className="pt-2">
-                  <div className="flex w-full min-w-0 gap-1.5 overflow-visible">
-                    <div className="relative min-w-0 flex-1">
+                  <div className="flex w-full min-w-0 flex-wrap gap-1.5 overflow-visible">
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
+                      <Select
+                        value={selectedGameSystem ?? "all"}
+                        onOpenChange={handlePortaledFilterOpenChange}
+                        onValueChange={(value) => {
+                          if (value === "all") {
+                            setSelectedGameSystem(null);
+                            return;
+                          }
+                          if (GAME_SYSTEMS.includes(value as CodexGameSystem)) {
+                            setSelectedGameSystem(value as CodexGameSystem);
+                          }
+                        }}>
+                        <SelectTrigger
+                          className={cn(
+                            "h-9 w-full min-w-0 px-2 text-xs focus-visible:ring-inset",
+                            selectedGameSystem !== null && "border-purple/30 bg-purple/5",
+                          )}
+                          aria-label={tDialog("gameSystemFilter.ariaLabel")}>
+                          <SelectValue>{gameSystemFilterLabel}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          side="bottom"
+                          sideOffset={4}
+                          className="min-w-[var(--radix-select-trigger-width)]">
+                          <SelectItem value="all">{tDialog("gameSystemFilter.all")}</SelectItem>
+                          {GAME_SYSTEMS.map((gameSystem) => (
+                            <SelectItem
+                              key={gameSystem}
+                              value={gameSystem}>
+                              {tDialog(`gameSystemFilter.${gameSystem}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
                       <Select
                         value={selectedLevel === null ? "all" : String(selectedLevel)}
                         onOpenChange={handlePortaledFilterOpenChange}
@@ -670,7 +725,7 @@ export default function CodexSpellSearchDialog({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="relative min-w-0 flex-1">
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
                       <DropdownMenu
                         modal={false}
                         onOpenChange={handlePortaledFilterOpenChange}>
@@ -711,7 +766,7 @@ export default function CodexSpellSearchDialog({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <div className="relative min-w-0 flex-1">
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
                       <DropdownMenu
                         modal={false}
                         onOpenChange={handlePortaledFilterOpenChange}>

@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import type { CodexGameSystem } from '@/constants/gameSystems';
 import { spellClassApiValue } from '@/constants/spellClasses';
 import { spellSchoolApiValue } from '@/constants/spellSchools';
 import { Spell, NPC, Action, ActionUsageType } from '@/types/character';
@@ -485,6 +486,7 @@ class CodexService {
      * @param classes - Filtre optionnel par une ou plusieurs classes de lanceur
      * @param level - Filtre optionnel par niveau de sort (0–9, 0 = sort mineur)
      * @param schools - Filtre optionnel par une ou plusieurs écoles de magie (slugs canoniques)
+     * @param gameSystem - Filtre optionnel par système de jeu (ex. DND_5E)
      */
     async searchSpells(
         searchQuery: string,
@@ -494,6 +496,7 @@ class CodexService {
         classes?: string[],
         level?: number,
         schools?: string[],
+        gameSystem?: CodexGameSystem,
     ): Promise<CodexSpellResponse> {
         try {
             const params: Record<string, string | number | string[]> = {
@@ -521,6 +524,10 @@ class CodexService {
 
             if (schools && schools.length > 0) {
                 params.schools = schools.map(spellSchoolApiValue);
+            }
+
+            if (gameSystem) {
+                params.gameSystem = gameSystem;
             }
 
             const response = await this.client.get<CodexSpellResponse>('/spells', {
@@ -616,12 +623,14 @@ class CodexService {
      * @param lang - La langue (fr, en, es) ou null pour toutes les langues
      * @param page - Le numéro de page
      * @param offset - Le nombre d'éléments par page
+     * @param gameSystem - Filtre optionnel par système de jeu (ex. DND_5E)
      */
     async searchMonsters(
         searchQuery: string,
         lang: string | null = null,
         page: number = 1,
-        offset: number = 10
+        offset: number = 10,
+        gameSystem?: CodexGameSystem,
     ): Promise<CodexMonsterResponse> {
         try {
             const params: Record<string, string | number> = {
@@ -637,6 +646,10 @@ class CodexService {
             // Ajouter le paramètre de recherche seulement s'il n'est pas vide
             if (searchQuery && searchQuery.trim()) {
                 params.name = searchQuery.trim();
+            }
+
+            if (gameSystem) {
+                params.gameSystem = gameSystem;
             }
 
             const response = await this.client.get<CodexMonsterResponse>('/monsters', {
