@@ -1536,18 +1536,24 @@
         }
       },
       "monsterCodexDialog": {
-        "title": "Buscar un monstruo en la biblioteca comunitaria",
-        "searchPlaceholder": "Buscar un monstruo...",
-        "noResults": "No se encontraron monstruos",
+        "title": "Buscar en la biblioteca comunitaria",
+        "searchPlaceholder": "Buscar un monstruo o un PJ...",
+        "noResults": "No se encontraron resultados",
         "searching": "Buscando...",
-        "selectMonster": "Selecciona un monstruo para ver los detalles",
-        "validate": "Usar este monstruo",
+        "selectEntry": "Selecciona una entrada para ver los detalles",
+        "validate": "Usar este personaje",
         "cancel": "Cancelar",
         "loadMore": "Cargar más",
         "error": "Error al buscar",
         "validatedByChariot": "Validado por Chariot",
         "srdContent": "Contenido SRD (System Reference Document)",
         "legendLabel": "Leyenda de iconos",
+        "entityTypeFilter": {
+          "both": "Monstruos y PJ",
+          "monsters": "Solo monstruos",
+          "players": "Solo PJ",
+          "ariaLabel": "Filtrar por tipo de personaje"
+        },
         "languageFilter": {
           "all": "🌍 Todos los idiomas",
           "fr": "🇫🇷 Francés",
@@ -1565,6 +1571,7 @@
         "resultsMore": "+",
         "crLabel": "CR",
         "monsterInfo": "{cr} • {type}",
+        "playerInfo": "Niv. {level} • {detail}",
         "preview": {
           "challengeRatingShort": "CR",
           "experiencePointsShort": "XP",

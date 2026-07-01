@@ -3744,3 +3744,49 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/CodexService.ts`
 - `services/web/client/src/constants/gameSystems.ts`
 - `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
+## FR-codex-npc-search-entity-type: Codex NPC Search — Monster and Player Filter
+
+**Rule**: The community library search dialog (`MonsterCodexDialog`) used for NPC creation MUST allow searching Codex monsters (`GET /monsters`) and premade player characters (`GET /players`), with a single-select entity-type filter.
+
+**Scope**:
+
+- Complements FR-codex-game-system-filter (game system and language filters).
+- Applies to NPC creation from the community library (`npcs-codex` flow).
+- Selected player entries are converted to `Partial<NPC>` for the existing NPC creation draft pipeline.
+
+**Behavior**:
+
+- Users MUST be able to filter results by: monsters only, players only, or both (default: both).
+- When **both** is selected, the client MUST query `/monsters` and `/players` in parallel with the same pagination, language, name, and game-system parameters, then merge results (monsters first, then players).
+- When only one type is selected, only the corresponding Codex endpoint is called.
+- Changing the entity-type filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening the dialog MUST reset the entity-type filter to **both**.
+- List rows for monsters keep CR and creature type; list rows for players show level and race (or class list fallback).
+- Preview and validation MUST work for both kinds; player selection uses `convertCodexPlayerToChariotNPC`.
+- Filter labels MUST use i18n keys under `entityTypeFilter` in `monsterCodexDialog`.
+
+**Accessibility (FR-frontend-design)**:
+
+- The entity-type filter control MUST expose an accessible name (`aria-label`) equivalent to other Codex filter controls.
+
+**Prohibitions**:
+
+- Client-side-only entity-type filtering when the Codex API exposes separate `/monsters` and `/players` endpoints.
+- Hardcoded entity-type labels bypassing i18n.
+- Breaking the existing NPC codex draft flow (`onMonsterSelected` / `setNpcCodexDraft`).
+
+**Tests**:
+
+- `CodexService.searchPlayers` forwards name, lang, pagination, and optional `gameSystem`.
+- `CodexService.convertCodexPlayerToChariotNPC` maps a nominal player translation to `Partial<NPC>`.
+- Edge: `searchPlayers` omits `gameSystem` when unset.
+
+**References**:
+
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/utils/codexLocale.utils.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`

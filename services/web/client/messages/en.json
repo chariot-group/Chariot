@@ -1535,18 +1535,24 @@
         }
       },
       "monsterCodexDialog": {
-        "title": "Search for a monster in the community library",
-        "searchPlaceholder": "Search for a monster...",
-        "noResults": "No monsters found",
+        "title": "Search the community library",
+        "searchPlaceholder": "Search for a monster or player character...",
+        "noResults": "No results found",
         "searching": "Searching...",
-        "selectMonster": "Select a monster to view details",
-        "validate": "Use this monster",
+        "selectEntry": "Select an entry to view details",
+        "validate": "Use this character",
         "cancel": "Cancel",
         "loadMore": "Load more",
         "error": "Error while searching",
         "validatedByChariot": "Validated by Chariot",
         "srdContent": "SRD Content (System Reference Document)",
         "legendLabel": "Icon legend",
+        "entityTypeFilter": {
+          "both": "Monsters and PCs",
+          "monsters": "Monsters only",
+          "players": "PCs only",
+          "ariaLabel": "Filter by character type"
+        },
         "languageFilter": {
           "all": "🌍 All languages",
           "fr": "🇫🇷 French",
@@ -1564,6 +1570,7 @@
         "resultsMore": "+",
         "crLabel": "CR",
         "monsterInfo": "{cr} • {type}",
+        "playerInfo": "Lv. {level} • {detail}",
         "preview": {
           "challengeRatingShort": "CR",
           "experiencePointsShort": "XP",

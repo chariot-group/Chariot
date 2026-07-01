@@ -9,7 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { NPC } from "@/types/character";
 import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/request";
-import CodexService, { CodexMonsterItem } from "@/services/CodexService";
+import CodexService, {
+  CodexMonsterItem,
+  CodexPlayerItem,
+  CodexPlayerTranslation,
+  CodexSearchResultItem,
+} from "@/services/CodexService";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
@@ -20,14 +25,36 @@ import {
   codexLocaleFlagEmoji,
   codexMonsterLangsVisibleInAllLanguagesSearch,
   codexMonsterTranslationLooksUsable,
+  codexPlayerLangsVisibleInAllLanguagesSearch,
+  codexPlayerTranslationLooksUsable,
 } from "@/utils/codexLocale.utils";
 import { GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
 import React from "react";
+
+type CodexEntityTypeFilter = "both" | "monsters" | "players";
 
 interface MonsterCodexDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onMonsterSelected: (monster: Partial<NPC>) => void;
+}
+
+function formatPlayerListDetail(
+  translation: CodexPlayerTranslation,
+  tClasses: (key: string) => string,
+): string {
+  const race = translation.profile?.race?.trim();
+  if (race) return race;
+  const classes = (translation.class ?? [])
+    .map((entry) => {
+      try {
+        return tClasses(entry.name);
+      } catch {
+        return entry.name;
+      }
+    })
+    .filter(Boolean);
+  return classes.length > 0 ? classes.join(", ") : "—";
 }
 
 function MonsterResultItem({
@@ -40,7 +67,6 @@ function MonsterResultItem({
 }: {
   monsterItem: CodexMonsterItem;
   selectedLang: string | null;
-  /** En mode « toutes les langues », une ligne par langue : drapeau sur la carte */
   pinnedLang?: string | null;
   isSelected: boolean;
   onMonsterClick: (monster: CodexMonsterItem, lang: string) => void | Promise<void>;
@@ -55,13 +81,9 @@ function MonsterResultItem({
   const translation = monsterItem.translations[displayLang];
   if (!translation) return null;
 
-  const handleCardClick = () => {
-    onMonsterClick(monsterItem, displayLang);
-  };
-
   return (
     <Card
-      onClick={handleCardClick}
+      onClick={() => onMonsterClick(monsterItem, displayLang)}
       className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
         isSelected ? "border-purple border-2 bg-purple/10" : ""
       }`}>
@@ -118,21 +140,92 @@ function MonsterResultItem({
   );
 }
 
+function PlayerResultItem({
+  playerItem,
+  selectedLang,
+  pinnedLang,
+  isSelected,
+  onPlayerClick,
+  tDialog,
+  tClasses,
+}: {
+  playerItem: CodexPlayerItem;
+  selectedLang: string | null;
+  pinnedLang?: string | null;
+  isSelected: boolean;
+  onPlayerClick: (player: CodexPlayerItem, lang: string) => void | Promise<void>;
+  tDialog: (key: string, values?: Record<string, unknown>) => string;
+  tClasses: (key: string) => string;
+}) {
+  const displayLang =
+    pinnedLang ??
+    (selectedLang && playerItem.languages.includes(selectedLang) ? selectedLang : playerItem.languages[0] || "en");
+
+  const translation = playerItem.translations[displayLang];
+  if (!translation) return null;
+
+  return (
+    <Card
+      onClick={() => onPlayerClick(playerItem, displayLang)}
+      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
+        isSelected ? "border-purple border-2 bg-purple/10" : ""
+      }`}>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-1 min-w-0 gap-2 items-start">
+            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
+              <InfoTooltip
+                content={tDialog(`languageFilter.${pinnedLang}`)}
+                side="top"
+                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
+                <span
+                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
+                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
+                  {codexLocaleFlagEmoji(pinnedLang)}
+                </span>
+              </InfoTooltip>
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {tDialog("playerInfo", {
+                  level: translation.progression?.level ?? 1,
+                  detail: formatPlayerListDetail(translation, tClasses),
+                })}
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            {playerItem.tag === 1 ? (
+              <BadgeCheck
+                className="size-5 text-green-600"
+                aria-label={tDialog("validatedByChariot")}
+              />
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelected }: MonsterCodexDialogProps) {
   const userLocale = useLocale() as Locale;
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
   const tMagic = useTranslations("characterDetail.magic");
+  const tClasses = useTranslations("classes");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
   const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(null);
-  const [searchResults, setSearchResults] = useState<CodexMonsterItem[]>([]);
+  const [entityTypeFilter, setEntityTypeFilter] = useState<CodexEntityTypeFilter>("both");
+  const [searchResults, setSearchResults] = useState<CodexSearchResultItem[]>([]);
   const [selectedMonster, setSelectedMonster] = useState<Partial<NPC> | null>(null);
   const [selectedCodexMonster, setSelectedCodexMonster] = useState<CodexMonsterItem | null>(null);
-  /** Pile des langues de prévisualisation (barre latérale) pour revenir en arrière */
+  const [selectedCodexPlayer, setSelectedCodexPlayer] = useState<CodexPlayerItem | null>(null);
+  const [selectedEntryKind, setSelectedEntryKind] = useState<"monster" | "player" | null>(null);
   const [previewLangStack, setPreviewLangStack] = useState<string[]>([]);
-  /** Clé `${_id}:${lang}` pour distinguer la même entrée codex en plusieurs langues */
-  const [selectedMonsterKey, setSelectedMonsterKey] = useState<string | null>(null);
+  const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,18 +238,21 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
 
   const ITEMS_PER_PAGE = 20;
 
-  // Recherche avec debounce
-  const searchMonsters = useCallback(
+  const searchCodex = useCallback(
     async (
       query: string,
       page: number = 1,
       append: boolean = false,
       apiLang?: string | null,
       apiGameSystem?: CodexGameSystem | null,
+      apiEntityType?: CodexEntityTypeFilter,
     ) => {
       const lang = apiLang !== undefined ? apiLang : selectedLang;
       const gameSystem = apiGameSystem !== undefined ? apiGameSystem : selectedGameSystem;
-      // Éviter les appels multiples simultanés
+      const entityFilter = apiEntityType !== undefined ? apiEntityType : entityTypeFilter;
+      const includeMonsters = entityFilter !== "players";
+      const includePlayers = entityFilter !== "monsters";
+
       if (isLoadingRef.current) {
         return;
       }
@@ -172,36 +268,53 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setError(null);
 
       try {
-        const response = await CodexService.searchMonsters(
-          query,
-          lang,
-          page,
-          ITEMS_PER_PAGE,
-          gameSystem ?? undefined,
-        );
-        const rawResults = response.data || [];
-        const newResults = await CodexService.populateMonstersList(rawResults);
+        const newResultItems: CodexSearchResultItem[] = [];
+        let monstersHasMore = false;
+        let playersHasMore = false;
 
-        // Vérifier si on a atteint la fin en comparant le nombre d'éléments reçus
-        const reachedEnd = newResults.length < ITEMS_PER_PAGE;
+        if (includeMonsters) {
+          const response = await CodexService.searchMonsters(
+            query,
+            lang,
+            page,
+            ITEMS_PER_PAGE,
+            gameSystem ?? undefined,
+          );
+          const populated = await CodexService.populateMonstersList(response.data || []);
+          newResultItems.push(...populated.map((item) => ({ kind: "monster" as const, item })));
+          monstersHasMore = populated.length >= ITEMS_PER_PAGE;
+        }
 
-        // Mettre à jour les résultats en utilisant la forme fonctionnelle
+        if (includePlayers) {
+          const response = await CodexService.searchPlayers(
+            query,
+            lang,
+            page,
+            ITEMS_PER_PAGE,
+            gameSystem ?? undefined,
+          );
+          const populated = await CodexService.populatePlayersList(response.data || []);
+          newResultItems.push(...populated.map((item) => ({ kind: "player" as const, item })));
+          playersHasMore = populated.length >= ITEMS_PER_PAGE;
+        }
+
         setSearchResults((prev) => {
           if (append) {
-            // Éviter les doublons en vérifiant les _id
-            const existingIds = new Set(prev.map((item) => item._id));
-            const uniqueNewResults = newResults.filter((item) => !existingIds.has(item._id));
+            const existingIds = new Set(prev.map((entry) => `${entry.kind}:${entry.item._id}`));
+            const uniqueNewResults = newResultItems.filter(
+              (entry) => !existingIds.has(`${entry.kind}:${entry.item._id}`),
+            );
             return [...prev, ...uniqueNewResults];
-          } else {
-            return newResults;
           }
+          return newResultItems;
         });
 
-        // Mettre à jour hasMore en fonction de la fin détectée
-        setHasMore(!reachedEnd);
-        setCurrentPage(response.pagination.page);
+        setHasMore(
+          (includeMonsters && monstersHasMore) || (includePlayers && playersHasMore),
+        );
+        setCurrentPage(page);
       } catch (err) {
-        console.error("Error searching monsters:", err);
+        console.error("Error searching codex:", err);
         setError(tDialog("error"));
         if (!append) {
           setSearchResults([]);
@@ -212,30 +325,31 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
         isLoadingRef.current = false;
       }
     },
-    [selectedLang, selectedGameSystem, tDialog, ITEMS_PER_PAGE],
+    [selectedLang, selectedGameSystem, entityTypeFilter, tDialog, ITEMS_PER_PAGE],
   );
 
-  // Effet pour lancer la recherche avec debounce
   useEffect(() => {
     setCurrentPage(1);
     const timer = setTimeout(() => {
-      searchMonsters(searchQuery, 1, false);
+      searchCodex(searchQuery, 1, false);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedLang, selectedGameSystem, searchMonsters]);
+  }, [searchQuery, selectedLang, selectedGameSystem, entityTypeFilter, searchCodex]);
 
-  // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
     if (open) {
       setSearchQuery("");
       setSelectedLang(userLocale);
       setSelectedGameSystem(null);
+      setEntityTypeFilter("both");
       setSearchResults([]);
       setSelectedMonster(null);
       setSelectedCodexMonster(null);
+      setSelectedCodexPlayer(null);
+      setSelectedEntryKind(null);
       setPreviewLangStack([]);
-      setSelectedMonsterKey(null);
+      setSelectedItemKey(null);
       setShowMobileDetails(false);
       setPreviewLangResolving(false);
       setPreviewTranslationError(null);
@@ -243,17 +357,15 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
-      // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchMonsters("", 1, false, userLocale, null);
+      searchCodex("", 1, false, userLocale, null, "both");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Charger plus de résultats
   const loadMore = () => {
     if (!isLoadingMore && !isLoadingRef.current && hasMore) {
       const nextPage = currentPage + 1;
-      searchMonsters(searchQuery, nextPage, true);
+      searchCodex(searchQuery, nextPage, true);
     }
   };
 
@@ -263,13 +375,16 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     options?: { fromPreviewLangBar?: boolean },
   ) => {
     const fromPreview = options?.fromPreviewLangBar ?? false;
-    const prevKey = selectedMonsterKey;
+    const prevKey = selectedItemKey;
     let currentLangForSameId: string | undefined;
     if (prevKey) {
-      const colon = prevKey.lastIndexOf(":");
-      const prevId = colon >= 0 ? prevKey.slice(0, colon) : prevKey;
-      const prevLang = colon >= 0 ? prevKey.slice(colon + 1) : undefined;
-      if (prevId === codexMonsterItem._id && prevLang) {
+      const colon = prevKey.indexOf(":");
+      const prevKind = colon >= 0 ? prevKey.slice(0, colon) : "";
+      const rest = colon >= 0 ? prevKey.slice(colon + 1) : prevKey;
+      const secondColon = rest.indexOf(":");
+      const prevId = secondColon >= 0 ? rest.slice(0, secondColon) : rest;
+      const prevLang = secondColon >= 0 ? rest.slice(secondColon + 1) : undefined;
+      if (prevKind === "monster" && prevId === codexMonsterItem._id && prevLang) {
         currentLangForSameId = prevLang;
       }
     }
@@ -321,8 +436,87 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     try {
       const convertedMonster = CodexService.convertToChariotNPC(item, lang);
       setSelectedCodexMonster(item);
+      setSelectedCodexPlayer(null);
+      setSelectedEntryKind("monster");
       setSelectedMonster(convertedMonster);
-      setSelectedMonsterKey(`${item._id}:${lang}`);
+      setSelectedItemKey(`monster:${item._id}:${lang}`);
+      setShowMobileDetails(true);
+    } catch {
+      setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+    }
+  };
+
+  const handlePlayerClick = async (
+    codexPlayerItem: CodexPlayerItem,
+    lang: string,
+    options?: { fromPreviewLangBar?: boolean },
+  ) => {
+    const fromPreview = options?.fromPreviewLangBar ?? false;
+    const prevKey = selectedItemKey;
+    let currentLangForSameId: string | undefined;
+    if (prevKey) {
+      const colon = prevKey.indexOf(":");
+      const prevKind = colon >= 0 ? prevKey.slice(0, colon) : "";
+      const rest = colon >= 0 ? prevKey.slice(colon + 1) : prevKey;
+      const secondColon = rest.indexOf(":");
+      const prevId = secondColon >= 0 ? rest.slice(0, secondColon) : rest;
+      const prevLang = secondColon >= 0 ? rest.slice(secondColon + 1) : undefined;
+      if (prevKind === "player" && prevId === codexPlayerItem._id && prevLang) {
+        currentLangForSameId = prevLang;
+      }
+    }
+
+    if (fromPreview) {
+      if (currentLangForSameId && currentLangForSameId !== lang) {
+        setPreviewLangStack((s) => [...s, currentLangForSameId]);
+      }
+    } else {
+      setPreviewLangStack([]);
+    }
+
+    setPreviewTranslationError(null);
+
+    let item = codexPlayerItem;
+    const shouldHydrate = fromPreview || !codexPlayerTranslationLooksUsable(item.translations[lang]);
+
+    if (shouldHydrate) {
+      setPreviewLangResolving(true);
+      try {
+        const forLang = await CodexService.getPlayerById(item._id, lang);
+        if (forLang) {
+          item = CodexService.overlayPlayerTranslationsFromDetail(item, forLang, [lang]);
+        }
+        if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
+          const unscoped = await CodexService.getPlayerById(item._id);
+          if (unscoped) {
+            item = CodexService.overlayPlayerTranslationsFromDetail(item, unscoped, [lang]);
+            if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
+              item = CodexService.mergePlayerFillMissingTranslations(item, unscoped);
+            }
+          }
+        }
+        if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
+          setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+          return;
+        }
+        const populated = await CodexService.populatePlayersList([item]);
+        item = populated[0];
+        if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
+          setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+          return;
+        }
+      } finally {
+        setPreviewLangResolving(false);
+      }
+    }
+
+    try {
+      const convertedMonster = CodexService.convertCodexPlayerToChariotNPC(item, lang);
+      setSelectedCodexPlayer(item);
+      setSelectedCodexMonster(null);
+      setSelectedEntryKind("player");
+      setSelectedMonster(convertedMonster);
+      setSelectedItemKey(`player:${item._id}:${lang}`);
       setShowMobileDetails(true);
     } catch {
       setPreviewTranslationError(tDialog("preview.loadTranslationError"));
@@ -330,12 +524,22 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   };
 
   const handlePreviewLangUndo = () => {
-    if (!selectedCodexMonster || previewLangStack.length === 0) return;
+    if (previewLangStack.length === 0) return;
     setPreviewTranslationError(null);
     const prevLang = previewLangStack[previewLangStack.length - 1];
-    const convertedMonster = CodexService.convertToChariotNPC(selectedCodexMonster, prevLang);
-    setSelectedMonster(convertedMonster);
-    setSelectedMonsterKey(`${selectedCodexMonster._id}:${prevLang}`);
+
+    if (selectedEntryKind === "monster" && selectedCodexMonster) {
+      const convertedMonster = CodexService.convertToChariotNPC(selectedCodexMonster, prevLang);
+      setSelectedMonster(convertedMonster);
+      setSelectedItemKey(`monster:${selectedCodexMonster._id}:${prevLang}`);
+    } else if (selectedEntryKind === "player" && selectedCodexPlayer) {
+      const convertedMonster = CodexService.convertCodexPlayerToChariotNPC(selectedCodexPlayer, prevLang);
+      setSelectedMonster(convertedMonster);
+      setSelectedItemKey(`player:${selectedCodexPlayer._id}:${prevLang}`);
+    } else {
+      return;
+    }
+
     setPreviewLangStack((s) => s.slice(0, -1));
   };
 
@@ -343,6 +547,38 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     if (selectedMonster) {
       onMonsterSelected(selectedMonster);
     }
+  };
+
+  const selectedPreviewCodexItem = selectedCodexMonster ?? selectedCodexPlayer;
+
+  const countVisibleResultRows = () => {
+    let visibleCount = 0;
+    for (const result of searchResults) {
+      if (result.kind === "monster") {
+        if (selectedLang && !result.item.languages.includes(selectedLang)) {
+          continue;
+        }
+        if (selectedLang) {
+          if (CodexService.getMonsterTranslation(result.item, selectedLang) !== null) {
+            visibleCount += 1;
+          }
+        } else {
+          visibleCount += codexMonsterLangsVisibleInAllLanguagesSearch(result.item, searchQuery).length;
+        }
+      } else {
+        if (selectedLang && !result.item.languages.includes(selectedLang)) {
+          continue;
+        }
+        if (selectedLang) {
+          if (CodexService.getPlayerTranslation(result.item, selectedLang) !== null) {
+            visibleCount += 1;
+          }
+        } else {
+          visibleCount += codexPlayerLangsVisibleInAllLanguagesSearch(result.item, searchQuery).length;
+        }
+      }
+    }
+    return visibleCount;
   };
 
   return (
@@ -355,10 +591,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
-          {/* Partie gauche : Recherche et résultats */}
           <div
             className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
-            {/* Barre de recherche et filtres */}
             <div className="flex shrink-0 flex-col gap-2 w-full overflow-visible">
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -371,6 +605,24 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                   autoFocus
                 />
               </div>
+              <Select
+                value={entityTypeFilter}
+                onValueChange={(value) => {
+                  if (value === "both" || value === "monsters" || value === "players") {
+                    setEntityTypeFilter(value);
+                  }
+                }}>
+                <SelectTrigger
+                  className="w-full focus-visible:ring-inset"
+                  aria-label={tDialog("entityTypeFilter.ariaLabel")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="both">{tDialog("entityTypeFilter.both")}</SelectItem>
+                  <SelectItem value="monsters">{tDialog("entityTypeFilter.monsters")}</SelectItem>
+                  <SelectItem value="players">{tDialog("entityTypeFilter.players")}</SelectItem>
+                </SelectContent>
+              </Select>
               <div className="flex w-full min-w-0 gap-2">
                 <Select
                   value={selectedGameSystem ?? "all"}
@@ -421,7 +673,6 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
               </div>
             </div>
 
-            {/* Légende des icônes */}
             <div
               className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground shrink-0 py-1"
               aria-label={tDialog("legendLabel")}>
@@ -441,7 +692,6 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
               </span>
             </div>
 
-            {/* Résultats de recherche */}
             <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
               {isSearching ? (
                 <div className="flex items-center justify-center h-32">
@@ -456,19 +706,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                 </div>
               ) : (
                 (() => {
-                  // Calculer le nombre de résultats visibles
-                  let visibleCount = 0;
-                  if (selectedLang) {
-                    visibleCount = searchResults.filter(
-                      (item) => CodexService.getMonsterTranslation(item, selectedLang) !== null,
-                    ).length;
-                  } else {
-                    visibleCount = searchResults.reduce(
-                      (count, item) =>
-                        count + codexMonsterLangsVisibleInAllLanguagesSearch(item, searchQuery).length,
-                      0,
-                    );
-                  }
+                  const visibleCount = countVisibleResultRows();
 
                   if (visibleCount === 0) {
                     return <div className="text-center py-8 text-sm text-muted-foreground">{tDialog("noResults")}</div>;
@@ -477,40 +715,76 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                   return (
                     <React.Fragment>
                       <div className="flex flex-col gap-2">
-                        {searchResults.flatMap((monsterItem) => {
-                          if (selectedLang && !monsterItem.languages.includes(selectedLang)) {
+                        {searchResults.flatMap((result) => {
+                          if (result.kind === "monster") {
+                            const monsterItem = result.item;
+                            if (selectedLang && !monsterItem.languages.includes(selectedLang)) {
+                              return [];
+                            }
+
+                            if (selectedLang) {
+                              return [
+                                <MonsterResultItem
+                                  key={`monster-${monsterItem._id}-${selectedLang}`}
+                                  monsterItem={monsterItem}
+                                  selectedLang={selectedLang}
+                                  isSelected={selectedItemKey === `monster:${monsterItem._id}:${selectedLang}`}
+                                  onMonsterClick={handleMonsterClick}
+                                  tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                                />,
+                              ];
+                            }
+
+                            return codexMonsterLangsVisibleInAllLanguagesSearch(monsterItem, searchQuery).map(
+                              (lang: string) => (
+                                <MonsterResultItem
+                                  key={`monster-${monsterItem._id}-${lang}`}
+                                  monsterItem={monsterItem}
+                                  selectedLang={selectedLang}
+                                  pinnedLang={lang}
+                                  isSelected={selectedItemKey === `monster:${monsterItem._id}:${lang}`}
+                                  onMonsterClick={handleMonsterClick}
+                                  tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                                />
+                              ),
+                            );
+                          }
+
+                          const playerItem = result.item;
+                          if (selectedLang && !playerItem.languages.includes(selectedLang)) {
                             return [];
                           }
 
                           if (selectedLang) {
                             return [
-                              <MonsterResultItem
-                                key={`${monsterItem._id}-${selectedLang}`}
-                                monsterItem={monsterItem}
+                              <PlayerResultItem
+                                key={`player-${playerItem._id}-${selectedLang}`}
+                                playerItem={playerItem}
                                 selectedLang={selectedLang}
-                                isSelected={selectedMonsterKey === `${monsterItem._id}:${selectedLang}`}
-                                onMonsterClick={handleMonsterClick}
+                                isSelected={selectedItemKey === `player:${playerItem._id}:${selectedLang}`}
+                                onPlayerClick={handlePlayerClick}
                                 tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                                tClasses={tClasses}
                               />,
                             ];
                           }
 
-                          return codexMonsterLangsVisibleInAllLanguagesSearch(monsterItem, searchQuery).map(
+                          return codexPlayerLangsVisibleInAllLanguagesSearch(playerItem, searchQuery).map(
                             (lang: string) => (
-                              <MonsterResultItem
-                                key={`${monsterItem._id}-${lang}`}
-                                monsterItem={monsterItem}
+                              <PlayerResultItem
+                                key={`player-${playerItem._id}-${lang}`}
+                                playerItem={playerItem}
                                 selectedLang={selectedLang}
                                 pinnedLang={lang}
-                                isSelected={selectedMonsterKey === `${monsterItem._id}:${lang}`}
-                                onMonsterClick={handleMonsterClick}
+                                isSelected={selectedItemKey === `player:${playerItem._id}:${lang}`}
+                                onPlayerClick={handlePlayerClick}
                                 tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
+                                tClasses={tClasses}
                               />
                             ),
                           );
                         })}
                       </div>
-                      {/* Bouton Charger plus */}
                       {hasMore && visibleCount > 0 && (
                         <div className="flex justify-center pt-4 pb-2">
                           <Button
@@ -530,7 +804,6 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                           </Button>
                         </div>
                       )}
-                      {/* Indicateur de résultats */}
                       {visibleCount > 0 && (
                         <div className="text-center text-xs text-muted-foreground py-2">
                           {tDialog("resultsCount", {
@@ -547,7 +820,6 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
             </div>
           </div>
 
-          {/* Partie droite : Affichage du monstre sélectionné */}
           <div
             className={`flex flex-col flex-1 min-h-0 w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
             <Button
@@ -559,21 +831,27 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
               <ArrowLeft className="size-4 mr-2" />
               {tMagic("backToList")}
             </Button>
-            {selectedMonster && selectedCodexMonster && selectedMonsterKey ? (
+            {selectedMonster && selectedPreviewCodexItem && selectedItemKey ? (
               <div className="flex flex-col flex-1 min-h-0 pr-0 lg:pr-2 overflow-visible lg:overflow-hidden">
                 {(() => {
-                  const colon = selectedMonsterKey.lastIndexOf(":");
-                  const previewLang = colon >= 0 ? selectedMonsterKey.slice(colon + 1) : userLocale;
-                  const langs = codexDeclaredPreviewLangs(selectedCodexMonster.languages);
+                  const firstColon = selectedItemKey.indexOf(":");
+                  const rest = firstColon >= 0 ? selectedItemKey.slice(firstColon + 1) : selectedItemKey;
+                  const secondColon = rest.indexOf(":");
+                  const previewLang = secondColon >= 0 ? rest.slice(secondColon + 1) : userLocale;
+                  const langs = codexDeclaredPreviewLangs(selectedPreviewCodexItem.languages);
                   return (
                     <>
                       <CodexPreviewLanguageBar
                         availableLangs={langs}
                         currentLang={previewLang}
                         disabled={previewLangResolving}
-                        onSelectLang={(l) =>
-                          handleMonsterClick(selectedCodexMonster, l, { fromPreviewLangBar: true })
-                        }
+                        onSelectLang={(l) => {
+                          if (selectedEntryKind === "monster" && selectedCodexMonster) {
+                            handleMonsterClick(selectedCodexMonster, l, { fromPreviewLangBar: true });
+                          } else if (selectedEntryKind === "player" && selectedCodexPlayer) {
+                            handlePlayerClick(selectedCodexPlayer, l, { fromPreviewLangBar: true });
+                          }
+                        }}
                         onUndo={handlePreviewLangUndo}
                         canUndo={previewLangStack.length > 0}
                         label={tDialog("preview.availableLanguages")}
@@ -593,7 +871,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                {tDialog("selectMonster")}
+                {tDialog("selectEntry")}
               </div>
             )}
           </div>

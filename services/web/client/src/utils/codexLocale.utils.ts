@@ -1,6 +1,8 @@
 import type {
   CodexMonsterItem,
   CodexMonsterTranslation,
+  CodexPlayerItem,
+  CodexPlayerTranslation,
   CodexSpellItem,
   CodexSpellTranslation,
 } from "@/services/CodexService";
@@ -36,6 +38,11 @@ export function codexMonsterTranslationLooksUsable(t: CodexMonsterTranslation | 
   if (t == null) return false;
   if ((t.firstname ?? "").trim().length > 0) return true;
   return [t.lastname, t.surname].filter(Boolean).join(" ").trim().length > 0;
+}
+
+/** Indique si une traduction PJ Codex est exploitable. */
+export function codexPlayerTranslationLooksUsable(t: CodexPlayerTranslation | undefined | null): boolean {
+  return codexMonsterTranslationLooksUsable(t as CodexMonsterTranslation | undefined | null);
 }
 
 /**
@@ -102,6 +109,28 @@ export function codexMonsterLangsVisibleInAllLanguagesSearch(
   const nq = normalizeCodexSearchText(q);
   const matched = base.filter((lang) => {
     const title = codexMonsterTranslationSearchableTitle(monster.translations[lang]);
+    return title.length > 0 && normalizeCodexSearchText(title).includes(nq);
+  });
+  return matched.length > 0 ? matched : base;
+}
+
+function codexPlayerTranslationSearchableTitle(t: CodexPlayerTranslation | undefined): string {
+  return codexMonsterTranslationSearchableTitle(t as CodexMonsterTranslation | undefined);
+}
+
+export function codexPlayerLangsVisibleInAllLanguagesSearch(
+  player: CodexPlayerItem,
+  searchQuery: string,
+): string[] {
+  const base = codexAvailableTranslationLangs(
+    player.languages,
+    player.translations as Record<string, unknown>,
+  );
+  const q = searchQuery.trim();
+  if (!q) return base;
+  const nq = normalizeCodexSearchText(q);
+  const matched = base.filter((lang) => {
+    const title = codexPlayerTranslationSearchableTitle(player.translations[lang]);
     return title.length > 0 && normalizeCodexSearchText(title).includes(nq);
   });
   return matched.length > 0 ? matched : base;

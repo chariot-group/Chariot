@@ -193,6 +193,87 @@ interface CodexMonsterResponse {
     };
 }
 
+export interface CodexPlayerClassEntry {
+    name: string;
+    subclass?: string;
+    level?: number;
+    hitDice?: number;
+    hitDiceRemaining?: number;
+}
+
+export interface CodexPlayerTranslation {
+    firstname: string;
+    lastname: string;
+    surname: string;
+    avatar: string;
+    stats: CodexMonsterTranslation['stats'] & {
+        proficiencyBonus?: number;
+        armors?: string[];
+        tools?: string[];
+        weapons?: string[];
+        masteries?: CodexMonsterTranslation['stats']['skills'];
+        masteriesAbility?: Record<string, boolean>;
+    };
+    affinities: CodexMonsterTranslation['affinities'];
+    abilities: CodexMonsterTranslation['abilities'];
+    spellcasting: CodexMonsterTranslation['spellcasting'];
+    appearance?: Record<string, unknown>;
+    background?: Record<string, unknown>;
+    treasure?: Record<string, unknown>;
+    actions?: Array<{
+        name: string;
+        type: string;
+        description?: string;
+        attackBonus?: number;
+        damage?: Array<{ dice: string; type: string }>;
+        range?: string;
+        dc?: { dcType: string; dcValue: number; successType: string };
+        usageType?: string;
+        attackAbility?: string;
+    }>;
+    class?: CodexPlayerClassEntry[];
+    progression?: {
+        level?: number;
+        experience?: number;
+    };
+    profile?: {
+        alignment?: string;
+        race?: string;
+        subrace?: string;
+        history?: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CodexPlayerItem {
+    _id: string;
+    tag: number;
+    languages: string[];
+    translations: {
+        [key: string]: CodexPlayerTranslation;
+    };
+    deletedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+interface CodexPlayerResponse {
+    message: string;
+    data: CodexPlayerItem[];
+    pagination: {
+        page: number;
+        offset: number;
+        totalItems: number;
+    };
+}
+
+export type CodexEntityKind = 'monster' | 'player';
+
+export type CodexSearchResultItem =
+    | { kind: 'monster'; item: CodexMonsterItem }
+    | { kind: 'player'; item: CodexPlayerItem };
+
 class CodexService {
     private client: AxiosInstance;
 
@@ -664,6 +745,45 @@ class CodexService {
     }
 
     /**
+     * Recherche des PJ dans Codex par nom
+     */
+    async searchPlayers(
+        searchQuery: string,
+        lang: string | null = null,
+        page: number = 1,
+        offset: number = 10,
+        gameSystem?: CodexGameSystem,
+    ): Promise<CodexPlayerResponse> {
+        try {
+            const params: Record<string, string | number> = {
+                page,
+                offset,
+            };
+
+            if (lang) {
+                params.lang = lang;
+            }
+
+            if (searchQuery && searchQuery.trim()) {
+                params.name = searchQuery.trim();
+            }
+
+            if (gameSystem) {
+                params.gameSystem = gameSystem;
+            }
+
+            const response = await this.client.get<CodexPlayerResponse>('/players', {
+                params,
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error('Error searching players from Codex:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Détail monstre par ID. Comme la liste, `lang` inclut la locale demandée dans la réponse (souvent en + lang ; sans param, surtout l’anglais).
      */
     async getMonsterById(id: string, lang?: string | null): Promise<CodexMonsterItem | null> {
@@ -685,6 +805,25 @@ class CodexService {
         }
     }
 
+    async getPlayerById(id: string, lang?: string | null): Promise<CodexPlayerItem | null> {
+        try {
+            const params: Record<string, string> = {};
+            if (lang) {
+                params.lang = lang;
+            }
+            const response = await this.client.get<{ message: string; data: CodexPlayerItem | CodexPlayerItem[] }>(
+                `/players/${id}`,
+                Object.keys(params).length > 0 ? { params } : undefined,
+            );
+            const data = response.data.data;
+            const item = Array.isArray(data) ? data[0] : data;
+            return item ?? null;
+        } catch (err) {
+            console.error(`Failed to fetch player ${id}:`, err);
+            return null;
+        }
+    }
+
     /**
      * Met à jour uniquement les locales listées avec le détail API (le détail l’emporte), sans écraser les autres traductions du partiel.
      */
@@ -699,6 +838,33 @@ class CodexService {
             const t = detail.translations[l];
             if (t != null) {
                 merged.translations[l] = t;
+            }
+        }
+        return merged;
+    }
+
+    overlayPlayerTranslationsFromDetail(
+        partial: CodexPlayerItem,
+        detail: CodexPlayerItem,
+        langs: string[],
+    ): CodexPlayerItem {
+        const merged: CodexPlayerItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        for (const l of langs) {
+            const t = detail.translations[l];
+            if (t != null) {
+                merged.translations[l] = t;
+            }
+        }
+        return merged;
+    }
+
+    mergePlayerFillMissingTranslations(partial: CodexPlayerItem, detail: CodexPlayerItem): CodexPlayerItem {
+        const merged: CodexPlayerItem = JSON.parse(JSON.stringify(partial));
+        merged.languages = [...new Set([...(merged.languages ?? []), ...(detail.languages ?? [])])].sort();
+        for (const l of Object.keys(detail.translations)) {
+            if (merged.translations[l] == null && detail.translations[l] != null) {
+                merged.translations[l] = detail.translations[l];
             }
         }
         return merged;
@@ -792,6 +958,81 @@ class CodexService {
                 ...(translation.profile || {}),
                 alignment: this.normalizeAlignment(translation.profile?.alignment),
             },
+        };
+    }
+
+    /**
+     * Convertit un PJ Codex en format Chariot NPC (création PNJ depuis la librairie).
+     */
+    convertCodexPlayerToChariotNPC(codexPlayerItem: CodexPlayerItem, lang: string): Partial<NPC> {
+        const translation = codexPlayerItem.translations[lang];
+
+        if (!translation) {
+            console.error('No translation found for player', codexPlayerItem);
+            throw new Error('No translation available for this player');
+        }
+
+        const normalizedSpeed = {
+            walk: translation.stats?.speed?.walk ?? 30,
+            fly: translation.stats?.speed?.fly ?? 0,
+            swim: translation.stats?.speed?.swim ?? 0,
+            climb: translation.stats?.speed?.climb ?? 0,
+            burrow: translation.stats?.speed?.burrow ?? 0,
+        };
+
+        const raceLabel = (translation.profile?.race ?? '').trim() || 'humanoid';
+
+        return {
+            firstname: translation.firstname,
+            lastname: translation.lastname,
+            surname: translation.surname,
+            stats: {
+                ...(translation.stats || {}),
+                speed: normalizedSpeed,
+                abilityScores: translation.stats?.abilityScores ?? {
+                    strength: 10,
+                    dexterity: 10,
+                    constitution: 10,
+                    intelligence: 10,
+                    wisdom: 10,
+                    charisma: 10,
+                },
+                savingThrows: translation.stats?.savingThrows ?? {
+                    strength: 0,
+                    dexterity: 0,
+                    constitution: 0,
+                    intelligence: 0,
+                    wisdom: 0,
+                    charisma: 0,
+                },
+                skills: translation.stats?.masteries ?? translation.stats?.skills ?? {},
+                senses: (translation.stats?.senses ?? []).map((sense) => ({
+                    name: sense.type,
+                    value: parseInt(sense.value, 10) || 0,
+                })),
+                languages: translation.stats?.languages ?? [],
+            },
+            affinities: translation.affinities,
+            abilities: translation.abilities,
+            spellcasting: this.normalizeSpellcasting(translation.spellcasting, lang),
+            actions: {
+                standard: this.normalizeCodexActionsForNpc(translation.actions, {
+                    attackBonus: translation.stats?.proficiencyBonus ?? 2,
+                    range: '',
+                }),
+                legendary: [],
+                lair: [],
+            },
+            challenge: {
+                challengeRating: 0,
+                experiencePoints: 0,
+            },
+            profile: {
+                alignment: this.normalizeAlignment(translation.profile?.alignment),
+                type: raceLabel,
+                subtype: translation.profile?.subrace ?? '',
+            },
+            hitPointsRoll: undefined,
         };
     }
 
@@ -944,12 +1185,84 @@ class CodexService {
         });
     }
 
+    async populatePlayersList(players: CodexPlayerItem[]): Promise<CodexPlayerItem[]> {
+        const spellIdSet = new Set<string>();
+        for (const player of players) {
+            for (const lang of player.languages) {
+                const translation = player.translations[lang];
+                if (!translation?.spellcasting) continue;
+                for (const entry of translation.spellcasting) {
+                    for (const spell of entry.spells || []) {
+                        const id = this.resolveSpellReferenceId(spell);
+                        if (id) {
+                            spellIdSet.add(id);
+                        }
+                    }
+                }
+            }
+        }
+        if (spellIdSet.size === 0) return players;
+
+        const spellMap = new Map<string, CodexSpellItem>();
+        await Promise.all(
+            Array.from(spellIdSet).map(async (id) => {
+                const spell = await this.getSpellById(id);
+                if (spell) {
+                    spellMap.set(id, spell);
+                }
+            }),
+        );
+
+        if (spellMap.size === 0) return players;
+
+        return players.map((player) => {
+            const cloned: CodexPlayerItem = JSON.parse(JSON.stringify(player));
+            for (const lang of cloned.languages) {
+                const translation = cloned.translations[lang];
+                if (!translation?.spellcasting) continue;
+                for (const entry of translation.spellcasting) {
+                    if (!entry.spells) continue;
+                    entry.spells = entry.spells.map((spell) => {
+                        const id = this.resolveSpellReferenceId(spell);
+                        if (!(id && spellMap.has(id))) {
+                            return spell;
+                        }
+                        const spellItem = spellMap.get(id)!;
+                        const slotsByUses = entry.spellSlotsByUses;
+                        if (!slotsByUses || typeof slotsByUses !== 'object') {
+                            return spellItem;
+                        }
+                        const spellLang =
+                            spellItem.translations[lang] != null
+                                ? lang
+                                : spellItem.translations['en'] != null
+                                  ? 'en'
+                                  : spellItem.languages.find((l) => spellItem.translations[l] != null);
+                        if (!spellLang || spellItem.translations[spellLang] == null) {
+                            return spellItem;
+                        }
+                        const merged = JSON.parse(JSON.stringify(spellItem)) as CodexSpellItem;
+                        merged.translations[spellLang].usesPerDay = slotsByUses[id] ?? null;
+                        return merged;
+                    }) as typeof entry.spells;
+                }
+            }
+            return cloned;
+        });
+    }
+
     /**
      * Extrait la traduction d'un monstre dans la langue demandée
      */
     getMonsterTranslation(codexMonsterItem: CodexMonsterItem, lang: string): CodexMonsterTranslation | null {
         return codexMonsterItem.translations[lang] ||
             codexMonsterItem.translations[codexMonsterItem.languages[0]] ||
+            null;
+    }
+
+    getPlayerTranslation(codexPlayerItem: CodexPlayerItem, lang: string): CodexPlayerTranslation | null {
+        return codexPlayerItem.translations[lang] ||
+            codexPlayerItem.translations[codexPlayerItem.languages[0]] ||
             null;
     }
 }
