@@ -125,7 +125,7 @@
     "createCharacterDialogDescription": "¿Qué tipo de personaje quieres crear?",
     "playerCharacter": "Personaje jugador",
     "npcCharacter": "PNJ",
-    "npcCodexCharacter": "PNJ desde Codex",
+    "npcCodexCharacter": "PNJ desde la biblioteca comunitaria",
     "gmSpaceAbbr": "MJ",
     "playerSpaceShort": "Jugador",
     "noCampaigns": "Sin campañas",
@@ -1377,8 +1377,8 @@
       "spells": "Conjuros",
       "spellSlotsEdit": "Ranuras de conjuros",
       "addSpell": "Añadir un conjuro manualmente",
-      "addCodexSpell": "Añadir un conjuro desde Codex",
-      "codexUnavailable": "Codex no está disponible actualmente",
+      "addCodexSpell": "Añadir un conjuro desde la biblioteca comunitaria",
+      "codexUnavailable": "La biblioteca comunitaria no está disponible actualmente",
       "selectSpellToEdit": "Selecciona un conjuro a la izquierda para editar sus detalles",
       "noSpellsInLevel": "No hay conjuros en este nivel",
       "newSpell": "Nuevo conjuro",
@@ -1461,7 +1461,7 @@
         "byUses": "Usos / día"
       },
       "codexDialog": {
-        "title": "Buscar un conjuro en Codex",
+        "title": "Buscar un conjuro en la biblioteca comunitaria",
         "searchPlaceholder": "Buscar un conjuro...",
         "noResults": "No se encontraron conjuros",
         "searching": "Buscando...",
@@ -1530,7 +1530,7 @@
         }
       },
       "monsterCodexDialog": {
-        "title": "Buscar un monstruo en Codex",
+        "title": "Buscar un monstruo en la biblioteca comunitaria",
         "searchPlaceholder": "Buscar un monstruo...",
         "noResults": "No se encontraron monstruos",
         "searching": "Buscando...",

@@ -125,7 +125,7 @@
     "createCharacterDialogDescription": "What type of character do you want to create?",
     "playerCharacter": "Player character",
     "npcCharacter": "NPC",
-    "npcCodexCharacter": "NPC from Codex",
+    "npcCodexCharacter": "NPC from the community library",
     "gmSpaceAbbr": "GM",
     "playerSpaceShort": "Player",
     "noCampaigns": "No campaigns",
@@ -1376,8 +1376,8 @@
       "spells": "Spells",
       "spellSlotsEdit": "Spell Slots",
       "addSpell": "Add a spell manually",
-      "addCodexSpell": "Add a spell via Codex",
-      "codexUnavailable": "Codex is currently unavailable",
+      "addCodexSpell": "Add a spell via the community library",
+      "codexUnavailable": "The community library is currently unavailable",
       "selectSpellToEdit": "Select a spell on the left to edit its details",
       "noSpellsInLevel": "No spells for this level",
       "newSpell": "New spell",
@@ -1460,7 +1460,7 @@
         "byUses": "Uses / day"
       },
       "codexDialog": {
-        "title": "Search for a spell in Codex",
+        "title": "Search for a spell in the community library",
         "searchPlaceholder": "Search for a spell...",
         "noResults": "No spells found",
         "searching": "Searching...",
@@ -1529,7 +1529,7 @@
         }
       },
       "monsterCodexDialog": {
-        "title": "Search for a monster in Codex",
+        "title": "Search for a monster in the community library",
         "searchPlaceholder": "Search for a monster...",
         "noResults": "No monsters found",
         "searching": "Searching...",

@@ -125,7 +125,7 @@
     "createCharacterDialogDescription": "Quel type de personnage souhaitez-vous créer ?",
     "playerCharacter": "Personnage joueur",
     "npcCharacter": "PNJ",
-    "npcCodexCharacter": "PNJ depuis Codex",
+    "npcCodexCharacter": "PNJ depuis la librairie communautaire",
     "gmSpaceAbbr": "MJ",
     "playerSpaceShort": "Joueur",
     "noCampaigns": "Aucune campagne",
@@ -1381,8 +1381,8 @@
       "spells": "Sorts",
       "spellSlotsEdit": "Emplacements de sorts",
       "addSpell": "Ajouter un sort",
-      "addCodexSpell": "Ajouter un sort via Codex",
-      "codexUnavailable": "Codex est actuellement indisponible",
+      "addCodexSpell": "Ajouter un sort via la librairie communautaire",
+      "codexUnavailable": "La librairie communautaire est actuellement indisponible",
       "selectSpellToEdit": "Sélectionnez un sort à gauche pour modifier ses détails",
       "noSpellsInLevel": "Aucun sort à ce niveau",
       "newSpell": "Nouveau sort",
@@ -1465,7 +1465,7 @@
         "byUses": "Utilisations / jour"
       },
       "codexDialog": {
-        "title": "Rechercher un sort dans Codex",
+        "title": "Rechercher un sort dans la librairie communautaire",
         "searchPlaceholder": "Rechercher un sort...",
         "noResults": "Aucun sort trouvé",
         "searching": "Recherche en cours...",
@@ -1534,7 +1534,7 @@
         }
       },
       "monsterCodexDialog": {
-        "title": "Rechercher un monstre dans Codex",
+        "title": "Rechercher un monstre dans la librairie communautaire",
         "searchPlaceholder": "Rechercher un monstre...",
         "noResults": "Aucun monstre trouvé",
         "searching": "Recherche en cours...",
