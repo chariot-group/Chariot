@@ -41,6 +41,10 @@ const minimalLabels: CharacterSheetPdfLabels = {
   attacksAndSpellcasting: "Attacks",
   equipment: "Equipment",
   proficienciesAndLanguages: "Proficiencies",
+  senses: "Senses",
+  tools: "Tools",
+  weapons: "Weapons",
+  armors: "Armors",
   featuresAndTraits: "Features",
   appearance: "Appearance",
   personalityTraits: "Traits",
@@ -57,6 +61,11 @@ const minimalLabels: CharacterSheetPdfLabels = {
   spellAttackBonus: "Attack",
   spellLevel: "Level",
   spellName: "Spell",
+  attackName: "Name",
+  attackBonusHeader: "Bonus",
+  attackDamageHeader: "Dmg / type",
+  proficienciesContinuation: "Proficiencies (cont.)",
+  equipmentContinuation: "Equipment (cont.)",
   cantrips: "Cantrips",
   preparedSpells: "Prepared",
   spellSlots: "Slots",
@@ -249,9 +258,79 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     expect(data.displayName).toBe("Aragorn Elessar");
     expect(data.hasSpellcasting).toBe(true);
     expect(data.inspiration).toBe(true);
-    const athletics = data.skills.find((s) => s.name === "Athletics");
+    expect(data.race).toBe("Human");
+    expect(data.subrace).toBe("");
+    expect(data.classPrimary).toBe("Fighter Lv.5");
+    const athletics = data.skills.find((s) => s.key === "athletics");
     expect(athletics?.bonus).toBe("+5");
     expect(athletics?.proficient).toBe(true);
+    expect(athletics?.masteryLevel).toBe(2);
+  });
+
+  it("edge: splits race/subrace and class/subclass for header display", () => {
+    const player = {
+      ...basePlayer,
+      profile: { ...basePlayer.profile, race: "Elf", subrace: "Wood Elf" },
+      class: [{ name: "Ranger", subclass: "Hunter", level: 3, hitDice: 10 }],
+    };
+    const data = mapCharacterToPdfData(player, mapOptions);
+    expect(data.race).toBe("Elf");
+    expect(data.subrace).toBe("Wood Elf");
+    expect(data.classPrimary).toBe("Ranger Lv.3");
+    expect(data.subclassPrimary).toBe("Hunter");
+  });
+
+  it("nominal: maps senses, tools, weapons and armors for the proficiencies card", () => {
+    const player = {
+      ...basePlayer,
+      stats: {
+        ...basePlayer.stats,
+        languages: ["Commun", "Elfique"],
+        senses: [
+          { name: "Vision dans le noir", value: 60 },
+          { name: "Perception aveugle", value: null },
+        ],
+        tools: ["Outils de calligraphe"],
+        weapons: ["Dague", "Bâton"],
+        armors: ["Armures légères"],
+      },
+    } as Player;
+
+    const data = mapCharacterToPdfData(player, mapOptions);
+    expect(data.languages).toBe("Commun, Elfique");
+    expect(data.senses).toBe("Vision dans le noir (60 ft), Perception aveugle");
+    expect(data.tools).toBe("Outils de calligraphe");
+    expect(data.weapons).toBe("Dague, Bâton");
+    expect(data.armors).toBe("Armures légères");
+  });
+
+  it("edge: empty senses/tools/weapons/armors map to empty strings", () => {
+    const data = mapCharacterToPdfData(basePlayer, mapOptions);
+    expect(data.senses).toBe("");
+    expect(data.tools).toBe("");
+    expect(data.weapons).toBe("");
+    expect(data.armors).toBe("");
+  });
+
+  it("edge: maps multiclass entries for header and hit dice display", () => {
+    const player = {
+      ...basePlayer,
+      class: [
+        { name: "Fighter", subclass: "Champion", level: 5, hitDice: 10, hitDiceRemaining: 3 },
+        { name: "Wizard", subclass: "Evocation", level: 3, hitDice: 6, hitDiceRemaining: 2 },
+      ],
+    };
+    const data = mapCharacterToPdfData(player, mapOptions);
+
+    expect(data.classEntries).toHaveLength(2);
+    expect(data.classEntries[0]).toMatchObject({ name: "Fighter", subclass: "Champion", level: 5, label: "Fighter Lv.5" });
+    expect(data.classEntries[1]).toMatchObject({ name: "Wizard", subclass: "Evocation", level: 3, label: "Wizard Lv.3" });
+    expect(data.classPrimary).toBe("Fighter Lv.5 / Wizard Lv.3");
+    expect(data.hitDiceEntries).toEqual([
+      { notation: "3d10", className: "Fighter" },
+      { notation: "2d6", className: "Wizard" },
+    ]);
+    expect(data.hitDice).toBe("3d10 (Fighter), 2d6 (Wizard)");
   });
 
   it("nominal: maps NPC with CR and without death saves", () => {

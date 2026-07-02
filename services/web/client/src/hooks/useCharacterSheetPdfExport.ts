@@ -9,9 +9,11 @@ import { buildCharacterSheetPdfLabels } from "@/lib/characterSheetPdf/buildChara
 import { buildCharacterQrCodeDataUrl } from "@/lib/characterSheetPdf/buildCharacterQrCodeDataUrl";
 import { buildCharacterSheetPageUrl } from "@/lib/characterSheetPdf/buildCharacterSheetPageUrl";
 import { fetchCharacterAvatarForPdf } from "@/lib/characterSheetPdf/fetchAvatarForPdf";
+import { enrichSkillsWithRasterIcons } from "@/lib/characterSheetPdf/enrichSkillsWithRasterIcons";
 import { mapCharacterToPdfData } from "@/lib/characterSheetPdf/mapCharacterToPdfData";
 import { exportCharacterSheetPdf } from "@/lib/characterSheetPdf/exportCharacterSheetPdf";
 import type { CharacterSheetPdfTheme } from "@/lib/characterSheetPdf/themes";
+import { CHARACTER_SHEET_PDF_THEMES } from "@/lib/characterSheetPdf/themes";
 import { useToast } from "@/hooks/useToast";
 
 export interface UseCharacterSheetPdfExportOptions {
@@ -70,7 +72,7 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
           buildCharacterQrCodeDataUrl(characterPageUrl),
         ]);
 
-        const data = mapCharacterToPdfData(character, {
+        const mappedData = mapCharacterToPdfData(character, {
           labels,
           playerName,
           translateClass: (name) => tClass(name),
@@ -80,6 +82,11 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
           qrCodeDataUrl,
           characterPageUrl,
         });
+
+        const data = await enrichSkillsWithRasterIcons(
+          mappedData,
+          CHARACTER_SHEET_PDF_THEMES[theme].textMuted,
+        );
 
         await exportCharacterSheetPdf({
           data,

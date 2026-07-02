@@ -41,6 +41,10 @@ export interface CharacterSheetPdfLabels {
   attacksAndSpellcasting: string;
   equipment: string;
   proficienciesAndLanguages: string;
+  senses: string;
+  tools: string;
+  weapons: string;
+  armors: string;
   featuresAndTraits: string;
   appearance: string;
   personalityTraits: string;
@@ -59,6 +63,10 @@ export interface CharacterSheetPdfLabels {
   spellLevel: string;
   spellName: string;
   attackName: string;
+  attackBonusHeader: string;
+  attackDamageHeader: string;
+  proficienciesContinuation: string;
+  equipmentContinuation: string;
   cantrips: string;
   preparedSpells: string;
   spellSlots: string;
@@ -93,16 +101,21 @@ export interface PdfAbilityRow {
 }
 
 export interface PdfSkillRow {
+  key: string;
   name: string;
+  abilityName: string;
   abilityAbbr: string;
   bonus: string;
   proficient: boolean;
+  masteryLevel: number;
+  iconDataUrl?: string | null;
 }
 
 export interface PdfSavingThrowRow {
   abbr: string;
   bonus: string;
   proficient: boolean;
+  masteryLevel: number;
 }
 
 export interface PdfAttackRow {
@@ -110,6 +123,18 @@ export interface PdfAttackRow {
   bonus: string;
   damage: string;
   range: string;
+}
+
+export interface PdfClassEntry {
+  name: string;
+  subclass: string;
+  level: number;
+  label: string;
+}
+
+export interface PdfHitDiceEntry {
+  notation: string;
+  className: string;
 }
 
 export interface PdfAbilityFeature {
@@ -139,7 +164,13 @@ export interface CharacterSheetPdfData {
   displayName: string;
   playerName: string;
   raceOrType: string;
+  race: string;
+  subrace: string;
   classOrCr: string;
+  classPrimary: string;
+  subclassPrimary: string;
+  classEntries: PdfClassEntry[];
+  hitDiceEntries: PdfHitDiceEntry[];
   backgroundOrSubtype: string;
   alignment: string;
   experience: string;
@@ -164,6 +195,10 @@ export interface CharacterSheetPdfData {
   currencies: { cp: number; sp: number; ep: number; gp: number; pp: number };
   proficiencies: string;
   languages: string;
+  senses: string;
+  tools: string;
+  weapons: string;
+  armors: string;
   features: PdfAbilityFeature[];
   appearance: {
     age: string;

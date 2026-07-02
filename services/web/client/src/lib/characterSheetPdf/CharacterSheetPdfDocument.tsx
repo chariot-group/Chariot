@@ -4,16 +4,26 @@ import React from "react";
 import { Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
 import { CHARACTER_SHEET_PDF_THEMES } from "@/lib/characterSheetPdf/themes";
 import { splitFeaturesForPdfPages } from "@/lib/characterSheetPdf/splitFeaturesForPdfPages";
-import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme, PdfAbilityFeature } from "@/lib/characterSheetPdf/types";
+import {
+  PDF_EQUIPMENT_PAGE1_MAX_CHARS,
+  splitTextForPdfPages,
+} from "@/lib/characterSheetPdf/splitTextForPdfPages";
+import { buildLucideSvgDataUrl } from "@/lib/characterSheetPdf/buildLucideSvgString";
+import { PDF_SKILL_LUCIDE_NODES } from "@/lib/characterSheetPdf/lucidePdfIconNodes";
+import { getMasteryIconSvg } from "@/lib/characterSheetPdf/masteryIconSvg";
+import { svgDataUrl } from "@/lib/characterSheetPdf/svgDataUrl";
+import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme, PdfAbilityFeature, PdfClassEntry, PdfHitDiceEntry } from "@/lib/characterSheetPdf/types";
 
 Font.registerHyphenationCallback((word) => [word]);
 
-/** Fixed header height (4:5 avatar 48×60 pt) — do not stretch with percentage heights. */
+/** Fixed header height (4:5 avatar 48×60 pt) — grows slightly for multiclass rows. */
 const PDF_HEADER_ROW_HEIGHT = 60;
+const PDF_HEADER_MULTICLASS_EXTRA_HEIGHT = 12;
 const PDF_HEADER_AVATAR_WIDTH = 48;
 
-function svgDataUrl(svg: string): string {
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+function getHeaderRowHeight(classCount: number): number {
+  if (classCount <= 1) return PDF_HEADER_ROW_HEIGHT;
+  return PDF_HEADER_ROW_HEIGHT + (classCount - 1) * PDF_HEADER_MULTICLASS_EXTRA_HEIGHT;
 }
 
 function createStyles(theme: CharacterSheetPdfTheme) {
@@ -44,6 +54,7 @@ function createStyles(theme: CharacterSheetPdfTheme) {
       paddingHorizontal: 6,
       borderRadius: 999,
       marginBottom: 3,
+      marginLeft: 8,
     },
     sectionHeaderText: { fontSize: 8.8, fontWeight: "bold", color: t.sectionHeaderText },
     box: {
@@ -58,6 +69,7 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     col: { flex: 1 },
     label: { fontSize: 6.6, color: t.textMuted, marginBottom: 2 },
     value: { fontSize: 8.8, fontWeight: "bold", lineHeight: 1.25 },
+    valueSub: { fontSize: 8.8, fontWeight: "normal", color: t.textMuted },
     fieldRow: { flexDirection: "row", marginBottom: 4, gap: 4 },
     fieldLabel: { fontSize: 7.5, color: t.textMuted, width: 74 },
     fieldValue: { fontSize: 8.8, flex: 1 },
@@ -74,9 +86,20 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     abilityAbbr: { fontSize: 7, color: t.textMuted },
     abilityScore: { fontSize: 12, fontWeight: "bold" },
     abilityMod: { fontSize: 8 },
-    skillRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 1.5, gap: 4 },
-    skillName: { fontSize: 7.4, flex: 1 },
-    skillBonus: { fontSize: 7.5, fontWeight: "bold", width: 24, textAlign: "right" },
+    skillRow: { flexDirection: "row", alignItems: "center", paddingVertical: 2, gap: 4 },
+    skillNameBlock: { flex: 1, minWidth: 0 },
+    skillName: { fontSize: 7.2, lineHeight: 1.2 },
+    skillAbilityName: { fontSize: 6.2, color: t.textMuted, lineHeight: 1.2, marginTop: 1 },
+    skillBonus: { fontSize: 7.5, fontWeight: "bold", width: 20, textAlign: "right" },
+    skillIconWrap: { width: 12, height: 12, flexShrink: 0 },
+    masteryIcon: { width: 12, height: 12, flexShrink: 0 },
+    skillsGrid: { flexDirection: "row", flexWrap: "wrap" },
+    skillCell: { width: "50%", paddingRight: 5, marginBottom: 2 },
+    savingThrowsGrid: { flexDirection: "row", flexWrap: "wrap" },
+    savingThrowCell: { width: "33.33%", alignItems: "center", paddingVertical: 4 },
+    savingThrowAbbr: { fontSize: 6.2, fontWeight: "bold", textTransform: "uppercase", color: t.textMuted },
+    savingThrowBonus: { fontSize: 10, fontWeight: "bold", marginTop: 2 },
+    savingThrowTopRow: { flexDirection: "row", alignItems: "center", gap: 2, marginBottom: 1 },
     proficient: { fontStyle: "italic" },
     tableHeader: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: t.border, paddingBottom: 2, marginBottom: 2 },
     tableRow: { flexDirection: "row", paddingVertical: 2, borderBottomWidth: 0.5, borderBottomColor: t.border },
@@ -154,15 +177,29 @@ function createStyles(theme: CharacterSheetPdfTheme) {
       paddingHorizontal: 5,
       justifyContent: "center",
     },
-    bodyGrid: { flexDirection: "row", gap: 7 },
-    colAbilities: { width: "17%" },
-    colSkills: { width: "34%" },
+    bodyGrid: { flexDirection: "row", gap: 7, alignItems: "flex-start" },
+    colLeftRegion: { width: "51%", flexDirection: "column" },
+    leftTopRow: { flexDirection: "row", gap: 7, alignItems: "flex-start" },
+    colAbilities: { width: "23%", flexDirection: "column" },
+    passivePerceptionWide: { marginTop: 8 },
+    colSkills: { flex: 1 },
     colCombat: { width: "26%" },
     colNarrative: { width: "23%" },
-    scoreCard: { borderWidth: 1, borderColor: t.border, borderRadius: 13, paddingVertical: 7, paddingHorizontal: 5, alignItems: "center", justifyContent: "center", minHeight: 69, backgroundColor: t.cardBackground, marginBottom: 5 },
-    scoreLabel: { fontSize: 6.8, fontWeight: "bold", textTransform: "uppercase" },
-    scoreValue: { fontSize: 12.5, fontWeight: "bold", marginTop: 3 },
-    scoreMod: { fontSize: 8, marginTop: 2 },
+    scoreCard: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 13,
+      paddingVertical: 5,
+      paddingHorizontal: 3,
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 52,
+      backgroundColor: t.cardBackground,
+      marginBottom: 4,
+    },
+    scoreLabel: { fontSize: 6.2, fontWeight: "bold", textTransform: "uppercase" },
+    scoreValue: { fontSize: 7.5, color: t.textMuted, marginTop: 2 },
+    scoreMod: { fontSize: 13, fontWeight: "bold", marginTop: 1 },
     smallPill: { borderWidth: 1, borderColor: t.border, borderRadius: 999, paddingVertical: 4, paddingHorizontal: 9, backgroundColor: t.cardBackground, marginBottom: 5 },
     smallPillLarge: { minHeight: 34, justifyContent: "center" },
     inlineStatRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
@@ -173,25 +210,64 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     statLineBox: { flex: 1, borderWidth: 1, borderColor: t.border, borderRadius: 10, paddingHorizontal: 4, paddingVertical: 3, backgroundColor: t.cardBackground, alignItems: "center", justifyContent: "center", gap: 1, minWidth: 0 },
     statLineLabel: { fontSize: 6, color: t.textMuted, textTransform: "uppercase", textAlign: "center" },
     statLineValue: { fontSize: 12, fontWeight: "bold", textAlign: "center" },
-    dotsRow: { flexDirection: "row", alignItems: "center", gap: 3 },
-    dot: { width: 7, height: 7, borderRadius: 999, borderWidth: 1, borderColor: t.textMuted },
-    attacksTableHeader: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: t.border, paddingBottom: 2, marginBottom: 2 },
-    attackName: { width: "43%", fontSize: 7, fontWeight: "bold", color: t.textMuted },
-    attackBonus: { width: "17%", fontSize: 7, fontWeight: "bold", color: t.textMuted },
-    attackDamage: { width: "40%", fontSize: 7, fontWeight: "bold", color: t.textMuted },
-    attackRow: { flexDirection: "row", borderBottomWidth: 0.6, borderBottomColor: t.border, paddingVertical: 2.5 },
-    attackCellName: { width: "43%", fontSize: 7.2 },
-    attackCellBonus: { width: "17%", fontSize: 7.2, textAlign: "center" },
-    attackCellDamage: { width: "40%", fontSize: 7.2 },
+    dotsRow: { flexDirection: "row", alignItems: "center", gap: 5, flex: 1, justifyContent: "flex-end" },
+    dot: { width: 10, height: 10, borderRadius: 999, borderWidth: 1, borderColor: t.textMuted },
+    deathSavesSection: {
+      marginTop: 8,
+      paddingTop: 8,
+      paddingBottom: 6,
+      paddingHorizontal: 6,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+    },
+    deathSavesTitle: { fontSize: 7.5, fontWeight: "bold", color: t.textMuted, marginBottom: 6 },
+    deathSaveRow: { flexDirection: "row", alignItems: "center", marginBottom: 5, gap: 6 },
+    deathSaveLabel: { fontSize: 7.5, fontWeight: "bold", width: 44 },
+    attacksTableHeader: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+      paddingBottom: 2,
+      marginBottom: 2,
+      gap: 3,
+    },
+    attackName: { flex: 2.4, fontSize: 6.5, fontWeight: "bold", color: t.textMuted },
+    attackBonus: { flex: 0.75, fontSize: 6.5, fontWeight: "bold", color: t.textMuted, textAlign: "center" },
+    attackDamage: { flex: 1.55, fontSize: 6.5, fontWeight: "bold", color: t.textMuted, textAlign: "right" },
+    attackRow: { flexDirection: "row", borderBottomWidth: 0.6, borderBottomColor: t.border, paddingVertical: 2.5, gap: 3 },
+    attackCellName: { flex: 2.4, fontSize: 7.2 },
+    attackCellBonus: { flex: 0.75, fontSize: 7.2, textAlign: "center" },
+    attackCellDamage: { flex: 1.55, fontSize: 7.2, textAlign: "right" },
     coinRow: { flexDirection: "row", alignItems: "center", marginBottom: 2, gap: 4 },
     coinIcon: { width: 10, height: 9 },
     coinText: { fontSize: 7.3, fontWeight: "bold" },
-    largeNarrativeBox: { flex: 1 },
+    largeNarrativeBox: { minHeight: 150 },
     featureItem: { marginBottom: 6 },
     featureName: { fontSize: 8, fontWeight: "bold", marginBottom: 1.5 },
     featureDescription: { fontSize: 7.2, lineHeight: 1.4, color: t.text },
-    equipmentBox: { minHeight: 172 },
-    proficienciesBox: { minHeight: 120 },
+    equipmentBox: { minHeight: 120 },
+    proficienciesBoxWide: { minHeight: 90, marginBottom: 0 },
+    profRow: { flexDirection: "row", marginBottom: 3, gap: 6 },
+    profLabel: { fontSize: 7, fontWeight: "bold", color: t.textMuted, width: 54, flexShrink: 0 },
+    profValue: { fontSize: 7.5, flex: 1, lineHeight: 1.35 },
+    multiclassLine: { fontSize: 7.6, fontWeight: "bold", lineHeight: 1.25 },
+    multiclassSubclass: { fontSize: 6.8, fontWeight: "normal", color: t.textMuted, lineHeight: 1.2 },
+    hitDiceBlock: { marginBottom: 4 },
+    hitDiceChips: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 3 },
+    hitDiceChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 3,
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 999,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      backgroundColor: t.pageBackground,
+    },
+    hitDiceChipClass: { fontSize: 6.6, color: t.textMuted },
+    hitDiceChipValue: { fontSize: 7.8, fontWeight: "bold" },
   });
 }
 
@@ -213,17 +289,22 @@ const COIN_SVGS = {
 interface PageFooterProps {
   labels: CharacterSheetPdfLabels;
   theme: CharacterSheetPdfTheme;
-  page: number;
-  total: number;
   styles: ReturnType<typeof createStyles>;
 }
 
-function PageFooter({ labels, theme, page, total, styles }: PageFooterProps) {
+function PageFooter({ labels, theme, styles }: PageFooterProps) {
   const t = CHARACTER_SHEET_PDF_THEMES[theme];
   return (
     <View style={styles.footer} fixed>
       <Text style={styles.footerText}>{labels.appName}</Text>
-      <Text style={styles.footerText}>{labels.pageOf.replace("{page}", String(page)).replace("{total}", String(total))}</Text>
+      <Text
+        style={styles.footerText}
+        render={({ pageNumber, totalPages }) =>
+          labels.pageOf
+            .replace("{page}", String(pageNumber))
+            .replace("{total}", String(totalPages))
+        }
+      />
       <Text style={[styles.footerText, { color: t.purple }]}>chariot.tools</Text>
     </View>
   );
@@ -233,15 +314,134 @@ function SectionHeader({
   title,
   color,
   styles,
+  topSpacing = 0,
 }: {
   title: string;
   color: string;
   styles: ReturnType<typeof createStyles>;
+  topSpacing?: number;
 }) {
   return (
-    <View style={[styles.sectionHeader, { backgroundColor: color }]}>
+    <View style={[styles.sectionHeader, { backgroundColor: color }, topSpacing > 0 ? { marginTop: topSpacing } : {}]}>
       <Text style={styles.sectionHeaderText}>{title}</Text>
     </View>
+  );
+}
+
+function SectionBlock({
+  title,
+  color,
+  styles,
+  topSpacing = 0,
+  children,
+}: {
+  title: string;
+  color: string;
+  styles: ReturnType<typeof createStyles>;
+  topSpacing?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <View wrap={false}>
+      <SectionHeader title={title} color={color} styles={styles} topSpacing={topSpacing} />
+      {children}
+    </View>
+  );
+}
+
+function ClassHeaderValue({
+  entries,
+  classPrimary,
+  subclassPrimary,
+  styles,
+}: {
+  entries: PdfClassEntry[];
+  classPrimary: string;
+  subclassPrimary: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  if (entries.length <= 1) {
+    return (
+      <HeaderValueWithSubtext
+        primary={classPrimary || " "}
+        secondary={subclassPrimary}
+        primaryMax={16}
+        secondaryMax={12}
+        styles={styles}
+      />
+    );
+  }
+
+  return (
+    <View>
+      {entries.map((entry, index) => (
+        <View key={`${entry.name}-${entry.level}-${index}`} style={index > 0 ? { marginTop: 2 } : {}}>
+          <Text style={styles.multiclassLine}>{clampText(entry.label, 18)}</Text>
+          {entry.subclass ? (
+            <Text style={styles.multiclassSubclass}>{clampText(entry.subclass, 16)}</Text>
+          ) : null}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function HitDiceRow({
+  label,
+  entries,
+  fallback,
+  styles,
+}: {
+  label: string;
+  entries: PdfHitDiceEntry[];
+  fallback: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  if (entries.length <= 1) {
+    return (
+      <View style={styles.fieldRow}>
+        <Text style={styles.fieldLabel}>{label}</Text>
+        <Text style={styles.fieldValue}>{clampText(fallback, 36)}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.hitDiceBlock}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <View style={styles.hitDiceChips}>
+        {entries.map((entry, index) => (
+          <View key={`${entry.className}-${entry.notation}-${index}`} style={styles.hitDiceChip}>
+            <Text style={styles.hitDiceChipClass}>{clampText(entry.className, 14)}</Text>
+            <Text style={styles.hitDiceChipValue}>{entry.notation}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function HeaderValueWithSubtext({
+  primary,
+  secondary,
+  primaryMax,
+  secondaryMax,
+  styles,
+}: {
+  primary: string;
+  secondary: string;
+  primaryMax: number;
+  secondaryMax: number;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const primaryText = clampText(primary, primaryMax);
+  const secondaryText = secondary ? clampText(secondary, secondaryMax) : "";
+
+  return (
+    <Text style={styles.value}>
+      {primaryText}
+      {secondaryText ? <Text style={styles.valueSub}> ({secondaryText})</Text> : null}
+    </Text>
   );
 }
 
@@ -285,7 +485,7 @@ function FeaturesList({
   return (
     <>
       {features.map((feature, index) => (
-        <View key={`${feature.name}-${index}`} style={styles.featureItem}>
+        <View key={`${feature.name}-${index}`} wrap={false} style={styles.featureItem}>
           <Text style={styles.featureName}>{feature.name.trim() || " "}</Text>
           {feature.description.trim() ? (
             <Text style={styles.featureDescription}>{feature.description.trim()}</Text>
@@ -305,22 +505,23 @@ interface CharacterSheetPdfDocumentProps {
 export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterSheetPdfDocumentProps) {
   const t = CHARACTER_SHEET_PDF_THEMES[theme];
   const styles = createStyles(theme);
+  const headerRowHeight = getHeaderRowHeight(data.isPlayer ? data.classEntries.length : 1);
   const { pageOne: featuresPageOne, pageTwo: featuresPageTwo } = splitFeaturesForPdfPages(data.features);
-  const spellPageCount = data.hasSpellcasting ? data.spellcastingBlocks.length : 0;
-  const totalPages = 2 + spellPageCount;
+  const equipmentSource = data.equipment || data.treasureText;
+  const equipmentSplit = splitTextForPdfPages(equipmentSource, PDF_EQUIPMENT_PAGE1_MAX_CHARS);
 
   return (
     <Document>
       {/* Page 1 — D&D-like core layout */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageOneHeader}>
-          <View style={styles.headerRow}>
+          <View style={[styles.headerRow, { height: headerRowHeight }]}>
             {data.avatarDataUrl ? (
-              <View style={styles.headerAvatarColumn}>
-                <Image src={data.avatarDataUrl} style={styles.headerAvatar} alt="" />
+              <View style={[styles.headerAvatarColumn, { height: headerRowHeight }]}>
+                <Image src={data.avatarDataUrl} style={[styles.headerAvatar, { height: headerRowHeight }]} alt="" />
               </View>
             ) : null}
-            <View style={styles.headerMainColumn}>
+            <View style={[styles.headerMainColumn, { height: headerRowHeight }]}>
               <View style={styles.headerMainRow}>
                 <View style={styles.headerNameItem}>
                   <Text style={styles.label}>{labels.characterName}</Text>
@@ -329,11 +530,26 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 <View style={styles.headerInfoGrid}>
                   <View style={styles.headerInfoItem}>
                     <Text style={styles.label}>{data.isPlayer ? labels.race : labels.creatureType}</Text>
-                    <Text style={styles.value}>{clampText(data.raceOrType, 24)}</Text>
+                    <HeaderValueWithSubtext
+                      primary={data.isPlayer ? data.race : data.race}
+                      secondary={data.isPlayer ? data.subrace : data.subrace}
+                      primaryMax={16}
+                      secondaryMax={12}
+                      styles={styles}
+                    />
                   </View>
                   <View style={styles.headerInfoItem}>
                     <Text style={styles.label}>{data.isPlayer ? labels.classAndLevel : labels.challengeRating}</Text>
-                    <Text style={styles.value}>{clampText(data.classOrCr, 24)}</Text>
+                    {data.isPlayer ? (
+                      <ClassHeaderValue
+                        entries={data.classEntries}
+                        classPrimary={data.classPrimary}
+                        subclassPrimary={data.subclassPrimary}
+                        styles={styles}
+                      />
+                    ) : (
+                      <Text style={styles.value}>{clampText(data.classOrCr, 24)}</Text>
+                    )}
                   </View>
                   <View style={styles.headerInfoItem}>
                     <Text style={styles.label}>{labels.background}</Text>
@@ -347,7 +563,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               </View>
             </View>
             {data.qrCodeDataUrl ? (
-              <View style={styles.headerQrColumn}>
+              <View style={[styles.headerQrColumn, { height: headerRowHeight }]}>
                 <Image src={data.qrCodeDataUrl} style={styles.qrCode} alt="" />
                 <Text style={styles.qrHint}>{labels.qrCodeHint}</Text>
               </View>
@@ -356,18 +572,20 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
         </View>
 
         <View style={styles.bodyGrid}>
-          <View style={styles.colAbilities}>
-            {data.abilities.map((ab) => (
-              <View key={ab.abbr} style={styles.scoreCard}>
-                <Text style={styles.scoreLabel}>{ab.name}</Text>
-                <Text style={styles.scoreValue}>{ab.score}</Text>
-                <Text style={styles.scoreMod}>{ab.modifier}</Text>
+          <View style={styles.colLeftRegion}>
+            <View style={styles.leftTopRow}>
+              <View style={styles.colAbilities}>
+                {data.abilities.map((ab) => (
+                  <View key={ab.abbr} style={styles.scoreCard}>
+                    <Text style={styles.scoreLabel}>{ab.name}</Text>
+                    <Text style={styles.scoreMod}>{ab.modifier}</Text>
+                    <Text style={styles.scoreValue}>{ab.score}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
 
-          <View style={styles.colSkills}>
-            <View style={styles.smallPill}>
+              <View style={styles.colSkills}>
+                <View style={styles.smallPill}>
               <View style={styles.inlineStatRow}>
                 <Text style={styles.smallPillLabel}>{labels.inspiration}</Text>
                 <View style={styles.checkbox}>
@@ -384,31 +602,76 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
 
             <SectionHeader title={labels.savingThrows} color={t.blue} styles={styles} />
             <View style={styles.box}>
-              {data.savingThrows.map((st) => (
-                <View key={st.abbr} style={styles.skillRow}>
-                  <Text style={styles.skillName}>{st.abbr}</Text>
-                  <View style={styles.valueWithIcon}>
-                    <Text style={styles.skillBonus}>{st.bonus}</Text>
-                    <View style={styles.checkbox}>{st.proficient ? <View style={styles.checkboxInner} /> : null}</View>
+              <View style={styles.savingThrowsGrid}>
+                {data.savingThrows.map((st) => (
+                  <View key={st.abbr} style={styles.savingThrowCell}>
+                      <View style={styles.savingThrowTopRow}>
+                      <Text style={styles.savingThrowAbbr}>{st.abbr}</Text>
+                      <Image
+                        src={svgDataUrl(
+                          getMasteryIconSvg(st.masteryLevel, "blue", theme, {
+                            blue: t.blue,
+                            red: t.red,
+                            textMuted: t.textMuted,
+                          }),
+                        )}
+                        style={styles.masteryIcon}
+                        alt=""
+                      />
+                    </View>
+                    <Text style={[styles.savingThrowBonus, st.proficient ? styles.proficient : {}]}>{st.bonus}</Text>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
 
             <SectionHeader title={labels.skills} color={t.blue} styles={styles} />
             <View style={styles.box}>
-              {data.skills.map((skill) => (
-                <View key={skill.name} style={styles.skillRow}>
-                  <Text style={styles.skillName}>{clampText(skill.name, 24)}</Text>
-                  <View style={styles.valueWithIcon}>
-                    <Text style={styles.skillBonus}>{skill.bonus}</Text>
-                    <Dots styles={styles} filled={skill.proficient ? 1 : 0} total={1} fillColor={t.blue} />
-                  </View>
-                </View>
-              ))}
+              <View style={styles.skillsGrid}>
+                {data.skills.map((skill) => {
+                  const iconNode = PDF_SKILL_LUCIDE_NODES[skill.key];
+                  const iconSrc =
+                    skill.iconDataUrl ??
+                    (iconNode ? buildLucideSvgDataUrl(iconNode, t.textMuted) : null);
+
+                  return (
+                    <View key={skill.key} style={styles.skillCell}>
+                      <View style={styles.skillRow}>
+                        {iconSrc ? (
+                          <Image src={iconSrc} style={styles.skillIconWrap} alt="" />
+                        ) : (
+                          <View style={styles.skillIconWrap} />
+                        )}
+                        <View style={styles.skillNameBlock}>
+                          <Text style={[styles.skillName, skill.proficient ? styles.proficient : {}]}>
+                            {clampText(skill.name, 18)}
+                          </Text>
+                          <Text style={styles.skillAbilityName}>{clampText(skill.abilityName, 16)}</Text>
+                        </View>
+                        <View style={styles.valueWithIcon}>
+                          <Text style={styles.skillBonus}>{skill.bonus}</Text>
+                          <Image
+                            src={svgDataUrl(
+                              getMasteryIconSvg(skill.masteryLevel, "blue", theme, {
+                                blue: t.blue,
+                                red: t.red,
+                                textMuted: t.textMuted,
+                              }),
+                            )}
+                            style={styles.masteryIcon}
+                            alt=""
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+              </View>
             </View>
 
-            <View style={[styles.smallPill, styles.smallPillLarge]}>
+            <View style={[styles.smallPill, styles.smallPillLarge, styles.passivePerceptionWide]}>
               <View style={styles.inlineStatRow}>
                 <Text style={styles.smallPillLabel}>{labels.passivePerception}</Text>
                 <Text style={styles.smallPillValue}>{data.passivePerception}</Text>
@@ -416,10 +679,19 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
             </View>
 
             <SectionHeader title={labels.proficienciesAndLanguages} color={t.blue} styles={styles} />
-            <View style={[styles.box, styles.proficienciesBox]}>
-              <Text style={styles.textBlock}>{clampText(data.proficiencies, 420)}</Text>
-              <Text style={[styles.label, { marginTop: 6, marginBottom: 3 }]}>{labels.languages}</Text>
-              <Text style={styles.textBlock}>{clampText(data.languages, 420)}</Text>
+            <View style={[styles.box, styles.proficienciesBoxWide]}>
+              {[
+                { label: labels.languages, value: data.languages },
+                { label: labels.senses, value: data.senses },
+                { label: labels.tools, value: data.tools },
+                { label: labels.weapons, value: data.weapons },
+                { label: labels.armors, value: data.armors },
+              ].map((entry) => (
+                <View key={entry.label} style={styles.profRow}>
+                  <Text style={styles.profLabel}>{entry.label}</Text>
+                  <Text style={styles.profValue}>{clampText(entry.value, 220)}</Text>
+                </View>
+              ))}
             </View>
           </View>
 
@@ -439,74 +711,97 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               </View>
             </View>
 
-            <SectionHeader title={labels.hitPoints} color={t.red} styles={styles} />
-            <View style={styles.box}>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>{labels.maxHp}</Text>
-                <Text style={styles.fieldValue}>{data.maxHp}</Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>{labels.currentHp}</Text>
-                <Text style={styles.fieldValue}>{data.currentHp}</Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>{labels.tempHp}</Text>
-                <Text style={styles.fieldValue}>{data.tempHp}</Text>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>{data.isPlayer ? labels.hitDice : labels.hitPointsRoll}</Text>
-                <Text style={styles.fieldValue}>{clampText(data.hitDice, 36)}</Text>
-              </View>
-              <Text style={styles.label}>{labels.deathSaves}</Text>
-              <View style={styles.row}>
-                <Text style={{ fontSize: 6.5, width: 36 }}>{labels.successes}</Text>
-                <Dots styles={styles} filled={Math.max(0, Math.min(3, data.deathSaveSuccesses))} total={3} fillColor={t.green} />
-              </View>
-              <View style={styles.row}>
-                <Text style={{ fontSize: 6.5, width: 36 }}>{labels.failures}</Text>
-                <Dots styles={styles} filled={Math.max(0, Math.min(3, data.deathSaveFailures))} total={3} fillColor={t.red} />
-              </View>
-            </View>
-
-            <SectionHeader title={labels.attacksAndSpellcasting} color={t.red} styles={styles} />
-            <View style={styles.box}>
-              <View style={styles.attacksTableHeader}>
-                <Text style={styles.attackName}>{labels.attackName}</Text>
-                <Text style={styles.attackBonus}>BONUS</Text>
-                <Text style={styles.attackDamage}>DMG / TYPE</Text>
-              </View>
-              {(data.attacks.length > 0 ? data.attacks : [{ name: " ", bonus: " ", damage: " ", range: " " }]).slice(0, 5).map((atk, i) => (
-                <View key={`${atk.name}-${i}`} style={styles.attackRow}>
-                  <Text style={styles.attackCellName}>{clampText(atk.name, 20)}</Text>
-                  <Text style={styles.attackCellBonus}>{atk.bonus}</Text>
-                  <Text style={styles.attackCellDamage}>{clampText(atk.damage, 24)}</Text>
+            <SectionBlock title={labels.hitPoints} color={t.red} styles={styles} topSpacing={10}>
+              <View style={styles.box}>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>{labels.maxHp}</Text>
+                  <Text style={styles.fieldValue}>{data.maxHp}</Text>
                 </View>
-              ))}
-            </View>
-
-            <SectionHeader title={labels.equipment} color={t.yellow} styles={styles} />
-            <View style={[styles.box, styles.equipmentBox]}>
-              {(["cp", "sp", "ep", "gp", "pp"] as const).map((key) => (
-                <View key={key} style={styles.coinRow}>
-                  <Image src={svgDataUrl(COIN_SVGS[key])} style={styles.coinIcon} alt="" />
-                  <Text style={styles.coinText}>
-                    {key.toUpperCase()}: {data.currencies[key]}
-                  </Text>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>{labels.currentHp}</Text>
+                  <Text style={styles.fieldValue}>{data.currentHp}</Text>
                 </View>
-              ))}
-              <Text style={[styles.textBlock, { marginTop: 4 }]}>{clampText(data.equipment || data.treasureText, 220)}</Text>
-            </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>{labels.tempHp}</Text>
+                  <Text style={styles.fieldValue}>{data.tempHp}</Text>
+                </View>
+                <HitDiceRow
+                  label={data.isPlayer ? labels.hitDice : labels.hitPointsRoll}
+                  entries={data.isPlayer ? data.hitDiceEntries : []}
+                  fallback={data.hitDice}
+                  styles={styles}
+                />
+                {data.isPlayer ? (
+                  <View style={styles.deathSavesSection}>
+                    <Text style={styles.deathSavesTitle}>{labels.deathSaves}</Text>
+                    <View style={styles.deathSaveRow}>
+                      <Text style={styles.deathSaveLabel}>{labels.successes}</Text>
+                      <Dots
+                        styles={styles}
+                        filled={Math.max(0, Math.min(3, data.deathSaveSuccesses))}
+                        total={3}
+                        fillColor={t.green}
+                      />
+                    </View>
+                    <View style={styles.deathSaveRow}>
+                      <Text style={styles.deathSaveLabel}>{labels.failures}</Text>
+                      <Dots
+                        styles={styles}
+                        filled={Math.max(0, Math.min(3, data.deathSaveFailures))}
+                        total={3}
+                        fillColor={t.red}
+                      />
+                    </View>
+                  </View>
+                ) : null}
+              </View>
+            </SectionBlock>
+
+            <SectionBlock title={labels.attacksAndSpellcasting} color={t.red} styles={styles}>
+              <View style={styles.box}>
+                <View style={styles.attacksTableHeader}>
+                  <Text style={styles.attackName}>{labels.attackName}</Text>
+                  <Text style={styles.attackBonus}>{labels.attackBonusHeader}</Text>
+                  <Text style={styles.attackDamage}>{labels.attackDamageHeader}</Text>
+                </View>
+                {(data.attacks.length > 0 ? data.attacks : [{ name: " ", bonus: " ", damage: " ", range: " " }]).slice(0, 5).map((atk, i) => (
+                  <View key={`${atk.name}-${i}`} style={styles.attackRow}>
+                    <Text style={styles.attackCellName}>{clampText(atk.name, 20)}</Text>
+                    <Text style={styles.attackCellBonus}>{atk.bonus}</Text>
+                    <Text style={styles.attackCellDamage}>{clampText(atk.damage, 24)}</Text>
+                  </View>
+                ))}
+              </View>
+            </SectionBlock>
+
+            <SectionBlock title={labels.equipment} color={t.yellow} styles={styles}>
+              <View style={[styles.box, styles.equipmentBox]}>
+                {(["cp", "sp", "ep", "gp", "pp"] as const).map((key) => (
+                  <View key={key} style={styles.coinRow}>
+                    <Image src={svgDataUrl(COIN_SVGS[key])} style={styles.coinIcon} alt="" />
+                    <Text style={styles.coinText}>
+                      {key.toUpperCase()}: {data.currencies[key]}
+                    </Text>
+                  </View>
+                ))}
+                <Text style={[styles.textBlock, { marginTop: 4 }]}>{equipmentSplit.pageOne || " "}</Text>
+              </View>
+            </SectionBlock>
           </View>
 
           <View style={styles.colNarrative}>
-            <SectionHeader title={labels.personalityTraits} color={t.green} styles={styles} />
-            <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.personalityTraits, 180)}</Text></View>
-            <SectionHeader title={labels.ideals} color={t.green} styles={styles} />
-            <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.ideals, 180)}</Text></View>
-            <SectionHeader title={labels.bonds} color={t.green} styles={styles} />
-            <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.bonds, 180)}</Text></View>
-            <SectionHeader title={labels.flaws} color={t.green} styles={styles} />
-            <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.flaws, 180)}</Text></View>
+            <SectionBlock title={labels.personalityTraits} color={t.green} styles={styles}>
+              <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.personalityTraits, 180)}</Text></View>
+            </SectionBlock>
+            <SectionBlock title={labels.ideals} color={t.green} styles={styles}>
+              <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.ideals, 180)}</Text></View>
+            </SectionBlock>
+            <SectionBlock title={labels.bonds} color={t.green} styles={styles}>
+              <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.bonds, 180)}</Text></View>
+            </SectionBlock>
+            <SectionBlock title={labels.flaws} color={t.green} styles={styles}>
+              <View style={styles.box}><Text style={styles.textBlock}>{clampText(data.flaws, 180)}</Text></View>
+            </SectionBlock>
             <SectionHeader title={labels.featuresAndTraits} color={t.blue} styles={styles} />
             <View style={[styles.box, styles.largeNarrativeBox]}>
               <FeaturesList features={featuresPageOne} styles={styles} />
@@ -514,16 +809,26 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
           </View>
         </View>
 
-        <PageFooter labels={labels} theme={theme} page={1} total={totalPages} styles={styles} />
+        <PageFooter labels={labels} theme={theme} styles={styles} />
       </Page>
 
       {/* Page 2 — Biography */}
       <Page size="LETTER" style={styles.page}>
         {featuresPageTwo.length > 0 ? (
           <View style={{ marginBottom: 6 }}>
-            <SectionHeader title={labels.featuresAndTraits} color={t.blue} styles={styles} />
+            <View wrap={false}>
+              <SectionHeader title={labels.featuresAndTraits} color={t.blue} styles={styles} />
+            </View>
             <View style={styles.box}>
               <FeaturesList features={featuresPageTwo} styles={styles} />
+            </View>
+          </View>
+        ) : null}
+        {equipmentSplit.pageTwo ? (
+          <View wrap={false} style={{ marginBottom: 6 }}>
+            <SectionHeader title={labels.equipmentContinuation} color={t.yellow} styles={styles} />
+            <View style={styles.box}>
+              <Text style={styles.textBlock}>{equipmentSplit.pageTwo}</Text>
             </View>
           </View>
         ) : null}
@@ -610,7 +915,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
           <Text style={styles.textBlock}>{clampText(data.treasureText, 420)}</Text>
         </View>
 
-        <PageFooter labels={labels} theme={theme} page={2} total={totalPages} styles={styles} />
+        <PageFooter labels={labels} theme={theme} styles={styles} />
       </Page>
 
       {/* Page 3 — Spellcasting (conditional) */}
@@ -667,7 +972,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               );
             })}
 
-            <PageFooter labels={labels} theme={theme} page={3 + blockIndex} total={totalPages} styles={styles} />
+            <PageFooter labels={labels} theme={theme} styles={styles} />
           </Page>
         ))}
     </Document>

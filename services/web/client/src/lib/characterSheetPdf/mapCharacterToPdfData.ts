@@ -9,6 +9,8 @@ import type {
   CharacterSheetPdfData,
   CharacterSheetPdfLabels,
   PdfAttackRow,
+  PdfClassEntry,
+  PdfHitDiceEntry,
   PdfSpellcastingBlock,
 } from "@/lib/characterSheetPdf/types";
 
@@ -32,6 +34,21 @@ function formatSpeed(speed: {
   if (speed.climb) parts.push(`climb ${speed.climb} ft`);
   if (speed.burrow) parts.push(`burrow ${speed.burrow} ft`);
   return parts.join(", ");
+}
+
+function formatSenses(senses: { name?: string; value?: number | null }[] | undefined): string {
+  if (!senses?.length) return "";
+  return senses
+    .filter((sense) => (sense.name && sense.name.trim()) || (sense.value != null && Number(sense.value) > 0))
+    .map((sense) => {
+      const name = (sense.name ?? "").trim();
+      const hasRange = sense.value != null && Number(sense.value) > 0;
+      if (!hasRange) return name;
+      const range = `${Number(sense.value)} ft`;
+      return name ? `${name} (${range})` : range;
+    })
+    .filter(Boolean)
+    .join(", ");
 }
 
 function formatDamage(action: Action): string {
@@ -158,6 +175,7 @@ export function mapCharacterToPdfData(
       abbr: labels.abilityAbbr[key] ?? key.slice(0, 3).toUpperCase(),
       bonus: formatSignedBonus(bonus),
       proficient: isProficient,
+      masteryLevel: isProficient ? 2 : 0,
     };
   });
 
@@ -177,10 +195,17 @@ export function mapCharacterToPdfData(
     }
 
     return {
+      key,
       name: labels.skillNames[key] ?? key,
+      abilityName: labels.abilityNames[abilityKey] ?? abilityKey,
       abilityAbbr: labels.abilityAbbr[abilityKey] ?? abilityKey.slice(0, 3).toUpperCase(),
       bonus: formatSignedBonus(bonus),
       proficient,
+      masteryLevel: isPlayer(character)
+        ? (character.stats.masteries[key as keyof typeof character.stats.masteries] ?? 0)
+        : proficient
+          ? 2
+          : 0,
     };
   });
 
@@ -190,7 +215,13 @@ export function mapCharacterToPdfData(
     .join(" ");
 
   let raceOrType = "";
+  let race = "";
+  let subrace = "";
   let classOrCr = "";
+  let classPrimary = "";
+  let subclassPrimary = "";
+  let classEntries: PdfClassEntry[] = [];
+  let hitDiceEntries: PdfHitDiceEntry[] = [];
   let backgroundOrSubtype = "";
   let experience = "";
   let inspiration = false;
@@ -202,19 +233,33 @@ export function mapCharacterToPdfData(
   let proficiencies = "";
 
   if (isPlayer(character)) {
-    raceOrType = [character.profile?.race, character.profile?.subrace].filter(Boolean).join(" ");
-    classOrCr = character.class
-      .map((cls) => formatClassLevel(translateClass(cls.name), cls.level))
+    race = orEmpty(character.profile?.race);
+    subrace = orEmpty(character.profile?.subrace);
+    raceOrType = [race, subrace].filter(Boolean).join(" ");
+    classEntries = character.class.map((cls) => ({
+      name: translateClass(cls.name),
+      subclass: orEmpty(cls.subclass),
+      level: cls.level,
+      label: formatClassLevel(translateClass(cls.name), cls.level),
+    }));
+    classPrimary = classEntries
+      .map((entry) => formatClassLevel(entry.name, entry.level))
       .join(" / ");
+    subclassPrimary = classEntries
+      .map((entry) => entry.subclass)
+      .filter(Boolean)
+      .join(" / ");
+    classOrCr = classPrimary;
     backgroundOrSubtype = orEmpty(character.profile?.history);
     experience = String(character.progression?.experience ?? 0);
     inspiration = Boolean(character.inspiration);
     proficiencyBonus = formatSignedBonus(character.stats.proficiencyBonus ?? 2);
-    hitDice = character.class
-      .map((cls) => {
-        const remaining = cls.hitDiceRemaining ?? cls.level;
-        return `${remaining}d${cls.hitDice} (${translateClass(cls.name)})`;
-      })
+    hitDiceEntries = character.class.map((cls) => ({
+      notation: `${cls.hitDiceRemaining ?? cls.level}d${cls.hitDice}`,
+      className: translateClass(cls.name),
+    }));
+    hitDice = hitDiceEntries
+      .map((entry) => `${entry.notation} (${entry.className})`)
       .join(", ");
     deathSaveSuccesses = character.deathSaves?.successes ?? 0;
     deathSaveFailures = character.deathSaves?.failures ?? 0;
@@ -224,7 +269,9 @@ export function mapCharacterToPdfData(
     const tools = (character.stats.tools ?? []).join(", ");
     proficiencies = [armor, weapons, tools].filter(Boolean).join(" · ");
   } else {
-    raceOrType = [character.profile?.type, character.profile?.subtype].filter(Boolean).join(" / ");
+    race = orEmpty(character.profile?.type);
+    subrace = orEmpty(character.profile?.subtype);
+    raceOrType = [race, subrace].filter(Boolean).join(" / ");
     const cr = formatChallengeRating(character.challenge?.challengeRating);
     const xp = character.challenge?.experiencePoints ?? 0;
     classOrCr = `${labels.challengeRating} ${cr} (${xp} XP)`;
@@ -244,7 +291,13 @@ export function mapCharacterToPdfData(
     displayName,
     playerName,
     raceOrType,
+    race,
+    subrace,
     classOrCr,
+    classPrimary,
+    subclassPrimary,
+    classEntries,
+    hitDiceEntries,
     backgroundOrSubtype,
     alignment,
     experience,
@@ -275,6 +328,10 @@ export function mapCharacterToPdfData(
     },
     proficiencies,
     languages: (stats.languages ?? []).join(", "),
+    senses: formatSenses(stats.senses),
+    tools: (stats.tools ?? []).join(", "),
+    weapons: (stats.weapons ?? []).join(", "),
+    armors: (stats.armors ?? []).join(", "),
     features: (character.abilities ?? []).map((a) => ({
       name: a.name ?? "",
       description: a.description ?? "",
