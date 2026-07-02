@@ -77,7 +77,7 @@ export function ExportCharacterSheetPdfDialog({
               onClick={() => setTheme("dark")}
               aria-pressed={theme === "dark"}
               className={cn(
-                "flex items-center gap-2 rounded-[15px] border px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary",
+                "flex cursor-pointer items-center gap-2 rounded-[15px] border px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary",
                 theme === "dark" ? "border-primary bg-primary/20" : "border-white/15 bg-gray-middle-light hover:bg-gray",
               )}>
               <Moon className="size-5 shrink-0 text-blue" aria-hidden="true" />
@@ -91,7 +91,7 @@ export function ExportCharacterSheetPdfDialog({
               onClick={() => setTheme("light")}
               aria-pressed={theme === "light"}
               className={cn(
-                "flex items-center gap-2 rounded-[15px] border px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary",
+                "flex cursor-pointer items-center gap-2 rounded-[15px] border px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary",
                 theme === "light" ? "border-primary bg-primary/20" : "border-white/15 bg-gray-middle-light hover:bg-gray",
               )}>
               <Sun className="size-5 shrink-0 text-yellow" aria-hidden="true" />

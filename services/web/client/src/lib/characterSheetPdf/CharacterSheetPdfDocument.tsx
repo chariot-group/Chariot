@@ -16,14 +16,18 @@ import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfT
 
 Font.registerHyphenationCallback((word) => [word]);
 
-/** Fixed header height (4:5 avatar 48×60 pt) — grows slightly for multiclass rows. */
+/** Fixed header height (4:5 avatar 48×60 pt) — grows only for dense multiclass stacks. */
 const PDF_HEADER_ROW_HEIGHT = 60;
-const PDF_HEADER_MULTICLASS_EXTRA_HEIGHT = 12;
+const PDF_HEADER_MULTICLASS_INLINE_THRESHOLD = 4;
+const PDF_HEADER_MULTICLASS_EXTRA_HEIGHT = 11;
 const PDF_HEADER_AVATAR_WIDTH = 48;
 
 function getHeaderRowHeight(classCount: number): number {
-  if (classCount <= 1) return PDF_HEADER_ROW_HEIGHT;
-  return PDF_HEADER_ROW_HEIGHT + (classCount - 1) * PDF_HEADER_MULTICLASS_EXTRA_HEIGHT;
+  if (classCount <= PDF_HEADER_MULTICLASS_INLINE_THRESHOLD) return PDF_HEADER_ROW_HEIGHT;
+  return (
+    PDF_HEADER_ROW_HEIGHT +
+    (classCount - PDF_HEADER_MULTICLASS_INLINE_THRESHOLD) * PDF_HEADER_MULTICLASS_EXTRA_HEIGHT
+  );
 }
 
 function createStyles(theme: CharacterSheetPdfTheme) {
@@ -65,6 +69,7 @@ function createStyles(theme: CharacterSheetPdfTheme) {
       padding: 10,
       marginBottom: 7,
     },
+    lastRowNoMargin: { marginBottom: 0 },
     row: { flexDirection: "row", gap: 7 },
     col: { flex: 1 },
     label: { fontSize: 6.6, color: t.textMuted, marginBottom: 2 },
@@ -112,8 +117,7 @@ function createStyles(theme: CharacterSheetPdfTheme) {
       borderTopLeftRadius: 14,
       borderBottomLeftRadius: 14,
     },
-    qrCode: { width: 48, height: 48, borderRadius: 4 },
-    qrHint: { fontSize: 5.5, color: t.textMuted, marginTop: 2, textAlign: "center" },
+    qrCode: { width: 42, height: 42, objectFit: "contain" },
     valueWithIcon: { flexDirection: "row", alignItems: "center", gap: 3 },
     chip: {
       borderRadius: 999,
@@ -148,35 +152,33 @@ function createStyles(theme: CharacterSheetPdfTheme) {
       flexShrink: 0,
     },
     headerQrColumn: {
-      width: 50,
-      height: PDF_HEADER_ROW_HEIGHT,
+      width: 52,
       flexShrink: 0,
       alignItems: "center",
       justifyContent: "center",
-      paddingRight: 4,
+      paddingVertical: 9,
+      paddingHorizontal: 4,
     },
-    headerMainColumn: { flex: 1, height: PDF_HEADER_ROW_HEIGHT, justifyContent: "center", paddingHorizontal: 6 },
-    headerMainRow: { flexDirection: "row", gap: 5, alignItems: "stretch" },
-    headerNameItem: {
-      width: "34%",
-      borderWidth: 1,
-      borderColor: t.border,
-      borderRadius: 10,
-      paddingVertical: 4,
-      paddingHorizontal: 6,
+    headerMainColumn: { flex: 1, justifyContent: "center", paddingHorizontal: 6, minWidth: 0 },
+    headerMainRow: { flexDirection: "row", gap: 4, alignItems: "center" },
+    headerIdentity: {
+      flexShrink: 0,
+      maxWidth: 128,
+      paddingRight: 2,
       justifyContent: "center",
     },
-    charName: { fontSize: 14.5, fontWeight: "bold", lineHeight: 1.2 },
-    headerInfoGrid: { flex: 1, flexDirection: "row", gap: 5, alignItems: "stretch" },
+    charName: { fontSize: 15, fontWeight: "bold", lineHeight: 1.15 },
+    headerRaceSub: { fontSize: 9, color: t.textMuted, marginTop: 2, lineHeight: 1.2 },
+    headerInfoGrid: { flex: 1, flexDirection: "row", gap: 6, alignItems: "center", minWidth: 0 },
     headerInfoItem: {
       flex: 1,
-      borderWidth: 1,
-      borderColor: t.border,
-      borderRadius: 10,
-      paddingVertical: 4,
-      paddingHorizontal: 5,
+      minWidth: 0,
+      paddingHorizontal: 2,
       justifyContent: "center",
     },
+    headerStackItem: { justifyContent: "center" },
+    headerStackDivider: { marginTop: 5 },
+    headerValueNormal: { fontSize: 8.8, fontWeight: "normal", lineHeight: 1.25 },
     bodyGrid: { flexDirection: "row", gap: 7, alignItems: "flex-start" },
     colLeftRegion: { width: "51%", flexDirection: "column" },
     leftTopRow: { flexDirection: "row", gap: 7, alignItems: "flex-start" },
@@ -188,7 +190,7 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     scoreCard: {
       borderWidth: 1,
       borderColor: t.border,
-      borderRadius: 13,
+      borderRadius: 15,
       paddingVertical: 5,
       paddingHorizontal: 3,
       alignItems: "center",
@@ -207,7 +209,7 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     smallPillValue: { fontSize: 8.8, fontWeight: "bold" },
     checkbox: { width: 10, height: 10, borderWidth: 1, borderColor: t.textMuted, borderRadius: 2, alignItems: "center", justifyContent: "center" },
     checkboxInner: { width: 6, height: 6, borderRadius: 1, backgroundColor: t.text },
-    statLineBox: { flex: 1, borderWidth: 1, borderColor: t.border, borderRadius: 10, paddingHorizontal: 4, paddingVertical: 3, backgroundColor: t.cardBackground, alignItems: "center", justifyContent: "center", gap: 1, minWidth: 0 },
+    statLineBox: { flex: 1, borderWidth: 1, borderColor: t.border, borderRadius: 15, paddingHorizontal: 4, paddingVertical: 3, backgroundColor: t.cardBackground, alignItems: "center", justifyContent: "center", gap: 1, minWidth: 0 },
     statLineLabel: { fontSize: 6, color: t.textMuted, textTransform: "uppercase", textAlign: "center" },
     statLineValue: { fontSize: 12, fontWeight: "bold", textAlign: "center" },
     dotsRow: { flexDirection: "row", alignItems: "center", gap: 5, flex: 1, justifyContent: "flex-end" },
@@ -215,7 +217,6 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     deathSavesSection: {
       marginTop: 8,
       paddingTop: 8,
-      paddingBottom: 6,
       paddingHorizontal: 6,
       borderTopWidth: 1,
       borderTopColor: t.border,
@@ -252,7 +253,7 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     profLabel: { fontSize: 7, fontWeight: "bold", color: t.textMuted, width: 54, flexShrink: 0 },
     profValue: { fontSize: 7.5, flex: 1, lineHeight: 1.35 },
     multiclassLine: { fontSize: 7.6, fontWeight: "bold", lineHeight: 1.25 },
-    multiclassSubclass: { fontSize: 6.8, fontWeight: "normal", color: t.textMuted, lineHeight: 1.2 },
+    multiclassSubclass: { fontSize: 6.8, fontWeight: "normal", color: t.textMuted },
     hitDiceBlock: { marginBottom: 4 },
     hitDiceChips: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 3 },
     hitDiceChip: {
@@ -365,8 +366,7 @@ function ClassHeaderValue({
       <HeaderValueWithSubtext
         primary={classPrimary || " "}
         secondary={subclassPrimary}
-        primaryMax={16}
-        secondaryMax={12}
+        primaryMax={24}
         styles={styles}
       />
     );
@@ -375,12 +375,15 @@ function ClassHeaderValue({
   return (
     <View>
       {entries.map((entry, index) => (
-        <View key={`${entry.name}-${entry.level}-${index}`} style={index > 0 ? { marginTop: 2 } : {}}>
-          <Text style={styles.multiclassLine}>{clampText(entry.label, 18)}</Text>
+        <Text
+          key={`${entry.name}-${entry.level}-${index}`}
+          style={[styles.multiclassLine, index > 0 ? { marginTop: 1.5 } : {}]}
+        >
+          {entry.label.trim() || " "}
           {entry.subclass ? (
-            <Text style={styles.multiclassSubclass}>{clampText(entry.subclass, 16)}</Text>
+            <Text style={styles.multiclassSubclass}> · {entry.subclass.trim()}</Text>
           ) : null}
-        </View>
+        </Text>
       ))}
     </View>
   );
@@ -391,15 +394,17 @@ function HitDiceRow({
   entries,
   fallback,
   styles,
+  isLast = false,
 }: {
   label: string;
   entries: PdfHitDiceEntry[];
   fallback: string;
   styles: ReturnType<typeof createStyles>;
+  isLast?: boolean;
 }) {
   if (entries.length <= 1) {
     return (
-      <View style={styles.fieldRow}>
+      <View style={[styles.fieldRow, isLast ? styles.lastRowNoMargin : {}]}>
         <Text style={styles.fieldLabel}>{label}</Text>
         <Text style={styles.fieldValue}>{clampText(fallback, 36)}</Text>
       </View>
@@ -407,7 +412,7 @@ function HitDiceRow({
   }
 
   return (
-    <View style={styles.hitDiceBlock}>
+    <View style={[styles.hitDiceBlock, isLast ? styles.lastRowNoMargin : {}]}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <View style={styles.hitDiceChips}>
         {entries.map((entry, index) => (
@@ -425,17 +430,15 @@ function HeaderValueWithSubtext({
   primary,
   secondary,
   primaryMax,
-  secondaryMax,
   styles,
 }: {
   primary: string;
   secondary: string;
   primaryMax: number;
-  secondaryMax: number;
   styles: ReturnType<typeof createStyles>;
 }) {
   const primaryText = clampText(primary, primaryMax);
-  const secondaryText = secondary ? clampText(secondary, secondaryMax) : "";
+  const secondaryText = secondary.trim();
 
   return (
     <Text style={styles.value}>
@@ -485,7 +488,11 @@ function FeaturesList({
   return (
     <>
       {features.map((feature, index) => (
-        <View key={`${feature.name}-${index}`} wrap={false} style={styles.featureItem}>
+        <View
+          key={`${feature.name}-${index}`}
+          wrap={false}
+          style={[styles.featureItem, index === features.length - 1 ? styles.lastRowNoMargin : {}]}
+        >
           <Text style={styles.featureName}>{feature.name.trim() || " "}</Text>
           {feature.description.trim() ? (
             <Text style={styles.featureDescription}>{feature.description.trim()}</Text>
@@ -523,21 +530,13 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
             ) : null}
             <View style={[styles.headerMainColumn, { height: headerRowHeight }]}>
               <View style={styles.headerMainRow}>
-                <View style={styles.headerNameItem}>
-                  <Text style={styles.label}>{labels.characterName}</Text>
-                  <Text style={styles.charName}>{clampText(data.displayName, 38)}</Text>
+                <View style={styles.headerIdentity}>
+                  <Text style={styles.charName}>{clampText(data.displayName, 34)}</Text>
+                  <Text style={styles.headerRaceSub}>
+                    {clampText([data.race, data.subrace].filter(Boolean).join(" "), 34) || " "}
+                  </Text>
                 </View>
                 <View style={styles.headerInfoGrid}>
-                  <View style={styles.headerInfoItem}>
-                    <Text style={styles.label}>{data.isPlayer ? labels.race : labels.creatureType}</Text>
-                    <HeaderValueWithSubtext
-                      primary={data.isPlayer ? data.race : data.race}
-                      secondary={data.isPlayer ? data.subrace : data.subrace}
-                      primaryMax={16}
-                      secondaryMax={12}
-                      styles={styles}
-                    />
-                  </View>
                   <View style={styles.headerInfoItem}>
                     <Text style={styles.label}>{data.isPlayer ? labels.classAndLevel : labels.challengeRating}</Text>
                     {data.isPlayer ? (
@@ -548,24 +547,25 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                         styles={styles}
                       />
                     ) : (
-                      <Text style={styles.value}>{clampText(data.classOrCr, 24)}</Text>
+                      <Text style={styles.value}>{clampText(data.classOrCr, 26)}</Text>
                     )}
                   </View>
                   <View style={styles.headerInfoItem}>
-                    <Text style={styles.label}>{labels.background}</Text>
-                    <Text style={styles.value}>{clampText(data.backgroundOrSubtype, 24)}</Text>
-                  </View>
-                  <View style={styles.headerInfoItem}>
-                    <Text style={styles.label}>{labels.alignment}</Text>
-                    <Text style={styles.value}>{clampText(data.alignment, 24)}</Text>
+                    <View style={styles.headerStackItem}>
+                      <Text style={styles.label}>{labels.background}</Text>
+                      <Text style={styles.headerValueNormal}>{clampText(data.backgroundOrSubtype, 40) || " "}</Text>
+                    </View>
+                    <View style={[styles.headerStackItem, styles.headerStackDivider]}>
+                      <Text style={styles.label}>{labels.alignment}</Text>
+                      <Text style={styles.value}>{clampText(data.alignment, 22)}</Text>
+                    </View>
                   </View>
                 </View>
               </View>
             </View>
             {data.qrCodeDataUrl ? (
-              <View style={[styles.headerQrColumn, { height: headerRowHeight }]}>
+              <View style={styles.headerQrColumn}>
                 <Image src={data.qrCodeDataUrl} style={styles.qrCode} alt="" />
-                <Text style={styles.qrHint}>{labels.qrCodeHint}</Text>
               </View>
             ) : null}
           </View>
@@ -686,8 +686,11 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 { label: labels.tools, value: data.tools },
                 { label: labels.weapons, value: data.weapons },
                 { label: labels.armors, value: data.armors },
-              ].map((entry) => (
-                <View key={entry.label} style={styles.profRow}>
+              ].map((entry, index, arr) => (
+                <View
+                  key={entry.label}
+                  style={[styles.profRow, index === arr.length - 1 ? styles.lastRowNoMargin : {}]}
+                >
                   <Text style={styles.profLabel}>{entry.label}</Text>
                   <Text style={styles.profValue}>{clampText(entry.value, 220)}</Text>
                 </View>
@@ -730,6 +733,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                   entries={data.isPlayer ? data.hitDiceEntries : []}
                   fallback={data.hitDice}
                   styles={styles}
+                  isLast={!data.isPlayer}
                 />
                 {data.isPlayer ? (
                   <View style={styles.deathSavesSection}>
@@ -743,7 +747,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                         fillColor={t.green}
                       />
                     </View>
-                    <View style={styles.deathSaveRow}>
+                    <View style={[styles.deathSaveRow, styles.lastRowNoMargin]}>
                       <Text style={styles.deathSaveLabel}>{labels.failures}</Text>
                       <Dots
                         styles={styles}
