@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,10 @@ import {
   codexPlayerTranslationLooksUsable,
 } from "@/utils/codexLocale.utils";
 import { GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
+import {
+  createPortaledFilterOpenTracker,
+  shouldPreventDialogDismissForPortaledFilter,
+} from "@/lib/portaledFilterOpenTracker";
 import React from "react";
 
 type CodexEntityTypeFilter = "both" | "monsters" | "players";
@@ -210,6 +215,7 @@ function PlayerResultItem({
 }
 
 export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelected }: MonsterCodexDialogProps) {
+  const router = useRouter();
   const userLocale = useLocale() as Locale;
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
   const tMagic = useTranslations("characterDetail.magic");
@@ -235,6 +241,18 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   const [previewLangResolving, setPreviewLangResolving] = useState(false);
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const isLoadingRef = useRef(false);
+  const portaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+
+  const handlePortaledFilterOpenChange = useCallback((isOpen: boolean) => {
+    portaledFilterOpenTrackerRef.current.notifyOpenChange(isOpen);
+  }, []);
+
+  const shouldPreventDialogOutsideDismiss = useCallback((target: EventTarget | null) => {
+    return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTrackerRef.current, target);
+  }, []);
+
+  const compactLanguageLabel =
+    selectedLang === null ? "🌍" : codexLocaleFlagEmoji(selectedLang) || selectedLang.toUpperCase();
 
   const ITEMS_PER_PAGE = 20;
 
@@ -357,6 +375,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
+      portaledFilterOpenTrackerRef.current.reset();
       searchCodex("", 1, false, userLocale, null, "both");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -549,6 +568,11 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     }
   };
 
+  const handleClose = () => {
+    onOpenChange(false);
+    router.back();
+  };
+
   const selectedPreviewCodexItem = selectedCodexMonster ?? selectedCodexPlayer;
 
   const countVisibleResultRows = () => {
@@ -584,8 +608,32 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   return (
     <Dialog
       open={open}
-      onOpenChange={onOpenChange}>
-      <DialogContent className="sm:w-4/5 h-[90vh] flex flex-col p-0">
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          handleClose();
+          return;
+        }
+        onOpenChange(nextOpen);
+      }}>
+      <DialogContent
+        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        onPointerDownOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onFocusOutside={(event) => {
+          if (shouldPreventDialogOutsideDismiss(event.target)) {
+            event.preventDefault();
+          }
+        }}>
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
         </DialogHeader>
@@ -593,39 +641,74 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
         <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
           <div
             className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
-            <div className="flex shrink-0 flex-col gap-2 w-full overflow-visible">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder={tDialog("searchPlaceholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                  autoFocus
-                />
+            <div className="flex shrink-0 flex-col gap-1.5 w-full overflow-visible">
+              <div className="flex w-full min-w-0 items-center gap-2">
+                <div className="relative min-w-0 flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder={tDialog("searchPlaceholder")}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                    autoFocus
+                  />
+                </div>
+                <Select
+                  value={selectedLang ?? "all"}
+                  onOpenChange={handlePortaledFilterOpenChange}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setSelectedLang(null);
+                    } else if (value === "fr" || value === "en" || value === "es") {
+                      setSelectedLang(value);
+                    }
+                  }}>
+                  <SelectTrigger
+                    className="h-9 w-auto shrink-0 gap-1 px-2.5 focus-visible:ring-inset [&_svg]:hidden"
+                    aria-label={tDialog("languageFilter.ariaLabel")}>
+                    <span
+                      className="text-lg leading-none select-none"
+                      aria-hidden="true">
+                      {compactLanguageLabel}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    align="end"
+                    side="bottom"
+                    sideOffset={4}
+                    className="min-w-[var(--radix-select-trigger-width)]">
+                    <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
+                    <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
+                    <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
+                    <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Select
-                value={entityTypeFilter}
-                onValueChange={(value) => {
-                  if (value === "both" || value === "monsters" || value === "players") {
-                    setEntityTypeFilter(value);
-                  }
-                }}>
-                <SelectTrigger
-                  className="w-full focus-visible:ring-inset"
-                  aria-label={tDialog("entityTypeFilter.ariaLabel")}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="both">{tDialog("entityTypeFilter.both")}</SelectItem>
-                  <SelectItem value="monsters">{tDialog("entityTypeFilter.monsters")}</SelectItem>
-                  <SelectItem value="players">{tDialog("entityTypeFilter.players")}</SelectItem>
-                </SelectContent>
-              </Select>
               <div className="flex w-full min-w-0 gap-2">
                 <Select
+                  value={entityTypeFilter}
+                  onOpenChange={handlePortaledFilterOpenChange}
+                  onValueChange={(value) => {
+                    if (value === "both" || value === "monsters" || value === "players") {
+                      setEntityTypeFilter(value);
+                    }
+                  }}>
+                  <SelectTrigger
+                    className="min-w-0 flex-1 focus-visible:ring-inset"
+                    aria-label={tDialog("entityTypeFilter.ariaLabel")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="both">{tDialog("entityTypeFilter.both")}</SelectItem>
+                    <SelectItem value="monsters">{tDialog("entityTypeFilter.monsters")}</SelectItem>
+                    <SelectItem value="players">{tDialog("entityTypeFilter.players")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
                   value={selectedGameSystem ?? "all"}
+                  onOpenChange={handlePortaledFilterOpenChange}
                   onValueChange={(value) => {
                     if (value === "all") {
                       setSelectedGameSystem(null);
@@ -647,27 +730,6 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                         {tDialog(`gameSystemFilter.${gameSystem}`)}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={selectedLang ?? "all"}
-                  onValueChange={(value) => {
-                    if (value === "all") {
-                      setSelectedLang(null);
-                    } else if (value === "fr" || value === "en" || value === "es") {
-                      setSelectedLang(value);
-                    }
-                  }}>
-                  <SelectTrigger
-                    className="min-w-0 flex-1 focus-visible:ring-inset"
-                    aria-label={tDialog("languageFilter.ariaLabel")}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
-                    <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
-                    <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
-                    <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -881,7 +943,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}>
+            onClick={handleClose}>
             {tDialog("cancel")}
           </Button>
           <Button

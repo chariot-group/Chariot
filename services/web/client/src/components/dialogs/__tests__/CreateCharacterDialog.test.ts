@@ -1,30 +1,27 @@
 import { describe, expect, it } from "vitest";
 import {
-  CHARACTER_TYPE_OPTION_ICON_WRAPPER,
-  getCharacterTypeOptionClasses,
+  CREATE_CHARACTER_LIBRARY_STRIP,
+  getManualCharacterButtonClasses,
 } from "@/components/dialogs/createCharacterDialogStyles";
 
 describe("CreateCharacterDialog — createCharacterDialogStyles", () => {
-  it("nominal: enabled option uses project card surface and neutral hover", () => {
-    const classes = getCharacterTypeOptionClasses();
+  it("nominal: manual player button uses compact outline styling", () => {
+    const classes = getManualCharacterButtonClasses("player");
 
-    expect(classes).toContain("bg-gray-middle-light/90");
     expect(classes).toContain("rounded-[12px]");
-    expect(classes).toContain("hover:border-white/25");
-    expect(classes).toContain("hover:bg-gray-middle-light");
-    expect(classes).toContain("hover:-translate-y-0.5");
+    expect(classes).toContain("hover:border-blue/40");
+    expect(classes).toContain("py-3.5");
   });
 
-  it("edge: disabled option removes hover affordances", () => {
-    const classes = getCharacterTypeOptionClasses(true);
+  it("nominal: manual npc button uses pink hover accent", () => {
+    const classes = getManualCharacterButtonClasses("npc");
 
-    expect(classes).toContain("opacity-50");
-    expect(classes).toContain("pointer-events-none");
-    expect(classes).not.toContain("hover:border-primary/55");
+    expect(classes).toContain("hover:border-pink/40");
   });
 
-  it("nominal: icon wrapper reacts on group hover", () => {
-    expect(CHARACTER_TYPE_OPTION_ICON_WRAPPER).toContain("group-hover:ring-white/20");
-    expect(CHARACTER_TYPE_OPTION_ICON_WRAPPER).toContain("group-hover:scale-105");
+  it("nominal: library strip stacks content vertically", () => {
+    expect(CREATE_CHARACTER_LIBRARY_STRIP).toContain("bg-gray-middle-light/90");
+    expect(CREATE_CHARACTER_LIBRARY_STRIP).toContain("flex-col");
+    expect(CREATE_CHARACTER_LIBRARY_STRIP).toContain("rounded-[12px]");
   });
 });
