@@ -41,7 +41,15 @@ type CodexEntityTypeFilter = "both" | "monsters" | "players";
 interface MonsterCodexDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onMonsterSelected: (monster: Partial<NPC>) => void;
+  onMonsterSelected?: (monster: Partial<NPC>) => void;
+  /** Read-only browse: preview only, no NPC draft creation. */
+  browseOnly?: boolean;
+  /** Renders search UI without an outer Dialog (for embedding in a parent modal). */
+  embedded?: boolean;
+  /** Locks entity search to monsters or players and hides the entity-type filter. */
+  lockedEntityTypeFilter?: "monsters" | "players";
+  /** Shared portaled filter tracker when embedded in a parent dialog. */
+  sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
 }
 
 function formatPlayerListDetail(
@@ -214,7 +222,15 @@ function PlayerResultItem({
   );
 }
 
-export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelected }: MonsterCodexDialogProps) {
+export default function MonsterCodexDialog({
+  open,
+  onOpenChange,
+  onMonsterSelected,
+  browseOnly = false,
+  embedded = false,
+  lockedEntityTypeFilter,
+  sharedPortaledFilterOpenTracker,
+}: MonsterCodexDialogProps) {
   const router = useRouter();
   const userLocale = useLocale() as Locale;
   const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
@@ -224,7 +240,8 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
   const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(null);
-  const [entityTypeFilter, setEntityTypeFilter] = useState<CodexEntityTypeFilter>("both");
+  const resolvedEntityTypeFilter = lockedEntityTypeFilter ?? "both";
+  const [entityTypeFilter, setEntityTypeFilter] = useState<CodexEntityTypeFilter>(resolvedEntityTypeFilter);
   const [searchResults, setSearchResults] = useState<CodexSearchResultItem[]>([]);
   const [selectedMonster, setSelectedMonster] = useState<Partial<NPC> | null>(null);
   const [selectedCodexMonster, setSelectedCodexMonster] = useState<CodexMonsterItem | null>(null);
@@ -241,15 +258,23 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   const [previewLangResolving, setPreviewLangResolving] = useState(false);
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const isLoadingRef = useRef(false);
-  const portaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+  const internalPortaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+  const portaledFilterOpenTracker =
+    sharedPortaledFilterOpenTracker ?? internalPortaledFilterOpenTrackerRef.current;
 
-  const handlePortaledFilterOpenChange = useCallback((isOpen: boolean) => {
-    portaledFilterOpenTrackerRef.current.notifyOpenChange(isOpen);
-  }, []);
+  const handlePortaledFilterOpenChange = useCallback(
+    (isOpen: boolean) => {
+      portaledFilterOpenTracker.notifyOpenChange(isOpen);
+    },
+    [portaledFilterOpenTracker],
+  );
 
-  const shouldPreventDialogOutsideDismiss = useCallback((target: EventTarget | null) => {
-    return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTrackerRef.current, target);
-  }, []);
+  const shouldPreventDialogOutsideDismiss = useCallback(
+    (target: EventTarget | null) => {
+      return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target);
+    },
+    [portaledFilterOpenTracker],
+  );
 
   const compactLanguageLabel =
     selectedLang === null ? "🌍" : codexLocaleFlagEmoji(selectedLang) || selectedLang.toUpperCase();
@@ -360,7 +385,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setSearchQuery("");
       setSelectedLang(userLocale);
       setSelectedGameSystem(null);
-      setEntityTypeFilter("both");
+      setEntityTypeFilter(resolvedEntityTypeFilter);
       setSearchResults([]);
       setSelectedMonster(null);
       setSelectedCodexMonster(null);
@@ -375,8 +400,10 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
-      portaledFilterOpenTrackerRef.current.reset();
-      searchCodex("", 1, false, userLocale, null, "both");
+      if (!sharedPortaledFilterOpenTracker) {
+        portaledFilterOpenTracker.reset();
+      }
+      searchCodex("", 1, false, userLocale, null, resolvedEntityTypeFilter);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -563,14 +590,16 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
   };
 
   const handleValidate = () => {
-    if (selectedMonster) {
+    if (selectedMonster && onMonsterSelected) {
       onMonsterSelected(selectedMonster);
     }
   };
 
   const handleClose = () => {
     onOpenChange(false);
-    router.back();
+    if (!browseOnly && !embedded) {
+      router.back();
+    }
   };
 
   const selectedPreviewCodexItem = selectedCodexMonster ?? selectedCodexPlayer;
@@ -605,40 +634,15 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
     return visibleCount;
   };
 
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(nextOpen) => {
-        if (!nextOpen) {
-          handleClose();
-          return;
-        }
-        onOpenChange(nextOpen);
-      }}>
-      <DialogContent
-        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
-        onPointerDownOutside={(event) => {
-          const target = event.detail.originalEvent?.target ?? event.target;
-          if (shouldPreventDialogOutsideDismiss(target)) {
-            event.preventDefault();
-          }
-        }}
-        onInteractOutside={(event) => {
-          const target = event.detail.originalEvent?.target ?? event.target;
-          if (shouldPreventDialogOutsideDismiss(target)) {
-            event.preventDefault();
-          }
-        }}
-        onFocusOutside={(event) => {
-          if (shouldPreventDialogOutsideDismiss(event.target)) {
-            event.preventDefault();
-          }
-        }}>
+  const dialogBody = (
+    <>
+      {!embedded ? (
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
         </DialogHeader>
+      ) : null}
 
-        <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
           <div
             className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
             <div className="flex shrink-0 flex-col gap-1.5 w-full overflow-visible">
@@ -687,25 +691,27 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
                 </Select>
               </div>
               <div className="flex w-full min-w-0 gap-2">
-                <Select
-                  value={entityTypeFilter}
-                  onOpenChange={handlePortaledFilterOpenChange}
-                  onValueChange={(value) => {
-                    if (value === "both" || value === "monsters" || value === "players") {
-                      setEntityTypeFilter(value);
-                    }
-                  }}>
-                  <SelectTrigger
-                    className="min-w-0 flex-1 focus-visible:ring-inset"
-                    aria-label={tDialog("entityTypeFilter.ariaLabel")}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="both">{tDialog("entityTypeFilter.both")}</SelectItem>
-                    <SelectItem value="monsters">{tDialog("entityTypeFilter.monsters")}</SelectItem>
-                    <SelectItem value="players">{tDialog("entityTypeFilter.players")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                {!lockedEntityTypeFilter ? (
+                  <Select
+                    value={entityTypeFilter}
+                    onOpenChange={handlePortaledFilterOpenChange}
+                    onValueChange={(value) => {
+                      if (value === "both" || value === "monsters" || value === "players") {
+                        setEntityTypeFilter(value);
+                      }
+                    }}>
+                    <SelectTrigger
+                      className="min-w-0 flex-1 focus-visible:ring-inset"
+                      aria-label={tDialog("entityTypeFilter.ariaLabel")}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="both">{tDialog("entityTypeFilter.both")}</SelectItem>
+                      <SelectItem value="monsters">{tDialog("entityTypeFilter.monsters")}</SelectItem>
+                      <SelectItem value="players">{tDialog("entityTypeFilter.players")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : null}
                 <Select
                   value={selectedGameSystem ?? "all"}
                   onOpenChange={handlePortaledFilterOpenChange}
@@ -939,6 +945,7 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
           </div>
         </div>
 
+      {!embedded ? (
         <DialogFooter className="px-6 pb-6 pt-4 border-t shrink-0">
           <Button
             type="button"
@@ -946,14 +953,58 @@ export default function MonsterCodexDialog({ open, onOpenChange, onMonsterSelect
             onClick={handleClose}>
             {tDialog("cancel")}
           </Button>
-          <Button
-            type="button"
-            onClick={handleValidate}
-            disabled={!selectedMonster}
-            className="bg-purple hover:bg-purple/90 text-white">
-            {tDialog("validate")}
-          </Button>
+          {!browseOnly ? (
+            <Button
+              type="button"
+              onClick={handleValidate}
+              disabled={!selectedMonster}
+              className="bg-purple hover:bg-purple/90 text-white">
+              {tDialog("validate")}
+            </Button>
+          ) : null}
         </DialogFooter>
+      ) : null}
+    </>
+  );
+
+  if (embedded) {
+    if (!open) {
+      return null;
+    }
+
+    return <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{dialogBody}</div>;
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          handleClose();
+          return;
+        }
+        onOpenChange(nextOpen);
+      }}>
+      <DialogContent
+        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        onPointerDownOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onFocusOutside={(event) => {
+          if (shouldPreventDialogOutsideDismiss(event.target)) {
+            event.preventDefault();
+          }
+        }}>
+        {dialogBody}
       </DialogContent>
     </Dialog>
   );

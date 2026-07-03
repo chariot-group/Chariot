@@ -3790,3 +3790,58 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/CodexService.ts`
 - `services/web/client/src/utils/codexLocale.utils.ts`
 - `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
+## FR-session-gm-codex-library: In-Session GM Community Library Access
+
+**Rule**: During an active session, the Game Master MUST be able to open a read-only community library (Codex) search from anywhere in the application, covering spells, monsters, and premade player characters.
+
+**Scope**:
+
+- Applies when the user is the GM (`currentParticipant.status === "gameMaster"`) and `isInSession === true`.
+- Complements FR-codex-game-system-filter, FR-codex-npc-search-entity-type, FR-codex-spell-level-filter, and FR-codex-spell-school-filter without changing their filter semantics.
+- Does not grant access to players or to users outside an active session.
+
+**Header entry point**:
+
+- The global header MUST expose a grimoire button immediately **before** (to the left of) the profile avatar when the GM is in session.
+- The button MUST use a book icon (`Book` from lucide-react).
+- The button MUST expose an accessible name and a tooltip with the label **« Accéder à la librairie communautaire »** (i18n key under `header`).
+- When Codex is unavailable (`useCodexHealth`), the button MUST be disabled and the tooltip MUST communicate unavailability (reuse existing `codexUnavailable` copy where applicable).
+
+**Dialog behavior**:
+
+- Clicking the button opens a modal community library browser reachable from any page while in session.
+- The dialog MUST provide access to spells, monsters (NPCs), and premade player characters within a **single** modal, using tabs or an equivalent in-dialog switch (no route change, no separate modals per type).
+- Each type reuses the same search, filters, preview, and pagination as `CodexSpellSearchDialog` (spells) and `MonsterCodexDialog` (monsters / players).
+- Session browse mode is **read-only**: users consult previews only; there is no spell import, NPC draft creation, or navigation away from the current session page.
+- Closing the dialog MUST return the GM to the exact page and state they were on (no route change).
+
+**Accessibility (FR-frontend-design)**:
+
+- Header button is keyboard-focusable with visible focus ring.
+- Dialog follows existing Dialog primitive focus trap and `aria-labelledby` title.
+- Tab controls (if used to switch spells / characters) MUST be keyboard-operable with an accessible name per tab.
+
+**Prohibitions**:
+
+- Showing the grimoire button to players or when not in session.
+- Hardcoded French tooltip bypassing i18n.
+- Reusing creation flows (`onSpellSelected`, `onMonsterSelected`, `npcs-codex` navigation) from session browse mode.
+- Opening a second WebSocket connection or mutating session state as part of Codex browse.
+
+**Tests**:
+
+- Nominal: GM in session sees grimoire button; player does not.
+- Nominal: opening the dialog exposes spell and character search without route change.
+- Edge: Codex unavailable disables the header button.
+- Failure: non-GM user never receives the header control.
+
+**References**:
+
+- `services/web/client/src/components/layout/Header.tsx`
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/hooks/useCodexHealth.ts`
+- `services/web/client/messages/{en,fr,es}.json`

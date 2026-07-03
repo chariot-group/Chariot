@@ -2,6 +2,7 @@
 
 import Profile from "@/components/layout/Profile";
 import SessionTimer from "@/components/layout/SessionTimer";
+import SessionCommunityLibraryButton from "@/components/layout/SessionCommunityLibraryButton";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -87,6 +88,7 @@ export default function Header() {
         </button>
         <div className="relative flex items-center gap-3">
           <SessionTimer />
+          <SessionCommunityLibraryButton />
           <Profile />
         </div>
       </header>

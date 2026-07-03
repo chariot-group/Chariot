@@ -59,8 +59,14 @@ const SPELL_LEVELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 interface CodexSpellSearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSpellSelected: (spell: Partial<Spell>) => void;
+  onSpellSelected?: (spell: Partial<Spell>) => void;
   accentColor: string;
+  /** Read-only browse: preview only, no spell import. */
+  browseOnly?: boolean;
+  /** Renders search UI without an outer Dialog (for embedding in a parent modal). */
+  embedded?: boolean;
+  /** Shared portaled filter tracker when embedded in a parent dialog. */
+  sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
 }
 
 import {
@@ -181,6 +187,9 @@ export default function CodexSpellSearchDialog({
   onOpenChange,
   onSpellSelected,
   accentColor,
+  browseOnly = false,
+  embedded = false,
+  sharedPortaledFilterOpenTracker,
 }: CodexSpellSearchDialogProps) {
   const userLocale = useLocale() as Locale;
   const tMagic = useTranslations("characterDetail.magic");
@@ -213,15 +222,23 @@ export default function CodexSpellSearchDialog({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const isLoadingRef = useRef(false);
   const spellPreviewScrollRef = useRef<HTMLDivElement>(null);
-  const portaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+  const internalPortaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+  const portaledFilterOpenTracker =
+    sharedPortaledFilterOpenTracker ?? internalPortaledFilterOpenTrackerRef.current;
 
-  const handlePortaledFilterOpenChange = useCallback((isOpen: boolean) => {
-    portaledFilterOpenTrackerRef.current.notifyOpenChange(isOpen);
-  }, []);
+  const handlePortaledFilterOpenChange = useCallback(
+    (isOpen: boolean) => {
+      portaledFilterOpenTracker.notifyOpenChange(isOpen);
+    },
+    [portaledFilterOpenTracker],
+  );
 
-  const shouldPreventDialogOutsideDismiss = useCallback((target: EventTarget | null) => {
-    return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTrackerRef.current, target);
-  }, []);
+  const shouldPreventDialogOutsideDismiss = useCallback(
+    (target: EventTarget | null) => {
+      return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target);
+    },
+    [portaledFilterOpenTracker],
+  );
 
   const ITEMS_PER_PAGE = 20;
 
@@ -389,7 +406,9 @@ export default function CodexSpellSearchDialog({
 
   // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
-    portaledFilterOpenTrackerRef.current.reset();
+    if (!sharedPortaledFilterOpenTracker) {
+      portaledFilterOpenTracker.reset();
+    }
 
     if (open) {
       setSearchQuery("");
@@ -504,7 +523,7 @@ export default function CodexSpellSearchDialog({
   };
 
   const handleUseThisSpell = () => {
-    if (selectedSpell) {
+    if (selectedSpell && onSpellSelected) {
       onSpellSelected(selectedSpell);
       onOpenChange(false);
     }
@@ -516,7 +535,7 @@ export default function CodexSpellSearchDialog({
   };
 
   const handleAddSelection = () => {
-    if (spellQueue.length === 0) return;
+    if (spellQueue.length === 0 || !onSpellSelected) return;
 
     spellQueue.forEach(({ spell }) => onSpellSelected(spell));
     onOpenChange(false);
@@ -529,34 +548,15 @@ export default function CodexSpellSearchDialog({
   const isMultiSelectionMode = spellQueue.length > 0;
   const spellActionsDisabled = !selectedSpell || previewLangResolving;
 
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}>
-      <DialogContent
-        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
-        onPointerDownOutside={(event) => {
-          const target = event.detail.originalEvent?.target ?? event.target;
-          if (shouldPreventDialogOutsideDismiss(target)) {
-            event.preventDefault();
-          }
-        }}
-        onInteractOutside={(event) => {
-          const target = event.detail.originalEvent?.target ?? event.target;
-          if (shouldPreventDialogOutsideDismiss(target)) {
-            event.preventDefault();
-          }
-        }}
-        onFocusOutside={(event) => {
-          if (shouldPreventDialogOutsideDismiss(event.target)) {
-            event.preventDefault();
-          }
-        }}>
+  const dialogBody = (
+    <>
+      {!embedded ? (
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
         </DialogHeader>
+      ) : null}
 
-        <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
           {/* Partie gauche : Recherche et résultats */}
           <div
             className={`relative z-10 flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
@@ -1014,9 +1014,10 @@ export default function CodexSpellSearchDialog({
           </div>
         </div>
 
+      {!embedded ? (
         <DialogFooter
-          className={`shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
-          {isMultiSelectionMode ? (
+          className={`shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${!browseOnly && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
+          {!browseOnly && isMultiSelectionMode ? (
             <Collapsible
               open={selectionDetailsOpen}
               onOpenChange={setSelectionDetailsOpen}
@@ -1083,7 +1084,7 @@ export default function CodexSpellSearchDialog({
               {tDialog("cancel")}
             </Button>
 
-            {(isMultiSelectionMode || selectedSpell) && (
+            {!browseOnly && (isMultiSelectionMode || selectedSpell) ? (
               <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 sm:border-l sm:border-border sm:pl-3">
                 {isMultiSelectionMode ? (
                   <>
@@ -1165,9 +1166,45 @@ export default function CodexSpellSearchDialog({
                   </>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
         </DialogFooter>
+      ) : null}
+    </>
+  );
+
+  if (embedded) {
+    if (!open) {
+      return null;
+    }
+
+    return <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{dialogBody}</div>;
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}>
+      <DialogContent
+        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        onPointerDownOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onFocusOutside={(event) => {
+          if (shouldPreventDialogOutsideDismiss(event.target)) {
+            event.preventDefault();
+          }
+        }}>
+        {dialogBody}
       </DialogContent>
     </Dialog>
   );

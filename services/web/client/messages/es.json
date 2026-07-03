@@ -1721,7 +1721,16 @@
   "header": {
     "logoAriaLabelHome": "Volver al inicio",
     "logoAriaLabelInSessionPlayer": "Volver a la hoja de personaje",
-    "logoAriaLabelInSessionGm": "Volver a las hojas de personaje de la campaña"
+    "logoAriaLabelInSessionGm": "Volver a las hojas de personaje de la campaña",
+    "communityLibraryTooltip": "Acceder a la biblioteca comunitaria",
+    "communityLibraryAriaLabel": "Acceder a la biblioteca comunitaria"
+  },
+  "sessionCommunityLibrary": {
+    "title": "Biblioteca comunitaria",
+    "tabsAriaLabel": "Tipo de contenido a consultar",
+    "tabSpells": "Conjuros",
+    "tabMonsters": "PNJ",
+    "tabPlayers": "PJ"
   },
   "sessionTime": {
     "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
