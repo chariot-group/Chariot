@@ -12,6 +12,7 @@ import type { Locale } from "@/i18n/request";
 import CodexService, { CodexSpellItem } from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
+import CodexIconLegend from "@/components/character/CodexIconLegend";
 import {
   Search,
   Loader2,
@@ -38,7 +39,7 @@ import type { SpellClass } from "@/constants/spellClasses";
 import { SPELL_CLASSES, spellClassTranslationKey } from "@/constants/spellClasses";
 import type { SpellSchool } from "@/constants/spellSchools";
 import { SPELL_SCHOOLS, spellSchoolTranslationKey } from "@/constants/spellSchools";
-import { GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
+import { GAME_SYSTEMS, getDefaultCodexGameSystemFilter, HAS_MULTIPLE_CODEX_GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
 import { resolveCodexSpellSchoolLabel } from "@/utils/codexSpellSchool.utils";
 import {
   DropdownMenu,
@@ -202,7 +203,9 @@ export default function CodexSpellSearchDialog({
   const [selectedClasses, setSelectedClasses] = useState<SpellClass[]>([]);
   const [selectedSchools, setSelectedSchools] = useState<SpellSchool[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
-  const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(null);
+  const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(
+    getDefaultCodexGameSystemFilter,
+  );
   const [searchResults, setSearchResults] = useState<CodexSpellItem[]>([]);
   const [selectedSpell, setSelectedSpell] = useState<Partial<Spell> | null>(null);
   const [selectedCodexSpell, setSelectedCodexSpell] = useState<CodexSpellItem | null>(null);
@@ -283,7 +286,7 @@ export default function CodexSpellSearchDialog({
     setSelectedLevel(null);
     setSelectedClasses([]);
     setSelectedSchools([]);
-    setSelectedGameSystem(null);
+    setSelectedGameSystem(getDefaultCodexGameSystemFilter());
   }, []);
 
   const toggleClassFilter = useCallback((spellClass: SpellClass) => {
@@ -306,7 +309,7 @@ export default function CodexSpellSearchDialog({
     selectedLevel !== null ||
     selectedClasses.length > 0 ||
     selectedSchools.length > 0 ||
-    selectedGameSystem !== null;
+    (HAS_MULTIPLE_CODEX_GAME_SYSTEMS && selectedGameSystem !== null);
 
   const compactLanguageLabel =
     selectedLang === null ? "🌍" : codexLocaleFlagEmoji(selectedLang) || selectedLang.toUpperCase();
@@ -416,7 +419,7 @@ export default function CodexSpellSearchDialog({
       setSelectedClasses([]);
       setSelectedSchools([]);
       setSelectedLevel(null);
-      setSelectedGameSystem(null);
+      setSelectedGameSystem(getDefaultCodexGameSystemFilter());
       setSearchResults([]);
       setSelectedSpell(null);
       setSelectedCodexSpell(null);
@@ -433,7 +436,7 @@ export default function CodexSpellSearchDialog({
       setHasMore(false);
       isLoadingRef.current = false;
       // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchSpells("", 1, false, userLocale, [], null, [], null);
+      searchSpells("", 1, false, userLocale, [], null, [], getDefaultCodexGameSystemFilter());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -606,6 +609,7 @@ export default function CodexSpellSearchDialog({
                   </SelectContent>
                 </Select>
               </div>
+              <CodexIconLegend showSelection />
               <Collapsible
                 open={filtersOpen}
                 onOpenChange={setFiltersOpen}
@@ -639,7 +643,7 @@ export default function CodexSpellSearchDialog({
                     disabled={!hasActiveFilters}
                     onClick={resetFilters}
                     aria-label={tDialog("filtersCollapse.resetAriaLabel")}
-                    className="size-8 shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-40">
+                    className="size-8 shrink-0 text-muted-foreground enabled:hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:opacity-40">
                     <FilterX
                       className="size-3.5"
                       aria-hidden="true"
@@ -651,6 +655,7 @@ export default function CodexSpellSearchDialog({
                     <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
                       <Select
                         value={selectedGameSystem ?? "all"}
+                        disabled={!HAS_MULTIPLE_CODEX_GAME_SYSTEMS}
                         onOpenChange={handlePortaledFilterOpenChange}
                         onValueChange={(value) => {
                           if (value === "all") {
@@ -662,6 +667,7 @@ export default function CodexSpellSearchDialog({
                           }
                         }}>
                         <SelectTrigger
+                          disabled={!HAS_MULTIPLE_CODEX_GAME_SYSTEMS}
                           className={cn(
                             "h-9 w-full min-w-0 px-2 text-xs focus-visible:ring-inset",
                             selectedGameSystem !== null && "border-purple/30 bg-purple/5",
@@ -675,7 +681,9 @@ export default function CodexSpellSearchDialog({
                           side="bottom"
                           sideOffset={4}
                           className="min-w-[var(--radix-select-trigger-width)]">
-                          <SelectItem value="all">{tDialog("gameSystemFilter.all")}</SelectItem>
+                          {HAS_MULTIPLE_CODEX_GAME_SYSTEMS ? (
+                            <SelectItem value="all">{tDialog("gameSystemFilter.all")}</SelectItem>
+                          ) : null}
                           {GAME_SYSTEMS.map((gameSystem) => (
                             <SelectItem
                               key={gameSystem}
@@ -810,38 +818,6 @@ export default function CodexSpellSearchDialog({
                   </div>
                 </CollapsibleContent>
               </Collapsible>
-
-              {/* Légende des icônes */}
-              <p
-                className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-muted-foreground"
-                aria-label={tDialog("legendLabel")}>
-                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                  <Check
-                    className="size-3.5 shrink-0 text-purple"
-                    aria-hidden="true"
-                  />
-                  {tDialog("legendShort.selection")}
-                </span>
-                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                  <BadgeCheck
-                    className="size-3.5 shrink-0 text-green-600"
-                    aria-hidden="true"
-                  />
-                  {tDialog("legendShort.chariot")}
-                </span>
-                <InfoTooltip
-                  content={tDialog("srdContent")}
-                  side="top"
-                  moreInfoLabel={tDialog("srdContent")}>
-                  <span className="inline-flex cursor-help items-center gap-1.5 whitespace-nowrap">
-                    <FileBadge
-                      className="size-3.5 shrink-0"
-                      aria-hidden="true"
-                    />
-                    {tDialog("legendShort.srd")}
-                  </span>
-                </InfoTooltip>
-              </p>
             </div>
 
             {/* Résultats de recherche */}

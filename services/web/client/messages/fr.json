@@ -1471,6 +1471,13 @@
         "byLevel": "Niveau",
         "byUses": "Utilisations / jour"
       },
+      "codexLegend": {
+        "legendLabel": "Légende des icônes",
+        "selection": "Sélection",
+        "chariot": "Chariot",
+        "srd": "SRD",
+        "srdTooltip": "Contenu SRD (System Reference Document)"
+      },
       "codexDialog": {
         "title": "Rechercher un sort dans la librairie communautaire",
         "searchPlaceholder": "Rechercher un sort...",
@@ -1492,7 +1499,6 @@
         "error": "Erreur lors de la recherche",
         "validatedByChariot": "Validé par Chariot",
         "srdContent": "Contenu SRD (System Reference Document)",
-        "legendLabel": "Légende des icônes",
         "languageFilter": {
           "all": "🌍 Toutes les langues",
           "fr": "🇫🇷 Français",
@@ -1504,35 +1510,30 @@
           "toggle": "Filtres",
           "ariaLabel": "Afficher ou masquer les filtres de recherche",
           "active": "Filtres actifs",
-          "resetAriaLabel": "Réinitialiser les filtres (système, niveau, classe, école)"
-        },
-        "legendShort": {
-          "selection": "Sélection",
-          "chariot": "Chariot",
-          "srd": "SRD"
+          "resetAriaLabel": "Réinitialiser les filtres (système(s), niveau(x), classe(s), école(s))"
         },
         "classFilter": {
           "all": "Toutes les classes",
-          "shortAll": "Classe",
+          "shortAll": "Classe(s)",
           "ariaLabel": "Filtrer par classe",
           "selectedCount": "{count} classes"
         },
         "levelFilter": {
           "all": "Tous les niveaux",
-          "shortAll": "Niveau",
+          "shortAll": "Niveau(x)",
           "shortCantrip": "Mineurs",
           "ariaLabel": "Filtrer par niveau de sort",
           "shortSelected": "Niv. {level}"
         },
         "schoolFilter": {
           "all": "Toutes les écoles",
-          "shortAll": "École",
+          "shortAll": "École(s)",
           "ariaLabel": "Filtrer par école de magie",
           "selectedCount": "{count} écoles"
         },
         "gameSystemFilter": {
           "all": "Tous les systèmes",
-          "shortAll": "Système",
+          "shortAll": "Système(s)",
           "ariaLabel": "Filtrer par système de jeu",
           "DND_5E": "D&D 5e"
         },
@@ -1558,11 +1559,10 @@
         "error": "Erreur lors de la recherche",
         "validatedByChariot": "Validé par Chariot",
         "srdContent": "Contenu SRD (System Reference Document)",
-        "legendLabel": "Légende des icônes",
         "entityTypeFilter": {
-          "both": "Monstres et joueurs",
-          "monsters": "Monstres",
-          "players": "Joueurs",
+          "both": "PNJ et PJ",
+          "monsters": "PNJ",
+          "players": "PJ",
           "ariaLabel": "Filtrer par type de personnage"
         },
         "languageFilter": {

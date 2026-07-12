@@ -3716,13 +3716,15 @@ Each initiative tracker row carries:
 - When no game system is selected, all systems are returned (no `gameSystem` param sent).
 - When a game system is selected, it MUST be forwarded to the API as `gameSystem` (canonical enum value, e.g. `DND_5E`).
 - Changing the game system filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
-- Opening either dialog MUST reset the game system filter to “all systems”.
+- Opening either dialog MUST reset the game system filter: when `GAME_SYSTEMS` contains exactly one entry, to that sole value (preselected); otherwise to “all systems” (unset).
+- When `GAME_SYSTEMS` contains exactly one entry, the game system filter control MUST remain visible with that sole value preselected and MUST be disabled (non-interactive); the sole system MUST still be applied to API requests.
 - Filter labels MUST use i18n keys under `gameSystemFilter` in each dialog namespace.
 - Supported values MUST come from `GAME_SYSTEMS` in `constants/gameSystems.ts` (extensible enum).
 
 **Accessibility (FR-frontend-design)**:
 
 - The game system filter control MUST expose an accessible name (`aria-label`) equivalent to other Codex filter controls.
+- When only one game system is supported, the control MUST be disabled and expose that state to assistive technologies.
 - The spell dialog MUST use the same single-select `Select` pattern as the level filter.
 
 **Prohibitions**:
@@ -3736,6 +3738,7 @@ Each initiative tracker row carries:
 - `CodexService.searchSpells` forwards a selected game system to `/spells`.
 - `CodexService.searchMonsters` forwards a selected game system to `/monsters`.
 - Both methods omit `gameSystem` when the filter is unset.
+- `getDefaultCodexGameSystemFilter` returns the sole system when `GAME_SYSTEMS.length === 1`, otherwise `null`.
 
 **References**:
 

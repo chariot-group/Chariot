@@ -1466,6 +1466,13 @@
         "byLevel": "Level",
         "byUses": "Uses / day"
       },
+      "codexLegend": {
+        "legendLabel": "Icon legend",
+        "selection": "Selection",
+        "chariot": "Chariot",
+        "srd": "SRD",
+        "srdTooltip": "SRD Content (System Reference Document)"
+      },
       "codexDialog": {
         "title": "Search for a spell in the community library",
         "searchPlaceholder": "Search for a spell...",
@@ -1487,7 +1494,6 @@
         "error": "Error while searching",
         "validatedByChariot": "Validated by Chariot",
         "srdContent": "SRD Content (System Reference Document)",
-        "legendLabel": "Icon legend",
         "languageFilter": {
           "all": "🌍 All languages",
           "fr": "🇫🇷 French",
@@ -1499,35 +1505,30 @@
           "toggle": "Filters",
           "ariaLabel": "Show or hide search filters",
           "active": "Active filters",
-          "resetAriaLabel": "Reset filters (system, level, class, school)"
-        },
-        "legendShort": {
-          "selection": "Selection",
-          "chariot": "Chariot",
-          "srd": "SRD"
+          "resetAriaLabel": "Reset filters (system(s), level(s), class(es), school(s))"
         },
         "classFilter": {
           "all": "All classes",
-          "shortAll": "Class",
+          "shortAll": "Class(es)",
           "ariaLabel": "Filter by class",
           "selectedCount": "{count} classes"
         },
         "levelFilter": {
           "all": "All levels",
-          "shortAll": "Level",
+          "shortAll": "Level(s)",
           "shortCantrip": "Cantrips",
           "ariaLabel": "Filter by spell level",
           "shortSelected": "Lvl {level}"
         },
         "schoolFilter": {
           "all": "All schools",
-          "shortAll": "School",
+          "shortAll": "School(s)",
           "ariaLabel": "Filter by school of magic",
           "selectedCount": "{count} schools"
         },
         "gameSystemFilter": {
           "all": "All systems",
-          "shortAll": "System",
+          "shortAll": "System(s)",
           "ariaLabel": "Filter by game system",
           "DND_5E": "D&D 5e"
         },
@@ -1553,11 +1554,10 @@
         "error": "Error while searching",
         "validatedByChariot": "Validated by Chariot",
         "srdContent": "SRD Content (System Reference Document)",
-        "legendLabel": "Icon legend",
         "entityTypeFilter": {
-          "both": "Monsters and players",
-          "monsters": "Monsters",
-          "players": "Players",
+          "both": "NPCs and PCs",
+          "monsters": "NPCs",
+          "players": "PCs",
           "ariaLabel": "Filter by character type"
         },
         "languageFilter": {

@@ -20,6 +20,7 @@ import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react"
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
+import CodexIconLegend from "@/components/character/CodexIconLegend";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import {
   codexDeclaredPreviewLangs,
@@ -29,7 +30,7 @@ import {
   codexPlayerLangsVisibleInAllLanguagesSearch,
   codexPlayerTranslationLooksUsable,
 } from "@/utils/codexLocale.utils";
-import { GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
+import { GAME_SYSTEMS, getDefaultCodexGameSystemFilter, HAS_MULTIPLE_CODEX_GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
 import {
   createPortaledFilterOpenTracker,
   shouldPreventDialogDismissForPortaledFilter,
@@ -239,7 +240,9 @@ export default function MonsterCodexDialog({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
-  const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(null);
+  const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(
+    getDefaultCodexGameSystemFilter,
+  );
   const resolvedEntityTypeFilter = lockedEntityTypeFilter ?? "both";
   const [entityTypeFilter, setEntityTypeFilter] = useState<CodexEntityTypeFilter>(resolvedEntityTypeFilter);
   const [searchResults, setSearchResults] = useState<CodexSearchResultItem[]>([]);
@@ -384,7 +387,7 @@ export default function MonsterCodexDialog({
     if (open) {
       setSearchQuery("");
       setSelectedLang(userLocale);
-      setSelectedGameSystem(null);
+      setSelectedGameSystem(getDefaultCodexGameSystemFilter());
       setEntityTypeFilter(resolvedEntityTypeFilter);
       setSearchResults([]);
       setSelectedMonster(null);
@@ -403,7 +406,7 @@ export default function MonsterCodexDialog({
       if (!sharedPortaledFilterOpenTracker) {
         portaledFilterOpenTracker.reset();
       }
-      searchCodex("", 1, false, userLocale, null, resolvedEntityTypeFilter);
+      searchCodex("", 1, false, userLocale, getDefaultCodexGameSystemFilter(), resolvedEntityTypeFilter);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -690,6 +693,7 @@ export default function MonsterCodexDialog({
                   </SelectContent>
                 </Select>
               </div>
+              <CodexIconLegend />
               <div className="flex w-full min-w-0 gap-2">
                 {!lockedEntityTypeFilter ? (
                   <Select
@@ -714,6 +718,7 @@ export default function MonsterCodexDialog({
                 ) : null}
                 <Select
                   value={selectedGameSystem ?? "all"}
+                  disabled={!HAS_MULTIPLE_CODEX_GAME_SYSTEMS}
                   onOpenChange={handlePortaledFilterOpenChange}
                   onValueChange={(value) => {
                     if (value === "all") {
@@ -723,12 +728,15 @@ export default function MonsterCodexDialog({
                     }
                   }}>
                   <SelectTrigger
+                    disabled={!HAS_MULTIPLE_CODEX_GAME_SYSTEMS}
                     className="min-w-0 flex-1 focus-visible:ring-inset"
                     aria-label={tDialog("gameSystemFilter.ariaLabel")}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{tDialog("gameSystemFilter.all")}</SelectItem>
+                    {HAS_MULTIPLE_CODEX_GAME_SYSTEMS ? (
+                      <SelectItem value="all">{tDialog("gameSystemFilter.all")}</SelectItem>
+                    ) : null}
                     {GAME_SYSTEMS.map((gameSystem) => (
                       <SelectItem
                         key={gameSystem}
@@ -739,25 +747,6 @@ export default function MonsterCodexDialog({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground shrink-0 py-1"
-              aria-label={tDialog("legendLabel")}>
-              <span className="flex items-center gap-1">
-                <BadgeCheck
-                  className="size-3.5 text-green-600 shrink-0"
-                  aria-hidden="true"
-                />
-                {tDialog("validatedByChariot")}
-              </span>
-              <span className="flex items-center gap-1">
-                <FileBadge
-                  className="size-3.5 shrink-0"
-                  aria-hidden="true"
-                />
-                {tDialog("srdContent")}
-              </span>
             </div>
 
             <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">

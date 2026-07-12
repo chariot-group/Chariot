@@ -1467,6 +1467,13 @@
         "byLevel": "Nivel",
         "byUses": "Usos / día"
       },
+      "codexLegend": {
+        "legendLabel": "Leyenda de iconos",
+        "selection": "Selección",
+        "chariot": "Chariot",
+        "srd": "SRD",
+        "srdTooltip": "Contenido SRD (System Reference Document)"
+      },
       "codexDialog": {
         "title": "Buscar un conjuro en la biblioteca comunitaria",
         "searchPlaceholder": "Buscar un conjuro...",
@@ -1488,7 +1495,6 @@
         "error": "Error al buscar",
         "validatedByChariot": "Validado por Chariot",
         "srdContent": "Contenido SRD (System Reference Document)",
-        "legendLabel": "Leyenda de iconos",
         "languageFilter": {
           "all": "🌍 Todos los idiomas",
           "fr": "🇫🇷 Francés",
@@ -1500,35 +1506,30 @@
           "toggle": "Filtros",
           "ariaLabel": "Mostrar u ocultar filtros de búsqueda",
           "active": "Filtros activos",
-          "resetAriaLabel": "Restablecer filtros (sistema, nivel, clase, escuela)"
-        },
-        "legendShort": {
-          "selection": "Selección",
-          "chariot": "Chariot",
-          "srd": "SRD"
+          "resetAriaLabel": "Restablecer filtros (sistema(s), nivel(es), clase(s), escuela(s))"
         },
         "classFilter": {
           "all": "Todas las clases",
-          "shortAll": "Clase",
+          "shortAll": "Clase(s)",
           "ariaLabel": "Filtrar por clase",
           "selectedCount": "{count} clases"
         },
         "levelFilter": {
           "all": "Todos los niveles",
-          "shortAll": "Nivel",
+          "shortAll": "Nivel(es)",
           "shortCantrip": "Trucos",
           "ariaLabel": "Filtrar por nivel de conjuro",
           "shortSelected": "Niv. {level}"
         },
         "schoolFilter": {
           "all": "Todas las escuelas",
-          "shortAll": "Escuela",
+          "shortAll": "Escuela(s)",
           "ariaLabel": "Filtrar por escuela de magia",
           "selectedCount": "{count} escuelas"
         },
         "gameSystemFilter": {
           "all": "Todos los sistemas",
-          "shortAll": "Sistema",
+          "shortAll": "Sistema(s)",
           "ariaLabel": "Filtrar por sistema de juego",
           "DND_5E": "D&D 5e"
         },
@@ -1554,11 +1555,10 @@
         "error": "Error al buscar",
         "validatedByChariot": "Validado por Chariot",
         "srdContent": "Contenido SRD (System Reference Document)",
-        "legendLabel": "Leyenda de iconos",
         "entityTypeFilter": {
-          "both": "Monstruos y jugadores",
-          "monsters": "Monstruos",
-          "players": "Jugadores",
+          "both": "PNJ y PJ",
+          "monsters": "PNJ",
+          "players": "PJ",
           "ariaLabel": "Filtrar por tipo de personaje"
         },
         "languageFilter": {
