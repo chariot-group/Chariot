@@ -36,13 +36,12 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
-          cache: 'npm'
-          cache-dependency-path: services/web/client/package-lock.json
+          package-manager-cache: false
 
       - name: Install dependencies for project
-        run: |
-          cd services/web/client
-          npm ci
+        uses: ./.github/actions/npm-ci
+        with:
+          working-directory: services/web/client
 
       - name: Create reports directory
         run: mkdir -p security/reports
@@ -98,13 +97,12 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
-          cache: 'npm'
-          cache-dependency-path: services/adventure/api/package-lock.json
+          package-manager-cache: false
 
       - name: Install dependencies for project
-        run: |
-          cd services/adventure/api
-          npm ci
+        uses: ./.github/actions/npm-ci
+        with:
+          working-directory: services/adventure/api
 
       - name: Create reports directory
         run: mkdir -p security/reports
