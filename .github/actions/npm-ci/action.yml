@@ -16,7 +16,7 @@ runs:
         export NODE_ENV=development
 
         install_deps() {
-          npm ci --include=dev
+          npm ci
         }
 
         if install_deps; then
