@@ -35,7 +35,7 @@
     "radix-ui": "^1.6.2",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "react-hook-form": "^7.81.0",
+    "react-hook-form": "^7.82.0",
     "react-redux": "^9.3.0",
     "react-toastify": "^11.0.5",
     "redux-persist": "^6.0.0",
