@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js for web
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           package-manager-cache: false
@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js for adventure
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           package-manager-cache: false
@@ -106,7 +106,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js for gateway
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           package-manager-cache: false
@@ -142,7 +142,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js for payment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           package-manager-cache: false
@@ -178,7 +178,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js for admin
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           package-manager-cache: false
@@ -338,7 +338,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js for session
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           package-manager-cache: false
@@ -531,7 +531,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js for media
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           package-manager-cache: false
