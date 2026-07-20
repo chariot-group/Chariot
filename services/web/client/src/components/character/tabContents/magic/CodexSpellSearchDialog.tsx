@@ -621,7 +621,7 @@ export default function CodexSpellSearchDialog({
                     aria-label={tDialog("filtersCollapse.ariaLabel")}
                     className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[15px] py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
                     <ChevronDown
-                      className={cn("size-4 shrink-0 transition-transform", filtersOpen && "rotate-180")}
+                      className={cn("size-4 shrink-0 transition-transform", !filtersOpen && "rotate-180")}
                       aria-hidden="true"
                     />
                     <Layers
@@ -1003,7 +1003,7 @@ export default function CodexSpellSearchDialog({
                 aria-expanded={selectionDetailsOpen}
                 className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-purple transition-colors hover:text-purple/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
                 <ChevronDown
-                  className={cn("size-4 shrink-0 transition-transform", selectionDetailsOpen && "rotate-180")}
+                  className={cn("size-4 shrink-0 transition-transform", !selectionDetailsOpen && "rotate-180")}
                   aria-hidden="true"
                 />
                 <span
