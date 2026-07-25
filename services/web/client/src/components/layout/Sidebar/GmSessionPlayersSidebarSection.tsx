@@ -19,20 +19,34 @@ import {
   mergeSessionParticipantDisplayNames,
   pruneSessionParticipantDisplayNames,
   selectGmGuestCharacterIds,
+  removeGmGuestCharacterFromSession,
+  selectBattleInitialized,
+  removeInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
 import { selectOpenSessionPlayers, setOpenSessionPlayers } from "@/store/slices/sidebarSlice";
+import { resolveSessionCharacterLabel } from "@/lib/formatSessionCharacterLabel";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisplayNames";
 import { useSidebar } from "@/components/ui/sidebar";
 import characterService from "@/services/CharacterService";
-import { removeGmGuestCharacterFromSession, selectBattleInitialized, removeInitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
+import { MediaAvatar } from "@/components/media/MediaAvatar";
+import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
+import type { MediaAvatarSize } from "@/utils/media.utils";
 
 const ROSTER_FETCH_DEBOUNCE_MS = 220;
+const CHARACTER_FETCH_RETRY_DELAY_MS = 350;
+const SIDEBAR_AVATAR_SIZE: MediaAvatarSize = "xs";
+
+type SessionCharacterMeta = {
+  label: string;
+  avatar?: string;
+};
 
 /**
  * Personnages choisis par les joueurs pendant une session — visible uniquement pour le MJ.
+ * @see FR-session-participant-labels — Assigned Character Identity
  */
 export default function GmSessionPlayersSidebarSection() {
   const t = useTranslations("sidebar");
@@ -50,8 +64,8 @@ export default function GmSessionPlayersSidebarSection() {
   const displayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
   const battleInitialized = useAppSelector(selectBattleInitialized);
-  const [characterLabels, setCharacterLabels] = React.useState<Record<string, string>>({});
-  const [guestLabels, setGuestLabels] = React.useState<Record<string, string>>({});
+  const [characterMeta, setCharacterMeta] = React.useState<Record<string, SessionCharacterMeta>>({});
+  const [guestMeta, setGuestMeta] = React.useState<Record<string, SessionCharacterMeta>>({});
 
   const locale = pathname?.split("/")[1] ?? "fr";
 
@@ -92,7 +106,30 @@ export default function GmSessionPlayersSidebarSection() {
       .join("|");
   }, [remoteVersions, participants]);
 
-  /** Retirer labels des joueurs qui ne sont plus au roster (évite d’afficher un UUID fantôme). */
+  const fetchCharacterMeta = React.useCallback(
+    async (cid: string, code: string): Promise<SessionCharacterMeta | null> => {
+      const load = async () => {
+        const ch = await characterService.getCharacterById(cid, { sessionCode: code });
+        return {
+          label: resolveSessionCharacterLabel(ch),
+          avatar: ch.avatar?.trim() || undefined,
+        } satisfies SessionCharacterMeta;
+      };
+      try {
+        return await load();
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, CHARACTER_FETCH_RETRY_DELAY_MS));
+        try {
+          return await load();
+        } catch {
+          return null;
+        }
+      }
+    },
+    [],
+  );
+
+  /** Retirer meta des joueurs qui ne sont plus au roster (évite d’afficher un UUID fantôme). */
   React.useEffect(() => {
     const rosterPresence = participantsRef.current.filter((p) => p.status !== "gameMaster");
     const rosterWithSheet = rosterPresence.filter((p) => p.characterId != null && p.characterId.length > 0);
@@ -100,7 +137,7 @@ export default function GmSessionPlayersSidebarSection() {
       rosterWithSheet.map((p) => p.characterId).filter((id): id is string => Boolean(id && id.length > 0)),
     );
     dispatch(pruneSessionParticipantDisplayNames());
-    setCharacterLabels((prev) => {
+    setCharacterMeta((prev) => {
       const next = { ...prev };
       for (const k of Object.keys(next)) {
         if (!cids.has(k)) delete next[k];
@@ -142,27 +179,23 @@ export default function GmSessionPlayersSidebarSection() {
 
     let cancelled = false;
     void (async () => {
-      const charUpdates: Record<string, string> = {};
+      const updates: Record<string, SessionCharacterMeta> = {};
       for (const cid of toRefetch) {
-        try {
-          const ch = await characterService.getCharacterById(cid, { sessionCode });
-          let label = ch.firstname?.trim() ?? "";
-          if (ch.lastname) label += ` ${ch.lastname.trim()}`;
-          charUpdates[cid] = label.trim() || cid;
-        } catch {
-          charUpdates[cid] = cid;
+        const meta = await fetchCharacterMeta(cid, sessionCode);
+        if (meta) {
+          updates[cid] = meta;
         }
         if (cancelled) return;
       }
-      if (!cancelled && Object.keys(charUpdates).length > 0) {
-        setCharacterLabels((prev) => ({ ...prev, ...charUpdates }));
+      if (!cancelled && Object.keys(updates).length > 0) {
+        setCharacterMeta((prev) => ({ ...prev, ...updates }));
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [contextMode, isGm, isInSession, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
+  }, [contextMode, fetchCharacterMeta, isGm, isInSession, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
 
   /** Chargement initial / changement de roster : requêtes espacées pour rester sous le rate limit gateway. */
   React.useEffect(() => {
@@ -176,7 +209,7 @@ export default function GmSessionPlayersSidebarSection() {
         const roster = participantsRef.current.filter((p) => p.status !== "gameMaster");
         if (roster.length === 0 || cancelled) return;
         const nameUpdates: Record<string, string> = {};
-        const charUpdates: Record<string, string> = {};
+        const charUpdates: Record<string, SessionCharacterMeta> = {};
         for (const p of roster) {
           const existing = displayNames[p.userId];
           if (!existing || existing === SESSION_PARTICIPANT_NAME_LOADING) {
@@ -189,13 +222,9 @@ export default function GmSessionPlayersSidebarSection() {
           if (!cid) {
             continue;
           }
-          try {
-            const ch = await characterService.getCharacterById(cid, { sessionCode });
-            let label = ch.firstname?.trim() ?? "";
-            if (ch.lastname) label += ` ${ch.lastname.trim()}`;
-            charUpdates[cid] = label.trim() || cid;
-          } catch {
-            charUpdates[cid] = cid;
+          const meta = await fetchCharacterMeta(cid, sessionCode);
+          if (meta) {
+            charUpdates[cid] = meta;
           }
           if (cancelled) return;
         }
@@ -203,7 +232,9 @@ export default function GmSessionPlayersSidebarSection() {
           if (Object.keys(nameUpdates).length > 0) {
             dispatch(mergeSessionParticipantDisplayNames(nameUpdates));
           }
-          setCharacterLabels((prev) => ({ ...prev, ...charUpdates }));
+          if (Object.keys(charUpdates).length > 0) {
+            setCharacterMeta((prev) => ({ ...prev, ...charUpdates }));
+          }
         }
       })();
     }, ROSTER_FETCH_DEBOUNCE_MS);
@@ -212,28 +243,78 @@ export default function GmSessionPlayersSidebarSection() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [contextMode, dispatch, displayNames, isGm, isInSession, rosterStableKey, sessionCode]);
+  }, [contextMode, dispatch, displayNames, fetchCharacterMeta, isGm, isInSession, rosterStableKey, sessionCode]);
 
   React.useEffect(() => {
-    if (!isInSession || contextMode !== "gm" || !isGm || gmGuestCharacterIds.length === 0) return;
+    if (!isInSession || contextMode !== "gm" || !isGm || gmGuestCharacterIds.length === 0 || !sessionCode) return;
     let cancelled = false;
     void (async () => {
-      const updates: Record<string, string> = {};
+      const updates: Record<string, SessionCharacterMeta> = {};
       for (const cid of gmGuestCharacterIds) {
-        try {
-          const ch = await characterService.getCharacterById(cid, { sessionCode: sessionCode ?? undefined });
-          let label = ch.firstname?.trim() ?? "";
-          if (ch.lastname) label += ` ${ch.lastname.trim()}`;
-          updates[cid] = label.trim() || cid;
-        } catch {
-          updates[cid] = cid;
+        const meta = await fetchCharacterMeta(cid, sessionCode);
+        if (meta) {
+          updates[cid] = meta;
         }
         if (cancelled) return;
       }
-      if (!cancelled) setGuestLabels((prev) => ({ ...prev, ...updates }));
+      if (!cancelled && Object.keys(updates).length > 0) {
+        setGuestMeta((prev) => ({ ...prev, ...updates }));
+      }
     })();
-    return () => { cancelled = true; };
-  }, [contextMode, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
+    return () => {
+      cancelled = true;
+    };
+  }, [contextMode, fetchCharacterMeta, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
+
+  React.useEffect(() => {
+    setGuestMeta((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const k of Object.keys(next)) {
+        if (!gmGuestCharacterIds.includes(k)) {
+          delete next[k];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [gmGuestCharacterIds]);
+
+  const avatarBatchItems = React.useMemo(() => {
+    const items: Array<{
+      scope: "character";
+      entityId: string;
+      storedValue: string;
+      size: MediaAvatarSize;
+    }> = [];
+    for (const [cid, meta] of Object.entries(characterMeta)) {
+      if (meta.avatar?.trim()) {
+        items.push({
+          scope: "character",
+          entityId: cid,
+          storedValue: meta.avatar,
+          size: SIDEBAR_AVATAR_SIZE,
+        });
+      }
+    }
+    for (const [cid, meta] of Object.entries(guestMeta)) {
+      if (meta.avatar?.trim()) {
+        items.push({
+          scope: "character",
+          entityId: cid,
+          storedValue: meta.avatar,
+          size: SIDEBAR_AVATAR_SIZE,
+        });
+      }
+    }
+    return items;
+  }, [characterMeta, guestMeta]);
+
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
+    avatarBatchItems,
+    sessionCode,
+    Boolean(isInSession && isGm && sessionCode && avatarBatchItems.length > 0),
+  );
 
   if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
     return null;
@@ -281,7 +362,8 @@ export default function GmSessionPlayersSidebarSection() {
           const cid = p.characterId?.trim();
           const userLabel = displayNames[p.userId] ?? SESSION_PARTICIPANT_NAME_LOADING;
           const hasSheet = Boolean(cid);
-          const charLabel = hasSheet ? (characterLabels[cid!] ?? cid!) : "";
+          const meta = cid ? characterMeta[cid] : undefined;
+          const charLabel = hasSheet ? (meta?.label ?? SESSION_PARTICIPANT_NAME_LOADING) : "";
           const href = cid
             ? `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`
             : "";
@@ -289,9 +371,10 @@ export default function GmSessionPlayersSidebarSection() {
 
           const primaryLabel = hasSheet ? charLabel : t("sessionPlayerChoosingCharacter");
           const inlineLabel = `${primaryLabel} – ${userLabel}`;
+          const avatarStored = meta?.avatar;
 
           const rowClasses = cn(
-            "relative w-full shrink-0 py-1.5 px-3 rounded-[12px] transition-all duration-150 flex flex-col gap-0 focus-visible:ring-1 focus-visible:ring-white/50",
+            "relative w-full shrink-0 py-1.5 px-3 rounded-[12px] transition-all duration-150 flex items-center gap-2 focus-visible:ring-1 focus-visible:ring-white/50",
             hasSheet
               ? cn("cursor-pointer", isSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10")
               : "cursor-default opacity-60",
@@ -305,42 +388,61 @@ export default function GmSessionPlayersSidebarSection() {
                   aria-hidden="true"
                 />
               )}
-              <span className={cn("text-sm truncate w-full", !hasSheet && "italic")}>
-                {primaryLabel}
-              </span>
-              <span className={cn("text-xs truncate w-full", isSelected ? "text-black/50" : "text-white/50")}>
-                {userLabel}
+              {hasSheet ? (
+                <MediaAvatar
+                  scope="character"
+                  entityId={cid!}
+                  storedValue={avatarStored}
+                  size={SIDEBAR_AVATAR_SIZE}
+                  sessionCode={sessionCode}
+                  alt={primaryLabel}
+                  enabled={Boolean(avatarStored?.trim())}
+                  avatarImageUrl={
+                    avatarStored?.trim()
+                      ? getAvatarUrl("character", cid!, SIDEBAR_AVATAR_SIZE)
+                      : undefined
+                  }
+                  className="shrink-0"
+                />
+              ) : null}
+              <span className="flex min-w-0 flex-1 flex-col gap-0">
+                <span className={cn("text-sm truncate w-full", !hasSheet && "italic")}>
+                  {primaryLabel}
+                </span>
+                <span className={cn("text-xs truncate w-full", isSelected ? "text-black/50" : "text-white/50")}>
+                  {userLabel}
+                </span>
               </span>
             </>
           );
 
-          return (
-            hasSheet ? (
-              <Link
-                key={`${p.userId}-${cid ?? "pending"}`}
-                href={href}
-                aria-current={isSelected ? "page" : undefined}
-                aria-label={inlineLabel}
-                className={rowClasses}
-                onClick={() => {
-                  if (isMobile) setOpenMobile(false);
-                }}>
-                {innerLabel}
-              </Link>
-            ) : (
-              <div
-                key={`${p.userId}-${cid ?? "pending"}`}
-                className={rowClasses}
-                aria-label={inlineLabel}>
-                {innerLabel}
-              </div>
-            )
+          return hasSheet ? (
+            <Link
+              key={`${p.userId}-${cid ?? "pending"}`}
+              href={href}
+              aria-current={isSelected ? "page" : undefined}
+              aria-label={inlineLabel}
+              className={rowClasses}
+              onClick={() => {
+                if (isMobile) setOpenMobile(false);
+              }}>
+              {innerLabel}
+            </Link>
+          ) : (
+            <div
+              key={`${p.userId}-${cid ?? "pending"}`}
+              className={rowClasses}
+              aria-label={inlineLabel}>
+              {innerLabel}
+            </div>
           );
         })}
         {gmGuestCharacterIds.map((cid) => {
-          const label = guestLabels[cid] ?? cid;
+          const meta = guestMeta[cid];
+          const label = meta?.label ?? SESSION_PARTICIPANT_NAME_LOADING;
           const href = `/${locale}/characters/${encodeURIComponent(cid)}?sessionCode=${encodeURIComponent(sessionCode)}`;
           const isSelected = selectedCharacterId === cid;
+          const avatarStored = meta?.avatar;
           const guestActions = [
             {
               id: "removeFromSession",
@@ -367,19 +469,38 @@ export default function GmSessionPlayersSidebarSection() {
                 aria-current={isSelected ? "page" : undefined}
                 aria-label={`${label} – ${t("gmGuestCharacter")}`}
                 className={cn(
-                  "relative flex min-w-0 flex-1 cursor-pointer flex-col gap-0 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                  "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
                   isSelected && "pl-4 font-bold text-black",
                 )}
-                onClick={() => { if (isMobile) setOpenMobile(false); }}>
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                }}>
                 {isSelected && (
                   <span
                     className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
                     aria-hidden="true"
                   />
                 )}
-                <span className="truncate w-full text-sm">{label}</span>
-                <span className={cn("truncate w-full text-xs", isSelected ? "text-black/50" : "text-white/50")}>
-                  {t("gmGuestCharacter")}
+                <MediaAvatar
+                  scope="character"
+                  entityId={cid}
+                  storedValue={avatarStored}
+                  size={SIDEBAR_AVATAR_SIZE}
+                  sessionCode={sessionCode}
+                  alt={label}
+                  enabled={Boolean(avatarStored?.trim())}
+                  avatarImageUrl={
+                    avatarStored?.trim()
+                      ? getAvatarUrl("character", cid, SIDEBAR_AVATAR_SIZE)
+                      : undefined
+                  }
+                  className="shrink-0"
+                />
+                <span className="flex min-w-0 flex-1 flex-col gap-0">
+                  <span className="truncate w-full text-sm">{label}</span>
+                  <span className={cn("truncate w-full text-xs", isSelected ? "text-black/50" : "text-white/50")}>
+                    {t("gmGuestCharacter")}
+                  </span>
                 </span>
               </Link>
             </SidebarItemWithActions>

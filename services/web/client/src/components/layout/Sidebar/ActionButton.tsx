@@ -30,6 +30,7 @@ import {
   shouldGmShowReturnToSheet,
   shouldPlayerShowReturnToBattleOnSessionLobby,
   shouldPlayerShowReturnToSheetOnSessionLobby,
+  withSessionCodeQuery,
 } from "@/lib/sessionInAppNavigation";
 
 interface ActionButtonConfig {
@@ -103,7 +104,7 @@ export function ActionButton() {
 
   const navigateToLastConsultedSheet = () => {
     if (lastConsultedSheetPath) {
-      router.push(lastConsultedSheetPath);
+      router.push(withSessionCodeQuery(lastConsultedSheetPath, session?.code));
     }
   };
 
