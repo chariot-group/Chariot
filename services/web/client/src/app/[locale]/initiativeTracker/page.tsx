@@ -311,6 +311,7 @@ export default function InitiativeTrackerPage() {
     ownCharacterSheetHref,
     playerCanAccessPreparationTracker,
     router,
+    sessionCode,
   ]);
 
   React.useEffect(() => {
@@ -658,14 +659,6 @@ export default function InitiativeTrackerPage() {
           currentRound={currentRound}
           onSetConcentration={
             isGameMaster || playerCanEditOwnConcentration ? handleSetConcentration : undefined
-          }
-          onResolvePendingConcentrationCheck={
-            isGameMaster || playerCanEditOwnConcentration
-              ? (row, result) => {
-                  if (!shouldShowConcentrationSaveDialog({ row, isGameMaster, ownCharacterId })) return;
-                  handleResolvePendingConcentrationCheck(row, result);
-                }
-              : undefined
           }
           onOpenConcentrationSaveDialog={openConcentrationSaveDialogForRow}
           onRemoveFromInitiative={
