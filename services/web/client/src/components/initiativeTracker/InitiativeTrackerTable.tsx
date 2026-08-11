@@ -52,10 +52,6 @@ export type InitiativeTrackerTableProps = {
   battleStarted?: boolean;
   currentRound?: number;
   onSetConcentration?: (row: InitiativeTrackerRow, concentration: import("@/store/slices/sessionSlice").TrackerConcentration | null) => void;
-  onResolvePendingConcentrationCheck?: (
-    row: InitiativeTrackerRow,
-    result: "kept" | "lost" | "later",
-  ) => void;
   onOpenConcentrationSaveDialog?: (row: InitiativeTrackerRow) => void;
   onRemoveFromInitiative?: (rowId: string) => void;
   onRemoveMultipleFromInitiative?: (rowIds: string[]) => void;
@@ -203,7 +199,6 @@ export function InitiativeTrackerTable({
   battleStarted = false,
   currentRound = 1,
   onSetConcentration,
-  onResolvePendingConcentrationCheck,
   onOpenConcentrationSaveDialog,
   onRemoveFromInitiative,
   onRemoveMultipleFromInitiative,
@@ -689,7 +684,6 @@ export function InitiativeTrackerTable({
             battleStarted={battleStarted}
             currentRound={currentRound}
             onSetConcentration={onSetConcentration}
-            onResolvePendingConcentrationCheck={onResolvePendingConcentrationCheck}
             onOpenConcentrationSaveDialog={onOpenConcentrationSaveDialog}
             onRemoveFromInitiative={isPlayerView ? undefined : onRemoveFromInitiative}
             labels={getRowLabels(row)}

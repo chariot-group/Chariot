@@ -1323,11 +1323,23 @@ When adding a rule:
   - if the removed row was the active turn, advance to the next alive row in sorted order (or clear active turn if none remain);
   - purge turn-action keys tied to the removed row;
   - if no rows remain, clear `battleInitialized` and reset turn engine.
+- The GM MUST also be able to **remove an entire group** from the roster while the battle is initialized (before or after combat start), without ending the battle:
+  - removes all tracker rows sharing that `groupId` in one action;
+  - applies the same per-row cleanup rules as “leave initiative” (active turn advance, turn-action purge, clear battle if no rows remain);
+  - the virtual session-participants group (`__session_participants__`) MUST remain non-removable as a whole when it still has members (individual participant rows may still leave initiative via the row action);
+  - removing a group MUST NOT reopen or reset `initBattleDraft` selection state beyond what is implied by the surviving tracker rows.
 
 **Reset and End States**:
 
+- `Cancel combat` / `Annuler le combat` (battle initialized, combat not started):
+  - MUST be available to the GM on the initiative tracker page without requiring combat start first
+  - primary label MUST be the product equivalent of **Annuler le combat** (localized)
+  - MUST open a confirmation dialog in functional, non-technical language
+  - dialog intent MUST state that the prepared combat will be discarded and everyone returns to their character sheet
+  - on confirmation, MUST apply the same cleanup as `End combat` (rows, draft, initialized/started flags, turn engine, `untilCombatEnd` conditions, navigation back to character sheets, broadcast of ended battle state)
+  - after cancel, a brand new battle configuration is required before another combat can start
 - `End combat`:
-  - is available to the GM only
+  - is available to the GM only once combat has started (`battleStarted === true`)
   - MUST first open a confirmation dialog written in functional, non-technical language
   - dialog intent MUST clearly state that leaving combat returns everyone to their character sheet and that combat progress will no longer be available
   - dialog copy SHOULD stay concise; recommended confirmation message: `Are you sure you want to leave combat? If you confirm, everyone will return to their character sheet and combat progress will no longer be available.`
@@ -1342,6 +1354,7 @@ When adding a rule:
   - clears all tracker rows
   - clears initialized/started combat state
   - requires a new battle configuration
+- Group removal from the roster MUST remain available both before and after combat start (same Mid-Combat Roster rules).
 
 **Persistence and Recovery**:
 
@@ -1370,6 +1383,8 @@ When adding a rule:
 - Action lock behavior on rollback after row update
 - Condition lifecycle for each duration type and combat end cleanup
 - Persist/rehydration normalization of session tracker state
+- Cancel preparation before start clears battle state without requiring `startBattle`
+- Remove entire group from roster (before and after start) while keeping unrelated rows; session-participants group cannot be removed as a whole when it has members
 
 **References**:
 
@@ -1551,7 +1566,9 @@ When adding a rule:
 
 - `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
 - Updated when the GM navigates to any character detail route during an active session.
+- When the session is active, the stored path MUST include the `sessionCode` query parameter so that sheets not owned by the GM (player roster / guest characters) remain readable after navigation back from the initiative tracker (including after cancel/end combat).
 - Cleared when the session ends (`clearCurrentSession`).
+- Navigation consumers (sidebar **Return to Character Sheet**, post-combat redirect) MUST ensure `sessionCode` is present on the target URL while the session is still active.
 
 **Player Visibility Model**:
 
@@ -1830,31 +1847,44 @@ Each initiative tracker row carries:
 - A resolved label MUST NOT be replaced by a Keycloak UUID if a better source becomes available later (WebSocket username or successful profile fetch).
 - While resolution is pending, UI surfaces MUST show `...`, not the raw `userId`.
 
+**Assigned Character Identity (lobby + GM sidebar)**:
+
+- When a participant has an assigned `characterId`, the session lobby participant card and the GM sidebar `Joueurs (session)` section MUST show the character display name (`firstname` + optional `lastname`), never the Mongo `characterId`.
+- While the character sheet is loading or the fetch failed, those surfaces MUST show `...` (same loading placeholder), not the raw character id.
+- Both surfaces MUST show the character avatar when an avatar stored value is available, resolving the presigned URL with `sessionCode` (FR-media-avatar-read-access).
+- The GM sidebar MUST show character avatars for roster players and GM guest characters (size `xs`, accessible `alt` derived from the character label).
+
 **Prohibitions**:
 
 - Displaying a participant email as their session label
 - Displaying a Keycloak `sub` / UUID (`userId`) as a fallback label
 - Treating a UUID-shaped `username` or WebSocket `username` as a valid display label
 - Persisting `participantDisplayNames` across sessions (labels are ephemeral per active session)
+- Displaying a Mongo character id as the character name in the lobby or GM sidebar
 
 **Tests**:
 
 - Nominal: user with `username` shows that username in lobby, GM sidebar, and initiative tracker when character sheet is unavailable
+- Nominal: assigned character shows `firstname` (+ `lastname`) and avatar in lobby card and GM sidebar (never Mongo id)
 - Edge: user without `username` but with `firstName` + `lastName` shows the full name
 - Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
 - Edge: initial API failure followed by WebSocket username still updates the displayed label
+- Edge: character sheet still loading shows `...` for the character name (not character id)
 - Error: profile fetch failure shows `...`, never UUID or email
+- Error: character sheet fetch failure keeps `...` for the character name (not character id)
 - Regression: `username` equal to Keycloak UUID falls back to `firstName` + `lastName` or `...`
 
 **References**:
 
 - `services/web/client/src/lib/formatSessionParticipantUserLabel.ts`
+- `services/web/client/src/lib/formatSessionCharacterLabel.ts`
 - `services/web/client/src/lib/sessionParticipantDisplayNames.ts`
 - `services/web/client/src/store/slices/sessionSlice.ts` (`participantDisplayNames`)
 - `services/web/client/src/hooks/useSessionData.ts`
 - `services/web/client/src/hooks/useSessionSocket.ts`
 - `services/web/client/src/components/SessionCharacterSyncClient.tsx`
 - `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
 - `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
 - `services/web/client/src/components/character/CharacterDetailView.tsx`

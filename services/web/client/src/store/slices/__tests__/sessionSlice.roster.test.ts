@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import sessionReducer, {
   appendInitiativeTrackerRows,
   createInitiativeTrackerRow,
   endBattle,
+  removeInitiativeTrackerGroups,
   removeInitiativeTrackerRow,
   setSessionInitBattleDraft,
   setInitiativeTrackerRows,
@@ -71,6 +73,62 @@ describe("FR-combat-initiative-tracker — mid-combat roster", () => {
     expect(state.battleInitialized).toBe(false);
     expect(state.battleStarted).toBe(false);
   });
+
+  it("nominal: removeInitiativeTrackerGroups removes all rows of selected groups", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({ id: "g1:a", characterId: "a", groupId: "g1", groupLabel: "A" }),
+        buildRow({ id: "g1:b", characterId: "b", groupId: "g1", groupLabel: "A" }),
+        buildRow({ id: "g2:c", characterId: "c", groupId: "g2", groupLabel: "B" }),
+      ]),
+    );
+
+    state = sessionReducer(state, removeInitiativeTrackerGroups(["g1"]));
+
+    expect(state.initiativeTrackerRows).toHaveLength(1);
+    expect(state.initiativeTrackerRows[0]?.groupId).toBe("g2");
+    expect(state.battleInitialized).toBe(true);
+  });
+
+  it("edge: removeInitiativeTrackerGroups advances turn when active row belonged to removed group", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({ id: "g1:a", characterId: "a", groupId: "g1", initiative: 20 }),
+        buildRow({ id: "g2:b", characterId: "b", groupId: "g2", initiative: 10 }),
+      ]),
+    );
+    state = sessionReducer(state, startBattle());
+    expect(state.activeTurnRowId).toBe("g1:a");
+
+    state = sessionReducer(state, removeInitiativeTrackerGroups(["g1"]));
+
+    expect(state.initiativeTrackerRows).toHaveLength(1);
+    expect(state.activeTurnRowId).toBe("g2:b");
+    expect(state.battleStarted).toBe(true);
+  });
+
+  it("failure: session participants group cannot be removed as a whole", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([
+        buildRow({
+          id: `${SESSION_PARTICIPANTS_GROUP_ID}:p1`,
+          characterId: "p1",
+          groupId: SESSION_PARTICIPANTS_GROUP_ID,
+          groupLabel: "Participants",
+          kind: "player",
+        }),
+        buildRow({ id: "g1:a", characterId: "a", groupId: "g1" }),
+      ]),
+    );
+
+    state = sessionReducer(state, removeInitiativeTrackerGroups([SESSION_PARTICIPANTS_GROUP_ID, "g1"]));
+
+    expect(state.initiativeTrackerRows).toHaveLength(1);
+    expect(state.initiativeTrackerRows[0]?.groupId).toBe(SESSION_PARTICIPANTS_GROUP_ID);
+  });
 });
 
 describe("FR-session-combat-navigation — playerDisplayName default on create", () => {
@@ -124,5 +182,20 @@ describe("FR-combat-initiative-tracker — end combat reset", () => {
       showAllOpponents: false,
       allowPlayerInitiativeInput: false,
     });
+  });
+
+  it("nominal: cancel preparation via endBattle before start clears state without requiring startBattle", () => {
+    let state = sessionReducer(
+      undefined,
+      setInitiativeTrackerRows([buildRow({ id: "g1:c1", characterId: "c1" })]),
+    );
+    expect(state.battleInitialized).toBe(true);
+    expect(state.battleStarted).toBe(false);
+
+    state = sessionReducer(state, endBattle());
+
+    expect(state.initiativeTrackerRows).toEqual([]);
+    expect(state.battleInitialized).toBe(false);
+    expect(state.battleStarted).toBe(false);
   });
 });

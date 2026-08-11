@@ -406,9 +406,41 @@ const mergePlayerFieldVisibilityChange = (
     };
 };
 
-const purgeTurnKeysForRow = (turnsWithActions: string[], rowId: string): string[] => {
-    const suffix = `:${rowId}`;
-    return turnsWithActions.filter((key) => !key.endsWith(suffix));
+const purgeTurnKeysForRows = (turnsWithActions: string[], rowIds: Set<string>): string[] => {
+    return turnsWithActions.filter((key) => {
+        const rowId = key.slice(key.indexOf(':') + 1);
+        return !rowIds.has(rowId);
+    });
+};
+
+/** Shared leave-initiative cleanup for one or many rows (FR-combat-initiative-tracker). */
+const removeTrackerRowsById = (state: CurrentSessionState, rowIdList: string[]) => {
+    const rowIds = new Set(rowIdList);
+    if (rowIds.size === 0) return;
+
+    const beforeLength = state.initiativeTrackerRows.length;
+    const removedActiveTurn = state.activeTurnRowId != null && rowIds.has(state.activeTurnRowId);
+    state.initiativeTrackerRows = state.initiativeTrackerRows.filter((row) => !rowIds.has(row.id));
+    if (state.initiativeTrackerRows.length === beforeLength) return;
+
+    state.turnsWithActions = purgeTurnKeysForRows(state.turnsWithActions, rowIds);
+
+    if (state.initiativeTrackerRows.length === 0) {
+        state.battleInitialized = false;
+        resetBattleTurnState(state);
+        return;
+    }
+
+    if (state.battleStarted) {
+        const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
+        const activeStillPresent = state.activeTurnRowId
+            ? sorted.some((row) => row.id === state.activeTurnRowId)
+            : false;
+        if (removedActiveTurn || !activeStillPresent) {
+            state.activeTurnRowId = findFirstAliveRowId(sorted);
+        }
+        markActiveTurnWithActions(state);
+    }
 };
 
 const resetBattleTurnState = (state: CurrentSessionState) => {
@@ -593,61 +625,25 @@ const sessionSlice = createSlice({
             }
         },
         removeInitiativeTrackerRow: (state, action: PayloadAction<string>) => {
-            const rowId = action.payload;
-            const index = state.initiativeTrackerRows.findIndex((row) => row.id === rowId);
-            if (index < 0) return;
-
-            const wasActiveTurn = state.activeTurnRowId === rowId;
-            state.initiativeTrackerRows.splice(index, 1);
-            state.turnsWithActions = purgeTurnKeysForRow(state.turnsWithActions, rowId);
-
-            if (state.initiativeTrackerRows.length === 0) {
-                state.battleInitialized = false;
-                resetBattleTurnState(state);
-                return;
-            }
-
-            if (state.battleStarted) {
-                const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
-                const activeStillPresent = state.activeTurnRowId
-                    ? sorted.some((row) => row.id === state.activeTurnRowId)
-                    : false;
-                if (wasActiveTurn || !activeStillPresent) {
-                    state.activeTurnRowId = findFirstAliveRowId(sorted);
-                }
-                markActiveTurnWithActions(state);
-            }
+            removeTrackerRowsById(state, [action.payload]);
         },
         removeInitiativeTrackerRows: (state, action: PayloadAction<string[]>) => {
-            const rowIds = new Set(action.payload);
-            if (rowIds.size === 0) return;
+            removeTrackerRowsById(state, action.payload);
+        },
+        /**
+         * FR-combat-initiative-tracker — remove all rows for one or more groups.
+         * Session participants group cannot be removed as a whole.
+         */
+        removeInitiativeTrackerGroups: (state, action: PayloadAction<string[]>) => {
+            const groupIds = new Set(
+                action.payload.filter((groupId) => groupId !== SESSION_PARTICIPANTS_GROUP_ID),
+            );
+            if (groupIds.size === 0) return;
 
-            const beforeLength = state.initiativeTrackerRows.length;
-            const removedActiveTurn = state.activeTurnRowId != null && rowIds.has(state.activeTurnRowId);
-            state.initiativeTrackerRows = state.initiativeTrackerRows.filter((row) => !rowIds.has(row.id));
-            if (state.initiativeTrackerRows.length === beforeLength) return;
-
-            state.turnsWithActions = state.turnsWithActions.filter((key) => {
-                const rowId = key.slice(key.indexOf(':') + 1);
-                return !rowIds.has(rowId);
-            });
-
-            if (state.initiativeTrackerRows.length === 0) {
-                state.battleInitialized = false;
-                resetBattleTurnState(state);
-                return;
-            }
-
-            if (state.battleStarted) {
-                const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
-                const activeStillPresent = state.activeTurnRowId
-                    ? sorted.some((row) => row.id === state.activeTurnRowId)
-                    : false;
-                if (removedActiveTurn || !activeStillPresent) {
-                    state.activeTurnRowId = findFirstAliveRowId(sorted);
-                }
-                markActiveTurnWithActions(state);
-            }
+            const rowIds = state.initiativeTrackerRows
+                .filter((row) => groupIds.has(row.groupId))
+                .map((row) => row.id);
+            removeTrackerRowsById(state, rowIds);
         },
         updateInitiativeTrackerRow: (
             state,
@@ -852,6 +848,7 @@ export const {
     appendInitiativeTrackerRows,
     removeInitiativeTrackerRow,
     removeInitiativeTrackerRows,
+    removeInitiativeTrackerGroups,
     updateInitiativeTrackerRow,
     updateInitiativeTrackerRowsBulk,
     resetInitiativeTracker,
