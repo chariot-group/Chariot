@@ -23,6 +23,10 @@ updates:
     patterns:
       - "*"
     versioning-strategy: increase
+    ignore:
+      # typescript-eslint peer is still <6.1.0; TS 7 breaks npm ci
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # npm — gateway
   - package-ecosystem: "npm"
@@ -34,6 +38,8 @@ updates:
     ignore:
       - dependency-name: "stripe"
       - dependency-name: "@stripe/*"
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # npm — session
   - package-ecosystem: "npm"
@@ -45,6 +51,8 @@ updates:
     ignore:
       - dependency-name: "stripe"
       - dependency-name: "@stripe/*"
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # npm — web
   - package-ecosystem: "npm"
@@ -82,6 +90,9 @@ updates:
     patterns:
       - "*"
     versioning-strategy: increase
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # Docker — media
   - package-ecosystem: "docker"

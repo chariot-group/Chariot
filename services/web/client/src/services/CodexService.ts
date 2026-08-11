@@ -1,11 +1,13 @@
 import axios, { AxiosInstance } from 'axios';
 import { spellClassApiValue } from '@/constants/spellClasses';
+import { spellSchoolApiValue } from '@/constants/spellSchools';
 import { Spell, NPC, Action, ActionUsageType } from '@/types/character';
+import { resolveCodexSpellSchoolLabel } from '@/utils/codexSpellSchool.utils';
 
 export interface CodexSpellTranslation {
     name: string;
     level: number;
-    school: string;
+    school?: string | { name?: string } | null;
     description: string;
     components: string[];
     castingTime: string;
@@ -406,7 +408,7 @@ class CodexService {
                         return {
                             name: t.name || '',
                             level: t.level ?? 0,
-                            school: t.school || '',
+                            school: resolveCodexSpellSchoolLabel(t.school),
                             description: t.description || '',
                             components: t.components || [],
                             castingTime: t.castingTime || '',
@@ -431,7 +433,7 @@ class CodexService {
                 return {
                     name: flat.name || '',
                     level: flat.level ?? 0,
-                    school: flat.school || '',
+                    school: resolveCodexSpellSchoolLabel(flat.school) || '',
                     description: flat.description || '',
                     components: flat.components || [],
                     castingTime: flat.castingTime || '',
@@ -482,6 +484,7 @@ class CodexService {
      * @param offset - Le nombre d'éléments par page
      * @param classes - Filtre optionnel par une ou plusieurs classes de lanceur
      * @param level - Filtre optionnel par niveau de sort (0–9, 0 = sort mineur)
+     * @param schools - Filtre optionnel par une ou plusieurs écoles de magie (slugs canoniques)
      */
     async searchSpells(
         searchQuery: string,
@@ -490,6 +493,7 @@ class CodexService {
         offset: number = 10,
         classes?: string[],
         level?: number,
+        schools?: string[],
     ): Promise<CodexSpellResponse> {
         try {
             const params: Record<string, string | number | string[]> = {
@@ -513,6 +517,10 @@ class CodexService {
 
             if (level !== undefined && level >= 0 && level <= 9) {
                 params.level = level;
+            }
+
+            if (schools && schools.length > 0) {
+                params.schools = schools.map(spellSchoolApiValue);
             }
 
             const response = await this.client.get<CodexSpellResponse>('/spells', {
@@ -552,7 +560,7 @@ class CodexService {
         return {
             name: translation.name,
             level: translation.level,
-            school: translation.school,
+            school: resolveCodexSpellSchoolLabel(translation.school),
             description: translation.description,
             components: translation.components || [],
             castingTime: translation.castingTime,

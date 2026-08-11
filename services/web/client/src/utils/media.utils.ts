@@ -22,12 +22,51 @@ export function mediaAvatarCacheKey(
 export type MediaAvatarSize = "sheet" | "profile" | "thumb" | "xs";
 
 /** @see FR-media-avatar-format */
-export const MEDIA_AVATAR_ACCEPTED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"] as const;
+export const MEDIA_AVATAR_ACCEPTED_EXTENSIONS = [
+  "jpg",
+  "jpeg",
+  "png",
+  "webp",
+  "heic",
+  "heif",
+] as const;
+export const MEDIA_AVATAR_ACCEPTED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/pjpeg",
+  "image/png",
+  "image/x-png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+]);
 export const MEDIA_AVATAR_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const MEDIA_AVATAR_MAX_UPLOAD_MB = MEDIA_AVATAR_MAX_UPLOAD_BYTES / (1024 * 1024);
 export const MEDIA_AVATAR_RECOMMENDED_WIDTH_PX = 400;
 export const MEDIA_AVATAR_RECOMMENDED_HEIGHT_PX = 500;
-export const MEDIA_AVATAR_ACCEPT_MIME =
-  "image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif";
+/** HTML `accept` filter for the file picker (MIME + extensions). */
+export const MEDIA_AVATAR_ACCEPT_MIME = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".heic",
+  ".heif",
+].join(",");
+
+/** Client-side gate matching FR-media-avatar-format accepted upload formats. */
+export function isAcceptedMediaAvatarFile(file: Pick<File, "name" | "type">): boolean {
+  if (file.type && MEDIA_AVATAR_ACCEPTED_MIME_TYPES.has(file.type)) {
+    return true;
+  }
+  const lowerName = file.name.toLowerCase();
+  return MEDIA_AVATAR_ACCEPTED_EXTENSIONS.some((ext) => lowerName.endsWith(`.${ext}`));
+}
 
 export const MEDIA_AVATAR_SIZE_CLASS: Record<MediaAvatarSize, string> = {
   sheet: "w-20 aspect-[4/5] sm:w-24 md:w-28",

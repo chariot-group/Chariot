@@ -196,6 +196,8 @@ export function sanitizeInitiativeTrackerRowForPlayer(row: InitiativeTrackerRow)
     tempHitPoints: fieldVis.hitPoints ? row.tempHitPoints : 0,
     armorClass: fieldVis.armorClass ? row.armorClass : 0,
     conditions: fieldVis.conditions ? row.conditions : [],
+    concentration: fieldVis.concentration ? row.concentration ?? null : null,
+    pendingConcentrationCheck: fieldVis.concentration ? row.pendingConcentrationCheck ?? null : null,
     groupLabel: fieldVis.groupLabel ? row.groupLabel : "",
     deathSavesFailures: fieldVis.hitPoints
       ? row.deathSavesFailures

@@ -1,5 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string, values?: Record<string, string | number>) => {
+    if (values) {
+      return `${key}:${JSON.stringify(values)}`;
+    }
+    return key;
+  },
+}));
+
 import { InitiativeTrackerRow } from "@/components/initiativeTracker/InitiativeTrackerRow";
 import type { InitiativeTrackerRow as InitiativeTrackerRowType } from "@/store/slices/sessionSlice";
 
@@ -45,6 +55,7 @@ const labels = {
       lifeStatus: "Vital status",
       armorClass: "AC",
       conditions: "Conditions",
+      concentration: "Concentration",
       groupLabel: "Group",
     },
     apply: "Apply",
@@ -82,6 +93,7 @@ const baseRow: InitiativeTrackerRowType = {
     lifeStatus: true,
     armorClass: true,
     conditions: true,
+    concentration: true,
     groupLabel: true,
   },
   conditions: [],
@@ -101,7 +113,7 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
       />,
     );
 
-    expect(html).toContain("flex w-full max-w-full min-w-0 overflow-hidden justify-self-start text-left");
+    expect(html).toContain('data-tracker-grid-cell-align="character"');
     expect(html).toContain("block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden underline");
     expect(html).toContain("flex w-full max-w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden");
     expect(html).toContain("block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white");
@@ -205,5 +217,29 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
 
     expect(html).toContain('type="number"');
     expect(html).toContain('aria-label="Initiative"');
+  });
+
+  it("nominal: grid condition and group cells are isolated to prevent overlap", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{
+          ...baseRow,
+          groupLabel: "Participants",
+          concentration: { spellName: "Entangle" },
+        }}
+        mode="gm"
+        battleStarted
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        onAddCondition={() => {}}
+        onRemoveCondition={() => {}}
+        onClearConditions={() => {}}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('data-tracker-grid-cell-align="condition"');
+    expect(html).toContain('data-tracker-grid-cell-align="group"');
+    expect(html).toContain("overflow-x-clip");
+    expect(html).toContain("md:grid");
   });
 });

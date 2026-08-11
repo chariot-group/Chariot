@@ -8,6 +8,7 @@ import campaignService from "@/services/CampaignService";
 import characterService from "@/services/CharacterService";
 import sessionService, { type SessionParticipant } from "@/services/SessionService";
 import UserService from "@/services/UserService";
+import { resolveSessionCharacterLabel } from "@/lib/formatSessionCharacterLabel";
 import { formatSessionParticipantUserLabel, SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -25,10 +26,28 @@ import { useToast } from "@/hooks/useToast";
 import type { Character } from "@/types/character";
 import type { Campaign } from "@/types/campaign";
 
+const CHARACTER_FETCH_RETRY_DELAY_MS = 350;
+
 interface UseSessionDataOptions {
     code: string;
     idCampaign: string;
     campaign: Campaign | undefined;
+}
+
+async function fetchCharacterByIdWithRetry(
+    characterId: string,
+    sessionCode: string,
+): Promise<Character | null> {
+    try {
+        return await characterService.getCharacterById(characterId, { sessionCode });
+    } catch {
+        await new Promise((resolve) => setTimeout(resolve, CHARACTER_FETCH_RETRY_DELAY_MS));
+        try {
+            return await characterService.getCharacterById(characterId, { sessionCode });
+        } catch {
+            return null;
+        }
+    }
 }
 
 export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOptions): {
@@ -69,14 +88,14 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     const fetchCharacterDetails = useCallback(async (ids: string[]) => {
         const targets = ids.filter((id) => Boolean(id?.trim()));
         if (targets.length === 0) return;
-        const results = await Promise.allSettled(
-            targets.map((id) => characterService.getCharacterById(id, { sessionCode: code })),
+        const results = await Promise.all(
+            targets.map((id) => fetchCharacterByIdWithRetry(id, code)),
         );
         setCharacterDetails((prev) => {
             const next = { ...prev };
-            results.forEach((result, i) => {
-                if (result.status === "fulfilled") {
-                    next[targets[i]] = result.value;
+            results.forEach((character, i) => {
+                if (character) {
+                    next[targets[i]] = character;
                 }
             });
             return next;
@@ -199,11 +218,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 
     const getCharacterLabel = (characterId: string | null): string => {
         if (!characterId) return "";
-        const character = characterDetails[characterId];
-        if (!character) return characterId;
-        let label = character.firstname.trim();
-        if (character.lastname) label += ` ${character.lastname.trim()}`;
-        return label;
+        return resolveSessionCharacterLabel(characterDetails[characterId]);
     };
 
     return {

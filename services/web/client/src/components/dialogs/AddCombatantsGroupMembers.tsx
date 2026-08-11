@@ -9,7 +9,7 @@ import { InitiativeTrackerGroupedInitiativeBar } from "@/components/initiativeTr
 export const ADD_COMBATANTS_MEMBER_GRID = "88px minmax(0, 1fr) 40px";
 
 const INITIATIVE_INPUT_CLASS =
-  "h-9 w-full max-w-[88px] rounded-[15px] bg-gray-middle-light px-3 text-center text-sm font-normal tabular-nums text-white";
+  "h-9 w-full rounded-[15px] bg-gray-middle-light px-3 text-center text-sm font-normal tabular-nums text-white";
 
 type BattleMember = {
   _id: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, OctagonX, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, OctagonX, Play, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -13,6 +13,11 @@ type InitiativeTrackerTurnControlsProps = {
   previousTurnState: PreviousTurnState;
   labels: {
     startCombat: string;
+    cancelCombat: string;
+    cancelCombatConfirmTitle: string;
+    cancelCombatConfirmDescription: string;
+    cancelCombatConfirmAction: string;
+    cancelCombatCancelAction: string;
     endCombat: string;
     endCombatConfirmTitle: string;
     endCombatConfirmDescription: string;
@@ -25,6 +30,7 @@ type InitiativeTrackerTurnControlsProps = {
     previousHintNoPrevious: string;
   };
   onStartCombat: () => void;
+  onCancelCombat: () => void;
   onEndCombat: () => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -41,12 +47,16 @@ function getPreviousHint(previousTurnState: PreviousTurnState, labels: Initiativ
   }
 }
 
+/**
+ * FR-combat-initiative-tracker — start / cancel (pre-start) / end combat + turn nav.
+ */
 export function InitiativeTrackerTurnControls({
   battleStarted,
   canGoPrevious,
   previousTurnState,
   labels,
   onStartCombat,
+  onCancelCombat,
   onEndCombat,
   onPrevious,
   onNext,
@@ -55,7 +65,7 @@ export function InitiativeTrackerTurnControls({
 
   return (
     <div className="mt-4 flex flex-col items-center gap-2">
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="inline-flex">
@@ -90,14 +100,31 @@ export function InitiativeTrackerTurnControls({
             </Button>
           </ConfirmDialog>
         ) : (
-          <Button
-            type="button"
-            onClick={onStartCombat}
-            aria-label={labels.startCombat}
-            className="h-9 rounded-[15px] bg-green px-3 text-sm font-semibold text-black hover:bg-[#7dc400] sm:px-4">
-            <Play className="size-4 sm:hidden" aria-hidden="true" />
-            <span className="sr-only sm:not-sr-only">{labels.startCombat}</span>
-          </Button>
+          <>
+            <ConfirmDialog
+              title={labels.cancelCombatConfirmTitle}
+              description={labels.cancelCombatConfirmDescription}
+              confirmLabel={labels.cancelCombatConfirmAction}
+              cancelLabel={labels.cancelCombatCancelAction}
+              onConfirm={onCancelCombat}>
+              <Button
+                type="button"
+                variant="outline"
+                aria-label={labels.cancelCombat}
+                className="h-9 rounded-[15px] border-red/50 bg-transparent px-3 text-sm font-semibold text-red hover:bg-red/15 sm:px-4">
+                <XCircle className="size-4 sm:hidden" aria-hidden="true" />
+                <span className="sr-only sm:not-sr-only">{labels.cancelCombat}</span>
+              </Button>
+            </ConfirmDialog>
+            <Button
+              type="button"
+              onClick={onStartCombat}
+              aria-label={labels.startCombat}
+              className="h-9 rounded-[15px] bg-green px-3 text-sm font-semibold text-black hover:bg-[#7dc400] sm:px-4">
+              <Play className="size-4 sm:hidden" aria-hidden="true" />
+              <span className="sr-only sm:not-sr-only">{labels.startCombat}</span>
+            </Button>
+          </>
         )}
 
         <Button

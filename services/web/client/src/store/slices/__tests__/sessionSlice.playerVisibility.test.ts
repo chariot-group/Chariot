@@ -53,6 +53,7 @@ describe("FR-session-combat-navigation — player field visibility defaults", ()
       lifeStatus: false,
       armorClass: false,
       conditions: false,
+      concentration: false,
       groupLabel: false,
     });
   });
@@ -369,6 +370,7 @@ describe("FR-tracker-bulk-display — bulk display configuration", () => {
       lifeStatus: false,
       armorClass: true,
       conditions: false,
+      concentration: false,
       groupLabel: true,
     });
   });

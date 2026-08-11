@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { ChevronDown, ChevronRight, HeartCrack, Layers2, Skull, Users } from "lucide-react";
+import { ChevronDown, ChevronRight, HeartCrack, Layers2, Pencil, Skull, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -37,6 +38,16 @@ import {
 } from "@/components/initiativeTracker/utils";
 import { InitiativeNumberInput } from "@/components/initiativeTracker/InitiativeNumberInput";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
+import {
+  ConcentrationSpellDialog,
+  type ConcentrationDialogIntent,
+} from "@/components/initiativeTracker/ConcentrationSpellDialog";
+import { ConcentrationStateBadge } from "@/components/initiativeTracker/ConcentrationStateBadge";
+import {
+  shouldShowConcentrationSaveDialog,
+} from "@/components/initiativeTracker/concentration.utils";
+import type { TrackerConcentration } from "@/store/slices/sessionSlice";
+import { TrackerGridCell } from "@/components/initiativeTracker/TrackerGridCell";
 
 type InitiativeTrackerRowProps = {
   row: InitiativeTrackerRowType;
@@ -68,6 +79,10 @@ type InitiativeTrackerRowProps = {
   onClearConditions?: (row: InitiativeTrackerRowType) => void;
   onHitPointsClick?: (row: InitiativeTrackerRowType) => void;
   onRemoveFromInitiative?: (rowId: string) => void;
+  battleStarted?: boolean;
+  currentRound?: number;
+  onSetConcentration?: (row: InitiativeTrackerRowType, concentration: TrackerConcentration | null) => void;
+  onOpenConcentrationSaveDialog?: (row: InitiativeTrackerRowType) => void;
   labels: {
     initiativeFor: string;
     viewSheetFor: string;
@@ -110,6 +125,7 @@ type InitiativeTrackerRowProps = {
         lifeStatus: string;
         armorClass: string;
         conditions: string;
+        concentration: string;
         groupLabel: string;
       };
       apply: string;
@@ -151,11 +167,29 @@ export function InitiativeTrackerRow({
   onClearConditions,
   onHitPointsClick,
   onRemoveFromInitiative,
+  battleStarted = false,
+  currentRound = 1,
+  onSetConcentration,
+  onOpenConcentrationSaveDialog,
   labels,
 }: InitiativeTrackerRowProps) {
+  const tConc = useTranslations("initTracker.tracker.concentration");
   const isPlayerView = mode === "player";
   const fieldVis = row.playerFieldVisibility;
   const [visibilityOpen, setVisibilityOpen] = React.useState(false);
+  const [concentrationDialogOpen, setConcentrationDialogOpen] = React.useState(false);
+  const [concentrationDialogIntent, setConcentrationDialogIntent] =
+    React.useState<ConcentrationDialogIntent>("set");
+
+  const openConcentrationDialog = React.useCallback(
+    (intent?: ConcentrationDialogIntent) => {
+      setConcentrationDialogIntent(
+        intent ?? (row.concentration ? "replace" : "set"),
+      );
+      setConcentrationDialogOpen(true);
+    },
+    [row.concentration],
+  );
 
   const gmName = characterName(row.firstname, row.lastname, row.surname);
   const isOwnCharacter = Boolean(
@@ -207,7 +241,13 @@ export function InitiativeTrackerRow({
   const showLifeStatus = !isPlayerView || fieldVis.lifeStatus;
   const showAc = !isPlayerView || fieldVis.armorClass;
   const showConditions = !isPlayerView || fieldVis.conditions;
+  const showConcentration = !isPlayerView || fieldVis.concentration;
   const showGroupLabel = !isPlayerView || fieldVis.groupLabel;
+  const canEditConcentration = Boolean(
+    battleStarted
+    && onSetConcentration
+    && (!isPlayerView || isOwnCharacter),
+  );
 
   const hpCellClassName = cn(
     "flex h-9 w-full min-w-[4.75rem] flex-col items-center justify-center gap-0 overflow-hidden rounded-[15px] bg-gray-middle-light px-2 tabular-nums",
@@ -391,20 +431,88 @@ export function InitiativeTrackerRow({
 
   const groupContent = renderGroupContent();
 
-  const rowConditions = row.conditions ?? [];
+  const rowConditions = React.useMemo(() => row.conditions ?? [], [row.conditions]);
+  const activeConcentration =
+    battleStarted && showConcentration && row.concentration ? row.concentration : null;
+  const activePendingConcentrationCheck =
+    battleStarted && showConcentration && activeConcentration ? row.pendingConcentrationCheck ?? null : null;
+  const totalStateCount = rowConditions.length + (activeConcentration ? 1 : 0);
+
+  const formatConcentrationDetail = React.useCallback(
+    (concentration: TrackerConcentration) => {
+      const base = tConc("badgeDetail", { spell: concentration.spellName });
+      if (!activePendingConcentrationCheck) return base;
+      return `${base}. ${tConc("pendingCheck", {
+        damage: activePendingConcentrationCheck.damageAmount,
+        dc: activePendingConcentrationCheck.dc,
+      })}`;
+    },
+    [activePendingConcentrationCheck, tConc],
+  );
+
+  const concentrationBadgeProps = React.useMemo(() => {
+    if (!activeConcentration) return null;
+
+    const canOpenSaveDialog = shouldShowConcentrationSaveDialog({
+      row,
+      isGameMaster: !isPlayerView,
+      ownCharacterId,
+    });
+
+    return {
+      concentration: activeConcentration,
+      badgeLabel: tConc("badgeLabel"),
+      badgeShort: tConc("badgeShort"),
+      detailLabel: formatConcentrationDetail(activeConcentration),
+      pendingCheck: activePendingConcentrationCheck,
+      pendingCheckLabel: activePendingConcentrationCheck
+        ? tConc("pendingCheckShort", { dc: activePendingConcentrationCheck.dc })
+        : null,
+      pendingCheckActivateLabel: activePendingConcentrationCheck
+        ? tConc("pendingCheckActivate", { dc: activePendingConcentrationCheck.dc })
+        : null,
+      onPendingCheckActivate:
+        canOpenSaveDialog && activePendingConcentrationCheck && onOpenConcentrationSaveDialog
+          ? () => onOpenConcentrationSaveDialog(row)
+          : undefined,
+    };
+  }, [
+    activeConcentration,
+    activePendingConcentrationCheck,
+    formatConcentrationDetail,
+    isPlayerView,
+    onOpenConcentrationSaveDialog,
+    ownCharacterId,
+    row,
+    tConc,
+  ]);
+
+  const stateSummaryLabels = React.useMemo(() => {
+    const parts: string[] = [];
+    if (activeConcentration) {
+      parts.push(formatConcentrationDetail(activeConcentration));
+    }
+    if (showConditions) {
+      parts.push(...rowConditions.map((entry) => labels.getConditionLabel(entry.condition)));
+    }
+    return parts;
+  }, [activeConcentration, formatConcentrationDetail, labels, rowConditions, showConditions]);
+
   const conditionContent =
-    showConditions && (row.conditions ?? []).length > 0
-      ? (row.conditions ?? []).map((entry) => labels.getConditionLabel(entry.condition)).join(", ")
-      : showConditions
-        ? "—"
-        : null;
+    showConditions || activeConcentration
+      ? stateSummaryLabels.length > 0
+        ? stateSummaryLabels.join(", ")
+        : showConditions
+          ? "—"
+          : null
+      : null;
 
   const detailsId = `initiative-tracker-row-details-${row.id}`;
   const tabletDetailsId = `initiative-tracker-row-tablet-details-${row.id}`;
-  const hasTabletExpansion = rowConditions.length > 1;
+  const hasTabletExpansion = totalStateCount > 1;
 
   const renderInitiativeCell = (compact = false) => (
-    <div className={cn("flex w-full min-w-0 items-center", !compact && TRACKER_CELL_ALIGN.initiative, hasTabletExpansion && "pl-5")}>
+    <div className={cn("flex w-full min-w-0 items-center", hasTabletExpansion && !compact && "pl-5")}>
       {showInitiative ? (
         initiativeLocked || (isPlayerView && !isOwnCharacter) ? (
           <div
@@ -420,9 +528,12 @@ export function InitiativeTrackerRow({
             resetKey={row.id}
             ariaLabel={labels.initiativeFor}
             onCommit={(nextValue) => onUpdateRow?.(row.id, { initiative: nextValue })}
+            containerClassName={cn(
+              compact && "mx-0 max-w-[72px] max-[360px]:max-w-[60px]",
+            )}
             className={cn(
-              "mx-auto h-9 w-full max-w-[88px] rounded-[15px] bg-gray-middle-light px-3 text-center text-sm text-white",
-              compact && "mx-0 max-w-[72px] px-2 max-[360px]:max-w-[60px]",
+              "h-9 rounded-[15px] bg-gray-middle-light px-3 text-center text-sm text-white",
+              compact && "px-2",
             )}
           />
         )
@@ -452,7 +563,7 @@ export function InitiativeTrackerRow({
     ) : null;
 
   const renderHpCell = (compact = false) => (
-    <div className={cn("flex min-w-0 justify-center self-center", !compact && TRACKER_CELL_ALIGN.hitPoints)}>
+    <div className={cn("flex min-w-0 justify-center self-center")}>
       {!isPlayerView && onHitPointsClick ? (
         <button
           type="button"
@@ -476,66 +587,125 @@ export function InitiativeTrackerRow({
   );
 
   const renderConditionBadges = () => {
-    if (!showConditions) return compactHidden;
-    if (rowConditions.length === 0) {
+    if (!showConditions && !activeConcentration) return compactHidden;
+    if (totalStateCount === 0) {
       return <span className="text-sm text-white/70">—</span>;
     }
 
     return (
       <div className="flex min-w-0 flex-wrap gap-1.5">
-        {rowConditions.map((entry) => {
-          const { Icon, badgeClassName } = CONDITION_META[entry.condition];
-          const conditionLabel = labels.getConditionLabel(entry.condition);
-          const durationLabel = labels.formatConditionEntryDuration(entry);
-          const badgeText = durationLabel ? `${conditionLabel} (${durationLabel})` : conditionLabel;
+        {concentrationBadgeProps ? (
+          <div className="min-w-0 max-w-full shrink overflow-x-clip">
+            <ConcentrationStateBadge
+            concentration={concentrationBadgeProps.concentration}
+            badgeLabel={concentrationBadgeProps.badgeLabel}
+            badgeShort={concentrationBadgeProps.badgeShort}
+            detailLabel={concentrationBadgeProps.detailLabel}
+            pendingCheck={concentrationBadgeProps.pendingCheck}
+            pendingCheckLabel={concentrationBadgeProps.pendingCheckLabel}
+            pendingCheckActivateLabel={concentrationBadgeProps.pendingCheckActivateLabel}
+            onPendingCheckActivate={concentrationBadgeProps.onPendingCheckActivate}
+            canEdit={canEditConcentration}
+            changeLabel={tConc("change")}
+            dropLabel={tConc("drop")}
+            onEdit={() => openConcentrationDialog("replace")}
+            onRemove={() => onSetConcentration?.(row, null)}
+          />
+          </div>
+        ) : null}
+        {showConditions
+          ? rowConditions.map((entry) => {
+              const { Icon, badgeClassName } = CONDITION_META[entry.condition];
+              const conditionLabel = labels.getConditionLabel(entry.condition);
+              const durationLabel = labels.formatConditionEntryDuration(entry);
+              const badgeText = durationLabel ? `${conditionLabel} (${durationLabel})` : conditionLabel;
 
-          return (
-            <span
-              key={entry.condition}
-              className={cn(
-                "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium",
-                badgeClassName,
-              )}
-              title={badgeText}>
-              <Icon aria-hidden="true" className="size-3.5 shrink-0" />
-              <span className="min-w-0 truncate">{badgeText}</span>
-            </span>
-          );
-        })}
+              return (
+                <span
+                  key={entry.condition}
+                  className={cn(
+                    "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium",
+                    badgeClassName,
+                  )}
+                  title={badgeText}>
+                  <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+                  <span className="min-w-0 truncate">{badgeText}</span>
+                </span>
+              );
+            })
+          : null}
       </div>
     );
   };
 
+  const concentrationSelectProps =
+    battleStarted && showConcentration
+      ? {
+          enabled: true,
+          canEdit: canEditConcentration,
+          concentration: row.concentration ?? null,
+          pendingConcentrationCheck: activePendingConcentrationCheck,
+          menuLabel: tConc("menuLabel"),
+          badgeLabel: tConc("badgeLabel"),
+          badgeShort: tConc("badgeShort"),
+          formatDetailLabel: formatConcentrationDetail,
+          formatPendingCheckShortLabel: (dc: number) => tConc("pendingCheckShort", { dc }),
+          formatPendingCheckActivateLabel: (dc: number) => tConc("pendingCheckActivate", { dc }),
+          changeLabel: tConc("change"),
+          dropLabel: tConc("drop"),
+          onOpenDialog: openConcentrationDialog,
+          onOpenConcentrationSaveDialog: onOpenConcentrationSaveDialog
+            ? () => onOpenConcentrationSaveDialog(row)
+            : undefined,
+          onSetConcentration: (concentration: TrackerConcentration | null) =>
+            onSetConcentration?.(row, concentration),
+        }
+      : undefined;
+
   const renderConditionsCell = (compact = false) => (
-    <div className={cn("min-w-0 overflow-hidden", !compact && TRACKER_CELL_ALIGN.condition, compact && "w-full")}>
-      {showConditions && !isPlayerView && onAddCondition && onRemoveCondition && onClearConditions ? (
-        <ConditionSelect
-          row={row}
-          label={labels.conditionFor}
-          searchPlaceholder={labels.conditionSearchPlaceholder}
-          searchClearLabel={labels.conditionSearchClear}
-          clearAllConditionsLabel={labels.conditionClearAll}
-          emptyText={labels.conditionSearchEmpty}
-          addBackLabel={labels.conditionAddBack}
-          addConfirmLabel={labels.conditionAddConfirm}
-          durationEnableLabel={labels.conditionDurationEnable}
-          durationAmountLabel={labels.conditionDurationAmount}
-          roundHintLabel={labels.conditionRoundHint}
-          getConditionLabel={labels.getConditionLabel}
-          getConditionDescription={labels.getConditionDescription}
-          formatConditionEntryDuration={labels.formatConditionEntryDuration}
-          getConditionDurationUnits={labels.getConditionDurationUnits}
-          onAddCondition={onAddCondition}
-          onRemoveCondition={onRemoveCondition}
-          onClearConditions={onClearConditions}
-        />
-      ) : compact ? (
-        renderConditionBadges()
-      ) : conditionContent != null ? (
-        <span className="block min-w-0 truncate text-sm text-white/80">{conditionContent}</span>
-      ) : (
-        compactHidden
-      )}
+    <div className={cn("flex min-w-0 flex-col gap-1.5", compact && "w-full")}>
+        {showConditions && !isPlayerView && onAddCondition && onRemoveCondition && onClearConditions ? (
+          <ConditionSelect
+            row={row}
+            label={labels.conditionFor}
+            searchPlaceholder={labels.conditionSearchPlaceholder}
+            searchClearLabel={labels.conditionSearchClear}
+            clearAllConditionsLabel={labels.conditionClearAll}
+            emptyText={labels.conditionSearchEmpty}
+            addBackLabel={labels.conditionAddBack}
+            addConfirmLabel={labels.conditionAddConfirm}
+            durationEnableLabel={labels.conditionDurationEnable}
+            durationAmountLabel={labels.conditionDurationAmount}
+            roundHintLabel={labels.conditionRoundHint}
+            getConditionLabel={labels.getConditionLabel}
+            getConditionDescription={labels.getConditionDescription}
+            formatConditionEntryDuration={labels.formatConditionEntryDuration}
+            getConditionDurationUnits={labels.getConditionDurationUnits}
+            onAddCondition={onAddCondition}
+            onRemoveCondition={onRemoveCondition}
+            onClearConditions={onClearConditions}
+            concentration={concentrationSelectProps}
+          />
+        ) : (
+          <div className="flex min-w-0 items-center gap-2">
+            {canEditConcentration && battleStarted && showConcentration ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={labels.conditionFor}
+                className="shrink-0 rounded-full text-white/80 hover:bg-white/10 hover:text-white"
+                onClick={() => openConcentrationDialog("set")}>
+                <Pencil className="size-4" />
+              </Button>
+            ) : null}
+            {compact ? renderConditionBadges() : conditionContent != null ? (
+              <span className="block min-w-0 truncate text-sm text-white/80">{conditionContent}</span>
+            ) : (
+              renderConditionBadges()
+            )}
+          </div>
+        )}
     </div>
   );
 
@@ -549,7 +719,7 @@ export function InitiativeTrackerRow({
   return (
     <>
       <div
-        className={`relative hidden w-full max-w-full min-w-0 items-center gap-x-2 rounded-[22px] py-3 pr-3 text-sm text-white shadow-lg transition-colors lg:gap-x-3 lg:px-5 lg:text-base md:grid ${hasTabletExpansion ? "pl-5 lg:pl-5" : "pl-3 lg:pl-5"
+        className={`relative hidden w-full max-w-full min-w-0 items-center gap-x-2 overflow-x-clip rounded-[22px] py-3 pr-3 text-sm text-white shadow-lg transition-colors lg:gap-x-3 lg:px-5 lg:text-base md:grid ${hasTabletExpansion ? "pl-5 lg:pl-5" : "pl-3 lg:pl-5"
           } ${rowBackgroundClass} ${rowRingClass}`}
         style={{ gridTemplateColumns }}
         data-status={status}
@@ -566,32 +736,32 @@ export function InitiativeTrackerRow({
         ) : null}
 
         {!isPlayerView ? (
-          <div className={TRACKER_CELL_ALIGN.visible}>
+          <TrackerGridCell align="visible">
             <VisibilityTriggerButton
               row={row}
               ariaLabel={labels.visibleFor}
               onClick={() => setVisibilityOpen(true)}
             />
-          </div>
+          </TrackerGridCell>
         ) : null}
 
-        {renderInitiativeCell()}
+        <TrackerGridCell align="initiative">{renderInitiativeCell()}</TrackerGridCell>
 
-        <div className={`flex w-full max-w-full min-w-0 overflow-hidden ${TRACKER_CELL_ALIGN.character}`}>
+        <TrackerGridCell align="character">
           {renderCharacterColumn()}
-        </div>
+        </TrackerGridCell>
 
-        {renderHpCell()}
+        <TrackerGridCell align="hitPoints">{renderHpCell()}</TrackerGridCell>
 
-        <div className={`min-w-0 text-sm font-semibold tabular-nums text-white/90 ${TRACKER_CELL_ALIGN.armorClass}`}>
+        <TrackerGridCell align="armorClass" className="text-sm font-semibold tabular-nums text-white/90">
           {showAc ? row.armorClass : compactHidden}
-        </div>
+        </TrackerGridCell>
 
-        {renderConditionsCell()}
+        <TrackerGridCell align="condition">{renderConditionsCell()}</TrackerGridCell>
 
-        <span className={`flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden ${TRACKER_CELL_ALIGN.group}`}>
+        <TrackerGridCell as="span" align="group" className="flex items-center gap-2">
           {groupContent}
-        </span>
+        </TrackerGridCell>
       </div>
 
       <div
@@ -739,6 +909,18 @@ export function InitiativeTrackerRow({
               playerDisplayName: resolvePlayerDisplayNameForSave(playerDisplayName, gmName),
             });
           }}
+        />
+      ) : null}
+
+      {canEditConcentration && battleStarted && showConcentration ? (
+        <ConcentrationSpellDialog
+          row={row}
+          open={concentrationDialogOpen}
+          onOpenChange={setConcentrationDialogOpen}
+          intent={concentrationDialogIntent}
+          currentRound={currentRound}
+          sessionCode={sessionCode}
+          onSetConcentration={(concentration) => onSetConcentration?.(row, concentration)}
         />
       ) : null}
     </>
