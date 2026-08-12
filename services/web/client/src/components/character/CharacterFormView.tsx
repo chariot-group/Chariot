@@ -16,7 +16,12 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
-import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
+import {
+  isEnterWithModifiers,
+  isEnterWithoutModifiers,
+  isModalOverlayOpen,
+  isTypingInInputElement,
+} from "@/utils/keyboard.utils";
 import { toast } from "react-toastify";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
 import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
@@ -495,7 +500,10 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
 
   useEffect(() => {
     const handleGlobalShortcuts = (event: KeyboardEvent) => {
+      // Nested dialogs (e.g. Codex spell search) must consume Escape first.
+      // @see FR-character-form-nested-escape
       if (event.key === "Escape") {
+        if (isModalOverlayOpen()) return;
         event.preventDefault();
         event.stopPropagation();
         handleCancel();

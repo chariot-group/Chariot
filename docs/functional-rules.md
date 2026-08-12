@@ -3817,3 +3817,42 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/characterSheetPdf/` (to create)
 - `services/web/client/src/utils/global.utils.ts`
 - `docs/design.md`
+
+---
+
+## FR-character-form-nested-escape: Character Form Escape vs Nested Dialogs
+
+**Rule**: On character create and character edit forms, pressing Escape MUST dismiss only the topmost open overlay (dialog / confirm / popover layer that traps Escape). Escape MUST NOT cancel or leave the character form while such an overlay is open.
+
+**Scope**:
+
+- Character creation (`CharacterFormView` and equivalent create flows)
+- Character edit mode (`CharacterDetailView` while `isEditing`)
+- Nested overlays opened from these forms, including at least: Codex spell search (`CodexSpellSearchDialog`), confirmation dialogs, export/theme dialogs, and other Radix/Shadcn `Dialog` instances opened above the form
+
+**Requirements**:
+
+- Global form shortcuts that cancel create/edit on Escape MUST ignore Escape when a nested dialog (or equivalent modal layer) is open.
+- Escape on an open nested dialog MUST close that dialog only; the form remains in create/edit mode with unsaved changes preserved.
+- After the nested dialog is closed, a subsequent Escape MAY cancel/leave the form (existing create/edit shortcut behavior).
+- Behavior MUST remain keyboard-accessible and consistent with dialog focus trap conventions (FR-frontend-design).
+
+**Prohibitions**:
+
+- Letting the form-level Escape handler (including capture-phase `window` listeners) cancel create/edit while a nested dialog is open.
+- Closing both the Codex (or other nested) dialog and the character form on a single Escape press.
+
+**Tests**:
+
+- Nominal: open Codex spell search from magic tab while editing → Escape closes Codex only; edit mode stays active.
+- Nominal: open Codex during character creation → Escape closes Codex only; create form stays mounted.
+- Edge: after Codex is closed, Escape cancels edit / leaves create as before.
+- Edge: ConfirmDialog open above the form → Escape closes confirm only, not the form.
+- Failure / guard: form Escape handler does not run when `role="dialog"` (or equivalent open modal) is present in the document.
+
+**References**:
+
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/web/client/src/components/character/CharacterFormView.tsx`
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`

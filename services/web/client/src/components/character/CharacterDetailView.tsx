@@ -18,7 +18,12 @@ import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
 import { useSearchParams, useRouter } from "next/navigation";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
+import {
+  isEnterWithModifiers,
+  isEnterWithoutModifiers,
+  isModalOverlayOpen,
+  isTypingInInputElement,
+} from "@/utils/keyboard.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
@@ -322,7 +327,10 @@ export default function CharacterDetailView({
 
   useEffect(() => {
     const handleGlobalShortcuts = (event: KeyboardEvent) => {
+      // Nested dialogs (e.g. Codex spell search) must consume Escape first.
+      // @see FR-character-form-nested-escape
       if (event.key === "Escape" && isEditing) {
+        if (isModalOverlayOpen()) return;
         event.preventDefault();
         event.stopPropagation();
         handleCancelEditor();
