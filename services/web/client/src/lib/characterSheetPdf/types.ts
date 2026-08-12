@@ -72,6 +72,25 @@ export interface CharacterSheetPdfLabels {
   spellSlots: string;
   slotsUsed: string;
   slotsTotal: string;
+  // Spell detail pages
+  spellsSection: string;
+  spellSchool: string;
+  spellCastingTime: string;
+  spellRange: string;
+  spellComponents: string;
+  spellDuration: string;
+  spellDescription: string;
+  spellDamage: string;
+  spellHealing: string;
+  spellPreparedLabel: string;
+  spellUnpreparedLabel: string;
+  spellDescriptionContinuation: string;
+  npcAtWill: string;
+  npcUsesPerDay: string;
+  spellUsesTracker: string;
+  spellLevelCantrips: string;
+  spellLevelCantrip: string;
+  spellSlotsUsage: string;
   // Currency
   cp: string;
   sp: string;
@@ -146,6 +165,36 @@ export interface PdfSpellRow {
   name: string;
   level: number;
   prepared: boolean;
+  school: string;
+  description: string;
+  components: string;
+  castingTime: string;
+  duration: string;
+  range: string;
+  damage: string | null;
+  healing: string | null;
+  effectType: "attack" | "heal" | "utility";
+  usesPerDay: number | null;
+  used: number | null;
+}
+
+export interface PdfSpellLevelGroup {
+  level: number;
+  usesPerDay: number | null;
+  spells: PdfSpellRow[];
+  slots: { used: number; total: number } | null;
+}
+
+export type SpellPdfPageKind = "overview" | "detailBatch" | "detailContinuation";
+
+export interface SpellPdfPageDescriptor {
+  kind: SpellPdfPageKind;
+  blockIndex: number;
+  /** Up to six spells rendered on one compact detail page. */
+  spells?: PdfSpellRow[];
+  /** Single spell for description overflow pages. */
+  spell?: PdfSpellRow;
+  descriptionText?: string;
 }
 
 export interface PdfSpellcastingBlock {

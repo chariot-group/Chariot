@@ -24,6 +24,7 @@ describe("buildCharacterSheetPdfLabels", () => {
       tClass: identityT("class"),
       tAlignment: identityT("alignment"),
       tCommon: (key) => key,
+      tMagic: identityT("magic"),
     });
 
     expect(tPdf).toHaveBeenCalledWith("pageOf", { page: "{page}", total: "{total}" });

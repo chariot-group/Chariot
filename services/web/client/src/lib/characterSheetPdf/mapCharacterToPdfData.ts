@@ -1,6 +1,7 @@
 /** @see FR-character-sheet-pdf-export */
 
-import type { Action, NPC, Player, Spellcasting } from "@/types/character";
+import type { Action, NPC, Player, Spell, Spellcasting } from "@/types/character";
+import { formatDamageFormula } from "@/utils/spell-damage.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { calculateSkillBonus, isPlayer } from "@/utils/global.utils";
 import { formatAbilityModifier, formatSignedBonus } from "@/lib/characterSheetPdf/formatBonus";
@@ -11,6 +12,7 @@ import type {
   PdfAttackRow,
   PdfClassEntry,
   PdfHitDiceEntry,
+  PdfSpellRow,
   PdfSpellcastingBlock,
 } from "@/lib/characterSheetPdf/types";
 
@@ -79,23 +81,60 @@ function mapNpcAttacks(npc: NPC): PdfAttackRow[] {
   return mapAttacks(all);
 }
 
+function formatSpellDamageOrHealing(spell: Spell): { damage: string | null; healing: string | null } {
+  const damage =
+    spell.damageDetails
+      ? formatDamageFormula(
+          spell.damageDetails.diceCount,
+          spell.damageDetails.diceType,
+          spell.damageDetails.bonus,
+          spell.damageDetails.damageType,
+        )
+      : spell.damage?.trim() || null;
+  const healing =
+    spell.healingDetails
+      ? formatDamageFormula(
+          spell.healingDetails.diceCount,
+          spell.healingDetails.diceType,
+          spell.healingDetails.bonus,
+        )
+      : spell.healing?.trim() || null;
+  return { damage, healing };
+}
+
+function mapSpellToPdfRow(spell: Spell): PdfSpellRow {
+  const { damage, healing } = formatSpellDamageOrHealing(spell);
+  return {
+    name: spell.name?.trim() ?? "",
+    level: spell.level ?? 0,
+    prepared: spell.prepared === true,
+    school: spell.school?.trim() ?? "",
+    description: spell.description?.trim() ?? "",
+    components: (spell.components ?? []).filter(Boolean).join(", "),
+    castingTime: spell.castingTime?.trim() ?? "",
+    duration: spell.duration?.trim() ?? "",
+    range: spell.range?.trim() ?? "",
+    damage,
+    healing,
+    effectType: spell.effectType ?? "utility",
+    usesPerDay: spell.usesPerDay ?? null,
+    used: spell.used ?? null,
+  };
+}
+
 function mapSpellcastingBlocks(spellcasting: Spellcasting[]): PdfSpellcastingBlock[] {
   return spellcasting
     .filter((block) => block.className?.trim() || (block.spells?.length ?? 0) > 0)
     .map((block) => {
       const cantrips = (block.spells ?? [])
         .filter((s) => s.level === 0)
-        .map((s) => ({ name: s.name, level: 0, prepared: s.prepared === true }));
+        .map(mapSpellToPdfRow);
 
-      const spellsByLevel: Record<number, typeof cantrips> = {};
+      const spellsByLevel: Record<number, PdfSpellRow[]> = {};
       for (const spell of block.spells ?? []) {
         if (spell.level === 0) continue;
         if (!spellsByLevel[spell.level]) spellsByLevel[spell.level] = [];
-        spellsByLevel[spell.level].push({
-          name: spell.name,
-          level: spell.level,
-          prepared: spell.prepared === true,
-        });
+        spellsByLevel[spell.level].push(mapSpellToPdfRow(spell));
       }
 
       const slotsByLevel: Record<number, { used: number; total: number }> = {};

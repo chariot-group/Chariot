@@ -35,6 +35,7 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
   const tDetail = useTranslations("characterDetail");
+  const tMagic = useTranslations("characterDetail.magic");
 
   const labels = useMemo(
     () =>
@@ -47,8 +48,9 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
         tClass: (key) => tClass(key),
         tAlignment: (key) => tAlignment(key),
         tCommon: (key) => (key === "yes" ? tPdf("yes") : tPdf("no")),
+        tMagic: (key, values) => (values !== undefined ? tMagic(key, values) : tMagic(key)),
       }),
-    [tPdf, tGeneral, tBattle, tEdit, tNpc, tClass, tAlignment],
+    [tPdf, tGeneral, tBattle, tEdit, tNpc, tClass, tAlignment, tMagic],
   );
 
   const formatClassLevel = useCallback(

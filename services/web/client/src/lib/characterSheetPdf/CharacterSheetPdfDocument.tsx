@@ -12,7 +12,20 @@ import { buildLucideSvgDataUrl } from "@/lib/characterSheetPdf/buildLucideSvgStr
 import { PDF_SKILL_LUCIDE_NODES } from "@/lib/characterSheetPdf/lucidePdfIconNodes";
 import { getMasteryIconSvg } from "@/lib/characterSheetPdf/masteryIconSvg";
 import { svgDataUrl } from "@/lib/characterSheetPdf/svgDataUrl";
-import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme, PdfAbilityFeature, PdfClassEntry, PdfHitDiceEntry } from "@/lib/characterSheetPdf/types";
+import {
+  buildSpellPdfPages,
+  computeSpellOverviewDensity,
+  getLevelGroupForOverview,
+  getSpellLevelGroups,
+  getSpellOverviewColumnLevels,
+  getSpellOverviewDisplaySpells,
+  getSpellOverviewLineCount,
+  truncateSpellDescription,
+  PDF_SPELL_COMPACT_DESCRIPTION_MAX_CHARS,
+  PDF_SPELL_OVERVIEW_LINES_PER_LEVEL,
+} from "@/lib/characterSheetPdf/buildSpellPdfPages";
+import type { SpellOverviewDensity } from "@/lib/characterSheetPdf/buildSpellPdfPages";
+import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme, PdfAbilityFeature, PdfClassEntry, PdfHitDiceEntry, PdfSpellLevelGroup, PdfSpellRow, PdfSpellcastingBlock } from "@/lib/characterSheetPdf/types";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -21,6 +34,9 @@ const PDF_HEADER_ROW_HEIGHT = 60;
 const PDF_HEADER_MULTICLASS_INLINE_THRESHOLD = 4;
 const PDF_HEADER_MULTICLASS_EXTRA_HEIGHT = 11;
 const PDF_HEADER_AVATAR_WIDTH = 48;
+
+/** LETTER page height in points; forces the spell overview page to span a full page (wrap=false won't grow it on its own). */
+const PDF_LETTER_PAGE_HEIGHT = 792;
 
 function getHeaderRowHeight(classCount: number): number {
   if (classCount <= PDF_HEADER_MULTICLASS_INLINE_THRESHOLD) return PDF_HEADER_ROW_HEIGHT;
@@ -39,6 +55,10 @@ function createStyles(theme: CharacterSheetPdfTheme) {
       padding: 24,
       fontSize: 8.4,
       fontFamily: "Helvetica",
+    },
+    spellOverviewPage: {
+      minHeight: PDF_LETTER_PAGE_HEIGHT,
+      paddingHorizontal: 18,
     },
     footer: {
       position: "absolute",
@@ -269,6 +289,259 @@ function createStyles(theme: CharacterSheetPdfTheme) {
     },
     hitDiceChipClass: { fontSize: 6.6, color: t.textMuted },
     hitDiceChipValue: { fontSize: 7.8, fontWeight: "bold" },
+    spellStatsRow: { flexDirection: "row", gap: 7, marginBottom: 8 },
+    spellStatBox: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 15,
+      paddingVertical: 6,
+      paddingHorizontal: 8,
+      backgroundColor: t.cardBackground,
+    },
+    slotGrid: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 15,
+      padding: 8,
+      backgroundColor: t.cardBackground,
+      marginBottom: 8,
+    },
+    slotGridHeaderRow: { flexDirection: "row", marginBottom: 3 },
+    slotGridLabelCell: { width: 52, fontSize: 6.8, fontWeight: "bold", color: t.textMuted },
+    slotGridLevelCell: { flex: 1, fontSize: 6.8, fontWeight: "bold", color: t.textMuted, textAlign: "center" },
+    slotGridValueRow: { flexDirection: "row", alignItems: "center", marginBottom: 2 },
+    slotGridValueCell: { flex: 1, fontSize: 7.8, fontWeight: "bold", textAlign: "center" },
+    spellListItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 999,
+      paddingVertical: 3,
+      paddingHorizontal: 8,
+      marginRight: 4,
+      marginBottom: 4,
+      backgroundColor: t.pageBackground,
+    },
+    spellPreparedMark: { width: 8, height: 8, borderRadius: 999, borderWidth: 1, borderColor: t.textMuted },
+    spellPreparedMarkFilled: { backgroundColor: t.green, borderColor: t.green },
+    spellListName: { fontSize: 7.4, fontWeight: "bold" },
+    spellListWrap: { flexDirection: "row", flexWrap: "wrap" },
+    spellTitleCard: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 15,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      backgroundColor: t.cardBackground,
+      marginBottom: 6,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 6,
+    },
+    spellTitleText: { fontSize: 12, fontWeight: "bold", flex: 1 },
+    spellPreparedBadge: {
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      fontSize: 6.8,
+      fontWeight: "bold",
+    },
+    spellPreparedBadgeOn: { backgroundColor: t.green, borderColor: t.green, color: t.sectionHeaderText },
+    spellPreparedBadgeOff: { borderColor: t.border, color: t.textMuted, backgroundColor: t.pageBackground },
+    spellMetaWrap: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 6 },
+    spellMetaCard: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 15,
+      paddingVertical: 5,
+      paddingHorizontal: 8,
+      backgroundColor: t.cardBackground,
+      minWidth: "31%",
+      flexGrow: 1,
+    },
+    spellMetaCardWide: { width: "100%", flexGrow: 0 },
+    spellMetaLabel: { fontSize: 6.4, fontWeight: "bold", color: t.textMuted, marginBottom: 2 },
+    spellMetaValue: { fontSize: 7.4, lineHeight: 1.35 },
+    spellDescriptionBox: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 15,
+      padding: 8,
+      backgroundColor: t.cardBackground,
+    },
+    spellOverviewHeader: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 15,
+      backgroundColor: t.cardBackground,
+      marginBottom: 4,
+      overflow: "hidden",
+    },
+    spellOverviewHeaderTop: {
+      flexDirection: "row",
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    spellOverviewClassCell: {
+      flex: 1.2,
+      paddingVertical: 4,
+      paddingHorizontal: 6,
+      borderRightWidth: 1,
+      borderRightColor: t.border,
+    },
+    spellOverviewStatCell: {
+      flex: 1,
+      paddingVertical: 4,
+      paddingHorizontal: 4,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRightWidth: 1,
+      borderRightColor: t.border,
+    },
+    spellOverviewStatCellLast: { borderRightWidth: 0 },
+    spellOverviewStatLabel: {
+      fontSize: 5.4,
+      fontWeight: "bold",
+      color: t.textMuted,
+      textTransform: "uppercase",
+      textAlign: "center",
+      marginBottom: 1,
+    },
+    spellOverviewStatValue: { fontSize: 9, fontWeight: "bold", textAlign: "center" },
+    spellOverviewColumns: { flexDirection: "row", gap: 5, alignItems: "flex-start" },
+    spellOverviewColumn: { flex: 1, minWidth: 0 },
+    spellLevelSection: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 6,
+      backgroundColor: t.cardBackground,
+      marginBottom: 1,
+    },
+    spellLevelHeader: {
+      flexDirection: "row",
+      alignItems: "stretch",
+      minHeight: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+      backgroundColor: t.pageBackground,
+    },
+    spellLevelBadge: {
+      width: 16,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: t.pink,
+      paddingVertical: 1,
+    },
+    spellLevelBadgeText: { fontSize: 7.5, fontWeight: "bold", color: t.sectionHeaderText },
+    spellLevelTitleBar: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 5,
+      paddingVertical: 2,
+      gap: 4,
+      minWidth: 0,
+    },
+    spellLevelTitleText: {
+      fontSize: 6,
+      fontWeight: "bold",
+      color: t.textMuted,
+      textTransform: "uppercase",
+      flex: 1,
+      minWidth: 0,
+    },
+    spellLevelHeaderSlots: { flexDirection: "row", alignItems: "center", gap: 5, flexShrink: 0 },
+    spellLevelSlotInline: { flexDirection: "row", alignItems: "center", gap: 2 },
+    spellLevelSlotLabel: { fontSize: 5.4, color: t.textMuted, textTransform: "uppercase" },
+    spellLevelSlotValue: {
+      fontSize: 7.2,
+      fontWeight: "bold",
+      minWidth: 12,
+      textAlign: "center",
+    },
+    spellLevelSlotUsedSpace: {
+      minWidth: 16,
+      height: 10,
+    },
+    spellOverviewLine: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 3,
+      paddingVertical: 0.5,
+      paddingHorizontal: 4,
+      borderBottomWidth: 0.5,
+      borderBottomColor: t.border,
+      minHeight: 8,
+    },
+    spellOverviewLineLast: { borderBottomWidth: 0 },
+    spellOverviewCheckbox: {
+      width: 7,
+      height: 7,
+      borderWidth: 1,
+      borderColor: t.textMuted,
+      borderRadius: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    spellOverviewCheckboxFilled: { backgroundColor: t.pink, borderColor: t.pink },
+    spellOverviewSpellName: { fontSize: 6.8, flex: 1, lineHeight: 1.15 },
+    spellOverviewEmptyLine: {
+      paddingVertical: 0.5,
+      paddingHorizontal: 4,
+      borderBottomWidth: 0.5,
+      borderBottomColor: t.border,
+      minHeight: 8,
+    },
+    spellDetailGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    spellCompactCard: {
+      width: "48.5%",
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 15,
+      padding: 10,
+      backgroundColor: t.cardBackground,
+    },
+    spellCompactTitleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 6,
+      marginBottom: 6,
+    },
+    spellCompactTitle: { fontSize: 11, fontWeight: "bold", flex: 1 },
+    spellCompactLevel: { fontSize: 8, color: t.textMuted, fontWeight: "bold" },
+    spellCompactMetaRow: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginBottom: 8 },
+    spellCompactMetaChip: {
+      fontSize: 7.2,
+      color: t.textMuted,
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 999,
+      paddingHorizontal: 7,
+      paddingVertical: 3,
+      backgroundColor: t.pageBackground,
+    },
+    spellCompactDescription: { fontSize: 8.4, lineHeight: 1.45, color: t.text },
+    spellCompactDescriptionBox: {
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      paddingTop: 6,
+      marginTop: 4,
+    },
+    spellCompactDescriptionLabel: {
+      fontSize: 7,
+      fontWeight: "bold",
+      color: t.textMuted,
+      marginBottom: 4,
+      textTransform: "uppercase",
+    },
   });
 }
 
@@ -503,6 +776,372 @@ function FeaturesList({
   );
 }
 
+function countPreparedSpells(block: PdfSpellcastingBlock): number {
+  return Object.values(block.spellsByLevel)
+    .flat()
+    .filter((spell) => spell.prepared)
+    .length;
+}
+
+function formatSlotTotal(slots: { used: number; total: number } | null | undefined): string {
+  if (!slots || slots.total <= 0) return " ";
+  return String(slots.total);
+}
+
+function getSpellOverviewLevelTitle(
+  group: PdfSpellLevelGroup,
+  labels: CharacterSheetPdfLabels,
+): string {
+  if (group.level === 0) return labels.spellLevelCantrips;
+  return `${labels.spellLevel} ${group.level}`;
+}
+
+function SpellOverviewLevelSection({
+  group,
+  block,
+  labels,
+  styles,
+  showPreparedMarks,
+  isLastInColumn,
+  density,
+}: {
+  group: PdfSpellLevelGroup;
+  block: PdfSpellcastingBlock;
+  labels: CharacterSheetPdfLabels;
+  styles: ReturnType<typeof createStyles>;
+  showPreparedMarks: boolean;
+  isLastInColumn: boolean;
+  density: SpellOverviewDensity;
+}) {
+  const slots = group.slots;
+  const displaySpells = getSpellOverviewDisplaySpells(group);
+  const lineCount = getSpellOverviewLineCount(group);
+  const emptyLineCount = Math.max(0, lineCount - displaySpells.length);
+  const rowStyle = { minHeight: density.rowMinHeight, paddingVertical: density.rowPaddingVertical };
+  const spellNameStyle = { fontSize: density.spellNameFontSize, lineHeight: density.spellNameLineHeight };
+
+  return (
+    <View
+      style={[
+        styles.spellLevelSection,
+        { marginBottom: density.sectionMarginBottom },
+        isLastInColumn ? styles.lastRowNoMargin : {},
+      ]}
+      wrap={false}
+    >
+      <View style={[styles.spellLevelHeader, { minHeight: density.levelHeaderMinHeight }]}>
+        <View style={styles.spellLevelBadge}>
+          <Text style={styles.spellLevelBadgeText}>{group.level === 0 ? "0" : group.level}</Text>
+        </View>
+        <View style={[styles.spellLevelTitleBar, { paddingVertical: density.levelTitleBarPaddingVertical }]}>
+          <Text style={styles.spellLevelTitleText}>{getSpellOverviewLevelTitle(group, labels)}</Text>
+          {group.level > 0 && !block.isInnate ? (
+            <View style={styles.spellLevelHeaderSlots}>
+              <View style={styles.spellLevelSlotInline}>
+                <Text style={styles.spellLevelSlotLabel}>{labels.slotsTotal}</Text>
+                <Text style={styles.spellLevelSlotValue}>{formatSlotTotal(slots)}</Text>
+              </View>
+              <View style={styles.spellLevelSlotInline}>
+                <Text style={styles.spellLevelSlotLabel}>{labels.slotsUsed}</Text>
+                <View style={styles.spellLevelSlotUsedSpace} />
+              </View>
+            </View>
+          ) : null}
+        </View>
+      </View>
+
+      {displaySpells.map((spell, index) => (
+        <View
+          key={`${spell.name}-${index}`}
+          style={[
+            styles.spellOverviewLine,
+            rowStyle,
+            index === displaySpells.length - 1 && emptyLineCount === 0 ? styles.spellOverviewLineLast : {},
+          ]}
+        >
+          {showPreparedMarks && group.level > 0 ? (
+            <View style={[styles.spellOverviewCheckbox, spell.prepared ? styles.spellOverviewCheckboxFilled : {}]} />
+          ) : (
+            <View style={{ width: 7 }} />
+          )}
+          <Text style={[styles.spellOverviewSpellName, spellNameStyle]}>{clampText(spell.name, 36)}</Text>
+        </View>
+      ))}
+
+      {Array.from({ length: emptyLineCount }).map((_, index) => (
+        <View
+          key={`empty-${group.level}-${index}`}
+          style={[
+            styles.spellOverviewEmptyLine,
+            rowStyle,
+            index === emptyLineCount - 1 ? styles.spellOverviewLineLast : {},
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
+function SpellOverviewInnateGroup({
+  group,
+  labels,
+  styles,
+  isLast,
+  density,
+}: {
+  group: PdfSpellLevelGroup;
+  labels: CharacterSheetPdfLabels;
+  styles: ReturnType<typeof createStyles>;
+  isLast: boolean;
+  density: SpellOverviewDensity;
+}) {
+  const title =
+    group.usesPerDay === null
+      ? labels.npcAtWill
+      : labels.npcUsesPerDay.replace("{count}", String(group.usesPerDay));
+  const rowStyle = { minHeight: density.rowMinHeight, paddingVertical: density.rowPaddingVertical };
+  const spellNameStyle = { fontSize: density.spellNameFontSize, lineHeight: density.spellNameLineHeight };
+
+  return (
+    <View
+      style={[
+        styles.spellLevelSection,
+        { marginBottom: density.sectionMarginBottom },
+        isLast ? styles.lastRowNoMargin : {},
+      ]}
+      wrap={false}
+    >
+      <View style={[styles.spellLevelHeader, { minHeight: density.levelHeaderMinHeight }]}>
+        <View style={styles.spellLevelBadge}>
+          <Text style={styles.spellLevelBadgeText}>★</Text>
+        </View>
+        <View style={[styles.spellLevelTitleBar, { paddingVertical: density.levelTitleBarPaddingVertical }]}>
+          <Text style={styles.spellLevelTitleText}>{title}</Text>
+        </View>
+      </View>
+      {group.spells.map((spell, index) => (
+        <View
+          key={`${spell.name}-${index}`}
+          style={[
+            styles.spellOverviewLine,
+            rowStyle,
+            index === group.spells.length - 1 ? styles.spellOverviewLineLast : {},
+          ]}
+        >
+          <View style={{ width: 8 }} />
+          <Text style={[styles.spellOverviewSpellName, spellNameStyle]}>{clampText(spell.name, 36)}</Text>
+        </View>
+      ))}
+
+      {Array.from({
+        length: Math.max(0, getSpellOverviewLineCount(group) - group.spells.length),
+      }).map((_, index) => (
+        <View
+          key={`innate-empty-${index}`}
+          style={[
+            styles.spellOverviewEmptyLine,
+            rowStyle,
+            index === getSpellOverviewLineCount(group) - group.spells.length - 1
+              ? styles.spellOverviewLineLast
+              : {},
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
+function SpellOverviewPage({
+  block,
+  labels,
+  theme,
+  styles,
+  showPreparedMarks,
+  density,
+}: {
+  block: PdfSpellcastingBlock;
+  labels: CharacterSheetPdfLabels;
+  theme: CharacterSheetPdfTheme;
+  styles: ReturnType<typeof createStyles>;
+  showPreparedMarks: boolean;
+  density: SpellOverviewDensity;
+}) {
+  const levelGroups = getSpellLevelGroups(block);
+  const preparedCount = countPreparedSpells(block);
+  const statLabelStyle = { fontSize: density.statLabelFontSize, marginBottom: density.statLabelMarginBottom };
+  const statValueStyle = { fontSize: density.statValueFontSize };
+  const headerCellStyle = { paddingVertical: density.headerCellPaddingVertical };
+
+  return (
+    <>
+      <View style={[styles.spellOverviewHeader, { marginBottom: density.headerBlockMarginBottom }]} wrap={false}>
+        <View style={styles.spellOverviewHeaderTop}>
+          <View style={[styles.spellOverviewClassCell, headerCellStyle]}>
+            <Text style={[styles.spellOverviewStatLabel, statLabelStyle]}>{labels.spellcastingClass}</Text>
+            <Text style={[styles.spellOverviewStatValue, statValueStyle]}>{block.className || " "}</Text>
+          </View>
+          <View style={[styles.spellOverviewClassCell, headerCellStyle]}>
+            <Text style={[styles.spellOverviewStatLabel, statLabelStyle]}>{labels.spellcastingAbility}</Text>
+            <Text style={[styles.spellOverviewStatValue, statValueStyle]}>{block.ability || " "}</Text>
+          </View>
+          {!block.isInnate ? (
+            <View style={[styles.spellOverviewStatCell, headerCellStyle]}>
+              <Text style={[styles.spellOverviewStatLabel, statLabelStyle]}>{labels.preparedSpells}</Text>
+              <Text style={[styles.spellOverviewStatValue, statValueStyle]}>{preparedCount}</Text>
+            </View>
+          ) : null}
+          <View style={[styles.spellOverviewStatCell, headerCellStyle]}>
+            <Text style={[styles.spellOverviewStatLabel, statLabelStyle]}>{labels.spellSaveDc}</Text>
+            <Text style={[styles.spellOverviewStatValue, statValueStyle]}>{block.saveDc || " "}</Text>
+          </View>
+          <View style={[styles.spellOverviewStatCell, styles.spellOverviewStatCellLast, headerCellStyle]}>
+            <Text style={[styles.spellOverviewStatLabel, statLabelStyle]}>{labels.spellAttackBonus}</Text>
+            <Text style={[styles.spellOverviewStatValue, statValueStyle]}>{block.attackBonus || " "}</Text>
+          </View>
+        </View>
+      </View>
+
+      {block.isInnate ? (
+        <View style={[styles.spellOverviewColumns, { gap: density.columnsGap }]}>
+          {levelGroups.map((group, index) => (
+            <View key={`innate-${group.usesPerDay ?? "atwill"}-${index}`} style={styles.spellOverviewColumn}>
+              <SpellOverviewInnateGroup
+                group={group}
+                labels={labels}
+                styles={styles}
+                isLast={index === levelGroups.length - 1}
+                density={density}
+              />
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View style={[styles.spellOverviewColumns, { gap: density.columnsGap }]}>
+          {getSpellOverviewColumnLevels().map((columnLevels, columnIndex) => (
+            <View key={`spell-col-${columnIndex}`} style={styles.spellOverviewColumn}>
+              {columnLevels.map((level, groupIndex) => (
+                <SpellOverviewLevelSection
+                  key={`level-${level}`}
+                  group={getLevelGroupForOverview(block, level, levelGroups)}
+                  block={block}
+                  labels={labels}
+                  styles={styles}
+                  showPreparedMarks={showPreparedMarks}
+                  isLastInColumn={groupIndex === columnLevels.length - 1}
+                  density={density}
+                />
+              ))}
+            </View>
+          ))}
+        </View>
+      )}
+    </>
+  );
+}
+
+function SpellCompactCard({
+  spell,
+  block,
+  labels,
+  styles,
+}: {
+  spell: PdfSpellRow;
+  block: PdfSpellcastingBlock;
+  labels: CharacterSheetPdfLabels;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const levelLabel =
+    spell.level === 0 ? labels.spellLevelCantrip : `${labels.spellLevel} ${spell.level}`;
+  const metaParts = [
+    spell.school,
+    spell.castingTime,
+    spell.range,
+    spell.components,
+    spell.duration,
+    spell.damage ?? undefined,
+    spell.healing ?? undefined,
+    spell.effectType === "attack" && block.attackBonus ? block.attackBonus : undefined,
+  ].filter(Boolean);
+
+  const description = truncateSpellDescription(spell.description, PDF_SPELL_COMPACT_DESCRIPTION_MAX_CHARS);
+
+  return (
+    <View style={styles.spellCompactCard}>
+      <View style={styles.spellCompactTitleRow}>
+        <Text style={styles.spellCompactTitle}>{clampText(spell.name, 64)}</Text>
+        <Text style={styles.spellCompactLevel}>{levelLabel}</Text>
+      </View>
+      <View style={styles.spellCompactMetaRow}>
+        {metaParts.map((part, index) => (
+          <Text key={`${part}-${index}`} style={styles.spellCompactMetaChip}>
+            {clampText(part ?? "", 40)}
+          </Text>
+        ))}
+      </View>
+      <View style={styles.spellCompactDescriptionBox}>
+        <Text style={styles.spellCompactDescriptionLabel}>{labels.spellDescription}</Text>
+        <Text style={styles.spellCompactDescription}>{description || " "}</Text>
+      </View>
+    </View>
+  );
+}
+
+function SpellDetailBatchPage({
+  spells,
+  block,
+  labels,
+  styles,
+}: {
+  spells: PdfSpellRow[];
+  block: PdfSpellcastingBlock;
+  labels: CharacterSheetPdfLabels;
+  theme: CharacterSheetPdfTheme;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <View style={styles.spellDetailGrid}>
+      {spells.map((spell, index) => (
+        <SpellCompactCard
+          key={`${spell.name}-${index}`}
+          spell={spell}
+          block={block}
+          labels={labels}
+          styles={styles}
+        />
+      ))}
+    </View>
+  );
+}
+
+function SpellDetailContinuationPage({
+  spell,
+  labels,
+  theme,
+  styles,
+  descriptionText,
+}: {
+  spell: PdfSpellRow;
+  labels: CharacterSheetPdfLabels;
+  theme: CharacterSheetPdfTheme;
+  styles: ReturnType<typeof createStyles>;
+  descriptionText: string;
+}) {
+  const t = CHARACTER_SHEET_PDF_THEMES[theme];
+
+  return (
+    <>
+      <SectionHeader
+        title={`${spell.name} — ${labels.spellDescriptionContinuation}`}
+        color={t.pink}
+        styles={styles}
+      />
+      <View style={styles.spellDescriptionBox}>
+        <Text style={styles.textBlock}>{descriptionText.trim() || " "}</Text>
+      </View>
+    </>
+  );
+}
+
 interface CharacterSheetPdfDocumentProps {
   data: CharacterSheetPdfData;
   labels: CharacterSheetPdfLabels;
@@ -516,11 +1155,16 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
   const { pageOne: featuresPageOne, pageTwo: featuresPageTwo } = splitFeaturesForPdfPages(data.features);
   const equipmentSource = data.equipment || data.treasureText;
   const equipmentSplit = splitTextForPdfPages(equipmentSource, PDF_EQUIPMENT_PAGE1_MAX_CHARS);
+  const spellPages = data.hasSpellcasting
+    ? buildSpellPdfPages(data.spellcastingBlocks, {
+        showPreparedBadge: data.isPlayer,
+      })
+    : [];
 
   return (
     <Document>
-      {/* Page 1 — D&D-like core layout */}
-      <Page size="LETTER" style={styles.page}>
+      {/* Core sheet — may span multiple PDF pages when content overflows */}
+      <Page size="LETTER" style={styles.page} wrap>
         <View style={styles.pageOneHeader}>
           <View style={[styles.headerRow, { height: headerRowHeight }]}>
             {data.avatarDataUrl ? (
@@ -816,9 +1460,8 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
         <PageFooter labels={labels} theme={theme} styles={styles} />
       </Page>
 
-      {/* Page 2 — Biography */}
-      <Page size="LETTER" style={styles.page}>
-        {featuresPageTwo.length > 0 ? (
+      {featuresPageTwo.length > 0 ? (
+        <Page size="LETTER" style={styles.page} wrap>
           <View style={{ marginBottom: 6 }}>
             <View wrap={false}>
               <SectionHeader title={labels.featuresAndTraits} color={t.blue} styles={styles} />
@@ -827,7 +1470,12 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               <FeaturesList features={featuresPageTwo} styles={styles} />
             </View>
           </View>
-        ) : null}
+          <PageFooter labels={labels} theme={theme} styles={styles} />
+        </Page>
+      ) : null}
+
+      {/* Biography — always its own page(s), never shared with features continuation */}
+      <Page size="LETTER" style={styles.page} wrap>
         {equipmentSplit.pageTwo ? (
           <View wrap={false} style={{ marginBottom: 6 }}>
             <SectionHeader title={labels.equipmentContinuation} color={t.yellow} styles={styles} />
@@ -922,63 +1570,72 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
         <PageFooter labels={labels} theme={theme} styles={styles} />
       </Page>
 
-      {/* Page 3 — Spellcasting (conditional) */}
-      {data.hasSpellcasting &&
-        data.spellcastingBlocks.map((block, blockIndex) => (
-          <Page key={`spell-${blockIndex}`} size="LETTER" style={styles.page}>
-            <SectionHeader
-              title={`${labels.spellcastingClass}: ${block.className}`}
-              color={t.pink}
-              styles={styles}
-            />
-            <View style={styles.row}>
-              <View style={styles.col}>
-                <Text style={styles.label}>{labels.spellcastingAbility}</Text>
-                <Text style={styles.value}>{block.ability || " "}</Text>
-              </View>
-              <View style={styles.col}>
-                <Text style={styles.label}>{labels.spellSaveDc}</Text>
-                <Text style={styles.value}>{block.saveDc || " "}</Text>
-              </View>
-              <View style={styles.col}>
-                <Text style={styles.label}>{labels.spellAttackBonus}</Text>
-                <Text style={styles.value}>{block.attackBonus || " "}</Text>
-              </View>
-            </View>
+      {/* Spellcasting pages (overview + compact detail batches) */}
+      {spellPages.map((pageDescriptor, pageIndex) => {
+        const block = data.spellcastingBlocks[pageDescriptor.blockIndex];
+        if (!block) return null;
 
-            {block.cantrips.length > 0 && (
-              <View style={{ marginTop: 8 }}>
-                <SectionHeader title={labels.cantrips} color={t.pink} styles={styles} />
-                <View style={styles.box}>
-                  <Text style={styles.textBlock}>{block.cantrips.map((s) => s.name).join(", ") || " "}</Text>
-                </View>
-              </View>
-            )}
+        const showPrepared = data.isPlayer && !block.isInnate;
+        const pageKey =
+          pageDescriptor.kind === "overview"
+            ? `spell-overview-${pageDescriptor.blockIndex}`
+            : pageDescriptor.kind === "detailBatch"
+              ? `spell-batch-${pageDescriptor.blockIndex}-${pageIndex}-${pageDescriptor.spells?.[0]?.name ?? "empty"}`
+              : `spell-cont-${pageDescriptor.blockIndex}-${pageDescriptor.spell?.name ?? pageIndex}-${pageIndex}`;
 
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => {
-              const spells = block.spellsByLevel[level];
-              const slots = block.slotsByLevel[level];
-              if (!spells?.length && !slots) return null;
-              return (
-                <View key={level} style={{ marginTop: 6 }}>
-                  <SectionHeader title={`${labels.spellLevel} ${level}`} color={t.pink} styles={styles} />
-                  <View style={styles.box}>
-                    {slots && (
-                      <Text style={[styles.label, { marginBottom: 4 }]}>
-                        {labels.spellSlots}: {labels.slotsUsed} {slots.used} / {labels.slotsTotal} {slots.total}
-                      </Text>
-                    )}
-                    <Text style={styles.textBlock}>
-                      {spells?.map((s) => (s.prepared ? `✓ ${s.name}` : s.name)).join(", ") || " "}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
+        const overviewDensity = pageDescriptor.kind === "overview" ? computeSpellOverviewDensity(block) : undefined;
 
+        return (
+          <Page
+            key={pageKey}
+            size="LETTER"
+            style={
+              overviewDensity
+                ? [
+                    styles.page,
+                    styles.spellOverviewPage,
+                    { paddingTop: overviewDensity.pagePaddingVertical, paddingBottom: overviewDensity.pagePaddingVertical },
+                  ]
+                : styles.page
+            }
+            wrap={pageDescriptor.kind !== "overview"}
+          >
+            {pageDescriptor.kind === "overview" && overviewDensity ? (
+              <SpellOverviewPage
+                block={block}
+                labels={labels}
+                theme={theme}
+                styles={styles}
+                showPreparedMarks={showPrepared}
+                density={overviewDensity}
+              />
+            ) : pageDescriptor.kind === "detailBatch" && pageDescriptor.spells?.length ? (
+              <>
+                {spellPages[pageIndex - 1]?.kind === "overview" &&
+                spellPages[pageIndex - 1]?.blockIndex === pageDescriptor.blockIndex ? (
+                  <SectionHeader title={labels.spellsSection} color={t.pink} styles={styles} />
+                ) : null}
+                <SpellDetailBatchPage
+                  spells={pageDescriptor.spells}
+                  block={block}
+                  labels={labels}
+                  theme={theme}
+                  styles={styles}
+                />
+              </>
+            ) : pageDescriptor.kind === "detailContinuation" && pageDescriptor.spell ? (
+              <SpellDetailContinuationPage
+                spell={pageDescriptor.spell}
+                labels={labels}
+                theme={theme}
+                styles={styles}
+                descriptionText={pageDescriptor.descriptionText ?? ""}
+              />
+            ) : null}
             <PageFooter labels={labels} theme={theme} styles={styles} />
           </Page>
-        ))}
+        );
+      })}
     </Document>
   );
 }

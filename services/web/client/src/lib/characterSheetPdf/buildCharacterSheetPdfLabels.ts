@@ -13,10 +13,11 @@ export interface BuildCharacterSheetPdfLabelsInput {
   tClass: TranslateFn;
   tAlignment: TranslateFn;
   tCommon: TranslateFn;
+  tMagic: TranslateFn;
 }
 
 export function buildCharacterSheetPdfLabels(input: BuildCharacterSheetPdfLabelsInput): CharacterSheetPdfLabels {
-  const { tPdf, tGeneral, tBattle, tEdit, tNpc, tCommon } = input;
+  const { tPdf, tGeneral, tBattle, tEdit, tNpc, tCommon, tMagic } = input;
 
   const abilityNames: Record<string, string> = {};
   const abilityAbbr: Record<string, string> = {};
@@ -115,6 +116,24 @@ export function buildCharacterSheetPdfLabels(input: BuildCharacterSheetPdfLabels
     spellSlots: tPdf("spellSlots"),
     slotsUsed: tEdit("slotsUsed"),
     slotsTotal: tEdit("slotsTotal"),
+    spellsSection: tMagic("spells"),
+    spellSchool: tMagic("spellDetails.school"),
+    spellCastingTime: tMagic("spellDetails.castingTime"),
+    spellRange: tMagic("spellDetails.range"),
+    spellComponents: tMagic("spellDetails.components"),
+    spellDuration: tMagic("spellDetails.duration"),
+    spellDescription: tMagic("spellDetails.description"),
+    spellDamage: tMagic("damage"),
+    spellHealing: tMagic("healing"),
+    spellPreparedLabel: tMagic("spellPreparedLabel"),
+    spellUnpreparedLabel: tMagic("spellUnpreparedBadge"),
+    spellDescriptionContinuation: tPdf("spellDescriptionContinuation"),
+    npcAtWill: tMagic("npc.atWill"),
+    npcUsesPerDay: tMagic("npc.usesPerDay", { count: "{count}" }),
+    spellUsesTracker: tMagic("spellDetails.usesTracker"),
+    spellLevelCantrips: tMagic("cantrips"),
+    spellLevelCantrip: tPdf("cantripSingular"),
+    spellSlotsUsage: tMagic("spellSlots", { current: "{current}", total: "{total}" }),
     cp: tEdit("copperPieces"),
     sp: tEdit("silverPieces"),
     ep: tEdit("electrumPieces"),

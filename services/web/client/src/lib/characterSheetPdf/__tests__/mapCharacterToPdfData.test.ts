@@ -71,6 +71,24 @@ const minimalLabels: CharacterSheetPdfLabels = {
   spellSlots: "Slots",
   slotsUsed: "Used",
   slotsTotal: "Total",
+  spellsSection: "Spells",
+  spellSchool: "School",
+  spellCastingTime: "Casting time",
+  spellRange: "Range",
+  spellComponents: "Components",
+  spellDuration: "Duration",
+  spellDescription: "Description",
+  spellDamage: "Damage",
+  spellHealing: "Healing",
+  spellPreparedLabel: "Prepared",
+  spellUnpreparedLabel: "Unprepared",
+  spellDescriptionContinuation: "Description (cont.)",
+  npcAtWill: "At will",
+  npcUsesPerDay: "{count}/day",
+  spellUsesTracker: "Uses",
+  spellLevelCantrips: "Cantrips",
+  spellLevelCantrip: "Cantrip",
+  spellSlotsUsage: "{current}/{total}",
   cp: "CP",
   sp: "SP",
   ep: "EP",
@@ -212,7 +230,19 @@ const basePlayer: Player = {
       attackBonus: 5,
       spellSlotsByLevel: { "1": { total: 2, used: 1 } },
       totalSlots: 2,
-      spells: [{ name: "Magic Missile", level: 1, school: "", description: "", components: [], castingTime: "", duration: "", range: "", effectType: "attack", prepared: true }],
+      spells: [{
+        name: "Magic Missile",
+        level: 1,
+        school: "Evocation",
+        description: "Three darts of force.",
+        components: ["V", "S"],
+        castingTime: "1 action",
+        duration: "Instantaneous",
+        range: "120 ft",
+        effectType: "attack",
+        prepared: true,
+        damage: "3d4+3 force",
+      }],
     },
   ],
   appearance: {},
@@ -257,6 +287,17 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     expect(data.isPlayer).toBe(true);
     expect(data.displayName).toBe("Aragorn Elessar");
     expect(data.hasSpellcasting).toBe(true);
+    expect(data.spellcastingBlocks[0]?.spellsByLevel[1]?.[0]).toMatchObject({
+      name: "Magic Missile",
+      school: "Evocation",
+      description: "Three darts of force.",
+      components: "V, S",
+      castingTime: "1 action",
+      duration: "Instantaneous",
+      range: "120 ft",
+      damage: "3d4+3 force",
+      prepared: true,
+    });
     expect(data.inspiration).toBe(true);
     expect(data.race).toBe("Human");
     expect(data.subrace).toBe("");
