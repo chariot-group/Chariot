@@ -15,6 +15,7 @@ import {
   selectSessionParticipants,
 } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
+import { useKeycloak } from "@/providers/KeycloakProvider";
 
 export default function Character() {
   const params = useParams();
@@ -32,6 +33,7 @@ export default function Character() {
   const reduxSessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const currentUser = useAppSelector(selectUser);
+  const { loading: keycloakLoading, userTransitioning } = useKeycloak();
 
   const { character, loading, error, refetch, setCharacter } = useCharacter(
     characterId,
@@ -77,11 +79,12 @@ export default function Character() {
       return `/campaigns/${campaignId}/groups/${remainingArchived[0]._id}/characters/new/players`;
     }
 
-    return `/${locale}`;
+    // Avoid locale root — it re-triggers post-login (FR-post-auth-navigation).
+    return `/${locale}/welcome`;
   }, [activeGroups, archivedGroups, campaignId, groupId, locale]);
 
   useEffect(() => {
-    if (loading || !character || !groupId || !campaignId) {
+    if (keycloakLoading || userTransitioning || loading || !character || !groupId || !campaignId) {
       return;
     }
 
@@ -98,33 +101,29 @@ export default function Character() {
     if (!groupIds.includes(groupId) && !sessionGmBypassGroup) {
       router.replace(getFallbackRoute());
     }
-  }, [campaignId, character, getFallbackRoute, groupId, loading, router, sessionGmBypassGroup]);
+  }, [
+    campaignId,
+    character,
+    getFallbackRoute,
+    groupId,
+    keycloakLoading,
+    loading,
+    router,
+    sessionGmBypassGroup,
+    userTransitioning,
+  ]);
 
   useEffect(() => {
-    if (loading) {
+    if (keycloakLoading || userTransitioning || loading) {
       return;
     }
 
     if (error || !character) {
       router.replace(getFallbackRoute());
     }
-  }, [loading, error, character, router, getFallbackRoute]);
+  }, [keycloakLoading, userTransitioning, loading, error, character, router, getFallbackRoute]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!loading && (error || !character)) {
-    setTimeout(() => {
-      if (!character) {
-        router.push(`/404`);
-      }
-    }, 500);
-
+  if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

@@ -14,7 +14,8 @@ export default function NotFoundPage() {
 
   useEffect(() => {
     error(t("message"));
-    router.push(`/${locale}`);
+    // Prefer welcome over locale root — `/` re-triggers post-login and can loop (FR-post-auth-navigation).
+    router.replace(`/${locale}/welcome`);
   }, [error, router, locale, t]);
 
   return null;

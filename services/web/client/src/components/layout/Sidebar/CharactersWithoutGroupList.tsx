@@ -19,9 +19,11 @@ import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
+import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import { showToast } from "@/lib/toast";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
+import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -50,6 +52,7 @@ export default function CharactersWithoutGroupList() {
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [characterToDuplicate, setCharacterToDuplicate] = useState<Character | null>(null);
+  const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
   const pathname = usePathname();
 
@@ -105,9 +108,16 @@ export default function CharactersWithoutGroupList() {
   };
 
   const buildCharacterActions = (character: Character): SidebarActionItem[] => {
-    if (actionsDisabled) return [];
+    const exportAction: SidebarActionItem = {
+      id: "exportPdf",
+      label: t("exportPdf"),
+      onSelect: () => void requestCharacterPdfExport(character._id),
+    };
+
+    if (actionsDisabled) return [exportAction];
 
     return [
+      exportAction,
       {
         id: "duplicate",
         label: t("duplicate"),
@@ -181,7 +191,7 @@ export default function CharactersWithoutGroupList() {
             <SidebarItemWithActions
               key={character._id ?? `character-${index}`}
               actions={characterActions}
-              disabled={actionsDisabled}
+              disabled={characterActions.length === 0}
               contextMenuLabel={t("characterActions")}
               className={cn(
                 "rounded-[12px] transition-all duration-150",
@@ -276,6 +286,12 @@ export default function CharactersWithoutGroupList() {
           if (!open) setCharacterToDuplicate(null);
         }}
         onDuplicate={(name, count) => handleDuplicateCharacter(characterToDuplicate!, name, count)}
+      />
+
+      <ExportCharacterSheetPdfDialog
+        character={characterToExport}
+        open={!!characterToExport}
+        onOpenChange={closeExportDialog}
       />
     </nav>
   );

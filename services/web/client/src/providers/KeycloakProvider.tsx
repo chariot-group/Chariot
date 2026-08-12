@@ -7,6 +7,7 @@ import { setKeycloakInstance } from "@/services/ApiService";
 import { saveStoredLocale, buildKeycloakAuthOptions, resolveAuthLocale } from "@/hooks/useLocalePreference";
 import { purgePersistedState } from "@/store";
 import { stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
+import { clearPostLoginCompleted } from "@/lib/postLoginNavigation";
 import { useTranslations } from "next-intl";
 
 interface KeycloakContextType {
@@ -14,7 +15,7 @@ interface KeycloakContextType {
   authenticated: boolean;
   loading: boolean;
   token: string | null;
-  userTransitioning: boolean; // Solution 1: État de transition utilisateur
+  userTransitioning: boolean;
   login: () => void;
   logout: () => void;
   register: () => void;
@@ -31,106 +32,124 @@ const KeycloakContext = createContext<KeycloakContextType>({
   register: () => {},
 });
 
+/** Survive layout remounts — re-init with login-required causes auth/nav loops. */
+let sharedKeycloak: Keycloak | null = null;
+let sharedInitPromise: Promise<boolean> | null = null;
+
+function getSafeAppOrigin(): string {
+  return typeof window !== "undefined" ? window.location.origin : "";
+}
+
+function buildWelcomeRedirectUri(locale: string): string {
+  return `${getSafeAppOrigin()}/${locale}/welcome`;
+}
+
 export function KeycloakProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const t = useTranslations("auth");
 
-  const [keycloak, setKeycloak] = useState<Keycloak | null>(null);
-  const [authenticated, setAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(null);
-  const [userTransitioning, setUserTransitioning] = useState(false); // Solution 1
+  const [keycloak, setKeycloak] = useState<Keycloak | null>(sharedKeycloak);
+  const [authenticated, setAuthenticated] = useState(Boolean(sharedKeycloak?.authenticated));
+  const [loading, setLoading] = useState(!sharedKeycloak?.authenticated);
+  const [token, setToken] = useState<string | null>(sharedKeycloak?.token ?? null);
+  const [userTransitioning, setUserTransitioning] = useState(false);
 
   const visibilityHandlerRef = useRef<(() => void) | null>(null);
-
-  // Ref to store interval ID
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const logoutInFlightRef = useRef(false);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const attachRefresh = (kc: Keycloak) => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+
+      if (!kc.authenticated || !kc.token) return;
+
+      refreshIntervalRef.current = setInterval(() => {
+        kc.updateToken(70)
+          .then((refreshed) => {
+            if (refreshed) setToken(kc.token || null);
+          })
+          .catch(() => {
+            setAuthenticated(false);
+            setToken(null);
+            const { locale } = buildKeycloakAuthOptions(window.location.pathname);
+            // Land on welcome — locale root re-triggers post-login → forbidden sheet loops.
+            kc.login({ locale, redirectUri: buildWelcomeRedirectUri(locale) });
+          });
+      }, 60000);
+    };
+
     const initKeycloak = async () => {
+      if (sharedKeycloak?.authenticated) {
+        if (cancelled) return;
+        setKeycloak(sharedKeycloak);
+        setAuthenticated(true);
+        setToken(sharedKeycloak.token || null);
+        setKeycloakInstance(sharedKeycloak);
+        attachRefresh(sharedKeycloak);
+        setLoading(false);
+        return;
+      }
+
       const keycloakConfig = {
         url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || "http://localhost:8080",
         realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || "chariot",
         clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "chariot-app",
       };
 
-      const kc = new Keycloak(keycloakConfig);
-
-      try {
+      if (!sharedInitPromise) {
+        sharedKeycloak = new Keycloak(keycloakConfig);
         const initOptions: KeycloakInitOptions = {
           onLoad: "login-required",
           checkLoginIframe: false,
           pkceMethod: "S256",
           locale: resolveAuthLocale(window.location.pathname),
         };
+        sharedInitPromise = sharedKeycloak.init(initOptions).catch((error) => {
+          sharedInitPromise = null;
+          throw error;
+        });
+      }
 
-        const authenticated = await kc.init(initOptions);
+      try {
+        const kc = sharedKeycloak!;
+        const isAuthenticated = await sharedInitPromise;
 
-        // Detect user change and handle cache transition (Solution 5 + Solution 1)
-        if (authenticated && kc.tokenParsed?.sub) {
+        if (cancelled) return;
+
+        if (isAuthenticated && kc.tokenParsed?.sub) {
           const currentUserId = kc.tokenParsed.sub;
           const storedUserId = localStorage.getItem("chariot_user_id");
 
           if (storedUserId && storedUserId !== currentUserId) {
-            // Different user detected - signal transition state
             console.log(`User change detected: ${storedUserId} -> ${currentUserId}`);
             setUserTransitioning(true);
-
-            // With Solution 5, each user has isolated cache - no need to purge
-            // Just update the stored user ID and the store will use the correct cache
+            clearPostLoginCompleted();
             localStorage.setItem("chariot_user_id", currentUserId);
-
-            // Signal that we need to recreate the Redux store with new user cache
-            // This will be handled by ReduxProvider
             window.dispatchEvent(
               new CustomEvent("chariot:user-changed", {
                 detail: { userId: currentUserId },
               }),
             );
-
-            // Transition completes after a short delay to ensure store recreation
             setTimeout(() => {
-              setUserTransitioning(false);
+              if (!cancelled) setUserTransitioning(false);
             }, 300);
           } else {
-            // First login or same user - just store ID
             localStorage.setItem("chariot_user_id", currentUserId);
           }
-        } else if (!authenticated) {
-          // User logged out - clear stored ID
+        } else if (!isAuthenticated) {
           localStorage.removeItem("chariot_user_id");
         }
 
         setKeycloak(kc);
-        setAuthenticated(authenticated);
+        setAuthenticated(Boolean(isAuthenticated));
         setToken(kc.token || null);
-
-        // Pass Keycloak instance to apiClient
         setKeycloakInstance(kc);
-
-        // Configure automatic refresh only if authenticated
-        if (authenticated && kc.token) {
-          // Clean up old interval if it exists
-          if (refreshIntervalRef.current) {
-            clearInterval(refreshIntervalRef.current);
-          }
-
-          // Configure new automatic refresh
-          refreshIntervalRef.current = setInterval(() => {
-            kc.updateToken(70) // Refresh if expires in less than 70 seconds
-              .then((refreshed) => {
-                if (refreshed) {
-                  setToken(kc.token || null);
-                }
-              })
-              .catch(() => {
-                setAuthenticated(false);
-                setToken(null);
-                const { locale, redirectUri } = buildKeycloakAuthOptions(window.location.pathname);
-                kc.login({ locale, redirectUri });
-              });
-          }, 60000); // Check every 60 seconds
-        }
+        attachRefresh(kc);
 
         const handleVisibilityChange = () => {
           if (document.visibilityState !== "visible") return;
@@ -140,11 +159,10 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
               if (refreshed) setToken(kc.token || null);
             })
             .catch(() => {
-              // Token expiré et refresh token mort → forcer reconnexion
               setAuthenticated(false);
               setToken(null);
-              const { locale, redirectUri } = buildKeycloakAuthOptions(window.location.pathname);
-              kc.login({ locale, redirectUri });
+              const { locale } = buildKeycloakAuthOptions(window.location.pathname);
+              kc.login({ locale, redirectUri: buildWelcomeRedirectUri(locale) });
             });
         };
 
@@ -152,16 +170,19 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         visibilityHandlerRef.current = handleVisibilityChange;
       } catch (error) {
         console.error("Keycloak initialization failed", error);
+        sharedInitPromise = null;
       } finally {
-        stripOidcCallbackParams();
-        setLoading(false);
+        if (!cancelled) {
+          stripOidcCallbackParams();
+          setLoading(false);
+        }
       }
     };
 
-    initKeycloak();
+    void initKeycloak();
 
-    // Cleanup function
     return () => {
+      cancelled = true;
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
       }
@@ -180,27 +201,40 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    if (logoutInFlightRef.current) return;
+    logoutInFlightRef.current = true;
     setLoading(true);
 
-    // Clean up interval before logging out
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
     }
 
-    // Purge Redux persisted state to prevent data leakage between users
+    const { locale } = buildKeycloakAuthOptions(pathname);
+    const redirectUri = buildWelcomeRedirectUri(locale);
+
     try {
       await purgePersistedState();
-      // Remove stored user ID to ensure fresh start on next login
       localStorage.removeItem("chariot_user_id");
+      clearPostLoginCompleted();
     } catch (error) {
       console.error("Failed to purge persisted state on logout:", error);
     }
 
-    // Redirect to root after logout - Keycloak will handle the login page
-    const { redirectUri } = buildKeycloakAuthOptions(pathname);
-    keycloak?.logout({
-      redirectUri,
-    });
+    try {
+      if (keycloak) {
+        sharedKeycloak = null;
+        sharedInitPromise = null;
+        await keycloak.logout({ redirectUri });
+        return;
+      }
+    } catch (error) {
+      console.error("Keycloak logout failed:", error);
+    }
+
+    // Hard escape if Keycloak logout hangs/fails (e.g. SSO just restarted).
+    sharedKeycloak = null;
+    sharedInitPromise = null;
+    window.location.assign(redirectUri);
   };
 
   const register = () => {
@@ -238,6 +272,13 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
               <p className="text-white text-lg font-medium">{t("loading")}</p>
               <p className="text-white/70 text-sm">{t("pleaseWait")}</p>
             </div>
+            {/* Escape hatch: loading overlay used to hide Profile/logout entirely. */}
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="mt-2 rounded-md border border-white/40 px-4 py-2 text-sm text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              {t("logoutEscape")}
+            </button>
           </div>
         </div>
       ) : (

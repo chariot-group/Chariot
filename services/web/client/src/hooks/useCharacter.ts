@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
 import CharacterService from '@/services/CharacterService';
+import { isCharacterAccessDeniedError } from '@/lib/characterAccessError';
 import { Character } from '@/types/character';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
@@ -57,6 +58,8 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const loadedCharacterIdRef = useRef<string | null>(null);
+    /** 403/404: stop WS/version retries that would cancel the welcome redirect (FR-user-cache-isolation). */
+    const accessDeniedRef = useRef(false);
 
     const remoteVersion = useAppSelector((s) =>
         characterId ? ((s.session.characterSheetRemoteVersions ?? {})[characterId] ?? 0) : 0,
@@ -64,6 +67,7 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
 
     useEffect(() => {
         loadedCharacterIdRef.current = null;
+        accessDeniedRef.current = false;
     }, [characterId]);
 
     const fetchCharacter = useCallback(async () => {
@@ -76,8 +80,12 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
             setLoading(true);
             setError(null);
             const data = await CharacterService.getCharacterById(characterId, { sessionCode });
+            accessDeniedRef.current = false;
             setCharacter(data);
         } catch (err) {
+            if (isCharacterAccessDeniedError(err)) {
+                accessDeniedRef.current = true;
+            }
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch character';
             setError(errorMessage);
             console.error('Error fetching character:', err);
@@ -96,6 +104,12 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
             return;
         }
 
+        // Do not hammer the API / cancel page redirects after a definitive access denial.
+        if (accessDeniedRef.current) {
+            setLoading(false);
+            return;
+        }
+
         let cancelled = false;
         const isBackgroundRefresh = isCharacterSheetBackgroundRefresh(loadedCharacterIdRef.current, characterId);
 
@@ -107,11 +121,15 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
                 setError(null);
                 const data = await CharacterService.getCharacterById(characterId, { sessionCode });
                 if (!cancelled) {
+                    accessDeniedRef.current = false;
                     setCharacter(data);
                     loadedCharacterIdRef.current = characterId;
                 }
             } catch (err) {
                 if (!cancelled) {
+                    if (isCharacterAccessDeniedError(err)) {
+                        accessDeniedRef.current = true;
+                    }
                     const errorMessage = err instanceof Error ? err.message : 'Failed to fetch character';
                     setError(errorMessage);
                     console.error('Error fetching character:', err);
