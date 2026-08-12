@@ -932,7 +932,7 @@
       "diceType": "Type de dé",
       "bonus": "Bonus",
       "damageType": "Type de dégâts",
-      "damageTypePlaceholder": "Feu, Froid...",
+      "damageTypePlaceholder": "Perforant, feu, force",
       "quickNumberPlaceholder": "Saisir un nombre",
       "hitDiceRemainingExceedsClassLevel": "Ce nombre dépasse le niveau autorisé pour cette classe (maximum : {max}).",
       "levelPlaceholder": "1",

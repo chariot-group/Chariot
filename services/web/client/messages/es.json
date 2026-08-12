@@ -931,7 +931,7 @@
       "diceType": "Tipo de dado",
       "bonus": "Bonificación",
       "damageType": "Tipo de daño",
-      "damageTypePlaceholder": "Fuego, Frío...",
+      "damageTypePlaceholder": "Perforante, fuego, fuerza",
       "quickNumberPlaceholder": "Introduce un numero",
       "hitDiceRemainingExceedsClassLevel": "Este valor supera lo permitido por el nivel de esta clase para los dados restantes (máx. {max}).",
       "levelPlaceholder": "1",

@@ -931,7 +931,7 @@
       "diceType": "Dice Type",
       "bonus": "Bonus",
       "damageType": "Damage Type",
-      "damageTypePlaceholder": "Fire, Cold...",
+      "damageTypePlaceholder": "Piercing, fire, force",
       "quickNumberPlaceholder": "Enter a number",
       "hitDiceRemainingExceedsClassLevel": "This value exceeds what this class allows for remaining hit dice (max {max}).",
       "levelPlaceholder": "1",
