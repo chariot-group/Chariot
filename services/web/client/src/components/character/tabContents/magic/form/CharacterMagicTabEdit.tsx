@@ -1,7 +1,15 @@
 "use client";
 
 import { Character } from "@/types/character";
-import { Controller, UseFormReturn, useWatch, useFieldArray, useFormState } from "react-hook-form";
+import {
+  Controller,
+  UseFormReturn,
+  useWatch,
+  useFieldArray,
+  useFormState,
+  type Path,
+  type PathValue,
+} from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -50,7 +58,7 @@ import { cn } from "@/lib/utils";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatSignedBonus } from "@/utils/attack.utils";
-import type { Spell, Spellcasting } from "@/types/character";
+import type { AbilityScores, DamageDetails, HealingDetails, Spell, Spellcasting } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
 import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
@@ -63,6 +71,7 @@ import {
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 const EMPTY_SPELLS: Spell[] = [];
+const EMPTY_ABILITY_SCORES = {} as AbilityScores;
 
 interface CharacterMagicTabEditProps {
   character: Character;
@@ -72,8 +81,25 @@ interface CharacterMagicTabEditProps {
 
 type CharacterClassInfo = { name?: string; level?: number };
 type SpellcastingFormEntry = Spellcasting & {
+  id: string;
   spellSlotsByUses?: Record<string, { used: number; total: number }>;
 };
+type SpellSlotsByLevel = Spellcasting["spellSlotsByLevel"];
+type SpellSlotFieldValue = number | string | null | undefined;
+
+/** Dynamic RHF paths (template strings) widen to `string`; cast back to Path without changing runtime. */
+function charPath(path: string): Path<Character> {
+  return path as Path<Character>;
+}
+
+function setCharValue(
+  form: UseFormReturn<Character>,
+  path: string,
+  value: unknown,
+  options?: Parameters<UseFormReturn<Character>["setValue"]>[2],
+) {
+  form.setValue(charPath(path), value as PathValue<Character, Path<Character>>, options);
+}
 
 function SyncRow({
   synced,
@@ -183,45 +209,56 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   useLayoutEffect(() => {
     if (isInnate || spellcastingList.length === 0) return;
     const basePath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
-    const slotsNow = ((form.getValues(basePath) ?? {}) as Spellcasting["spellSlotsByLevel"]) ?? {};
+    const slotsNow =
+      (form.getValues(charPath(basePath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
 
     for (const s of currentSpells) {
       const L = Number(s.level);
       if (Number.isNaN(L) || L <= 0) continue;
       const key = String(L);
       const slotPath = `${basePath}.${key}`;
-      const entry = slotsNow[key];
+      const entry = slotsNow[key] as
+        | { total?: SpellSlotFieldValue; used?: SpellSlotFieldValue }
+        | undefined;
 
       if (entry == null || typeof entry !== "object") {
-        form.setValue(slotPath, { total: 1, used: 0 }, { shouldDirty: true });
+        setCharValue(form, slotPath, { total: 1, used: 0 }, { shouldDirty: true });
         continue;
       }
       const t = entry.total;
       const u = entry.used;
       if (t === undefined || t === null) {
-        form.setValue(`${slotPath}.total`, 1, { shouldDirty: true });
+        setCharValue(form, `${slotPath}.total`, 1, { shouldDirty: true });
       } else if (t !== "" && Number.isNaN(Number(t))) {
-        form.setValue(`${slotPath}.total`, 1, { shouldDirty: true });
+        setCharValue(form, `${slotPath}.total`, 1, { shouldDirty: true });
       }
       if (u === undefined || u === null) {
-        form.setValue(`${slotPath}.used`, 0, { shouldDirty: true });
+        setCharValue(form, `${slotPath}.used`, 0, { shouldDirty: true });
       } else if (u !== "" && Number.isNaN(Number(u))) {
-        form.setValue(`${slotPath}.used`, 0, { shouldDirty: true });
+        setCharValue(form, `${slotPath}.used`, 0, { shouldDirty: true });
       }
     }
 
     const slotsAfterEnsure =
-      ((form.getValues(basePath) ?? {}) as Spellcasting["spellSlotsByLevel"]) ?? {};
+      (form.getValues(charPath(basePath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
     const pruned = pruneOrphanSpellSlotsByLevel(slotsAfterEnsure, currentSpells);
     if (!spellSlotLevelKeysEqual(slotsAfterEnsure, pruned)) {
-      form.setValue(basePath, pruned, { shouldDirty: true, shouldValidate: false });
+      setCharValue(form, basePath, pruned, { shouldDirty: true, shouldValidate: false });
     }
   }, [isInnate, selectedSpellcastingIndex, currentSpells, form, spellcastingList.length]);
 
   // Fonctions pour manipuler les spells directement
   const addSpell = useCallback(
     (spell: Partial<Spell>) => {
-      const spellWithDefaults: Partial<Spell> = {
+      const spellWithDefaults: Spell = {
+        name: "",
+        level: 0,
+        school: "",
+        description: "",
+        components: [],
+        castingTime: "",
+        duration: "",
+        range: "",
         ...spell,
         effectType: spell.effectType || "utility",
       };
@@ -259,9 +296,13 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
       const uses = spellWithDefaults.usesPerDay ?? null;
       if (uses !== null) {
-        const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
+        const currentByUses =
+          (form.getValues(
+            charPath(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`),
+          ) as unknown as Record<string, { used: number; total: number }> | undefined) || {};
         if (!currentByUses[`k${uses}`]) {
-          form.setValue(
+          setCharValue(
+            form,
             `spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}`,
             { used: 0, total: uses },
             { shouldDirty: true },
@@ -290,10 +331,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
       const slotsPath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
       const slotsNow =
-        (form.getValues(slotsPath) as Spellcasting["spellSlotsByLevel"] | undefined) ?? {};
+        (form.getValues(charPath(slotsPath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
       const pruned = pruneOrphanSpellSlotsByLevel(slotsNow, newSpells);
       if (!spellSlotLevelKeysEqual(slotsNow, pruned)) {
-        form.setValue(slotsPath, pruned, { shouldDirty: true, shouldValidate: false });
+        setCharValue(form, slotsPath, pruned, { shouldDirty: true, shouldValidate: false });
       }
 
       if (selectedSpellIndex === index) {
@@ -331,9 +372,19 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   );
 
   // ── Reactive watches (must be at top level) ──
-  const proficiencyBonus: number = useWatch({ control: form.control, name: "stats.proficiencyBonus" }) ?? 2;
-  const abilityScores: Record<string, number> = useWatch({ control: form.control, name: "stats.abilityScores" }) ?? {};
-  const classesList: CharacterClassInfo[] = useWatch({ control: form.control, name: "class" }) ?? [];
+  const proficiencyBonus: number =
+    (useWatch({
+      control: form.control,
+      name: "stats.proficiencyBonus" as Path<Character>,
+    }) as number | undefined) ?? 2;
+  const abilityScores: AbilityScores =
+    (useWatch({ control: form.control, name: "stats.abilityScores" }) as AbilityScores | undefined) ??
+    EMPTY_ABILITY_SCORES;
+  const classesList: CharacterClassInfo[] =
+    (useWatch({
+      control: form.control,
+      name: "class" as Path<Character>,
+    }) as CharacterClassInfo[] | undefined) ?? [];
   const availableSpellcastingClasses = classesList.filter(
     (cls): cls is CharacterClassInfo & { name: string } => (cls?.name?.length ?? 0) > 1,
   );
@@ -360,35 +411,31 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   });
 
   // Watch current spell damage and healing details
-  const watchPath =
-    selectedSpellIndex !== null
-      ? `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}`
-      : `spellcasting.${selectedSpellcastingIndex}.spells.0`;
-
+  const spellWatchIndex = selectedSpellIndex ?? 0;
   const currentDamageDetails = useWatch({
     control: form.control,
-    name: `${watchPath}.damageDetails`,
-  });
+    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.damageDetails`,
+  }) as DamageDetails | undefined;
   const currentHealingDetails = useWatch({
     control: form.control,
-    name: `${watchPath}.healingDetails`,
-  });
+    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.healingDetails`,
+  }) as HealingDetails | undefined;
   const currentDamage = useWatch({
     control: form.control,
-    name: `${watchPath}.damage`,
-  });
+    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.damage`,
+  }) as string | undefined;
   const currentHealing = useWatch({
     control: form.control,
-    name: `${watchPath}.healing`,
-  });
+    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.healing`,
+  }) as string | undefined;
   const currentEffectType = useWatch({
     control: form.control,
-    name: `${watchPath}.effectType`,
-  });
+    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.effectType`,
+  }) as Spell["effectType"] | undefined;
   const currentUsesPerDay = useWatch({
     control: form.control,
-    name: `${watchPath}.usesPerDay`,
-  });
+    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.usesPerDay`,
+  }) as number | null | undefined;
 
   // Sync spellcasting className when the player has a single class
   // – covers: setting the default when className is blank, and propagating a class rename.
@@ -409,9 +456,13 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     if (!isInnate || selectedSpellIndex === null) return;
     const uses: number | null = currentUsesPerDay ?? null;
     if (uses === null) return;
-    const currentByUses = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`) || {};
+    const currentByUses =
+      (form.getValues(
+        charPath(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`),
+      ) as unknown as Record<string, { used: number; total: number }> | undefined) || {};
     if (!currentByUses[`k${uses}`]) {
-      form.setValue(
+      setCharValue(
+        form,
         `spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}`,
         { used: 0, total: uses },
         { shouldDirty: true },
@@ -484,7 +535,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     selectedSpellcastingIndex,
   ]);
 
-  const abilityScore: number = currentAbilityKey ? (abilityScores[currentAbilityKey] ?? 10) : 10;
+  const abilityScore: number = currentAbilityKey
+    ? (abilityScores[currentAbilityKey as keyof AbilityScores] ?? 10)
+    : 10;
   const abilityMod: number = calculateAbilityBonus(abilityScore);
   const calculatedSaveDC: number = calculateSpellSaveDC(proficiencyBonus, abilityScore);
   const calculatedAttackBonus: number = calculateSpellAttackBonus(proficiencyBonus, abilityScore);
@@ -1283,14 +1336,15 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                       render={({ field, fieldState }) => {
                                         const slotTotalPath =
                                           `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total` as const;
+                                        const fieldValue = field.value as SpellSlotFieldValue;
                                         return (
                                           <Input
                                             name={field.name}
                                             ref={field.ref}
                                             value={
-                                              field.value === undefined || field.value === null || field.value === ""
+                                              fieldValue === undefined || fieldValue === null || fieldValue === ""
                                                 ? ""
-                                                : String(field.value)
+                                                : String(fieldValue)
                                             }
                                             className="w-14 min-w-14 text-center h-9 text-sm"
                                             type="number"
@@ -1311,7 +1365,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                               form.clearErrors(slotTotalPath);
                                             }}
                                             onBlur={() => {
-                                              const raw = form.getValues(slotTotalPath);
+                                              const raw = form.getValues(slotTotalPath) as SpellSlotFieldValue;
                                               if (raw === "" || raw === undefined || raw === null) {
                                                 form.clearErrors(slotTotalPath);
                                                 field.onBlur();
