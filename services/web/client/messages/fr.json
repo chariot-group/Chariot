@@ -1775,11 +1775,18 @@
   },
   "header": {
     "logoAriaLabelHome": "Retour à l'accueil",
-    "logoAriaLabelInSession": "Ouvrir le lobby de session"
+    "logoAriaLabelInSession": "Ouvrir le lobby de session",
+    "logoAriaLabelInSessionWarning": "Ouvrir le lobby de session, moins de 30 minutes restantes",
+    "logoAriaLabelInSessionCritical": "Ouvrir le lobby de session, moins de 5 minutes restantes"
   },
   "sessionTime": {
     "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée.",
-    "remainingAriaLabel": "Temps restant de la session : {time}"
+    "tooltipWarning": "Il reste moins de 30 minutes.",
+    "tooltipCritical": "Il reste moins de 5 minutes.",
+    "remainingAriaLabel": "Temps restant de la session : {time}",
+    "remainingAriaLabelWarning": "Temps restant de la session, moins de 30 minutes : {time}",
+    "remainingAriaLabelCritical": "Temps restant de la session, moins de 5 minutes : {time}",
+    "warningToast": "Il reste 30 minutes avant la fin de la session."
   },
   "releaseNotes": {
     "title": "Nouveautés",

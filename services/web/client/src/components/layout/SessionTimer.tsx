@@ -1,47 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Timer } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
-import { selectSessionStatus, selectSessionExpiresAt } from "@/store/slices/sessionSlice";
 import { useTranslations } from "next-intl";
+import { useSessionRemainingSeconds } from "@/hooks/useSessionRemainingSeconds";
 import {
-  computeSessionRemainingSeconds,
   formatSessionRemainingDuration,
-  isSessionTimerLow,
+  resolveSessionLiveTone,
   shouldShowSessionTimer,
 } from "@/lib/sessionPresenceUi";
+import { useAppSelector } from "@/store/hooks";
+import { selectSessionExpiresAt, selectSessionStatus } from "@/store/slices/sessionSlice";
 import { cn } from "@/lib/utils";
 
 export default function SessionTimer() {
   const status = useAppSelector(selectSessionStatus);
   const expiresAt = useAppSelector(selectSessionExpiresAt);
-  const [remaining, setRemaining] = useState<number | null>(null);
+  const remaining = useSessionRemainingSeconds();
   const t = useTranslations("sessionTime");
-
-  useEffect(() => {
-    if (!shouldShowSessionTimer(status, expiresAt) || !expiresAt) return;
-
-    const compute = () => {
-      setRemaining(computeSessionRemainingSeconds(expiresAt, Date.now()));
-    };
-
-    compute();
-    const interval = setInterval(compute, 1000);
-    return () => clearInterval(interval);
-  }, [status, expiresAt]);
 
   if (!shouldShowSessionTimer(status, expiresAt) || remaining === null) return null;
 
   const formatted = formatSessionRemainingDuration(remaining);
+  const tone = resolveSessionLiveTone(remaining);
+  const remainingAriaKey =
+    tone === "critical"
+      ? "remainingAriaLabelCritical"
+      : tone === "warning"
+        ? "remainingAriaLabelWarning"
+        : "remainingAriaLabel";
 
   return (
     <div
       role="timer"
-      aria-label={t("remainingAriaLabel", { time: formatted })}
+      aria-label={t(remainingAriaKey, { time: formatted })}
       className={cn(
         "flex shrink-0 items-center gap-1.5 whitespace-nowrap font-mono text-sm font-semibold tabular-nums",
-        isSessionTimerLow(remaining) ? "text-red" : "text-muted-foreground",
+        tone === "critical" && "text-red",
+        tone === "warning" && "text-yellow",
+        tone === "live" && "text-muted-foreground",
       )}>
       <Timer
         className="size-4 shrink-0"

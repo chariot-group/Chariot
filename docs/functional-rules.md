@@ -1907,7 +1907,8 @@ Each initiative tracker row carries:
 **Header Logo — In Session**:
 
 - The logo MUST show a discreet live/record indicator (small filled disc, slow opacity pulse) so the user can tell a session is active without a header countdown.
-- `prefers-reduced-motion: reduce` MUST disable the pulse; the disc remains visible and static.
+- When remaining time is ≤ 30 minutes, the indicator MUST switch to a warning tone (`yellow`, faster pulse). When remaining time is ≤ 5 minutes, it MUST switch to a critical tone (`red`, faster pulse than warning). Color MUST NOT be the only cue: pulse speed also changes, and the accessible name / tooltip MUST mention the remaining-time urgency.
+- `prefers-reduced-motion: reduce` MUST disable the pulse; the disc remains visible and static, still using the warning/critical color when applicable.
 - Hover and keyboard focus MUST show the session-validity tooltip (8 hours, or auto-close after 5 minutes if all participants have left).
 - Clicking the logo MUST dispatch `openSessionLobby` (FR-session-lobby-modal). It MUST NOT navigate to a character sheet or to welcome.
 - The logo button MUST expose an accessible name indicating that it opens the session lobby.
@@ -1921,7 +1922,9 @@ Each initiative tracker row carries:
 
 - The remaining-time countdown MUST be displayed only inside the session lobby modal, and only when `sessionStatus === "launched"` and `expiresAt` is available.
 - The header MUST NOT display the countdown.
-- Remaining time ≤ 5 minutes MAY use the warning color `red` in the modal; color MUST NOT be the only cue (the numeric countdown remains visible).
+- Remaining time ≤ 30 minutes MUST use the warning color `yellow` in the modal; remaining time ≤ 5 minutes MUST use `red`. Color MUST NOT be the only cue (the numeric countdown remains visible).
+- When remaining time **crosses** the 30-minute threshold (from above 30 minutes to ≤ 30 minutes), every connected participant MUST see a warning toast once. Late join or refresh while already ≤ 30 minutes MUST NOT replay the toast.
+- The 30-minute toast MUST be owned by a single layout-level client (`SessionTimeWarningToast`). Header and lobby MUST NOT emit a duplicate.
 
 **Sidebar Action Button — Player on Session Lobby**:
 
@@ -1940,6 +1943,10 @@ Each initiative tracker row carries:
 
 - Nominal: in session, logo click opens the lobby; live indicator is visible.
 - Nominal: launched session, timer is visible in the lobby and absent from the header.
+- Nominal: launched session with more than 30 minutes remaining uses the live indicator tone.
+- Edge: remaining time ≤ 30 minutes uses the warning tone; ≤ 5 minutes uses the critical tone.
+- Nominal: remaining time crosses 30 minutes → one warning toast per connected client.
+- Edge: mount or refresh already below 30 minutes → no toast.
 - Nominal: launched session, player on session lobby without combat sees **Return to Character Sheet**.
 - Edge: in session but not launched → live indicator and logo open the lobby; no timer.
 - Edge: player without assigned character cannot use **Return to Character Sheet**.
@@ -1952,6 +1959,8 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
 - `services/web/client/src/components/layout/SessionTimer.tsx`
 - `services/web/client/src/lib/sessionPresenceUi.ts`
+- `services/web/client/src/hooks/useSessionRemainingSeconds.ts`
+- `services/web/client/src/components/layout/SessionTimeWarningToast.tsx`
 - `services/web/client/src/lib/sessionInAppNavigation.ts`
 
 ---

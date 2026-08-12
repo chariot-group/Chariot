@@ -11,7 +11,9 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { openSessionLobby, selectIsInSession } from "@/store/slices/sessionSlice";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { resolveHeaderLogoClickIntent } from "@/lib/sessionPresenceUi";
+import { resolveHeaderLogoClickIntent, resolveSessionLiveTone } from "@/lib/sessionPresenceUi";
+import { useSessionRemainingSeconds } from "@/hooks/useSessionRemainingSeconds";
+import { cn } from "@/lib/utils";
 
 export default function Header() {
   const pathname = usePathname();
@@ -22,10 +24,18 @@ export default function Header() {
   const t = useTranslations("header");
   const tSessionTime = useTranslations("sessionTime");
   const isInSession = useAppSelector(selectIsInSession);
+  const remainingSeconds = useSessionRemainingSeconds();
   const logoIntent = resolveHeaderLogoClickIntent(isInSession);
+  const liveTone = resolveSessionLiveTone(remainingSeconds);
 
   const logoAriaLabel =
-    logoIntent === "openSessionLobby" ? t("logoAriaLabelInSession") : t("logoAriaLabelHome");
+    logoIntent === "openSessionLobby"
+      ? liveTone === "critical"
+        ? t("logoAriaLabelInSessionCritical")
+        : liveTone === "warning"
+          ? t("logoAriaLabelInSessionWarning")
+          : t("logoAriaLabelInSession")
+      : t("logoAriaLabelHome");
 
   const handleLogoClick = () => {
     if (logoIntent === "openSessionLobby") {
@@ -54,7 +64,12 @@ export default function Header() {
       {logoIntent === "openSessionLobby" ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute top-[14%] right-[18%] size-2 rounded-full bg-red ring-1 ring-background motion-safe:animate-session-live motion-reduce:animate-none"
+          className={cn(
+            "pointer-events-none absolute top-[14%] right-[18%] size-2 rounded-full ring-1 ring-background motion-reduce:animate-none",
+            liveTone === "warning" && "bg-yellow motion-safe:animate-session-warning",
+            liveTone === "critical" && "bg-red motion-safe:animate-session-critical",
+            liveTone === "live" && "bg-red motion-safe:animate-session-live",
+          )}
         />
       ) : null}
     </button>
@@ -72,7 +87,11 @@ export default function Header() {
         {logoIntent === "openSessionLobby" ? (
           <Tooltip>
             <TooltipTrigger asChild>{logoButton}</TooltipTrigger>
-            <TooltipContent className="max-w-xs sm:max-w-sm">{tSessionTime("tooltip")}</TooltipContent>
+            <TooltipContent className="max-w-xs sm:max-w-sm">
+              {tSessionTime("tooltip")}
+              {liveTone === "warning" ? ` ${tSessionTime("tooltipWarning")}` : null}
+              {liveTone === "critical" ? ` ${tSessionTime("tooltipCritical")}` : null}
+            </TooltipContent>
           </Tooltip>
         ) : (
           logoButton

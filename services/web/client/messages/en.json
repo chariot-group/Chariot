@@ -1770,11 +1770,18 @@
   },
   "header": {
     "logoAriaLabelHome": "Return to home",
-    "logoAriaLabelInSession": "Open session lobby"
+    "logoAriaLabelInSession": "Open session lobby",
+    "logoAriaLabelInSessionWarning": "Open session lobby, less than 30 minutes remaining",
+    "logoAriaLabelInSessionCritical": "Open session lobby, less than 5 minutes remaining"
   },
   "sessionTime": {
     "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left.",
-    "remainingAriaLabel": "Session time remaining: {time}"
+    "tooltipWarning": "Less than 30 minutes remaining.",
+    "tooltipCritical": "Less than 5 minutes remaining.",
+    "remainingAriaLabel": "Session time remaining: {time}",
+    "remainingAriaLabelWarning": "Session time remaining, less than 30 minutes: {time}",
+    "remainingAriaLabelCritical": "Session time remaining, less than 5 minutes: {time}",
+    "warningToast": "30 minutes remaining before the session ends."
   },
   "releaseNotes": {
     "title": "What's new",
