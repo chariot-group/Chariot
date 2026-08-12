@@ -19,11 +19,11 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
   } = useDistanceUnit();
 
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-4">
-      {/* Apparence, Alliés et Liens */}
-      <div className="flex flex-col gap-2 md:gap-4">
+    <div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4">
+      {/* Col 1: Apparence (spans 2 rows on xl) */}
+      <div className="xl:row-span-2">
         <Card
-          className="gap-3 py-4 px-4 md:px-6"
+          className="gap-3 py-4 px-4 md:px-6 h-full"
           role="region"
           aria-labelledby="appearance-title">
           <h2
@@ -34,16 +34,6 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 w-full">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Eye
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("eyes")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.eyes}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
                 <Cake
                   className="shrink-0 w-4 h-4"
                   aria-hidden="true"
@@ -51,16 +41,6 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 <span className="text-xs font-medium">{t("age")}</span>
               </div>
               <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.age}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <PersonStanding
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("skin")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.skin}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -110,6 +90,26 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
+                <Eye
+                  className="shrink-0 w-4 h-4"
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-medium">{t("eyes")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.eyes}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <PersonStanding
+                  className="shrink-0 w-4 h-4"
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-medium">{t("skin")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.skin}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Scissors
                   className="shrink-0 w-4 h-4"
                   aria-hidden="true"
@@ -120,62 +120,49 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
             </div>
           </div>
         </Card>
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
-          role="region"
-          aria-labelledby="allies-title">
-          <h2
-            id="allies-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("alliesAndOrgs")}
-          </h2>
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
-            {character?.background?.alliesAndOrgs}
-          </p>
-        </Card>
       </div>
 
-      {/* Description */}
-      <div className="flex flex-col gap-2 md:gap-4">
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
-          role="region"
-          aria-labelledby="flaws-title">
-          <h2
-            id="flaws-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("flaws")}
-          </h2>
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.flaws}</p>
-        </Card>
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
-          role="region"
-          aria-labelledby="bonds-title">
-          <h2
-            id="bonds-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("bonds")}
-          </h2>
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.bonds}</p>
-        </Card>
-      </div>
+      {/* Cols 2–4 row 1: Traits | Alliés | Liens */}
+      <Card
+        className="gap-3 py-4 px-4 md:px-6 break-all"
+        role="region"
+        aria-labelledby="traits-title">
+        <h2
+          id="traits-title"
+          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
+          {t("personalityTraits")}
+        </h2>
+        <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
+          {character?.background?.personalityTraits}
+        </p>
+      </Card>
+      <Card
+        className="gap-3 py-4 px-4 md:px-6 break-all"
+        role="region"
+        aria-labelledby="allies-title">
+        <h2
+          id="allies-title"
+          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
+          {t("alliesAndOrgs")}
+        </h2>
+        <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
+          {character?.background?.alliesAndOrgs}
+        </p>
+      </Card>
+      <Card
+        className="gap-3 py-4 px-4 md:px-6 break-all"
+        role="region"
+        aria-labelledby="bonds-title">
+        <h2
+          id="bonds-title"
+          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
+          {t("bonds")}
+        </h2>
+        <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.bonds}</p>
+      </Card>
 
-      {/* Traits, Idéaux et Défauts */}
-      <div className="flex flex-col gap-2 md:gap-4">
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
-          role="region"
-          aria-labelledby="traits-title">
-          <h2
-            id="traits-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("personalityTraits")}
-          </h2>
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
-            {character?.background?.personalityTraits}
-          </p>
-        </Card>
+      {/* Cols 2–4 row 2: Idéaux | Défauts (equal width) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 xl:col-start-2 xl:col-span-3">
         <Card
           className="gap-3 py-4 px-4 md:px-6 break-all"
           role="region"
@@ -187,10 +174,21 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
           </h2>
           <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.ideals}</p>
         </Card>
+        <Card
+          className="gap-3 py-4 px-4 md:px-6 break-all"
+          role="region"
+          aria-labelledby="flaws-title">
+          <h2
+            id="flaws-title"
+            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
+            {t("flaws")}
+          </h2>
+          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.flaws}</p>
+        </Card>
       </div>
 
-      {/* Histoire (full width) */}
-      <div className="col-span-1 xl:col-span-3">
+      {/* Ligne 2: Histoire | Description */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 col-span-1 lg:col-span-2 xl:col-span-4">
         <Card
           className="gap-3 py-4 px-4 md:px-6 break-all"
           role="region"
@@ -202,12 +200,8 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
           </h2>
           <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.backstory}</p>
         </Card>
-      </div>
-
-      {/* Description (full width) */}
-      <div className="col-span-1 xl:col-span-3">
         <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all h-full"
+          className="gap-3 py-4 px-4 md:px-6 break-all"
           role="region"
           aria-labelledby="description-title">
           <h2
