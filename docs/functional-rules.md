@@ -2876,7 +2876,8 @@ Each initiative tracker row carries:
 **Modale de confirmation (`DuplicateCharacterDialog`)** :
 
 - S'ouvre lorsque l'utilisateur sélectionne l'action « Dupliquer » dans le menu contextuel ou le menu overflow.
-- Affiche un champ de texte prérempli avec le nom proposé : `"<firstname> <lastname> 2"` (ou `"<firstname> 2"` si pas de nom de famille, ou simplement `"2"` si les deux sont vides). Le suffixe est incrémenté (`2`, `3`…) si le nom proposé correspond déjà à un personnage existant dans la liste visible (vérification locale uniquement).
+- Affiche un champ de texte prérempli avec le nom proposé : prochain suffixe libre `"<stem> 2"`, `"<stem> 3"`… où `<stem>` est le nom d’affichage source sans suffixe numérique final (ou simplement `"2"` / `"3"`… si le nom est vide). Le suffixe est choisi en vérifiant la liste visible uniquement (pas d’appel API). Exemple : source `test` avec `test 2` déjà présent → propose `test 3` ; source `test 2` → stem `test`, même logique.
+- Champ count (entier 1–99, défaut 1) : chaque copie reçoit un nom séquentiel à partir de la valeur saisie (`test 2` + count 2 → `test 2`, `test 3` — jamais `test 2 2`).
 - Le champ est éditable et autofocusé à l'ouverture.
 - La validation par **Entrée** déclenche le bouton « Créer » (action primaire), sauf si le champ de texte est vide.
 - **Escape** ferme la modale sans création.
@@ -2917,6 +2918,8 @@ Each initiative tracker row carries:
 
 - Nominal : dupliquer un joueur sans groupe → nouveau personnage sans groupe, nom `"<nom> 2"`, toast succès, redirection vers la fiche.
 - Nominal : dupliquer un PNJ dans un groupe → même groupe, nom `"<nom> 2"`, toast succès.
+- Nominal : count = 2 avec nom proposé `"test 2"` → crée `test 2` et `test 3`.
+- Nominal : source `test` alors que `test 2` existe déjà → propose `test 3`.
 - Edge : nom vide dans la modale → bouton « Créer » désactivé.
 - Edge : Escape ferme la modale sans déclencher de création.
 - Edge : Enter dans le champ déclenche « Créer » (action primaire).
@@ -2928,7 +2931,8 @@ Each initiative tracker row carries:
 
 - `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
-- `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx` (à créer)
+- `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx`
+- `services/web/client/src/lib/duplicateName.ts`
 - `services/web/client/src/services/CharacterService.ts`
 - `services/web/client/src/components/dialogs/MoveCharacterDialog.tsx`
 
@@ -2943,7 +2947,7 @@ Each initiative tracker row carries:
 - Indisponible en session active (`actionsDisabled`).
 
 **Modale (`DuplicateGroupDialog`)** :
-- Champ label prérempli avec `"<label du groupe source> 2"`, éditable, autofocusé.
+- Champ label prérempli avec le prochain suffixe libre parmi les labels de groupes visibles (même logique stem/suffixe que FR-character-duplicate), éditable, autofocusé.
 - Champ count (entier 1–99, défaut 1).
 - Bouton **Créer** (action primaire) : déclenché aussi par **Enter** si label non vide.
 - **Escape** ferme sans création.
@@ -2958,7 +2962,7 @@ Each initiative tracker row carries:
 
 **Logique de duplication (côté frontend)** :
 - Aucun nouvel endpoint backend requis.
-- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-character-duplicate).
+- Pour chaque copie `i` (0 à count−1) : label issu de `buildSequentialCopyNames(name, count)` — ex. name prérempli `"Gobelins 2"` et count 3 → `"Gobelins 2"`, `"Gobelins 3"`, `"Gobelins 4"` (jamais `"Gobelins 2 2"`).
 - Créer le groupe via `GroupService.createGroup(campaignId, { label })`.
 - Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
 - Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
