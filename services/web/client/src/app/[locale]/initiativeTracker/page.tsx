@@ -3,9 +3,10 @@
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LayersPlus } from "lucide-react";
+import { LayersMinus, LayersPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddCombatantsDialog } from "@/components/dialogs/AddCombatantsDialog";
+import { RemoveCombatantGroupsDialog } from "@/components/dialogs/RemoveCombatantGroupsDialog";
 import { InitiativeTrackerHealthDialog } from "@/components/initiativeTracker/InitiativeTrackerHealthDialog";
 import { InitiativeTrackerTable } from "@/components/initiativeTracker/InitiativeTrackerTable";
 import { InitiativeTrackerTurnControls, type PreviousTurnState } from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
@@ -22,6 +23,7 @@ import {
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
 import CharacterService from "@/services/CharacterService";
+import { withSessionCodeQuery } from "@/lib/sessionInAppNavigation";
 import {
   buildConditionEntry,
   formatRemainingConditionDuration,
@@ -293,7 +295,7 @@ export default function InitiativeTrackerPage() {
 
     if (isGameMaster) {
       if (lastConsultedSheetPath) {
-        router.replace(lastConsultedSheetPath);
+        router.replace(withSessionCodeQuery(lastConsultedSheetPath, sessionCode));
       }
       return;
     }
@@ -309,6 +311,7 @@ export default function InitiativeTrackerPage() {
     ownCharacterSheetHref,
     playerCanAccessPreparationTracker,
     router,
+    sessionCode,
   ]);
 
   React.useEffect(() => {
@@ -597,19 +600,34 @@ export default function InitiativeTrackerPage() {
             )}
 
             {isGameMaster ? (
-              <AddCombatantsDialog>
-                <Button
-                  type="button"
-                  variant="outline"
-                  aria-label={tInit("addCombatants")}
-                  className="gap-2 rounded-[15px] px-3 sm:px-4">
-                  <LayersPlus
-                    className="size-4"
-                    aria-hidden="true"
-                  />
-                  <span className="sr-only sm:not-sr-only">{tInit("addCombatants")}</span>
-                </Button>
-              </AddCombatantsDialog>
+              <div className="flex shrink-0 items-center gap-2">
+                <RemoveCombatantGroupsDialog>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    aria-label={tInit("removeCombatantGroups")}
+                    className="gap-2 rounded-[15px] px-3 sm:px-4">
+                    <LayersMinus
+                      className="size-4"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only sm:not-sr-only">{tInit("removeCombatantGroups")}</span>
+                  </Button>
+                </RemoveCombatantGroupsDialog>
+                <AddCombatantsDialog>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    aria-label={tInit("addCombatants")}
+                    className="gap-2 rounded-[15px] px-3 sm:px-4">
+                    <LayersPlus
+                      className="size-4"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only sm:not-sr-only">{tInit("addCombatants")}</span>
+                  </Button>
+                </AddCombatantsDialog>
+              </div>
             ) : null}
           </div>
         ) : null}
@@ -641,14 +659,6 @@ export default function InitiativeTrackerPage() {
           currentRound={currentRound}
           onSetConcentration={
             isGameMaster || playerCanEditOwnConcentration ? handleSetConcentration : undefined
-          }
-          onResolvePendingConcentrationCheck={
-            isGameMaster || playerCanEditOwnConcentration
-              ? (row, result) => {
-                  if (!shouldShowConcentrationSaveDialog({ row, isGameMaster, ownCharacterId })) return;
-                  handleResolvePendingConcentrationCheck(row, result);
-                }
-              : undefined
           }
           onOpenConcentrationSaveDialog={openConcentrationSaveDialogForRow}
           onRemoveFromInitiative={
@@ -727,6 +737,11 @@ export default function InitiativeTrackerPage() {
                 previousTurnState={previousTurnState}
                 labels={{
                   startCombat: t("startCombat"),
+                  cancelCombat: t("cancelCombat"),
+                  cancelCombatConfirmTitle: t("cancelCombatConfirmTitle"),
+                  cancelCombatConfirmDescription: t("cancelCombatConfirmDescription"),
+                  cancelCombatConfirmAction: t("cancelCombatConfirmAction"),
+                  cancelCombatCancelAction: t("cancelCombatCancelAction"),
                   endCombat: t("endCombat"),
                   endCombatConfirmTitle: t("endCombatConfirmTitle"),
                   endCombatConfirmDescription: t("endCombatConfirmDescription"),
@@ -739,6 +754,7 @@ export default function InitiativeTrackerPage() {
                   previousHintNoPrevious: t("previousTurnHintNoPrevious"),
                 }}
                 onStartCombat={() => dispatchTrackerAction(startBattle())}
+                onCancelCombat={() => dispatchTrackerAction(endBattle(), { includeEnded: true })}
                 onEndCombat={() => dispatchTrackerAction(endBattle(), { includeEnded: true })}
                 onPrevious={() => dispatchTrackerAction(previousBattleTurn())}
                 onNext={() => dispatchTrackerAction(nextBattleTurn())}

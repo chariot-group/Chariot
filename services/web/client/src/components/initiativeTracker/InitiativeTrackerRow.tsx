@@ -82,10 +82,6 @@ type InitiativeTrackerRowProps = {
   battleStarted?: boolean;
   currentRound?: number;
   onSetConcentration?: (row: InitiativeTrackerRowType, concentration: TrackerConcentration | null) => void;
-  onResolvePendingConcentrationCheck?: (
-    row: InitiativeTrackerRowType,
-    result: "kept" | "lost" | "later",
-  ) => void;
   onOpenConcentrationSaveDialog?: (row: InitiativeTrackerRowType) => void;
   labels: {
     initiativeFor: string;
@@ -174,7 +170,6 @@ export function InitiativeTrackerRow({
   battleStarted = false,
   currentRound = 1,
   onSetConcentration,
-  onResolvePendingConcentrationCheck,
   onOpenConcentrationSaveDialog,
   labels,
 }: InitiativeTrackerRowProps) {
@@ -436,7 +431,7 @@ export function InitiativeTrackerRow({
 
   const groupContent = renderGroupContent();
 
-  const rowConditions = row.conditions ?? [];
+  const rowConditions = React.useMemo(() => row.conditions ?? [], [row.conditions]);
   const activeConcentration =
     battleStarted && showConcentration && row.concentration ? row.concentration : null;
   const activePendingConcentrationCheck =
