@@ -778,14 +778,15 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
           {/* Back button: single-column layouts through laptop */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={handleBackToList}
-            className="xl:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
+            className="xl:hidden self-start shrink-0 h-8 px-2"
             aria-label={tMagic("backToList")}>
-            <ArrowLeft className="w-4 h-4" />
-            <span>{tMagic("backToList")}</span>
-          </button>
+            <ArrowLeft className="size-4" />
+            {tMagic("backToList")}
+          </Button>
           <SpellDisplay
             spell={selectedSpell}
             accentColor={accentColor}

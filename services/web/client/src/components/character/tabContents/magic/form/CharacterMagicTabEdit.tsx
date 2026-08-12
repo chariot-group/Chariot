@@ -1572,14 +1572,15 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
           {/* Back button: single-column layouts (mobile through laptop lg) */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setShowMobileDetails(false)}
-            className="xl:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
+            className="xl:hidden self-start shrink-0 h-8 px-2"
             aria-label={tMagic("backToList")}>
-            <ArrowLeft className="w-4 h-4" />
-            <span>{tMagic("backToList")}</span>
-          </button>
+            <ArrowLeft className="size-4" />
+            {tMagic("backToList")}
+          </Button>
           {selectedSpellIndex === null ? (
             <div
               className="flex items-center justify-center h-full min-h-48"
