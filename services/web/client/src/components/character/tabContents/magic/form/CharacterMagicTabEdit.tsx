@@ -551,6 +551,28 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     }
   }, [showPreparedSpellsButtonEarly, preparationEditMode]);
 
+  const openAccordionAllowedSignature = (() => {
+    if (spellcastingList.length === 0) return "";
+    if (!isInnate) {
+      return getSpellLevelsFromSpells(currentSpells)
+        .map((level) => `level-${level}`)
+        .join("|");
+    }
+    const seen = new Set<number | null>();
+    currentSpells.forEach((spell) => seen.add(spell.usesPerDay ?? null));
+    return Array.from(seen)
+      .map(npcUsesKey)
+      .join("|");
+  })();
+
+  useEffect(() => {
+    const allowed = new Set(openAccordionAllowedSignature ? openAccordionAllowedSignature.split("|") : []);
+    setOpenAccordionValues((prev) => {
+      const next = prev.filter((key) => allowed.has(key));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [openAccordionAllowedSignature]);
+
   // If no spellcasting, show interface to create first one
   if (spellcastingList.length === 0) {
     return (
@@ -694,15 +716,6 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     ? levels.filter((level) => (spellIndicesByLevel[level] ?? []).length > 0).map((level) => `level-${level}`)
     : npcUsesGroups.filter((uses) => (npcSpellIndicesByUses[npcUsesKey(uses)] ?? []).length > 0).map(npcUsesKey);
   const hasSpellAccordions = allSpellAccordionKeys.length > 0;
-  const allSpellAccordionKeysSignature = allSpellAccordionKeys.join("|");
-
-  useEffect(() => {
-    const allowed = new Set(allSpellAccordionKeysSignature ? allSpellAccordionKeysSignature.split("|") : []);
-    setOpenAccordionValues((prev) => {
-      const next = prev.filter((key) => allowed.has(key));
-      return next.length === prev.length ? prev : next;
-    });
-  }, [allSpellAccordionKeysSignature]);
 
   // ── Keyboard navigation for tabs ──
   const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {

@@ -4,7 +4,7 @@ import { isModalOverlayOpen } from "@/utils/keyboard.utils";
 type FakeAttrs = Record<string, string>;
 
 class FakeElement {
-  constructor(private readonly attrs: FakeAttrs = {}) {}
+  constructor(private readonly attrs: FakeAttrs = {}) { }
 
   getAttribute(name: string): string | null {
     return this.attrs[name] ?? null;
@@ -12,9 +12,10 @@ class FakeElement {
 }
 
 class FakeRoot {
-  constructor(private readonly elements: FakeElement[]) {}
+  constructor(private readonly elements: FakeElement[]) { }
 
-  querySelectorAll(_selector: string): FakeElement[] {
+  querySelectorAll(selector: string): FakeElement[] {
+    void selector;
     return this.elements;
   }
 }
