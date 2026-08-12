@@ -992,6 +992,7 @@
       "abilityUseAria": "Usar {name}, {current} de {max} usos restantes",
       "abilityUseLimitReached": "Límite de usos alcanzado",
       "abilityUseError": "No se pudo guardar el uso",
+      "abilityAdd": "Añadir una habilidad o rasgo",
       "abilityRemove": "Quitar esta habilidad",
       "abilityCounterPlayerSessionNote": "Fuera de sesión no puedes ajustar los usos actuales aquí.",
       "abilityCounterResetLegend": "Reinicio del contador tras descanso",

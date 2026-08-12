@@ -27,4 +27,9 @@ describe("FR-frontend-design — add action scroll behavior", () => {
     expect(source).not.toContain("fields.length - 1");
     expect(source).not.toContain("fields.length > 0 ? document.getElementById(`action-${fields.length - 1}`)");
   });
+
+  it("edge: keeps the section add controls sticky while the list scrolls", () => {
+    expect(source).toContain("sticky top-0 z-10");
+    expect(source).toContain("bg-card");
+  });
 });

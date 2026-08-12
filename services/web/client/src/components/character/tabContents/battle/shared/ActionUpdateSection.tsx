@@ -193,7 +193,7 @@ const ActionUpdateSection = ({
     <section
       className="flex flex-col gap-2 w-full"
       aria-labelledby={headingId}>
-      <Card className="gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between min-w-0 w-full">
+      <Card className="sticky top-0 z-10 gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between min-w-0 w-full bg-card">
         <h2
           id={headingId}
           className={`min-w-0 flex-1 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>

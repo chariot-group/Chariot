@@ -992,6 +992,7 @@
       "abilityUseAria": "Use {name}, {current} of {max} uses remaining",
       "abilityUseLimitReached": "Maximum uses reached",
       "abilityUseError": "Could not save use",
+      "abilityAdd": "Add an ability or trait",
       "abilityRemove": "Remove this ability",
       "abilityCounterPlayerSessionNote": "While not in a session, current uses cannot be edited here.",
       "abilityCounterResetLegend": "Counter reset after rest",
