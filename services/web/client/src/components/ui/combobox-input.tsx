@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, KeyboardEvent, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { getComboboxSuggestionsStyle } from "@/utils/combobox-suggestions.utils";
 
 interface ComboboxInputProps {
   value: string;
@@ -26,10 +28,16 @@ export function ComboboxInput({
   const [inputValue, setInputValue] = useState(value);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [dropdownStyle, setDropdownStyle] = useState<CSSProperties>({});
+  const [isMounted, setIsMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const isSelectingOptionRef = useRef(false);
   const canShowSuggestionsRef = useRef(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Sync input value with prop value
   useEffect(() => {
@@ -56,6 +64,27 @@ export function ComboboxInput({
     if (document.activeElement !== inputRef.current) return;
     setShowSuggestions(inputValue.length > 0 && allOptions.length > 0);
   }, [inputValue, allOptions.length]);
+
+  const updateDropdownPosition = () => {
+    const input = inputRef.current;
+    if (!input) return;
+    setDropdownStyle(getComboboxSuggestionsStyle(input.getBoundingClientRect(), window.innerHeight));
+  };
+
+  useLayoutEffect(() => {
+    if (!showSuggestions) return;
+    updateDropdownPosition();
+
+    const handleReposition = () => updateDropdownPosition();
+    window.addEventListener("resize", handleReposition);
+    // Capture scroll from nested overflow containers (accordion cards, sheet scroll views).
+    window.addEventListener("scroll", handleReposition, true);
+
+    return () => {
+      window.removeEventListener("resize", handleReposition);
+      window.removeEventListener("scroll", handleReposition, true);
+    };
+  }, [showSuggestions, allOptions.length]);
 
   const selectOption = (option: string) => {
     isSelectingOptionRef.current = true;
@@ -116,7 +145,9 @@ export function ComboboxInput({
   // Scroll highlighted item into view
   useEffect(() => {
     if (highlightedIndex >= 0 && suggestionsRef.current) {
-      const highlightedElement = suggestionsRef.current.children[0]?.children[highlightedIndex] as HTMLElement;
+      const highlightedElement = suggestionsRef.current.querySelector<HTMLElement>(
+        `[data-combobox-option-index="${highlightedIndex}"]`,
+      );
       if (highlightedElement) {
         highlightedElement.scrollIntoView({
           block: "nearest",
@@ -126,45 +157,29 @@ export function ComboboxInput({
     }
   }, [highlightedIndex]);
 
-  return (
-    <div className="relative w-full">
-      {/* Input field */}
-      <div className="relative">
-        <Input
-          ref={inputRef}
-          id={id}
-          type="text"
-          className="cursor-pointer"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onClick={handleInputClick}
-          onBlur={handleBlur}
-          placeholder={placeholder}
-          aria-invalid={ariaInvalid}
-          aria-describedby={ariaDescribedby}
-          aria-autocomplete="list"
-          aria-expanded={showSuggestions}
-          aria-controls={showSuggestions ? `${id}-suggestions` : undefined}
-        />
+  const suggestionsListId = id ? `${id}-suggestions` : "combobox-suggestions";
 
-        {/* Suggestions dropdown */}
-        {showSuggestions && (
+  const suggestionsDropdown =
+    showSuggestions && isMounted
+      ? createPortal(
           <div
             ref={suggestionsRef}
-            id={`${id}-suggestions`}
+            id={suggestionsListId}
             role="listbox"
-            className="absolute z-50 w-full mt-1 bg-gray-middle-light rounded-[15px] border shadow-md max-h-60 overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+            style={dropdownStyle}
+            className="z-100 bg-gray-middle-light rounded-[15px] border shadow-md overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
             <div className="p-1">
               {allOptions.map((option, index) => {
                 const isCustom = index === 0 && isCustomEntry;
                 const isSelected = option === value;
                 return (
                   <button
-                    key={index}
+                    key={`${option}-${index}`}
                     type="button"
                     role="option"
+                    data-combobox-option-index={index}
                     aria-selected={index === highlightedIndex}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => selectOption(option)}
                     onMouseEnter={() => setHighlightedIndex(index)}
                     className={`w-full my-0.5 cursor-pointer text-left rounded-[15px] py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight,color,background-color] flex items-center justify-between ${
@@ -184,9 +199,33 @@ export function ComboboxInput({
                 );
               })}
             </div>
-          </div>
-        )}
+          </div>,
+          document.body,
+        )
+      : null;
+
+  return (
+    <div className="relative w-full">
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          id={id}
+          type="text"
+          className="cursor-pointer"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onClick={handleInputClick}
+          onBlur={handleBlur}
+          placeholder={placeholder}
+          aria-invalid={ariaInvalid}
+          aria-describedby={ariaDescribedby}
+          aria-autocomplete="list"
+          aria-expanded={showSuggestions}
+          aria-controls={showSuggestions ? suggestionsListId : undefined}
+        />
       </div>
+      {suggestionsDropdown}
     </div>
   );
 }

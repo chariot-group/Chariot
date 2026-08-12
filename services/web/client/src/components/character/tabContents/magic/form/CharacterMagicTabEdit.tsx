@@ -296,8 +296,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     if (currentSpells.some((s) => Number(s.level) === 0)) levels.push(0);
     const slotsRow =
       (form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) as
-        | Spellcasting["spellSlotsByLevel"]
-        | undefined) ?? {};
+        Spellcasting["spellSlotsByLevel"] | undefined) ?? {};
     Object.keys(slotsRow).forEach((l) => {
       const n = Number(l);
       if (!levels.includes(n)) levels.push(n);
@@ -1256,7 +1255,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                               )}>
                               <div className="relative w-full">
                                 <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
-                                  <h3 className={`inline-flex items-center gap-1.5 text-base md:text-lg font-medium ${accentColor}`}>
+                                  <h3
+                                    className={`inline-flex items-center gap-1.5 text-base md:text-lg font-medium ${accentColor}`}>
                                     <span>{level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}</span>
                                     {hasLevelError ? renderErrorIndicator(tMagic("spellCategoryContainsErrors")) : null}
                                   </h3>
@@ -1486,8 +1486,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           )}>
                           <div className="relative w-full">
                             <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
-                              <h3 className={`inline-flex items-center gap-1.5 text-base md:text-lg font-medium ${accentColor}`}>
-                                <span>{uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}</span>
+                              <h3
+                                className={`inline-flex items-center gap-1.5 text-base md:text-lg font-medium ${accentColor}`}>
+                                <span>
+                                  {uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}
+                                </span>
                                 {hasUsesGroupError ? renderErrorIndicator(tMagic("spellCategoryContainsErrors")) : null}
                               </h3>
                             </AccordionTrigger>
@@ -1528,7 +1531,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                       role="button"
                                       tabIndex={0}
                                       aria-label={
-                                        hasSpellError ? tMagic("spellContainsErrorsAria", { name: spellLabel }) : spellLabel
+                                        hasSpellError
+                                          ? tMagic("spellContainsErrorsAria", { name: spellLabel })
+                                          : spellLabel
                                       }>
                                       <div className="flex items-center gap-1.5 min-w-0">
                                         <span
@@ -1661,7 +1666,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           type="number"
                           min={0}
                           max={9}
-                          className="w-20"
+                          className="w-full"
                         />
                         {fieldState.error && <FieldError errors={[fieldState.error]} />}
                       </Field>
