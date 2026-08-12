@@ -33,6 +33,7 @@ import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
 import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
 import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
+import { cn } from "@/lib/utils";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -344,6 +345,46 @@ export default function CharacterDetailView({
   }, [form, handleCharacterSave, handleCancelEditor, handleInvalid, hasPendingChanges, isEditing]);
 
   const [isExportPdfDialogOpen, setIsExportPdfDialogOpen] = React.useState(false);
+  const isNpcPdfExportDisabled = !isPlayer(character);
+
+  const exportPdfButton = (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() => {
+        if (isNpcPdfExportDisabled) return;
+        setIsExportPdfDialogOpen(true);
+      }}
+      disabled={isNpcPdfExportDisabled}
+      tabIndex={0}
+      className={cn(
+        "max-w-full min-w-0 lg:text-sm text-xs font-semibold",
+        isNpcPdfExportDisabled && "pointer-events-none",
+      )}
+      aria-label={
+        isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")
+      }
+      aria-disabled={isNpcPdfExportDisabled || undefined}>
+      <FileDown
+        className="lg:size-5 size-4 shrink-0"
+        aria-hidden="true"
+      />
+      <span className="truncate">{t("exportPdf")}</span>
+    </Button>
+  );
+
+  const exportPdfAction = isNpcPdfExportDisabled ? (
+    <InfoTooltip
+      content={t("pdfExport.npcComingSoon")}
+      side="top"
+      helpPlacement="corner"
+      className="max-w-full min-w-0"
+      moreInfoLabel={t("pdfExport.npcComingSoon")}>
+      <span className="inline-flex max-w-full min-w-0 cursor-not-allowed">{exportPdfButton}</span>
+    </InfoTooltip>
+  ) : (
+    exportPdfButton
+  );
 
   const characterFooterActions = showEditControls ? (
     <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
@@ -418,19 +459,7 @@ export default function CharacterDetailView({
             />
             <span className="truncate">{t("editCharacter")}</span>
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsExportPdfDialogOpen(true)}
-            tabIndex={0}
-            className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
-            aria-label={t("pdfExport.exportAria")}>
-            <FileDown
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
-            <span className="truncate">{t("exportPdf")}</span>
-          </Button>
+          {exportPdfAction}
         </React.Fragment>
       )}
     </div>
@@ -583,13 +612,15 @@ export default function CharacterDetailView({
           </div>
         ) : null}
       </form>
-      <ExportCharacterSheetPdfDialog
-        character={character}
-        open={isExportPdfDialogOpen}
-        onOpenChange={setIsExportPdfDialogOpen}
-        sessionCode={sessionCodeForMedia}
-        playerName={playedByLabel ?? undefined}
-      />
+      {isPlayer(character) ? (
+        <ExportCharacterSheetPdfDialog
+          character={character}
+          open={isExportPdfDialogOpen}
+          onOpenChange={setIsExportPdfDialogOpen}
+          sessionCode={sessionCodeForMedia}
+          playerName={playedByLabel ?? undefined}
+        />
+      ) : null}
     </main>
   );
 }

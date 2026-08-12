@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import { useIsTabletOrMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -39,32 +40,76 @@ function SidebarActionMenuItems({
   variant: "context" | "dropdown";
 }) {
   if (variant === "context") {
-    return actions.map((action) => (
-      <ContextMenuItem
-        key={action.id}
+    return actions.map((action) => {
+      const item = (
+        <ContextMenuItem
+          disabled={action.disabled}
+          variant={action.variant === "destructive" ? "destructive" : "default"}
+          className={cn(
+            "cursor-pointer rounded-[8px] px-2 py-1.5 text-sm focus-visible:border",
+            action.variant === "destructive" && "text-red-500 hover:text-red-600 focus:text-red-600",
+            action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto",
+          )}
+          onSelect={(event) => {
+            if (action.disabled) {
+              event.preventDefault();
+              return;
+            }
+            action.onSelect();
+          }}>
+          {action.label}
+        </ContextMenuItem>
+      );
+
+      if (action.disabled && action.disabledTooltip) {
+        return (
+          <Tooltip key={action.id}>
+            <TooltipTrigger asChild>
+              <div className="w-full">{item}</div>
+            </TooltipTrigger>
+            <TooltipContent side="left">{action.disabledTooltip}</TooltipContent>
+          </Tooltip>
+        );
+      }
+
+      return <React.Fragment key={action.id}>{item}</React.Fragment>;
+    });
+  }
+
+  return actions.map((action) => {
+    const item = (
+      <DropdownMenuItem
+        disabled={action.disabled}
         variant={action.variant === "destructive" ? "destructive" : "default"}
         className={cn(
           "cursor-pointer rounded-[8px] px-2 py-1.5 text-sm focus-visible:border",
           action.variant === "destructive" && "text-red-500 hover:text-red-600 focus:text-red-600",
+          action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto",
         )}
-        onSelect={() => action.onSelect()}>
+        onSelect={(event) => {
+          if (action.disabled) {
+            event.preventDefault();
+            return;
+          }
+          action.onSelect();
+        }}>
         {action.label}
-      </ContextMenuItem>
-    ));
-  }
+      </DropdownMenuItem>
+    );
 
-  return actions.map((action) => (
-    <DropdownMenuItem
-      key={action.id}
-      variant={action.variant === "destructive" ? "destructive" : "default"}
-      className={cn(
-        "cursor-pointer rounded-[8px] px-2 py-1.5 text-sm focus-visible:border",
-        action.variant === "destructive" && "text-red-500 hover:text-red-600 focus:text-red-600",
-      )}
-      onSelect={() => action.onSelect()}>
-      {action.label}
-    </DropdownMenuItem>
-  ));
+    if (action.disabled && action.disabledTooltip) {
+      return (
+        <Tooltip key={action.id}>
+          <TooltipTrigger asChild>
+            <div className="w-full">{item}</div>
+          </TooltipTrigger>
+          <TooltipContent side="left">{action.disabledTooltip}</TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return <React.Fragment key={action.id}>{item}</React.Fragment>;
+  });
 }
 
 function SidebarOverflowDropdown({

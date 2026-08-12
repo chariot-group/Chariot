@@ -15,6 +15,7 @@ import { exportCharacterSheetPdf } from "@/lib/characterSheetPdf/exportCharacter
 import type { CharacterSheetPdfTheme } from "@/lib/characterSheetPdf/themes";
 import { CHARACTER_SHEET_PDF_THEMES } from "@/lib/characterSheetPdf/themes";
 import { useToast } from "@/hooks/useToast";
+import { isPlayer } from "@/utils/global.utils";
 
 export interface UseCharacterSheetPdfExportOptions {
   sessionCode?: string | null;
@@ -61,6 +62,10 @@ export function useCharacterSheetPdfExport(options: UseCharacterSheetPdfExportOp
   const exportSheet = useCallback(
     async (character: Player | NPC, theme: CharacterSheetPdfTheme) => {
       if (isExporting) return;
+      if (!isPlayer(character)) {
+        toast.info(tPdf("npcComingSoon"));
+        return;
+      }
       setIsExporting(true);
       try {
         const characterPageUrl = buildCharacterSheetPageUrl(

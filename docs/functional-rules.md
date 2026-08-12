@@ -3733,18 +3733,18 @@ Each initiative tracker row carries:
 
 ## FR-character-sheet-pdf-export: Character Sheet PDF Export
 
-**Rule**: The web application MUST allow exporting any Player or NPC character sheet as a downloadable PDF. The PDF layout MUST follow the three-page D&D 5e personal character sheet structure (core stats, biography/appearance, spellcasting) while applying Chariot's documented visual baseline (`docs/design.md`). Export is client-side only; no new backend endpoint is required.
+**Rule**: The web application MUST allow exporting Player character sheets as a downloadable PDF. NPC export MUST remain visible but disabled with a « coming soon » affordance until a dedicated NPC PDF layout ships. The Player PDF layout MUST follow the three-page D&D 5e personal character sheet structure (core stats, biography/appearance, spellcasting) while applying Chariot's documented visual baseline (`docs/design.md`). Export is client-side only; no new backend endpoint is required.
 
 **Scope**:
 
-- Player characters (`Player`) in **Mes personnages** and in campaign groups
-- NPC characters (`NPC`) in campaign groups
+- Player characters (`Player`) in **Mes personnages** and in campaign groups — export active
+- NPC characters (`NPC`) in campaign groups — export control visible but disabled (coming soon); PDF generation MUST NOT run
 - Game system: `DND_5E` only (initial release); other systems MUST NOT expose the action until a dedicated layout exists
 
 **Entry points**:
 
-- **Character detail view** (`CharacterDetailView`): secondary action button « Exporter en PDF » visible when the sheet is in read mode (not editing), alongside existing footer/header actions. Hidden when `showEditControls` is false (GM read-only player sheet outside session).
-- **Sidebar context menu** (FR-sidebar-context-actions): same action on character rows (players and NPCs) in **Mes personnages** and in groups, via overflow menu on mobile/tablet.
+- **Character detail view** (`CharacterDetailView`): secondary action button « Exporter en PDF » visible when the sheet is in read mode (not editing), alongside existing footer/header actions. Hidden when `showEditControls` is false (GM read-only player sheet outside session). For NPCs the button MUST be disabled (grayed), expose an accessible name that reflects unavailability, and show a tooltip/popover on hover (or equivalent touch affordance) stating that NPC PDF export is coming soon.
+- **Sidebar context menu** (FR-sidebar-context-actions): same action on character rows (players and NPCs) in **Mes personnages** and in groups, via overflow menu on mobile/tablet. For NPCs the menu item MUST be disabled (grayed) with the same coming-soon tooltip/title and MUST NOT open the export dialog or fetch the full sheet for export.
 
 **PDF layout (D&D 5e structure + Chariot styling)**:
 
@@ -3781,15 +3781,18 @@ Each initiative tracker row carries:
 
 **Interaction**:
 
-- Click opens a theme picker (dark / light) then triggers client-side PDF generation and browser download
-- Button shows loading state (`aria-busy="true"`, disabled) while generating
-- Success: file downloaded as `chariot-{sanitized-firstname}-{sanitized-lastname}-{YYYY-MM-DD}.pdf`
-- Failure: toast error; button returns to idle
+- Player: click opens a theme picker (dark / light) then triggers client-side PDF generation and browser download
+- Player: button shows loading state (`aria-busy="true"`, disabled) while generating
+- Player success: file downloaded as `chariot-{sanitized-firstname}-{sanitized-lastname}-{YYYY-MM-DD}.pdf`
+- Player failure: toast error; button returns to idle
+- NPC: control remains visible, disabled, with coming-soon tooltip; no theme dialog, no PDF generation
 
 **Prohibitions**:
 
 - Requiring a backend export endpoint
-- Blocking export during an active session (export remains available unless `showEditControls` is false for GM read-only player sheets)
+- Blocking export during an active session for Players (export remains available unless `showEditControls` is false for GM read-only player sheets)
+- Enabling or completing PDF export for NPC characters while this coming-soon gate is active
+- Hiding the NPC export control entirely (must stay visible but disabled)
 - Using relative imports in new source files (project `@/` alias rule)
 - Embedding Wizards of the Coast copyrighted artwork or verbatim « TM & © » footer from the official blank sheet
 - Light-theme PDF that ignores Chariot palette without explicit product decision
@@ -3797,13 +3800,14 @@ Each initiative tracker row carries:
 **Tests**:
 
 - Nominal: Player with full data → 3-page PDF buffer produced, filename sanitized
-- Nominal: NPC with CR and legendary actions → page 1 includes CR/XP, no death saves
-- Edge: Character without spellcasting → 2 pages only
+- Nominal: NPC sheet / sidebar row → export control disabled with coming-soon tooltip; no PDF generated
+- Edge: Character without spellcasting → 2 pages only (Player)
 - Edge: Long text fields truncated or wrapped without layout overflow crash
 - Failure: Avatar fetch failure → PDF still generated without image
 - Unit: export filename builder strips unsafe characters
 - Unit: skill bonus mapping matches `calculateSkillBonus` for sample stats
-- Accessibility: export button has accessible name; loading state exposes `aria-busy`
+- Unit / component: group/sidebar character discriminant correctly marks NPC export as disabled
+- Accessibility: export button has accessible name; loading state exposes `aria-busy`; disabled NPC control still exposes coming-soon reason to assistive tech
 
 **References**:
 

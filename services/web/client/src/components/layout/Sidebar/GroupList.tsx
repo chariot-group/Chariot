@@ -48,6 +48,7 @@ import {
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
 import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
+import { isNpcGroupCharacter } from "@/lib/isNpcGroupCharacter";
 
 interface GroupListProps {
   groups: Group[];
@@ -376,10 +377,16 @@ export default function GroupList({
     (character: GroupCharacter, groupId: string): SidebarActionItem[] => {
       if (!selectedCampaignId) return [];
 
+      const npcPdfExportDisabled = isNpcGroupCharacter(character);
       const exportAction: SidebarActionItem = {
         id: "exportPdf",
         label: t("exportPdf"),
-        onSelect: () => void requestCharacterPdfExport(character._id),
+        disabled: npcPdfExportDisabled,
+        disabledTooltip: npcPdfExportDisabled ? t("exportPdfNpcComingSoon") : undefined,
+        onSelect: () => {
+          if (npcPdfExportDisabled) return;
+          void requestCharacterPdfExport(character._id);
+        },
       };
 
       if (actionsDisabled) {

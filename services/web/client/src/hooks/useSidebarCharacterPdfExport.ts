@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import type { NPC, Player } from "@/types/character";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
+import { isPlayer } from "@/utils/global.utils";
 
 export function useSidebarCharacterPdfExport() {
   const toast = useToast();
@@ -20,7 +21,11 @@ export function useSidebarCharacterPdfExport() {
       setIsFetchingExport(true);
       try {
         const full = await CharacterService.getCharacterById(characterId);
-        setCharacterToExport(full as Player | NPC);
+        if (!isPlayer(full)) {
+          toast.info(t("npcComingSoon"));
+          return;
+        }
+        setCharacterToExport(full);
       } catch {
         toast.error(t("error"));
       } finally {

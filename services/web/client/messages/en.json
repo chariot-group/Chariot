@@ -95,6 +95,7 @@
     "gmGuestCharacter": "GM Guest",
     "duplicate": "Duplicate",
     "exportPdf": "Export as PDF",
+    "exportPdfNpcComingSoon": "NPC PDF export coming soon",
     "duplicateCharacterDialogTitle": "Duplicate character",
     "duplicateCharacterDialogDescription": "Choose a name for the new character.",
     "duplicateCharacterNameLabel": "Character name",
@@ -830,6 +831,8 @@
       "export": "Export",
       "exporting": "Exporting…",
       "exportAria": "Export character sheet as PDF",
+      "npcComingSoon": "NPC PDF export coming soon",
+      "npcComingSoonAria": "Export character sheet as PDF — coming soon for NPCs",
       "cancel": "Cancel",
       "success": "Sheet exported as PDF.",
       "error": "Could not export sheet as PDF."
