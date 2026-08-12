@@ -33,7 +33,11 @@ import {
   resolveSessionLobbyParticipantAvatar,
   type SessionLobbyParticipantAvatarDescriptor,
 } from "@/lib/sessionLobbyAvatarBatch";
-import { computeMaxAddableWheels, sumDepositedWheels } from "@/lib/sessionWheelDeposit";
+import {
+  computeMaxAddableWheels,
+  isWheelQuotaMetForLaunch,
+  sumDepositedWheels,
+} from "@/lib/sessionWheelDeposit";
 import { cn } from "@/lib/utils";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
@@ -116,7 +120,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     totalDeposited,
     maxSlots,
   });
-  const quotaFull = maxSlots > 0 && totalDeposited >= maxSlots;
+  const quotaFull = isWheelQuotaMetForLaunch(totalDeposited, maxSlots);
 
   const sessionSocket = useSessionSocket({
     token,

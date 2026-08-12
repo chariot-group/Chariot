@@ -510,7 +510,11 @@ describe('SessionGateway', () => {
                     ],
                 },
             });
-            mockSessionService.leave.mockResolvedValue(session);
+            mockSessionService.leave.mockResolvedValue({
+                message: 'left',
+                data: session,
+                tokensByUser: { 'other-user': 1 },
+            });
 
             const client = makeSocket();
             const data = { sessionId: 'sess-uuid-1' };
@@ -526,7 +530,40 @@ describe('SessionGateway', () => {
                 username: 'testuser',
                 characterId: 'char-99',
             });
+            expect(mockRoomEmit).toHaveBeenCalledWith('session:token-updated', {
+                tokensByUser: { 'other-user': 1 },
+            });
             expect(client.emit).toHaveBeenCalledWith('session:left', { sessionId: 'sess-uuid-1' });
+        });
+
+        it('guard: does not broadcast token-updated when leave has no tokensByUser (launched)', async () => {
+            const session = makeSession({ status: SessionStatus.launched });
+            mockSessionService.findParticipants.mockResolvedValue({
+                message: 'ok',
+                data: {
+                    author: { userId: 'user-uuid-1', campaignId: 'camp-1' },
+                    participants: [
+                        {
+                            id: 'part-1',
+                            userId: 'user-uuid-1',
+                            characterId: 'char-99',
+                            status: 'connected',
+                            joinedAt: new Date().toISOString(),
+                            sessionId: 'sess-uuid-1',
+                        },
+                    ],
+                },
+            });
+            mockSessionService.leave.mockResolvedValue({
+                message: 'left',
+                data: session,
+            });
+
+            const client = makeSocket();
+            await gateway.handleLeaveSession(client, { sessionId: 'sess-uuid-1' });
+
+            expect(mockRoomEmit).toHaveBeenCalledWith('session:participant-left', expect.any(Object));
+            expect(mockRoomEmit).not.toHaveBeenCalledWith('session:token-updated', expect.anything());
         });
 
         it('should also emit session:closed when the session is closed after leaving', async () => {
@@ -547,7 +584,7 @@ describe('SessionGateway', () => {
                     ],
                 },
             });
-            mockSessionService.leave.mockResolvedValue(session);
+            mockSessionService.leave.mockResolvedValue({ message: 'left', data: session });
 
             const client = makeSocket();
             const data = { sessionId: 'sess-uuid-1' };

@@ -16,6 +16,7 @@ import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { ParticipantStatus, SessionStatus } from '@prisma/client';
 import { SessionParticipant, SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
 import { IResponse } from '@/common/dtos/response.dto';
+import { sumTokenMap } from '@/resources/session/session-wheel-quota';
 
 @Injectable()
 export class SessionService {
@@ -218,6 +219,21 @@ export class SessionService {
                 throw new BadRequestException(message);
             }
 
+            /* FR-session-lobby-wheel-quota-invariant: égalité exacte requise pour lancer. */
+            const tokensByUser = await this.redisService.getTokens(code);
+            const totalDeposited = sumTokenMap(tokensByUser);
+            const quota = session.participants.length;
+            if (totalDeposited !== quota) {
+                const message: string = `Session with code ${code} cannot be launched: wheel quota mismatch (deposited=${totalDeposited}, required=${quota})`;
+                this.logger.error(message, null, this.SERVICE_NAME);
+                throw new BadRequestException({
+                    code: 'WHEEL_QUOTA_MISMATCH',
+                    message,
+                    deposited: totalDeposited,
+                    required: quota,
+                });
+            }
+
             const expiresAt: Date = new Date();
             expiresAt.setHours(expiresAt.getHours() + SessionService.EXPIRATION_HOURS);
 
@@ -289,7 +305,10 @@ export class SessionService {
         }
     }
 
-    async leave(code: string, userId: string): Promise<IResponse<SessionWithParticipants>> {
+    async leave(
+        code: string,
+        userId: string,
+    ): Promise<IResponse<SessionWithParticipants> & { tokensByUser?: Record<string, number> }> {
         try {
             const start: number = Date.now();
             const session: SessionWithParticipants = await this._findSession(code);
@@ -302,14 +321,31 @@ export class SessionService {
                 throw new BadRequestException(message);
             }
 
+            /* FR-session-lobby-wheel-leave-refund + FR-session-lobby-wheel-quota-invariant */
+            let tokensByUser: Record<string, number> | undefined;
+            if (session.status === SessionStatus.activated) {
+                await this.redisService.clearUserTokens(code, userId);
+            }
+
             await this.prisma.sessionParticipant.delete({
                 where: { id: participant.id },
             });
 
             const updated: SessionWithParticipants = await this._findSession(code);
+
+            if (session.status === SessionStatus.activated) {
+                const clamped = await this.redisService.clampTokensToMax(
+                    code,
+                    updated.participants.length,
+                );
+                tokensByUser = clamped.tokens;
+            }
+
             const message: string = `User ${userId} left session with code ${code} in ${Date.now() - start}ms`;
             this.logger.verbose(message, this.SERVICE_NAME);
-            return { message, data: updated };
+            return tokensByUser !== undefined
+                ? { message, data: updated, tokensByUser }
+                : { message, data: updated };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
             const message: string = `Error leaving session with code ${code} for user ${userId}: ${error.message}`;

@@ -3907,3 +3907,83 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useGroups.ts`
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx`
 - `docs/functional-rules.md` — FR-sidebar-navigation, FR-character-detail-view, FR-i18n-navigation
+
+---
+
+## FR-session-lobby-wheel-leave-refund: Auto-release of reserved wheels on pre-launch leave
+
+**Rule**: When a participant explicitly leaves a session that is still in lobby (`status === activated`, not launched), the server MUST automatically release all wheels that participant had reserved for that session so they are available again on their balance quota and removed from the session deposit pool.
+
+**Scope**:
+
+- Complements FR-session-lobby-wheel-deposit (reservations until launch) and FR-user-balance-history (debit only at launch).
+- Applies to explicit leave paths (WebSocket `session:leave` and HTTP leave), not to transient disconnect grace periods.
+
+**Requirements**:
+
+- Deposits remain Redis reservations until launch; “refund” means clearing that user’s reserved count for the session (no Adventure `addHistory` credit, because no debit occurred yet).
+- On leave while `status === activated`: release all reserved wheels for the leaving `userId` (set their deposit to 0 / remove their Redis hash field).
+- Broadcast `session:token-updated` with the updated `tokensByUser` map to remaining participants (same contract as manual withdraw).
+- If the leaving user had 0 reserved wheels, leave behavior is unchanged (no-op on tokens).
+- If the session is already `launched` (or `closed`), leave MUST NOT release or credit wheels (launch debit already applied or session ended).
+
+**Prohibitions**:
+
+- Crediting user balance / writing history on pre-launch leave for released reservations.
+- Releasing another participant’s reserved wheels when one user leaves.
+- Skipping the Redis release on WS leave while doing it only on HTTP leave (or the reverse) — both paths MUST share the same release semantics.
+
+**Tests**:
+
+- Nominal: user with N reserved wheels leaves an `activated` session → their entry is cleared, others’ deposits unchanged, `session:token-updated` broadcast.
+- Edge: leave with 0 reserved wheels → no token map change required beyond existing leave flow.
+- Edge / guard: leave after `launched` → reserved/spent wheels are not restored via this mechanism.
+- Failure: Redis clear failure must not silently leave orphan reservations without surfacing an error on the leave path when feasible.
+
+**References**:
+
+- `services/session/api/src/resources/session/session.gateway.ts`
+- `services/session/api/src/resources/session/session.service.ts`
+- `services/session/api/src/redis/redis.service.ts`
+- `docs/functional-rules.md` — FR-session-lobby-wheel-deposit, FR-user-balance-history
+
+---
+
+## FR-session-lobby-wheel-quota-invariant: Wheel deposits must match participant quota before launch
+
+**Rule**: While a session is in lobby (`activated`), the total reserved wheels MUST never exceed the current participant count (quota). Launch MUST be allowed only when the total reserved wheels equals that quota exactly.
+
+**Scope**:
+
+- Complements FR-session-lobby-wheel-deposit (quota = participants including GM) and FR-session-lobby-wheel-leave-refund (release leaver deposits).
+- Applies after roster shrinks (leave) and at launch validation.
+
+**Requirements**:
+
+- **Invariant**: at all times in lobby, `sum(tokensByUser) <= participants.length`.
+- **On leave (activated)**: after releasing the leaving user’s reservations, if the remaining total still exceeds the new participant count, the server MUST automatically release the excess reservations until `sum === participants.length` (deterministic order: reduce from users with the highest deposit first; ties broken by `userId` ascending). Broadcast `session:token-updated` with the final map.
+- **Launch gate (server authority)**: `session:launch` / HTTP launch MUST reject when `sum(tokensByUser) !== participants.length` (too few or too many), with an explicit error code (e.g. `WHEEL_QUOTA_MISMATCH`).
+- **Client**: the GM “Lancer la session” control MUST be enabled only when `totalDeposited === participants.length` (not merely `>=`). If over-quota somehow appears client-side before sync, launch MUST stay disabled and the progress UI MUST not present an over-quota state as launch-ready.
+
+**Prohibitions**:
+
+- Launching with `totalDeposited > participants.length` or `< participants.length`.
+- Silently leaving excess deposits after a leave without clamp or launch block.
+- Debiting Adventure balance for excess reservations created only by a post-leave overflow.
+
+**Tests**:
+
+- Nominal: after leave, leaver cleared and remaining total already `<=` new quota → no further clamp.
+- Nominal: after leave, remaining total `>` new quota → excess released from highest depositors; broadcast updated map; total equals new quota.
+- Edge: equal highest deposits → tie-break by `userId` ascending is stable.
+- Guard: launch with mismatch (under or over) is rejected server-side.
+- Failure: client does not enable launch when `totalDeposited !== maxSlots`.
+
+**References**:
+
+- `services/session/api/src/redis/redis.service.ts`
+- `services/session/api/src/resources/session/session.service.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/lib/sessionWheelDeposit.ts`
+- `docs/functional-rules.md` — FR-session-lobby-wheel-deposit, FR-session-lobby-wheel-leave-refund

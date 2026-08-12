@@ -5,6 +5,7 @@ import {
     computeMaxAddableWheels,
     computeRemainingBalanceAfterDeposit,
     computeWheelProgressPercent,
+    isWheelQuotaMetForLaunch,
     sumDepositedWheels,
 } from "@/lib/sessionWheelDeposit";
 
@@ -73,5 +74,23 @@ describe("sessionWheelDeposit", () => {
     it("sums deposited wheels across users", () => {
         expect(sumDepositedWheels({ a: 2, b: 1 })).toBe(3);
         expect(sumDepositedWheels({})).toBe(0);
+    });
+
+    describe("FR-session-lobby-wheel-quota-invariant — isWheelQuotaMetForLaunch", () => {
+        it("nominal: exact equality enables launch", () => {
+            expect(isWheelQuotaMetForLaunch(3, 3)).toBe(true);
+        });
+
+        it("guard: over-quota does not enable launch", () => {
+            expect(isWheelQuotaMetForLaunch(4, 3)).toBe(false);
+        });
+
+        it("guard: under-quota does not enable launch", () => {
+            expect(isWheelQuotaMetForLaunch(2, 3)).toBe(false);
+        });
+
+        it("edge: zero slots never launch-ready", () => {
+            expect(isWheelQuotaMetForLaunch(0, 0)).toBe(false);
+        });
     });
 });

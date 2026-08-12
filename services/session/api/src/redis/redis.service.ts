@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { clampTokensToParticipantQuota } from '@/resources/session/session-wheel-quota';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
@@ -169,6 +170,54 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
             ? Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, parseInt(v, 10)]))
             : {};
         return { tokens, removed: canRemove };
+    }
+
+    /**
+     * Libère toutes les wheels réservées d’un utilisateur pour une session (leave pré-lancement).
+     * @see FR-session-lobby-wheel-leave-refund
+     */
+    async clearUserTokens(
+        sessionId: string,
+        userId: string,
+    ): Promise<{ tokens: Record<string, number>; released: number }> {
+        const key = this.tokenKey(sessionId);
+        const current = parseInt((await this.client.hget(key, userId)) ?? '0', 10);
+        const released = Number.isFinite(current) && current > 0 ? current : 0;
+        if (released > 0) {
+            await this.client.hdel(key, userId);
+        }
+        const tokens = await this.getTokens(sessionId);
+        return { tokens, released };
+    }
+
+    /**
+     * Réécrit la map de tokens Redis (écrase le hash).
+     */
+    async replaceTokens(sessionId: string, tokens: Record<string, number>): Promise<void> {
+        const key = this.tokenKey(sessionId);
+        await this.client.del(key);
+        const entries = Object.entries(tokens).filter(([, count]) => count > 0);
+        if (entries.length === 0) return;
+        const payload: Record<string, string> = {};
+        for (const [userId, count] of entries) {
+            payload[userId] = String(count);
+        }
+        await this.client.hset(key, payload);
+    }
+
+    /**
+     * Clamp le total réservé à `maxSlots` (FR-session-lobby-wheel-quota-invariant).
+     */
+    async clampTokensToMax(
+        sessionId: string,
+        maxSlots: number,
+    ): Promise<{ tokens: Record<string, number>; released: number }> {
+        const current = await this.getTokens(sessionId);
+        const { tokens, released } = clampTokensToParticipantQuota(current, maxSlots);
+        if (released > 0) {
+            await this.replaceTokens(sessionId, tokens);
+        }
+        return { tokens, released };
     }
 
     /**
