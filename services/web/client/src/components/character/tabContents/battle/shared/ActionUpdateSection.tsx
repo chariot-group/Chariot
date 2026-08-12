@@ -214,13 +214,15 @@ const ActionUpdateSection = ({
                 damage: [{ dice: "", type: "", applyAbilityBonus: false }],
                 range: "",
               });
-              // Attendre le prochain rendu pour que le nouvel élément soit présent
+              const newIndex = fields.length;
+              setOpenAccordionValues((prev) => [...prev, `action-${newIndex}`]);
+              // Wait for render + accordion open before scrolling within the sheet container
               setTimeout(() => {
-                const lastAction = fields.length > 0 ? document.getElementById(`action-${fields.length - 1}`) : null;
-                if (lastAction) {
-                  lastAction.scrollIntoView({ behavior: "smooth", block: "center" });
+                const newAction = document.getElementById(`action-${newIndex}`);
+                if (newAction) {
+                  newAction.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 }
-              }, 100);
+              }, 350);
             }}
             aria-label={t("addActionToSection", { section: title })}
             className="flex items-center gap-2">
