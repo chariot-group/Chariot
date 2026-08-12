@@ -1569,6 +1569,9 @@ When adding a rule:
 - When the session is active, the stored path MUST include the `sessionCode` query parameter so that sheets not owned by the GM (player roster / guest characters) remain readable after navigation back from the initiative tracker (including after cancel/end combat).
 - Cleared when the session ends (`clearCurrentSession`).
 - Navigation consumers (sidebar **Return to Character Sheet**, post-combat redirect) MUST ensure `sessionCode` is present on the target URL while the session is still active.
+- Combat name links (initiative tracker rows, combat footer “view sheet”) MUST navigate with `sessionCode` while the session is active and MUST use locale-aware navigation (`@/i18n/navigation`).
+- Character sheet pages MUST resolve session read context as URL `sessionCode` **or** the active Redux session code (same precedence as `useActiveSessionCode`) so a soft-navigation race without query hydration does not 403 roster sheets.
+- Sheet routes MUST redirect away (welcome / fallback) only on definitive access denial (HTTP 403/404). Transient fetch failures MUST NOT permanently lock or kick the user off the sheet; a 403/404 that occurred without session context MUST be retried when `sessionCode` becomes available.
 
 **Player Visibility Model**:
 

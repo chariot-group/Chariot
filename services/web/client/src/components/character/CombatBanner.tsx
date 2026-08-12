@@ -2,8 +2,7 @@
 
 import React from "react";
 import { ChevronLeft, ChevronRight, Dices, Heart, ScrollText, Shield, Swords } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useStore } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -25,6 +24,8 @@ import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { RootState } from "@/store/index";
+import { useRouter } from "@/i18n/navigation";
+import { buildSessionCharacterHref } from "@/lib/sessionInAppNavigation";
 import { selectIsGmMode } from "@/store/slices/environmentSlice";
 import {
   nextBattleTurn,
@@ -50,7 +51,6 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
   const dispatch = useAppDispatch();
   const store = useStore<RootState>();
   const router = useRouter();
-  const locale = useLocale();
 
   const isGm = useAppSelector(selectIsGmMode);
   const battleStarted = useAppSelector(selectBattleStarted);
@@ -189,10 +189,9 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
 
   const handleViewSheet = React.useCallback(
     (cId: string) => {
-      const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
-      router.push(`/${locale}/characters/${encodeURIComponent(cId)}${query}`);
+      router.push(buildSessionCharacterHref(cId, sessionCode));
     },
-    [router, locale, sessionCode],
+    [router, sessionCode],
   );
 
   const formatConditionDuration = React.useCallback(

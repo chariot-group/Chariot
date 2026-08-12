@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import * as React from "react";
+import { Link } from "@/i18n/navigation";
 import { ChevronDown, ChevronRight, HeartCrack, Layers2, Pencil, Skull, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";

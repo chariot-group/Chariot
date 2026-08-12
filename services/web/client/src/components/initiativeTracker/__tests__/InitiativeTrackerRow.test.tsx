@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import type { ReactNode } from "react";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, values?: Record<string, string | number>) => {
@@ -8,6 +9,23 @@ vi.mock("next-intl", () => ({
     }
     return key;
   },
+}));
+
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children?: ReactNode;
+    className?: string;
+    "aria-label"?: string;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 import { InitiativeTrackerRow } from "@/components/initiativeTracker/InitiativeTrackerRow";

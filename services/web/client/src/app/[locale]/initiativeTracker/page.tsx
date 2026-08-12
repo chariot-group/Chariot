@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { LayersMinus, LayersPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import {
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
 import CharacterService from "@/services/CharacterService";
-import { withSessionCodeQuery } from "@/lib/sessionInAppNavigation";
+import { buildSessionCharacterHref, withSessionCodeQuery } from "@/lib/sessionInAppNavigation";
 import {
   buildConditionEntry,
   formatRemainingConditionDuration,
@@ -80,7 +80,6 @@ export default function InitiativeTrackerPage() {
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const router = useRouter();
-  const { locale } = useParams<{ locale: string }>();
   const sessionCode = useAppSelector(selectSessionCode);
   const isInSession = useAppSelector(selectIsInSession);
   const participants = useAppSelector(selectSessionParticipants);
@@ -117,9 +116,8 @@ export default function InitiativeTrackerPage() {
 
   const ownCharacterSheetHref = React.useMemo(() => {
     if (!ownCharacterId) return null;
-    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
-    return `/${locale}/characters/${encodeURIComponent(ownCharacterId)}${query}`;
-  }, [locale, ownCharacterId, sessionCode]);
+    return buildSessionCharacterHref(ownCharacterId, sessionCode);
+  }, [ownCharacterId, sessionCode]);
 
   const playerCanAccessPreparationTracker = !isGameMaster
     && battleInitialized
@@ -250,10 +248,7 @@ export default function InitiativeTrackerPage() {
     };
   }, [dispatchTrackerAction, isGameMaster, remoteCharacterVersions, rows, sessionCode]);
 
-  const getSheetHref = (characterId: string) => {
-    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
-    return `/${locale}/characters/${encodeURIComponent(characterId)}${query}`;
-  };
+  const getSheetHref = (characterId: string) => buildSessionCharacterHref(characterId, sessionCode);
 
   const addCondition = (
     row: InitiativeTrackerRow,

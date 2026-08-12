@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
     buildPlayerSessionCharacterPath,
+    buildSessionCharacterHref,
     isInitiativeTrackerPage,
     isSessionLobbyPage,
     shouldGmShowReturnToBattle,
@@ -36,6 +37,18 @@ describe("shouldShowSessionLobbyInvitePanel", () => {
         expect(shouldShowSessionLobbyInvitePanel("closed")).toBe(false);
         expect(shouldShowSessionLobbyInvitePanel(null)).toBe(false);
         expect(shouldShowSessionLobbyInvitePanel(undefined)).toBe(false);
+    });
+});
+
+describe("buildSessionCharacterHref", () => {
+    it("nominal: builds locale-agnostic href with sessionCode", () => {
+        expect(buildSessionCharacterHref("char-1", "ABCD12")).toBe(
+            "/characters/char-1?sessionCode=ABCD12",
+        );
+    });
+
+    it("edge: omits query when session code is missing", () => {
+        expect(buildSessionCharacterHref("char-1", null)).toBe("/characters/char-1");
     });
 });
 

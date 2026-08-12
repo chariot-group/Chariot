@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
 import CharacterService from '@/services/CharacterService';
-import { isCharacterAccessDeniedError } from '@/lib/characterAccessError';
+import {
+    isCharacterAccessDeniedError,
+    shouldClearCharacterAccessDeniedOnSessionCodeChange,
+} from '@/lib/characterAccessError';
 import { Character } from '@/types/character';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
@@ -35,6 +38,8 @@ interface UseCharacterReturn {
     character: Character | null;
     loading: boolean;
     error: string | null;
+    /** Definitive 403/404 — pages may leave the route (FR-user-cache-isolation). */
+    accessDenied: boolean;
     refetch: () => Promise<void>;
     setCharacter: Dispatch<SetStateAction<Character | null>>;
 }
@@ -57,9 +62,11 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
     const [character, setCharacter] = useState<Character | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [accessDenied, setAccessDenied] = useState(false);
     const loadedCharacterIdRef = useRef<string | null>(null);
     /** 403/404: stop WS/version retries that would cancel the welcome redirect (FR-user-cache-isolation). */
     const accessDeniedRef = useRef(false);
+    const sessionCodeRef = useRef(sessionCode);
 
     const remoteVersion = useAppSelector((s) =>
         characterId ? ((s.session.characterSheetRemoteVersions ?? {})[characterId] ?? 0) : 0,
@@ -68,6 +75,7 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
     useEffect(() => {
         loadedCharacterIdRef.current = null;
         accessDeniedRef.current = false;
+        setAccessDenied(false);
     }, [characterId]);
 
     const fetchCharacter = useCallback(async () => {
@@ -81,10 +89,12 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
             setError(null);
             const data = await CharacterService.getCharacterById(characterId, { sessionCode });
             accessDeniedRef.current = false;
+            setAccessDenied(false);
             setCharacter(data);
         } catch (err) {
             if (isCharacterAccessDeniedError(err)) {
                 accessDeniedRef.current = true;
+                setAccessDenied(true);
             }
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch character';
             setError(errorMessage);
@@ -104,6 +114,14 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
             return;
         }
 
+        // FR-session-combat-navigation: retry when session context appears after a denial without it.
+        const previousSessionCode = sessionCodeRef.current;
+        if (shouldClearCharacterAccessDeniedOnSessionCodeChange(previousSessionCode, sessionCode)) {
+            accessDeniedRef.current = false;
+            setAccessDenied(false);
+        }
+        sessionCodeRef.current = sessionCode;
+
         // Do not hammer the API / cancel page redirects after a definitive access denial.
         if (accessDeniedRef.current) {
             setLoading(false);
@@ -122,6 +140,7 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
                 const data = await CharacterService.getCharacterById(characterId, { sessionCode });
                 if (!cancelled) {
                     accessDeniedRef.current = false;
+                    setAccessDenied(false);
                     setCharacter(data);
                     loadedCharacterIdRef.current = characterId;
                 }
@@ -129,6 +148,7 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
                 if (!cancelled) {
                     if (isCharacterAccessDeniedError(err)) {
                         accessDeniedRef.current = true;
+                        setAccessDenied(true);
                     }
                     const errorMessage = err instanceof Error ? err.message : 'Failed to fetch character';
                     setError(errorMessage);
@@ -150,6 +170,7 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
         character,
         loading,
         error,
+        accessDenied,
         refetch: fetchCharacter,
         setCharacter,
     };
@@ -194,7 +215,7 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
                 total: response.pagination.totalItems
             }));
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch players without group';
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch characters without group';
             dispatch(fetchCharactersWithoutGroupFailure(errorMessage));
         }
     }, [dispatch, pageSize]);

@@ -9,13 +9,24 @@ export function shouldShowSessionLobbyInvitePanel(
     return sessionStatus === "activated";
 }
 
+/**
+ * Locale-agnostic sheet href for `@/i18n/navigation` Link / router.
+ * @see FR-session-combat-navigation, FR-i18n-navigation
+ */
+export function buildSessionCharacterHref(
+    characterId: string,
+    sessionCode?: string | null,
+): string {
+    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
+    return `/characters/${encodeURIComponent(characterId)}${query}`;
+}
+
 export function buildPlayerSessionCharacterPath(
     locale: string,
     characterId: string,
     sessionCode?: string | null,
 ): string {
-    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
-    return `/${locale}/characters/${encodeURIComponent(characterId)}${query}`;
+    return `/${locale}${buildSessionCharacterHref(characterId, sessionCode)}`;
 }
 
 /**
