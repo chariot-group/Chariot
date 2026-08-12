@@ -3174,22 +3174,26 @@ Each initiative tracker row carries:
 
 ## FR-session-join-qr-code: Session Join QR Code
 
-**Rule**: The session lobby MUST display a QR code encoding the join URL so any participant (GM or player) can share session access quickly.
+**Rule**: While the session is still in lobby (`status === activated`), the session lobby MUST display the session code and a QR code encoding the join URL so participants can invite others. After the session is launched, invite surfaces (session code, copy actions, and QR) MUST be hidden because new players cannot join mid-session.
 
 **Requirements**:
 
-- The QR code is rendered inside `SessionLobbyContent` (session lobby modal), not on a dedicated full-page session route
+- The QR code and session-code invite panel are rendered inside `SessionLobbyContent` (session lobby modal), not on a dedicated full-page session route
+- Invite UI (code, copy code/link, QR) MUST be shown only when `sessionStatus === "activated"`
+- When `sessionStatus === "launched"` (or any non-lobby status), the invite column/panel MUST NOT be rendered; the participants / in-session content MAY use the full lobby width
 - Join URL encodes the current page origin with query parameter `?join={sessionCode}`
 - QR code MUST use a white background and sufficient contrast (dark foreground) for mobile scanners
-- QR section MUST expose an accessible label (`aria-label`)
+- When visible, the QR section MUST expose an accessible label (`aria-label`)
 
 **Prohibitions**:
 
 - Require navigation to a dedicated session page solely to display the QR code
+- Showing session code or QR invite controls after launch when join is closed to newcomers
 
 **Tests**:
 
-- Nominal: session lobby modal shows a scannable QR code for the active session
+- Nominal: activated lobby shows scannable QR and session code
+- Nominal: launched lobby hides code and QR
 - Edge: encoded URL contains the correct `join` query parameter
 
 **References**:

@@ -2,6 +2,13 @@ export function isSessionLobbyPage(pathname: string): boolean {
     return /\/campaigns\/[^/]+\/session\/[^/]+\/?$/.test(pathname);
 }
 
+/** @see FR-session-join-qr-code — invite code/QR only before launch. */
+export function shouldShowSessionLobbyInvitePanel(
+    sessionStatus: string | null | undefined,
+): boolean {
+    return sessionStatus === "activated";
+}
+
 export function buildPlayerSessionCharacterPath(
     locale: string,
     characterId: string,

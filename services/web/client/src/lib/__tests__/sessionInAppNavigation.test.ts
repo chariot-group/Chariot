@@ -7,6 +7,7 @@ import {
     shouldGmShowReturnToSheet,
     shouldPlayerShowReturnToBattleOnSessionLobby,
     shouldPlayerShowReturnToSheetOnSessionLobby,
+    shouldShowSessionLobbyInvitePanel,
     withSessionCodeQuery,
 } from "@/lib/sessionInAppNavigation";
 
@@ -18,6 +19,23 @@ describe("isSessionLobbyPage", () => {
     it("edge: rejects character and initiative tracker routes", () => {
         expect(isSessionLobbyPage("/fr/campaigns/camp-1/groups/gr-1/characters/ch-1")).toBe(false);
         expect(isSessionLobbyPage("/fr/initiativeTracker")).toBe(false);
+    });
+});
+
+/** @see FR-session-join-qr-code */
+describe("shouldShowSessionLobbyInvitePanel", () => {
+    it("nominal: shows invite panel while session is activated", () => {
+        expect(shouldShowSessionLobbyInvitePanel("activated")).toBe(true);
+    });
+
+    it("nominal: hides invite panel after launch", () => {
+        expect(shouldShowSessionLobbyInvitePanel("launched")).toBe(false);
+    });
+
+    it("edge: hides for closed or missing status", () => {
+        expect(shouldShowSessionLobbyInvitePanel("closed")).toBe(false);
+        expect(shouldShowSessionLobbyInvitePanel(null)).toBe(false);
+        expect(shouldShowSessionLobbyInvitePanel(undefined)).toBe(false);
     });
 });
 

@@ -33,6 +33,7 @@ import {
   resolveSessionLobbyParticipantAvatar,
   type SessionLobbyParticipantAvatarDescriptor,
 } from "@/lib/sessionLobbyAvatarBatch";
+import { shouldShowSessionLobbyInvitePanel } from "@/lib/sessionInAppNavigation";
 import {
   computeMaxAddableWheels,
   isWheelQuotaMetForLaunch,
@@ -76,7 +77,8 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
   const toast = useToast();
 
   const sessionStatus = useAppSelector(selectSessionStatus);
-  const sessionIsActive = sessionStatus == "activated";
+  /** Lobby pré-lancement : invite code/QR + dépôt wheels + changement de perso. */
+  const sessionIsActive = shouldShowSessionLobbyInvitePanel(sessionStatus);
   const [codeCopyState, setCodeCopyState] = useState<SessionLobbyCopyState>("idle");
   const [linkCopyState, setLinkCopyState] = useState<SessionLobbyCopyState>("idle");
   const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
@@ -195,46 +197,55 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
       <div
         className="flex h-full min-h-0 flex-col"
         aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
-        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 pt-4 sm:gap-4 sm:px-6 sm:pt-6 lg:grid lg:grid-cols-4 lg:items-stretch">
-          {/* Session code + QR — top on mobile, right column on desktop */}
-          <aside
-            aria-labelledby="session-lobby-code-heading"
-            className="flex shrink-0 flex-col gap-2 lg:col-span-1 lg:col-start-4 lg:row-start-1 lg:gap-3">
-            <Card className={cn("max-w-full min-w-0 lg:hidden", SESSION_LOBBY_CARD_CLASS)}>
-              <SessionLobbyCodeSection
-                code={code}
-                joinUrl={joinUrl}
-                inviteDisplay="responsive"
-                codeCopyState={codeCopyState}
-                linkCopyState={linkCopyState}
-                onCopyCode={() => copy(code, setCodeCopyState)}
-                onCopyLink={() => copy(joinUrl, setLinkCopyState)}
-                headingId="session-lobby-code-heading"
-              />
-            </Card>
-            <Card className={cn("hidden w-full lg:flex", SESSION_LOBBY_CARD_CLASS)}>
-              <SessionLobbyCodeSection
-                code={code}
-                inviteDisplay="text"
-                codeCopyState={codeCopyState}
-                linkCopyState={linkCopyState}
-                onCopyCode={() => copy(code, setCodeCopyState)}
-                onCopyLink={() => copy(joinUrl, setLinkCopyState)}
-                headingId="session-lobby-code-heading"
-              />
-            </Card>
-            <Card className={cn("hidden w-full items-center lg:flex", SESSION_LOBBY_CARD_CLASS)}>
-              <SessionLobbyQrSection
-                joinUrl={joinUrl}
-                showHeading
-              />
-            </Card>
-          </aside>
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 pt-4 sm:gap-4 sm:px-6 sm:pt-6",
+            sessionIsActive && "lg:grid lg:grid-cols-4 lg:items-stretch",
+          )}>
+          {/* Session code + QR — only while join is open (activated lobby). @see FR-session-join-qr-code */}
+          {sessionIsActive ? (
+            <aside
+              aria-labelledby="session-lobby-code-heading"
+              className="flex shrink-0 flex-col gap-2 lg:col-span-1 lg:col-start-4 lg:row-start-1 lg:gap-3">
+              <Card className={cn("max-w-full min-w-0 lg:hidden", SESSION_LOBBY_CARD_CLASS)}>
+                <SessionLobbyCodeSection
+                  code={code}
+                  joinUrl={joinUrl}
+                  inviteDisplay="responsive"
+                  codeCopyState={codeCopyState}
+                  linkCopyState={linkCopyState}
+                  onCopyCode={() => copy(code, setCodeCopyState)}
+                  onCopyLink={() => copy(joinUrl, setLinkCopyState)}
+                  headingId="session-lobby-code-heading"
+                />
+              </Card>
+              <Card className={cn("hidden w-full lg:flex", SESSION_LOBBY_CARD_CLASS)}>
+                <SessionLobbyCodeSection
+                  code={code}
+                  inviteDisplay="text"
+                  codeCopyState={codeCopyState}
+                  linkCopyState={linkCopyState}
+                  onCopyCode={() => copy(code, setCodeCopyState)}
+                  onCopyLink={() => copy(joinUrl, setLinkCopyState)}
+                  headingId="session-lobby-code-heading"
+                />
+              </Card>
+              <Card className={cn("hidden w-full items-center lg:flex", SESSION_LOBBY_CARD_CLASS)}>
+                <SessionLobbyQrSection
+                  joinUrl={joinUrl}
+                  showHeading
+                />
+              </Card>
+            </aside>
+          ) : null}
 
           {/* Participants + wheels */}
           <section
             aria-labelledby="session-lobby-players-heading"
-            className="flex min-h-0 flex-1 flex-col gap-2.5 lg:col-span-3 lg:col-start-1 lg:row-start-1 lg:gap-3">
+            className={cn(
+              "flex min-h-0 flex-1 flex-col gap-2.5 lg:row-start-1 lg:gap-3",
+              sessionIsActive ? "lg:col-span-3 lg:col-start-1" : "lg:col-span-full",
+            )}>
             <h2
               id="session-lobby-players-heading"
               className="shrink-0 text-xl font-bold sm:text-xl lg:text-lg">
