@@ -32,9 +32,12 @@ import {
   classWithSpellPrepared,
   countPreparedSpellsInList,
   DICE_TYPES,
+  getSpellLevelsFromSpells,
   hasLevel1OrHigherSpells,
   numberSpellsPrepare,
   npcUsesKey,
+  pruneOrphanSpellSlotsByLevel,
+  spellSlotLevelKeysEqual,
   SPELL_SCHOOLS,
 } from "@/utils/magic.utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -173,14 +176,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       name: `spellcasting.${selectedSpellcastingIndex}.isInnate`,
     }) ?? false;
 
-  /** Hors useFieldArray : `setValue` sur spellSlotsByLevel ne met pas à jour `spellcastingFields`. */
-  const watchedSpellSlotsByLevel = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`,
-  }) as Spellcasting["spellSlotsByLevel"] | undefined;
-
-  /** Tout niveau > 0 représenté par un sort doit avoir une ligne d’emplacements (ex. niveau modifié dans le formulaire sans repasser par « ajouter »).
-   *  Un `setValue` sur l’objet `spellSlotsByLevel` entier ne met pas toujours à jour les champs imbriqués (.total) : on écrit chaque niveau comme `addSpell`. */
+  /**
+   * Tout niveau > 0 représenté par un sort doit avoir une ligne d’emplacements.
+   * Les clés orphelines (plus aucun sort à ce niveau) sont purgées — FR-magic-spell-level-categories.
+   */
   useLayoutEffect(() => {
     if (isInnate || spellcastingList.length === 0) return;
     const basePath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
@@ -209,6 +208,13 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       } else if (u !== "" && Number.isNaN(Number(u))) {
         form.setValue(`${slotPath}.used`, 0, { shouldDirty: true });
       }
+    }
+
+    const slotsAfterEnsure =
+      ((form.getValues(basePath) ?? {}) as Spellcasting["spellSlotsByLevel"]) ?? {};
+    const pruned = pruneOrphanSpellSlotsByLevel(slotsAfterEnsure, currentSpells);
+    if (!spellSlotLevelKeysEqual(slotsAfterEnsure, pruned)) {
+      form.setValue(basePath, pruned, { shouldDirty: true, shouldValidate: false });
     }
   }, [isInnate, selectedSpellcastingIndex, currentSpells, form, spellcastingList.length]);
 
@@ -281,6 +287,15 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
       const newSpells = currentSpells.filter((_, i: number) => i !== index);
       form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, newSpells, { shouldDirty: true });
+
+      const slotsPath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
+      const slotsNow =
+        (form.getValues(slotsPath) as Spellcasting["spellSlotsByLevel"] | undefined) ?? {};
+      const pruned = pruneOrphanSpellSlotsByLevel(slotsNow, newSpells);
+      if (!spellSlotLevelKeysEqual(slotsNow, pruned)) {
+        form.setValue(slotsPath, pruned, { shouldDirty: true, shouldValidate: false });
+      }
+
       if (selectedSpellIndex === index) {
         setSelectedSpellIndex(null);
         setShowMobileDetails(false);
@@ -292,21 +307,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   );
 
   const appendSpellHelper = useCallback(() => {
-    const levels: number[] = [];
-    if (currentSpells.some((s) => Number(s.level) === 0)) levels.push(0);
-    const slotsRow =
-      (form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) as
-        Spellcasting["spellSlotsByLevel"] | undefined) ?? {};
-    Object.keys(slotsRow).forEach((l) => {
-      const n = Number(l);
-      if (!levels.includes(n)) levels.push(n);
-    });
-    currentSpells.forEach((spell) => {
-      const n = Number(spell.level);
-      if (!levels.includes(n)) levels.push(n);
-    });
-    levels.sort((a, b) => a - b);
-
+    const levels = getSpellLevelsFromSpells(currentSpells);
     const defaultLevel = levels.length > 0 ? levels[0] : 1;
     addSpell({
       name: "",
@@ -320,7 +321,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       effectType: "utility",
       usesPerDay: null,
     });
-  }, [currentSpells, form, selectedSpellcastingIndex, addSpell]);
+  }, [currentSpells, addSpell]);
 
   const addSpellFromCodex = useCallback(
     (spell: Partial<Spell>) => {
@@ -512,8 +513,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       saveDC: 10,
       attackBonus: 2,
       isInnate: false,
-      spellSlotsByLevel: { "1": { total: 1, used: 0 } },
-      totalSlots: 1,
+      spellSlotsByLevel: {},
+      totalSlots: 0,
       spells: [],
     };
 
@@ -617,24 +618,12 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const saveDCSynced = isPlayer(character) && currentSaveDC === calculatedSaveDC;
   const attackBonusSynced = isPlayer(character) && currentAttackBonus === calculatedAttackBonus;
 
-  // Build sorted level list (byLevel mode) or uses-per-day groups (byUses mode)
-  const levels: number[] = [];
+  // Build sorted level list from spells only (byLevel) or uses-per-day groups (byUses).
+  // @see FR-magic-spell-level-categories
+  const levels: number[] = !isInnate ? getSpellLevelsFromSpells(currentSpells) : [];
   const npcUsesGroups: Array<number | null> = [];
 
-  if (!isInnate) {
-    if (currentSpells.some((s) => Number(s.level) === 0)) levels.push(0);
-    const slotsMerged = watchedSpellSlotsByLevel ?? selectedSpellcasting?.spellSlotsByLevel ?? {};
-    Object.keys(slotsMerged).forEach((l) => {
-      const n = Number(l);
-      if (!levels.includes(n)) levels.push(n);
-    });
-    currentSpells.forEach((spell) => {
-      const n = Number(spell.level);
-      if (!levels.includes(n)) levels.push(n);
-    });
-    levels.sort((a, b) => a - b);
-  } else {
-    // byUses: group by usesPerDay
+  if (isInnate) {
     const seen = new Set<number | null>();
     currentSpells.forEach((spell) => {
       seen.add(spell.usesPerDay ?? null);
@@ -705,6 +694,15 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     ? levels.filter((level) => (spellIndicesByLevel[level] ?? []).length > 0).map((level) => `level-${level}`)
     : npcUsesGroups.filter((uses) => (npcSpellIndicesByUses[npcUsesKey(uses)] ?? []).length > 0).map(npcUsesKey);
   const hasSpellAccordions = allSpellAccordionKeys.length > 0;
+  const allSpellAccordionKeysSignature = allSpellAccordionKeys.join("|");
+
+  useEffect(() => {
+    const allowed = new Set(allSpellAccordionKeysSignature ? allSpellAccordionKeysSignature.split("|") : []);
+    setOpenAccordionValues((prev) => {
+      const next = prev.filter((key) => allowed.has(key));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [allSpellAccordionKeysSignature]);
 
   // ── Keyboard navigation for tabs ──
   const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {

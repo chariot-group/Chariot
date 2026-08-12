@@ -39,6 +39,63 @@ export function getSpellByLevel(selectedSpellcasting: Spellcasting, level: numbe
 }
 
 /**
+ * Niveaux de sorts présents (0–9), dérivés uniquement de la liste de sorts.
+ * @see FR-magic-spell-level-categories
+ */
+export function getSpellLevelsFromSpells(spells: Spell[] | undefined | null): number[] {
+    const levels: number[] = [];
+    for (const spell of spells ?? []) {
+        const n = Number(spell.level);
+        if (!Number.isFinite(n) || n < 0) continue;
+        if (!levels.includes(n)) levels.push(n);
+    }
+    levels.sort((a, b) => a - b);
+    return levels;
+}
+
+/**
+ * Conserve uniquement les emplacements des niveaux ≥ 1 qui ont encore au moins un sort.
+ * @see FR-magic-spell-level-categories
+ */
+export function pruneOrphanSpellSlotsByLevel(
+    slots: Spellcasting["spellSlotsByLevel"] | undefined | null,
+    spells: Spell[] | undefined | null,
+): NonNullable<Spellcasting["spellSlotsByLevel"]> {
+    const present = new Set(
+        (spells ?? [])
+            .map((s) => Number(s.level))
+            .filter((n) => Number.isFinite(n) && n >= 1),
+    );
+    const next: NonNullable<Spellcasting["spellSlotsByLevel"]> = {};
+    if (!slots) return next;
+    for (const [key, entry] of Object.entries(slots)) {
+        const level = Number(key);
+        if (!Number.isFinite(level) || level < 1) continue;
+        if (!present.has(level)) continue;
+        if (entry == null || typeof entry !== "object") continue;
+        next[String(level)] = entry;
+    }
+    return next;
+}
+
+/** Compare les clés d’emplacements (ignore l’ordre). */
+export function spellSlotLevelKeysEqual(
+    a: Spellcasting["spellSlotsByLevel"] | undefined | null,
+    b: Spellcasting["spellSlotsByLevel"] | undefined | null,
+): boolean {
+    const ak = Object.keys(a ?? {})
+        .map(Number)
+        .filter((n) => Number.isFinite(n))
+        .sort((x, y) => x - y);
+    const bk = Object.keys(b ?? {})
+        .map(Number)
+        .filter((n) => Number.isFinite(n))
+        .sort((x, y) => x - y);
+    if (ak.length !== bk.length) return false;
+    return ak.every((k, i) => k === bk[i]);
+}
+
+/**
  * Trie les sorts d’un même niveau : préparés d’abord (si mécanique active), puis par nom.
  */
 export function sortSpellsPreparedFirst(spells: Spell[], spellLevel: number, appliesPreparedMechanic: boolean): Spell[] {

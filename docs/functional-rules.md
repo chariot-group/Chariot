@@ -4042,3 +4042,39 @@ Each initiative tracker row carries:
 - `services/web/client/src/store/slices/sessionSlice.ts` (`createInitiativeTrackerRow`, `startBattle`)
 - `services/web/client/src/components/initiativeTracker/utils.ts` (`trackerMirrorFieldsFromCharacter`)
 - `docs/functional-rules.md` — FR-combat-initiative-tracker, FR-session-combat-sync, FR-session-combat-navigation
+
+---
+
+## FR-magic-spell-level-categories: Spell Level Categories Without Orphans
+
+**Rule**: On the character magic tab (view and edit), spell-level accordion categories MUST appear only for levels that currently have at least one spell; orphan `spellSlotsByLevel` entries MUST be pruned when no spell remains at that level.
+
+**Requirements**:
+
+- Level accordion sections (cantrips = 0, levels 1–9) MUST be listed from spells present on the active spellcasting block, not from `spellSlotsByLevel` keys alone.
+- A level section MUST be shown if and only if at least one spell has that level.
+- When the last spell of a level is removed, or a spell’s level is changed so that the previous level has no remaining spells, the corresponding `spellSlotsByLevel` entry MUST be removed from form/persisted state.
+- Adding a non-cantrip spell of level N MUST still ensure a `spellSlotsByLevel[N]` entry exists (create with sensible defaults if missing).
+- New empty spellcasting blocks MUST NOT seed a level-1 slot row by default; slots are created when the first level ≥ 1 spell is added (or when the user otherwise needs that level’s slots).
+- Innate / uses-per-day grouping is unchanged: groups follow `usesPerDay` of existing spells only.
+- Accessibility: collapsing empty categories MUST NOT leave focus on a removed accordion item; focus moves to the list region or another remaining category.
+
+**Prohibitions**:
+
+- Showing empty level accordion headers (slots-only levels with zero spells) in view or edit mode.
+- Leaving stale `spellSlotsByLevel` keys after the last spell of that level is gone.
+- Filling intermediate levels 1…N−1 solely because a spell of level N was added or its level was incremented via the control.
+
+**Tests**:
+
+- Nominal: add a level-6 spell → only cantrips (if any) and level 6 sections appear; remove that spell → level 6 section disappears and `spellSlotsByLevel["6"]` is gone.
+- Edge: change a spell from level 1 to 6 via the level control (including stepped increments) → no empty sections for levels 1–5; orphan slot keys for 1–5 are pruned when no spells remain there.
+- Edge: two spells at level 3, remove one → level 3 section and slots remain.
+- Failure: innate spellcasting still groups only by existing `usesPerDay` values; no by-level orphan categories.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/view/CharacterMagicView.tsx`
+- `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
+- `services/web/client/src/utils/magic.utils.ts`
+- `docs/functional-rules.md` — FR-character-detail-view

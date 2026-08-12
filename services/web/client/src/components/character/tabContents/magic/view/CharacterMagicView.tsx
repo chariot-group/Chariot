@@ -22,7 +22,7 @@ import {
   countPreparedSpellsInList,
   findSpellIndexInList,
   getSpellByLevel,
-  hasLevel0Spells,
+  getSpellLevelsFromSpells,
   hasLevel1OrHigherSpells,
   numberSpellsPrepare,
   getNpcUsesGroups,
@@ -267,28 +267,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
     ? getNpcUsesGroups(activeSpellcasting)
         .filter((uses) => getSpellsByUses(activeSpellcasting, uses).length > 0)
         .map(npcUsesKey)
-    : (() => {
-        const levels: number[] = [];
-        if (hasLevel0Spells(activeSpellcasting)) {
-          levels.push(0);
-        }
-        if (activeSpellcasting.spellSlotsByLevel) {
-          Object.keys(activeSpellcasting.spellSlotsByLevel).forEach((l) => {
-            const n = Number(l);
-            if (!Number.isFinite(n)) return;
-            if (!levels.includes(n)) levels.push(n);
-          });
-        }
-        if (activeSpellcasting.spells) {
-          activeSpellcasting.spells.forEach((spell) => {
-            const n = Number(spell.level);
-            if (!Number.isFinite(n)) return;
-            if (!levels.includes(n)) levels.push(n);
-          });
-        }
-        levels.sort((a, b) => a - b);
-        return levels.map((level) => `level-${level}`);
-      })();
+    : getSpellLevelsFromSpells(activeSpellcasting.spells).map((level) => `level-${level}`);
   const hasAccordionItems = allAccordionValues.length > 0;
 
   const maxPreparedForView =
@@ -605,34 +584,8 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                     );
                   }
 
-                  // ── Grouped by spell level ──
-                  const levels: number[] = [];
-
-                  // Add level 0 if cantrips exist
-                  if (hasLevel0Spells(activeSpellcasting)) {
-                    levels.push(0);
-                  }
-
-                  // Add other levels from spellSlotsByLevel
-                  if (activeSpellcasting.spellSlotsByLevel) {
-                    Object.keys(activeSpellcasting.spellSlotsByLevel).forEach((l) => {
-                      const n = Number(l);
-                      if (!Number.isFinite(n)) return;
-                      if (!levels.includes(n)) levels.push(n);
-                    });
-                  }
-
-                  // Add all levels that have spells (even without slots)
-                  if (activeSpellcasting.spells) {
-                    activeSpellcasting.spells.forEach((spell) => {
-                      const n = Number(spell.level);
-                      if (!Number.isFinite(n)) return;
-                      if (!levels.includes(n)) levels.push(n);
-                    });
-                  }
-
-                  // Sort levels
-                  levels.sort((a, b) => a - b);
+                  // ── Grouped by spell level (spells only — FR-magic-spell-level-categories) ──
+                  const levels = getSpellLevelsFromSpells(activeSpellcasting.spells);
 
                   return (
                     <Accordion
@@ -646,6 +599,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                           level,
                           appliesPrepMechanic,
                         );
+                        if (spells.length === 0) return null;
                         const slotKey = String(level);
                         const slotCount = level > 0 ? getRemainingSpellSlots(activeSpellcasting, level) : null;
                         const spellsList = activeSpellcasting.spells ?? [];
