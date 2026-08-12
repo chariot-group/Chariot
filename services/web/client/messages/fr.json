@@ -457,7 +457,8 @@
   },
   "auth": {
     "loading": "Chargement...",
-    "pleaseWait": "Veuillez patienter pendant la vérification de votre session"
+    "pleaseWait": "Veuillez patienter pendant la vérification de votre session",
+    "logoutEscape": "Se déconnecter"
   },
   "notFound": {
     "message": "Page introuvable. Redirection vers l'accueil..."

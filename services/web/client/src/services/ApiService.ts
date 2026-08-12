@@ -1,11 +1,22 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import Keycloak from "keycloak-js";
+import { buildKeycloakAuthOptions } from "@/hooks/useLocalePreference";
 
 let keycloakInstance: Keycloak | null = null;
+let loginRedirectInFlight = false;
 
 export const setKeycloakInstance = (instance: Keycloak) => {
   keycloakInstance = instance;
 };
+
+/** Debounce forced re-login — parallel 401s after SSO restart must not spam Keycloak. */
+function redirectToLogin(kc: Keycloak): void {
+  if (typeof window === "undefined" || loginRedirectInFlight) return;
+  loginRedirectInFlight = true;
+  const { locale } = buildKeycloakAuthOptions(window.location.pathname);
+  const redirectUri = `${window.location.origin}/${locale}/welcome`;
+  kc.login({ locale, redirectUri });
+}
 
 // Create a single shared axios instance
 let apiClientInstance: AxiosInstance | null = null;
@@ -72,7 +83,7 @@ const createApiClient = (): AxiosInstance => {
         try {
           // Check if user is authenticated
           if (!keycloakInstance.authenticated) {
-            keycloakInstance.login();
+            redirectToLogin(keycloakInstance);
             return Promise.reject(error);
           }
 
@@ -90,15 +101,12 @@ const createApiClient = (): AxiosInstance => {
             // Retry request
             return instance(originalRequest);
           } else {
-            keycloakInstance.login();
+            redirectToLogin(keycloakInstance);
             return Promise.reject(error);
           }
         } catch (refreshError) {
           console.error("Token refresh failed", refreshError);
-          // Redirect to login page
-          if (typeof window !== "undefined") {
-            keycloakInstance.login();
-          }
+          redirectToLogin(keycloakInstance);
           return Promise.reject(error);
         }
       }

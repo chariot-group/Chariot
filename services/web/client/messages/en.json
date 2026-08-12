@@ -456,7 +456,8 @@
   },
   "auth": {
     "loading": "Loading...",
-    "pleaseWait": "Please wait while we verify your session"
+    "pleaseWait": "Please wait while we verify your session",
+    "logoutEscape": "Sign out"
   },
   "notFound": {
     "message": "Page not found. Redirecting to home..."

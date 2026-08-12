@@ -56,12 +56,12 @@ export function estimateSpellDetailCardHeight(spell: PdfSpellRow): number {
   const description = spell.description.replace(/\s+/g, " ").trim();
   const descriptionLines = description
     ? Math.max(
-        1,
-        Math.ceil(
-          Math.min(description.length, PDF_SPELL_COMPACT_DESCRIPTION_MAX_CHARS) /
-            PDF_SPELL_DETAIL_DESC_CHARS_PER_LINE,
-        ),
-      )
+      1,
+      Math.ceil(
+        Math.min(description.length, PDF_SPELL_COMPACT_DESCRIPTION_MAX_CHARS) /
+        PDF_SPELL_DETAIL_DESC_CHARS_PER_LINE,
+      ),
+    )
     : 0;
   return PDF_SPELL_DETAIL_CARD_BASE_HEIGHT + descriptionLines * PDF_SPELL_DETAIL_DESC_LINE_HEIGHT;
 }
@@ -168,7 +168,7 @@ export function densityFromDriverLines(driverLines: number): SpellOverviewDensit
     Math.max(
       0,
       (SPELL_OVERVIEW_DENSITY_DENSE_LINES - driverLines) /
-        (SPELL_OVERVIEW_DENSITY_DENSE_LINES - SPELL_OVERVIEW_DENSITY_SPARSE_LINES),
+      (SPELL_OVERVIEW_DENSITY_DENSE_LINES - SPELL_OVERVIEW_DENSITY_SPARSE_LINES),
     ),
   );
   return {

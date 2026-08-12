@@ -456,7 +456,8 @@
   },
   "auth": {
     "loading": "Cargando...",
-    "pleaseWait": "Por favor, espere mientras verificamos su sesión"
+    "pleaseWait": "Por favor, espere mientras verificamos su sesión",
+    "logoutEscape": "Cerrar sesión"
   },
   "notFound": {
     "message": "Página no encontrada. Redirigiendo al inicio..."
