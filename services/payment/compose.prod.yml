@@ -23,13 +23,13 @@ services:
       - chariot-network
 
   chariot-payment:
+    ports:
+      - "9003:9003"
     image: ghcr.io/chariot-group/chariot-payment-production:latest
     container_name: chariot-payment-prod
     restart: unless-stopped
     working_dir: /app
     command: sh -c "npx prisma generate && npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/src/main"
-    ports:
-      - "9003"
     environment:
       NODE_ENV: production
       DATABASE_URL: ${PAYMENT_DATABASE_URL}
@@ -43,6 +43,14 @@ services:
       KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-}
+      LOKI_ENABLED: ${LOKI_ENABLED:-false}
+      LOKI_URL: ${LOKI_URL:-}
+      LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       SHOWCASE_URL: ${SHOWCASE_URL}

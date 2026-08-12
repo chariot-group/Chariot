@@ -12,6 +12,7 @@ import {
     affiliationUsagesCounterProvider,
     dbQueryDurationProvider,
     stripePaymentsCounterProvider,
+    stripeWebhooksCounterProvider,
 } from '@/metrics/metrics.service';
 
 @Module({
@@ -42,6 +43,7 @@ import {
         affiliationUsagesCounterProvider,
         dbQueryDurationProvider,
         stripePaymentsCounterProvider,
+        stripeWebhooksCounterProvider,
     ],
     exports: [
         MetricsService,
@@ -54,6 +56,7 @@ import {
         affiliationUsagesCounterProvider,
         dbQueryDurationProvider,
         stripePaymentsCounterProvider,
+        stripeWebhooksCounterProvider,
     ],
 })
 export class MetricsModule { }

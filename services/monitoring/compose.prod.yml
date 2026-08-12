@@ -1,0 +1,69 @@
+# Exporters scrapeables (pull) — déployés sur le VPS Chariot
+# Accès réservé au réseau WireGuard / firewall (voir Monitoring/docs/wireguard.md)
+#
+# Usage:
+#   cd services/monitoring && docker compose -f compose.prod.yml --env-file .env up -d
+#   make up SERVICE=monitoring ENV=prod
+
+name: chariot-monitoring-exporters-prod
+
+services:
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    platform: linux/amd64
+    container_name: chariot-node-exporter-prod
+    restart: unless-stopped
+    pid: host
+    ports:
+      - "9100:9100"
+    command:
+      - "--path.rootfs=/host"
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    volumes:
+      - /:/host:ro
+    networks:
+      - chariot-group-network-prod
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.43.1
+    platform: linux/amd64
+    container_name: chariot-mongodb-exporter-prod
+    restart: unless-stopped
+    ports:
+      - "9216:9216"
+    environment:
+      MONGODB_URI: ${MONGODB_EXPORTER_URI}
+    command:
+      - "--compatible-mode"
+    networks:
+      - chariot-group-network-prod
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.66.0
+    platform: linux/amd64
+    container_name: chariot-redis-exporter-prod
+    restart: unless-stopped
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: ${REDIS_EXPORTER_ADDR:-redis://chariot-session-redis-prod:6379}
+    networks:
+      - chariot-group-network-prod
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    platform: linux/amd64
+    container_name: chariot-postgres-exporter-prod
+    restart: unless-stopped
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: ${POSTGRES_EXPORTER_DSN}
+    networks:
+      - chariot-group-network-prod
+
+networks:
+  chariot-group-network-prod:
+    external: true

@@ -24,6 +24,10 @@ describe('StripeService.resolveCode — FR-stripe-checkout', () => {
         inc: jest.fn(),
     };
 
+    const stripeWebhooksCounterMock = {
+        inc: jest.fn(),
+    };
+
     beforeAll(() => {
         process.env.STRIPE_SECRET_KEY = 'sk_test_fake';
     });
@@ -37,6 +41,7 @@ describe('StripeService.resolveCode — FR-stripe-checkout', () => {
             affiliationServiceMock,
             referralServiceMock,
             stripePaymentsCounterMock as any,
+            stripeWebhooksCounterMock as any,
         );
     });
 

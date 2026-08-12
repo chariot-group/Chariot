@@ -11,6 +11,7 @@ import { ProxyModule } from "./proxy/proxy.module";
 import { HealthModule } from "./health/health.module";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 import { MetricsModule } from "./metrics/metrics.module";
+import { MetricsInterceptor } from "./metrics/metrics.interceptor";
 
 @Module({
   imports: [
@@ -32,6 +33,10 @@ import { MetricsModule } from "./metrics/metrics.module";
       defaultMetrics: {
         enabled: true,
       },
+      defaultLabels: {
+        app: "chariot",
+        service: "gateway",
+      },
     }),
     HttpModule,
     MetricsModule,
@@ -49,6 +54,10 @@ import { MetricsModule } from "./metrics/metrics.module";
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
     },
   ],
 })

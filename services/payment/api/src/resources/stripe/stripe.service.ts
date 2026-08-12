@@ -46,6 +46,8 @@ export class StripeService {
         private readonly referralService: ReferralService,
         @InjectMetric('chariot_stripe_payments_total')
         private readonly stripePaymentsCounter: Counter,
+        @InjectMetric('chariot_stripe_webhooks_total')
+        private readonly stripeWebhooksCounter: Counter,
     ) {
         this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
             apiVersion: '2026-02-25.clover',
@@ -376,10 +378,19 @@ export class StripeService {
                 );
             }
 
+            this.stripeWebhooksCounter.inc({
+                status: 'success',
+                event_type: event.type,
+            });
+
             const message = `Stripe webhook handled in ${Date.now() - start} ms`;
             this.logger.verbose(message, this.SERVICE_NAME);
             return { message, data: true };
         } catch (error) {
+            this.stripeWebhooksCounter.inc({
+                status: 'failed',
+                event_type: 'unknown',
+            });
             const errorMessage = `Error handling Stripe webhook: ${error.message}`;
             this.logger.error(errorMessage, null, this.SERVICE_NAME);
             throw new BadRequestException(errorMessage);

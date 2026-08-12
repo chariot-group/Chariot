@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MediaModule } from '@/resources/media/media.module';
 import { HealthModule } from '@/health/health.module';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
+import { MetricsModule } from '@/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
     }),
     MediaModule,
     HealthModule,
+    MetricsModule,
   ],
   providers: [
     Logger,

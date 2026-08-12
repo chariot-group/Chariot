@@ -82,7 +82,7 @@ export class ProxyController {
 
   constructor(private readonly proxyService: ProxyService) {}
 
-  @All("*")
+  @All("{*path}")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
     await handleProxy(req, res, "adventure", /^\/api/, this.proxyService, this.logger);
   }
@@ -94,7 +94,7 @@ export class SessionProxyController {
 
   constructor(private readonly proxyService: ProxyService) {}
 
-  @All("*")
+  @All("{*path}")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
     await handleProxy(req, res, "session", /^\/session/, this.proxyService, this.logger);
   }
@@ -106,7 +106,7 @@ export class PaymentProxyController {
 
   constructor(private readonly proxyService: ProxyService) {}
 
-  @All("*")
+  @All("{*path}")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
     await handleProxy(req, res, "payment", /^\/payment/, this.proxyService, this.logger);
   }
@@ -118,7 +118,7 @@ export class MediaProxyController {
 
   constructor(private readonly proxyService: ProxyService) {}
 
-  @All("*")
+  @All("{*path}")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
     await handleProxy(req, res, "media", /^\/api/, this.proxyService, this.logger);
   }

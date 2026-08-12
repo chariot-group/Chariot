@@ -27,6 +27,12 @@
     "@nestjs/core": "^11.1.28",
     "@nestjs/platform-express": "^11.1.28",
     "@nestjs/throttler": "^6.5.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.56.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.57.2",
+    "@opentelemetry/resources": "^1.30.1",
+    "@opentelemetry/sdk-node": "^0.57.2",
+    "@opentelemetry/semantic-conventions": "^1.28.0",
     "@willsoto/nestjs-prometheus": "^6.0.0",
     "axios": "^1.18.1",
     "class-transformer": "^0.5.1",
@@ -39,7 +45,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "winston": "^3.11.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "winston-transport": "^4.9.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.24",
@@ -63,7 +70,7 @@
     "ts-loader": "^9.6.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^7.0.2"
+    "typescript": "^5.8.3"
   },
   "jest": {
     "moduleFileExtensions": [

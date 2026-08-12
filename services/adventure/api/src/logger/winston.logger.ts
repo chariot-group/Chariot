@@ -1,62 +1,45 @@
 import { createLogger, format, transports } from 'winston';
+import { createLokiTransport } from '@/observability/loki.transport';
 
-// custom log display format
-const customFormat = format.printf(
-  ({ timestamp, level, stack, message, context }) => {
-    return `${timestamp} - ${level}: [${context}] ${message || stack}`;
-  },
-);
+const SERVICE = 'adventure';
+const isDev = process.env.NODE_ENV === 'development';
+const logLevel =
+  process.env.LOG_LEVEL || (isDev ? 'debug' : 'info');
 
-const options = {
-  errorFile: {
-    filename: 'logger/logs/error.log',
-    level: 'error',
-  },
-  combineFile: {
-    filename: 'logger/logs/combine.log',
-    level: 'info',
-  },
-  console: {
-    level: 'silly',
-  },
-};
+const consoleFormat = isDev
+  ? format.combine(
+      format.colorize({ all: true }),
+      format.printf(({ timestamp, level, message, context, stack }) => {
+        const scope = context ? `${SERVICE}/${context}` : SERVICE;
+        return `${timestamp} ${level} [${scope}] ${stack || message}`;
+      }),
+    )
+  : format.json();
 
-// for development environment
-const devLogger = {
+const lokiTransport = createLokiTransport(SERVICE);
+
+export const instance = createLogger({
+  level: logLevel,
+  // service/environment only as Loki stream labels — not duplicated in the line body
   format: format.combine(
-    format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss.SSS',
-    }),
-    format.colorize({ all: true }),
-    format.align(),
+    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
     format.errors({ stack: true }),
-    customFormat,
   ),
   transports: [
-    new transports.Console(options.console),
-    new transports.File(options.errorFile),
-    new transports.File(options.combineFile),
-  ],
-};
-
-// for production environment
-const prodLogger = {
-  format: format.combine(
-    format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss.SSS',
+    new transports.Console({
+      level: isDev ? 'silly' : logLevel,
+      format: consoleFormat,
     }),
-    format.errors({ stack: true }),
-    format.json(),
-  ),
-  transports: [
-    new transports.Console(options.console), // Add console logging for Docker
-    new transports.File(options.errorFile),
-    new transports.File(options.combineFile),
+    new transports.File({
+      filename: 'logger/logs/error.log',
+      level: 'error',
+      format: format.json(),
+    }),
+    new transports.File({
+      filename: 'logger/logs/combine.log',
+      level: 'info',
+      format: format.json(),
+    }),
+    ...(lokiTransport ? [lokiTransport] : []),
   ],
-};
-
-// export log instance based on the current environment
-const instanceLogger =
-  process.env.NODE_ENV === 'development' ? devLogger : prodLogger;
-
-export const instance = createLogger(instanceLogger);
+});

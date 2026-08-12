@@ -55,3 +55,4 @@ service-specific documentation available in the repository.
 - For frontend, see `services/web/client/docs`
 - For API and backend configuration, see `services/adventure/api/docs`
 
+- [Observability](./OBSERVABILITY.md)

@@ -9,10 +9,13 @@ import * as express from 'express';
 import { ErrorDetailsFilter } from '@/common/filters/errors.filter';
 import { setupSwagger } from '@/config/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
+import { initTracing } from '@/observability/tracing';
+import { metricsBasicAuthMiddleware } from '@/observability/metrics-auth.middleware';
 
 type RawBodyRequest = express.Request & { rawBody?: Buffer };
 
 async function bootstrap() {
+  await initTracing('chariot-adventure');
   let AppModuleToUse = AppModule;
 
   const app = await NestFactory.create(AppModuleToUse, {
@@ -21,6 +24,8 @@ async function bootstrap() {
       instance: instance,
     }),
   });
+
+  app.use(metricsBasicAuthMiddleware);
 
   // CORS Configuration - Service interne, accepte toutes les requêtes
   // La validation CORS est gérée par la Gateway qui est le seul point d'entrée public

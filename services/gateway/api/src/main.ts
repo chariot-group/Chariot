@@ -6,6 +6,8 @@ import { ValidationPipe, Logger } from "@nestjs/common";
 import cookieParser from "cookie-parser";
 import * as express from "express";
 import helmet from "helmet";
+import { initTracing } from "./observability/tracing";
+import { metricsBasicAuthMiddleware } from "./observability/metrics-auth.middleware";
 
 type RawBodyRequest = express.Request & { rawBody?: Buffer };
 
@@ -17,12 +19,15 @@ const normalizeOrigin = (origin: string): string => origin.trim().replace(/\/+$/
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
+  await initTracing("chariot-gateway");
 
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger({
       instance: instance,
     }),
   });
+
+  app.use(metricsBasicAuthMiddleware);
 
   // Security headers
   app.use(

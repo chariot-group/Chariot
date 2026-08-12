@@ -26,6 +26,8 @@ services:
       - chariot-network
 
   chariot-adventure:
+    ports:
+      - "9000:9000"
     image: ghcr.io/chariot-group/chariot-adventure-integration:latest
     container_name: chariot-adventure-integ
     restart: unless-stopped
@@ -50,6 +52,14 @@ services:
       KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-}
+      LOKI_ENABLED: ${LOKI_ENABLED:-false}
+      LOKI_URL: ${LOKI_URL:-}
+      LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
     depends_on:
       chariot-mongo:
         condition: service_healthy

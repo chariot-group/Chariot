@@ -1,0 +1,62 @@
+name: chariot-monitoring-exporters-dev
+
+services:
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    platform: linux/amd64
+    container_name: chariot-node-exporter
+    restart: unless-stopped
+    pid: host
+    ports:
+      - "9100:9100"
+    command:
+      - "--path.rootfs=/host"
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    volumes:
+      - /:/host:ro
+    networks:
+      - chariot-group-network
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.43.1
+    platform: linux/amd64
+    container_name: chariot-mongodb-exporter
+    restart: unless-stopped
+    ports:
+      - "9216:9216"
+    environment:
+      MONGODB_URI: ${MONGODB_EXPORTER_URI:-mongodb://chariot_mongo:chariot_mongo@chariot-mongodb:27017}
+    command:
+      - "--compatible-mode"
+    networks:
+      - chariot-group-network
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.66.0
+    platform: linux/amd64
+    container_name: chariot-redis-exporter
+    restart: unless-stopped
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: ${REDIS_EXPORTER_ADDR:-redis://chariot-session-redis:6379}
+    networks:
+      - chariot-group-network
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    platform: linux/amd64
+    container_name: chariot-postgres-exporter
+    restart: unless-stopped
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: ${POSTGRES_EXPORTER_DSN:-postgresql://postgres:postgres@chariot-session-postgres:5432/session?sslmode=disable}
+    networks:
+      - chariot-group-network
+
+networks:
+  chariot-group-network:
+    external: true

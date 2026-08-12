@@ -34,6 +34,12 @@
     "@nestjs/platform-socket.io": "^11.1.28",
     "@nestjs/swagger": "^11.4.6",
     "@nestjs/websockets": "^11.1.28",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.56.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.57.2",
+    "@opentelemetry/resources": "^1.30.1",
+    "@opentelemetry/sdk-node": "^0.57.2",
+    "@opentelemetry/semantic-conventions": "^1.28.0",
     "@prisma/adapter-pg": "^7.9.0",
     "@prisma/client": "^7.9.0",
     "@types/jsonwebtoken": "^9.0.9",
@@ -51,7 +57,8 @@
     "prom-client": "^15.1.3",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.2",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "winston-transport": "^4.9.0"
   },
   "overrides": {
     "axios": ">=1.15.0",

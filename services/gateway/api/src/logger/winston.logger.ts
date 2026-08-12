@@ -1,10 +1,12 @@
 import * as winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 import { utilities as nestWinstonModuleUtilities } from "nest-winston";
+import { createLokiTransport } from "../observability/loki.transport";
 
+const SERVICE = "gateway";
 const logLevel = process.env.GATEWAY_LOG_LEVEL || "info";
+const lokiTransport = createLokiTransport(SERVICE);
 
-// Transport pour les erreurs
 const errorTransport = new DailyRotateFile({
   dirname: "logger/logs",
   filename: "error-%DATE%.log",
@@ -20,7 +22,6 @@ const errorTransport = new DailyRotateFile({
   ),
 });
 
-// Transport pour tous les logs
 const combinedTransport = new DailyRotateFile({
   dirname: "logger/logs",
   filename: "combined-%DATE%.log",
@@ -35,7 +36,6 @@ const combinedTransport = new DailyRotateFile({
   ),
 });
 
-// Transport console avec couleurs en développement
 const consoleTransport = new winston.transports.Console({
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -47,20 +47,22 @@ const consoleTransport = new winston.transports.Console({
   ),
 });
 
-// Instance Winston pour l'API Gateway
 export const instance = winston.createLogger({
   level: logLevel,
+  // No defaultMeta.service — Loki stream label already carries service=gateway
   format: winston.format.combine(
-    winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
-    winston.format.json(),
   ),
-  defaultMeta: { service: "chariot-gateway" },
-  transports: [errorTransport, combinedTransport, consoleTransport],
+  transports: [
+    errorTransport,
+    combinedTransport,
+    consoleTransport,
+    ...(lokiTransport ? [lokiTransport] : []),
+  ],
 });
 
-// Log de démarrage
 instance.info("Winston logger initialized for Gateway", {
   level: logLevel,
   environment: process.env.NODE_ENV,

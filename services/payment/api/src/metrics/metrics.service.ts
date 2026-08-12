@@ -71,3 +71,10 @@ export const stripePaymentsCounterProvider = makeCounterProvider({
     help: 'Total number of Stripe payments',
     labelNames: ['status'],
 });
+
+// 9. COMPTEUR: Webhooks Stripe
+export const stripeWebhooksCounterProvider = makeCounterProvider({
+    name: 'chariot_stripe_webhooks_total',
+    help: 'Total number of Stripe webhooks received',
+    labelNames: ['status', 'event_type'],
+});

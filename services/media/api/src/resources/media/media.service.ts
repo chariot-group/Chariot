@@ -6,6 +6,8 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter, Histogram } from 'prom-client';
 import { ImageProcessorService } from '@/resources/media/image-processor.service';
 import { MediaAccessService } from '@/resources/media/media-access.service';
 import { MinioService } from '@/resources/media/minio.service';
@@ -36,6 +38,12 @@ export class MediaService {
     private readonly imageProcessorService: ImageProcessorService,
     private readonly mediaAccessService: MediaAccessService,
     private readonly configService: ConfigService,
+    @InjectMetric('chariot_media_uploads_total')
+    private readonly uploadsCounter: Counter<string>,
+    @InjectMetric('chariot_media_presigned_urls_total')
+    private readonly presignedCounter: Counter<string>,
+    @InjectMetric('chariot_media_minio_operation_duration_seconds')
+    private readonly minioDuration: Histogram<string>,
   ) {
     this.adventureBaseUrl = (
       this.configService.get<string>('ADVENTURE_INTERNAL_URL') ??
@@ -89,6 +97,7 @@ export class MediaService {
       kind: character.kind,
     });
 
+    this.uploadsCounter.inc({ type: 'character_avatar', status: 'success' });
     return { avatar: mainKey };
   }
 
@@ -150,6 +159,7 @@ export class MediaService {
 
     await this.updateUserAvatar(keycloakId, mainKey);
 
+    this.uploadsCounter.inc({ type: 'user_avatar', status: 'success' });
     return { avatar: mainKey };
   }
 
@@ -304,14 +314,18 @@ export class MediaService {
     }
 
     try {
+      const end = this.minioDuration.startTimer({ operation: 'presign_get' });
       const presigned =
         await this.minioService.createPresignedGetUrl(objectKey);
+      end();
+      this.presignedCounter.inc({ status: 'success' });
       return {
         url: presigned.url,
         expiresAt: presigned.expiresAt,
         source: 'presigned',
       };
     } catch (error) {
+      this.presignedCounter.inc({ status: 'error' });
       this.logger.warn(
         `Presigned URL failed for ${objectKey}: ${(error as Error).message}`,
       );

@@ -9,13 +9,18 @@ import * as express from 'express';
 import { ErrorDetailsFilter } from '@/common/filters/errors.filter';
 import { setupSwagger } from '@/config/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
+import { initTracing } from '@/observability/tracing';
+import { metricsBasicAuthMiddleware } from '@/observability/metrics-auth.middleware';
 
 async function bootstrap() {
+    await initTracing('chariot-session');
     const app = await NestFactory.create(AppModule, {
         logger: WinstonModule.createLogger({
             instance: instance,
         }),
     });
+
+    app.use(metricsBasicAuthMiddleware);
 
     // CORS Configuration - Service interne, accepte toutes les requêtes
     // La validation CORS est gérée par la Gateway qui est le seul point d'entrée public
