@@ -1978,6 +1978,7 @@ Each initiative tracker row carries:
 - Client roster state MUST merge HTTP and WebSocket updates without overwriting newer WebSocket data (`mergeParticipantsPreserveCharacterIds`).
 - After participant join or character-change events, clients SHOULD trigger a debounced HTTP roster resync as a convergence fallback.
 - Session end toasts MUST be deduplicated per session code and reason when multiple socket subscribers receive the same event (`shouldShowSessionEndNotice`).
+- Participant leave and disconnect toasts MUST be shown by exactly one client owner (`SessionCharacterSyncClient`). Lobby subscribers (`useSessionSocket`) MAY update local roster state for the same events but MUST NOT emit duplicate leave/disconnect toasts.
 
 **WebSocket Conventions** (mandatory for all session event handlers):
 
@@ -1995,6 +1996,7 @@ Each initiative tracker row carries:
 - Broadcasting join events with `characterId: null` when the persisted roster already has a character.
 - Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
 - Registering duplicate session-end handlers that each show an independent toast for the same event.
+- Showing participant-left or participant-disconnected toasts from more than one socket subscriber for the same event.
 - Closing a session automatically due to WebSocket inactivity or all participants being disconnected. The only valid session termination triggers are: 8-hour Redis TTL expiration and explicit GM manual close.
 
 **Tests**:
@@ -2006,11 +2008,14 @@ Each initiative tracker row carries:
 - Gateway edge: disconnect beyond grace period emits `session:participant-disconnected`.
 - Join after reconnect preserves roster `characterId` in the `session:participant-joined` broadcast.
 - Session end toast is shown once despite multiple subscribers.
+- Participant leave/disconnect toast is shown once despite layout + lobby subscribers both receiving the event.
 
 **References**:
 
 - `services/web/client/src/lib/sessionSocketPool.ts`
 - `services/web/client/src/lib/__tests__/sessionSocketPool.test.ts`
+- `services/web/client/src/lib/sessionParticipantLifecycleToasts.ts`
+- `services/web/client/src/lib/__tests__/sessionParticipantLifecycleToasts.test.ts`
 - `services/web/client/src/hooks/useSessionSocket.ts`
 - `services/web/client/src/components/SessionCharacterSyncClient.tsx`
 - `services/web/client/src/lib/sessionCharacterSyncBridge.ts`
