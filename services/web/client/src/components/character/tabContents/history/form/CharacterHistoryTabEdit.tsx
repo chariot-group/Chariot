@@ -39,6 +39,41 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Controller
+              name="appearance.eyes"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="appearance-eyes"
+                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                    <Eye
+                      className="shrink-0 w-4 h-4"
+                      aria-hidden="true"
+                    />
+                    {t("eyes")}
+                  </label>
+                  <Input
+                    {...field}
+                    id="appearance-eyes"
+                    tabIndex={1}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "appearance-eyes-error" : undefined}
+                    placeholder={t("eyes")}
+                    type="text"
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="appearance-eyes-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
               name="appearance.age"
               control={form.control}
               render={({ field, fieldState }) => (
@@ -59,7 +94,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                     min={0}
                     value={field.value ?? ""}
                     id="appearance-age"
-                    tabIndex={1}
+                    tabIndex={2}
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-age-error" : undefined}
                     placeholder={t("age")}
@@ -68,6 +103,41 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                   {fieldState.error && (
                     <FieldError
                       id="appearance-age-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="appearance.skin"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="appearance-skin"
+                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                    <PersonStanding
+                      className="shrink-0 w-4 h-4"
+                      aria-hidden="true"
+                    />
+                    {t("skin")}
+                  </label>
+                  <Input
+                    {...field}
+                    id="appearance-skin"
+                    tabIndex={3}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "appearance-skin-error" : undefined}
+                    placeholder={t("skin")}
+                    type="text"
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="appearance-skin-error"
                       errors={[fieldState.error]}
                     />
                   )}
@@ -98,7 +168,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                     toDisplay={displayHeight}
                     toStored={toHeightFeet}
                     id="appearance-height"
-                    tabIndex={2}
+                    tabIndex={4}
                     min={0}
                     step={0.1}
                     aria-invalid={fieldState.invalid}
@@ -139,7 +209,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                     toDisplay={displayWeight}
                     toStored={toWeightLbs}
                     id="appearance-weight"
-                    tabIndex={3}
+                    tabIndex={5}
                     min={0}
                     step={0.1}
                     aria-invalid={fieldState.invalid}
@@ -150,76 +220,6 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                   {fieldState.error && (
                     <FieldError
                       id="appearance-weight-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="appearance.eyes"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="appearance-eyes"
-                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
-                    <Eye
-                      className="shrink-0 w-4 h-4"
-                      aria-hidden="true"
-                    />
-                    {t("eyes")}
-                  </label>
-                  <Input
-                    {...field}
-                    id="appearance-eyes"
-                    tabIndex={4}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "appearance-eyes-error" : undefined}
-                    placeholder={t("eyes")}
-                    type="text"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="appearance-eyes-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="appearance.skin"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="appearance-skin"
-                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
-                    <PersonStanding
-                      className="shrink-0 w-4 h-4"
-                      aria-hidden="true"
-                    />
-                    {t("skin")}
-                  </label>
-                  <Input
-                    {...field}
-                    id="appearance-skin"
-                    tabIndex={5}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "appearance-skin-error" : undefined}
-                    placeholder={t("skin")}
-                    type="text"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="appearance-skin-error"
                       errors={[fieldState.error]}
                     />
                   )}

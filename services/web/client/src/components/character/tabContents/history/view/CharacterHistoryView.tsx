@@ -34,6 +34,16 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 w-full">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
+                <Eye
+                  className="shrink-0 w-4 h-4"
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-medium">{t("eyes")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.eyes}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Cake
                   className="shrink-0 w-4 h-4"
                   aria-hidden="true"
@@ -41,6 +51,16 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 <span className="text-xs font-medium">{t("age")}</span>
               </div>
               <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.age}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <PersonStanding
+                  className="shrink-0 w-4 h-4"
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-medium">{t("skin")}</span>
+              </div>
+              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.skin}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -87,26 +107,6 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                   </>
                 ) : null}
               </span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Eye
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("eyes")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.eyes}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <PersonStanding
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("skin")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.skin}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
